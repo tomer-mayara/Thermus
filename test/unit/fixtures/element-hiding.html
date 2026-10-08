@@ -1,0 +1,316 @@
+<!-- Downloaded 2026-10-08 from https://abptestpages.org/en/filters/element-hiding -->
+<!DOCTYPE html>
+<html>
+  
+  <head>
+  <title>Element Hiding - ABP Test Pages</title>
+  <link rel="stylesheet" href="/css/testpages.css?1750141628">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/abp-32.png?1750141628">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <script src="/lib/utils.js?2462770367"></script>
+</head>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const filterElements = document.querySelectorAll(".testcase-filters pre");
+
+    filterElements.forEach(function(element) {
+      let isCopying = false;
+      element.addEventListener("click", function() {
+        if (isCopying) {
+          return;
+        }
+
+        isCopying = true;
+        const filterText = element.textContent;
+        const textArea = document.createElement("textarea");
+        textArea.value = filterText;
+
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        element.innerText = "COPIED!"
+        
+        setTimeout(function() {
+          element.textContent = filterText;
+          isCopying = false;
+        }, 500);
+        });
+      });
+    });
+  </script>
+  <body>
+    <header id="site-header">
+  <a href="/"><h1>ABP Test Pages</h1></a>
+</header>
+
+    
+    <section class="site-panel">
+      <h2>Element Hiding</h2>
+      <p>Check that basic element hiding functionality is working as expected.</p>
+    </section>
+    
+
+    
+
+
+
+
+
+<section id="id-selector-section" class="testcase-panel">
+  <h2 aria-label="test-case-id-selector" id="id-selector">ID Selector</h2>
+  <p>Test that an element hiding filter using an ID selector hides its target.</p>
+  <div id="id-selector-area" class="testcase-area">
+    <div id="eh-id" data-expectedresult="fail" data-dp="fail" aria-label="id-selector-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="id-selector-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="id-selector-filters" class="testcase-filters">
+    <li><pre>abptestpages.org###eh-id</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="id-selector-with-double-curly-braces-section" class="testcase-panel">
+  <h2 aria-label="test-case-id-selector-with-double-curly-braces" id="id-selector-with-double-curly-braces">ID Selector with double curly braces</h2>
+  <p>Test that an element hiding filter using an ID selector with two curly braces hides its target.</p>
+  <div id="id-selector-with-double-curly-braces-area" class="testcase-area">
+    <div id="{{eh-id}}" data-expectedresult="fail" data-dp="fail" aria-label="id-selector-with-double-curly-braces-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="id-selector-with-double-curly-braces-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="id-selector-with-double-curly-braces-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[id='{{eh-id}}']</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="class-selector-section" class="testcase-panel">
+  <h2 aria-label="test-case-class-selector" id="class-selector">Class Selector</h2>
+  <p>Test that an element hiding filter using a class selector hides its target.</p>
+  <div id="class-selector-area" class="testcase-area">
+    <div id="class-selector-fail-1" class="eh-class" data-expectedresult="fail" data-dp="fail" aria-label="class-selector-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="class-selector-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="class-selector-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##.eh-class</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="descendant-selector-section" class="testcase-panel"> 
+  <h2 aria-label="test-case-descendant-selector" id="descendant-selector">Descendant Selector</h2>
+  <p>Test that an element hiding filter using a descendant selector hides its target.</p>
+  <div id="descendant-selector-area" class="testcase-area">
+    <div id="descendant-selector-fail-1" class="eh-descendant" data-expectedresult="fail" data-dp="fail" aria-label="descendant-selector-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="descendant-selector-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="descendant-selector-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##.testcase-area > .eh-descendant</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="sibling-selector-section" class="testcase-panel">
+  <h2 aria-label="test-case-sibling-selector" id="sibling-selector">Sibling Selector</h2>
+  <p>Test that an element hiding filter using a sibling selector hides its target.</p>
+  <div id="sibling-selector-area" class="testcase-area">
+    <div class="testcase-examplecontent" aria-label="sibling-selector-example">Example Content</div>
+    <div id="sibling-selector-fail-1" class="eh-sibling" data-expectedresult="fail" data-dp="fail" aria-label="sibling-selector-fail">Target</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="sibling-selector-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##.testcase-examplecontent + .eh-sibling</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="attribute-selector-1-section" class="testcase-panel">
+  <h2 aria-label="test-case-attribute-selector-1" id="attribute-selector-1">Attribute Selector 1</h2>
+  <p>Test that an element hiding filter using an attribute selector hides its target.</p>
+  <div id="attribute-selector-1-area" class="testcase-area">
+    <div id="attribute-selector-1-fail-1" width="100" height="100" data-expectedresult="fail" data-dp="fail" aria-label="attribute-selector-1-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="attribute-selector-1-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="attribute-selector-1-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[height="100"][width="100"]</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="attribute-selector-2-section" class="testcase-panel">
+  <h2 aria-label="test-case-attribute-selector-2" id="attribute-selector-2">Attribute Selector 2</h2>
+  <p>Test that an element hiding filter using an attribute selector hides its target.</p>
+  <div id="attribute-selector-2-area" class="testcase-area">
+    <div id="attribute-selector-2-fail-1" href="http://testcase-attribute.com/" data-expectedresult="fail" data-dp="fail" aria-label="attribute-selector-2-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="attribute-selector-2-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="attribute-selector-2-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[href="http://testcase-attribute.com/"]</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="attribute-selector-3-section" class="testcase-panel">
+  <h2 aria-label="test-case-attribute-selector-3" id="attribute-selector-3">Attribute Selector 3</h2>
+  <p>Test that an element hiding filter using an attribute selector hides its target.</p>
+  <div id="attribute-selector-3-area" class="testcase-area">
+    <div id="attribute-selector-3-fail-1" style="width: 200px;" data-expectedresult="fail" data-dp="fail" aria-label="attribute-selector-3-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="attribute-selector-3-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="attribute-selector-3-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[style="width: 200px;"]</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="starts-with-selector-1-section" class="testcase-panel">
+  <h2 aria-label="test-case-starts-with-selector-1" id="starts-with-selector-1">Starts with Selector 1</h2>
+  <p>Test that an element hiding filter using a starts with selector hides its target.</p>
+  <div id="starts-with-selector-1-area" class="testcase-area">
+    <div id="starts-with-selector-1-fail-1" href="http://testcase-startswith.com/test" data-expectedresult="fail" data-dp="fail" aria-label="starts-with-selector-1-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="starts-with-selector-1-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="starts-with-selector-1-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[href^="http://testcase-startswith.com/"]</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="starts-with-selector-2-section" class="testcase-panel">
+  <h2 aria-label="test-case-starts-with-selector-2" id="starts-with-selector-2">Starts with Selector 2</h2>
+  <p>Test that an element hiding filter using a starts with selector hides its target.</p>
+  <div id="starts-with-selector-2-area" class="testcase-area">
+    <div id="starts-with-selector-2-fail-1" style="width: 201px; color: white;" data-expectedresult="fail" data-dp="fail" aria-label="starts-with-selector-2-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="starts-with-selector-2-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="starts-with-selector-2-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[style^="width: 201px;"]</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="ends-with-selector-1-section" class="testcase-panel">
+  <h2 aria-label="test-case-ends-with-selector-1" id="ends-with-selector-1">Ends with Selector 1</h2>
+  <p>Test that an element hiding filter using a ends with selector hides its target.</p>
+  <div id="ends-with-selector-1-area" class="testcase-area">
+    <div id="ends-with-selector-1-fail-1" style="color: white; width: 202px;" data-expectedresult="fail" data-dp="fail" aria-label="ends-with-selector-1-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="ends-with-selector-1-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="ends-with-selector-1-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[style$="width: 202px;"]</pre></li>
+  </ul>
+</section>
+
+
+
+<section id="contains-section" class="testcase-panel">
+  <h2 aria-label="test-case-contains" id="contains">Contains</h2>
+  <p>Test that an element hiding filter using a contains selector hides its target.</p>
+  <div id="contains-area" class="testcase-area">
+    <div id="contains-fail-1" style="color: white; width: 203px;" data-expectedresult="fail" data-dp="fail" aria-label="contains-fail">Target</div>
+    <div class="testcase-examplecontent" aria-label="contains-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The red element should be hidden and the space collapsed.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="contains-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##div[style*="width: 203px;"]</pre></li>
+  </ul>
+</section>
+
+    <footer id="site-footer">
+  <p id="site-update">Last deploy: 07 October 2026</p>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,89 @@
+<!-- Downloaded 2026-10-08 from https://abptestpages.org/en/exceptions/element-hiding -->
+<!DOCTYPE html>
+<html>
+  
+  <head>
+  <title>Element Hiding Exception - ABP Test Pages</title>
+  <link rel="stylesheet" href="/css/testpages.css?3815731714">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/abp-32.png?3815731714">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <script src="/lib/utils.js?3229551658"></script>
+</head>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const filterElements = document.querySelectorAll(".testcase-filters pre");
+
+    filterElements.forEach(function(element) {
+      let isCopying = false;
+      element.addEventListener("click", function() {
+        if (isCopying) {
+          return;
+        }
+
+        isCopying = true;
+        const filterText = element.textContent;
+        const textArea = document.createElement("textarea");
+        textArea.value = filterText;
+
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        element.innerText = "COPIED!"
+        
+        setTimeout(function() {
+          element.textContent = filterText;
+          isCopying = false;
+        }, 500);
+        });
+      });
+    });
+  </script>
+  <body>
+    <header id="site-header">
+  <a href="/"><h1>ABP Test Pages</h1></a>
+</header>
+
+    
+    <section class="site-panel">
+      <h2>Element Hiding Exception</h2>
+      <p>Check that usage of the element hiding filter in an exception is working as expected.</p>
+    </section>
+    
+
+    
+
+
+
+
+
+<section id="exception-usage-section" class="testcase-panel">
+  <h2 aria-label="test-case-exception-usage" id="exception-usage">Exception usage</h2>
+  <p>Test that the element hiding filter in an exception works.</p>
+  <div id="exception-usage-area" class="testcase-area">
+    <div class="testcase-expected-view">Exception Target</div>
+    <div id="exception-usage-pass-1" class="testcase-ehe" data-expectedresult="pass" data-dp="pass" aria-label="exception-usage-pass">Exception Target</div>
+    <div class="testcase-examplecontent" aria-label="exception-usage-example">Example Content</div>
+  </div>
+  <h3>Steps</h3>
+  <ul class="testcase-steps">
+    <li>Add filter #1.</li>
+    <li>Refresh page.</li>
+    <li>The exception target element should be blocked.</li>
+    <li>Add filter #2.</li>
+    <li>The exception target element should become unblocked.</li>
+  </ul>
+  <h3>Filters</h3>
+  <ul id="exception-usage-filters" class="testcase-filters">
+    <li><pre>abptestpages.org##.testcase-ehe</pre></li>
+    <li><pre>abptestpages.org#@#.testcase-ehe</pre></li>
+  </ul>
+</section>
+
+    <footer id="site-footer">
+  <p id="site-update">Last deploy: 07 October 2026</p>
+</footer>
+  </body>
+</html>

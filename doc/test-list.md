@@ -6,17 +6,17 @@
 ## Unit
 
 
+**Ad blocker Server**
 
+[V] Get an HTML and returns a clean HTML
 
-**MCP Server**
-
-
+**HTML to MD**
 
 ## Interface
 
 **HTML Fetcher**
 
-[] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
-[] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
+[V] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
+[V] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
 
 ## Acceptance

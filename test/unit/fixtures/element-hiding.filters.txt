@@ -1,0 +1,11 @@
+abptestpages.org###eh-id
+abptestpages.org##.eh-class
+abptestpages.org##.testcase-area > .eh-descendant
+abptestpages.org##.testcase-examplecontent + .eh-sibling
+abptestpages.org##div[height="100"][width="100"]
+abptestpages.org##div[href="http://testcase-attribute.com/"]
+abptestpages.org##div[style="width: 200px;"]
+abptestpages.org##div[href^="http://testcase-startswith.com/"]
+abptestpages.org##.testcase-ehe
+abptestpages.org#@#.testcase-ehe
+abptestpages.org##div:has-text(Example Content)

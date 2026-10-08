@@ -2,6 +2,7 @@ packages:
   - ".habit-hooks"
 
 allowBuilds:
+  adblock-rs: true
   esbuild: true
 
 overrides:
