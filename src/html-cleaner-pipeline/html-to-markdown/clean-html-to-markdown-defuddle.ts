@@ -6,7 +6,7 @@ import { type CleanHtmlToMarkdown } from './clean-html-to-markdown.ts';
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
     const { document } = parseHTML(ctx.html);
-    const result = await Defuddle(document, ctx.url, { markdown: true });
+    const result = await Defuddle(document, ctx.url, { markdown: true, useAsync: false });
     return {
       ...ctx,
       markdown: result.content ?? '',
