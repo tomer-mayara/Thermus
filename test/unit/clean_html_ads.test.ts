@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/clean-html-ads-adblock-rs.ts';
+import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads-adblock-rs.ts';
 
 const fixturesDirectory = join(process.cwd(), 'test/unit/fixtures');
 
