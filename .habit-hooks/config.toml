@@ -1,0 +1,25 @@
+plugins = ["typescript", "generic"]
+transformers = ["snooze"]
+files = [
+  "**/*.ts",
+  "**/*.tsx",
+  "**/*.js",
+  "**/*.jsx",
+  "**/*.mjs",
+  "**/*.cjs",
+  "!**/node_modules/**",
+  "!**/dist/**",
+  "!coverage/**",
+  "!tools/code-review-agents/**",
+]
+
+[scope]
+autoBranchOffMain = true
+branchBase = "origin/main"
+mainBranch = "main"
+
+[sensors.eslint]
+args = ["--config", ".habit-hooks/eslint.config.mjs"]
+
+[sensors.jscpd]
+disabled = true

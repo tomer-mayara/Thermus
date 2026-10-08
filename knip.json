@@ -1,0 +1,7 @@
+{
+  "workspaces": {
+    ".habit-hooks": { "project": ["*.mjs"] }
+  },
+  "ignoreDependencies": ["eslint", "ts-morph"],
+  "ignore": ["tools/code-review-agents/**"]
+}
