@@ -1,3 +1,3 @@
-export abstract class WebsiteFetcher {
-  public abstract fetchURL(url: string): Promise<string>;
+export interface WebsiteFetcher {
+  fetchURL(url: string): Promise<string>;
 }

@@ -1,11 +1,11 @@
 import { execFile } from 'node:child_process';
-import { WebsiteFetcher } from './website-fetcher.ts';
+import { type WebsiteFetcher } from './website-fetcher.ts';
 
 const LIGHTPANDA_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
 
-export class WebsiteFetcherLightpanda extends WebsiteFetcher {
+export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   public async fetchURL(url: string): Promise<string> {
     const parsed = new URL(url);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
