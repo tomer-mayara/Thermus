@@ -5,6 +5,8 @@ export type Ctx = {
   title?: string | null;
   removed: number;
   skipped: number;
+  found?: readonly string[];
+  warnings?: readonly string[];
 };
 
 export interface Step {
