@@ -4,6 +4,6 @@ export type CleanHtmlAdsResult = {
   skipped: number;
 };
 
-export abstract class CleanHtmlAds {
-  public abstract invoke(url: string, html: string): CleanHtmlAdsResult;
+export interface CleanHtmlAds {
+  invoke(url: string, html: string): CleanHtmlAdsResult;
 }

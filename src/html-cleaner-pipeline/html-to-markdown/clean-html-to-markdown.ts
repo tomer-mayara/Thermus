@@ -1,3 +1,3 @@
-export abstract class CleanHtmlToMarkdown {
-  public abstract invoke(html: string): Promise<string>;
+export interface CleanHtmlToMarkdown {
+  invoke(html: string): Promise<string>;
 }

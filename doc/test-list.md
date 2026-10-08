@@ -12,6 +12,8 @@
 
 **HTML to MD**
 
+[V] Get HTML and spit MD file
+
 ## Interface
 
 **HTML Fetcher**

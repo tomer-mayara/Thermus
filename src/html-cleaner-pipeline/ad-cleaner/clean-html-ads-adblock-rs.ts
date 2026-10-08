@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import adblockRust from 'adblock-rs';
 import { selectAll } from 'css-select';
 import { ElementType, parseDocument } from 'htmlparser2';
-import { CleanHtmlAds, type CleanHtmlAdsResult } from './clean-html-ads.ts';
+import { type CleanHtmlAds, type CleanHtmlAdsResult } from './clean-html-ads.ts';
 
 const RULES_PATH = join(process.cwd(), 'test/unit/fixtures/element-hiding.filters.txt');
 
@@ -153,7 +153,7 @@ function stripHtml(html: string, document: HtmlNode, selectors: string[]): {
   };
 }
 
-export class CleanHtmlAdsAdblockRs extends CleanHtmlAds {
+export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
   public invoke(url: string, html: string): CleanHtmlAdsResult {
     const document = parseHtml(html);
     const selected = selectorsFor(getEngine(), url, document);
