@@ -1,0 +1,3 @@
+[submodule "tools/code-review-agents"]
+	path = tools/code-review-agents
+	url = https://github.com/tomer-mayara/code-review-agents.git
