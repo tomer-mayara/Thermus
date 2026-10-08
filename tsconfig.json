@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
+    "rewriteRelativeImportExtensions": true,
     "isolatedModules": true,
     "types": ["node"]
   },
