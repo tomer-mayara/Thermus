@@ -1,3 +1,3 @@
-export interface CleanHtmlToMarkdown {
-  invoke(html: string): Promise<string>;
-}
+import { type Step } from '../html-to-markdown-pipeline.ts';
+
+export interface CleanHtmlToMarkdown extends Step {}

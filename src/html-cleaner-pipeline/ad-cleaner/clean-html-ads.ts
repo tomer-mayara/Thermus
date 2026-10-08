@@ -1,9 +1,3 @@
-export type CleanHtmlAdsResult = {
-  html: string;
-  removed: number;
-  skipped: number;
-};
+import { type Step } from '../html-to-markdown-pipeline.ts';
 
-export interface CleanHtmlAds {
-  invoke(url: string, html: string): CleanHtmlAdsResult;
-}
+export interface CleanHtmlAds extends Step {}
