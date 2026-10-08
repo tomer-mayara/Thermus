@@ -12,7 +12,6 @@ describe('WebsiteFetcherLightpanda', () => {
   test('fetchURL returns rendered HTML for a JavaScript page', async () => {
     const html = await fetcher.fetchURL('https://quotes.toscrape.com/js/');
 
-    // console.log(html); // Log the HTML content for debugging purposes
     assert.match(html, /<html[\s>]/i);
     assert.match(html, /<small class=['"]author['"]>Albert Einstein<\/small>/);
   });
