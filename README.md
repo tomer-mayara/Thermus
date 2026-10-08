@@ -35,7 +35,9 @@ pnpm install
 pnpm dev         # tsx watch src/index.ts
 pnpm build       # tsc
 pnpm start       # node dist/src/index.js
-pnpm test        # tsc, then node --test on dist/test/
+pnpm test             # tsc, then node --test on dist/test/
+pnpm test:unit        # tsc, then node --test on dist/test/unit/
+pnpm test:interface   # tsc, then node --test on dist/test/interface/
 pnpm typecheck   # tsc --noEmit
 ```
 
