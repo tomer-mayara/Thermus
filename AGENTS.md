@@ -68,7 +68,11 @@ For each ticket, do the steps that follow:
    Ready pull request. Manual workflow dispatch remains available. A missing,
    pending, skipped, cancelled, failed, or mismatched result is not passing
    evidence.
-8. If a fix changes the head after Ready
+8. If a fix changes the head after Ready, repeat step 3 and run `habit-hooks`
+   before you commit. After you push the new head, run all 4 reviewers with
+   the command in step 5. Repair each reviewer defect. Repeat this sequence
+   for each new head. Wait for every configured unit and integration job in
+   step 7 to pass on that head. Results for an earlier head do not count.
 9.  Do not merge if a required test failed or a reviewer defect remains. Merge a clean pull request once.
 
 

@@ -17,7 +17,11 @@ describe('Known HTML pipeline output', () => {
     const local = new HtmlToMarkdownPipeline([new PromptInjectionRemoverSanitizer(), markdowner]);
     const html = `${'<div>\n'.repeat(6000)}<span hidden>hidden payload</span>${'</div>\n'.repeat(6000)}`;
 
-    const result = await local.process('https://example.com/', html);
+    const result = await local.process({
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/',
+      html,
+    });
 
     assert.equal(seenHtml, '');
     assert.deepEqual(result.found, ['hidden-html', 'exfil-urls']);
@@ -46,7 +50,11 @@ describe('Known HTML pipeline output', () => {
       '</html>',
     ].join('\n');
 
-    const result = await local.process('https://example.com/', html);
+    const result = await local.process({
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/',
+      html,
+    });
 
     assert.ok(result.markdown);
     assert.match(result.markdown, /Visible article line 0/);
