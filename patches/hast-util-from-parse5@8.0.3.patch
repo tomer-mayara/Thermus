@@ -1,0 +1,32 @@
+diff --git a/index.d.ts b/index.d.ts
+index 903ad59b00bb974c33a81175eb7947738f3b98a6..4756258c6148827c3365894fc7bb6fc257f87736 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -71,6 +71,11 @@ declare module 'hast' {
+   }
+
+   interface RootData {
++    /**
++     * Exact document mode from the HTML parser. Absent for fragments.
++     */
++    documentMode?: 'no-quirks' | 'quirks' | 'limited-quirks' | undefined
++
+     /**
+      * Whether the document was using quirksmode.
+      *
+diff --git a/lib/index.js b/lib/index.js
+index 79f9186ede80232644b8b8f82bf1adbe80801cbd..85274e8f122d12237052370aa35605388113db0b 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -93,7 +93,10 @@ function one(state, node) {
+       result = {
+         type: 'root',
+         children: all(state, node.childNodes),
+-        data: {quirksMode}
++        data: {
++          quirksMode,
++          documentMode: 'mode' in reference ? reference.mode : undefined
++        }
+       }
+
+       if (state.file && state.location) {

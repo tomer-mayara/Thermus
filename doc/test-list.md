@@ -22,8 +22,13 @@
 [V] Reports exfil-shaped URLs and keeps them in the HTML
 [V] Removes inherited zero-font-size text and keeps descendants with visible font-size or font shorthand overrides
 [V] Keeps visible images inside zero-font-size parents and removes hidden images
+[V] Uses unitless `font-size` in full quirks mode and rejects nonzero unitless sizes in standards and limited-quirks modes
+[V] Resolves font-size declaration order and `!important` rules without changing the font shorthand grammar
 [V] Removes whole subtrees for display:none, zero opacity, content-visibility:hidden, zero scale, and collapsed height with hidden overflow
 [V] Keeps visible matrix and matrix3d content, including rotations in the rendered plane with zero diagonal values, and removes singular or collapsed transforms
+[V] Composes valid matrix() and matrix3d() lists in CSS order before projected-plane checks
+[V] Keeps mixed rotate/matrix transforms when their combined projection is visible or unknown, and removes known singular matrices
+[V] Keeps content visible when matrix lists use invalid comma or plus separators
 
 **HTML to Markdown Pipeline**
 
@@ -33,6 +38,7 @@
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
 [V] Keeps visible descendants, images, and rotated content in the final Markdown and removes hidden text and collapsed content
+[V] Checks exact final Markdown for composed transform and quirks-mode font-size regressions
 
 **HTML to MD**
 

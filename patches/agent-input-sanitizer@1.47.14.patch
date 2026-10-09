@@ -1,8 +1,26 @@
 diff --git a/src/html.mjs b/src/html.mjs
-index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16154b29d4 100644
+index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4a0d036cc 100644
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -208,25 +208,14 @@ function isHidingTransform(node) {
+@@ -196,43 +196,32 @@ function isOffscreenOffset(node) {
+
+ /**
+  * True when a `transform` renders text invisible: scaled to (near) nothing,
+- * rotated edge-on (an odd quarter-turn around X or Y projects to zero area), or
+- * translated far off any viewport. Walks the transform-function list so any
+- * hiding function anywhere in the list is caught.
++ * rotated edge-on, or translated far off any viewport. Compose matrix lists
++ * before testing the projected plane. An unresolved list can change that plane.
+  * @param {any} node value node for `transform`
+  * @returns {boolean}
+  */
+ function isHidingTransform(node) {
+   if (!node) return false;
+-  for (const fn of valueTokens(node)) {
++  // Keep operators: an invalid list must not form a composed matrix.
++  const functions = node.children?.toArray().filter((token) => token.type !== "WhiteSpace") ?? [];
++  if (isHidingMatrixList(functions)) return true;
++  for (const fn of functions) {
      if (fn.type !== "Function") continue;
      const name = fn.name.toLowerCase();
      const args = valueTokens(fn);
@@ -18,9 +36,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 -      // `matrix(a,b,c,d,…)` puts scaleX=a (0) and scaleY=d (3); `matrix3d` puts
 -      // scaleX=m11 (0) and scaleY=m22 (5). Do NOT use index 3 for matrix3d — that
 -      // is m14, which is legitimately 0 on the identity matrix (false positive).
-+    if (name === "matrix" || name === "matrix3d") {
-+      if (isHidingMatrix(fn)) return true;
-+    } else if (/^(?:scale|scale3d|scalex|scaley)$/.test(name)) {
++    if (/^(?:scale|scale3d|scalex|scaley)$/.test(name)) {
        const numbers = args.filter(
          (/** @type {any} */ a) => a.type === "Number",
        );
@@ -32,10 +48,17 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
            const f = numbers[i];
            return f && Math.abs(parseFloat(f.value)) < NEAR_ZERO_EPSILON;
          })
-@@ -268,6 +257,61 @@ function isHidingTransform(node) {
+       )
+         return true;
+-    } else if (name === "rotatex" || name === "rotatey") {
++    } else if (functions.length === 1 && (name === "rotatex" || name === "rotatey")) {
+       // An axis rotation collapses the box to a line at an odd quarter-turn.
+       // Only the axis-specific rotations collapse; a plain rotate()/rotateZ()
+       // spins in-plane and stays visible. The angle needs an explicit unit (a
+@@ -268,6 +257,88 @@ function isHidingTransform(node) {
    return false;
  }
- 
+
 +/** @param {number[][]} rows @returns {{ value: number, magnitude: number }} */
 +function determinant(rows) {
 +  if (rows.length === 1)
@@ -67,37 +90,64 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 +    Math.hypot(c, d) < NEAR_ZERO_EPSILON;
 +}
 +
-+/** @param {any} fn @returns {boolean} */
-+function isHidingMatrix(fn) {
++const MATRIX_AXES = [0, 1, 2, 3];
++const PROJECTED_AXES = [0, 1, 3];
++
++/** @param {any} fn @returns {number[][] | null} */
++function matrixRows(fn) {
++  if (fn.type !== "Function") return null;
++  const name = csstree.ident.decode(fn.name).toLowerCase();
++  if (name !== "matrix" && name !== "matrix3d") return null;
 +  const groups = functionArgs(fn);
-+  const size = fn.name.toLowerCase() === "matrix" ? 6 : 16;
++  const size = name === "matrix" ? 6 : 16;
 +  if (groups.length !== size ||
 +      groups.some((group) => group.length !== 1 || group[0].type !== "Number"))
-+    return false;
++    return null;
 +  const values = groups.map((group) => Number(group[0].value));
-+  if (!values.every(Number.isFinite)) return false;
-+  if (size === 6) return isCollapsedPlane(values);
++  if (!values.every(Number.isFinite)) return null;
++  if (size === 6) {
++    const [a, b, c, d, e, f] = values;
++    return [[a, c, 0, e], [b, d, 0, f], [0, 0, 1, 0], [0, 0, 0, 1]];
++  }
++  // CSS lists matrix columns in order.
++  return MATRIX_AXES.map((row) =>
++    MATRIX_AXES.map((column) => values[column * MATRIX_AXES.length + row]));
++}
 +
-+  // CSS stores matrix columns in order. A singular matrix hides the subtree.
++/** @param {any[]} functions @returns {boolean} */
++function isHidingMatrixList(functions) {
++  if (functions.length === 0) return false;
++  const matrices = functions.map(matrixRows).filter((matrix) => matrix !== null);
++  // Other functions can restore the projected area, but not a singular matrix.
++  if (matrices.length !== functions.length)
++    return matrices.some(isSingularMatrix);
++
++  let rows = MATRIX_AXES.map((row) => MATRIX_AXES.map((column) => Number(row === column)));
++  // Post-multiply in CSS order, then project the complete transform.
++  // https://www.w3.org/TR/css-transforms-2/#transform-rendering
++  for (const matrix of matrices) {
++    rows = rows.map((row) => MATRIX_AXES.map((column) =>
++      row.reduce((sum, value, index) => sum + value * matrix[index][column], 0)));
++  }
++
++  // A singular matrix hides the subtree.
 +  // https://www.w3.org/TR/css-transforms-1/#transform-function-lists
-+  const rows = [0, 1, 2, 3].map((row) =>
-+    [0, 1, 2, 3].map((column) => values[column * 4 + row]));
 +  if (isSingularMatrix(rows)) return true;
 +  // Text lies in the local z=0 plane. Check its projection onto the screen.
-+  const projected = [0, 1, 3].map((row) =>
-+    [0, 1, 3].map((column) => rows[row][column]));
++  const projected = PROJECTED_AXES.map((row) =>
++    PROJECTED_AXES.map((column) => rows[row][column]));
 +  if (isSingularMatrix(projected)) return true;
-+  const affine = values[3] === 0 && values[7] === 0 && values[15] === 1;
-+  return affine && isCollapsedPlane([values[0], values[1], values[4], values[5]]);
++  const affine = rows[3][0] === 0 && rows[3][1] === 0 && rows[3][3] === 1;
++  return affine && isCollapsedPlane([rows[0][0], rows[1][0], rows[0][1], rows[1][1]]);
 +}
 +
  /**
   * True when a `filter` renders content invisible: an `opacity()` function drops
   * the element to fully transparent. The amount is a <number-percentage>; a
-@@ -840,26 +884,63 @@ function isOverflowHidden(nodeOf, textOf) {
+@@ -840,26 +911,70 @@ function isOverflowHidden(nodeOf, textOf) {
    return false;
  }
- 
+
 -// The length units that denote a font-size in a `font` SHORTHAND. Only a length
 -// with one of these units is a size (a bare number there is a weight, a `%` a
 -// stretch), so those never misread as a zero size. `q` (quarter-mm) is a font
@@ -111,14 +161,21 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 +  return { type: "Value", children: new csstree.List().fromArray([token]) };
 +}
 +
-+/** @param {string} property @param {any} value @returns {any} */
-+function parseFontSize(property, value) {
++/** @param {string} property @param {any} value @param {boolean} quirksMode @returns {any} */
++function parseFontSize(property, value, quirksMode) {
 +  const decoded = csstree.clone(value);
 +  csstree.walk(decoded, (/** @type {any} */ token) => {
 +    if (token.type === "Identifier" || token.type === "Function")
 +      token.name = csstree.ident.decode(token.name);
 +    if (token.type === "Dimension") token.unit = csstree.ident.decode(token.unit);
 +  });
++  const token = soleToken(decoded);
++  // Quirks mode accepts a unitless font-size as pixels, but not in shorthand.
++  // https://drafts.csswg.org/css-values-4/#quirky-length
++  if (quirksMode && property === "font-size" && token?.type === "Number") {
++    token.type = "Dimension";
++    token.unit = "px";
++  }
 +  const match = csstree.lexer.matchProperty(property, decoded);
 +  const variable = csstree.find(decoded, (/** @type {any} */ token) =>
 +    token.type === "Function" && token.name.toLowerCase() === "var");
@@ -129,7 +186,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 +
 +const FONT_PIXELS_PER_UNIT = { px: 1, pt: 96 / 72, pc: 16, in: 96, cm: 96 / 2.54,
 +  mm: 96 / 25.4, q: 96 / 101.6 };
- 
+
  /**
 - * True when a `font` SHORTHAND's font-size collapses the text to nothing. The
 - * font-size is the FIRST length token in the shorthand (it precedes an optional
@@ -173,23 +230,30 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 +  if (["ex", "ch", "cap", "ic"].includes(unit) && inherited === 0) return 0;
 +  return null;
  }
- 
+
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -912,6 +993,7 @@ function declText(valueNode) {
- function parseDeclarations(styleStr) {
+@@ -907,11 +1022,13 @@ function declText(valueNode) {
+  * free). Property names are escape-decoded and gated to real CSS idents;
+  * anything else is dropped (fail open). Later declarations win, per the cascade.
+  * @param {string} styleStr
++ * @param {boolean} [quirksMode]
+  * @returns {Map<string, any>}
+  */
+-function parseDeclarations(styleStr) {
++function parseDeclarations(styleStr, quirksMode = false) {
    /** @type {Map<string, any>} */
    const decls = new Map();
 +  let fontImportant = false;
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,6 +1016,14 @@ function parseDeclarations(styleStr) {
+@@ -934,6 +1051,14 @@ function parseDeclarations(styleStr) {
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
 +      if (property === "font-size" || property === "font") {
 +        if (fontImportant && !node.important) return;
-+        const size = parseFontSize(property, node.value);
++        const size = parseFontSize(property, node.value, quirksMode);
 +        if (!size) return;
 +        decls.set("font-size", size);
 +        fontImportant = Boolean(node.important);
@@ -198,8 +262,8 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
        decls.set(property, node.value);
      },
    });
-@@ -942,9 +1032,10 @@ function parseDeclarations(styleStr) {
- 
+@@ -942,9 +1067,10 @@ function parseDeclarations(styleStr) {
+
  /**
   * @param {string} styleStr
 + * @param {boolean} [ignoreFontSize]
@@ -209,8 +273,8 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 +export function isHiddenStyle(styleStr, ignoreFontSize = false) {
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
- 
-@@ -982,11 +1073,8 @@ export function isHiddenStyle(styleStr) {
+
+@@ -982,11 +1108,8 @@ export function isHiddenStyle(styleStr) {
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -221,10 +285,10 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 -  if (isFontShorthandHidden(nodeOf("font"))) return true;
 +  // Font size hides text, but a descendant can set a visible size.
 +  if (!ignoreFontSize && isNearZeroLength(nodeOf("font-size"))) return true;
- 
+
    if (isPositionedOffscreen(nodeOf, textOf)) return true;
- 
-@@ -1094,9 +1182,10 @@ const RAW_TEXT_ELEMENTS = new Set([
+
+@@ -1094,9 +1217,10 @@ const RAW_TEXT_ELEMENTS = new Set([
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -236,7 +300,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1197,7 @@ export function isHiddenElement(node) {
+@@ -1108,7 +1232,7 @@ export function isHiddenElement(node) {
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -244,8 +308,8 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 +  if (properties.style && isHiddenStyle(properties.style, ignoreFontSize)) return true;
    return false;
  }
- 
-@@ -1256,18 +1345,30 @@ function hasWarned(warned) {
+
+@@ -1256,18 +1380,30 @@ function hasWarned(warned) {
   * through matching close, and parse5 extends an unclosed element to the end
   * of the fragment — fail-closed for truncated markup).
   * @param {string} html
@@ -267,7 +331,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
 +  visit(tree, (/** @type {any} */ node, _index, parent) => {
 +    const inherited = fontSizes.get(parent) ?? null;
 +    if (node.type === "element") {
-+      const declarations = parseDeclarations(node.properties?.style ?? "");
++      const declarations = parseDeclarations(node.properties?.style ?? "", tree.data?.documentMode === "quirks");
 +      const size = resolveFontSize(declarations.get("font-size"), inherited, rootSize);
 +      fontSizes.set(node, size);
 +      if (node.tagName === "html") rootSize = size;
@@ -280,7 +344,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16
        /* c8 ignore start -- parse5 omits positions only on recovery-synthesized
           elements (tbody and friends), which carry no attributes and so can
           never be hidden; fail closed on the whole fragment if that assumption
-@@ -1631,15 +1732,16 @@ export function looksLikeHtmlSource(text) {
+@@ -1631,15 +1767,16 @@ export function looksLikeHtmlSource(text) {
   * count preserved scripting/resource tags for the caller's warning. Returns
   * null when there is nothing to strip and nothing to report.
   * @param {string} text
@@ -316,7 +380,7 @@ index fecfde7e1445c989f356dd18d7bb6f6718cd252f..ccc413f9629531bcba1a0c107f6af142
 @@ -134,7 +134,7 @@ export async function sanitize(text, options) {
    // less, yet Layer 2 would otherwise remove it from view before the scan.
    const preSplice = cleaned;
- 
+
 -  const layer2 = sanitizeHtml(cleaned);
 +  const layer2 = sanitizeHtml(cleaned, options?.htmlSource);
    if (layer2) {
