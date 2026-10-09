@@ -66,7 +66,8 @@ describe('CleanHtmlAdsAdblockRs adjacent HTML recovery', () => {
   for (const sourceCase of sourceCases) {
     test(sourceCase.name, async () => {
       const result = await cleaner.invoke({
-        url: elementHidingUrl,
+        requestedUrl: elementHidingUrl,
+        finalUrl: elementHidingUrl,
         html: sourceCase.html,
         removed: 3,
         skipped: 5,

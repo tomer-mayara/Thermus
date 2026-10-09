@@ -7,10 +7,10 @@ import {
 import {
   createSelectorMatcher, type HtmlElement,
 } from './css-visibility-selectors.ts';
-import { parseSourceDocument, type CssHtmlDocument } from './css-visibility-tree.ts';
-import { applyElementVisibility, type VisibilityStyle } from './css-visibility-html.ts';
+import type { CssHtmlDocument } from './css-visibility-tree.ts';
 
 type StyleMap = Map<HtmlElement, Declarations>;
+export type VisibilityStyle = '' | 'display:none';
 
 type RuleContext = {
   elements: HtmlElement[];
@@ -66,7 +66,7 @@ function createStyleClassifier() {
   };
 }
 
-function resolveStyles({ document, elements }: CssHtmlDocument): Map<HtmlElement, VisibilityStyle> {
+export function resolveCssVisibility({ document, elements }: CssHtmlDocument): Map<HtmlElement, VisibilityStyle> {
   const styles: StyleMap = new Map();
   const context = { elements, styles, compileSelectors: createSelectorMatcher(document) };
   for (const element of elements) {
@@ -85,9 +85,4 @@ function resolveStyles({ document, elements }: CssHtmlDocument): Map<HtmlElement
   }
   const classify = createStyleClassifier();
   return new Map([...styles].map(([element, declarations]) => [element, classify(declarations)]));
-}
-
-export function applyCssVisibility(html: string): string {
-  const tree = parseSourceDocument(html);
-  return applyElementVisibility(html, tree, resolveStyles(tree));
 }

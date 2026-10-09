@@ -5,6 +5,12 @@
 
 ## Unit
 
+**Renderer network policy**
+
+[V] Rejects blocked IPv4 and IPv6 ranges, obfuscated loopback addresses, mixed DNS answers, and failed DNS before renderer launch
+[V] Accepts public addresses and checks every DNS answer again on each fetch
+[V] Passes the native network policy and disables proxy environment settings on every renderer launch
+[V] Rejects URL-supplied flags and unsupported schemes; fails when Lightpanda is missing or cannot apply the required policy
 
 **Clean HTML Ads**
 
@@ -44,8 +50,10 @@
 [V] Removes direct text hidden by implied or explicit document elements
 [V] Keeps separate visibility for parser-reconstructed formatting elements that share a source tag
 [V] Removes attributes when every reconstructed copy of a source tag is hidden
+[V] Keeps hidden title and link attributes removed when text ends at the same source offset as a reconstructed tag
+[V] Checks CSS-hidden content formed by a previous removal and keeps visible inline overrides
 [V] Preserves visible text after parser-created formatting copies without source locations
-[V] Keeps source tag names and closing tags for hidden copies without source locations
+[V] Removes hidden content from parser-created copies without source locations
 [V] Preserves unrelated attributes on reconstructed source tags
 [V] Decodes escaped attribute selector `i` and `s` flags
 [V] Uses ASCII-only case folding for the attribute selector `i` flag
@@ -82,17 +90,35 @@
 [V] Keeps removed ad targets out of the Markdown
 [V] Returns Markdown instead of raw HTML
 [V] Returns empty output for a document with an empty body
+[V] Returns empty Markdown and preserves findings when cleaning leaves empty or whitespace-only HTML
 [V] Preserves URL, HTML, and existing counts in a new context without mutating the input
 [V] Extracts the document title
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
-[V] Preserves local content and resolves relative links with the page URL
-
-## Interface
+[V] Preserves local content and resolves relative links with finalUrl
+[V] Resolves relative, root-relative, and protocol-relative links after same-host and cross-host redirects
+[V] Applies ad rules for the final host after redirects, in both host-change directions
+[V] Preserves direct content when requestedUrl and finalUrl match
 
 **HTML Fetcher**
 
-[V] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
-[V] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
+[V] Returns requestedUrl, finalUrl, and HTML for direct and redirected fetches
+[V] Preserves the exact requested URL
+[V] Rejects missing or invalid fetch metadata
+
+## Interface
+
+**Renderer network policy**
+
+[V] Blocks literal and DNS loopback targets before a connection
+[V] Blocks a DNS change, IPv6 loopback, a redirect, a script resource, fetch, XHR, and WebSocket to a blocked address
+[V] Allows an IPv4 loopback fixture only inside the test scope and ignores proxy environment settings
+
+**HTML Fetcher**
+
+[V] Fetches a page without JavaScript (https://quotes.toscrape.com) and returns rendered HTML
+[V] Fetches a page with JavaScript (https://quotes.toscrape.com/js/) and returns rendered HTML
+[V] Returns a direct fetch result through Lightpanda
+[V] Traces a redirect chain through Lightpanda and resolves Markdown links against the final URL
 
 ## Acceptance

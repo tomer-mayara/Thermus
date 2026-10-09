@@ -97,8 +97,7 @@ function attributeSelectorWeight(node: AttributeSelector): Specificity | undefin
   if (node.value?.type === 'Identifier' && !isIdentifier(node.value.name)) return undefined;
   if (node.flags !== null) {
     if (node.matcher === null) return undefined;
-    node.flags = normalizedIdent(node.flags);
-    if (!/^[is]$/.test(node.flags)) return undefined;
+    if (!/^[is]$/.test(normalizedIdent(node.flags))) return undefined;
   }
   return [0, 0, 1, 0];
 }

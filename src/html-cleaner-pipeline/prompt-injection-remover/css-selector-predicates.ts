@@ -56,8 +56,9 @@ function attributeMatch(node: AttributeSelector): AttributeMatch {
   const name = asciiLower(ident.decode(node.name.name));
   const value = node.value?.type === 'Identifier'
     ? ident.decode(node.value.name) : node.value?.value ?? '';
-  const insensitive = node.flags === 'i'
-    || (node.flags === null && insensitiveHtmlAttributes.has(name));
+  const flags = node.flags === null ? null : ident.decode(node.flags).toLowerCase();
+  const insensitive = flags === 'i'
+    || (flags === null && insensitiveHtmlAttributes.has(name));
   return { name, value, matcher: node.matcher, insensitive };
 }
 

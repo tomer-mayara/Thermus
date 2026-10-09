@@ -13,6 +13,12 @@ const maxSelectorNodes = 128;
 const maxSelectorLength = 4096;
 const maxSelectorWork = 1_000_000;
 
+export class CssSelectorLimitError extends RangeError {
+  public constructor(limit: 'work' | 'size') {
+    super(`CSS selector ${limit} limit exceeded`);
+  }
+}
+
 export function documentElements(document: HtmlDocument): HtmlElement[] {
   const elements: HtmlElement[] = [];
   const pending: HtmlNode[] = [document];
@@ -35,7 +41,7 @@ function boundedAdapter() {
   let remaining = maxSelectorWork;
   const spend = (cost = 1) => {
     remaining -= cost;
-    if (remaining < 0) throw new RangeError('CSS selector work limit exceeded');
+    if (remaining < 0) throw new CssSelectorLimitError('work');
   };
   return {
     ...DomUtils,
@@ -97,12 +103,12 @@ export function createSelectorMatcher(document: HtmlDocument) {
     for (const selector of prelude.children) {
       if (selector.type !== 'Selector') return undefined;
       if (selector.children.size > maxSelectorNodes) {
-        throw new RangeError('CSS selector size limit exceeded');
+        throw new CssSelectorLimitError('size');
       }
       const specificity = selectorSpecificity(selector);
       if (specificity === undefined) return undefined;
       const css = generate(selector);
-      if (css.length > maxSelectorLength) throw new RangeError('CSS selector size limit exceeded');
+      if (css.length > maxSelectorLength) throw new CssSelectorLimitError('size');
       try {
         selectors.push({ specificity, query: compileSelector(selector, options) });
       } catch (error) {
