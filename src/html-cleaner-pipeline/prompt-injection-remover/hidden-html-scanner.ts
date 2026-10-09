@@ -96,8 +96,7 @@ export class HiddenHtmlScanner {
     const location = adapter.getNodeSourceCodeLocation(node);
     if (location == null) return;
     if (adapter.isElementNode(node) && this.visibleSources.has(this.sourceElement(node))) return;
-    // A visible reconstructed copy can still use the original source tags.
-    // Remove each hidden tag and text range without changing other source text.
+    // A whole element interval can also contain visible nodes outside its parsed subtree.
     const sources = adapter.isElementNode(node)
       ? [location.startTag, location.endTag]
       : [location];
@@ -108,7 +107,6 @@ export class HiddenHtmlScanner {
 
   private static urlSource(node: HtmlElement): string {
     // The URL detector skips document elements and template contents.
-    // Separate attribute sources keep these URLs visible to that detector.
     const tag = HiddenHtmlScanner.exfilTagsToPreserve.has(node.name) ? node.name : 'div';
     const element = adapter.createElement(tag, html.NS.HTML, adapter.getAttrList(node));
     return serializeOuter(element, { treeAdapter: adapter });

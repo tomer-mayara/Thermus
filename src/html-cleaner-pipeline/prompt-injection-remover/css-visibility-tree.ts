@@ -25,7 +25,7 @@ export function parseSourceDocument(html: string) {
     },
   };
   const document = parse(html, { treeAdapter, sourceCodeLocationInfo: true, scriptingEnabled: false });
-  // Keep the authored mode for selector matching after source-tree recovery.
+  // Source recovery uses standards parsing; selectors still need the authored mode.
   adapter.setDocumentMode(document, authoredMode);
   const sourceElement: SourceElement = (element) => sources.get(element) ?? element;
   return { document, elements: documentElements(document), sourceElement };
