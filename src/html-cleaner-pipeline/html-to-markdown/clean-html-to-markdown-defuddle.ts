@@ -12,11 +12,14 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
     const detected = new Set<string>();
     const notices = new Set<string>();
-    const sanitizeText = async (text: string): Promise<string> => {
-      const result = await sanitize(text);
+    const sanitizeText = async (text: string, prefix = ''): Promise<string> => {
+      const result = await sanitize(prefix + text);
+      if (!result.cleaned.startsWith(prefix)) {
+        throw new Error('Sanitizer changed the text boundary prefix');
+      }
       for (const category of result.found) detected.add(category);
       for (const warning of result.warnings) notices.add(warning);
-      return result.cleaned;
+      return result.cleaned.slice(prefix.length);
     };
 
     const { document } = parseHTML(ctx.html);
@@ -44,7 +47,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
 
   private async sanitizeDocument(
     document: HtmlDocument,
-    sanitizeText: (text: string) => Promise<string>,
+    sanitizeText: (text: string, prefix?: string) => Promise<string>,
   ): Promise<void> {
     // Entity decoding can split a valid joiner sequence across adjacent text nodes.
     document.normalize();
@@ -53,11 +56,11 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
       if (node.nodeType === node.TEXT_NODE) {
         const text = node as HtmlText;
         // A BOM in a DOM field is inside the HTML input, not at its start.
-        text.data = (await sanitizeText(` ${text.data}`)).slice(1);
+        text.data = await sanitizeText(text.data, ' ');
       } else {
         const element = node as HtmlElement;
         for (const attribute of element.attributes) {
-          attribute.value = (await sanitizeText(` ${attribute.value}`)).slice(1);
+          attribute.value = await sanitizeText(attribute.value, ' ');
         }
       }
     }
