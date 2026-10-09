@@ -34,6 +34,10 @@
 
 [V] Converts surviving HTML text to Markdown
 [V] Preserves visible plain text and HTML fragments without `html` or `body` tags
+[V] Uses supplied empty, plain-text, or fragment HTML at a URL with a site-specific extractor
+[V] Keeps fragment metadata and resolves relative links at a URL with a site-specific extractor
+[V] Keeps body content when the document omits the closing `</head>` tag
+[V] Keeps line breaks and fenced Markdown for styled `<code>` and bare `<pre>` blocks
 [V] Keeps removed ad targets out of the Markdown
 [V] Returns Markdown instead of raw HTML
 [V] Returns empty output for a document with an empty body

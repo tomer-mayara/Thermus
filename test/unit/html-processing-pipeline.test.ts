@@ -185,6 +185,25 @@ describe('HTML to Markdown Pipeline', () => {
     assert.doesNotMatch(result.markdown ?? '', /Removed hidden payload|HTML.*removed/);
   });
 
+  test('returns empty markdown after hidden-only content is removed at a YouTube URL', async () => {
+    const local = new HtmlToMarkdownPipeline([
+      new PromptInjectionRemoverSanitizer(),
+      new CleanHtmlToMarkdownDefuddle(),
+    ]);
+
+    const result = await local.process(
+      'https://www.youtube.com/watch?v=abcdef12345',
+      '<div hidden>Removed hidden payload</div>',
+    );
+
+    assert.equal(result.html, '');
+    assert.equal(result.markdown, '');
+    assert.equal(result.title, '');
+    assert.equal(result.skipped, 1);
+    assert.ok(result.found?.includes('hidden-html'));
+    assert.ok(result.warnings?.length);
+  });
+
   test('an oversized document fails before markdown conversion', async () => {
     let markdownerCalled = false;
     const markdowner: Step = {
