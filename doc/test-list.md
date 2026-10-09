@@ -175,6 +175,10 @@
 [V] Cancels the readiness timer after success or a process error
 [V] Preserves process timeout and output limit errors, and handles missing executable (ENOENT), permission error (EACCES), and synchronous launch failure
 
+### Planned Cache Key Tests
+
+No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../docs/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
+
 ## Interface
 
 **Renderer network policy**
