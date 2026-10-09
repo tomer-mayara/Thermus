@@ -65,6 +65,20 @@ describe('hidden HTML document and template handling', () => {
     assert.equal(result.html, '<table><tr><td>visible</td></tr></table><p>tail</p>');
   });
 
+  test('withholds HTML when a hidden document element has no source range', async () => {
+    const result = await new PromptInjectionRemoverSanitizer().invoke(
+      createContext('<p>[hidden HTML removed]</p><body hidden>secret</body>'),
+    );
+
+    assert.equal(result.html, '');
+    assert.equal(
+      result.warnings?.filter((warning) => warning === 'HTML scan failed; remaining HTML withheld').length,
+      1,
+    );
+    assert.equal(result.found?.includes('hidden-html'), false);
+    assert.equal(result.skipped, 0);
+  });
+
   test('removes comments and hidden content from template content', async () => {
     const result = await new PromptInjectionRemoverSanitizer().invoke(
       createContext('<template><!-- secret --><span hidden>secret</span></template><p>visible</p>'),

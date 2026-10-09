@@ -64,11 +64,12 @@ export class HiddenHtmlScanner {
 
   private recordRange(node: HtmlNode, kind: 'comment' | 'hidden'): void {
     const location = node.sourceCodeLocation;
+    if (location == null) throw new Error('HTML node has no source range');
     const unclosedBody = defaultTreeAdapter.isElementNode(node)
       && node.tagName === 'body' && !node.sourceCodeLocation?.endTag;
     this.ranges.push({
-      start: location?.startOffset ?? 0,
-      end: unclosedBody ? this.text.length : location?.endOffset ?? this.text.length,
+      start: location.startOffset,
+      end: unclosedBody ? this.text.length : location.endOffset,
       kind,
     });
   }
