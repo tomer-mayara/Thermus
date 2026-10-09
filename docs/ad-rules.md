@@ -19,7 +19,7 @@ const result = await pipeline.process(page);
 
 The page has `requestedUrl`, `finalUrl`, and `html` fields. The cleaner uses `finalUrl` to select domain rules after redirects.
 
-The constructor throws `TypeError('Ad rules must be supplied as a string')` when the value is missing, `null`, or not a string. An empty string, a string with only blank lines, and a string with only comments make the cleaner a no-op. The adblock-rs engine ignores malformed filter lines and keeps valid rules. Malformed lines do not increment `skipped`. Unsupported selectors and procedural actions that the cleaner encounters during `invoke` do increment `skipped`. A rules string with only malformed lines can make the cleaner a no-op. The cleaner does not use a fallback source or fetch rules.
+The constructor throws `TypeError('Ad rules must be supplied as a string')` when the value is missing, `null`, or not a string. An empty string, a string with only blank lines, and a string with only comments make the cleaner a no-op. The native adblock-rs parser ignores lines that it cannot parse and keeps accepted rules. Those ignored lines do not increment `skipped`. Accepted selectors that the cleaner does not support and procedural actions encountered during `invoke` do increment `skipped`. A rules string with only ignored lines can make the cleaner a no-op. The cleaner does not use a fallback source or fetch rules.
 
 Use ABP exception rules in the supplied string when a site needs an exception. For example, `example.com#@#.sponsor` exempts the `.sponsor` selector on `example.com`.
 

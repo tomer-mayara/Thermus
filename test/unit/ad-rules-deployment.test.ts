@@ -7,6 +7,11 @@ import { test } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 test('a deployment without test fixtures applies supplied rules across working directories', (t) => {
+  const packageRoot = new URL(
+    import.meta.url.endsWith('.ts') ? '../../' : '../../../', import.meta.url,
+  );
+  const compiledSource = new URL('dist/src/', packageRoot);
+  assert.ok(existsSync(compiledSource), 'Run pnpm build before this deployment test.');
   const directory = mkdtempSync(join(tmpdir(), 'magumagu-ad-rules-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const deployment = join(directory, 'deployment');
@@ -14,9 +19,9 @@ test('a deployment without test fixtures applies supplied rules across working d
   const secondCwd = join(directory, 'second');
   mkdirSync(firstCwd);
   mkdirSync(secondCwd);
-  cpSync(new URL('../../src/', import.meta.url), join(deployment, 'src'), { recursive: true });
+  cpSync(compiledSource, join(deployment, 'src'), { recursive: true });
   writeFileSync(join(deployment, 'package.json'), '{"type":"module"}');
-  symlinkSync(fileURLToPath(new URL('../../../node_modules/', import.meta.url)),
+  symlinkSync(fileURLToPath(new URL('node_modules/', packageRoot)),
     join(deployment, 'node_modules'), 'dir');
   assert.equal(existsSync(join(deployment, 'test')), false);
 
