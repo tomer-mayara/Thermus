@@ -2,7 +2,7 @@ import { html as htmlNames, Parser, type Token } from 'parse5';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { documentElements, type HtmlElement } from './css-visibility-selectors.ts';
 
-export type SourceElement = (element: HtmlElement) => HtmlElement;
+type SourceElement = (element: HtmlElement) => HtmlElement;
 
 export function parseSourceDocument(html: string) {
   const tokenSources = new WeakMap<Parameters<typeof adapter.createElement>[2], HtmlElement>();
