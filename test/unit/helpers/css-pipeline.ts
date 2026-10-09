@@ -13,3 +13,9 @@ export function createPipeline() {
     },
   };
 }
+
+export async function cleanBody(body: string, head = '') {
+  return createPipeline().process('https://example.com/',
+    `<!doctype html><html><head>${head}</head><body><main>${body}` +
+    '<p>Visible sibling</p></main></body></html>');
+}
