@@ -24,15 +24,20 @@
 [V] Keeps visible images inside zero-font-size parents and removes hidden images
 [V] Uses unitless `font-size` in full quirks mode and rejects nonzero unitless sizes in standards and limited-quirks modes
 [V] Resolves font-size declaration order and `!important` rules without changing the font shorthand grammar
+[V] Keeps sizes with named deferred `var()`, `env()`, and `attr()` functions unknown, including typed `attr()` raw syntax; invalid raw values and nameless `env()` or `attr()` do not replace an earlier size
 [V] Removes whole subtrees for display:none, zero opacity, content-visibility:hidden, zero scale, and collapsed height with hidden overflow
-[V] Keeps visible matrix and matrix3d content, including rotations in the rendered plane with zero diagonal values, and removes singular or collapsed transforms
-[V] Composes valid matrix() and matrix3d() lists in CSS order before projected-plane checks
-[V] Keeps mixed rotate/matrix transforms when their combined projection is visible or unknown, and removes known singular matrices
+[V] Composes supported matrix, scale, rotation, and resolvable translate functions in CSS order before checking the projected plane
+[V] Removes collapsed composed transforms and known singular operands, but keeps unresolved lists when they do not prove collapse
+[V] Keeps transforms whose combined projection is visible, including rotations in the rendered plane with zero diagonal matrix values
 [V] Keeps content visible when matrix lists use invalid comma or plus separators
 [V] Keeps content visible for invalid lists with singular operands, malformed matrices, or invalid function arguments
-[V] Decodes escaped matrix names before visibility checks and recognizes collapsed matrices
+[V] Decodes escaped transform names before visibility checks and recognizes collapsed matrices
 [V] Applies transform declaration order and `!important`, and leaves deferred `var()`, `env()`, and `attr()` values unknown
 [V] Hides zero numeric or percentage Z scales, keeps small nonzero numeric or percentage Z scales, and checks near-zero X and Y scales
+[V] Applies `transform-style` declaration order and `!important`; supported grouping values make `preserve-3d` effective style flat for opacity, overflow, filters, clipping, isolation, masking, blend mode, and paint containment
+[V] Skips the local-plane check when an element can preserve 3D planes or participates in an ancestor's 3D context
+[V] Still removes singular transforms and whole subtrees hidden by display or opacity rules in a preserved 3D context
+[V] Keeps a collapsed flat subtree hidden
 
 **HTML to Markdown Pipeline**
 
@@ -42,7 +47,7 @@
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
 [V] Keeps visible descendants, images, and rotated content in the final Markdown and removes hidden text and collapsed content
-[V] Checks exact final Markdown for composed transform and quirks-mode font-size regressions
+[V] Checks exact final Markdown for deferred font sizes, composed transforms, preserved 3D descendants, and quirks-mode font sizes
 
 **HTML to MD**
 
