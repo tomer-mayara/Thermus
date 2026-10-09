@@ -33,7 +33,16 @@
 
 [V] Removes zero-width format characters and counts detections as skipped
 [V] Removes hidden display-none text and HTML comments while keeping visible content
-[V] Cleans the hidden-text fixture and removes sanitizer placeholder markers
+[V] Cleans the hidden-text fixture without adding removal markers
+[V] Preserves authored removal markers in text, code, and attributes
+[V] Preserves an authored marker in a link payload without reporting it
+[V] Preserves authored markers formed across removed hidden spans or comments
+[V] Removes hidden elements and comments in nested template bodies and preserves source offsets
+[V] Reports resource tags and hidden, visible, and final exfil-shaped URLs in template bodies once
+[V] Removes adjacent and nested hidden ranges without adding markers
+[V] Reports final links formed by removal of comments or hidden elements
+[V] Retains reports from removed URLs and reports final URLs without duplicate reasons
+[V] Normalizes invisible characters before URL checks and counts each category once
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML

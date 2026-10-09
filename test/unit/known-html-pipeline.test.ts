@@ -28,9 +28,40 @@ describe('Known HTML pipeline output', () => {
     });
 
     assert.equal(seenHtml, '');
+    assert.equal(result.html, '');
+    assert.equal(result.markdown, '');
     assert.equal(result.skipped, 0);
     assert.equal(result.found?.includes('hidden-html'), false);
     assert.deepEqual(result.warnings, ['HTML scan failed; remaining HTML withheld']);
+  });
+
+  test('keeps deeply nested HTML safe before markdown conversion', async () => {
+    let seenHtml: string | undefined;
+    const markdowner: Step = {
+      async invoke(ctx) {
+        seenHtml = ctx.html;
+        return { ...ctx, markdown: '' };
+      },
+    };
+    const local = new HtmlToMarkdownPipeline([new PromptInjectionRemoverSanitizer(), markdowner]);
+    const hiddenElement = '<span hidden>hidden payload</span>';
+    const html = `${'<div>\n'.repeat(6000)}${hiddenElement}${'</div>\n'.repeat(6000)}`;
+
+    const result = await local.process({
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/',
+      html,
+    });
+
+    assert.equal(result.markdown, '');
+    assert.equal(result.html, seenHtml);
+    assert.doesNotMatch(seenHtml ?? '', /hidden payload/);
+    if (seenHtml === '') {
+      assert.ok(result.warnings?.includes('HTML scan failed; remaining HTML withheld'));
+    } else {
+      assert.equal(seenHtml, html.replace(hiddenElement, ''));
+      assert.ok(result.found?.includes('hidden-html'));
+    }
   });
 
   test('the real pipeline removes fenced hidden HTML from a complete document with few tags', async () => {
