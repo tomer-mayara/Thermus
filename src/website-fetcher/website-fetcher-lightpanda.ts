@@ -5,6 +5,7 @@ import { type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.
 const LIGHTPANDA_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
+const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   public async fetchURL(url: string): Promise<WebsiteFetchResult> {
@@ -15,10 +16,14 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
     await assertPublicDestination(parsed);
 
     const stdout = await new Promise<string>((resolve, reject) => {
-      execFile(
+      let readinessTimer: ReturnType<typeof setTimeout> | undefined;
+      let readinessLimitReached = false;
+      let completed = false;
+      const child = execFile(
         LIGHTPANDA_BIN,
         [
           'fetch', '--json', '--dump', 'html',
+          '--wait-until', 'networkidle', '--wait-ms', String(LIGHTPANDA_TIMEOUT_MS),
           '--block-private-networks', '--block-cidrs', LIGHTPANDA_BLOCKED_CIDRS,
           '--http-proxy', '',
           parsed.href,
@@ -29,15 +34,32 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
           timeout: LIGHTPANDA_TIMEOUT_MS,
         },
         (error, stdout) => {
-          if (error !== null) {
-            reject(error.code === 'ENOENT'
-              ? new Error('lightpanda is not available on PATH')
-              : error);
+          completed = true;
+          clearTimeout(readinessTimer);
+          if (readinessLimitReached) {
+            reject(new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
+              cause: error ?? undefined,
+            }));
             return;
           }
-          resolve(stdout);
+          if (error === null) {
+            resolve(stdout);
+            return;
+          }
+          if (error.code === 'ENOENT') {
+            reject(new Error('lightpanda is not available on PATH'));
+            return;
+          }
+          reject(error);
         },
       );
+      if (!completed) {
+        readinessTimer = setTimeout(() => {
+          if (completed || child.exitCode !== null || child.signalCode !== null) return;
+          readinessLimitReached = true;
+          child.kill('SIGKILL');
+        }, LIGHTPANDA_READINESS_DEADLINE_MS);
+      }
     });
     return WebsiteFetcherLightpanda.parseResult(url, stdout);
   }
