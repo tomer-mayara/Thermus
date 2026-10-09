@@ -29,8 +29,8 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       found.add(CATEGORY.EXFIL_URLS);
       warnings.add(`Exfil-shaped URLs detected: ${[...result.exfilReasons].join('; ')}`);
     }
-    if (result.limitReached) {
-      warnings.add('HTML scan limit reached; remaining HTML withheld');
+    if (result.withholdWarning) {
+      warnings.add(result.withholdWarning);
     }
 
     return {
@@ -56,13 +56,16 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
           `${threat.isImage ? 'image' : 'link'} to ${threat.target}: ${threat.reason}`,
         );
       }
-      const scan = PromptInjectionRemoverSanitizer.scanHtml(result.html);
+      const scan = PromptInjectionRemoverSanitizer.tryScanHtml(result.html);
+      if (!scan) {
+        return { ...result, html: '', withholdWarning: 'HTML scan failed; remaining HTML withheld' };
+      }
       // Keep the largest count for each reason. A new scan can see the same tag.
       for (const [tag, count] of Object.entries(scan.warned.tags)) {
         result.warned.tags[tag] = Math.max(result.warned.tags[tag] ?? 0, count);
       }
       result.warned.dataSrc = Math.max(result.warned.dataSrc, scan.warned.dataSrc);
-      if (scan.ranges.length === 0) return { ...result, limitReached: false };
+      if (scan.ranges.length === 0) return { ...result, withholdWarning: undefined };
 
       result.html = PromptInjectionRemoverSanitizer.removeRanges(
         result.html,
@@ -72,17 +75,14 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     }
 
     // The last removal can form more hidden HTML. Withhold the unchecked result.
-    return { ...result, html: '', limitReached: true };
+    return { ...result, html: '', withholdWarning: 'HTML scan limit reached; remaining HTML withheld' };
   }
 
-  private static scanHtml(text: string): HtmlScan {
+  private static tryScanHtml(text: string): HtmlScan | undefined {
     try {
       return scanHtmlFragment(text);
     } catch {
-      return {
-        ranges: [{ start: 0, end: text.length, kind: 'hidden' }],
-        warned: { tags: {}, dataSrc: 0 },
-      };
+      return undefined;
     }
   }
 

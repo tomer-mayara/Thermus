@@ -129,4 +129,37 @@ describe('hidden HTML removal passes', () => {
     const warnings = result.warnings?.join('\n') ?? '';
     assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);
   });
+
+  test('reports a failed HTML scan without inventing hidden removals', async () => {
+    const depth = 8000;
+    const html = `${'<div>'.repeat(depth)}visible\u200b${'</div>'.repeat(depth)}`;
+    const input = createContext(html, {
+      found: ['existing-finding'],
+      warnings: ['existing warning'],
+      skipped: 4,
+      removed: 2,
+      markdown: 'Existing markdown',
+      title: 'Existing title',
+    });
+    const original = { ...input };
+
+    const result = await new PromptInjectionRemoverSanitizer().invoke(input);
+
+    assert.equal(result.html, '');
+    assert.deepEqual(input, original);
+    assert.equal(result.url, input.url);
+    assert.equal(result.markdown, input.markdown);
+    assert.equal(result.title, input.title);
+    assert.equal(result.removed, 2);
+    assert.equal(result.found?.[0], 'existing-finding');
+    assert.equal(result.found?.includes('cf-format'), true);
+    assert.equal(result.found?.includes('hidden-html'), false);
+    assert.equal(result.skipped, 5 + (result.found?.includes('exfil-urls') ? 1 : 0));
+    assert.equal(result.warnings?.[0], 'existing warning');
+    assert.equal(
+      result.warnings?.filter((warning) => warning === 'HTML scan failed; remaining HTML withheld').length,
+      1,
+    );
+    assert.doesNotMatch(result.warnings?.join('\n') ?? '', /hidden element\(s\)/);
+  });
 });
