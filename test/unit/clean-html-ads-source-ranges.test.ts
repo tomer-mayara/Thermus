@@ -62,48 +62,6 @@ describe('CleanHtmlAdsAdblockRs source ranges', () => {
       removed: 1,
     },
     {
-      name: 'preserves explicit html and body end tags and a trailing comment after an ad paragraph',
-      html: '<html><body><p id="eh-id">AD</body></html><!-- trailing -->',
-      expected: '<html><body></body></html><!-- trailing -->',
-      removed: 1,
-    },
-    {
-      name: 'preserves the body end tag after an ad paragraph in a body-only source',
-      html: '<body><p id="eh-id">AD</body>',
-      expected: '<body></body>',
-      removed: 1,
-    },
-    {
-      name: 'preserves an explicit html end tag and following comment when the body end tag is omitted',
-      html: '<html><body><p id="eh-id">AD</html><!-- trailing -->',
-      expected: '<html><body></html><!-- trailing -->',
-      removed: 1,
-    },
-    {
-      name: 'preserves explicit body and html end tags when both opening tags are omitted',
-      html: '<p id="eh-id">AD</body></html><!--after-->',
-      expected: '</body></html><!--after-->',
-      removed: 1,
-    },
-    {
-      name: 'preserves body and html end tags when only the body opening tag is omitted',
-      html: '<html><p id="eh-id">AD</body></html>',
-      expected: '<html></body></html>',
-      removed: 1,
-    },
-    {
-      name: 'preserves the html end tag when an ad paragraph follows the body end tag',
-      html: '<body></body><p id="eh-id">AD</p></html>',
-      expected: '<body></body></html>',
-      removed: 1,
-    },
-    {
-      name: 'preserves the html end tag when an unclosed ad paragraph follows the body end tag',
-      html: '<body></body><p id="eh-id">AD</html>',
-      expected: '<body></body></html>',
-      removed: 1,
-    },
-    {
       name: 'counts nested ad list and paragraph matches and preserves the next item',
       html: '<ul><li id="eh-id"><p class="eh-class">AD<li data-value="keep">Visible text</ul>',
       expected: '<ul><li data-value="keep">Visible text</ul>',

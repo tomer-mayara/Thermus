@@ -16,6 +16,7 @@
 [V] Preserves following elements after omitted paragraph end tags inside list items and before dialog, search, menu, and hgroup
 [V] Preserves Unicode, comments, attributes, and source formatting
 [V] Preserves nested list boundaries and parent end tags around explicit, nested, adjacent, and overlapping ad matches
+[V] Preserves text and repeated body and html end tags during parser recovery
 [V] Counts each ad element once and keeps selector exceptions
 
 **Prompt Injection Remover**
