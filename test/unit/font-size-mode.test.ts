@@ -102,15 +102,17 @@ describe('Font size and document mode', () => {
     assert.match(result.html, /Visible sibling/);
   });
 
-  test('removes actual zero and invalid negative font sizes', async () => {
+  test('ignores negative font sizes and removes text that inherits zero', async () => {
     const result = await sanitizeHtml(
       '<html><body><main><div style="font-size:0">' +
       '<p style="font-size:0">Hidden zero</p>' +
       '<p style="font-size:-1">Hidden invalid negative</p>' +
-      '</div><p>Visible sibling</p></main></body></html>',
+      '</div><p style="font-size:-1">Visible invalid size</p>' +
+      '<p>Visible sibling</p></main></body></html>',
     );
 
     assert.doesNotMatch(result.html, /Hidden/);
+    assert.match(result.html, /Visible invalid size/);
     assert.match(result.html, /Visible sibling/);
   });
 
