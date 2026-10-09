@@ -18,18 +18,20 @@ export class HiddenHtmlScanner {
   private readonly visibleSources = new Set<HtmlElement>();
   private readonly visibleNodes = new Set<HtmlElement>();
   private readonly visibleStyles = new Map<number, { start: number; end: number }>();
+  private readonly visibleStyleValues: string[] = [];
 
   private constructor(
     private readonly styles: Map<HtmlElement, VisibilityStyle>,
     private readonly sourceElement: SourceElement,
     private readonly adoptedSources: CssHtmlDocument['adoptedSources'],
+    private readonly decodedStyleValues: CssHtmlDocument['decodedStyleValues'],
   ) {}
 
   public static scan(text: string, provenance = new CssVisibilityProvenance()) {
     const tree = parseSourceDocument(text);
     const styles = resolveCssVisibility(tree);
     const contexts = provenance.apply(tree, styles);
-    const scanner = new HiddenHtmlScanner(styles, tree.sourceElement, tree.adoptedSources);
+    const scanner = new HiddenHtmlScanner(styles, tree.sourceElement, tree.adoptedSources, tree.decodedStyleValues);
     scanner.visit(tree.document, false);
     const root = tree.document.children.find(adapter.isElementNode);
     if (root && scanner.hiddenNodes.includes(root)) {
@@ -45,6 +47,7 @@ export class HiddenHtmlScanner {
       warned: scanner.warned,
       urlSource: scanner.urlSources.join(''),
       visibleStyles: [...scanner.visibleStyles.values()],
+      visibleStyleValues: scanner.visibleStyleValues,
     };
   }
 
@@ -105,7 +108,9 @@ export class HiddenHtmlScanner {
     ];
     for (const location of locations) {
       const style = location?.attrs?.style;
-      if (style) this.visibleStyles.set(style.startOffset, { start: style.startOffset, end: style.endOffset });
+      if (!style) continue;
+      this.visibleStyles.set(style.startOffset, { start: style.startOffset, end: style.endOffset });
+      this.visibleStyleValues.push(...this.decodedStyleValues.get(style.startOffset) ?? []);
     }
   }
 

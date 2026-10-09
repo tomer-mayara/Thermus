@@ -59,6 +59,7 @@
 [V] Checks hiding attributes that a formed tag adds to an implied or explicit document element
 [V] Removes hidden attributes on duplicate document tags, keeps URL findings, and preserves visible duplicate tags
 [V] Clears resolved visible styles on duplicate document tags before Markdown conversion
+[V] Keeps decoded control findings from cleared style values, including duplicate document tags, without duplicate reports or a second entity decode
 [V] Preserves visible text after parser-created formatting copies without source locations
 [V] Removes hidden content from parser-created copies without source locations
 [V] Preserves unrelated attributes on reconstructed source tags

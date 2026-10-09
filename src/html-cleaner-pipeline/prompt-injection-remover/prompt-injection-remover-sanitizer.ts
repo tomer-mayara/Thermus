@@ -13,6 +13,7 @@ type HtmlRemoval = {
   removed: { comments: number; hidden: number };
   warned: HtmlScan['warned'];
   exfilReasons: Set<string>;
+  visibleStyleValues: string[];
 };
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
@@ -26,8 +27,9 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
 
     const sanitized = await sanitize(ctx.html);
     const result = PromptInjectionRemoverSanitizer.removeHiddenHtml(sanitized.cleaned);
-    const found = new Set(sanitized.found);
-    const warnings = new Set(sanitized.warnings);
+    const styleReports = await Promise.all([...new Set(result.visibleStyleValues)].map((value) => sanitize(` ${value}`)));
+    const found = new Set([...sanitized.found, ...styleReports.flatMap((report) => report.found)]);
+    const warnings = new Set([...sanitized.warnings, ...styleReports.flatMap((report) => report.warnings)]);
     if (result.removed.comments > 0) found.add(CATEGORY.HTML_COMMENTS);
     if (result.removed.hidden > 0) found.add(CATEGORY.HIDDEN_HTML);
     const removed = describeRemoved(result.removed);
@@ -58,6 +60,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       removed: { comments: 0, hidden: 0 },
       warned: { tags: {}, dataSrc: 0 },
       exfilReasons: new Set<string>(),
+      visibleStyleValues: [],
     };
 
     for (let pass = 0; pass < PromptInjectionRemoverSanitizer.maxHtmlScans; pass++) {
@@ -73,7 +76,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       PromptInjectionRemoverSanitizer.recordScanWarnings(scan, result);
       if (scan.ranges.length === 0) {
         const html = PromptInjectionRemoverSanitizer.removeRanges(result.html, scan.visibleStyles, 'style=""');
-        return { ...result, html, withholdWarning: undefined };
+        return { ...result, html, visibleStyleValues: scan.visibleStyleValues, withholdWarning: undefined };
       }
 
       result.removed.comments += scan.removed.comments;
