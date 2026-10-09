@@ -79,7 +79,7 @@
     },
     "agents": {
       "maintainability": {
-        "harness": "opencode_gpt-6.1-sol_max"
+        "harness": "opencode_xai_grok-high"
       },
       "test-design": {
         "harness": "opencode_xai_grok-high"
@@ -88,7 +88,7 @@
         "harness": "opencode_xai_grok-high"
       },
       "correctness": {
-        "harness": "opencode_gpt-6.1-sol_max"
+        "harness": "opencode_xai_grok-high"
       }
     },
     "github": {
