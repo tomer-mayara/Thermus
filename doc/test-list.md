@@ -120,3 +120,8 @@
 [V] Keeps visible children under mask shorthands and parent perspective
 [V] Removes offscreen text and images while it keeps descendants restored by transforms or layout offsets
 [V] Resolves mask shorthand order and important mask-image declarations
+[V] Keeps valid transform declarations when later raw syntax is invalid, and keeps named deferred values unknown
+[V] Applies perspective declaration order and important priority; rejects invalid raw values and negative lengths
+[V] Keeps non-replaced inline text when its own transform does not apply, and uses display declaration order and important priority
+[V] Removes collapsed inline-block boxes, images, and boxes made block by positioning, float, or flex/grid rules
+[V] Keeps transforms with unknown display applicability unresolved, and still removes display-none content

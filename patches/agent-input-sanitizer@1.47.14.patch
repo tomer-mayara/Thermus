@@ -269,7 +269,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +977,111 @@
+@@ -840,26 +977,112 @@
    return false;
  }
 
@@ -295,14 +295,15 @@ diff --git a/src/html.mjs b/src/html.mjs
 -  return false;
 +/** @param {string} property @param {any} value @returns {any} */
 +function parseCssProperty(property, value) {
-+  // Raw syntax can contain CSS values that this parser does not yet support.
-+  if (value.type === "Raw") return value;
++  // Keep named deferred values. Discard plainly invalid raw syntax.
++  if (value.type === "Raw") return hasNamedDeferredFunction(value) ? value : undefined;
 +  const decoded = csstree.clone(value);
 +  csstree.walk(decoded, (/** @type {any} */ token) => {
 +    if (token.type === "Identifier" || token.type === "Function")
 +      token.name = csstree.ident.decode(token.name);
 +    if (token.type === "Dimension") token.unit = csstree.ident.decode(token.unit);
 +  });
++  if (property === "perspective" && Number(soleToken(decoded)?.value) < 0) return undefined;
 +  const deferred = csstree.find(decoded, (/** @type {any} */ token) =>
 +    token.type === "Function" && ["var", "env", "attr"].includes(token.name.toLowerCase()));
 +  // Deferred values replace earlier declarations, but their computed value is unknown.
@@ -401,7 +402,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1129,13 @@
+@@ -907,11 +1130,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -416,12 +417,12 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1158,94 @@
+@@ -934,17 +1159,94 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
 +      const font = property === "font-size" || property === "font";
-+      if (font || property === "transform" || property === "transform-style" || property === "position" || GROUPING_PROPERTIES.has(property)) {
++      if (font || ["transform", "transform-style", "perspective", "position", "display", "float"].includes(property) || GROUPING_PROPERTIES.has(property)) {
 +        const key = font ? "font-size" : property;
 +        const value = font ? parseFontSize(property, node.value, quirksMode) :
 +          parseCssProperty(property, node.value);
@@ -508,11 +509,11 @@ diff --git a/src/html.mjs b/src/html.mjs
   * @returns {boolean}
   */
 -export function isHiddenStyle(styleStr) {
-+export function isHiddenStyle(styleStr, { ignoreFontSize = false, in3dContext = false, ignoreTransformOffsets = false } = {}) {
++export function isHiddenStyle(styleStr, { ignoreFontSize = false, in3dContext = false, ignoreTransformOffsets = false, ignoreTransforms = false } = {}) {
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,11 +1283,8 @@
+@@ -982,11 +1284,8 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -526,18 +527,18 @@ diff --git a/src/html.mjs b/src/html.mjs
 
    if (isPositionedOffscreen(nodeOf, textOf)) return true;
 
-@@ -994,7 +1292,9 @@
+@@ -994,7 +1293,9 @@
 
    // Clipped to nothing: the modern equivalent of the legacy `clip: rect(0…)`.
    if (isClipPathHidden(nodeOf("clip-path"))) return true;
 -  if (isHidingTransform(nodeOf("transform"))) return true;
 +  const transformStyle = nodeOf("transform-style");
 +  const ignorePlane = in3dContext || Boolean(transformStyle && !FLAT_TRANSFORM_STYLES.has(textOf("transform-style")));
-+  if (isHidingTransform(nodeOf("transform"), ignorePlane, ignoreTransformOffsets)) return true;
++  if (!ignoreTransforms && isHidingTransform(nodeOf("transform"), ignorePlane, ignoreTransformOffsets)) return true;
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1394,10 @@
+@@ -1094,9 +1395,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -549,7 +550,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1409,7 @@
+@@ -1108,7 +1410,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -558,7 +559,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1436,78 @@
+@@ -1135,8 +1437,132 @@
    return firstElement;
  }
 
@@ -570,18 +571,67 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    (column === 3 && rowIndex < 3) || value === Number(rowIndex === column)));
 +}
 +
++const INLINE_ELEMENTS = new Set([
++  "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn", "em", "i",
++  "kbd", "label", "mark", "q", "s", "samp", "small", "span", "strong", "sub", "sup",
++  "time", "u", "var", "wbr",
++]);
++const REPLACED_ELEMENTS = new Set([
++  "audio", "canvas", "embed", "iframe", "img", "input", "object", "select", "textarea", "video",
++]);
++
++/** @param {any} node @param {Map<string, any>} declarations @returns {string | null} */
++function resolveDisplay(node, declarations) {
++  const value = declarations.get("display");
++  if (!value) return INLINE_ELEMENTS.has(node.tagName) ? "inline" : "";
++  const text = declText(value).trim().toLowerCase();
++  if (["initial", "unset"].includes(text)) return "inline";
++  if (!csstree.lexer.matchProperty("display", value).matched ||
++      ["inherit", "revert", "revert-layer"].includes(text)) return null;
++  return text;
++}
++
++/**
++ * Check inline box eligibility without computing stylesheet or layout values.
++ * @param {any} node
++ * @param {Map<string, any>} declarations
++ * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
++ * @param {string | null} display
++ * @returns {boolean | null}
++ */
++function appliesTransform(node, declarations, parent, display) {
++  if (node.namespace && node.namespace !== "http://www.w3.org/1999/xhtml") return true;
++  if (display === null) return null;
++  if (["none", "contents"].includes(display)) return false;
++  const position = declText(declarations.get("position")).trim().toLowerCase();
++  const floating = declText(declarations.get("float")).trim().toLowerCase();
++  // Positioning, floating, and flex/grid items can turn inline boxes into blocks.
++  // https://www.w3.org/TR/css-display-3/#transformations
++  if (["absolute", "fixed"].includes(position) ||
++      ["left", "right", "inline-start", "inline-end"].includes(floating) ||
++      /(?:^|[- ])(?:flex|grid)(?:$| )/.test(parent?.display ?? "")) return true;
++  const inline = ["inline", "inline flow", "flow inline"].includes(display);
++  if (inline && !REPLACED_ELEMENTS.has(node.tagName)) {
++    if (parent?.display === null ||
++        !["", "static", "relative", "sticky", "initial", "unset"].includes(position) ||
++        !["", "none", "initial", "unset"].includes(floating)) return null;
++    return false;
++  }
++  return !["table-column", "table-column-group"].includes(display);
++}
++
 +/**
 + * Track pure translations through flat and preserved descendants.
 + * Layout-dependent offsets remain unknown.
 + * @param {Map<string, any>} declarations
 + * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
++ * @param {any} transform
 + * @returns {{ translation: number[] | null, offscreen: boolean }}
 + */
-+function resolveTranslation(declarations, parent) {
++function resolveTranslation(declarations, parent, transform) {
 +  const layoutOffset = [...declarations.keys()].some((property) =>
 +    /^(?:margin(?:-|$)|inset(?:-|$)|left$|right$|top$|bottom$|position$)/.test(property));
 +  if (layoutOffset || parent?.hasPerspective) return { translation: null, offscreen: false };
-+  const transform = declarations.get("transform");
 +  const rows = localPlaneRows(transform);
 +  const inherited = parent ? parent.translation : [0, 0, 0];
 +  if (rows && isPureTranslation(rows) && inherited) {
@@ -609,28 +659,33 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const in3dContext = parent?.preserves3d ?? false;
 +  const declarations = parseDeclarations(node.properties?.style ?? "", options.quirksMode);
 +  const fontSize = resolveFontSize(declarations.get("font-size"), inherited, options.rootSize ?? null);
-+  const transformStyle = declarations.get("transform-style");
++  const display = resolveDisplay(node, declarations);
++  const transformable = appliesTransform(node, declarations, parent, display);
++  const transform = transformable === false ? undefined : transformable === null
++    ? { type: "Raw", value: "" } : declarations.get("transform");
++  const transformStyle = transformable === false ? undefined : declarations.get("transform-style");
 +  const style = declText(transformStyle).trim().toLowerCase();
 +  const preserves3d = Boolean(transformStyle && !FLAT_TRANSFORM_STYLES.has(style));
-+  const perspective = declText(declarations.get("perspective")).trim().toLowerCase();
++  const perspective = transformable === false ? "" : declText(declarations.get("perspective")).trim().toLowerCase();
 +  const hasPerspective = Boolean(perspective && !["none", "initial", "unset"].includes(perspective));
 +  let hiddenPlane = Boolean(parent?.hiddenPlane && !in3dContext);
 +  let matrix = null;
 +  if (in3dContext || preserves3d) {
-+    let rows = localPlaneRows(declarations.get("transform"));
++    let rows = localPlaneRows(transform);
 +    if (in3dContext) rows = composeMatrices([parent?.matrix ?? null, rows]);
 +    if (parent?.hasPerspective) rows = null;
 +    if (rows && isCollapsedPlane(rows)) hiddenPlane = true;
 +    const unknownContext = hasPerspective || (preserves3d && style !== "preserve-3d");
 +    matrix = unknownContext ? null : rows;
 +  }
-+  const { translation, offscreen } = resolveTranslation(declarations, parent);
++  const { translation, offscreen } = resolveTranslation(declarations, parent, transform);
 +  return {
-+    fontSize, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
++    fontSize, display, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
 +    hiddenElement: isHiddenElement(node, {
 +      ignoreFontSize: true,
 +      in3dContext: in3dContext || Boolean(parent?.hasPerspective),
 +      ignoreTransformOffsets: true,
++      ignoreTransforms: transformable !== true,
 +    }),
 +    hiddenText: offscreen || hiddenPlane || (fontSize !== null && fontSize < NEAR_ZERO_EPSILON),
 +  };
@@ -659,7 +714,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -115,3 +115,28 @@
+@@ -115,3 +115,32 @@
  import { SECRET_HINT_EXT } from "./gates.mjs";
  import { matchesSecretHint } from "./gates.mjs";
  export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };
@@ -668,9 +723,11 @@ diff --git a/types/html.d.mts b/types/html.d.mts
 +    ignoreFontSize?: boolean;
 +    in3dContext?: boolean;
 +    ignoreTransformOffsets?: boolean;
++    ignoreTransforms?: boolean;
 +}
 +export interface ElementVisibility {
 +    fontSize: number | null;
++    display: string | null;
 +    preserves3d: boolean;
 +    matrix: number[][] | null;
 +    hiddenPlane: boolean;
@@ -683,6 +740,8 @@ diff --git a/types/html.d.mts b/types/html.d.mts
 +/** Resolve inline visibility. The caller supplies the parsed parent state. */
 +export function resolveElementVisibility(node: {
 +    type: "element";
++    tagName: string;
++    namespace?: string;
 +    properties: Record<string, string>;
 +}, parent: ElementVisibility | undefined, options?: {
 +    rootSize?: number | null;
