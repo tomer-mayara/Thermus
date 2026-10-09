@@ -122,6 +122,7 @@
 **HTML to Markdown Pipeline**
 
 [V] Removes ad targets before Markdown conversion and keeps the removal count
+[V] Returns empty Markdown when sanitization removes all content
 [V] Propagates a step error without calling the next step
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
@@ -136,14 +137,25 @@
 **HTML to MD**
 
 [V] Converts surviving HTML text to Markdown
+[V] Preserves visible plain text and HTML fragments without `html` or `body` tags
+[V] Uses supplied empty, plain-text, or fragment HTML at a URL with a site-specific extractor
+[V] Keeps fragment metadata and resolves relative links at a URL with a site-specific extractor
+[V] Escapes plain-text angle tokens, such as email addresses and generic type names, before HTML parsing
+[V] Keeps schema headline metadata for empty and nonempty documents without restoring removed body content from schema `articleBody` or `text`
+[V] Keeps body content when the document omits the closing `</head>` tag
+[V] Keeps text and element siblings before and after an existing body in source order, with or without document metadata
+[V] Keeps line breaks and fenced Markdown for styled `<code>` and bare `<pre>` blocks
+[V] Keeps relative indentation in preformatted fragments, including nested indentation, tabs, and leading whitespace
 [V] Keeps removed ad targets out of the Markdown
 [V] Returns Markdown instead of raw HTML
-[V] Returns empty output for a document with an empty body
-[V] Returns empty Markdown and preserves findings when cleaning leaves empty or whitespace-only HTML
+[V] Returns empty output for a document with an empty body and no embedded page content
+[V] Returns empty Markdown for empty, whitespace-only, and fully sanitized input with no embedded page content
+[V] Sets a null title and preserves findings when cleaning leaves empty HTML or only HTML whitespace
 [V] Preserves URL, HTML, and existing counts in a new context without mutating the input
-[V] Extracts the document title
+[V] Extracts the title from a full document
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
+[V] Extracts embedded Substack `body_html` synchronously and sanitizes generated page content
 [V] Preserves local content and resolves relative links with finalUrl
 [V] Resolves relative, root-relative, and protocol-relative links after same-host and cross-host redirects
 [V] Applies ad rules for the final host after redirects, in both host-change directions
@@ -160,6 +172,7 @@
 [V] Keeps visibly escaped entity examples through LinkeDOM attribute serialization and Defuddle's serialize/reparse step
 [V] Does not parse converted output as HTML or decode another entity layer during control checks
 [V] Keeps an escaped image example in noscript as text without converting it to an image
+[V] Keeps top-level noscript fragment text and escaped image examples in body order and preserves metadata in an explicit or unclosed head
 [V] Keeps real image elements in noscript available to Defuddle
 [V] Keeps a real fallback image and an escaped image example visible when both appear in noscript
 [V] Keeps a picture fallback and escaped example separate, with one real image
@@ -167,6 +180,11 @@
 [V] Keeps nested escaped noscript code as text
 [V] Emits one escaped noscript example after repeated extractor callbacks
 [V] Preserves parser behavior for malformed entities and invalid code points
+[V] Keeps a less-than sign in a quoted image attribute and omits event handlers from Markdown
+[V] Keeps table cells with preformatted code and removes internal code markers
+[V] Keeps schema headline text with CSS comments and literal or escaped slashes; omits schema `articleBody` and `text`
+[V] Escapes a single equals sign after plain text so it does not become a heading underline
+[V] Removes raw controls from plain-text input before Markdown escaping and reports each finding once
 
 **HTML Fetcher**
 

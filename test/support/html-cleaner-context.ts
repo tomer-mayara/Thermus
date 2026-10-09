@@ -10,3 +10,7 @@ export function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
     ...overrides,
   };
 }
+
+export function createContextForUrl(html: string, url = 'https://example.com/'): Ctx {
+  return createContext(html, { requestedUrl: url, finalUrl: url });
+}

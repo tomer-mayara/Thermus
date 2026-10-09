@@ -31,6 +31,12 @@ The pinned `agent-input-sanitizer` 1.47.14 patch reports the exact UTF-16 ranges
 
 The pinned LinkeDOM 0.18.13 patch makes HTML attribute serialization escape values in both ESM and CommonJS builds. Keep the patch until a dependency upgrade passes the encoded-control regression tests. It preserves escaped entity examples during Defuddle's serialize and reparse step.
 
+HTML-to-Markdown conversion uses the cleaned HTML that the pipeline supplies. Input with no visible or embedded page content, including empty or whitespace-only input and input fully removed by sanitization, produces empty Markdown. For empty input or input that contains only tab, line feed, form feed, carriage return, or space, the converter sets `title` to `null` and preserves existing findings. A full document can contain page content in an embedded script, such as Substack `body_html`; the converter extracts that content synchronously from the supplied page. It sanitizes the source and extracted content and makes no network requests.
+
+The converter preserves visible plain text and HTML fragments without `html` or `body` tags. For plain-text input, it escapes literal angle tokens such as `email <alice@example.com>` and `List<T>` in the Markdown output, and removes and reports prohibited raw controls. Full documents keep their metadata. The pipeline uses `finalUrl` to resolve relative links and apply host rules. Schema headline metadata remains available, including text with escaped slashes or CSS comments. Schema `articleBody` and `text` fields cannot restore content removed from the document body. An omitted `</head>` does not hide following body content.
+
+Preformatted `<pre>` blocks and `<code style="white-space: pre">` keep their line breaks and become fenced Markdown code. Fragment code keeps relative indentation, including common and nested indentation, tabs, and leading whitespace. Conversion does not mutate the input context.
+
 The cleaned page is cached per tenant, keyed by URL with the query string removed. The cache is never keyed on the reason the agent gave. A hit does not fetch the page again.
 
 ## Hidden-text sanitizer
