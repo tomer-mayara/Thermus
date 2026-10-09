@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException, type ExecFileOptions } from 'node:child_process';
+import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
@@ -16,9 +17,10 @@ function stubLightpanda(t: TestContext, stdout: string, error: ExecFileException
     callback(error, stdout, '');
     return new childProcess.ChildProcess();
   }) as typeof childProcess.execFile);
+  t.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
   syncBuiltinESMExports();
   t.after(() => {
-    stub.mock.restore();
+    t.mock.restoreAll();
     syncBuiltinESMExports();
   });
   return stub;
@@ -49,9 +51,14 @@ test('keeps the exact requested URL and the final URL after a redirect', async (
   });
   assert.equal(stub.mock.callCount(), 1);
   assert.equal(stub.mock.calls[0].arguments[0], 'lightpanda');
-  assert.deepEqual(stub.mock.calls[0].arguments[1], [
-    'fetch', '--json', '--dump', 'html', new URL(requestedUrl).href,
-  ]);
+  const args = stub.mock.calls[0].arguments[1];
+  assert.ok(args);
+  assert.ok(args.includes('--json'));
+  assert.ok(args.includes('--block-private-networks'));
+  assert.ok(args.includes('--block-cidrs'));
+  assert.ok(args.includes('--http-proxy'));
+  assert.equal(args[args.indexOf('--http-proxy') + 1], '');
+  assert.equal(args.at(-1), new URL(requestedUrl).href);
 });
 
 test('keeps an empty HTML result', async (t) => {
