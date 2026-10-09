@@ -174,6 +174,10 @@
 [V] Preserves a child result or error when the child has already exited at the deadline, and rejects a late success when the child was still running at the deadline
 [V] Cancels the readiness timer after success or a process error
 [V] Preserves process timeout and output limit errors, and handles missing executable (ENOENT), permission error (EACCES), and synchronous launch failure
+[V] Keeps an HTTP failure when the child exits before the readiness deadline
+[V] Reports a readiness failure when an HTTP error callback arrives after the deadline
+[V] Reports HTTP status failures with WebsiteFetchHttpError and preserves the status and process cause when available
+[V] Uses --json and --fail-on-http-error while preserving the readiness, timeout, output, and network-blocking options
 
 ### Planned Cache Key Tests
 
@@ -193,6 +197,13 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Fetches a page with JavaScript (https://quotes.toscrape.com/js/) and returns rendered HTML
 [V] Returns a direct fetch result through Lightpanda
 [V] Traces a redirect chain through Lightpanda and resolves Markdown links against the final URL
+[V] Returns local HTTP 200 content and successful redirects; reports local HTTP 403, 404, 429, and 500 responses as HTTP errors
+
+Run the focused HTTP fetcher tests with:
+
+```bash
+pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/interface/website-fetcher-http.test.js
+```
 
 **LinkeDOM Serialization**
 

@@ -1,11 +1,37 @@
-import { execFile } from 'node:child_process';
+import { execFile, type ExecFileException } from 'node:child_process';
 import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
-import { type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
+import { WebsiteFetchHttpError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
 const LIGHTPANDA_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
 const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
+const LIGHTPANDA_HTTP_ERROR_EXIT_CODE = 22;
+
+function readFetchOutput(stdout: string, cause: ExecFileException | null): Record<string, unknown> {
+  try {
+    const output: unknown = JSON.parse(stdout);
+    if (typeof output !== 'object' || output === null) {
+      throw new Error('Expected a fetch result object');
+    }
+    return output as Record<string, unknown>;
+  } catch (error) {
+    if (cause !== null) {
+      throw new WebsiteFetchHttpError(undefined, { cause });
+    }
+    throw new Error('lightpanda returned invalid fetch metadata', { cause: error });
+  }
+}
+
+function assertSuccessfulHttpStatus(result: Record<string, unknown>, cause: ExecFileException | null): void {
+  const status = Number.isInteger(result.http_status) ? Number(result.http_status) : undefined;
+  if (cause !== null || (status ?? 0) >= 400) {
+    throw new WebsiteFetchHttpError(status, { cause: cause ?? undefined });
+  }
+  if (status === undefined || status < 200) {
+    throw new Error('lightpanda did not return successful HTML', { cause: result.error });
+  }
+}
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   public async fetchURL(url: string): Promise<WebsiteFetchResult> {
@@ -15,14 +41,14 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
     }
     await assertPublicDestination(parsed);
 
-    const stdout = await new Promise<string>((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let readinessTimer: ReturnType<typeof setTimeout> | undefined;
       let readinessLimitReached = false;
       let completed = false;
       const child = execFile(
         LIGHTPANDA_BIN,
         [
-          'fetch', '--json', '--dump', 'html',
+          'fetch', '--json', '--dump', 'html', '--fail-on-http-error',
           '--wait-until', 'networkidle', '--wait-ms', String(LIGHTPANDA_TIMEOUT_MS),
           '--block-private-networks', '--block-cidrs', LIGHTPANDA_BLOCKED_CIDRS,
           '--http-proxy', '',
@@ -42,15 +68,19 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
             }));
             return;
           }
-          if (error === null) {
-            resolve(stdout);
+          if (error !== null && (error.killed || error.code !== LIGHTPANDA_HTTP_ERROR_EXIT_CODE)) {
+            if (error.code === 'ENOENT') {
+              reject(new Error('lightpanda is not available on PATH', { cause: error }));
+              return;
+            }
+            reject(error);
             return;
           }
-          if (error.code === 'ENOENT') {
-            reject(new Error('lightpanda is not available on PATH'));
-            return;
+          try {
+            resolve(WebsiteFetcherLightpanda.parseResult(url, stdout, error));
+          } catch (error) {
+            reject(error);
           }
-          reject(error);
         },
       );
       if (!completed) {
@@ -61,17 +91,17 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
         }, LIGHTPANDA_READINESS_DEADLINE_MS);
       }
     });
-    return WebsiteFetcherLightpanda.parseResult(url, stdout);
   }
 
-  private static parseResult(requestedUrl: string, stdout: string): WebsiteFetchResult {
-    const result: { url?: unknown; content?: unknown; error?: unknown } | null = JSON.parse(stdout);
+  private static parseResult(requestedUrl: string, stdout: string, cause: ExecFileException | null): WebsiteFetchResult {
+    const result = readFetchOutput(stdout, cause);
+    assertSuccessfulHttpStatus(result, cause);
     if (
-      typeof result?.url !== 'string'
-      || typeof result?.content !== 'string'
+      typeof result.url !== 'string'
+      || typeof result.content !== 'string'
       || result.error !== null
     ) {
-      throw new Error('lightpanda returned an invalid fetch result');
+      throw new Error('lightpanda did not return successful HTML', { cause: result.error });
     }
     const finalUrl = new URL(result.url);
     if (finalUrl.protocol !== 'http:' && finalUrl.protocol !== 'https:') {
