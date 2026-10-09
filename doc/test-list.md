@@ -17,6 +17,14 @@
 [V] Removes documented ad targets, honors element-hiding exceptions, and leaves HTML unchanged when no host matches
 [V] Counts unsupported procedural actions as skipped
 [V] Returns an updated context, preserves metadata, adds to existing counts, and does not mutate the input
+[V] Keeps nested selector matches within the 256 element depth limit
+[V] Rejects 5,000 nested elements before it gets selectors for the page URL, for matching and non-matching hosts
+[V] Checks depth when generic hiding is disabled
+[V] Collects nested class and ID tokens for generic selectors
+[V] Accepts parsed element depth 256 and rejects depth 257 (254 and 255 nested divs in the body)
+[V] Allows template content at depth 256 without counting its document fragment and rejects template children at depth 257
+[V] Counts script, style, span, and template elements toward the limit
+[V] Propagates the depth error and does not invoke later pipeline steps
 [V] Preserves the next paragraph and its source text when an ad paragraph omits its end tag
 [V] Preserves the next list item and its attributes when an ad item omits its end tag
 [V] Preserves following elements after omitted paragraph end tags inside list items and before dialog, search, menu, and hgroup
