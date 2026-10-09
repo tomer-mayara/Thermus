@@ -8,10 +8,12 @@ import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetc
 
 function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null) {
   const calls: string[][] = [];
+  const lookup = t.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
   t.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
     assert.equal(args[0], 'lightpanda');
     calls.push([...(args[1] ?? [])]);
-    args[3]?.(error, '<html><body>Public page</body></html>', '');
+    const url = args[1]?.at(-1) ?? 'https://public.test/';
+    args[3]?.(error, JSON.stringify({ url, content: '<html><body>Public page</body></html>', error: null }), '');
     return new ChildProcess();
   });
   syncBuiltinESMExports();
@@ -19,7 +21,7 @@ function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null
     t.mock.restoreAll();
     syncBuiltinESMExports();
   });
-  return calls;
+  return { calls, lookup };
 }
 
 const forbiddenAddresses = [
@@ -34,7 +36,7 @@ const forbiddenAddresses = [
 ];
 
 test('blocks non-public IPv4 and IPv6 destinations before a renderer launch', async (t) => {
-  const calls = stubRenderer(t);
+  const { calls } = stubRenderer(t);
   const fetcher = new WebsiteFetcherLightpanda();
   for (const address of forbiddenAddresses) {
     await assert.rejects(fetcher.fetchURL(`http://${address}/`), /not a public network address/, address);
@@ -43,20 +45,20 @@ test('blocks non-public IPv4 and IPv6 destinations before a renderer launch', as
 });
 
 test('accepts public IPv4 and IPv6 addresses at private-range boundaries', async (t) => {
-  const calls = stubRenderer(t);
+  const { calls } = stubRenderer(t);
   const addresses = [
     '1.1.1.1', '8.8.8.8', '100.63.255.254', '100.128.0.1', '172.15.255.254',
     '172.32.0.1', '192.167.255.254', '192.169.0.1',
     '[2001:4860:4860::8888]', '[2606:4700:4700::1111]', '[::ffff:8.8.8.8]',
   ];
   for (const address of addresses) {
-    assert.match(await new WebsiteFetcherLightpanda().fetchURL(`https://${address}/`), /Public page/);
+    assert.match((await new WebsiteFetcherLightpanda().fetchURL(`https://${address}/`)).html, /Public page/);
   }
   assert.equal(calls.length, addresses.length);
 });
 
 test('rejects obfuscated loopback addresses after URL normalization', async (t) => {
-  const calls = stubRenderer(t);
+  const { calls } = stubRenderer(t);
   for (const address of ['127.1', '2130706433', '0x7f000001', '0177.0.0.1']) {
     await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(`http://${address}/`), /not a public network address/);
   }
@@ -64,8 +66,8 @@ test('rejects obfuscated loopback addresses after URL normalization', async (t) 
 });
 
 test('checks every DNS answer and rejects a mixed public and private result', async (t) => {
-  const calls = stubRenderer(t);
-  const lookup = t.mock.method(dns, 'lookup', async () => [
+  const { calls, lookup } = stubRenderer(t);
+  lookup.mock.mockImplementation(async () => [
     { address: '1.1.1.1', family: 4 },
     { address: 'fd00::1', family: 6 },
   ]);
@@ -75,9 +77,9 @@ test('checks every DNS answer and rejects a mixed public and private result', as
 });
 
 test('blocks private IPv4 addresses in mapped IPv6 DNS answers before launch', async (t) => {
-  const calls = stubRenderer(t);
+  const { calls, lookup } = stubRenderer(t);
   let address = '';
-  t.mock.method(dns, 'lookup', async () => [{ address, family: 6 }]);
+  lookup.mock.mockImplementation(async () => [{ address, family: 6 }]);
   for (address of ['::ffff:127.0.0.1', '::ffff:7f00:1', '::ffff:10.0.0.1', '::ffff:a9fe:a9fe']) {
     await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://mapped.test/'), /not a public network address/);
   }
@@ -85,11 +87,11 @@ test('blocks private IPv4 addresses in mapped IPv6 DNS answers before launch', a
 });
 
 test('resolves a hostname again for each fetch and blocks a changed address', async (t) => {
-  const calls = stubRenderer(t);
+  const { calls, lookup } = stubRenderer(t);
   let address = '1.1.1.1';
-  const lookup = t.mock.method(dns, 'lookup', async () => [{ address, family: 4 }]);
+  lookup.mock.mockImplementation(async () => [{ address, family: 4 }]);
   const fetcher = new WebsiteFetcherLightpanda();
-  assert.match(await fetcher.fetchURL('https://changes.test/'), /Public page/);
+  assert.match((await fetcher.fetchURL('https://changes.test/')).html, /Public page/);
   address = '127.0.0.1';
   await assert.rejects(fetcher.fetchURL('https://changes.test/'), /not a public network address/);
   assert.equal(lookup.mock.callCount(), 2);
@@ -97,8 +99,8 @@ test('resolves a hostname again for each fetch and blocks a changed address', as
 });
 
 test('rejects DNS failure, an empty answer, and invalid addresses without launching', async (t) => {
-  const calls = stubRenderer(t);
-  const lookup = t.mock.method(dns, 'lookup', async (): Promise<LookupAddress[]> => { throw new Error('DNS failed'); });
+  const { calls, lookup } = stubRenderer(t);
+  lookup.mock.mockImplementation(async (): Promise<LookupAddress[]> => { throw new Error('DNS failed'); });
   const fetcher = new WebsiteFetcherLightpanda();
   await assert.rejects(fetcher.fetchURL('https://missing.test/'), /DNS failed/);
   lookup.mock.mockImplementation(async () => []);
@@ -109,13 +111,13 @@ test('rejects DNS failure, an empty answer, and invalid addresses without launch
 });
 
 test('applies the native connection policy and disables proxies on every launch', async (t) => {
-  const calls = stubRenderer(t);
-  t.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
+  const { calls } = stubRenderer(t);
   const fetcher = new WebsiteFetcherLightpanda();
   await fetcher.fetchURL('https://public.test/one');
   await fetcher.fetchURL('https://public.test/two');
   assert.equal(calls.length, 2);
   for (const args of calls) {
+    assert.ok(args.includes('--json'));
     assert.ok(args.includes('--block-private-networks'));
     const cidrs = args[args.indexOf('--block-cidrs') + 1]?.split(',') ?? [];
     assert.ok(cidrs.includes('100.64.0.0/10'));
@@ -127,7 +129,7 @@ test('applies the native connection policy and disables proxies on every launch'
 });
 
 test('URL text cannot supply renderer flags or permit a fixture', async (t) => {
-  const calls = stubRenderer(t);
+  const { calls } = stubRenderer(t);
   const url = 'https://1.1.1.1/?--block-cidrs=-127.0.0.1/32&allowPrivate=true#--http-proxy=http://127.0.0.1';
   await new WebsiteFetcherLightpanda().fetchURL(url);
   assert.equal(calls[0]?.at(-1), new URL(url).href);
@@ -137,7 +139,7 @@ test('URL text cannot supply renderer flags or permit a fixture', async (t) => {
 });
 
 test('rejects unsupported URL schemes and malformed input before launch', async (t) => {
-  const calls = stubRenderer(t);
+  const { calls } = stubRenderer(t);
   for (const url of ['file:///etc/hosts', 'ftp://1.1.1.1/', 'data:text/html,test', '--block-cidrs=-127.0.0.1/32']) {
     await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url));
   }
@@ -146,7 +148,7 @@ test('rejects unsupported URL schemes and malformed input before launch', async 
 
 test('fails closed when the renderer cannot apply its policy', async (t) => {
   const error = new Error('unknown option: --block-private-networks');
-  const calls = stubRenderer(t, error);
+  const { calls } = stubRenderer(t, error);
   await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://1.1.1.1/'), error);
   assert.equal(calls.length, 1);
 });
