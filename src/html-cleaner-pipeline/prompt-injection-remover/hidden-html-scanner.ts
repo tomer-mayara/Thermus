@@ -2,7 +2,8 @@ import { isHiddenElement, REPORTED_TAGS } from 'agent-input-sanitizer/html';
 import { html, serializeOuter } from 'parse5';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { resolveCssVisibility, type VisibilityStyle } from './css-visibility.ts';
-import { parseSourceDocument, type SourceElement } from './css-visibility-tree.ts';
+import { parseSourceDocument, type SourceElement, type CssHtmlDocument } from './css-visibility-tree.ts';
+import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 
 type HtmlNode = Htmlparser2TreeAdapterMap['node'];
 type HtmlElement = Htmlparser2TreeAdapterMap['element'];
@@ -15,16 +16,20 @@ export class HiddenHtmlScanner {
   private readonly urlSources: string[] = [];
   private readonly hiddenNodes: HtmlNode[] = [];
   private readonly visibleSources = new Set<HtmlElement>();
+  private readonly visibleNodes = new Set<HtmlElement>();
   private readonly visibleStyles = new Map<number, { start: number; end: number }>();
 
   private constructor(
     private readonly styles: Map<HtmlElement, VisibilityStyle>,
     private readonly sourceElement: SourceElement,
+    private readonly adoptedSources: CssHtmlDocument['adoptedSources'],
   ) {}
 
-  public static scan(text: string) {
+  public static scan(text: string, provenance = new CssVisibilityProvenance()) {
     const tree = parseSourceDocument(text);
-    const scanner = new HiddenHtmlScanner(resolveCssVisibility(tree), tree.sourceElement);
+    const styles = resolveCssVisibility(tree);
+    const contexts = provenance.apply(tree, styles);
+    const scanner = new HiddenHtmlScanner(styles, tree.sourceElement, tree.adoptedSources);
     scanner.visit(tree.document, false);
     const root = tree.document.children.find(adapter.isElementNode);
     if (root && scanner.hiddenNodes.includes(root)) {
@@ -33,6 +38,7 @@ export class HiddenHtmlScanner {
       }
     }
     for (const node of scanner.hiddenNodes) scanner.recordSource(node);
+    provenance.retain(contexts, scanner.visibleNodes, scanner.ranges);
     return {
       ranges: scanner.ranges,
       removed: scanner.removed,
@@ -48,7 +54,10 @@ export class HiddenHtmlScanner {
     }
     const removed = removedAncestor || this.recordNode(node);
     if (removed) this.hiddenNodes.push(node);
-    else if (adapter.isElementNode(node)) this.visibleSources.add(this.sourceElement(node));
+    else if (adapter.isElementNode(node)) {
+      this.visibleSources.add(this.sourceElement(node));
+      this.visibleNodes.add(node);
+    }
     const children = adapter.isElementNode(node) && node.name === 'template'
       ? adapter.getTemplateContent(node).children
       : 'children' in node ? node.children : [];
@@ -82,20 +91,33 @@ export class HiddenHtmlScanner {
   private recordVisibleElement(
     node: HtmlElement, properties: Record<string, string>, css: VisibilityStyle | undefined,
   ): void {
-    const style = adapter.getNodeSourceCodeLocation(this.sourceElement(node))?.attrs?.style;
-    if (css === '' && style) {
-      this.visibleStyles.set(style.startOffset, { start: style.startOffset, end: style.endOffset });
-    }
+    if (css === '') this.recordVisibleStyles(node);
     if (REPORTED_TAGS.has(node.name)) {
       this.warned.tags[node.name] = (this.warned.tags[node.name] ?? 0) + 1;
     }
     if (properties.src?.startsWith('data:')) this.warned.dataSrc++;
   }
 
+  private recordVisibleStyles(node: HtmlElement): void {
+    const locations = [
+      adapter.getNodeSourceCodeLocation(this.sourceElement(node)),
+      ...this.adoptedSources.get(node) ?? [],
+    ];
+    for (const location of locations) {
+      const style = location?.attrs?.style;
+      if (style) this.visibleStyles.set(style.startOffset, { start: style.startOffset, end: style.endOffset });
+    }
+  }
+
   private recordSource(node: HtmlNode): void {
+    if (adapter.isElementNode(node)) {
+      if (this.visibleSources.has(this.sourceElement(node))) return;
+      for (const source of this.adoptedSources.get(node) ?? []) {
+        this.ranges.push({ start: source.startOffset, end: source.endOffset });
+      }
+    }
     const location = adapter.getNodeSourceCodeLocation(node);
     if (location == null) return;
-    if (adapter.isElementNode(node) && this.visibleSources.has(this.sourceElement(node))) return;
     // A whole element interval can also contain visible nodes outside its parsed subtree.
     const sources = adapter.isElementNode(node)
       ? [location.startTag, location.endTag]

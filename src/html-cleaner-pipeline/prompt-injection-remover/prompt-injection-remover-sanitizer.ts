@@ -4,6 +4,7 @@ import { describeRemoved, describeWarned } from 'agent-input-sanitizer/output';
 import type { Ctx } from '../html-to-markdown-pipeline.ts';
 import { HiddenHtmlScanner } from './hidden-html-scanner.ts';
 import { CssSelectorLimitError } from './css-visibility-selectors.ts';
+import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 
 type HtmlScan = ReturnType<typeof HiddenHtmlScanner.scan>;
@@ -51,6 +52,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   }
 
   private static removeHiddenHtml(text: string) {
+    const provenance = new CssVisibilityProvenance();
     const result: HtmlRemoval = {
       html: text,
       removed: { comments: 0, hidden: 0 },
@@ -64,7 +66,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
           `${threat.isImage ? 'image' : 'link'} to ${threat.target}: ${threat.reason}`,
         );
       }
-      const scan = PromptInjectionRemoverSanitizer.tryScanHtml(result.html);
+      const scan = PromptInjectionRemoverSanitizer.tryScanHtml(result.html, provenance);
       if (!scan) {
         return { ...result, html: '', withholdWarning: 'HTML scan failed; remaining HTML withheld' };
       }
@@ -99,9 +101,9 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     result.warned.dataSrc = Math.max(result.warned.dataSrc, scan.warned.dataSrc);
   }
 
-  private static tryScanHtml(text: string): HtmlScan | undefined {
+  private static tryScanHtml(text: string, provenance: CssVisibilityProvenance): HtmlScan | undefined {
     try {
-      return HiddenHtmlScanner.scan(text);
+      return HiddenHtmlScanner.scan(text, provenance);
     } catch (error) {
       if (error instanceof CssSelectorLimitError) throw error;
       return undefined;

@@ -52,6 +52,13 @@
 [V] Removes attributes when every reconstructed copy of a source tag is hidden
 [V] Keeps hidden title and link attributes removed when text ends at the same source offset as a reconstructed tag
 [V] Checks CSS-hidden content formed by a previous removal and keeps visible inline overrides
+[V] Keeps visible source tags and reconstructed copies when a removal changes a sibling selector match
+[V] Keeps an implied table body's visibility when a hidden caption and its first row are removed
+[V] Checks new hidden children and ancestors while keeping unchanged visible content
+[V] Applies a formed stylesheet to new targets and resets saved visibility for each invocation
+[V] Checks hiding attributes that a formed tag adds to an implied or explicit document element
+[V] Removes hidden attributes on duplicate document tags, keeps URL findings, and preserves visible duplicate tags
+[V] Clears resolved visible styles on duplicate document tags before Markdown conversion
 [V] Preserves visible text after parser-created formatting copies without source locations
 [V] Removes hidden content from parser-created copies without source locations
 [V] Preserves unrelated attributes on reconstructed source tags
