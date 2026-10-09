@@ -27,7 +27,7 @@ Fragments stay in the default key. Lightpanda JavaScript can use hash routes, so
 
 ## Required key tests
 
-These future unit tests remain pending. Unless a row says otherwise, use tenant `t1` and reason `research` for both inputs. Run new tests RED → GREEN. Confirm each fails for the expected reason before implementing the key, then confirm it passes.
+These future unit tests remain pending. Unless a row says otherwise, use tenant `t1` and reason `research` for both inputs. Treat tenant IDs as accepted opaque IDs from a trusted test context. Test key encoding independently of upstream validation. Run new tests RED → GREEN. Confirm each fails for the expected reason before implementing the key, then confirm it passes.
 
 | Exact input pair or condition | Expected result under default policy |
 | --- | --- |
@@ -50,7 +50,7 @@ These future unit tests remain pending. Unless a row says otherwise, use tenant 
 | `https://example.test/article#one` versus `https://example.test/article#two` | Different keys, including for hash routes |
 | `https://example.test/article` versus `https://example.test/article?`; `https://example.test/article` versus `https://example.test/article#` | Different keys for each pair |
 | `https://example.test/article` versus `http://example.test/article`; `https://example.test/article` versus `https://other.test/article`; `https://example.test/article` versus `https://example.test:8443/article`; `https://example.test/article` versus `https://example.test/other` | Different keys for each pair |
-| Tenant `t1:https://example.test/p`, URL `https://example.test/q` versus tenant `t1`, URL `https://example.test/p:https://example.test/q` | Different keys; if tenant IDs cannot contain `:`, reject an invalid ID instead of conflating tuple fields |
+| Tenant `t1:https://example.test/p`, URL `https://example.test/q` versus tenant `t1`, URL `https://example.test/p:https://example.test/q` | Different keys; preserve tuple field boundaries |
 
 ## Hypothetical scoped equivalence tests
 
