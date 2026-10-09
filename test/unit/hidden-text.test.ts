@@ -116,7 +116,8 @@ describe('PromptInjectionRemoverSanitizer', () => {
 
     assert.deepEqual(input, original);
     assert.notEqual(result, input);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(
       result.html.replace(/\s+/g, ' ').trim(),
       input.html.replace(/\s+/g, ' ').trim(),

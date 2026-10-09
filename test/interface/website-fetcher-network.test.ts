@@ -38,7 +38,7 @@ test('renders permitted local HTML and JavaScript only in the trusted fixture sc
   });
   await t.test('the fixture is allowed by the test launcher', async (scope) => {
     permitIPv4Fixture(scope);
-    const html = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
+    const { html } = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
     assert.match(html, /<p id="result">Allowed script ran<\/p>/);
     assert.deepEqual(allowed.requests, ['/', '/allowed.js']);
   });
@@ -71,7 +71,7 @@ test('blocks a script subresource before it reaches a forbidden fixture', async 
       </body></html>`);
   });
   permitIPv4Fixture(t);
-  const html = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
+  const { html } = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
   assert.match(html, /<p id="result">Script blocked<\/p>/);
   assert.deepEqual(forbidden.requests, []);
   assert.equal(forbidden.connections, 0);
@@ -95,7 +95,7 @@ test('blocks page JavaScript fetch, XHR, and WebSocket connections', async (t) =
       </script></body></html>`);
   });
   permitIPv4Fixture(t);
-  const html = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
+  const { html } = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
   assert.match(html, /<p id="fetch">Fetch blocked<\/p>/);
   assert.match(html, /<p id="xhr">XHR blocked<\/p>/);
   assert.match(html, /<p id="ws">WebSocket blocked<\/p>/);
@@ -113,7 +113,7 @@ test('ignores ambient proxy settings during a fixture fetch', async (t) => {
   process.env.no_proxy = '';
   process.env.NO_PROXY = '';
   try {
-    const html = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
+    const { html } = await new WebsiteFetcherLightpanda().fetchURL(allowed.hostnameOrigin);
     assert.match(html, /Direct fixture/);
     assert.deepEqual(proxy.requests, []);
     assert.equal(proxy.connections, 0);

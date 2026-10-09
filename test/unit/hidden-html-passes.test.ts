@@ -102,7 +102,8 @@ describe('hidden HTML removal passes', () => {
 
     assert.equal(result.html, `${visible}<p></p><p></p>`);
     assert.deepEqual(input, original);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(result.markdown, input.markdown);
     assert.equal(result.title, input.title);
     assert.equal(result.removed, 2);
@@ -172,7 +173,8 @@ describe('hidden HTML removal passes', () => {
 
     assert.equal(result.html, '');
     assert.deepEqual(input, original);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(result.markdown, input.markdown);
     assert.equal(result.title, input.title);
     assert.equal(result.removed, 2);
