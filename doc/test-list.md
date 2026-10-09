@@ -56,4 +56,8 @@
 [V] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
 [V] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
 
+**LinkeDOM Serialization**
+
+[V] ESM and CommonJS preserve escaped numeric entities, ordinary entities, quotes, and query ampersands after attribute serialization and reparsing
+
 ## Acceptance
