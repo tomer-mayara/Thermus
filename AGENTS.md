@@ -58,8 +58,6 @@ For each ticket, do the steps that follow:
    finding. Fix at least one pre-existing smell in the code you change.
 5. Run the 4 reviewers. Replace `382` with the number of this pull request:
    `npx tsx tools/code-review-agents/src/application/review.ts --pr 382 --comment`
-   Run the architecture diff for the same pull request:
-   `npx tsx script/architecture-diff.ts --pr 382 --comment`
    Repair each reviewer defect.
 6. Make sure the relevant docs under `docs/*` are up to date with recent
    changes. Create a subagent for doc changes and require ASD-STE100.
