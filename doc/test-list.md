@@ -269,3 +269,9 @@
 [V] Removes local and inherited offscreen input values, keeps visible inputs, and keeps descendants whose transforms return them to view
 [V] Keeps a nearly singular matrix with a resolved or unresolved inverse, and keeps a preserved child whose inverse restores the parent plane
 [V] Removes a truly singular operand even when another transform is unresolved
+[V] Keeps a flat child restored by an inverse transform, including finite coefficients that exceed the exact decimal proof budget
+[V] Removes zero-font text-entry input values from effective author rules, including class rules and explicit font inheritance
+[V] Keeps input values with default, visible, or unresolved fonts under zero-font parents, and keeps images and native input controls
+[V] Keeps known inherited offsets and planes through unstyled elements with unknown box defaults
+[V] Keeps inherited offsets when an unknown box has an explicit none, initial, or unset transform
+[V] Removes replaced HTML images with display:contents and keeps visible images with default or unresolved display

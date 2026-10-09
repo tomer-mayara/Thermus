@@ -1,7 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,76 +196,257 @@
+@@ -196,76 +196,263 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -164,11 +164,11 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return exactDeterminant(rows) === 0n;
 +}
 +
-+/** @param {number[][]} rows @returns {boolean} */
-+function isCollapsedPlane(rows) {
++/** @param {number[][]} rows @param {boolean} [ignoreRankRoundoff] @returns {boolean} */
++function isCollapsedPlane(rows, ignoreRankRoundoff = false) {
 +  const projected = PROJECTED_AXES.map((row) =>
 +    PROJECTED_AXES.map((column) => rows[row][column]));
-+  if (isSingularMatrix(projected)) return true;
++  if (!ignoreRankRoundoff && isSingularMatrix(projected)) return true;
 +  const affine = rows[3][0] === 0 && rows[3][1] === 0 && rows[3][3] === 1;
 +  return affine && (Math.hypot(rows[0][0], rows[1][0]) < NEAR_ZERO_EPSILON ||
 +    Math.hypot(rows[0][1], rows[1][1]) < NEAR_ZERO_EPSILON);
@@ -176,6 +176,9 @@ diff --git a/src/html.mjs b/src/html.mjs
 +
 +const MATRIX_AXES = [0, 1, 2, 3];
 +const PROJECTED_AXES = [0, 1, 3];
++const TWO_DIMENSIONAL_TRANSFORMS = new Set([
++  "matrix", "scale", "scalex", "scaley", "rotate", "rotatez", "translate", "translatex", "translatey",
++]);
 +const FLAT_TRANSFORM_STYLES = new Set(["flat", "initial", "unset"]);
 +const GROUPING_DEFAULTS = {
 +  "overflow-x": ["visible", "clip"], "overflow-y": ["visible", "clip"],
@@ -294,7 +297,10 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  // A projective matrix needs origin and layout data before its plane can be resolved.
 +  if (!rows[3].every((value, column) => value === Number(column === 3))) return false;
 +  // Text lies in the local z=0 plane. Check its projection onto the screen.
-+  if (isCollapsedPlane(rows)) return true;
++  const twoDimensional = functions.every((fn) => fn.type === "Function" &&
++    TWO_DIMENSIONAL_TRANSFORMS.has(csstree.ident.decode(fn.name).toLowerCase()));
++  // A 2D rank loss needs the exact proof above. Small projected axes still count.
++  if (isCollapsedPlane(rows, twoDimensional)) return true;
 +  // Rotation and scale also move the box around its layout-dependent origin.
 +  const translationOnly = isPureTranslation(rows);
 +  const offscreen = !ignoreOffsets && translationOnly &&
@@ -313,7 +319,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +1021,141 @@
+@@ -840,26 +1027,141 @@
    return false;
  }
 
@@ -473,7 +479,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1203,13 @@
+@@ -907,11 +1209,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -488,7 +494,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1232,93 @@
+@@ -934,17 +1238,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -583,7 +589,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,19 +1356,18 @@
+@@ -982,19 +1362,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -610,7 +616,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1467,10 @@
+@@ -1094,9 +1473,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -622,7 +628,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1482,7 @@
+@@ -1108,7 +1488,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -631,7 +637,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1509,185 @@
+@@ -1135,8 +1515,203 @@
    return firstElement;
  }
 
@@ -650,6 +656,10 @@ diff --git a/src/html.mjs b/src/html.mjs
 +]);
 +const REPLACED_ELEMENTS = new Set([
 +  "audio", "canvas", "embed", "iframe", "img", "input", "object", "select", "textarea", "video",
++]);
++const NON_TEXT_INPUT_TYPES = new Set([
++  "hidden", "date", "month", "week", "time", "datetime-local", "number", "range", "color",
++  "checkbox", "radio", "file", "submit", "image", "reset", "button",
 +]);
 +const BLOCK_ELEMENTS = new Set([
 +  "address", "article", "aside", "blockquote", "body", "center", "dd", "details", "dialog",
@@ -768,6 +778,16 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  };
 +}
 +
++/** @param {any} node @param {Map<string, any>} declarations @param {number | null} fontSize @returns {boolean} */
++function hasHiddenInputValue(node, declarations, fontSize) {
++  if (node.tagName !== "input" || !declarations.has("font-size") ||
++      fontSize === null || fontSize >= NEAR_ZERO_EPSILON) return false;
++  const { type = "", value } = node.properties ?? {};
++  // Missing and invalid input types use the text state.
++  return typeof value === "string" && value.length > 0 &&
++    !NON_TEXT_INPUT_TYPES.has(type.toLowerCase());
++}
++
 +/**
 + * Resolve one element without changing its source or its descendants.
 + * @param {any} node
@@ -783,8 +803,11 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const display = resolveDisplay(node, declarations);
 +  if (isContentsWrapper(node, display)) return contentsVisibility(node, parent, fontSize);
 +  const transformable = appliesTransform(node, declarations, parent, display);
-+  const transform = transformable === false ? undefined : transformable === null
-+    ? { type: "Raw", value: "" } : declarations.get("transform");
++  const localTransform = declarations.get("transform");
++  const unknownTransform = transformable === null && localTransform &&
++    !["none", "initial", "unset"].includes(declText(localTransform).trim().toLowerCase());
++  const transform = transformable === false ? undefined : unknownTransform
++    ? { type: "Raw", value: "" } : localTransform;
 +  const transformStyle = transformable === false ? undefined : declarations.get("transform-style");
 +  const style = declText(transformStyle).trim().toLowerCase();
 +  const preserves3d = Boolean(transformStyle && !FLAT_TRANSFORM_STYLES.has(style));
@@ -801,12 +824,13 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    matrix = unknownContext ? null : rows;
 +  }
 +  const { translation, offscreen } = resolveTranslation(declarations, parent, transform);
++  const htmlReplaced = REPLACED_ELEMENTS.has(node.tagName) &&
++    (!node.namespace || node.namespace === "http://www.w3.org/1999/xhtml");
 +  return {
 +    fontSize, display, boxDisplay: display, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
-+    hiddenReplacedContent: (offscreen || hiddenPlane) &&
-+      REPLACED_ELEMENTS.has(node.tagName) && VOID_ELEMENTS.has(node.tagName) &&
-+      (!node.namespace || node.namespace === "http://www.w3.org/1999/xhtml"),
-+    hiddenElement: isHiddenElement(node, {
++    hiddenReplacedContent: htmlReplaced && (((offscreen || hiddenPlane) && VOID_ELEMENTS.has(node.tagName)) ||
++      hasHiddenInputValue(node, declarations, fontSize)),
++    hiddenElement: (htmlReplaced && display === "contents") || isHiddenElement(node, {
 +      ignoreFontSize: true,
 +      in3dContext: in3dContext || Boolean(parent?.hasPerspective),
 +      ignoreTransformOffsets: true,

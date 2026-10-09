@@ -75,7 +75,10 @@ export class HiddenHtmlScanner {
   private elementVisibility(node: HtmlElement, parent?: ElementVisibility): ElementVisibility {
     const visibility = resolveElementVisibility({
       type: 'element', tagName: node.name, namespace: node.namespace,
-      properties: { style: this.styles.get(node) ?? node.attribs.style ?? '' },
+      properties: {
+        type: node.attribs.type ?? '', value: node.attribs.value ?? '',
+        style: this.styles.get(node) ?? node.attribs.style ?? '',
+      },
     }, parent, {
       rootSize: this.rootSize,
       quirksMode: this.tree.document['x-mode'] === 'quirks',
