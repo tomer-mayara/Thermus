@@ -45,6 +45,66 @@ describe('Images and examples in noscript content', () => {
     assert.match(markdown, /\\<img src="\/example\.png" alt="Example: &#x202e;">/);
   });
 
+  for (const [caseName, outerImage, imageCount] of [
+    ['without an outer image', '', 0],
+    ['with an outer image', '<img src="/real.png" alt="Real image">', 1],
+  ] as const) {
+    test(`keeps a nested noscript example ${caseName}`, async () => {
+      const result = await processHtml(
+        '<html><head><title>Safe title</title></head><body><figure><noscript>'
+        + outerImage
+        + '<noscript>&lt;img src="/example.png" alt="Example: &amp;#x202e;"&gt;'
+        + '</noscript></noscript></figure></body></html>',
+      );
+      const markdown = result.markdown ?? '';
+
+      assert.equal(markdown.match(/!\[/g)?.length ?? 0, imageCount);
+      if (imageCount === 1) {
+        assert.match(markdown, /!\[Real image\]\(https:\/\/example\.com\/real\.png\)/);
+      }
+      assert.equal(
+        markdown.match(/\\<img src="\/example\.png" alt="Example: &#x202e;">/g)?.length,
+        1,
+      );
+      assert.deepEqual(result.found?.filter((finding) => finding === 'cf-format'), []);
+    });
+  }
+
+  test('keeps picture fallbacks and escaped examples in noscript separate', async () => {
+    const result = await processHtml(
+      '<html><head><title>Safe title</title></head><body><figure><noscript><picture>'
+      + '<source srcset="/wide.png 800w"><img src="/image.png" alt="Real image">'
+      + '</picture>&lt;img src="/example.png" alt="Example: &amp;#x202e;"&gt;'
+      + '</noscript></figure></body></html>',
+    );
+    const markdown = result.markdown ?? '';
+
+    assert.equal(markdown.match(/!\[/g)?.length, 1);
+    assert.match(markdown, /!\[Real image\]\(https:\/\/example\.com\/image\.png\)/);
+    assert.doesNotMatch(markdown, /!\[\]\(https:\/\/example\.com\/wide\.png\)/);
+    assert.equal(result.skipped, 0);
+    assert.deepEqual(result.found, []);
+    assert.deepEqual(result.warnings, []);
+    assert.match(markdown, /\\<img src="\/example\.png" alt="Example: &#x202e;">/);
+  });
+
+  test('uses the noscript fallback for a lazy image and keeps escaped examples visible', async () => {
+    const result = await processHtml(
+      '<html><head><title>Safe title</title></head><body><div>'
+      + '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///w==" alt="Real image">'
+      + '<noscript><img src="/image.png" alt="Real image">'
+      + '&lt;img src="/example.png" alt="Example: &amp;#x202e;"&gt;</noscript>'
+      + '</div></body></html>',
+    );
+    const markdown = result.markdown ?? '';
+
+    assert.equal(markdown.match(/!\[Real image\]/g)?.length, 1);
+    assert.match(markdown, /!\[Real image\]\(https:\/\/example\.com\/image\.png\)/);
+    assert.doesNotMatch(markdown, /data:image\/gif|https:\/\/example\.com\/example\.png/);
+    assert.deepEqual(result.found?.filter((finding) => finding === 'cf-format'), []);
+    assert.match(markdown, /\\<img src="\/example\.png" alt="Example: &#x202e;">/);
+  });
+
   test('keeps an escaped noscript image nested in code as code text', async () => {
     const result = await processHtml(
       '<html><head><title>Safe title</title></head><body><figure><noscript><code>'

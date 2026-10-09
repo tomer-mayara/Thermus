@@ -43,7 +43,7 @@
 [V] Removes literal and entity-decoded controls from DOM text, attributes, Markdown, and title; reports the control finding once
 [V] Removes controls before Markdown escaping and code-fence selection, including generated Substack code with literal, decimal, and hexadecimal controls
 [V] Checks logical text runs across inline spans and preserves contextual Persian ZWNJ and emoji ZWJ across highlighted spans
-[V] Ends text runs at block and line-break boundaries, maps deletions to original nodes, and preserves inline formatting
+[V] Ends text runs at block, line-break, and image boundaries; maps deletions to original nodes and preserves inline formatting
 [V] Removes and reports isolated joiners
 [V] Removes all four prohibited controls from links in generated extractor content
 [V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title during the control check
@@ -53,6 +53,8 @@
 [V] Keeps an escaped image example in noscript as text without converting it to an image
 [V] Keeps real image elements in noscript available to Defuddle
 [V] Keeps a real fallback image and an escaped image example visible when both appear in noscript
+[V] Keeps a picture fallback and escaped example separate, with one real image
+[V] Uses a noscript fallback for a lazy image outside a figure and keeps escaped examples visible
 [V] Keeps nested escaped noscript code as text
 [V] Preserves parser behavior for malformed entities and invalid code points
 

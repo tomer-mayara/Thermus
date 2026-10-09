@@ -97,24 +97,36 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   private preserveNoscriptText(root: HtmlDocument | HtmlElement, document: HtmlDocument): void {
     const figureTextAnchors = new Map<HtmlElement, HtmlElement>();
     for (const noscript of root.querySelectorAll('noscript')) {
-      const images = [...noscript.querySelectorAll('img')];
+      if (noscript.parentElement?.closest('noscript')) continue;
+      const hasImage = noscript.querySelector('img') !== null;
       const figure = noscript.closest('figure');
       // LinkeDOM has already decoded this text. Defuddle must not parse it as HTML.
       const content = document.createElement(figure ? 'div' : 'span', {});
-      while (noscript.firstChild) content.appendChild(noscript.firstChild);
-      for (const image of images) noscript.appendChild(image);
+      this.copyNoscriptContent(noscript, content);
       if (figure) {
         // Defuddle reduces image figures to an image and a caption.
         const anchor = figureTextAnchors.get(figure) ?? figure;
         anchor.after(content);
         figureTextAnchors.set(figure, content);
-        if (images.length === 0) noscript.remove();
-      } else if (images.length > 0) {
+        if (!hasImage) noscript.remove();
+      } else if (hasImage) {
         noscript.after(content);
       } else {
         noscript.replaceWith(content);
       }
     }
+  }
+
+  private copyNoscriptContent(noscript: HtmlElement, content: HtmlElement): void {
+    const copy = noscript.cloneNode(true) as HtmlElement;
+    if (copy.querySelector('img')) {
+      for (const image of copy.querySelectorAll('img, source')) image.remove();
+    }
+    for (const nested of copy.querySelectorAll('noscript')) {
+      while (nested.firstChild) nested.before(nested.firstChild);
+      nested.remove();
+    }
+    while (copy.firstChild) content.appendChild(copy.firstChild);
   }
 
   private applyTextDeletions(nodes: readonly HtmlText[], cleaned: string): void {

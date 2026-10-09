@@ -119,6 +119,17 @@ describe('Controls in deferred HTML content', () => {
     assertFormatFinding(result);
   });
 
+  test('treats an image as a boundary for Persian joiner context', async () => {
+    const result = await processHtml(
+      '<html><head><title>Safe title</title></head><body><main><p>'
+      + 'می<img src="/separator.png" alt="separator">&#x200c;خواهم'
+      + '</p></main></body></html>',
+    );
+
+    assert.doesNotMatch(result.markdown ?? '', /\u200c/);
+    assertFormatFinding(result);
+  });
+
   test('removes controls across inline spans and preserves visible order and formatting', async () => {
     const result = await processHtml(
       '<html><head><title>Safe title</title></head><body><main><p>'
