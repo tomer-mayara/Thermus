@@ -41,6 +41,10 @@
 [V] Makes no network requests when the API fallback receives an empty document
 [V] Preserves local content and resolves relative links with the page URL
 
+### Planned Cache Key Tests
+
+No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../docs/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
+
 ## Interface
 
 **HTML Fetcher**
