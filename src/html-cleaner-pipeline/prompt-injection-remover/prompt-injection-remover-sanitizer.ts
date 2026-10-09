@@ -1,4 +1,13 @@
-import { sanitize } from 'agent-input-sanitizer';
+import { CATEGORY, sanitize } from 'agent-input-sanitizer';
+import {
+  COMMENT_PLACEHOLDER,
+  HIDDEN_PLACEHOLDER,
+  UNPARSEABLE_PLACEHOLDER,
+  detectExfil,
+  scanHtmlFragment,
+  spliceRanges,
+} from 'agent-input-sanitizer/html';
+import { describeRemoved, describeWarned } from 'agent-input-sanitizer/output';
 import type { Ctx } from '../html-to-markdown-pipeline.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 
@@ -6,9 +15,9 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static readonly maxHtmlBytes = 10 * 1024 * 1024;
 
   private static readonly htmlPlaceholders = [
-    '[HTML comment removed]',
-    '[hidden HTML removed]',
-    '[HTML unparseable — withheld]',
+    COMMENT_PLACEHOLDER,
+    HIDDEN_PLACEHOLDER,
+    UNPARSEABLE_PLACEHOLDER,
   ] as const;
 
   public async invoke(ctx: Ctx): Promise<Ctx> {
@@ -16,7 +25,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitize(ctx.html, { html: true });
+    const sanitized = await PromptInjectionRemoverSanitizer.sanitizeKnownHtml(ctx.html);
     const html = PromptInjectionRemoverSanitizer.removeHtmlPlaceholders(sanitized.cleaned);
 
     return {
@@ -26,6 +35,50 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       found: [...(ctx.found ?? []), ...sanitized.found],
       warnings: [...(ctx.warnings ?? []), ...sanitized.warnings],
     };
+  }
+
+  private static async sanitizeKnownHtml(text: string): ReturnType<typeof sanitize> {
+    const sanitized = await sanitize(text);
+    const preSplice = sanitized.cleaned;
+    const scanned = PromptInjectionRemoverSanitizer.scanHtml(preSplice);
+    sanitized.cleaned = scanned.text;
+    if (scanned.removed.comments > 0) sanitized.found.push(CATEGORY.HTML_COMMENTS);
+    if (scanned.removed.hidden > 0) sanitized.found.push(CATEGORY.HIDDEN_HTML);
+    if (scanned.text !== preSplice) {
+      sanitized.warnings.push(
+        `HTML sanitized: ${describeRemoved(scanned.removed)} replaced with placeholders`,
+      );
+    }
+    const preserved = describeWarned(scanned.warned);
+    if (preserved) sanitized.warnings.push(preserved);
+
+    const threats = detectExfil(preSplice);
+    if (threats) {
+      sanitized.found.push(CATEGORY.EXFIL_URLS);
+      const reasons = [...new Set(threats.map((threat) =>
+        `${threat.isImage ? 'image' : 'link'} to ${threat.target}: ${threat.reason}`,
+      ))];
+      sanitized.warnings.push(`Exfil-shaped URLs detected: ${reasons.join('; ')}`);
+    }
+    return sanitized;
+  }
+
+  private static scanHtml(text: string) {
+    try {
+      // The library's HTML option can keep hidden HTML inside Markdown code fences.
+      const { ranges, warned } = scanHtmlFragment(text);
+      const removed = { comments: 0, hidden: 0 };
+      for (const range of ranges) {
+        removed[range.kind === 'comment' ? 'comments' : 'hidden']++;
+      }
+      return { text: spliceRanges(text, ranges), removed, warned };
+    } catch {
+      return {
+        text: UNPARSEABLE_PLACEHOLDER,
+        removed: { comments: 0, hidden: 1 },
+        warned: { tags: {}, dataSrc: 0 },
+      };
+    }
   }
 
   private static matchesSuffix(

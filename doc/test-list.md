@@ -20,6 +20,9 @@
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML
+[V] Treats sparse full documents and HTML fragments as HTML at every line and tag density
+[V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
+[V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
 
 **HTML to Markdown Pipeline**
 
@@ -28,6 +31,7 @@
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
+[V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 
 **HTML to MD**
 
