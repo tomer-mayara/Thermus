@@ -95,12 +95,25 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   }
 
   private preserveNoscriptText(root: HtmlDocument | HtmlElement, document: HtmlDocument): void {
+    const figureTextAnchors = new Map<HtmlElement, HtmlElement>();
     for (const noscript of root.querySelectorAll('noscript')) {
-      if (noscript.querySelector('img')) continue;
+      const images = [...noscript.querySelectorAll('img')];
+      const figure = noscript.closest('figure');
       // LinkeDOM has already decoded this text. Defuddle must not parse it as HTML.
-      const span = document.createElement('span', {});
-      while (noscript.firstChild) span.appendChild(noscript.firstChild);
-      noscript.replaceWith(span);
+      const content = document.createElement(figure ? 'div' : 'span', {});
+      while (noscript.firstChild) content.appendChild(noscript.firstChild);
+      for (const image of images) noscript.appendChild(image);
+      if (figure) {
+        // Defuddle reduces image figures to an image and a caption.
+        const anchor = figureTextAnchors.get(figure) ?? figure;
+        anchor.after(content);
+        figureTextAnchors.set(figure, content);
+        if (images.length === 0) noscript.remove();
+      } else if (images.length > 0) {
+        noscript.after(content);
+      } else {
+        noscript.replaceWith(content);
+      }
     }
   }
 

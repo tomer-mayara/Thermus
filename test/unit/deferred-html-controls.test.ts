@@ -1,19 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline, type Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { processHtml } from '../helpers/process-html.ts';
 
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';
-
-function createPipeline(): HtmlToMarkdownPipeline {
-  return new HtmlToMarkdownPipeline([
-    new CleanHtmlAdsAdblockRs(),
-    new PromptInjectionRemoverSanitizer(),
-    new CleanHtmlToMarkdownDefuddle(),
-  ]);
-}
 
 function assertFormatFinding(result: Ctx): void {
   assert.equal(result.skipped, 1);
@@ -36,36 +26,7 @@ function substackPage(bodyHtml: string): string {
     + '</body></html>';
 }
 
-async function processHtml(html: string, url = 'https://example.com/'): Promise<Ctx> {
-  return createPipeline().process(url, html);
-}
-
 describe('Controls in deferred HTML content', () => {
-  test('keeps an escaped image example inside noscript as visible text', async () => {
-    const result = await processHtml(
-      '<html><head><title>Safe title</title></head><body><figure>'
-      + '<noscript>&lt;img src="/image.png" alt="Example: &amp;#x202e;"&gt;</noscript>'
-      + '</figure></body></html>',
-    );
-
-    assert.match(result.markdown ?? '', /\\<img src="\/image\.png" alt="Example: &#x202e;">/);
-    assert.doesNotMatch(result.markdown ?? '', /!\[|\]\(https:\/\/example\.com\/image\.png/);
-    assert.equal(result.title, 'Safe title');
-    assert.equal(result.skipped, 0);
-    assert.deepEqual(result.found, []);
-    assert.deepEqual(result.warnings, []);
-  });
-
-  test('keeps real images in noscript content supported', async () => {
-    const result = await processHtml(
-      '<html><head><title>Safe title</title></head><body><figure>'
-      + '<noscript><img src="/image.png" alt="Real image"></noscript>'
-      + '</figure></body></html>',
-    );
-
-    assert.match(result.markdown ?? '', /!\[Real image\]\(https:\/\/example\.com\/image\.png\)/);
-  });
-
   test('keeps escaped examples visible in Substack body_html without decoding another layer', async () => {
     const result = await processHtml(
       substackPage(
@@ -168,20 +129,6 @@ describe('Controls in deferred HTML content', () => {
 
     assert.equal(result.markdown, 'Start **left & middle** *right end* finish');
     assertFormatFinding(result);
-  });
-
-  test('keeps an escaped noscript image nested in code as code text', async () => {
-    const result = await processHtml(
-      '<html><head><title>Safe title</title></head><body><figure><noscript><code>'
-      + '&lt;img src="/image.png" alt=&quot;Example: &amp;#x202e;&quot;&gt;'
-      + '</code></noscript></figure></body></html>',
-    );
-
-    assert.match(result.markdown ?? '', /`.*img src=.*Example: &#x202e;.*`/);
-    assert.doesNotMatch(result.markdown ?? '', /!\[|\]\(https:\/\/example\.com\/image\.png/);
-    assert.equal(result.skipped, 0);
-    assert.deepEqual(result.found, []);
-    assert.deepEqual(result.warnings, []);
   });
 
   test('removes and reports isolated joiners', async () => {

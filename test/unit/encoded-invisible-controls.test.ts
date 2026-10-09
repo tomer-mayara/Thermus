@@ -1,24 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline, type Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { processHtml } from '../helpers/process-html.ts';
 
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';
 const controls = [0x202e, 0x202c, 0x2066, 0x2069];
 
 function documentHtml(body: string, title = 'Safe title'): string {
   return `<html><head><title>${title}</title></head><body><main>${body}</main></body></html>`;
-}
-
-function processHtml(html: string): Promise<Ctx> {
-  const pipeline = new HtmlToMarkdownPipeline([
-    new CleanHtmlAdsAdblockRs(),
-    new PromptInjectionRemoverSanitizer(),
-    new CleanHtmlToMarkdownDefuddle(),
-  ]);
-  return pipeline.process('https://example.com/', html);
 }
 
 describe('Invisible controls after HTML entity decoding', () => {

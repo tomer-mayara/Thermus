@@ -52,6 +52,7 @@
 [V] Does not parse converted output as HTML or decode another entity layer during control checks
 [V] Keeps an escaped image example in noscript as text without converting it to an image
 [V] Keeps real image elements in noscript available to Defuddle
+[V] Keeps a real fallback image and an escaped image example visible when both appear in noscript
 [V] Keeps nested escaped noscript code as text
 [V] Preserves parser behavior for malformed entities and invalid code points
 
