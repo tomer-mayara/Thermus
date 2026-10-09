@@ -27,6 +27,7 @@
 [V] Keeps sizes with named deferred `var()`, `env()`, and `attr()` functions unknown, including typed `attr()` raw syntax; invalid raw values and nameless `env()` or `attr()` do not replace an earlier size
 [V] Removes whole subtrees for display:none, zero opacity, content-visibility:hidden, zero scale, and collapsed height with hidden overflow
 [V] Composes supported matrix, scale, rotation, and resolvable translate functions in CSS order before checking the projected plane
+[V] Checks composed pure-translation X/Y offsets, keeps cancelling X/Y and `em` translations and matrix compensation, removes truly offscreen results, and keeps a mirrored wide plane visible
 [V] Removes collapsed composed transforms and known singular operands, but keeps unresolved lists when they do not prove collapse
 [V] Keeps transforms whose combined projection is visible, including rotations in the rendered plane with zero diagonal matrix values
 [V] Keeps content visible when matrix lists use invalid comma or plus separators
@@ -47,7 +48,7 @@
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
 [V] Keeps visible descendants, images, and rotated content in the final Markdown and removes hidden text and collapsed content
-[V] Checks exact final Markdown for deferred font sizes, composed transforms, preserved 3D descendants, and quirks-mode font sizes
+[V] Checks exact final Markdown for deferred font sizes, composed transforms and offsets, preserved 3D descendants, and quirks-mode font sizes
 
 **HTML to MD**
 

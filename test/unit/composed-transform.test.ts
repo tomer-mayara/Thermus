@@ -17,6 +17,9 @@ describe('Composed transform visibility', () => {
     'rotateY(45deg) rotateY(45deg)',
     'scale(0.001) matrix(2,0,0,2,0,0)',
     'scale3d(1,1,0) matrix(1000,0,0,1000,0,0)',
+    'translateX(-2000000px) translateX(1000000px)',
+    'matrix(1,0,0,1,0,-1000000)',
+    'translateY(-10000em)',
   ]) {
     test(`removes the collapsed composition ${transform}`, async () => {
       const result = await sanitizeHtml(
@@ -41,6 +44,11 @@ describe('Composed transform visibility', () => {
     'rotateY(90deg) rotateY(-90deg) matrix(1,0,0,1,0,0)',
     'rotateX(90deg) matrix3d(1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1)',
     'scale(0.001) scale(calc(1000))',
+    'translateX(1000000px) translateX(-1000000px)',
+    'translateX(-1000000px) translateX(1000000px)',
+    'translateY(-1000000px) translateY(1000000px)',
+    'matrix(1,0,0,1,1000000,0) translateX(-1000000px)',
+    'translateX(-10000em) translateX(10000em)',
   ]) {
     test(`keeps the visible or unresolved composition ${transform}`, async () => {
       const result = await sanitizeHtml(`<div style="transform:${transform}">Visible content</div>`);
@@ -51,17 +59,30 @@ describe('Composed transform visibility', () => {
   }
 });
 
+test('keeps text when the transform origin places a mirrored plane in view', async () => {
+  const result = await sanitizeHtml(
+    '<div style="width:2000px;transform:matrix(-1,0,0,1,-1000,0)">' +
+    '<span>Visible content</span></div><p>Visible sibling</p>',
+  );
+
+  assert.match(result.html, /Visible content/);
+  assert.match(result.html, /Visible sibling/);
+  assert.deepEqual(result.found, []);
+});
+
 test('the final Markdown uses the combined transform', async () => {
   const pipeline = new HtmlToMarkdownPipeline([
     new PromptInjectionRemoverSanitizer(), new CleanHtmlToMarkdownDefuddle(),
   ]);
   const html = '<!doctype html><html><body><main>' +
     '<p style="transform:scale(0.001) matrix(1000,0,0,1000,0,0)">Visible content</p>' +
+    '<p style="transform:translateX(1000000px) translateX(-1000000px)">Visible translation</p>' +
     '<p style="transform:rotateY(90deg) matrix(1,0,0,1,0,0)">Hidden rotation</p>' +
     '<p style="transform:rotateX(90deg) translateX(0px)">Hidden translation</p>' +
+    '<p style="transform:translateX(-2000000px) translateX(1000000px)">Hidden offscreen</p>' +
     '<p>Visible sibling</p></main></body></html>';
 
   const result = await pipeline.process('https://example.com/', html);
 
-  assert.equal(result.markdown, 'Visible content\n\nVisible sibling');
+  assert.equal(result.markdown, 'Visible content\n\nVisible translation\n\nVisible sibling');
 });

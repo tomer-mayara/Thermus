@@ -130,6 +130,17 @@ describe('Visible descendants', () => {
     assert.match(result.html, /Visible scaled text/);
     assert.match(result.html, /Visible absolute size/);
   });
+
+  test('resolves root-relative font sizes inside a zero-font-size parent', async () => {
+    const result = await sanitizeHtml('<!doctype html><html style="font-size:16px"><body>' +
+      '<div style="font-size:0">Hidden parent text' +
+      '<p style="font-size:1rem">Visible child</p></div>' +
+      '<p>Visible sibling</p></body></html>');
+
+    assert.doesNotMatch(result.html, /Hidden parent text/);
+    assert.match(result.html, /Visible child/);
+    assert.match(result.html, /Visible sibling/);
+  });
 });
 
 test('the final Markdown contains the visible descendants, image, and rotation', async () => {
