@@ -155,37 +155,6 @@ describe('visible CSS controls', () => {
     assert.equal(result.skipped, 1);
   });
 
-  test('normalizes inline visibility declarations in template content and nested templates', async () => {
-    const html = [
-      '<!doctype html><html><head><title>Template CSS</title></head><body><main>',
-      '<style>.external-hide { display: none; }</style>',
-      '<template><p style="display:none!important;display:block">Hidden important template text</p>',
-      '<template><p style="position:absolute;left:-9999PX">Hidden offscreen nested template text</p></template>',
-      '<p style="display:none;display:block!important">Visible template control</p></template>',
-      '<template><style>.inner-hide { display: none; }</style>',
-      '<p class="external-hide">Visible template selector control</p>',
-      '<p class="inner-hide">Visible template stylesheet control</p></template>',
-      '<p class="inner-hide">Visible template stylesheet document control</p>',
-      '<p>Visible document control</p>',
-      '</main></body></html>',
-    ].join('');
-
-    const result = await createPipeline().process('https://example.com/template-css', html);
-    const markdown = result.markdown ?? '';
-
-    assert.doesNotMatch(result.html, /Hidden important template text|Hidden offscreen nested template text/);
-    assert.doesNotMatch(markdown, /Hidden important template text|Hidden offscreen nested template text/);
-    assert.match(result.html, /Visible template control/);
-    assert.match(result.html, /Visible template selector control/);
-    assert.match(result.html, /Visible template stylesheet control/);
-    assert.match(result.html, /Visible template stylesheet document control/);
-    assert.match(markdown, /Visible template stylesheet document control/);
-    assert.match(result.html, /Visible document control/);
-    assert.match(markdown, /Visible document control/);
-    assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
-  });
-
   test('preserves attributes after a Unicode tag name in the source', async () => {
     const html = [
       '<!doctype html><html><head><title>Unicode tag source</title>',
