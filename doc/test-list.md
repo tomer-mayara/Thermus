@@ -11,6 +11,17 @@
 [V] Removes documented ad targets, honors element-hiding exceptions, and leaves HTML unchanged when no host matches
 [V] Counts unsupported procedural actions as skipped
 [V] Returns an updated context, preserves metadata, adds to existing counts, and does not mutate the input
+[V] Preserves the next paragraph and its source text when an ad paragraph omits its end tag
+[V] Preserves the next list item and its attributes when an ad item omits its end tag
+[V] Preserves following elements after omitted paragraph end tags inside list items and before dialog, search, menu, and hgroup
+[V] Preserves a table after an ad paragraph with an omitted end tag in a fragment without an explicit html element or doctype
+[V] Preserves non-ad tables between reconstructed formatting matches and counts overlapping selectors per DOM node
+[V] Removes an explicit ad body that reaches end of source, with and without a doctype
+[V] Preserves Unicode, comments, attributes, and source formatting
+[V] Preserves nested list boundaries and parent end tags around explicit, nested, adjacent, and overlapping ad matches
+[V] Preserves text and repeated body and html end tags during parser recovery
+[V] Keeps parent reads bounded for deeply nested malformed HTML at end of file
+[V] Counts each ad element once and keeps selector exceptions
 
 **Prompt Injection Remover**
 
@@ -63,6 +74,7 @@
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
+[V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
 **HTML to MD**
 
