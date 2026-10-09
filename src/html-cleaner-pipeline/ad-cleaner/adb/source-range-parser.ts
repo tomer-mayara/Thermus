@@ -14,7 +14,9 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
       && closingToken.tagName === element.name && closingLocation !== null) {
       this.endTags.set(element, closingLocation);
     }
-    this.excludeAncestorEndTags(element);
+    if (closingToken.type === Token.TokenType.EOF) {
+      this.excludeAncestorEndTags(element);
+    }
   }
 
   private excludeAncestorEndTags(element: HtmlElement): void {

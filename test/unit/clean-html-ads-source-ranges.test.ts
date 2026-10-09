@@ -98,6 +98,12 @@ describe('CleanHtmlAdsAdblockRs source ranges', () => {
       removed: 1,
     },
     {
+      name: 'preserves the html end tag when an unclosed ad paragraph follows the body end tag',
+      html: '<body></body><p id="eh-id">AD</html>',
+      expected: '<body></body></html>',
+      removed: 1,
+    },
+    {
       name: 'counts nested ad list and paragraph matches and preserves the next item',
       html: '<ul><li id="eh-id"><p class="eh-class">AD<li data-value="keep">Visible text</ul>',
       expected: '<ul><li data-value="keep">Visible text</ul>',
