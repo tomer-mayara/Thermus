@@ -33,7 +33,7 @@ describe('HTML to Markdown fragment content', () => {
 
       assert.deepEqual(input, original);
       assert.notEqual(result, input);
-      assert.deepEqual(result, { ...original, markdown: '', title: '' });
+      assert.deepEqual(result, { ...original, markdown: '', title: null });
     });
   }
 

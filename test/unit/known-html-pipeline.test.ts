@@ -24,8 +24,10 @@ describe('Known HTML pipeline output', () => {
     });
 
     assert.equal(seenHtml, '');
-    assert.deepEqual(result.found, ['hidden-html', 'exfil-urls']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.html, '');
+    assert.equal(result.markdown, '');
+    assert.deepEqual(result.found, ['exfil-urls']);
+    assert.equal(result.skipped, 1);
     assert.ok(result.warnings?.includes('HTML scan failed; remaining HTML withheld'));
     assert.ok(result.warnings?.some((warning) =>
       warning.includes('input too deeply nested to scan for exfil URLs'),

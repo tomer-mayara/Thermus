@@ -70,6 +70,25 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     assert.equal(result.markdown, '');
   });
 
+  for (const html of ['', '\t\n\f\r ']) {
+    test(`returns empty Markdown when cleaning leaves ${JSON.stringify(html)}`, async () => {
+      const input: Ctx = {
+        ...createContext(html),
+        markdown: 'Previous output',
+        title: 'Previous title',
+        found: ['hidden-html'],
+        warnings: ['HTML sanitized: hidden elements removed'],
+        skipped: 1,
+      };
+      const original = structuredClone(input);
+
+      const result = await converter.invoke(input);
+
+      assert.deepEqual(result, { ...input, markdown: '', title: null });
+      assert.deepEqual(input, original);
+    });
+  }
+
   test('uses local HTML for X posts without making network requests', async (t) => {
     const fetchCalls: string[] = [];
     t.mock.method(globalThis, 'fetch', async (input: string | URL | Request) => {

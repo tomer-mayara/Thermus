@@ -19,7 +19,7 @@ describe('HTML pipeline sanitized content', () => {
 
       assert.equal(result.html, '');
       assert.equal(result.markdown, '');
-      assert.equal(result.title, '');
+      assert.equal(result.title, null);
       assert.equal(result.skipped, 1);
       assert.ok(result.found?.includes(finding));
       assert.ok(result.warnings?.length);
@@ -58,7 +58,7 @@ describe('HTML pipeline sanitized content', () => {
 
     assert.equal(result.html, '');
     assert.equal(result.markdown, '');
-    assert.equal(result.title, '');
+    assert.equal(result.title, null);
     assert.equal(result.skipped, 1);
     assert.ok(result.found?.includes('hidden-html'));
     assert.ok(result.warnings?.length);

@@ -33,13 +33,69 @@
 
 [V] Removes zero-width format characters and counts detections as skipped
 [V] Removes hidden display-none text and HTML comments while keeping visible content
-[V] Cleans the hidden-text fixture and removes sanitizer placeholder markers
+[V] Cleans the hidden-text fixture without adding removal markers
+[V] Preserves authored removal markers in text, code, and attributes
+[V] Preserves an authored marker in a link payload without reporting it
+[V] Preserves authored markers formed across removed hidden spans or comments
+[V] Removes hidden elements and comments in nested template bodies and preserves source offsets
+[V] Reports resource tags and hidden, visible, and final exfil-shaped URLs in template bodies once
+[V] Removes adjacent and nested hidden ranges without adding markers
+[V] Reports final links formed by removal of comments or hidden elements
+[V] Retains reports from removed URLs and reports final URLs without duplicate reasons
+[V] Normalizes invisible characters before URL checks and counts each category once
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML
 [V] Treats sparse full documents and HTML fragments as HTML at every line and tag density
 [V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
 [V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
+
+**Supported CSS Visibility Rules**
+
+[V] Applies inline and eligible local style rules after the default sanitizer pass
+[V] Applies importance, inline specificity, selector specificity, and source order
+[V] Applies important selector specificity when the less-specific rule comes later
+[V] Handles type, universal, ID, class, attribute, and combinator selectors
+[V] Matches selectors against the browser-compatible HTML tree, including implied table bodies
+[V] Applies inline importance on explicit `html` and `body` elements
+[V] Removes content hidden by explicit `html` or `body` selectors and styles
+[V] Removes direct text hidden by implied or explicit document elements
+[V] Keeps separate visibility for parser-reconstructed formatting elements that share a source tag
+[V] Removes attributes when every reconstructed copy of a source tag is hidden
+[V] Keeps hidden title and link attributes removed when text ends at the same source offset as a reconstructed tag
+[V] Checks CSS-hidden content formed by a previous removal and keeps visible inline overrides
+[V] Keeps visible source tags and reconstructed copies when a removal changes a sibling selector match
+[V] Keeps an implied table body's visibility when a hidden caption and its first row are removed
+[V] Checks new hidden children and ancestors while keeping unchanged visible content
+[V] Applies a formed stylesheet to new targets and resets saved visibility for each invocation
+[V] Checks hiding attributes that a formed tag adds to an implied or explicit document element
+[V] Removes hidden attributes on duplicate document tags, keeps URL findings, and preserves visible duplicate tags
+[V] Clears resolved visible styles on duplicate document tags before Markdown conversion
+[V] Keeps decoded control findings from cleared style values, including duplicate document tags, without duplicate reports or a second entity decode
+[V] Preserves visible text after parser-created formatting copies without source locations
+[V] Removes hidden content from parser-created copies without source locations
+[V] Preserves unrelated attributes on reconstructed source tags
+[V] Decodes escaped attribute selector `i` and `s` flags
+[V] Uses ASCII-only case folding for the attribute selector `i` flag
+[V] Uses default ASCII-insensitive matching for `rel` and honors its `s` flag
+[V] Splits class and `~=` attribute values only at HTML whitespace
+[V] Matches escaped nonbreaking spaces in class names and accepts escaped leading digits in ID selectors
+[V] Treats an escaped `*` as a type name and does not fetch linked stylesheets
+[V] Rejects a selector list with invalid ID or attribute selector forms, while accepting an escaped leading digit
+[V] Rejects a whole rule when its selector list has an unsupported selector
+[V] Skips pseudo selectors, namespace selectors, invalid selector forms, and inactive media rules
+[V] Rejects selector matching when a selector or document exceeds its stated complexity budget
+[V] Rejects over-budget documents without returning partial HTML or Markdown
+[V] Handles uppercase and escaped units and function names
+[V] Keeps visible text for invalid declarations, malformed escaped values, and unresolved variables
+[V] Keeps same-color text visible when its background image is unresolved
+[V] Keeps same-color text visible when a background shorthand or color is unresolved and still applies independent hiding rules
+[V] Normalizes inline styles in nested template content while keeping embedded stylesheet rules outside templates
+[V] Preserves visible text, unrelated attributes, and Layer 1 findings
+[V] Preserves attributes after a Unicode tag name in the source
+[V] Does not fetch linked stylesheets or CSS imports
+[V] Limits output growth from a selected shared background image while preserving visible Markdown text
+[V] Rejects repeated descendant selectors within a subprocess time limit and keeps ordinary combinators working
 
 **HTML to Markdown Pipeline**
 
@@ -67,6 +123,7 @@
 [V] Returns Markdown instead of raw HTML
 [V] Returns empty output for a document with an empty body and no embedded page content
 [V] Returns empty Markdown for empty, whitespace-only, and fully sanitized input with no embedded page content
+[V] Sets a null title and preserves findings when cleaning leaves empty HTML or only HTML whitespace
 [V] Preserves URL, HTML, and existing counts in a new context without mutating the input
 [V] Extracts the title from a full document
 [V] Makes no network requests for preferred async site extractors when the document has content

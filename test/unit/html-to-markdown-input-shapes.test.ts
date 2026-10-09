@@ -10,14 +10,14 @@ beforeEach(() => {
 });
 
 describe('HTML to Markdown input shapes', () => {
-  for (const [html, markdown] of [
-    ['', ''],
-    [' \n\t ', ''],
-    ['<html><head><title>Empty title</title></head><body></body></html>', ''],
-    ['<html><head><title>Empty title</title></head><body><div><!-- Removed --></div></body></html>', ''],
-    ['Visible plain text', 'Visible plain text'],
-    ['<p>Hello world</p>', 'Hello world'],
-  ]) {
+  for (const [html, markdown, title] of [
+    ['', '', null],
+    [' \n\t ', '', null],
+    ['<html><head><title>Empty title</title></head><body></body></html>', '', 'Empty title'],
+    ['<html><head><title>Empty title</title></head><body><div><!-- Removed --></div></body></html>', '', 'Empty title'],
+    ['Visible plain text', 'Visible plain text', ''],
+    ['<p>Hello world</p>', 'Hello world', ''],
+  ] as const) {
     test(`uses supplied content at a YouTube URL: ${html}`, async () => {
       const input: Ctx = {
         ...createContext(html, 'https://www.youtube.com/watch?v=abcdef12345'),
@@ -31,9 +31,9 @@ describe('HTML to Markdown input shapes', () => {
       const result = await converter.invoke(Object.freeze(input));
 
       assert.equal(result.markdown, markdown);
-      assert.equal(result.title, html.includes('<title>') ? 'Empty title' : '');
+      assert.equal(result.title, title);
       assert.deepEqual(input, original);
-      assert.deepEqual(result, { ...original, markdown, title: result.title });
+      assert.deepEqual(result, { ...original, markdown, title });
     });
   }
 

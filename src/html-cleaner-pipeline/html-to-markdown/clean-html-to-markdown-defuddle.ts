@@ -8,6 +8,9 @@ import { sanitizeHtmlDocument, type SanitizeText } from './sanitize-html-documen
 
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
+    if (/^[\t\n\f\r ]*$/.test(ctx.html)) {
+      return { ...ctx, markdown: '', title: null };
+    }
     const reports: ReturnType<typeof sanitize>[] = [];
     const sanitizeText: SanitizeText = (text, onDelete) => {
       // DOM fields are inside the HTML input, so a leading BOM is not a file BOM.
