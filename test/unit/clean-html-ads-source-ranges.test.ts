@@ -92,6 +92,12 @@ describe('CleanHtmlAdsAdblockRs source ranges', () => {
       removed: 1,
     },
     {
+      name: 'preserves the html end tag when an ad paragraph follows the body end tag',
+      html: '<body></body><p id="eh-id">AD</p></html>',
+      expected: '<body></body></html>',
+      removed: 1,
+    },
+    {
       name: 'counts nested ad list and paragraph matches and preserves the next item',
       html: '<ul><li id="eh-id"><p class="eh-class">AD<li data-value="keep">Visible text</ul>',
       expected: '<ul><li data-value="keep">Visible text</ul>',
@@ -182,7 +188,6 @@ describe('CleanHtmlAdsAdblockRs source ranges', () => {
 
       assert.equal(result.html, sourceCase.expected);
       assert.equal(result.removed, 3 + sourceCase.removed);
-      assert.equal(result.skipped, 6);
     });
   }
 

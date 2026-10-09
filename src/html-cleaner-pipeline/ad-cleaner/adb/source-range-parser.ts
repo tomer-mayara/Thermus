@@ -25,7 +25,8 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
     let boundary: Token.Location | undefined;
     for (let parent = element.parent; parent !== null; parent = parent.parent) {
       const endTag = this.endTags.get(parent);
-      if (endTag !== undefined && endTag.startOffset < (boundary?.startOffset ?? location.endOffset)) {
+      if (endTag !== undefined && endTag.startOffset >= location.startOffset
+        && endTag.startOffset < (boundary?.startOffset ?? location.endOffset)) {
         boundary = endTag;
       }
     }
