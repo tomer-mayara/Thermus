@@ -1,8 +1,8 @@
 diff --git a/src/html.mjs b/src/html.mjs
-index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4a0d036cc 100644
+index 1d576a4923c3916b592c45f70f29b1cea2c696d3..eba62f15df6688319816dfb9c2933b160b384f11 100644
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,43 +196,32 @@ function isOffscreenOffset(node) {
+@@ -196,43 +196,33 @@ function isOffscreenOffset(node) {
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -17,8 +17,9 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
  function isHidingTransform(node) {
    if (!node) return false;
 -  for (const fn of valueTokens(node)) {
-+  // Keep operators: an invalid list must not form a composed matrix.
-+  const functions = node.children?.toArray().filter((token) => token.type !== "WhiteSpace") ?? [];
++  // Unresolved declarations cannot prove that content is hidden.
++  if (!csstree.lexer.matchProperty("transform", node).matched) return false;
++  const functions = valueTokens(node);
 +  if (isHidingMatrixList(functions)) return true;
 +  for (const fn of functions) {
      if (fn.type !== "Function") continue;
@@ -36,26 +37,33 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
 -      // `matrix(a,b,c,d,…)` puts scaleX=a (0) and scaleY=d (3); `matrix3d` puts
 -      // scaleX=m11 (0) and scaleY=m22 (5). Do NOT use index 3 for matrix3d — that
 -      // is m14, which is legitimately 0 on the identity matrix (false positive).
-+    if (/^(?:scale|scale3d|scalex|scaley)$/.test(name)) {
-       const numbers = args.filter(
-         (/** @type {any} */ a) => a.type === "Number",
+-      const numbers = args.filter(
+-        (/** @type {any} */ a) => a.type === "Number",
++    if (/^(?:scale|scale3d|scalex|scaley|scalez)$/.test(name)) {
++      const factors = args.map(
++        (/** @type {any} */ a) => a.type === "Number" ? Number(a.value) :
++          a.type === "Percentage" ? Number(a.value) / 100 : null,
        );
 -      const factorIdx =
 -        name === "matrix" ? [0, 3] : name === "matrix3d" ? [0, 5] : [0, 1];
-       if (
+-      if (
 -        factorIdx.some((/** @type {number} */ i) => {
-+        [0, 1].some((/** @type {number} */ i) => {
-           const f = numbers[i];
-           return f && Math.abs(parseFloat(f.value)) < NEAR_ZERO_EPSILON;
-         })
-       )
+-          const f = numbers[i];
+-          return f && Math.abs(parseFloat(f.value)) < NEAR_ZERO_EPSILON;
+-        })
+-      )
++      const planeFactors = name === "scalez" ? [] : factors.slice(0, 2);
++      if (planeFactors.some((factor) => factor !== null && Math.abs(factor) < NEAR_ZERO_EPSILON))
          return true;
 -    } else if (name === "rotatex" || name === "rotatey") {
++      // Only an exact zero Z scale is singular; a small Z scale keeps the plane.
++      const zFactor = name === "scalez" ? factors[0] : name === "scale3d" ? factors[2] : null;
++      if (zFactor === 0) return true;
 +    } else if (functions.length === 1 && (name === "rotatex" || name === "rotatey")) {
        // An axis rotation collapses the box to a line at an odd quarter-turn.
        // Only the axis-specific rotations collapse; a plain rotate()/rotateZ()
        // spins in-plane and stays visible. The angle needs an explicit unit (a
-@@ -268,6 +257,88 @@ function isHidingTransform(node) {
+@@ -268,6 +258,88 @@ function isHidingTransform(node) {
    return false;
  }
 
@@ -144,7 +152,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
  /**
   * True when a `filter` renders content invisible: an `opacity()` function drops
   * the element to fully transparent. The amount is a <number-percentage>; a
-@@ -840,26 +911,70 @@ function isOverflowHidden(nodeOf, textOf) {
+@@ -840,26 +912,87 @@ function isOverflowHidden(nodeOf, textOf) {
    return false;
  }
 
@@ -153,6 +161,23 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
 -// stretch), so those never misread as a zero size. `q` (quarter-mm) is a font
 -// length unit too, though it never gates an offset above.
 -const FONT_SIZE_UNITS = new Set([...ABSOLUTE_UNITS, "q"]);
++/** @param {any} value @returns {any} */
++function parseTransform(value) {
++  // Raw syntax can contain CSS values that this parser does not yet support.
++  if (value.type === "Raw") return value;
++  const decoded = csstree.clone(value);
++  csstree.walk(decoded, (/** @type {any} */ token) => {
++    if (token.type === "Identifier" || token.type === "Function")
++      token.name = csstree.ident.decode(token.name);
++    if (token.type === "Dimension") token.unit = csstree.ident.decode(token.unit);
++  });
++  const deferred = csstree.find(decoded, (/** @type {any} */ token) =>
++    token.type === "Function" && ["var", "env", "attr"].includes(token.name.toLowerCase()));
++  // Deferred values replace earlier declarations, but their transform is unknown.
++  return csstree.lexer.matchProperty("transform", decoded).matched || deferred
++    ? decoded : undefined;
++}
++
 +/** @param {any} node @returns {any} */
 +function fontSizeValue(node) {
 +  const match = csstree.lexer.matchProperty("font", node);
@@ -232,7 +257,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1022,13 @@ function declText(valueNode) {
+@@ -907,11 +1040,14 @@ function declText(valueNode) {
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -244,13 +269,22 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
    /** @type {Map<string, any>} */
    const decls = new Map();
 +  let fontImportant = false;
++  let transformImportant = false;
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,6 +1051,14 @@ function parseDeclarations(styleStr) {
+@@ -934,6 +1070,22 @@ function parseDeclarations(styleStr) {
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
++      if (property === "transform") {
++        if (transformImportant && !node.important) return;
++        const transform = parseTransform(node.value);
++        if (!transform) return;
++        decls.set(property, transform);
++        transformImportant = Boolean(node.important);
++        return;
++      }
 +      if (property === "font-size" || property === "font") {
 +        if (fontImportant && !node.important) return;
 +        const size = parseFontSize(property, node.value, quirksMode);
@@ -262,7 +296,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
        decls.set(property, node.value);
      },
    });
-@@ -942,9 +1067,10 @@ function parseDeclarations(styleStr) {
+@@ -942,9 +1094,10 @@ function parseDeclarations(styleStr) {
 
  /**
   * @param {string} styleStr
@@ -274,7 +308,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,11 +1108,8 @@ export function isHiddenStyle(styleStr) {
+@@ -982,11 +1135,8 @@ export function isHiddenStyle(styleStr) {
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -288,7 +322,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
 
    if (isPositionedOffscreen(nodeOf, textOf)) return true;
 
-@@ -1094,9 +1217,10 @@ const RAW_TEXT_ELEMENTS = new Set([
+@@ -1094,9 +1244,10 @@ const RAW_TEXT_ELEMENTS = new Set([
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -300,7 +334,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1232,7 @@ export function isHiddenElement(node) {
+@@ -1108,7 +1259,7 @@ export function isHiddenElement(node) {
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -309,7 +343,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
    return false;
  }
 
-@@ -1256,18 +1380,30 @@ function hasWarned(warned) {
+@@ -1256,18 +1407,30 @@ function hasWarned(warned) {
   * through matching close, and parse5 extends an unclosed element to the end
   * of the fragment — fail-closed for truncated markup).
   * @param {string} html
@@ -344,7 +378,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..f0c0c4cd236eab4516b2e1dba71e3ed4
        /* c8 ignore start -- parse5 omits positions only on recovery-synthesized
           elements (tbody and friends), which carry no attributes and so can
           never be hidden; fail closed on the whole fragment if that assumption
-@@ -1631,15 +1767,16 @@ export function looksLikeHtmlSource(text) {
+@@ -1631,15 +1794,16 @@ export function looksLikeHtmlSource(text) {
   * count preserved scripting/resource tags for the caller's warning. Returns
   * null when there is nothing to strip and nothing to report.
   * @param {string} text

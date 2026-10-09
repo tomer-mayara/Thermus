@@ -29,6 +29,10 @@
 [V] Composes valid matrix() and matrix3d() lists in CSS order before projected-plane checks
 [V] Keeps mixed rotate/matrix transforms when their combined projection is visible or unknown, and removes known singular matrices
 [V] Keeps content visible when matrix lists use invalid comma or plus separators
+[V] Keeps content visible for invalid lists with singular operands, malformed matrices, or invalid function arguments
+[V] Decodes escaped matrix names before visibility checks and recognizes collapsed matrices
+[V] Applies transform declaration order and `!important`, and leaves deferred `var()`, `env()`, and `attr()` values unknown
+[V] Hides zero numeric or percentage Z scales, keeps small nonzero numeric or percentage Z scales, and checks near-zero X and Y scales
 
 **HTML to Markdown Pipeline**
 
