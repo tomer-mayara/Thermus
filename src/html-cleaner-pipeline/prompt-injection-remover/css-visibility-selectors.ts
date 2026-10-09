@@ -1,8 +1,9 @@
 import { compile } from 'css-select';
-import { generate, type CssNode } from 'css-tree';
+import { generate, type CssNode, type Selector } from 'css-tree';
 import { DomUtils } from 'htmlparser2';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { selectorSpecificity } from './css-visibility-rules.ts';
+import { simpleSelectorPredicate } from './css-selector-predicates.ts';
 
 export type HtmlElement = Htmlparser2TreeAdapterMap['element'];
 export type HtmlDocument = Htmlparser2TreeAdapterMap['document'];
@@ -51,6 +52,10 @@ function boundedAdapter() {
       spend(1 + (value?.length ?? 0));
       return value;
     },
+    getName(element: HtmlElement) {
+      spend(1 + element.name.length);
+      return element.name;
+    },
     prevElementSibling(node: HtmlNode) {
       for (let previous = node.prev; previous !== null; previous = previous.prev) {
         spend();
@@ -59,6 +64,26 @@ function boundedAdapter() {
       return null;
     },
   };
+}
+
+function compileSelector(selector: Selector, options: {
+  adapter: ReturnType<typeof boundedAdapter>;
+  quirksMode: boolean;
+}) {
+  const parts: string[] = [];
+  const pseudos: Record<string, (element: HtmlElement) => boolean> = {};
+  const context = { ...options.adapter, quirksMode: options.quirksMode };
+  // css-select treats an escaped star as a wildcard and folds some non-ASCII characters.
+  for (const node of selector.children) {
+    if (node.type === 'Combinator') {
+      parts.push(node.name);
+      continue;
+    }
+    const name = `visibility-${parts.length}`;
+    pseudos[name] = simpleSelectorPredicate(node, context);
+    parts.push(`:${name}`);
+  }
+  return compile<HtmlNode, HtmlElement>(parts.join(''), { ...options, pseudos });
 }
 
 export function createSelectorMatcher(document: HtmlDocument) {
@@ -79,7 +104,7 @@ export function createSelectorMatcher(document: HtmlDocument) {
       const css = generate(selector);
       if (css.length > maxSelectorLength) throw new RangeError('CSS selector size limit exceeded');
       try {
-        selectors.push({ specificity, query: compile<HtmlNode, HtmlElement>(css, options) });
+        selectors.push({ specificity, query: compileSelector(selector, options) });
       } catch (error) {
         if (error instanceof RangeError) throw error;
         return undefined;

@@ -1,19 +1,16 @@
 import { isHiddenStyle } from 'agent-input-sanitizer/html';
 import { generate, type CssNode, type Declaration } from 'css-tree';
 import { DomUtils } from 'htmlparser2';
-import { parse } from 'parse5';
-import { adapter } from 'parse5-htmlparser2-tree-adapter';
 import {
   applyDeclarations, normalizeDeclarations, parseCss, type Declarations,
 } from './css-visibility-rules.ts';
 import {
-  createSelectorMatcher, documentElements, type HtmlElement,
+  createSelectorMatcher, type HtmlElement,
 } from './css-visibility-selectors.ts';
+import { parseSourceDocument, type CssHtmlDocument } from './css-visibility-tree.ts';
+import { applyElementVisibility, type VisibilityStyle } from './css-visibility-html.ts';
 
 type StyleMap = Map<HtmlElement, Declarations>;
-type HtmlEdit = { start: number; end: number; replacement: string };
-type VisibilityStyle = '' | 'display:none';
-type VisibilityMap = Map<HtmlElement, VisibilityStyle>;
 
 type RuleContext = {
   elements: HtmlElement[];
@@ -69,9 +66,7 @@ function createStyleClassifier() {
   };
 }
 
-function resolveStyles(html: string): VisibilityMap {
-  const document = parse(html, { treeAdapter: adapter, sourceCodeLocationInfo: true });
-  const elements = documentElements(document);
+function resolveStyles({ document, elements }: CssHtmlDocument): Map<HtmlElement, VisibilityStyle> {
   const styles: StyleMap = new Map();
   const context = { elements, styles, compileSelectors: createSelectorMatcher(document) };
   for (const element of elements) {
@@ -88,69 +83,11 @@ function resolveStyles(html: string): VisibilityMap {
     applyDeclarations(target, declarations, [1, 0, 0, 0]);
     styles.set(element, target);
   }
-  return classifyElements(elements, styles);
-}
-
-function classifyElements(elements: HtmlElement[], styles: StyleMap): VisibilityMap {
-  const resolved: VisibilityMap = new Map();
   const classify = createStyleClassifier();
-  const hiddenImpliedElements = new Set<HtmlElement>();
-  for (const element of elements) {
-    const parentIsHidden = element.parent !== null && adapter.isElementNode(element.parent)
-      && hiddenImpliedElements.has(element.parent);
-    const declarations = styles.get(element);
-    const css = parentIsHidden ? 'display:none' : declarations && classify(declarations);
-    if (css === undefined) continue;
-    resolved.set(element, css);
-    if (element.startIndex === null && css === 'display:none') hiddenImpliedElements.add(element);
-  }
-  return resolved;
-}
-
-function elementStyleEdit(element: HtmlElement, css: VisibilityStyle): HtmlEdit | undefined {
-  const location = adapter.getNodeSourceCodeLocation(element);
-  if (location?.startTag === undefined) return undefined;
-  const style = location.attrs?.style;
-  const start = style?.startOffset ?? location.startOffset + 1 + element.name.length;
-  const end = style?.endOffset ?? start;
-  const separator = style === undefined ? ' ' : '';
-  return { start, end, replacement: `${separator}style="${css}"` };
-}
-
-function hiddenImpliedTextEdits(element: HtmlElement): HtmlEdit[] {
-  const edits: HtmlEdit[] = [];
-  for (const node of element.children) {
-    if (!adapter.isTextNode(node)) continue;
-    const location = adapter.getNodeSourceCodeLocation(node);
-    if (location === undefined || location === null) continue;
-    const { startOffset: start, endOffset: end } = location;
-    edits.push(
-      { start, end: start, replacement: '<span style="display:none">' },
-      { start: end, end, replacement: '</span>' },
-    );
-  }
-  return edits;
+  return new Map([...styles].map(([element, declarations]) => [element, classify(declarations)]));
 }
 
 export function applyCssVisibility(html: string): string {
-  const edits = new Map<number, HtmlEdit>();
-  for (const [element, css] of resolveStyles(html)) {
-    const edit = elementStyleEdit(element, css);
-    if (edit !== undefined) {
-      edits.set(edit.start, edit);
-    } else if (css === 'display:none') {
-      for (const textEdit of hiddenImpliedTextEdits(element)) {
-        edits.set(textEdit.start, textEdit);
-      }
-    }
-  }
-  if (edits.size === 0) return html;
-  const chunks: string[] = [];
-  let copiedThrough = 0;
-  for (const { start, end, replacement } of [...edits.values()].sort((left, right) => left.start - right.start)) {
-    chunks.push(html.slice(copiedThrough, start), replacement);
-    copiedThrough = end;
-  }
-  chunks.push(html.slice(copiedThrough));
-  return chunks.join('');
+  const tree = parseSourceDocument(html);
+  return applyElementVisibility(html, tree, resolveStyles(tree));
 }

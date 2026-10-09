@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import https from 'node:https';
 import { describe, test } from 'node:test';
-import { applyCssVisibility } from '../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility.ts';
 import { createPipeline } from './helpers/css-pipeline.ts';
 
 describe('CSS selectors on the browser HTML tree', () => {
@@ -55,15 +54,88 @@ describe('CSS selectors on the browser HTML tree', () => {
     assert.equal(result.skipped, 1);
   });
 
-  test('does not duplicate source text moved out of a table', () => {
+  test('removes hidden text moved out of a table', async () => {
     const html = '<!doctype html><style>body{display:none}</style>'
       + 'Leading text<table>Moved text<tr><td>Cell text</td></tr></table>';
 
-    const rewritten = applyCssVisibility(html);
+    const result = await createPipeline().process('https://example.com/moved-text', html);
 
-    assert.equal(rewritten.split('Leading text').length, 2);
-    assert.equal(rewritten.split('Moved text').length, 2);
-    assert.equal(rewritten.split('Cell text').length, 2);
-    assert.equal(rewritten.split('<table').length, 2);
+    assert.doesNotMatch(result.html, /Leading text|Moved text|Cell text/);
+    assert.doesNotMatch(result.markdown ?? '', /Leading text|Moved text|Cell text/);
+    assert.deepEqual(result.found, ['hidden-html']);
+    assert.equal(result.skipped, 1);
   });
+
+  for (const hiddenFirst of [true, false]) {
+    test(`keeps separate visibility for reconstructed formatting when hiddenFirst=${hiddenFirst}`, async () => {
+      const html = [
+        '<!doctype html><html><head><title>Reconstructed formatting</title><style>',
+        `.x{display:${hiddenFirst ? 'none' : 'block'}}`,
+        `p+p b.x{display:${hiddenFirst ? 'block' : 'none'}}`,
+        '</style></head><body><main><p><b class="x" data-value="kept">',
+        hiddenFirst ? 'HIDDEN PAYLOAD' : 'VISIBLE CONTROL',
+        '<p>',
+        hiddenFirst ? 'VISIBLE CONTROL' : 'HIDDEN PAYLOAD',
+        '</b></p><p>OTHER CONTROL</p></main></body></html>',
+      ].join('');
+
+      const result = await createPipeline().process('https://example.com/reconstructed', html);
+
+      assert.doesNotMatch(result.html, /HIDDEN PAYLOAD/);
+      assert.doesNotMatch(result.markdown ?? '', /HIDDEN PAYLOAD/);
+      assert.match(result.html, /VISIBLE CONTROL/);
+      assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
+      assert.match(result.html, /OTHER CONTROL/);
+      assert.match(result.markdown ?? '', /OTHER CONTROL/);
+      assert.match(result.html, /data-value="kept"/);
+      assert.deepEqual(result.found, ['hidden-html']);
+      assert.equal(result.skipped, 1);
+    });
+  }
+
+  test('removes attributes when every reconstructed copy is hidden', async () => {
+    const html = '<!doctype html><html><head><style>.x{display:none}</style></head><body><main>'
+      + '<p><a class="x" href="https://example.net/?q=HIDDEN_URL" title="HIDDEN TITLE">'
+      + 'HIDDEN ONE<p>HIDDEN TWO</a></p><p>VISIBLE CONTROL</p></main></body></html>';
+
+    const result = await createPipeline().process('https://example.com/hidden-copies', html);
+
+    assert.doesNotMatch(result.html, /HIDDEN/);
+    assert.doesNotMatch(result.markdown ?? '', /HIDDEN/);
+    assert.match(result.html, /VISIBLE CONTROL/);
+    assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
+    assert.deepEqual(result.found, ['hidden-html']);
+    assert.equal(result.skipped, 1);
+  });
+
+  for (const formatting of ['<b class="x">', '<b class="x"><i>']) {
+    test(`keeps visible text after locationless copies of ${formatting}`, async () => {
+      const html = '<!doctype html><html><head><style>.x{display:none}</style></head><body><main>'
+        + formatting + 'HIDDEN PAYLOAD<p></b>VISIBLE CONTROL</main></body></html>';
+
+      const result = await createPipeline().process('https://example.com/locationless-copies', html);
+
+      assert.doesNotMatch(result.html, /HIDDEN PAYLOAD/);
+      assert.doesNotMatch(result.markdown ?? '', /HIDDEN PAYLOAD/);
+      assert.match(result.html, /VISIBLE CONTROL/);
+      assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
+      assert.deepEqual(result.found, ['hidden-html']);
+      assert.equal(result.skipped, 1);
+    });
+  }
+
+  for (const copiedText of ['', 'HIDDEN SECOND']) {
+    test(`keeps source tag structure around hidden copies with text=${copiedText}`, async () => {
+      const html = '<!doctype html><html><head><style>.x{display:none}</style></head><body>'
+        + `<main><p><b class="x"><b class="x"><div>HIDDEN FIRST<p>${copiedText}</b></div>`
+        + 'HIDDEN PAYLOAD</main></body></html>';
+
+      const result = await createPipeline().process('https://example.com/hidden-closing-tags', html);
+
+      assert.doesNotMatch(result.html, /HIDDEN/);
+      assert.equal(result.markdown, '');
+      assert.deepEqual(result.found, ['hidden-html']);
+      assert.equal(result.skipped, 1);
+    });
+  }
 });

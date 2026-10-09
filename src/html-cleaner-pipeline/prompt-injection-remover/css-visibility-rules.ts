@@ -1,6 +1,6 @@
 import {
   ident, lexer, parse, tokenize, tokenTypes, walk,
-  type CssNode, type Declaration, type Selector,
+  type AttributeSelector, type CssNode, type Declaration, type Selector,
 } from 'css-tree';
 
 type Specificity = readonly [inline: number, ids: number, classes: number, types: number];
@@ -84,28 +84,33 @@ export function normalizeDeclarations(nodes: CssNode[]): ParsedDeclaration[] {
   return declarations;
 }
 
-function hasNamespace(name: string): boolean {
-  let namespace = false;
+function isIdentifier(name: string): boolean {
+  let valid = false;
   tokenize(name, (type, start, end) => {
-    if (type === tokenTypes.Delim && name.slice(start, end) === '|') namespace = true;
+    valid = type === tokenTypes.Ident && start === 0 && end === name.length;
   });
-  return namespace;
+  return valid;
+}
+
+function attributeSelectorWeight(node: AttributeSelector): Specificity | undefined {
+  if (!isIdentifier(node.name.name)) return undefined;
+  if (node.value?.type === 'Identifier' && !isIdentifier(node.value.name)) return undefined;
+  if (node.flags !== null) {
+    if (node.matcher === null) return undefined;
+    node.flags = normalizedIdent(node.flags);
+    if (!/^[is]$/.test(node.flags)) return undefined;
+  }
+  return [0, 0, 1, 0];
 }
 
 function selectorWeight(node: CssNode): Specificity | undefined {
   switch (node.type) {
-    case 'IdSelector': return [0, 1, 0, 0];
-    case 'ClassSelector': return [0, 0, 1, 0];
-    case 'AttributeSelector':
-      if (hasNamespace(node.name.name)) return undefined;
-      if (node.flags !== null) {
-        node.flags = normalizedIdent(node.flags);
-        if (!/^[is]$/.test(node.flags)) return undefined;
-      }
-      return [0, 0, 1, 0];
+    case 'IdSelector': return isIdentifier(node.name) ? [0, 1, 0, 0] : undefined;
+    case 'ClassSelector': return isIdentifier(node.name) ? [0, 0, 1, 0] : undefined;
+    case 'AttributeSelector': return attributeSelectorWeight(node);
     case 'TypeSelector':
-      if (hasNamespace(node.name)) return undefined;
-      return [0, 0, 0, Number(node.name !== '*')];
+      if (node.name === '*') return [0, 0, 0, 0];
+      return isIdentifier(node.name) ? [0, 0, 0, 1] : undefined;
     default: return undefined;
   }
 }

@@ -25,10 +25,24 @@
 
 [V] Applies inline and eligible local style rules after the default sanitizer pass
 [V] Applies importance, inline specificity, selector specificity, and source order
+[V] Applies important selector specificity when the less-specific rule comes later
 [V] Handles type, universal, ID, class, attribute, and combinator selectors
 [V] Matches selectors against the browser-compatible HTML tree, including implied table bodies
-[V] Removes direct text hidden by an implied body element
+[V] Applies inline importance on explicit `html` and `body` elements
+[V] Removes content hidden by explicit `html` or `body` selectors and styles
+[V] Removes direct text hidden by implied or explicit document elements
+[V] Keeps separate visibility for parser-reconstructed formatting elements that share a source tag
+[V] Removes attributes when every reconstructed copy of a source tag is hidden
+[V] Preserves visible text after parser-created formatting copies without source locations
+[V] Keeps source tag names and closing tags for hidden copies without source locations
+[V] Preserves unrelated attributes on reconstructed source tags
 [V] Decodes escaped attribute selector `i` and `s` flags
+[V] Uses ASCII-only case folding for the attribute selector `i` flag
+[V] Uses default ASCII-insensitive matching for `rel` and honors its `s` flag
+[V] Splits class and `~=` attribute values only at HTML whitespace
+[V] Matches escaped nonbreaking spaces in class names and accepts escaped leading digits in ID selectors
+[V] Treats an escaped `*` as a type name and does not fetch linked stylesheets
+[V] Rejects a selector list with invalid ID or attribute selector forms, while accepting an escaped leading digit
 [V] Rejects a whole rule when its selector list has an unsupported selector
 [V] Skips pseudo selectors, namespace selectors, invalid selector forms, and inactive media rules
 [V] Rejects selector matching when a selector or document exceeds its stated complexity budget

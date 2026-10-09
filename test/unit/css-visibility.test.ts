@@ -94,7 +94,7 @@ const visibilityCases: VisibilityCase[] = [
   },
   {
     name: 'uses importance and specificity across stylesheet rules',
-    styles: '.payload { display: none !important; } #payload { display: block !important; }',
+    styles: '#payload { display: block !important; } .payload { display: none !important; }',
     hiddenElement: '<p class="payload">Hidden important class target</p>',
     visibleElement: '<p id="payload" class="payload">Visible important specificity control</p>',
     hiddenText: 'Hidden important class target',
