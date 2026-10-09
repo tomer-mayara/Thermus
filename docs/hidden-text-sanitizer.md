@@ -1,0 +1,19 @@
+# Hidden-text sanitizer
+
+`PromptInjectionRemoverSanitizer` removes hidden HTML elements and comments from source HTML. It also removes invisible characters. It does not remove authored marker text outside removed content.
+
+The sanitizer removes invisible characters once. It then makes up to eight removal scans. Each scan parses the full HTML document. It checks hidden document elements, including `html` and `body` elements with hidden attributes or inline hidden styles. It also visits nested template content. Each scan finds source ranges for hidden elements and comments. The sanitizer removes those ranges and scans the result again. This allows a removal to expose a new hidden element or comment. When it removes a hidden element, it follows the parsed descendants. This includes descendants whose source appears after the element's closing tag. It keeps visible nodes that the parser places outside the hidden element, such as a paragraph before a hidden table. Source ranges keep template wrappers and text outside removed content. They also preserve supplementary characters. The scan count includes the final scan that finds no ranges. If the eighth scan still finds ranges, the sanitizer returns empty HTML and adds the warning `HTML scan limit reached; remaining HTML withheld`. It does not return HTML that it has not checked.
+
+If a parser scan fails, the sanitizer stops and returns empty HTML. It adds the warning `HTML scan failed; remaining HTML withheld` and keeps reports from earlier scans. A parser failure does not count as a hidden element removal.
+
+Before each removal, the sanitizer checks URLs from parsed attributes in document elements and template content. It keeps threat findings and warnings when a later scan removes their source content. A visible flagged URL stays in the HTML. Each finding category and warning reason appears once per invocation. The sanitizer adds each category found in the invocation to `skipped` once and preserves existing context values.
+
+The sanitizer rejects HTML larger than 10 MiB in UTF-8 bytes. This behavior does not change ad removal or Markdown conversion.
+
+The scanner resolves inline font sizes and supported transforms for each parsed element. It passes the parent visibility state to descendants, including template content. Zero font size removes text, but keeps visible font-size overrides and images. A preserved 3D parent can have a hidden local plane and a visible child plane. The scanner removes hidden local text and flat descendants while it checks each preserved child plane. A hidden attribute, `display:none`, or a singular transform still removes the complete parsed subtree.
+
+Each scan starts with new visibility state. Thus, markup formed by an earlier removal gets the same checks. The scanner uses the original parser mode for CSS font-size rules. It retains the existing table boundaries for input without a doctype. It removes only source ranges owned by hidden parsed nodes, so text moved outside a table by the parser remains visible. The local `agent-input-sanitizer` patch supplies the visibility resolver. It does not replace the scanner or the removal loop.
+
+The scanner records each text token's source range through public parser adapter methods. It joins ranges only when their source offsets are adjacent. Thus, text merged across a table cannot remove the visible cell between its source segments. Character references remain complete.
+
+Offscreen translation hides local text and images. It does not by itself hide the complete subtree: a descendant transform can return content to view. The resolver tracks supported pure translations through both flat and preserved descendants. Position or margin declarations make inherited offsets unknown. A parent's perspective also makes a child's projected plane unknown, even when the child is flat. Mask shorthands participate in the grouping-property cascade.

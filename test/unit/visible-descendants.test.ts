@@ -4,6 +4,7 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 describe('Visible descendants', () => {
   for (const tag of ['div', 'span', 'body']) {
@@ -155,7 +156,7 @@ test('the final Markdown contains the visible descendants, image, and rotation',
     '<div style="display:none"><p style="font-size:16px">Hidden override</p></div>' +
     '<p>Visible sibling</p></main></body></html>';
 
-  const result = await pipeline.process('https://example.com/', html);
+  const result = await pipeline.process(createContext(html));
 
   assert.equal(result.markdown, [
     'VISIBLE CONTENT', '![Visible photo](https://example.com/photo.png)',

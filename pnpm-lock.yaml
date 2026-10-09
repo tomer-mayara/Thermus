@@ -166,8 +166,7 @@ overrides:
   ts-api-utils>typescript: 6.0.3
 
 patchedDependencies:
-  agent-input-sanitizer@1.47.14: cbf9e580c58a8bdabb52c2c461235b4a1defbd0bd440585565aae2d03ee1c210
-  hast-util-from-parse5@8.0.3: 123299b3b5c5e16366ae7386b9356fda36cad3839117230fbd68de971758d09a
+  agent-input-sanitizer@1.47.14: 503a32061baa404ef5cb3bbf23e89674a79a77e8f7474f22641c9a8e1b67e616
 
 importers:
 
@@ -178,19 +177,22 @@ importers:
         version: 0.13.3
       agent-input-sanitizer:
         specifier: 1.47.14
-        version: 1.47.14(patch_hash=cbf9e580c58a8bdabb52c2c461235b4a1defbd0bd440585565aae2d03ee1c210)
+        version: 1.47.14(patch_hash=503a32061baa404ef5cb3bbf23e89674a79a77e8f7474f22641c9a8e1b67e616)
       css-select:
         specifier: ^7.0.0
         version: 7.0.0
       defuddle:
         specifier: ^0.19.4
         version: 0.19.4
-      htmlparser2:
-        specifier: ^12.0.0
-        version: 12.0.0
       linkedom:
         specifier: ^0.18.13
         version: 0.18.13
+      parse5:
+        specifier: 8.0.1
+        version: 8.0.1
+      parse5-htmlparser2-tree-adapter:
+        specifier: 8.0.1
+        version: 8.0.1
     devDependencies:
       '@types/node':
         specifier: ^24.19.1
@@ -1196,10 +1198,6 @@ packages:
   htmlparser2@10.1.0:
     resolution: {integrity: sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==}
 
-  htmlparser2@12.0.0:
-    resolution: {integrity: sha512-Tz7u1i95/g2x2jz81+x0FBVhBhY5aRTvD3tXXdFaljuNdzDLJ8UGNRrTcj2cgQvAg3iW/h77Fz15nLW0L0CrZw==}
-    engines: {node: '>=20.19.0'}
-
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
@@ -1433,8 +1431,14 @@ packages:
   package-manager-detector@1.9.0:
     resolution: {integrity: sha512-zAMfbta9nPA8AKkA4WdmNAT8R8s6Dk0/xwPsqNnRidMFcLo1YkLuPDTgs2f64XdzS8vbLNnoJ+uUIkgbz7oRHA==}
 
+  parse5-htmlparser2-tree-adapter@8.0.1:
+    resolution: {integrity: sha512-aqkH+xQxX+QGZtP5GIMmqqp16Y0v9muEf2VVeypv35kFsD5bqP1UeBanSshdfjMY+RTh2vN4mmK6nEOVRMEvHg==}
+
   parse5@7.3.0:
     resolution: {integrity: sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==}
+
+  parse5@8.0.1:
+    resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
 
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
@@ -2118,7 +2122,7 @@ snapshots:
     dependencies:
       cargo-cp-artifact: 0.1.9
 
-  agent-input-sanitizer@1.47.14(patch_hash=cbf9e580c58a8bdabb52c2c461235b4a1defbd0bd440585565aae2d03ee1c210):
+  agent-input-sanitizer@1.47.14(patch_hash=503a32061baa404ef5cb3bbf23e89674a79a77e8f7474f22641c9a8e1b67e616):
     dependencies:
       css-tree: 3.2.1
       rehype-parse: 9.0.1
@@ -2417,12 +2421,12 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
       devlop: 1.1.0
-      hast-util-from-parse5: 8.0.3(patch_hash=123299b3b5c5e16366ae7386b9356fda36cad3839117230fbd68de971758d09a)
+      hast-util-from-parse5: 8.0.3
       parse5: 7.3.0
       vfile: 6.0.3
       vfile-message: 4.0.3
 
-  hast-util-from-parse5@8.0.3(patch_hash=123299b3b5c5e16366ae7386b9356fda36cad3839117230fbd68de971758d09a):
+  hast-util-from-parse5@8.0.3:
     dependencies:
       '@types/hast': 3.0.5
       '@types/unist': 3.0.3
@@ -2457,13 +2461,6 @@ snapshots:
       domhandler: 5.0.3
       domutils: 3.2.2
       entities: 7.0.1
-
-  htmlparser2@12.0.0:
-    dependencies:
-      domelementtype: 3.0.0
-      domhandler: 6.0.1
-      domutils: 4.0.2
-      entities: 8.1.0
 
   ignore@5.3.2: {}
 
@@ -2914,9 +2911,18 @@ snapshots:
 
   package-manager-detector@1.9.0: {}
 
+  parse5-htmlparser2-tree-adapter@8.0.1:
+    dependencies:
+      domhandler: 6.0.1
+      parse5: 8.0.1
+
   parse5@7.3.0:
     dependencies:
       entities: 6.0.1
+
+  parse5@8.0.1:
+    dependencies:
+      entities: 8.1.0
 
   path-browserify@1.0.1: {}
 

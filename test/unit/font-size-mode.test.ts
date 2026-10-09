@@ -4,6 +4,7 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 describe('Font size and document mode', () => {
   test('keeps unitless font size in a full document without a doctype', async () => {
@@ -144,7 +145,7 @@ test('the final Markdown keeps quirks mode unitless text and its sibling', async
     '<p>Visible sibling</p>' +
     '</main></body></html>';
 
-  const result = await pipeline.process('https://example.com/', html);
+  const result = await pipeline.process(createContext(html));
 
   assert.equal(result.markdown, [
     'Visible content', 'Visible sibling',

@@ -4,6 +4,7 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 describe('Composed transform visibility', () => {
   for (const transform of [
@@ -85,7 +86,7 @@ test('the final Markdown uses the combined transform', async () => {
     '<p style="transform:translateX(-2000000px) translateX(1000000px)">Hidden offscreen</p>' +
     '<p>Visible sibling</p></main></body></html>';
 
-  const result = await pipeline.process('https://example.com/', html);
+  const result = await pipeline.process(createContext(html));
 
   assert.equal(result.markdown, 'Visible content\n\nVisible translation\n\nVisible sibling');
 });

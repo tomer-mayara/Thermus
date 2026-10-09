@@ -4,6 +4,7 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 const collapsedParentPlane = 'matrix3d(1,1,0,0,1,1,1,0,0,1,1,0,0,0,0,1)';
 
@@ -120,7 +121,7 @@ test('the final Markdown retains a visible child in another plane', async () => 
     '<p style="transform:rotateX(45deg)">Visible child</p></div>' +
     '<p>Visible sibling</p></main></body></html>';
 
-  const result = await pipeline.process('https://example.com/', html);
+  const result = await pipeline.process(createContext(html));
 
   assert.equal(result.markdown, 'Visible child\n\nVisible sibling');
 });

@@ -2,195 +2,163 @@
 
 ### Top-level agent
 
-If you are the top-level agent, you are the manager.
-You control the work. You inspect the work. You give the final approval.
-You usually do not write the code.
+If you are the top-level agent, you are the manager. You control the work,
+inspect the result, and give final approval. You usually do not write the code.
 
-- Give small work to a subagent.
-- Inspect the work of each subagent and approve it.
-- Do the work yourself when the task is large.
-- Do the work yourself when you must understand the full system.
-- Use a maximum of 4 subagents at one time.
+- Give each subagent a focused brief with its ownership, relevant files, and
+  expected result. Give it the applicable rules from this file.
+- Delegate independent work or inspection. Keep small, sequential edits with
+  the manager when delegation adds no value.
+- Inspect each subagent's work before final approval.
+- Do the work yourself when it is large or requires understanding the full
+  system.
+- Use no more than four subagents at a time.
 
 ### Subagent
 
-If you are a subagent, do the work that the manager gave you.
-Do not start a further subagent unless the manager asked you to.
+Do the work that the manager assigned. Do not start another subagent unless the
+manager asks you to.
 
 ### Models
 
-Follow `CLAUDE.md` for Claude model rules.
-If you are not Claude, use a smaller model for small work.
+Follow `CLAUDE.md` for Claude model rules. If you are not Claude, use a smaller
+model for small work.
 
-This file is the source of the house rules. `CLAUDE.md` includes this file and holds Claude-only rules.
+This file is the source of the house rules. `CLAUDE.md` includes this file and
+holds Claude-only rules.
 
 ## Coding principles
 
-Use these rules.
-Give these rules to each subagent.
-During inspection, make sure that the work obeys these rules.
+Read the task, relevant documentation, and public contracts before you start.
+Reuse this context while it remains current.
 
-Read the ticket spec and `docs/implementation/delamain-plan.md` for each ticket.
+State the expected behavior, completion criteria, affected files or modules,
+and dependencies before implementation. Keep unrelated cleanup and unrequested
+features outside the change. Follow DRY3: reuse an existing helper, and create
+a shared helper after the third repeated use.
 
-### Work from a Delamain board
+When you write or update documents, tickets, or code comments, use ASD-STE100.
 
-For a ticket from a Delamain board, follow its code prompt. An agent session
-gets the prompt from Delamain's MCP server with the ticket UUID. A worker
-follows the prompt that its run supplies. Plan F.8 defines both loops. This
-file gives the rules that each prompt references. The coding, test, review,
-documentation, and merge conditions below apply to every ticket, including
-board tickets. Follow the prompt for the step order and for PR actions. Do not
-add PR steps from the manual loop below. The session prompt owns opening and
-merging the PR, one time each. A restart reuses the same PR and merge result;
-it does not repeat either action. A worker follows the PR actions in the prompt
-that its run supplies.
+## Ticket work
 
-### Language
+Use this sequence for manual ticket work. For a board or runner ticket, follow
+the supplied code prompt for step order and pull request actions. Apply the
+common test, review, documentation, and merge conditions below at the matching
+steps. Do not add manual pull request steps to a board prompt. On restart, reuse
+the same pull request and merge result. Direct edits are not automatically
+tickets.
 
-When you write or update documents, tickets, or code comments, follow ASD-STE100.
+1. The manager opens a draft pull request before implementation.
+2. State expected behavior, completion criteria, and affected modules and
+   dependencies. Split independent deliverables when this helps review.
+3. Implement the change with TDD. Run focused checks while editing.
+4. Update relevant documentation before formal review. Delegate documentation
+   work when it benefits from independent work; a small edit can stay with the
+   manager. Use ASD-STE100.
+5. Run `habit-hooks` and `pnpm check` on the complete candidate before formal
+   review. Run every new or edited test locally before commit, including tests
+   outside `pnpm check`. Repeat a test after editing it. Record each command
+   and result. Run full gates once on the complete candidate, not after each
+   small edit in a batch. All required test and review evidence must apply to
+   the final head.
+6. Run all four configured reviewers with the repository wrapper:
+   `tools/code-review-agents/bin/review --pr <number> --comment`.
+   Install reviewer dependencies, if needed, with
+   `pnpm --dir tools/code-review-agents install --frozen-lockfile`. Pin a PR
+   review to its full head SHA with `--expect-head <sha>`. For local review, use
+   `--local`. Collect the initial findings before making a batch of fixes.
+   Inspect each finding in context. Record it as a confirmed defect, a false
+   positive with evidence, or a non-blocking improvement. Fix confirmed
+   defects. After two review rounds, assess remaining findings and choose the
+   next action. Do not repeat the full review loop automatically. A confirmed
+   defect that remains unresolved blocks merge.
+7. Mark the pull request Ready when review and local gates are complete. Wait
+   for each required CI check to pass on the exact pull request head. Reuse a
+   successful result only when it identifies that exact head and the check
+   policy allows reuse. A missing, pending, skipped, cancelled, failed, or
+   mismatched result is not passing evidence. Follow the checks configured for
+   this repository; do not assume a workflow or integration job exists.
+8. If a fix changes the head after Ready, return the pull request to Draft
+   before pushing. Run `habit-hooks`, `pnpm check`, and each new or edited test
+   affected by the fix on the changed candidate. Repeat review for the new
+   head, mark it Ready, and wait for required CI checks on that head.
+9. Do not merge if a required check failed or a confirmed defect remains. The
+   manager merges a clean pull request once.
 
-### Manual ticket loop
+For reviews and checks, record the full commit SHA, command or run ID, status,
+and result. Prefer supported status tools. Investigate an identity mismatch;
+do not treat it as a pass. A child process exit alone does not prove that each
+reviewer completed successfully.
 
-Use this sequence for ticket work that does not start from a Delamain board
-`code` prompt. For board tickets, follow the prompt's sequence and apply the
-rules and conditions below at the matching steps. The prompt determines when
-to open and merge a pull request. Check the repository's effective
-`.delamain/config.json` for product behavior. The current repository gate
-policy is in [the test gate policy](docs/implementation/test-gate-policy.md).
-It applies now and does not depend on the generic `githubActionsGate` setting.
+Classify infrastructure failures, such as unavailable models, network errors,
+and timeouts. Check the cause, then retry only the failed reviewer role with
+unchanged inputs. Diagnose repeated failures before changing a timeout or
+retrying again. Empty output and timeout are not approval. Respect reviewer
+concurrency limits; do not launch separate role commands to bypass them.
 
-For each ticket, do the steps that follow:
+Reuse review or gate approval across commits only when the tool and check
+policy support it. Verify that relevant code, dependencies, requirements, and
+policy have not changed. Otherwise, run all four reviewers and the required
+checks for the new head.
+Reassess after a change to behavior, contracts, architecture, or base commit.
+A finding disposition does not prove that a gate passed.
 
-1. Open a draft pull request.
-2. Do the work for the ticket. Follow DRY3. Use an existing helper. Make a
-   new shared function only after the third copy.
-3. Run every test introduced by this pull request locally before you commit
-   it. This applies to unit, integration, interface, and acceptance tests,
-   including new cases in an existing test file. Use a focused command for a
-   new test that `npm run check` does not select. Repeat the run if you edit a
-   new test after it passes. Record each command and result in your work
-   summary.
-4. Run `habit-hooks` (See "Habit hooks" sub-section below). Repair each
-   finding. Fix at least one pre-existing smell in the code you change.
-5. Run `npm run check`. It runs lint, architecture checks, typecheck, and unit
-   tests. It does not run existing integration, interface, provider, browser,
-   or other acceptance suites.
-6. Run the 4 reviewers. Replace `382` with the number of this pull request:
-   `npx tsx tools/code-review-agents/src/application/review.ts --pr 382 --comment`
-   Run the architecture diff for the same pull request:
-   `npx tsx script/architecture-diff.ts --pr 382 --comment`
-   Repair each reviewer defect.
-7. Make sure the relevant docs under `docs/*` are up to date with recent
-   changes. Create a subagent for doc changes and require ASD-STE100.
-8. Mark the pull request Ready. Wait for every configured unit and integration
-   job to pass on the pull request head. The unit workflow runs on branch
-   pushes, so reuse successful results for that exact head. Ready does not
-   start a duplicate unit run. Automated integration runs require an eligible
-   Ready pull request. Manual workflow dispatch remains available. A missing,
-   pending, skipped, cancelled, failed, or mismatched result is not passing
-   evidence.
-9. If a fix changes the head after Ready, return the pull request to Draft
-   before the push. Run `npm run check`, run each new test affected by the fix,
-   and repeat the review and architecture diff for the new head. Mark it Ready
-   and wait for the required Actions jobs on that head.
-10. Do not merge if a required test failed or a reviewer defect remains. The
-    owner merges a pull request that adds an architectural decision record
-    under `architecture/decisions/`. Merge a clean pull request once.
+## Tests
 
-The unit workflow runs on branch pushes and manual dispatch. It runs Core,
-Daemon, and script unit tests once each, and splits App unit tests across four
-shards. The unit jobs use two workers each. The integration workflow runs
-automatically for opened, reopened, synchronized, or Ready pull requests to
-`main`, when the pull request is not a draft. Manual workflow dispatch remains
-available. It splits Daemon integration tests across two shards, with one
-worker per shard. The App integration tests run in one shard with two workers.
-The supplemental interface workflow runs on branch pushes and manual dispatch.
-It has no `pull_request` trigger. Its Core job uses `Production`; its App job
-uses no provider credentials. This workflow does not add required unit or
-integration package and shard jobs. The supplemental acceptance workflow runs
-the root, browser, packaged Electron, and live provider acceptance suites on
-branch pushes and manual dispatch. It has no `pull_request` trigger and adds no
-required jobs. Existing fake-harness cases remain offline. Separate live cases
-use provider CLIs and test-only model settings. `ACCEPTANCE_TEST_WITH_API_KEY`
-controls optional acceptance API keys and is separate from
-`INTERFACE_TEST_WITH_API_KEY`. See the test gate policy for details. The
-workflows can run at the same time for the same head.
-The workflow and package details are in [the test gate
-policy](docs/implementation/test-gate-policy.md).
-
-Keep the worker boundary: the session opens and merges the PR. A worker does
-not open or merge a PR. For board tickets, the session opens the draft PR
-before the first worker step. The configurable `githubActionsGate` is a
-separate Delamain product feature. It remains off unless a repository's saved
-config opts in after the required proof. See the [test gate policy](docs/implementation/test-gate-policy.md)
-for the distinction between this repository's Actions checks and that product
-feature.
-
-### src/ and script/
-
-No file under `src/` imports a path that resolves under `script/`.
-`npm run check:architecture` runs this check (`script/verify-boundary.ts`).
-
-### Tests
-
-Follow TDD (RED → GREEN).
+Follow TDD (RED → GREEN):
 
 1. Write the test.
-2. Run it before implementing. Confirm that it fails for the expected reason.
-   If it does not fail, investigate.
-3. Implement the production code so the test passes.
-4. Refactor if needed. Run the test again to check the refactor.
+2. Run it before implementation. Confirm that it fails for the expected
+   reason. If it does not fail, investigate.
+3. Implement the behavior so the test passes.
+4. Refactor if needed. Run the test again.
 
 Use these test types:
 
-- **Unit tests:** Fast, automated tests of focused behavior in one Delamain
-  package. Replace other Delamain packages with test doubles at their public
-  interfaces for direct and indirect calls. Real collaboration within the
-  package is allowed. Type-only imports of public contracts are allowed because
-  they run no production behavior. Keep each test independent of other tests.
-- **Integration tests:** Verify real collaboration between two or more
-  Delamain packages through public interfaces. These remain integration tests
-  even when they run fast or in one process. They cover collaboration across
-  package boundaries that some methods call sociable unit testing.
-- **Interface tests:** Focus on one public interface or data contract. Check
-  accepted inputs, outputs, data formats, events, and error behavior. Keep
-  these tests few and limited to the contract. A test that connects real
-  Delamain packages to check collaboration is an integration test.
-- **Acceptance tests:** Give executable specifications of user-required
-  behavior. Exercise public interfaces in an environment similar to production.
-  Check observable outcomes against the acceptance criteria. These tests can
-  span packages; their purpose is to show that the system meets a user
-  requirement.
+- **Unit tests:** Test focused behavior within one module, such as
+  `website-fetcher` or `html-cleaner-pipeline`. Real collaboration within the
+  module is allowed. Replace other modules with test doubles at their public
+  interfaces for direct and indirect calls. Type-only imports of public
+  contracts are allowed. Keep each test independent.
+- **Integration tests:** Test real collaboration between two or more modules
+  through their public interfaces. This remains an integration test when it
+  runs in one process.
+- **Interface tests:** Test one public interface or data contract. Check valid
+  inputs, outputs, formats, events, and errors. Keep these tests focused.
+- **Acceptance tests:** Specify user-required behavior. Exercise public
+  interfaces in an environment similar to production and check observable
+  results against the criteria.
 
-For example, a daemon unit test can use a test double for a Core public
-interface. A test that calls real Daemon and Core code to check their combined
-behavior is an integration test.
+Magumagu uses `node:test`. Use the Node version in `.nvmrc` and the pnpm version
+pinned in `package.json`. The root `package.json` defines the commands.
+`pnpm typecheck` checks types. `pnpm test:unit` and `pnpm test:interface` run
+their named suites. `pnpm check` runs typecheck and unit tests; it excludes
+interface tests. The root has no lint or architecture check scripts.
+`pnpm test` runs all current root test files, including interface tests.
+Interface tests require Lightpanda, and some use public sites. To run a focused
+test, build first and then run its compiled file. For example:
 
-Make sure the required current gate passes before merge. Also make sure every
-test introduced by the pull request passes locally before you commit it.
+```bash
+pnpm build
+node --test dist/test/unit/website-fetcher.test.js
+```
 
-### Habit hooks
+Run the test suites required by the task and configured checks before merge.
 
-Run the full pass before you open a pull request:
+## Habit hooks
+
+Run the full pass on the complete candidate before formal review:
 
 ```bash
 habit-hooks
 ```
 
-This examines each file that your branch changed. Exit code `0` is clean, `1` is
-an enforced smell, and `2` is a tool failure. Correct each enforced smell, or
-give the reason that you keep it.
+The configured pass examines JavaScript and TypeScript files. It can report
+pre-existing findings in changed files. Fix findings that relate to code you
+change. Record a reason when a finding is outside the task scope. See
+`.habit-hooks/config.toml` and `.habit-hooks/hook.config.toml` for the current
+settings. Exit code `0` means clean, `1` reports an enforced smell, and `2`
+means tool failure.
 
-`.habit-hooks/snooze.json` is EMPTY, and it stays empty. habit-hooks reports
-every smell in a file that your branch changed, including the ones that were
-there before you.
-
-Correct the smells that are in the code you touch. You are in that code, so you
-know what the invariants are — this is the moment to name one. Do not go and
-split a function in a file that your work does not touch. Give the reason when
-you keep a smell.
-
-Do not put an entry in the snooze file to make a run clean. One entry silences
-that file for EVERY smell that the file is the key for.
-
-`docs/habit-hooks.md` gives the installation steps and the design.
+`.habit-hooks/snooze.json` stays empty. Do not add an entry to silence a
+finding. An entry silences every smell for that file.

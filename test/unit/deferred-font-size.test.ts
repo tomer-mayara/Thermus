@@ -4,6 +4,7 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 const deferredSizes = [
   ['env fallback', 'env(missing,16px)'],
@@ -80,7 +81,7 @@ test('the final Markdown keeps deferred visible descendants in document order', 
     '<div style="display:none"><p style="font-size:env(missing,16px)">Hidden display none</p></div>' +
     '</main></body></html>';
 
-  const result = await pipeline.process('https://example.com/', html);
+  const result = await pipeline.process(createContext(html));
 
   assert.equal(result.markdown, [
     'Visible env fallback', 'Visible typed attr fallback',

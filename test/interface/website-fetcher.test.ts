@@ -10,7 +10,7 @@ describe('WebsiteFetcherLightpanda', () => {
   });
 
   test('fetchURL returns rendered HTML for a JavaScript page', async () => {
-    const html = await fetcher.fetchURL('https://quotes.toscrape.com/js/');
+    const { html } = await fetcher.fetchURL('https://quotes.toscrape.com/js/');
 
     assert.match(html, /<html[\s>]/i);
     assert.match(html, /<small class=['"]author['"]>Albert Einstein<\/small>/);
@@ -33,7 +33,7 @@ describe('WebsiteFetcherLightpanda', () => {
     ];
 
     for (const page of pages) {
-      const html = await fetcher.fetchURL(page.url);
+      const { html } = await fetcher.fetchURL(page.url);
       assert.match(html, /<html[\s>]/i, page.url);
       assert.match(html, page.expected, page.url);
     }

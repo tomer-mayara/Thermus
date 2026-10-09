@@ -10,4 +10,3 @@ overrides:
 
 patchedDependencies:
   agent-input-sanitizer@1.47.14: patches/agent-input-sanitizer@1.47.14.patch
-  hast-util-from-parse5@8.0.3: patches/hast-util-from-parse5@8.0.3.patch

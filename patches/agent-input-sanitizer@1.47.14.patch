@@ -1,8 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
-index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb657510b2 100644
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,71 +196,33 @@ function isOffscreenOffset(node) {
+@@ -196,76 +196,213 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -13,19 +12,20 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 + * before testing the projected plane. An unresolved list can change that plane.
   * @param {any} node value node for `transform`
 + * @param {boolean} ignorePlane
++ * @param {boolean} [ignoreOffsets]
   * @returns {boolean}
   */
 -function isHidingTransform(node) {
-+function isHidingTransform(node, ignorePlane) {
++function isHidingTransform(node, ignorePlane, ignoreOffsets = false) {
    if (!node) return false;
 -  for (const fn of valueTokens(node)) {
 +  // Unresolved declarations cannot prove that content is hidden.
 +  if (!csstree.lexer.matchProperty("transform", node).matched) return false;
 +  const functions = valueTokens(node);
-+  const hidden = isHidingTransformList(functions, ignorePlane);
++  const hidden = isHidingTransformList(functions, ignorePlane, ignoreOffsets);
 +  if (hidden !== null) return hidden;
 +  // A layout-dependent list can restore an offset. Only judge a lone function.
-+  if (functions.length !== 1) return false;
++  if (ignoreOffsets || functions.length !== 1) return false;
 +  for (const fn of functions) {
      if (fn.type !== "Function") continue;
      const name = fn.name.toLowerCase();
@@ -90,10 +90,10 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
          if (group.length === 1 && isOffscreenLength(group[0], false))
            return true;
      }
-@@ -268,6 +230,181 @@ function isHidingTransform(node) {
+   }
    return false;
- }
-
++}
++
 +/** @param {number[][]} rows @returns {{ value: number, magnitude: number }} */
 +function determinant(rows) {
 +  if (rows.length === 1)
@@ -137,7 +137,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 +  "mask-image": ["none"], "mask-border-source": ["none"], "mix-blend-mode": ["normal"],
 +  opacity: [], contain: [],
 +};
-+const GROUPING_PROPERTIES = new Set(["overflow", ...Object.keys(GROUPING_DEFAULTS)]);
++const GROUPING_PROPERTIES = new Set(["overflow", "mask", "mask-border", ...Object.keys(GROUPING_DEFAULTS)]);
 +
 +/** @returns {number[][]} */
 +function identityMatrix() {
@@ -234,8 +234,8 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 +  return rows;
 +}
 +
-+/** @param {any[]} functions @param {boolean} ignorePlane @returns {boolean | null} */
-+function isHidingTransformList(functions, ignorePlane) {
++/** @param {any[]} functions @param {boolean} ignorePlane @param {boolean} ignoreOffsets @returns {boolean | null} */
++function isHidingTransformList(functions, ignorePlane, ignoreOffsets) {
 +  if (functions.length === 0) return false;
 +  const matrices = functions.map(transformRows);
 +  const rows = composeMatrices(matrices);
@@ -252,9 +252,8 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 +  const affine = rows[3][0] === 0 && rows[3][1] === 0 && rows[3][3] === 1;
 +  if (!affine) return false;
 +  // Rotation and scale also move the box around its layout-dependent origin.
-+  const translationOnly = rows.every((row, rowIndex) => row.every((value, column) =>
-+    (column === 3 && rowIndex < 3) || value === Number(rowIndex === column)));
-+  const offscreen = translationOnly &&
++  const translationOnly = isPureTranslation(rows);
++  const offscreen = !ignoreOffsets && translationOnly &&
 +    (rows[0][3] < OFFSCREEN_ABSOLUTE_THRESHOLD || rows[1][3] < OFFSCREEN_ABSOLUTE_THRESHOLD);
 +  return offscreen;
 +}
@@ -267,12 +266,10 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 +  const rows = composeMatrices(valueTokens(transform).map(transformRows));
 +  // Perspective needs origin and layout data before child planes can be resolved.
 +  return rows && rows[3].every((value, column) => value === Number(column === 3)) ? rows : null;
-+}
-+
+ }
+
  /**
-  * True when a `filter` renders content invisible: an `opacity()` function drops
-  * the element to fully transparent. The amount is a <number-percentage>; a
-@@ -840,26 +977,111 @@ function isOverflowHidden(nodeOf, textOf) {
+@@ -840,26 +977,111 @@
    return false;
  }
 
@@ -281,6 +278,21 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 -// stretch), so those never misread as a zero size. `q` (quarter-mm) is a font
 -// length unit too, though it never gates an offset above.
 -const FONT_SIZE_UNITS = new Set([...ABSOLUTE_UNITS, "q"]);
+-
+-/**
+- * True when a `font` SHORTHAND's font-size collapses the text to nothing. The
+- * font-size is the FIRST length token in the shorthand (it precedes an optional
+- * `/line-height` and the family); a near-zero one hides the text just like the
+- * `font-size` longhand.
+- * @param {any} node value node for `font`
+- * @returns {boolean}
+- */
+-function isFontShorthandHidden(node) {
+-  if (!node) return false;
+-  for (const token of valueTokens(node))
+-    if (token.type === "Dimension" && FONT_SIZE_UNITS.has(token.unit))
+-      return Math.abs(parseFloat(token.value)) < NEAR_ZERO_EPSILON;
+-  return false;
 +/** @param {string} property @param {any} value @returns {any} */
 +function parseCssProperty(property, value) {
 +  // Raw syntax can contain CSS values that this parser does not yet support.
@@ -355,26 +367,14 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 +
 +const PIXELS_PER_UNIT = { px: 1, pt: 96 / 72, pc: 16, in: 96, cm: 96 / 2.54,
 +  mm: 96 / 25.4, q: 96 / 101.6 };
-
- /**
-- * True when a `font` SHORTHAND's font-size collapses the text to nothing. The
-- * font-size is the FIRST length token in the shorthand (it precedes an optional
-- * `/line-height` and the family); a near-zero one hides the text just like the
-- * `font-size` longhand.
-- * @param {any} node value node for `font`
-- * @returns {boolean}
++
++/**
 + * Resolve inline font sizes. A null value needs stylesheet or layout data.
 + * @param {any} node
 + * @param {number | null} inherited
 + * @param {number | null} rootSize
 + * @returns {number | null}
-  */
--function isFontShorthandHidden(node) {
--  if (!node) return false;
--  for (const token of valueTokens(node))
--    if (token.type === "Dimension" && FONT_SIZE_UNITS.has(token.unit))
--      return Math.abs(parseFloat(token.value)) < NEAR_ZERO_EPSILON;
--  return false;
++ */
 +function resolveFontSize(node, inherited, rootSize) {
 +  if (!node) return inherited;
 +  const token = soleToken(node);
@@ -401,7 +401,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1129,13 @@ function declText(valueNode) {
+@@ -907,11 +1129,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -416,7 +416,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1158,88 @@ function parseDeclarations(styleStr) {
+@@ -934,17 +1158,94 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -427,6 +427,13 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 +          parseCssProperty(property, node.value);
 +        if (!value) return;
 +        const entries = [[key, value]];
++        if (property === "mask" || property === "mask-border") {
++          const target = property === "mask" ? "mask-image" : "mask-border-source";
++          const known = csstree.lexer.matchProperty(target, value).matched;
++          entries.push([target, known ? value : { type: "Raw", value: "" }]);
++          if (property === "mask")
++            entries.push(["mask-border-source", csstree.parse("none", { context: "value" })]);
++        }
 +        if (property === "overflow") {
 +          const tokens = valueTokens(value);
 +          for (const [index, axis] of ["overflow-x", "overflow-y"].entries()) {
@@ -497,16 +504,15 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 
  /**
   * @param {string} styleStr
-+ * @param {boolean} [ignoreFontSize]
-+ * @param {boolean} [in3dContext]
++ * @param {import("../types/html.d.mts").VisibilityOptions} [options]
   * @returns {boolean}
   */
 -export function isHiddenStyle(styleStr) {
-+export function isHiddenStyle(styleStr, ignoreFontSize = false, in3dContext = false) {
++export function isHiddenStyle(styleStr, { ignoreFontSize = false, in3dContext = false, ignoreTransformOffsets = false } = {}) {
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,11 +1277,8 @@ export function isHiddenStyle(styleStr) {
+@@ -982,11 +1283,8 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -520,141 +526,120 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..be649cb7b27e3f16626e9b4bd3e85bbb
 
    if (isPositionedOffscreen(nodeOf, textOf)) return true;
 
-@@ -994,7 +1286,9 @@ export function isHiddenStyle(styleStr) {
+@@ -994,7 +1292,9 @@
 
    // Clipped to nothing: the modern equivalent of the legacy `clip: rect(0…)`.
    if (isClipPathHidden(nodeOf("clip-path"))) return true;
 -  if (isHidingTransform(nodeOf("transform"))) return true;
 +  const transformStyle = nodeOf("transform-style");
 +  const ignorePlane = in3dContext || Boolean(transformStyle && !FLAT_TRANSFORM_STYLES.has(textOf("transform-style")));
-+  if (isHidingTransform(nodeOf("transform"), ignorePlane)) return true;
++  if (isHidingTransform(nodeOf("transform"), ignorePlane, ignoreTransformOffsets)) return true;
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1388,11 @@ const RAW_TEXT_ELEMENTS = new Set([
+@@ -1094,9 +1394,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
-+ * @param {boolean} [ignoreFontSize]
-+ * @param {boolean} [in3dContext]
++ * @param {import("../types/html.d.mts").VisibilityOptions} [options]
   * @returns {boolean}
   */
 -export function isHiddenElement(node) {
-+export function isHiddenElement(node, ignoreFontSize = false, in3dContext = false) {
++export function isHiddenElement(node, options = {}) {
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1404,7 @@ export function isHiddenElement(node) {
+@@ -1108,7 +1409,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
 -  if (properties.style && isHiddenStyle(properties.style)) return true;
-+  if (properties.style && isHiddenStyle(properties.style, ignoreFontSize, in3dContext)) return true;
++  if (properties.style && isHiddenStyle(properties.style, options)) return true;
    return false;
  }
 
-@@ -1256,18 +1552,53 @@ function hasWarned(warned) {
-  * through matching close, and parse5 extends an unclosed element to the end
-  * of the fragment — fail-closed for truncated markup).
-  * @param {string} html
-+ * @param {boolean} [document]
-  * @returns {{ ranges: Array<{start: number, end: number, kind: "comment" | "hidden"}>, warned: ReturnType<typeof newWarned> }}
-  */
--export function scanHtmlFragment(html) {
--  const tree = unified().use(rehypeParse, { fragment: true }).parse(html);
-+export function scanHtmlFragment(html, document = false) {
-+  const tree = unified().use(rehypeParse, { fragment: !document }).parse(html);
-   /** @type {Array<{start: number, end: number, kind: "comment" | "hidden"}>} */
-   const ranges = [];
-   const warned = newWarned();
-+  const fontSizes = new WeakMap();
-+  const preservedPlanes = new WeakSet();
-+  const contextMatrices = new WeakMap();
-+  const hiddenPlanes = new WeakSet();
-+  const perspectiveParents = new WeakSet();
-+  let rootSize = null;
-   // @ts-ignore -- visit callback returns EXIT/SKIP only on matches; implicit undefined return is intentional
-   // eslint-disable-next-line consistent-return
--  visit(tree, (/** @type {any} */ node) => {
-+  visit(tree, (/** @type {any} */ node, _index, parent) => {
-+    const inherited = fontSizes.get(parent) ?? null;
-+    const in3dContext = preservedPlanes.has(parent);
-+    if (node.type === "element") {
-+      const declarations = parseDeclarations(node.properties?.style ?? "", tree.data?.documentMode === "quirks");
-+      const size = resolveFontSize(declarations.get("font-size"), inherited, rootSize);
-+      fontSizes.set(node, size);
-+      if (node.tagName === "html") rootSize = size;
-+      const transformStyle = declarations.get("transform-style");
-+      const style = declText(transformStyle).trim().toLowerCase();
-+      if (transformStyle && !FLAT_TRANSFORM_STYLES.has(style)) preservedPlanes.add(node);
-+      const perspective = declText(declarations.get("perspective")).trim().toLowerCase();
-+      const hasPerspective = perspective && !["none", "initial", "unset"].includes(perspective);
-+      if (hasPerspective) perspectiveParents.add(node);
-+      if (hiddenPlanes.has(parent) && !in3dContext) hiddenPlanes.add(node);
-+      if (in3dContext || preservedPlanes.has(node)) {
-+        let rows = localPlaneRows(declarations.get("transform"));
-+        if (in3dContext) rows = composeMatrices([contextMatrices.get(parent) ?? null, rows]);
-+        if (perspectiveParents.has(parent)) rows = null;
-+        if (rows && isCollapsedPlane(rows)) hiddenPlanes.add(node);
-+        const unknownContext = hasPerspective || (preservedPlanes.has(node) && style !== "preserve-3d");
-+        contextMatrices.set(node, unknownContext ? null : rows);
-+      }
-+    }
-     const isComment = node.type === "comment";
--    if (isComment || isHiddenElement(node)) {
-+    const hiddenText = node.type === "text" && node.value.trim() !== "" &&
-+      (hiddenPlanes.has(parent) || (inherited !== null && inherited < NEAR_ZERO_EPSILON));
-+    // A flat hidden plane hides its subtree. A preserved plane can have visible children.
-+    // Synthetic elements have no range; continue to their text and child ranges.
-+    const hiddenPlaneSubtree = hiddenPlanes.has(node) && !preservedPlanes.has(node) && node.position;
-+    if (isComment || hiddenText || hiddenPlaneSubtree || isHiddenElement(node, true, in3dContext)) {
-       /* c8 ignore start -- parse5 omits positions only on recovery-synthesized
-          elements (tbody and friends), which carry no attributes and so can
-          never be hidden; fail closed on the whole fragment if that assumption
-@@ -1631,15 +1962,16 @@ export function looksLikeHtmlSource(text) {
-  * count preserved scripting/resource tags for the caller's warning. Returns
-  * null when there is nothing to strip and nothing to report.
-  * @param {string} text
-+ * @param {boolean} [htmlSource]
-  * @returns {{ text: string, removed: { comments: number, hidden: number }, warned: { tags: Record<string, number>, dataSrc: number } } | null}
-  */
--export function sanitizeHtml(text) {
-+export function sanitizeHtml(text, htmlSource = false) {
-   if (!HTML_TAG_PRESENT.test(text)) return null;
-   /** @type {{ ranges: Array<{start: number, end: number, kind: "comment" | "hidden"}>, warned: ReturnType<typeof newWarned> }} */
-   let scan;
-   try {
--    scan = looksLikeHtmlSource(text)
--      ? scanHtmlFragment(text)
-+    scan = htmlSource || looksLikeHtmlSource(text)
-+      ? scanHtmlFragment(text, htmlSource)
-       : scanMarkdown(text);
-   } catch {
-     // The parse/visit blew up (stack overflow on pathological nesting, or any
-diff --git a/src/index.mjs b/src/index.mjs
-index fecfde7e1445c989f356dd18d7bb6f6718cd252f..ccc413f9629531bcba1a0c107f6af1428e4f7a95 100644
---- a/src/index.mjs
-+++ b/src/index.mjs
-@@ -87,7 +87,7 @@ function describeWarned(warned) {
-  * of an internal TypeError leaking implementation details (or a silent, wrong
-  * coercion of e.g. a number to a string).
-  * @param {string} text
-- * @param {{ html?: boolean } | null} [options]
-+ * @param {{ html?: boolean, htmlSource?: boolean } | null} [options]
-  * @returns {Promise<{ cleaned: string, found: string[], warnings: string[] }>}
-  */
- export async function sanitize(text, options) {
-@@ -134,7 +134,7 @@ export async function sanitize(text, options) {
-   // less, yet Layer 2 would otherwise remove it from view before the scan.
-   const preSplice = cleaned;
+@@ -1135,8 +1436,78 @@
+   return firstElement;
+ }
 
--  const layer2 = sanitizeHtml(cleaned);
-+  const layer2 = sanitizeHtml(cleaned, options?.htmlSource);
-   if (layer2) {
-     if (layer2.text !== cleaned) {
-       cleaned = layer2.text;
+-// Returns null on a closing tag: `</x>` alone can never be the *start* of a
+-// hidden element, so only opens drive the surrounding loop's removal mode.
++/** @param {number[][]} rows @returns {boolean} */
++function isPureTranslation(rows) {
++  return rows.every((row, rowIndex) => row.every((value, column) =>
++    (column === 3 && rowIndex < 3) || value === Number(rowIndex === column)));
++}
++
++/**
++ * Track pure translations through flat and preserved descendants.
++ * Layout-dependent offsets remain unknown.
++ * @param {Map<string, any>} declarations
++ * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
++ * @returns {{ translation: number[] | null, offscreen: boolean }}
++ */
++function resolveTranslation(declarations, parent) {
++  const layoutOffset = [...declarations.keys()].some((property) =>
++    /^(?:margin(?:-|$)|inset(?:-|$)|left$|right$|top$|bottom$|position$)/.test(property));
++  if (layoutOffset || parent?.hasPerspective) return { translation: null, offscreen: false };
++  const transform = declarations.get("transform");
++  const rows = localPlaneRows(transform);
++  const inherited = parent ? parent.translation : [0, 0, 0];
++  if (rows && isPureTranslation(rows) && inherited) {
++    const translation = inherited.map((value, axis) => value + rows[axis][3]);
++    return { translation, offscreen: translation[0] < OFFSCREEN_ABSOLUTE_THRESHOLD ||
++      translation[1] < OFFSCREEN_ABSOLUTE_THRESHOLD };
++  }
++  // An unchanged child retains an unresolved offscreen translation.
++  if (rows && isPureTranslation(rows) && rows.every((row, axis) => axis === 3 || row[3] === 0))
++    return { translation: null, offscreen: parent?.offscreen ?? false };
++  const unshiftedParent = inherited?.every((value) => value === 0);
++  const offscreen = !rows && Boolean(unshiftedParent) && isHidingTransform(transform, true);
++  return { translation: null, offscreen };
++}
++
++/**
++ * Resolve one element without changing its source or its descendants.
++ * @param {any} node
++ * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
++ * @param {{ rootSize?: number | null, quirksMode?: boolean }} options
++ * @returns {import("../types/html.d.mts").ElementVisibility}
++ */
++export function resolveElementVisibility(node, parent, options = {}) {
++  const inherited = parent?.fontSize ?? null;
++  const in3dContext = parent?.preserves3d ?? false;
++  const declarations = parseDeclarations(node.properties?.style ?? "", options.quirksMode);
++  const fontSize = resolveFontSize(declarations.get("font-size"), inherited, options.rootSize ?? null);
++  const transformStyle = declarations.get("transform-style");
++  const style = declText(transformStyle).trim().toLowerCase();
++  const preserves3d = Boolean(transformStyle && !FLAT_TRANSFORM_STYLES.has(style));
++  const perspective = declText(declarations.get("perspective")).trim().toLowerCase();
++  const hasPerspective = Boolean(perspective && !["none", "initial", "unset"].includes(perspective));
++  let hiddenPlane = Boolean(parent?.hiddenPlane && !in3dContext);
++  let matrix = null;
++  if (in3dContext || preserves3d) {
++    let rows = localPlaneRows(declarations.get("transform"));
++    if (in3dContext) rows = composeMatrices([parent?.matrix ?? null, rows]);
++    if (parent?.hasPerspective) rows = null;
++    if (rows && isCollapsedPlane(rows)) hiddenPlane = true;
++    const unknownContext = hasPerspective || (preserves3d && style !== "preserve-3d");
++    matrix = unknownContext ? null : rows;
++  }
++  const { translation, offscreen } = resolveTranslation(declarations, parent);
++  return {
++    fontSize, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
++    hiddenElement: isHiddenElement(node, {
++      ignoreFontSize: true,
++      in3dContext: in3dContext || Boolean(parent?.hasPerspective),
++      ignoreTransformOffsets: true,
++    }),
++    hiddenText: offscreen || hiddenPlane || (fontSize !== null && fontSize < NEAR_ZERO_EPSILON),
++  };
++}
++
+ /**
+  * @param {string} htmlValue
+  * @returns {string | null}
 diff --git a/types/html.d.mts b/types/html.d.mts
-index e6e6478a464159700f9320b5c8060d9c6a844426..b228f9c12c42690047f6a40612ecc5020867dca9 100644
 --- a/types/html.d.mts
 +++ b/types/html.d.mts
 @@ -2,14 +2,14 @@
@@ -662,7 +647,7 @@ index e6e6478a464159700f9320b5c8060d9c6a844426..b228f9c12c42690047f6a40612ecc502
   * @returns {boolean}
   */
 -export function isHiddenStyle(styleStr: string): boolean;
-+export function isHiddenStyle(styleStr: string, ignoreFontSize?: boolean): boolean;
++export function isHiddenStyle(styleStr: string, options?: VisibilityOptions): boolean;
  /**
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
@@ -670,43 +655,36 @@ index e6e6478a464159700f9320b5c8060d9c6a844426..b228f9c12c42690047f6a40612ecc502
   * @returns {boolean}
   */
 -export function isHiddenElement(node: any): boolean;
-+export function isHiddenElement(node: any, ignoreFontSize?: boolean): boolean;
++export function isHiddenElement(node: any, options?: VisibilityOptions): boolean;
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -42,7 +42,7 @@ export function spliceRanges(text: string, ranges: Array<{
-  * @param {string} html
-  * @returns {{ ranges: Array<{start: number, end: number, kind: "comment" | "hidden"}>, warned: ReturnType<typeof newWarned> }}
-  */
--export function scanHtmlFragment(html: string): {
-+export function scanHtmlFragment(html: string, document?: boolean): {
-     ranges: Array<{
-         start: number;
-         end: number;
-@@ -63,7 +63,7 @@ export function looksLikeHtmlSource(text: string): boolean;
-  * @param {string} text
-  * @returns {{ text: string, removed: { comments: number, hidden: number }, warned: { tags: Record<string, number>, dataSrc: number } } | null}
-  */
--export function sanitizeHtml(text: string): {
-+export function sanitizeHtml(text: string, htmlSource?: boolean): {
-     text: string;
-     removed: {
-         comments: number;
-diff --git a/types/index.d.mts b/types/index.d.mts
-index 741cfb37d8674b31ee36b809c80b9fe60804448d..e23da87b54350606db14893eefc36450a3de3613 100644
---- a/types/index.d.mts
-+++ b/types/index.d.mts
-@@ -18,11 +18,12 @@
-  * of an internal TypeError leaking implementation details (or a silent, wrong
-  * coercion of e.g. a number to a string).
-  * @param {string} text
-- * @param {{ html?: boolean } | null} [options]
-+ * @param {{ html?: boolean, htmlSource?: boolean } | null} [options]
-  * @returns {Promise<{ cleaned: string, found: string[], warnings: string[] }>}
-  */
- export function sanitize(text: string, options?: {
-     html?: boolean;
-+    htmlSource?: boolean;
- } | null): Promise<{
-     cleaned: string;
-     found: string[];
+@@ -115,3 +115,28 @@
+ import { SECRET_HINT_EXT } from "./gates.mjs";
+ import { matchesSecretHint } from "./gates.mjs";
+ export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };
++
++export interface VisibilityOptions {
++    ignoreFontSize?: boolean;
++    in3dContext?: boolean;
++    ignoreTransformOffsets?: boolean;
++}
++export interface ElementVisibility {
++    fontSize: number | null;
++    preserves3d: boolean;
++    matrix: number[][] | null;
++    hiddenPlane: boolean;
++    hasPerspective: boolean;
++    hiddenElement: boolean;
++    hiddenText: boolean;
++    translation: number[] | null;
++    offscreen: boolean;
++}
++/** Resolve inline visibility. The caller supplies the parsed parent state. */
++export function resolveElementVisibility(node: {
++    type: "element";
++    properties: Record<string, string>;
++}, parent: ElementVisibility | undefined, options?: {
++    rootSize?: number | null;
++    quirksMode?: boolean;
++}): ElementVisibility;

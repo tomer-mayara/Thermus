@@ -4,6 +4,7 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 const matrixA = 'matrix3d(0,0,-1,0,0,1,0,0,1,0,0,0,0,0,0,1)';
 const matrixB = 'matrix3d(0,1,0,0,0,0,-1,0,-1,0,0,0,0,0,0,1)';
@@ -123,7 +124,7 @@ test('the final Markdown keeps visible transform-list content and its sibling', 
     `<p>Visible sibling</p>` +
     `</main></body></html>`;
 
-  const result = await pipeline.process('https://example.com/', html);
+  const result = await pipeline.process(createContext(html));
 
   assert.equal(result.markdown, [
     'Visible rotation', 'Visible context', 'Visible sibling',

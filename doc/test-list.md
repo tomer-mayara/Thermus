@@ -5,12 +5,29 @@
 
 ## Unit
 
+**Renderer network policy**
+
+[V] Rejects blocked IPv4 and IPv6 ranges, obfuscated loopback addresses, mixed DNS answers, and failed DNS before renderer launch
+[V] Accepts public addresses and checks every DNS answer again on each fetch
+[V] Passes the native network policy and disables proxy environment settings on every renderer launch
+[V] Rejects URL-supplied flags and unsupported schemes; fails when Lightpanda is missing or cannot apply the required policy
 
 **Clean HTML Ads**
 
 [V] Removes documented ad targets, honors element-hiding exceptions, and leaves HTML unchanged when no host matches
 [V] Counts unsupported procedural actions as skipped
 [V] Returns an updated context, preserves metadata, adds to existing counts, and does not mutate the input
+[V] Preserves the next paragraph and its source text when an ad paragraph omits its end tag
+[V] Preserves the next list item and its attributes when an ad item omits its end tag
+[V] Preserves following elements after omitted paragraph end tags inside list items and before dialog, search, menu, and hgroup
+[V] Preserves a table after an ad paragraph with an omitted end tag in a fragment without an explicit html element or doctype
+[V] Preserves non-ad tables between reconstructed formatting matches and counts overlapping selectors per DOM node
+[V] Removes an explicit ad body that reaches end of source, with and without a doctype
+[V] Preserves Unicode, comments, attributes, and source formatting
+[V] Preserves nested list boundaries and parent end tags around explicit, nested, adjacent, and overlapping ad matches
+[V] Preserves text and repeated body and html end tags during parser recovery
+[V] Keeps parent reads bounded for deeply nested malformed HTML at end of file
+[V] Counts each ad element once and keeps selector exceptions
 
 **Prompt Injection Remover**
 
@@ -52,6 +69,7 @@
 [V] Rejects oversized HTML before Markdown conversion
 [V] Keeps visible descendants, images, and rotated content in the final Markdown and removes hidden text and collapsed content
 [V] Checks exact final Markdown for deferred font sizes, composed transforms and offsets, preserved 3D descendants, and quirks-mode font sizes
+[V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
 **HTML to MD**
 
@@ -63,13 +81,42 @@
 [V] Extracts the document title
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
-[V] Preserves local content and resolves relative links with the page URL
-
-## Interface
+[V] Preserves local content and resolves relative links with finalUrl
+[V] Resolves relative, root-relative, and protocol-relative links after same-host and cross-host redirects
+[V] Applies ad rules for the final host after redirects, in both host-change directions
+[V] Preserves direct content when requestedUrl and finalUrl match
 
 **HTML Fetcher**
 
-[V] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
-[V] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
+[V] Returns requestedUrl, finalUrl, and HTML for direct and redirected fetches
+[V] Preserves the exact requested URL
+[V] Rejects missing or invalid fetch metadata
+
+## Interface
+
+**Renderer network policy**
+
+[V] Blocks literal and DNS loopback targets before a connection
+[V] Blocks a DNS change, IPv6 loopback, a redirect, a script resource, fetch, XHR, and WebSocket to a blocked address
+[V] Allows an IPv4 loopback fixture only inside the test scope and ignores proxy environment settings
+
+**HTML Fetcher**
+
+[V] Fetches a page without JavaScript (https://quotes.toscrape.com) and returns rendered HTML
+[V] Fetches a page with JavaScript (https://quotes.toscrape.com/js/) and returns rendered HTML
+[V] Returns a direct fetch result through Lightpanda
+[V] Traces a redirect chain through Lightpanda and resolves Markdown links against the final URL
 
 ## Acceptance
+
+**Visibility and parsed source ranges**
+
+[V] Keeps visible font overrides and images when an earlier removal forms a zero-font-size parent
+[V] Removes hidden local text and keeps visible child planes when an earlier removal forms a preserved 3D parent
+[V] Uses parsed parents for font inheritance around tables and in template content
+[V] Keeps a visible override under a zero-font-size document body in quirks mode
+[V] Keeps visible content outside hidden tables and removes overrides inside display-none ancestors
+[V] Keeps visible table cells between hidden merged text segments, including character references
+[V] Keeps visible children under mask shorthands and parent perspective
+[V] Removes offscreen text and images while it keeps descendants restored by transforms or layout offsets
+[V] Resolves mask shorthand order and important mask-image declarations

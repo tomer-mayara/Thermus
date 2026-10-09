@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
 import type { PromptInjectionRemover } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 const hiddenTextHtml = readFileSync(
   join(process.cwd(), 'test/unit/fixtures/hidden-text.html'),
@@ -21,16 +21,6 @@ describe('PromptInjectionRemoverSanitizer', () => {
   beforeEach(() => {
     sanitizer = new PromptInjectionRemoverSanitizer();
   });
-
-  function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
-    return {
-      url: 'https://example.com/',
-      html,
-      removed: 0,
-      skipped: 0,
-      ...overrides,
-    };
-  }
 
   test('strips zero-width format characters and counts the detected category as skipped', async () => {
     const result = await sanitizer.invoke(
@@ -89,28 +79,28 @@ describe('PromptInjectionRemoverSanitizer', () => {
     }
   });
 
-  test('removes comment markers formed across a hidden span', async () => {
+  test('preserves authored comment markers formed across a hidden span', async () => {
     const result = await sanitizer.invoke(
       createContext('<p>[HTML <span hidden>payload</span>comment removed]</p>'),
     );
 
-    assert.equal(result.html, '<p></p>');
+    assert.equal(result.html, '<p>[HTML comment removed]</p>');
   });
 
-  test('removes hidden markers formed across another hidden span', async () => {
+  test('preserves authored hidden markers formed across another hidden span', async () => {
     const result = await sanitizer.invoke(
       createContext('<p>[hidden <span hidden>payload</span>HTML removed]</p>'),
     );
 
-    assert.equal(result.html, '<p></p>');
+    assert.equal(result.html, '<p>[hidden HTML removed]</p>');
   });
 
-  test('preserves supplementary characters while removing placeholders', async () => {
+  test('preserves supplementary characters and authored marker text', async () => {
     const result = await sanitizer.invoke(
       createContext('<p>😀 [HTML <span hidden>payload</span>comment removed]</p>'),
     );
 
-    assert.equal(result.html, '<p>😀 </p>');
+    assert.equal(result.html, '<p>😀 [HTML comment removed]</p>');
   });
 
   test('preserves ordinary visible content and context without mutation', async () => {
@@ -120,13 +110,14 @@ describe('PromptInjectionRemoverSanitizer', () => {
       removed: 2,
       skipped: 3,
     });
-    const original = { ...input };
+    const original = structuredClone(input);
 
     const result = await sanitizer.invoke(input);
 
     assert.deepEqual(input, original);
     assert.notEqual(result, input);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(
       result.html.replace(/\s+/g, ' ').trim(),
       input.html.replace(/\s+/g, ' ').trim(),

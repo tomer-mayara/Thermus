@@ -4,6 +4,7 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 test('removes content on a hidden parent plane and keeps visible child planes', async () => {
   const result = await sanitizeHtml(
@@ -60,12 +61,12 @@ test('the final Markdown excludes hidden local text but keeps the visible plane'
   const pipeline = new HtmlToMarkdownPipeline([
     new PromptInjectionRemoverSanitizer(), new CleanHtmlToMarkdownDefuddle(),
   ]);
-  const result = await pipeline.process('https://example.com/',
+  const result = await pipeline.process(createContext(
     '<!doctype html><html><body><main>' +
     '<div style="transform-style:preserve-3d;transform:rotateX(90deg)">Hidden parent' +
     '<p style="transform:rotateX(45deg)">Visible child</p>' +
     '<p>Hidden same plane</p></div><p>Visible sibling</p></main></body></html>',
-  );
+  ));
 
   assert.equal(result.markdown, 'Visible child\n\nVisible sibling');
 });
