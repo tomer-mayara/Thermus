@@ -99,17 +99,28 @@ describe('WebsiteFetcherLightpanda process contract', () => {
     await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error === cause);
   });
 
-  for (const stdout of [
-    '<html>Unstructured output</html>',
-    'null',
-    '{}',
-    JSON.stringify({ http_status: 0, content: html, error: 'CouldntConnect' }),
-    JSON.stringify({ http_status: 200, content: html, error: 'WaitTimeout' }),
-    JSON.stringify({ http_status: 200, error: null }),
+  for (const [stdout, message] of [
+    ['<html>Unstructured output</html>', 'lightpanda returned invalid fetch metadata'],
+    ['null', 'lightpanda returned invalid fetch metadata'],
+    ['{}', 'lightpanda did not return successful HTML'],
+    [
+      JSON.stringify({ http_status: 0, content: html, error: 'CouldntConnect' }),
+      'lightpanda did not return successful HTML',
+    ],
+    [
+      JSON.stringify({ http_status: 200, content: html, error: 'WaitTimeout' }),
+      'lightpanda did not return successful HTML',
+    ],
+    [JSON.stringify({ http_status: 200, error: null }), 'lightpanda did not return successful HTML'],
   ]) {
     test(`rejects an invalid renderer result: ${stdout}`, async (context) => {
       stubProcess(context, { stdout });
-      await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url));
+      await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => {
+        assert.ok(error instanceof Error);
+        assert.ok(!(error instanceof WebsiteFetchHttpError));
+        assert.equal(error.message, message);
+        return true;
+      });
     });
   }
 
