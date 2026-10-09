@@ -1,5 +1,5 @@
 diff --git a/src/html.mjs b/src/html.mjs
-index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613da3f9ed6 100644
+index 1d576a4923c3916b592c45f70f29b1cea2c696d3..ee0ada1fa6513ce82fbd4cbe8acc0d16154b29d4 100644
 --- a/src/html.mjs
 +++ b/src/html.mjs
 @@ -208,25 +208,14 @@ function isHidingTransform(node) {
@@ -32,22 +32,37 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
            const f = numbers[i];
            return f && Math.abs(parseFloat(f.value)) < NEAR_ZERO_EPSILON;
          })
-@@ -268,6 +257,45 @@ function isHidingTransform(node) {
+@@ -268,6 +257,61 @@ function isHidingTransform(node) {
    return false;
  }
  
-+/** @param {number[][]} rows @returns {number} */
++/** @param {number[][]} rows @returns {{ value: number, magnitude: number }} */
 +function determinant(rows) {
-+  if (rows.length === 1) return rows[0][0];
-+  return rows[0].reduce((sum, value, column) => {
++  if (rows.length === 1)
++    return { value: rows[0][0], magnitude: Math.abs(rows[0][0]) };
++  let value = 0;
++  let magnitude = 0;
++  for (let column = 0; column < rows.length; column++) {
++    const coefficient = rows[0][column];
 +    const minor = rows.slice(1).map((row) => row.filter((_, i) => i !== column));
-+    return sum + (column % 2 === 0 ? 1 : -1) * value * determinant(minor);
-+  }, 0);
++    const term = determinant(minor);
++    value += (column % 2 === 0 ? 1 : -1) * coefficient * term.value;
++    magnitude += Math.abs(coefficient) * term.magnitude;
++  }
++  return { value, magnitude };
++}
++
++/** @param {number[][]} rows @returns {boolean} */
++function isSingularMatrix(rows) {
++  const { value, magnitude } = determinant(rows);
++  // Scale the rounding allowance to the determinant terms, not the visible area.
++  const roundoff = Number.EPSILON * rows.length * rows.length * magnitude;
++  return Number.isFinite(magnitude) && Math.abs(value) <= roundoff;
 +}
 +
 +/** @param {number[]} coefficients @returns {boolean} */
 +function isCollapsedPlane([a, b, c, d]) {
-+  return a * d - b * c === 0 ||
++  return isSingularMatrix([[a, c], [b, d]]) ||
 +    Math.hypot(a, b) < NEAR_ZERO_EPSILON ||
 +    Math.hypot(c, d) < NEAR_ZERO_EPSILON;
 +}
@@ -64,13 +79,14 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
 +  if (size === 6) return isCollapsedPlane(values);
 +
 +  // CSS stores matrix columns in order. A singular matrix hides the subtree.
++  // https://www.w3.org/TR/css-transforms-1/#transform-function-lists
 +  const rows = [0, 1, 2, 3].map((row) =>
 +    [0, 1, 2, 3].map((column) => values[column * 4 + row]));
-+  if (determinant(rows) === 0) return true;
++  if (isSingularMatrix(rows)) return true;
 +  // Text lies in the local z=0 plane. Check its projection onto the screen.
 +  const projected = [0, 1, 3].map((row) =>
 +    [0, 1, 3].map((column) => rows[row][column]));
-+  if (determinant(projected) === 0) return true;
++  if (isSingularMatrix(projected)) return true;
 +  const affine = values[3] === 0 && values[7] === 0 && values[15] === 1;
 +  return affine && isCollapsedPlane([values[0], values[1], values[4], values[5]]);
 +}
@@ -78,7 +94,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
  /**
   * True when a `filter` renders content invisible: an `opacity()` function drops
   * the element to fully transparent. The amount is a <number-percentage>; a
-@@ -840,26 +868,63 @@ function isOverflowHidden(nodeOf, textOf) {
+@@ -840,26 +884,63 @@ function isOverflowHidden(nodeOf, textOf) {
    return false;
  }
  
@@ -159,7 +175,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
  }
  
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -912,6 +977,7 @@ function declText(valueNode) {
+@@ -912,6 +993,7 @@ function declText(valueNode) {
  function parseDeclarations(styleStr) {
    /** @type {Map<string, any>} */
    const decls = new Map();
@@ -167,7 +183,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,6 +1000,14 @@ function parseDeclarations(styleStr) {
+@@ -934,6 +1016,14 @@ function parseDeclarations(styleStr) {
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -182,7 +198,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
        decls.set(property, node.value);
      },
    });
-@@ -942,9 +1016,10 @@ function parseDeclarations(styleStr) {
+@@ -942,9 +1032,10 @@ function parseDeclarations(styleStr) {
  
  /**
   * @param {string} styleStr
@@ -194,7 +210,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
  
-@@ -982,11 +1057,8 @@ export function isHiddenStyle(styleStr) {
+@@ -982,11 +1073,8 @@ export function isHiddenStyle(styleStr) {
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -208,7 +224,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
  
    if (isPositionedOffscreen(nodeOf, textOf)) return true;
  
-@@ -1094,9 +1166,10 @@ const RAW_TEXT_ELEMENTS = new Set([
+@@ -1094,9 +1182,10 @@ const RAW_TEXT_ELEMENTS = new Set([
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -220,7 +236,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1181,7 @@ export function isHiddenElement(node) {
+@@ -1108,7 +1197,7 @@ export function isHiddenElement(node) {
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -229,7 +245,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
    return false;
  }
  
-@@ -1256,18 +1329,30 @@ function hasWarned(warned) {
+@@ -1256,18 +1345,30 @@ function hasWarned(warned) {
   * through matching close, and parse5 extends an unclosed element to the end
   * of the fragment — fail-closed for truncated markup).
   * @param {string} html
@@ -264,7 +280,7 @@ index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613
        /* c8 ignore start -- parse5 omits positions only on recovery-synthesized
           elements (tbody and friends), which carry no attributes and so can
           never be hidden; fail closed on the whole fragment if that assumption
-@@ -1631,15 +1716,16 @@ export function looksLikeHtmlSource(text) {
+@@ -1631,15 +1732,16 @@ export function looksLikeHtmlSource(text) {
   * count preserved scripting/resource tags for the caller's warning. Returns
   * null when there is nothing to strip and nothing to report.
   * @param {string} text

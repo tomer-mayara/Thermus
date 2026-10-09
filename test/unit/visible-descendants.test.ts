@@ -30,7 +30,7 @@ describe('Visible descendants', () => {
     });
   }
 
-  for (const size of ['inherit', 'unset', '0px', '2em', '150%']) {
+  for (const size of ['inherit', 'unset', '0px', '2em', '150%', 'larger', '2ex']) {
     test(`removes hidden text when the child font size is ${size}`, async () => {
       const result = await sanitizeHtml(
         `<div style="font-size:0"><span style="font-size:${size}">Hidden text</span></div>` +
@@ -158,10 +158,17 @@ describe('Matrix visibility', () => {
     'matrix(0,0,0,1,0,0)',
     'matrix(1,0,0,0,0,0)',
     'matrix(1,2,2,4,0,0)',
+    'matrix(0.001,0.3,0.003,0.9,0,0)',
+    'matrix(0.3,0.2,0.9,0.6,0,0)',
     'matrix(0,0,0,0,10,20)',
     'matrix(0.001,0,0,1,0,0)',
     'matrix3d(1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1)',
     'matrix3d(1,2,0,0,2,4,0,0,0,0,1,0,0,0,0,1)',
+    'matrix3d(0.001,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)',
+    'matrix3d(1,0,0,0,0,0.3,0.2,0,0,0.9,0.6,0,0,0,0,1)',
+    'matrix3d(0.3,0.2,0,0,0.9,0.6,1,0,0,1,0,0,0,0,0,1)',
+    // CSS does not render a singular transform, including a zero Z scale.
+    // https://www.w3.org/TR/css-transforms-1/#transform-function-lists
     'matrix3d(1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1)',
     'matrix3d(0,0,-1,0,0,1,0,0,1,0,0,0,0,0,0,1)',
     'matrix(0,1,-1,0,0,0) scale(0)',
