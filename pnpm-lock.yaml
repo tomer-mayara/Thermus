@@ -166,7 +166,9 @@ overrides:
   ts-api-utils>typescript: 6.0.3
 
 patchedDependencies:
-  agent-input-sanitizer@1.47.14: ba233744ca7c9ee5b9995f7f68b2ee9326158c5e0e713f103fd57529a50477f2
+  agent-input-sanitizer@1.47.14: 96b63ca82db4767c5f703687a5b664ced6d1059e15f25f63f16402b13286ce81
+  defuddle@0.19.4: f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6
+  linkedom@0.18.13: ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590
 
 importers:
 
@@ -177,16 +179,16 @@ importers:
         version: 0.13.3
       agent-input-sanitizer:
         specifier: 1.47.14
-        version: 1.47.14(patch_hash=ba233744ca7c9ee5b9995f7f68b2ee9326158c5e0e713f103fd57529a50477f2)
+        version: 1.47.14(patch_hash=96b63ca82db4767c5f703687a5b664ced6d1059e15f25f63f16402b13286ce81)
       css-select:
         specifier: ^7.0.0
         version: 7.0.0
       defuddle:
         specifier: ^0.19.4
-        version: 0.19.4
+        version: 0.19.4(patch_hash=f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6)
       linkedom:
         specifier: ^0.18.13
-        version: 0.18.13
+        version: 0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590)
       parse5:
         specifier: 8.0.1
         version: 8.0.1
@@ -2122,7 +2124,7 @@ snapshots:
     dependencies:
       cargo-cp-artifact: 0.1.9
 
-  agent-input-sanitizer@1.47.14(patch_hash=ba233744ca7c9ee5b9995f7f68b2ee9326158c5e0e713f103fd57529a50477f2):
+  agent-input-sanitizer@1.47.14(patch_hash=96b63ca82db4767c5f703687a5b664ced6d1059e15f25f63f16402b13286ce81):
     dependencies:
       css-tree: 3.2.1
       rehype-parse: 9.0.1
@@ -2204,12 +2206,12 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  defuddle@0.19.4:
+  defuddle@0.19.4(patch_hash=f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6):
     dependencies:
       commander: 12.1.0
       mathml-to-latex: 1.8.0
     optionalDependencies:
-      linkedom: 0.18.13
+      linkedom: 0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590)
       temml: 0.13.5
       turndown: 7.2.4
     transitivePeerDependencies:
@@ -2511,7 +2513,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  linkedom@0.18.13:
+  linkedom@0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590):
     dependencies:
       css-select: 7.0.0
       cssom: 0.5.0

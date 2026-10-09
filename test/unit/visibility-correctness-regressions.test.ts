@@ -98,6 +98,10 @@ describe('visibility correctness regressions', () => {
 
   const eligibilityCases = [
     { name: 'an explicit inline div', tag: 'div', style: 'display:inline', parent: '', visible: true },
+    { name: 'a default del element', tag: 'del', style: '', parent: '', visible: true },
+    { name: 'a default ins element', tag: 'ins', style: '', parent: '', visible: true },
+    { name: 'a default custom element', tag: 'x-inline', style: '', parent: '', visible: true },
+    { name: 'an explicit block custom element', tag: 'x-inline', style: 'display:block', parent: '', visible: false },
     { name: 'important inline before normal inline-block', tag: 'span',
       style: 'display:inline!important;display:inline-block', parent: '', visible: true },
     { name: 'inline before important block', tag: 'span',
@@ -120,7 +124,8 @@ describe('visibility correctness regressions', () => {
 
       if (visible) assert.match(result.html, /TARGET CONTENT/);
       else assert.doesNotMatch(result.html, /TARGET CONTENT/);
-      assert.equal(result.markdown, visible ? 'TARGET CONTENT\n\nVisible sibling' : 'Visible sibling');
+      const visibleContent = tag === 'del' ? '~~TARGET CONTENT~~' : 'TARGET CONTENT';
+      assert.equal(result.markdown, visible ? `${visibleContent}\n\nVisible sibling` : 'Visible sibling');
       assert.deepEqual(result.found, visible ? [] : ['hidden-html']);
     });
   }
