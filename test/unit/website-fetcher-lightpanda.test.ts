@@ -4,6 +4,7 @@ import childProcess, {
   type ExecFileException,
   type ExecFileOptionsWithStringEncoding,
 } from 'node:child_process';
+import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
@@ -16,15 +17,20 @@ describe('WebsiteFetcherLightpanda', () => {
   let fetcher: WebsiteFetcherLightpanda;
   let launchCount: number;
   let child: ChildProcess;
+  let rendererLaunched: Promise<void>;
+  let signalRendererLaunch!: () => void;
 
   beforeEach(() => {
     launchCount = 0;
     child = new ChildProcess();
+    rendererLaunched = new Promise((resolve) => { signalRendererLaunch = resolve; });
+    mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
     mock.method(childProcess, 'execFile', ((...invocation: [
       string, readonly string[], ExecFileOptionsWithStringEncoding, typeof finish,
     ]) => {
       const [executable, arguments_, executionOptions, callback] = invocation;
       launchCount += 1;
+      signalRendererLaunch();
       command = executable;
       args = arguments_;
       options = executionOptions;
@@ -40,14 +46,19 @@ describe('WebsiteFetcherLightpanda', () => {
     syncBuiltinESMExports();
   });
 
-  test('uses a bounded network idle wait and preserves process limits', async () => {
+  test('uses bounded network idle and native network policies while preserving process limits', async () => {
     const result = fetcher.fetchURL('https://example.com');
+    await rendererLaunched;
 
     assert.equal(command, 'lightpanda');
-    assert.deepEqual(args, [
+    assert.deepEqual(args.slice(0, 8), [
       'fetch', '--dump', 'html', '--wait-until', 'networkidle', '--wait-ms', '60000',
-      'https://example.com/',
+      '--block-private-networks',
     ]);
+    assert.ok(args.includes('--block-cidrs'));
+    assert.ok(args.includes('--http-proxy'));
+    assert.equal(args[args.indexOf('--http-proxy') + 1], '');
+    assert.equal(args.at(-1), 'https://example.com/');
     assert.deepEqual(options, {
       encoding: 'utf8',
       maxBuffer: 32 * 1024 * 1024,
@@ -59,6 +70,7 @@ describe('WebsiteFetcherLightpanda', () => {
 
   test('returns HTML as soon as the process completes', async () => {
     const result = fetcher.fetchURL('https://example.com/');
+    await rendererLaunched;
     finish(null, '<html>Ready early</html>', '');
 
     const nextTurn = new Promise<string>((resolve) => {
@@ -67,18 +79,29 @@ describe('WebsiteFetcherLightpanda', () => {
     assert.equal(await Promise.race([result, nextTurn]), '<html>Ready early</html>');
   });
 
-  test('rejects a readiness failure and discards partial HTML', async () => {
-    const error: ExecFileException = Object.assign(new Error('wait failed'), { code: 1 });
-    const result = fetcher.fetchURL('https://example.com/');
-    finish(error, '<html>Partial</html>', 'wait failed');
+  const processErrors: Array<[string, ExecFileException, string?]> = [
+    ['rejects a readiness failure and discards partial HTML', Object.assign(new Error('wait failed'), { code: 1 })],
+    ['preserves the output buffer limit error', Object.assign(new Error('stdout maxBuffer length exceeded'), { code: 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER' })],
+    ['reports an unavailable executable', Object.assign(new Error('spawn lightpanda ENOENT'), { code: 'ENOENT' }), 'lightpanda is not available on PATH'],
+    ['preserves other launch errors', Object.assign(new Error('spawn lightpanda EACCES'), { code: 'EACCES' })],
+  ];
 
-    await assert.rejects(result, (caught) => caught === error);
-  });
+  for (const [name, error, expectedMessage] of processErrors) {
+    test(name, async () => {
+      const result = fetcher.fetchURL('https://example.com/');
+      await rendererLaunched;
+      finish(error, '<html>Partial</html>', error.message);
+      await assert.rejects(result, (caught) => expectedMessage
+        ? (caught as Error).message === expectedMessage
+        : caught === error);
+    });
+  }
 
   test('kills the child at the readiness limit and rejects only after child completion', async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
     const kill = mock.method(child, 'kill', () => true);
     const result = fetcher.fetchURL('https://example.com/');
+    await rendererLaunched;
     let settled = false;
     void result.then(() => { settled = true; }, () => { settled = true; });
 
@@ -104,28 +127,27 @@ describe('WebsiteFetcherLightpanda', () => {
     assert.equal(kill.mock.callCount(), 1);
   });
 
-  test('clears the readiness timer after success', async (t) => {
-    t.mock.timers.enable({ apis: ['setTimeout'] });
-    const kill = mock.method(child, 'kill', () => true);
-    const result = fetcher.fetchURL('https://example.com/');
-    finish(null, '<html>Ready</html>', '');
-    assert.equal(await result, '<html>Ready</html>');
+  const timerCleanupCases: Array<[string, ExecFileException | null]> = [
+    ['clears the readiness timer after success', null],
+    ['clears the readiness timer after a process error', new Error('launch failed')],
+  ];
 
-    t.mock.timers.tick(60_000);
-    assert.equal(kill.mock.callCount(), 0);
-  });
-
-  test('clears the readiness timer after a process error', async (t) => {
-    t.mock.timers.enable({ apis: ['setTimeout'] });
-    const kill = mock.method(child, 'kill', () => true);
-    const error = new Error('launch failed');
-    const result = fetcher.fetchURL('https://example.com/');
-    finish(error, '', '');
-    await assert.rejects(result, (caught) => caught === error);
-
-    t.mock.timers.tick(60_000);
-    assert.equal(kill.mock.callCount(), 0);
-  });
+  for (const [name, error] of timerCleanupCases) {
+    test(name, async (t) => {
+      t.mock.timers.enable({ apis: ['setTimeout'] });
+      const kill = mock.method(child, 'kill', () => true);
+      const result = fetcher.fetchURL('https://example.com/');
+      await rendererLaunched;
+      finish(error, '<html>Ready</html>', '');
+      if (error === null) {
+        assert.equal(await result, '<html>Ready</html>');
+      } else {
+        await assert.rejects(result, (caught) => caught === error);
+      }
+      t.mock.timers.tick(60_000);
+      assert.equal(kill.mock.callCount(), 0);
+    });
+  }
 
   test('waits for child completion and preserves the process timeout error', async () => {
     const error: ExecFileException = Object.assign(new Error('Command timed out'), {
@@ -134,42 +156,13 @@ describe('WebsiteFetcherLightpanda', () => {
       code: null,
     });
     const result = fetcher.fetchURL('https://example.com/');
+    await rendererLaunched;
     assert.equal(options.timeout, 60_000);
     let settled = false;
     void result.then(() => { settled = true; }, () => { settled = true; });
     await new Promise<void>((resolve) => { setImmediate(resolve); });
     assert.equal(settled, false);
     finish(error, '<html>Partial</html>', '');
-
-    await assert.rejects(result, (caught) => caught === error);
-  });
-
-  test('preserves the output buffer limit error', async () => {
-    const error: ExecFileException = Object.assign(new Error('stdout maxBuffer length exceeded'), {
-      code: 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER',
-    });
-    const result = fetcher.fetchURL('https://example.com/');
-    finish(error, '<html>Partial</html>', '');
-
-    await assert.rejects(result, (caught) => caught === error);
-  });
-
-  test('reports an unavailable executable', async () => {
-    const error: ExecFileException = Object.assign(new Error('spawn lightpanda ENOENT'), {
-      code: 'ENOENT',
-    });
-    const result = fetcher.fetchURL('https://example.com/');
-    finish(error, '', '');
-
-    await assert.rejects(result, { message: 'lightpanda is not available on PATH' });
-  });
-
-  test('preserves other launch errors', async () => {
-    const error: ExecFileException = Object.assign(new Error('spawn lightpanda EACCES'), {
-      code: 'EACCES',
-    });
-    const result = fetcher.fetchURL('https://example.com/');
-    finish(error, '', '');
 
     await assert.rejects(result, (caught) => caught === error);
   });

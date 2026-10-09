@@ -7,8 +7,9 @@ import childProcess, {
 import { once } from 'node:events';
 import { createServer, type Server } from 'node:http';
 import { syncBuiltinESMExports } from 'node:module';
-import { afterEach, beforeEach, describe, mock, test } from 'node:test';
+import { afterEach, beforeEach, describe, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { permitIPv4Fixture } from '../support/network-fixture.ts';
 
 const originalExecFile = childProcess.execFile;
 const READINESS_WAIT_MS = 5_000;
@@ -32,7 +33,8 @@ describe('WebsiteFetcherLightpanda readiness', { concurrency: false }, () => {
   let delayedResponseComplete: boolean;
   let ongoingRequests: number;
 
-  beforeEach(async () => {
+  beforeEach(async (context) => {
+    assert.ok('mock' in context);
     children = [];
     timers = new Set();
     delayedResponseComplete = false;
@@ -73,9 +75,9 @@ describe('WebsiteFetcherLightpanda readiness', { concurrency: false }, () => {
     await once(server, 'listening');
     const address = server.address();
     assert.ok(address !== null && typeof address !== 'string');
-    origin = `http://127.0.0.1:${address.port}`;
+    origin = `http://localhost:${address.port}`;
 
-    mock.method(childProcess, 'execFile', ((...invocation: FetchInvocation) => {
+    context.mock.method(childProcess, 'execFile', ((...invocation: FetchInvocation) => {
       const child = originalExecFile(...invocation);
       children.push(child);
       const timer = setTimeout(() => child.kill('SIGKILL'), CHILD_GUARD_MS);
@@ -86,12 +88,13 @@ describe('WebsiteFetcherLightpanda readiness', { concurrency: false }, () => {
       });
       return child;
     }) as typeof childProcess.execFile);
-    syncBuiltinESMExports();
+    permitIPv4Fixture(context);
     fetcher = new WebsiteFetcherLightpanda();
   });
 
-  afterEach(async () => {
-    mock.restoreAll();
+  afterEach(async (context) => {
+    assert.ok('mock' in context);
+    context.mock.restoreAll();
     syncBuiltinESMExports();
     for (const timer of timers) clearTimeout(timer);
     await Promise.all(children.map(async (child) => {

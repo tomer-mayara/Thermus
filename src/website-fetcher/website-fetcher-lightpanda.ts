@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
 import { type WebsiteFetcher } from './website-fetcher.ts';
 
 const LIGHTPANDA_BIN = 'lightpanda';
@@ -12,6 +13,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       throw new Error(`Fetch URL must use http or https: ${url}`);
     }
+    await assertPublicDestination(parsed);
 
     return new Promise((resolve, reject) => {
       let readinessTimer: ReturnType<typeof setTimeout> | undefined;
@@ -22,6 +24,8 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
         [
           'fetch', '--dump', 'html',
           '--wait-until', 'networkidle', '--wait-ms', String(LIGHTPANDA_TIMEOUT_MS),
+          '--block-private-networks', '--block-cidrs', LIGHTPANDA_BLOCKED_CIDRS,
+          '--http-proxy', '',
           parsed.href,
         ],
         {

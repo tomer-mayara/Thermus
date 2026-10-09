@@ -1,0 +1,100 @@
+{
+  "reviewer": {
+    "defaultAgent": "all",
+    "parallelIfPossible": true,
+    "defaultHarness": "glm_zai_glm-5.2",
+    "reviewerLogin": null,
+    "harnesses": {
+      "hermes_gpt-5.6-terra_xhigh": {
+        "kind": "hermes",
+        "bin": "hermes",
+        "timeoutMs": 300000,
+        "model": "gpt-5.6-terra",
+        "provider": "openai-codex",
+        "reasoningEffort": "xhigh"
+      },
+      "opencode_gpt-5.6-terra_xhigh": {
+        "kind": "opencode",
+        "bin": "opencode",
+        "timeoutMs": 900000,
+        "model": "openai/gpt-5.6-terra",
+        "variant": "xhigh",
+        "auto": false
+      },
+      "opencode_gpt-5.6-sol_xhigh": {
+        "kind": "opencode",
+        "bin": "opencode",
+        "timeoutMs": 900000,
+        "model": "openai/gpt-5.6-sol",
+        "variant": "xhigh",
+        "auto": false
+      },
+      "opencode_gpt-5.6-sol_max": {
+        "kind": "opencode",
+        "bin": "opencode",
+        "timeoutMs": 900000,
+        "model": "openai/gpt-5.6-sol",
+        "variant": "max",
+        "auto": false
+      },
+      "opencode_gpt-6-astra_max": {
+        "kind": "opencode",
+        "bin": "opencode",
+        "timeoutMs": 900000,
+        "model": "openai/gpt-6-astra",
+        "variant": "max",
+        "auto": false
+      },
+      "opencode_gpt-6.1-sol_max": {
+        "kind": "opencode",
+        "bin": "opencode",
+        "timeoutMs": 900000,
+        "model": "openai/gpt-6.1-sol",
+        "variant": "max",
+        "auto": false
+      },
+      "opencode_xai_grok-high": {
+        "kind": "opencode",
+        "bin": "opencode",
+        "timeoutMs": 300000,
+        "model": "xai/grok-4.7",
+        "variant": "high",
+        "auto": false
+      },
+      "opencode_zai_glm-5.2_max": {
+        "kind": "opencode",
+        "bin": "opencode",
+        "timeoutMs": 300000,
+        "model": "zai-coding-plan/glm-5.2",
+        "variant": "max",
+        "auto": false
+      },
+      "glm_zai_glm-5.2": {
+        "kind": "glm",
+        "model": "glm-5.2",
+        "apiKey": "07c432fcbef244ce8e6e1612df2bbf0b",
+        "codingUrl": "https://api.z.ai/api/coding/paas/v4",
+        "timeoutMs": 300000
+      }
+    },
+    "agents": {
+      "maintainability": {
+        "harness": "opencode_xai_grok-high"
+      },
+      "test-design": {
+        "harness": "opencode_xai_grok-high"
+      },
+      "spec-comparator": {
+        "harness": "opencode_xai_grok-high"
+      },
+      "correctness": {
+        "harness": "opencode_xai_grok-high"
+      }
+    },
+    "github": {
+      "token": "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",
+      "apiUrl": "https://api.github.com",
+      "requestAttempts": 3
+    }
+  }
+}
