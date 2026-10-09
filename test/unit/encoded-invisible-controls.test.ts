@@ -159,4 +159,33 @@ describe('Invisible controls after HTML entity decoding', () => {
     assert.deepEqual(result.found, ['existing-finding', 'cf-format']);
     assert.deepEqual(result.warnings, ['existing warning', formatWarning]);
   });
+
+  const documentsWithoutTitles = [
+    ['a visible body', '<html><body><p>Visible paragraph.</p></body></html>', 'Visible paragraph.'],
+    ['an empty body', '<html><body></body></html>', ''],
+  ] as const;
+
+  for (const [name, html, markdown] of documentsWithoutTitles) {
+    test(`returns an empty title for ${name} and preserves prior reports`, async () => {
+      const input: Ctx = {
+        url: 'https://example.com/',
+        html,
+        removed: 2,
+        skipped: 3,
+        found: Object.freeze(['existing-finding']),
+        warnings: Object.freeze(['existing warning']),
+      };
+      const original = { ...input };
+
+      const result = await new CleanHtmlToMarkdownDefuddle().invoke(input);
+
+      assert.equal(result.markdown, markdown);
+      assert.equal(result.title, '');
+      assert.equal(result.removed, 2);
+      assert.equal(result.skipped, 3);
+      assert.deepEqual(result.found, ['existing-finding']);
+      assert.deepEqual(result.warnings, ['existing warning']);
+      assert.deepEqual(input, original);
+    });
+  }
 });

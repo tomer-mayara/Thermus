@@ -8,6 +8,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
     const { document } = parseHTML(ctx.html);
     const result = await Defuddle(document, ctx.url, { markdown: true, useAsync: false });
+    // Defuddle returns empty strings for missing content and titles.
     const [markdown, title] = await Promise.all([
       sanitize(result.content),
       sanitize(result.title),
