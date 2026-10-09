@@ -93,8 +93,12 @@ describe('Supplied ad rules', () => {
         removed: 2,
         skipped: 3,
       };
+      const expected = { ...input };
 
-      assert.deepEqual(await supplied.invoke(input), input);
+      const result = await supplied.invoke(input);
+
+      assert.deepEqual(result, expected);
+      assert.deepEqual(input, expected);
     });
   }
 
@@ -136,9 +140,13 @@ describe('Supplied ad rules', () => {
 
     assert.throws(() => Reflect.construct(CleanHtmlAdsAdblockRs, []), TypeError);
     assert.throws(() => Reflect.construct(CleanHtmlAdsAdblockRs, [null]), TypeError);
-    const unchanged = { url: 'https://example.com/', html: '<div class="ad">Ad</div>', removed: 0, skipped: 0 };
     for (const rules of ['', 'example.com##\n||example.com^$unknown-filter-option']) {
-      assert.deepEqual(await new CleanHtmlAdsAdblockRs(rules).invoke(unchanged), unchanged);
+      const input = { url: 'https://example.com/', html: '<div class="ad">Ad</div>', removed: 2, skipped: 3 };
+      const expected = { ...input };
+      const result = await new CleanHtmlAdsAdblockRs(rules).invoke(input);
+
+      assert.deepEqual(result, expected);
+      assert.deepEqual(input, expected);
     }
     const result = await supplied.invoke({
       url: 'https://example.com/',
