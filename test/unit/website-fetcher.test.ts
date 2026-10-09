@@ -103,15 +103,16 @@ describe('WebsiteFetcherLightpanda process contract', () => {
     ['<html>Unstructured output</html>', 'lightpanda returned invalid fetch metadata'],
     ['null', 'lightpanda returned invalid fetch metadata'],
     ['{}', 'lightpanda did not return successful HTML'],
+    [JSON.stringify({ url, content: html, error: null }), 'lightpanda did not return successful HTML'],
     [
-      JSON.stringify({ http_status: 0, content: html, error: 'CouldntConnect' }),
+      JSON.stringify({ url, http_status: 0, content: html, error: 'CouldntConnect' }),
       'lightpanda did not return successful HTML',
     ],
     [
-      JSON.stringify({ http_status: 200, content: html, error: 'WaitTimeout' }),
+      JSON.stringify({ url, http_status: 200, content: html, error: 'WaitTimeout' }),
       'lightpanda did not return successful HTML',
     ],
-    [JSON.stringify({ http_status: 200, error: null }), 'lightpanda did not return successful HTML'],
+    [JSON.stringify({ url, http_status: 200, error: null }), 'lightpanda did not return successful HTML'],
   ]) {
     test(`rejects an invalid renderer result: ${stdout}`, async (context) => {
       stubProcess(context, { stdout });
