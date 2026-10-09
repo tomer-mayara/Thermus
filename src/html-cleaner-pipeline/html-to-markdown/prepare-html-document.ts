@@ -55,8 +55,13 @@ function normalizeDocument(document: HtmlDocument): void {
   // LinkeDOM inserts missing head and body elements through these getters after the root exists.
   const head = document.head;
   const body = document.body;
+  let bodyAnchor = body.firstChild;
   for (const node of [...document.documentElement.childNodes]) {
-    if (node === head || node === body) {
+    if (node === body) {
+      bodyAnchor = null;
+      continue;
+    }
+    if (node === head) {
       continue;
     }
     if (node.nodeName === 'HEAD' || node.nodeName === 'BODY') {
@@ -68,7 +73,7 @@ function normalizeDocument(document: HtmlDocument): void {
     } else if (node.nodeName !== 'NOSCRIPT' && headElements.has(node.nodeName)) {
       head.appendChild(node);
     } else {
-      body.appendChild(node);
+      body.insertBefore(node, bodyAnchor);
     }
   }
   moveImpliedBodyContent(document);

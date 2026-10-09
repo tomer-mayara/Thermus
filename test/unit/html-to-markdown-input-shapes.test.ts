@@ -94,6 +94,26 @@ describe('HTML to Markdown input shapes', () => {
     assert.equal(result.markdown, 'First\n\nSecond');
   });
 
+  for (const [shape, html, title] of [
+    ['root text', '<html>Before<body><p>Inside</p></body>After</html>', ''],
+    ['fragment text', 'Before<body><p>Inside</p></body>After', ''],
+    ['document text', '<html><head><title>Title</title></head>Before<body><p>Inside</p></body>After</html>', 'Title'],
+    ['root elements', '<html><p>Before</p><body><p>Inside</p></body><p>After</p></html>', ''],
+    ['fragment elements', '<p>Before</p><body><p>Inside</p></body><p>After</p>', ''],
+    ['document elements', '<html><head><title>Title</title></head><p>Before</p><body><p>Inside</p></body><p>After</p></html>', 'Title'],
+  ]) {
+    test(`keeps ${shape} before and after an existing body in source order`, async () => {
+      const input = createContext(html);
+      const original = structuredClone(input);
+
+      const result = await converter.invoke(Object.freeze(input));
+
+      assert.equal(result.markdown, 'Before\n\nInside\n\nAfter');
+      assert.equal(result.title, title);
+      assert.deepEqual(input, original);
+    });
+  }
+
   for (const html of [
     '<!doctype html><head><title>Title</title><p>Hello world</p>',
     '<!doctype html><html><head><title>Title</title><p>Hello world</p></html>',

@@ -117,6 +117,7 @@
 [V] Escapes plain-text angle tokens, such as email addresses and generic type names, before HTML parsing
 [V] Keeps schema headline metadata for empty and nonempty documents without restoring removed body content from schema `articleBody` or `text`
 [V] Keeps body content when the document omits the closing `</head>` tag
+[V] Keeps text and element siblings before and after an existing body in source order, with or without document metadata
 [V] Keeps line breaks and fenced Markdown for styled `<code>` and bare `<pre>` blocks
 [V] Keeps relative indentation in preformatted fragments, including nested indentation, tabs, and leading whitespace
 [V] Keeps removed ad targets out of the Markdown
