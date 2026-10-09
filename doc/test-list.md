@@ -13,7 +13,9 @@
 [V] Returns an updated context, preserves metadata, adds to existing counts, and does not mutate the input
 [V] Preserves the next paragraph and its source text when an ad paragraph omits its end tag
 [V] Preserves the next list item and its attributes when an ad item omits its end tag
-[V] Preserves parent end tags and source text around explicit, nested, adjacent, and overlapping ad matches
+[V] Preserves following elements after omitted paragraph end tags inside list items and before dialog, search, menu, and hgroup
+[V] Preserves Unicode, comments, attributes, and source formatting
+[V] Preserves nested list boundaries and parent end tags around explicit, nested, adjacent, and overlapping ad matches
 [V] Counts each ad element once and keeps selector exceptions
 
 **Prompt Injection Remover**

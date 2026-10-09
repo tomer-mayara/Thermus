@@ -2,17 +2,17 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import adblockRust from 'adblock-rs';
 import { selectAll } from 'css-select';
-import { type DomHandler, ElementType, Parser } from 'htmlparser2';
+import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { type Ctx } from '../../html-to-markdown-pipeline.ts';
 import { type CleanHtmlAds } from '../clean-html-ads.ts';
-import { SourceRangeDomHandler } from './source-range-dom-handler.ts';
+import { SourceRangeParser } from './source-range-parser.ts';
 
 type StripHtmlResult = Pick<Ctx, 'html' | 'removed' | 'skipped'>;
 
 type AdblockEngine = InstanceType<typeof adblockRust.Engine>;
 
-type HtmlDocument = DomHandler['root'];
-type HtmlNode = HtmlDocument | HtmlDocument['children'][number];
+type HtmlDocument = Htmlparser2TreeAdapterMap['document'];
+type HtmlNode = Htmlparser2TreeAdapterMap['node'];
 
 type SourceRange = {
   start: number;
@@ -54,16 +54,15 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
   }
 
   private static parseHtml(html: string): HtmlDocument {
-    const handler = new SourceRangeDomHandler(undefined, {
-      withStartIndices: true,
-      withEndIndices: true,
+    return SourceRangeParser.parse(html, {
+      treeAdapter: adapter,
+      sourceCodeLocationInfo: true,
+      scriptingEnabled: false,
     });
-    new Parser(handler).end(html);
-    return handler.root;
   }
 
   private static collectClassAndId(node: HtmlNode, classes: Set<string>, ids: Set<string>): void {
-    if (node.type === ElementType.Tag) {
+    if (node.type === 'tag') {
       const id = node.attribs.id;
       if (id !== undefined && id !== '') {
         ids.add(id);
@@ -159,17 +158,19 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
         continue;
       }
       for (const node of nodes) {
-        if (node.startIndex == null || node.endIndex == null) {
+        const location = node.sourceCodeLocation;
+        if (location == null) {
           skipped += 1;
           continue;
         }
-        const key = `${node.startIndex}:${node.endIndex}`;
+        const { startOffset, endOffset } = location;
+        const key = `${startOffset}:${endOffset}`;
         if (seen.has(key)) {
           continue;
         }
         seen.add(key);
         removed += 1;
-        ranges.push(CleanHtmlAdsAdblockRs.loneLineRange(html, node.startIndex, node.endIndex + 1));
+        ranges.push(CleanHtmlAdsAdblockRs.loneLineRange(html, startOffset, endOffset));
       }
     }
 
