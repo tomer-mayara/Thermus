@@ -21,6 +21,45 @@ function assertControlFinding(result: Ctx): void {
 }
 
 describe('Controls around entity decoding boundaries', () => {
+  test('preserves strong text after an ANSI color sequence in every encoding', async () => {
+    const sequences = [
+      ['literal', '\u001b[31m'],
+      ['decimal', '&#27;[31m'],
+      ['hexadecimal', '&#x1b;[31m'],
+    ] as const;
+    const results: Ctx[] = [];
+
+    for (const [, sequence] of sequences) {
+      const result = await processHtml(documentHtml(
+        `<p>${sequence}<strong>main</strong></p>`,
+      ));
+
+      results.push(result);
+    }
+
+    assert.deepEqual(results.map(({ markdown }) => markdown), [
+      '**main**',
+      '**main**',
+      '**main**',
+    ]);
+    const reports = results.map(({ found, warnings, skipped }) => ({
+      found,
+      warnings,
+      skipped,
+    }));
+    assert.deepEqual(reports[1], reports[0]);
+    assert.deepEqual(reports[2], reports[0]);
+  });
+
+  test('does not attach an OSC-only link to the same visible text that follows it', async () => {
+    const result = await processHtml(documentHtml(
+      '<p><a href="/unexpected">&#27;]0;hello&#7;</a>hello</p>',
+    ));
+
+    assert.equal(result.markdown, 'hello');
+    assert.doesNotMatch(result.markdown ?? '', /\]\(/);
+  });
+
   const bodyControls = [0x200b, 0x200d, 0x200e, 0x200f, 0xfeff];
 
   for (const codePoint of bodyControls) {

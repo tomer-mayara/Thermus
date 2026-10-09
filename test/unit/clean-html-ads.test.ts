@@ -29,7 +29,8 @@ describe('CleanHtmlAdsAdblockRs', () => {
 
   test('hides the documented targets', async () => {
     const result = await cleaner.invoke({
-      url: elementHidingUrl,
+      requestedUrl: elementHidingUrl,
+      finalUrl: elementHidingUrl,
       html: elementHidingHtml,
       removed: 0,
       skipped: 0,
@@ -41,7 +42,8 @@ describe('CleanHtmlAdsAdblockRs', () => {
 
   test('honors the element-hiding exception', async () => {
     const result = await cleaner.invoke({
-      url: elementHidingExceptionUrl,
+      requestedUrl: elementHidingExceptionUrl,
+      finalUrl: elementHidingExceptionUrl,
       html: elementHidingExceptionHtml,
       removed: 0,
       skipped: 0,
@@ -53,7 +55,8 @@ describe('CleanHtmlAdsAdblockRs', () => {
 
   test('does nothing without a matching host', async () => {
     const result = await cleaner.invoke({
-      url: 'https://example.com/',
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/',
       html: elementHidingHtml,
       removed: 0,
       skipped: 0,
@@ -65,7 +68,8 @@ describe('CleanHtmlAdsAdblockRs', () => {
 
   test('counts unsupported procedural actions as skipped', async () => {
     const result = await cleaner.invoke({
-      url: elementHidingUrl,
+      requestedUrl: elementHidingUrl,
+      finalUrl: elementHidingUrl,
       html: elementHidingHtml,
       removed: 0,
       skipped: 0,
@@ -77,7 +81,8 @@ describe('CleanHtmlAdsAdblockRs', () => {
 
   test('preserves context metadata, accumulates counts, and does not mutate input', async () => {
     const input: Ctx = {
-      url: elementHidingUrl,
+      requestedUrl: elementHidingUrl,
+      finalUrl: elementHidingUrl,
       html: elementHidingHtml,
       markdown: 'existing markdown',
       title: 'Existing title',
@@ -90,7 +95,8 @@ describe('CleanHtmlAdsAdblockRs', () => {
 
     assert.deepEqual(input, original);
     assert.notEqual(result, input);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(result.html, elementHidingCleanedHtml);
     assert.equal(result.markdown, input.markdown);
     assert.equal(result.title, input.title);

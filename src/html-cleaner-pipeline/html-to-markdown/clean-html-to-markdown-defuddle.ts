@@ -1,5 +1,4 @@
 import { applyLayer1, sanitize } from 'agent-input-sanitizer';
-import { alignDeletions } from 'agent-input-sanitizer/view-map';
 import { Defuddle } from 'defuddle/node';
 import { type DOMParser, NodeFilter, parseHTML } from 'linkedom';
 import { type Ctx } from '../html-to-markdown-pipeline.ts';
@@ -20,10 +19,10 @@ const textBoundaries = [
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
     const reports: ReturnType<typeof sanitize>[] = [];
-    const sanitizeText = (text: string): string => {
+    const sanitizeText = (text: string, onDelete?: Parameters<typeof applyLayer1>[1]): string => {
       // DOM fields are inside the HTML input, so a leading BOM is not a file BOM.
       const input = ' ' + text;
-      const { cleaned } = applyLayer1(input);
+      const { cleaned } = applyLayer1(input, onDelete);
       if (!cleaned.startsWith(' ')) {
         throw new Error('Sanitizer changed the text boundary prefix');
       }
@@ -33,7 +32,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
 
     const { document } = parseHTML(ctx.html);
     this.sanitizeDocument(document, sanitizeText);
-    const result = await Defuddle(document, ctx.url, {
+    const result = await Defuddle(document, ctx.finalUrl, {
       markdown: true,
       useAsync: false,
       processExtractedDom: (root) => this.sanitizeDocument(root, sanitizeText),
@@ -63,7 +62,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
 
   private sanitizeDocument(
     root: HtmlDocument | HtmlElement,
-    sanitizeText: (text: string) => string,
+    sanitizeText: (text: string, onDelete?: Parameters<typeof applyLayer1>[1]) => string,
   ): void {
     const document = root.ownerDocument ?? root as HtmlDocument;
     this.preserveNoscriptText(root, document);
@@ -73,7 +72,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
     const flush = () => {
       if (run.length === 0) return;
       const text = run.map((node) => node.data).join('');
-      this.applyTextDeletions(run, sanitizeText(text));
+      sanitizeText(text, (ranges) => this.applyTextDeletions(run, ranges));
       run = [];
     };
     for (let node = walker.currentNode; node; node = walker.nextNode()) {
@@ -98,22 +97,29 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
     const figureTextAnchors = new Map<HtmlElement, HtmlElement>();
     for (const noscript of root.querySelectorAll('noscript')) {
       if (noscript.parentElement?.closest('noscript')) continue;
-      const hasImage = noscript.querySelector('img') !== null;
-      const figure = noscript.closest('figure');
-      // LinkeDOM has already decoded this text. Defuddle must not parse it as HTML.
-      const content = document.createElement(figure ? 'div' : 'span', {});
-      this.copyNoscriptContent(noscript, content);
-      if (figure) {
-        // Defuddle reduces image figures to an image and a caption.
-        const anchor = figureTextAnchors.get(figure) ?? figure;
-        anchor.after(content);
-        figureTextAnchors.set(figure, content);
-        if (!hasImage) noscript.remove();
-      } else if (hasImage) {
-        noscript.after(content);
-      } else {
-        noscript.replaceWith(content);
-      }
+      this.preserveNoscriptElement(noscript, document, figureTextAnchors);
+    }
+  }
+
+  private preserveNoscriptElement(
+    noscript: HtmlElement, document: HtmlDocument, figureTextAnchors: Map<HtmlElement, HtmlElement>,
+  ): void {
+    const hasImage = noscript.querySelector('img') !== null;
+    if (hasImage && !noscript.textContent) return;
+    const figure = noscript.closest('figure');
+    // LinkeDOM has already decoded this text. Defuddle must not parse it as HTML.
+    const content = document.createElement(figure ? 'div' : 'span', {});
+    this.copyNoscriptContent(noscript, content);
+    if (figure) {
+      // Defuddle reduces image figures to an image and a caption.
+      const anchor = figureTextAnchors.get(figure) ?? figure;
+      anchor.after(content);
+      figureTextAnchors.set(figure, content);
+      if (!hasImage) noscript.remove();
+    } else if (hasImage) {
+      noscript.after(content);
+    } else {
+      noscript.replaceWith(content);
     }
   }
 
@@ -127,16 +133,17 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
       nested.remove();
     }
     while (copy.firstChild) content.appendChild(copy.firstChild);
+    // Extractor callbacks can visit this image tree again after serialization.
+    const walker = noscript.ownerDocument.createTreeWalker(noscript, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) node.nodeValue = '';
   }
 
-  private applyTextDeletions(nodes: readonly HtmlText[], cleaned: string): void {
-    const source = nodes.map((node) => node.data).join('');
-    if (source === cleaned) return;
-    let removed = 0;
-    const ranges = alignDeletions(source, cleaned).map(({ start, deleted }) => {
-      const from = start + removed;
-      removed += deleted.length;
-      return { from, to: start + removed };
+  private applyTextDeletions(
+    nodes: readonly HtmlText[], deletions: { start: number; end: number }[],
+  ): void {
+    const ranges = deletions.map(({ start, end }) => {
+      if (start < 1) throw new Error('Sanitizer removed the text boundary prefix');
+      return { from: start - 1, to: end - 1 };
     });
     let offset = 0;
     let rangeIndex = 0;

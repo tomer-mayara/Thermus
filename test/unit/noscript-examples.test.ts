@@ -2,6 +2,15 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { processHtml } from '../helpers/process-html.ts';
 
+function substackPage(bodyHtml: string): string {
+  const preloadData = JSON.stringify({
+    feedData: { initialPost: { post: { body_html: bodyHtml } } },
+  });
+  return '<html><head><title>Safe title</title></head><body>'
+    + `<script>window._preloads = JSON.parse(${JSON.stringify(preloadData)});</script>`
+    + '</body></html>';
+}
+
 describe('Images and examples in noscript content', () => {
   test('keeps an escaped image example inside noscript as visible text', async () => {
     const result = await processHtml(
@@ -43,6 +52,27 @@ describe('Images and examples in noscript content', () => {
     assert.deepEqual(result.found, []);
     assert.deepEqual(result.warnings, []);
     assert.match(markdown, /\\<img src="\/example\.png" alt="Example: &#x202e;">/);
+  });
+
+  test('keeps one noscript example through repeated Substack extraction', async () => {
+    const result = await processHtml(
+      substackPage(
+        '<div class="body markup"><figure><img src="/real.png" alt="Real image">'
+        + '<noscript><img src="/fallback.png" alt="Fallback image">'
+        + '&lt;img src="/example.png" alt="Example: &amp;#x202e;"&gt;'
+        + '</noscript></figure></div>',
+      ),
+      'https://example.substack.com/p/test',
+    );
+    const markdown = result.markdown ?? '';
+
+    assert.equal(markdown.match(/!\[Real image\]/g)?.length, 1);
+    assert.match(markdown, /!\[Real image\]\(https:\/\/example\.substack\.com\/real\.png\)/);
+    assert.equal(
+      markdown.match(/\\<img src="\/example\.png" alt="Example: &#x202e;">/g)?.length,
+      1,
+    );
+    assert.deepEqual(result.found?.filter((finding) => finding === 'cf-format'), []);
   });
 
   for (const [caseName, outerImage, imageCount] of [

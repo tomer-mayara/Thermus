@@ -125,7 +125,8 @@ describe('Invisible controls after HTML entity decoding', () => {
 
   test('preserves prior findings, warnings, counts, and input without mutation', async () => {
     const input: Ctx = {
-      url: 'https://example.com/',
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/',
       html: documentHtml('<p>left&#8238;right.</p>', 'left&#x2069;right'),
       removed: 2,
       skipped: 3,
@@ -141,7 +142,8 @@ describe('Invisible controls after HTML entity decoding', () => {
     assert.deepEqual(input, original);
     assert.notEqual(result, input);
     assert.equal(result.html, input.html);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(result.markdown, 'leftright.');
     assert.equal(result.title, 'leftright');
     assert.equal(result.removed, 2);
@@ -158,7 +160,8 @@ describe('Invisible controls after HTML entity decoding', () => {
   for (const [name, html, markdown] of documentsWithoutTitles) {
     test(`returns an empty title for ${name} and preserves prior reports`, async () => {
       const input: Ctx = {
-        url: 'https://example.com/',
+        requestedUrl: 'https://example.com/',
+        finalUrl: 'https://example.com/',
         html,
         removed: 2,
         skipped: 3,

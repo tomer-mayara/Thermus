@@ -12,5 +12,5 @@ export async function processHtml(
     new PromptInjectionRemoverSanitizer(),
     new CleanHtmlToMarkdownDefuddle(),
   ]);
-  return pipeline.process(url, html);
+  return pipeline.process({ requestedUrl: url, finalUrl: url, html });
 }
