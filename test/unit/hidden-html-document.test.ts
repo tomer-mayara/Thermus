@@ -1,24 +1,29 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createContext } from '../support/html-cleaner-context.ts';
 
 const threatUrl = `https://attacker.example/?payload=${'a'.repeat(128)}`;
+const scanFailureWarning = 'HTML scan failed; remaining HTML withheld';
+
+function assertHiddenDocumentRemoved(result: Ctx): void {
+  assert.equal(result.html, '');
+  assert.equal(result.found?.includes('hidden-html'), true);
+  assert.equal(result.skipped, 1);
+  assert.equal(result.warnings?.includes(scanFailureWarning), false);
+}
 
 describe('hidden HTML document and template handling', () => {
   test('removes a body or html element formed as a hidden element', async () => {
     const sanitizer = new PromptInjectionRemoverSanitizer();
-    const results: string[] = [];
-
     for (const tag of ['body', 'html']) {
       const result = await sanitizer.invoke(
         createContext(`<<span hidden>cut</span>${tag} hidden>secret</${tag}>`),
       );
 
-      results.push(result.html);
+      assertHiddenDocumentRemoved(result);
     }
-
-    assert.deepEqual(results, ['', '']);
   });
 
   test('removes a hidden body without a closing tag', async () => {
@@ -27,15 +32,11 @@ describe('hidden HTML document and template handling', () => {
       '<body hidden>secret',
       '<<span hidden>cut</span>body hidden>secret',
     ];
-    const results: string[] = [];
-
     for (const html of inputs) {
       const result = await sanitizer.invoke(createContext(html));
 
-      results.push(result.html);
+      assertHiddenDocumentRemoved(result);
     }
-
-    assert.deepEqual(results, ['', '']);
   });
 
   test('removes body and html elements with inline hidden styles', async () => {
@@ -44,15 +45,11 @@ describe('hidden HTML document and template handling', () => {
       '<body style="display:none">secret</body>',
       '<html style="display:none">secret</html>',
     ];
-    const results: string[] = [];
-
     for (const html of inputs) {
       const result = await sanitizer.invoke(createContext(html));
 
-      results.push(result.html);
+      assertHiddenDocumentRemoved(result);
     }
-
-    assert.deepEqual(results, ['', '']);
   });
 
   test('preserves a table after a hidden paragraph before it', async () => {

@@ -12,14 +12,15 @@ export class HiddenHtmlScanner {
       defaultTreeAdapter.setDocumentMode(document, hasDoctype ? mode : html.DOCUMENT_MODE.NO_QUIRKS);
     },
   };
-  private readonly ranges: { start: number; end: number; kind: 'comment' | 'hidden' }[] = [];
+  private readonly ranges: { start: number; end: number }[] = [];
+  private readonly removed = { comments: 0, hidden: 0 };
   private readonly warned = { tags: {} as Record<string, number>, dataSrc: 0 };
   private readonly urlSources: string[] = [];
 
-  private constructor(private readonly text: string) {}
+  private constructor() {}
 
   public static scan(text: string) {
-    const scanner = new HiddenHtmlScanner(text);
+    const scanner = new HiddenHtmlScanner();
     const document = parse(text, {
       treeAdapter: HiddenHtmlScanner.treeAdapter,
       sourceCodeLocationInfo: true,
@@ -28,6 +29,7 @@ export class HiddenHtmlScanner {
     scanner.visit(document, false);
     return {
       ranges: scanner.ranges,
+      removed: scanner.removed,
       warned: scanner.warned,
       urlSource: scanner.urlSources.join(''),
     };
@@ -38,6 +40,7 @@ export class HiddenHtmlScanner {
       this.urlSources.push(HiddenHtmlScanner.urlSource(node));
     }
     const removed = removedAncestor || this.recordNode(node);
+    if (removed) this.recordSource(node);
     const children = 'content' in node
       ? node.content.childNodes
       : 'childNodes' in node ? node.childNodes : [];
@@ -46,13 +49,15 @@ export class HiddenHtmlScanner {
 
   private recordNode(node: HtmlNode): boolean {
     if (defaultTreeAdapter.isCommentNode(node)) {
-      this.recordRange(node, 'comment');
+      if (node.sourceCodeLocation == null) throw new Error('HTML comment has no source range');
+      this.removed.comments++;
       return true;
     }
     if (!defaultTreeAdapter.isElementNode(node)) return false;
     const properties = Object.fromEntries(node.attrs.map(({ name, value }) => [name, value]));
     if (isHiddenElement({ type: 'element', properties })) {
-      this.recordRange(node, 'hidden');
+      if (node.sourceCodeLocation == null) throw new Error('Hidden HTML element has no source range');
+      this.removed.hidden++;
       return true;
     }
     if (REPORTED_TAGS.has(node.tagName)) {
@@ -62,16 +67,17 @@ export class HiddenHtmlScanner {
     return false;
   }
 
-  private recordRange(node: HtmlNode, kind: 'comment' | 'hidden'): void {
+  private recordSource(node: HtmlNode): void {
     const location = node.sourceCodeLocation;
-    if (location == null) throw new Error('HTML node has no source range');
-    const unclosedBody = defaultTreeAdapter.isElementNode(node)
-      && node.tagName === 'body' && !node.sourceCodeLocation?.endTag;
-    this.ranges.push({
-      start: location.startOffset,
-      end: unclosedBody ? this.text.length : location.endOffset,
-      kind,
-    });
+    if (location == null) return;
+    // Element intervals can include visible nodes or exclude hidden descendants.
+    // Record each tag and text range under the parsed hidden ancestor instead.
+    const sources = defaultTreeAdapter.isElementNode(node)
+      ? [node.sourceCodeLocation?.startTag, node.sourceCodeLocation?.endTag]
+      : [location];
+    for (const source of sources) {
+      if (source) this.ranges.push({ start: source.startOffset, end: source.endOffset });
+    }
   }
 
   private static urlSource(node: HtmlElement): string {

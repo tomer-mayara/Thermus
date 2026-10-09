@@ -70,10 +70,11 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       PromptInjectionRemoverSanitizer.recordScanWarnings(scan, result);
       if (scan.ranges.length === 0) return { ...result, withholdWarning: undefined };
 
+      result.removed.comments += scan.removed.comments;
+      result.removed.hidden += scan.removed.hidden;
       result.html = PromptInjectionRemoverSanitizer.removeRanges(
         result.html,
         scan.ranges,
-        result.removed,
       );
     }
 
@@ -105,12 +106,10 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static removeRanges(
     text: string,
     ranges: HtmlScan['ranges'],
-    removed: { comments: number; hidden: number },
   ): string {
     const parts: string[] = [];
     let cursor = 0;
     for (const range of ranges.sort((left, right) => left.start - right.start)) {
-      removed[range.kind === 'comment' ? 'comments' : 'hidden']++;
       if (range.start > cursor) parts.push(text.slice(cursor, range.start));
       cursor = Math.max(cursor, range.end);
     }
