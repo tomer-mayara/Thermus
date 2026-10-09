@@ -40,6 +40,21 @@ describe('visible CSS controls', () => {
       visibleText: 'Visible unresolved image',
     },
     {
+      name: 'unresolved background shorthand with matching foreground and background colors',
+      element: '<p style="color:#fff;background-color:#fff;background:var(--hero)">Visible unresolved background</p>',
+      visibleText: 'Visible unresolved background',
+    },
+    {
+      name: 'unresolved background color over a matching background shorthand',
+      element: '<p style="color:#fff;background:#fff;background-color:var(--tone)">Visible unresolved background color</p>',
+      visibleText: 'Visible unresolved background color',
+    },
+    {
+      name: 'unresolved background environment value',
+      element: '<p style="color:#fff;background-color:#fff;background:env(--hero)">Visible unresolved background environment</p>',
+      visibleText: 'Visible unresolved background environment',
+    },
+    {
       name: 'invalid blur before escaped zero opacity',
       element: `<p style="${String.raw`filter:blur(garbage) \6f pacity(0)`}">Visible invalid blur filter</p>`,
       visibleText: 'Visible invalid blur filter',
@@ -115,6 +130,60 @@ describe('visible CSS controls', () => {
     assert.match(markdown, /Visible control/);
     assert.deepEqual(result.found, ['cf-format', 'hidden-html']);
     assert.equal(result.skipped, 2);
+  });
+
+  test('keeps independent hiding rules when the background paint is unresolved', async () => {
+    const html = [
+      '<!doctype html><html><head><title>Unknown background hiding controls</title></head><body><main>',
+      '<p style="display:none;color:#fff;background-color:#fff;background:var(--hero)">Hidden by display</p>',
+      '<p style="opacity:0;color:#fff;background-color:#fff;background:var(--hero)">Hidden by opacity</p>',
+      '<p style="color:transparent;background-color:#fff;background:var(--hero)">Hidden by transparent text</p>',
+      '<p style="transform:scale(0);color:#fff;background-color:#fff;background:var(--hero)">Hidden by transform</p>',
+      '<p style="font-size:0;color:#fff;background-color:#fff;background:var(--hero)">Hidden by font size</p>',
+      '<p>Visible background control</p>',
+      '</main></body></html>',
+    ].join('');
+
+    const result = await createPipeline().process('https://example.com/unknown-background-controls', html);
+    const markdown = result.markdown ?? '';
+
+    assert.doesNotMatch(result.html, /Hidden by display|Hidden by opacity|Hidden by transparent text|Hidden by transform|Hidden by font size/);
+    assert.doesNotMatch(markdown, /Hidden by display|Hidden by opacity|Hidden by transparent text|Hidden by transform|Hidden by font size/);
+    assert.match(result.html, /Visible background control/);
+    assert.match(markdown, /Visible background control/);
+    assert.deepEqual(result.found, ['hidden-html']);
+    assert.equal(result.skipped, 1);
+  });
+
+  test('normalizes inline visibility declarations in template content and nested templates', async () => {
+    const html = [
+      '<!doctype html><html><head><title>Template CSS</title></head><body><main>',
+      '<style>.external-hide { display: none; }</style>',
+      '<template><p style="display:none!important;display:block">Hidden important template text</p>',
+      '<template><p style="position:absolute;left:-9999PX">Hidden offscreen nested template text</p></template>',
+      '<p style="display:none;display:block!important">Visible template control</p></template>',
+      '<template><style>.inner-hide { display: none; }</style>',
+      '<p class="external-hide">Visible template selector control</p>',
+      '<p class="inner-hide">Visible template stylesheet control</p></template>',
+      '<p class="inner-hide">Visible template stylesheet document control</p>',
+      '<p>Visible document control</p>',
+      '</main></body></html>',
+    ].join('');
+
+    const result = await createPipeline().process('https://example.com/template-css', html);
+    const markdown = result.markdown ?? '';
+
+    assert.doesNotMatch(result.html, /Hidden important template text|Hidden offscreen nested template text/);
+    assert.doesNotMatch(markdown, /Hidden important template text|Hidden offscreen nested template text/);
+    assert.match(result.html, /Visible template control/);
+    assert.match(result.html, /Visible template selector control/);
+    assert.match(result.html, /Visible template stylesheet control/);
+    assert.match(result.html, /Visible template stylesheet document control/);
+    assert.match(markdown, /Visible template stylesheet document control/);
+    assert.match(result.html, /Visible document control/);
+    assert.match(markdown, /Visible document control/);
+    assert.deepEqual(result.found, ['hidden-html']);
+    assert.equal(result.skipped, 1);
   });
 
   test('preserves attributes after a Unicode tag name in the source', async () => {

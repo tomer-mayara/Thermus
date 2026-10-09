@@ -5,7 +5,7 @@ import {
   applyDeclarations, normalizeDeclarations, parseCss, type Declarations,
 } from './css-visibility-rules.ts';
 import {
-  createSelectorMatcher, type HtmlElement,
+  createSelectorMatcher, documentElements, type HtmlElement,
 } from './css-visibility-selectors.ts';
 import type { CssHtmlDocument } from './css-visibility-tree.ts';
 
@@ -60,7 +60,12 @@ function createStyleClassifier() {
     const css = values
       .filter(({ resolved, declaration }) => resolved || declaration.property === 'background-image')
       .map(({ declaration }) => generate(declaration)).join(';');
-    const style = isHiddenStyle(css) ? 'display:none' : '';
+    const hasUnknownBackgroundPaint = values.some(({ resolved, declaration }) =>
+      !resolved && (declaration.property === 'background' || declaration.property === 'background-color'),
+    );
+    // Unresolved paint cannot prove a same-color hide, whether the value is shorthand or color.
+    const unknownPaint = hasUnknownBackgroundPaint ? ';background-image:var(--unknown-background-paint)' : '';
+    const style = isHiddenStyle(`${css}${unknownPaint}`) ? 'display:none' : '';
     results.set(key, style);
     return style;
   };
@@ -76,7 +81,7 @@ export function resolveCssVisibility({ document, elements }: CssHtmlDocument): M
       applyRule(rule, context);
     }
   }
-  for (const element of elements) {
+  for (const element of documentElements(document, true)) {
     if (!Object.hasOwn(element.attribs, 'style')) continue;
     const target = styles.get(element) ?? new Map();
     const declarations = normalizeDeclarations(parseCss(element.attribs.style, 'declarationList'));

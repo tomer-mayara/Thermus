@@ -19,7 +19,7 @@ export class CssSelectorLimitError extends RangeError {
   }
 }
 
-export function documentElements(document: HtmlDocument): HtmlElement[] {
+export function documentElements(document: HtmlDocument, includeTemplateContent = false): HtmlElement[] {
   const elements: HtmlElement[] = [];
   const pending: HtmlNode[] = [document];
   while (pending.length > 0) {
@@ -27,7 +27,12 @@ export function documentElements(document: HtmlDocument): HtmlElement[] {
     if (node === undefined) break;
     if (adapter.isElementNode(node)) {
       elements.push(node);
-      if (node.name === 'template') continue;
+      if (node.name === 'template') {
+        if (includeTemplateContent) {
+          pending.push(adapter.getTemplateContent(node));
+        }
+        continue;
+      }
     }
     if (!('children' in node)) continue;
     for (let index = node.children.length - 1; index >= 0; index--) {

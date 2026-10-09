@@ -76,6 +76,8 @@
 [V] Handles uppercase and escaped units and function names
 [V] Keeps visible text for invalid declarations, malformed escaped values, and unresolved variables
 [V] Keeps same-color text visible when its background image is unresolved
+[V] Keeps same-color text visible when a background shorthand or color is unresolved and still applies independent hiding rules
+[V] Normalizes inline styles in nested template content while keeping embedded stylesheet rules outside templates
 [V] Preserves visible text, unrelated attributes, and Layer 1 findings
 [V] Preserves attributes after a Unicode tag name in the source
 [V] Does not fetch linked stylesheets or CSS imports

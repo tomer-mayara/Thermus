@@ -14,4 +14,4 @@ The parser can merge attributes from a duplicate `html` or `body` tag into an ex
 
 The sanitizer rejects HTML larger than 10 MiB in UTF-8 bytes. This behavior does not change ad removal or Markdown conversion.
 
-The CSS pass supports declaration importance, inline precedence, selector specificity, source order, and normalized escapes. It does not fetch external stylesheets or imports. See the README for the supported selectors, declarations, and layout limits.
+The CSS pass supports declaration importance, inline precedence, selector specificity, source order, and normalized escapes. Inline checks include nested template content. Embedded stylesheet rules stay outside template content. Unresolved background paint prevents a same-color verdict; independent supported hiding rules still apply. The pass does not fetch external stylesheets or imports. See the README for the supported selectors, declarations, and layout limits.
