@@ -33,10 +33,22 @@
 
 [V] Removes zero-width format characters and counts detections as skipped
 [V] Removes hidden display-none text and HTML comments while keeping visible content
-[V] Cleans the hidden-text fixture and removes sanitizer placeholder markers
+[V] Cleans the hidden-text fixture without adding removal markers
+[V] Preserves authored removal markers in text, code, and attributes
+[V] Preserves an authored marker in a link payload without reporting it
+[V] Preserves authored markers formed across removed hidden spans or comments
+[V] Removes hidden elements and comments in nested template bodies and preserves source offsets
+[V] Reports resource tags and hidden, visible, and final exfil-shaped URLs in template bodies once
+[V] Removes adjacent and nested hidden ranges without adding markers
+[V] Reports final links formed by removal of comments or hidden elements
+[V] Retains reports from removed URLs and reports final URLs without duplicate reasons
+[V] Normalizes invisible characters before URL checks and counts each category once
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML
+[V] Treats sparse full documents and HTML fragments as HTML at every line and tag density
+[V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
+[V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
 
 **Supported CSS Visibility Rules**
 
@@ -92,6 +104,7 @@
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
+[V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
 **HTML to MD**
