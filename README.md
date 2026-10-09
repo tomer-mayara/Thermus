@@ -35,6 +35,8 @@ The cleaned page is cached per tenant, keyed by URL with the query string remove
 
 `PromptInjectionRemoverSanitizer` always parses its input as HTML, regardless of document length or tag density. It preserves visible text in `pre` and `code` elements and encoded tag examples. It still removes hidden descendants.
 
+Removed HTML and comments leave no generated markers. Authored marker text stays unchanged in visible text, code, and attributes, including URL values. The step checks URLs before each removal and in the final HTML. It retains findings from removed content and reports each category and warning reason once. A flagged visible URL stays in the HTML. The scanner visits nested template content and preserves source offsets.
+
 The step does not enable the span-deleting filter, secret redaction, visible-text filtering, or homoglyph normalization. It does not fetch pages or call a model. Pipeline composition and startup warm-up are deferred to loader and acceptance tests.
 
 **MVP.** One tool, `fetch`. Allowlist, denylist, and outbound redaction. Boilerplate and hidden-text stripping. Per-tenant content cache. Audit log. A container that runs the server and Lightpanda on localhost, and a hosted version of the same container.

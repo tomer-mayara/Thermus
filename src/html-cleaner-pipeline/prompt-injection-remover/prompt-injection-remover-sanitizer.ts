@@ -22,7 +22,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitize(ctx.html);
+    const sanitized = await sanitize(ctx.html, { html: false });
     const result = PromptInjectionRemoverSanitizer.removeHiddenHtml(sanitized.cleaned);
     const found = new Set(sanitized.found);
     const warnings = new Set(sanitized.warnings);
