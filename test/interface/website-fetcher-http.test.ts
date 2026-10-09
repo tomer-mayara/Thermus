@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import type { ExecFileException } from 'node:child_process';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { after, before, describe, test } from 'node:test';
@@ -10,16 +11,20 @@ describe('WebsiteFetcherLightpanda HTTP contract', () => {
   const server = createServer((request, response) => {
     const parts = (request.url ?? '/').split('/');
     if (parts[1] === 'redirect') {
-      response.writeHead(302, { location: `/next/${parts[2]}` });
+      response.writeHead(302, { location: `/next/${parts.slice(2).join('/')}` });
       response.end();
       return;
     }
     if (parts[1] === 'next') {
-      response.writeHead(307, { location: `/status/${parts[2]}` });
+      response.writeHead(307, { location: `/status/${parts.slice(2).join('/')}` });
       response.end();
       return;
     }
     const status = Number(parts[2]);
+    const challengeHeader = parts[3];
+    if (challengeHeader === 'cf-mitigated' || challengeHeader === 'x-vercel-mitigated') {
+      response.setHeader(challengeHeader, 'challenge');
+    }
     response.writeHead(status, { 'content-type': 'text/html' });
     response.end(`<html><body>HTTP ${status}<script>document.body.append(' rendered');</script></body></html>`);
   });
@@ -60,6 +65,20 @@ describe('WebsiteFetcherLightpanda HTTP contract', () => {
           assert.equal(error.kind, 'http');
           assert.equal(error.status, status);
           assert.ok(error.cause instanceof Error);
+          return true;
+        });
+      });
+    }
+
+    for (const [status, header] of [[403, 'cf-mitigated'], [429, 'x-vercel-mitigated']] as const) {
+      test(`preserves HTTP ${status} for ${route} ending in a ${header} challenge`, async (context) => {
+        permitIPv4Fixture(context);
+        await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(`${origin}/${route}/${status}/${header}`), (error) => {
+          assert.ok(error instanceof WebsiteFetchHttpError);
+          assert.equal(error.kind, 'http');
+          assert.equal(error.status, status);
+          assert.ok(error.cause instanceof Error);
+          assert.equal((error.cause as ExecFileException).code, 1);
           return true;
         });
       });

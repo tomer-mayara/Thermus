@@ -17,7 +17,10 @@ function readFetchOutput(stdout: string, cause: ExecFileException | null): Recor
     return output as Record<string, unknown>;
   } catch (error) {
     if (cause !== null) {
-      throw new WebsiteFetchHttpError(undefined, { cause });
+      if (cause.code === LIGHTPANDA_HTTP_ERROR_EXIT_CODE) {
+        throw new WebsiteFetchHttpError(undefined, { cause });
+      }
+      throw cause;
     }
     throw new Error('lightpanda returned invalid fetch metadata', { cause: error });
   }
@@ -25,11 +28,24 @@ function readFetchOutput(stdout: string, cause: ExecFileException | null): Recor
 
 function assertSuccessfulHttpStatus(result: Record<string, unknown>, cause: ExecFileException | null): void {
   const status = Number.isInteger(result.http_status) ? Number(result.http_status) : undefined;
-  if (cause !== null || (status ?? 0) >= 400) {
+  if ((status ?? 0) >= 400 || cause?.code === LIGHTPANDA_HTTP_ERROR_EXIT_CODE) {
     throw new WebsiteFetchHttpError(status, { cause: cause ?? undefined });
+  }
+  if (cause !== null) {
+    throw cause;
   }
   if (status === undefined || status < 200) {
     throw new Error('lightpanda did not return successful HTML', { cause: result.error });
+  }
+}
+
+function assertRendererExit(cause: ExecFileException | null): void {
+  if (cause === null) return;
+  if (cause.code === 'ENOENT') {
+    throw new Error('lightpanda is not available on PATH', { cause });
+  }
+  if (cause.killed || cause.signal != null || typeof cause.code !== 'number') {
+    throw cause;
   }
 }
 
@@ -68,14 +84,6 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
             }));
             return;
           }
-          if (error !== null && (error.killed || error.code !== LIGHTPANDA_HTTP_ERROR_EXIT_CODE)) {
-            if (error.code === 'ENOENT') {
-              reject(new Error('lightpanda is not available on PATH', { cause: error }));
-              return;
-            }
-            reject(error);
-            return;
-          }
           try {
             resolve(WebsiteFetcherLightpanda.parseResult(url, stdout, error));
           } catch (error) {
@@ -94,6 +102,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   }
 
   private static parseResult(requestedUrl: string, stdout: string, cause: ExecFileException | null): WebsiteFetchResult {
+    assertRendererExit(cause);
     const result = readFetchOutput(stdout, cause);
     assertSuccessfulHttpStatus(result, cause);
     if (
