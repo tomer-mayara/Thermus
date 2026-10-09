@@ -44,6 +44,7 @@
 [V] Removes controls before Markdown escaping and code-fence selection
 [V] Merges adjacent text nodes before checks and preserves valid emoji joiners during the control check
 [V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title during the control check
+[V] Cleans controls from link and image destinations before URL serialization
 [V] Keeps visibly escaped entity examples through LinkeDOM attribute serialization and Defuddle's serialize/reparse step
 [V] Does not parse converted output as HTML or decode another entity layer during control checks
 [V] Preserves parser behavior for malformed entities and invalid code points
