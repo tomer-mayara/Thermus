@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import { describe, test } from 'node:test';
+import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { HtmlDepthLimitError } from '../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts';
+import {
+  HtmlToMarkdownPipeline,
+  type Ctx,
+} from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+
+describe('HTML to Markdown pipeline depth limit', () => {
+  test('an ad cleaner depth failure stops all later steps', async (t) => {
+    const later = t.mock.fn(async (ctx: Ctx) => ({ ...ctx, markdown: 'cleaned' }));
+    const local = new HtmlToMarkdownPipeline([
+      new CleanHtmlAdsAdblockRs(), { invoke: later }, { invoke: later },
+    ]);
+
+    await assert.rejects(local.process({
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/',
+      html: '<div>'.repeat(5000) + 'text' + '</div>'.repeat(5000),
+    }), (error: unknown) => error instanceof HtmlDepthLimitError);
+    assert.equal(later.mock.callCount(), 0);
+  });
+});

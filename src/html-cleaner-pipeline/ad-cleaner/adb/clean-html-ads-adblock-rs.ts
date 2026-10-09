@@ -3,6 +3,7 @@ import { selectAll } from 'css-select';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { type Ctx } from '../../html-to-markdown-pipeline.ts';
 import { type CleanHtmlAds } from '../clean-html-ads.ts';
+import { HtmlDepthLimitError, MAX_HTML_ELEMENT_DEPTH } from '../html-depth-limit-error.ts';
 import { SourceRangeParser } from './source-range-parser.ts';
 
 type StripHtmlResult = Pick<Ctx, 'html' | 'removed' | 'skipped'>;
@@ -53,22 +54,39 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     });
   }
 
-  private static collectClassAndId(node: HtmlNode, classes: Set<string>, ids: Set<string>): void {
-    if ('children' in node) {
-      for (const child of node.children) {
-        CleanHtmlAdsAdblockRs.collectClassAndId(child, classes, ids);
+  private static *nodesWithinDepth(document: HtmlNode): Generator<HtmlNode> {
+    const pending = [{ node: document, depth: 0 }];
+    for (let current = pending.pop(); current !== undefined; current = pending.pop()) {
+      const { node } = current;
+      const depth = current.depth + (adapter.isElementNode(node) ? 1 : 0);
+      if (depth > MAX_HTML_ELEMENT_DEPTH) {
+        throw new HtmlDepthLimitError();
+      }
+      yield node;
+      if ('children' in node) {
+        for (let index = node.children.length - 1; index >= 0; index--) {
+          pending.push({ node: node.children[index], depth });
+        }
       }
     }
-    if (node.type !== 'tag') {
-      return;
+  }
+
+  private static collectClassAndId(document: HtmlNode): { classes: Set<string>; ids: Set<string> } {
+    const classes = new Set<string>();
+    const ids = new Set<string>();
+    for (const node of CleanHtmlAdsAdblockRs.nodesWithinDepth(document)) {
+      if (node.type !== 'tag') {
+        continue;
+      }
+      const id = node.attribs.id;
+      if (id !== undefined && id !== '') {
+        ids.add(id);
+      }
+      for (const token of node.attribs.class?.match(/\S+/g) ?? []) {
+        classes.add(token);
+      }
     }
-    const id = node.attribs.id;
-    if (id !== undefined && id !== '') {
-      ids.add(id);
-    }
-    for (const token of node.attribs.class?.match(/\S+/g) ?? []) {
-      classes.add(token);
-    }
+    return { classes, ids };
   }
 
   private static selectorsFor(
@@ -76,12 +94,10 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     url: string,
     document: HtmlNode,
   ): { hide: string[]; skipped: number } {
+    const { classes, ids } = CleanHtmlAdsAdblockRs.collectClassAndId(document);
     const specific = adblock.urlCosmeticResources(url);
     const hide = new Set(specific.hide_selectors);
     if (!specific.generichide) {
-      const classes = new Set<string>();
-      const ids = new Set<string>();
-      CleanHtmlAdsAdblockRs.collectClassAndId(document, classes, ids);
       for (const selector of adblock.hiddenClassIdSelectors(
         [...classes],
         [...ids],
