@@ -13,7 +13,7 @@ type EndTagIndex = {
 };
 
 export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
-  private readonly startLocations = new WeakSet<Token.LocationWithAttributes>();
+  private readonly openingElements = new Map<number, HtmlElement>();
   private readonly reconstructedElements = new WeakSet<HtmlElement>();
   private readonly endTags = new WeakMap<HtmlNode, Token.Location[]>();
   private readonly endTagIndexes = new WeakMap<HtmlNode, EndTagIndex>();
@@ -29,10 +29,12 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
 
   public override _attachElementToTree(element: HtmlElement, location: Token.LocationWithAttributes | null): void {
     if (location !== null) {
-      if (this.startLocations.has(location)) {
+      const original = this.openingElements.get(location.startOffset);
+      if (original === undefined) {
+        this.openingElements.set(location.startOffset, element);
+      } else if (original !== element) {
         this.reconstructedElements.add(element);
       }
-      this.startLocations.add(location);
     }
     super._attachElementToTree(element, location);
   }
