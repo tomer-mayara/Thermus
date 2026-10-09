@@ -165,6 +165,11 @@ settings:
 overrides:
   ts-api-utils>typescript: 6.0.3
 
+patchedDependencies:
+  agent-input-sanitizer@1.47.14: ec4b7ee694955682aaca20314871d6d8565d7fb0b6de4d578fa57de8f65969d1
+  defuddle@0.19.4: f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6
+  linkedom@0.18.13: ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590
+
 importers:
 
   .:
@@ -174,20 +179,32 @@ importers:
         version: 0.13.3
       agent-input-sanitizer:
         specifier: 1.47.14
-        version: 1.47.14
+        version: 1.47.14(patch_hash=ec4b7ee694955682aaca20314871d6d8565d7fb0b6de4d578fa57de8f65969d1)
       css-select:
         specifier: ^7.0.0
         version: 7.0.0
+      css-tree:
+        specifier: 3.2.1
+        version: 3.2.1
       defuddle:
         specifier: ^0.19.4
-        version: 0.19.4
+        version: 0.19.4(patch_hash=f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6)
       htmlparser2:
         specifier: ^12.0.0
         version: 12.0.0
       linkedom:
         specifier: ^0.18.13
-        version: 0.18.13
+        version: 0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590)
+      parse5:
+        specifier: 8.0.1
+        version: 8.0.1
+      parse5-htmlparser2-tree-adapter:
+        specifier: 8.0.1
+        version: 8.0.1
     devDependencies:
+      '@types/css-tree':
+        specifier: 3.2.0
+        version: 3.2.0
       '@types/node':
         specifier: ^24.19.1
         version: 24.19.1
@@ -694,6 +711,9 @@ packages:
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
+
+  '@types/css-tree@3.2.0':
+    resolution: {integrity: sha512-J5KXmk6BFIepOT7280FdFyNs4c5fh0Uee0otjKEvzchrRs38Ii9qminqc4ds0L19X8Zd/rT+brR9jkBthygjWw==}
 
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
@@ -1429,8 +1449,14 @@ packages:
   package-manager-detector@1.9.0:
     resolution: {integrity: sha512-zAMfbta9nPA8AKkA4WdmNAT8R8s6Dk0/xwPsqNnRidMFcLo1YkLuPDTgs2f64XdzS8vbLNnoJ+uUIkgbz7oRHA==}
 
+  parse5-htmlparser2-tree-adapter@8.0.1:
+    resolution: {integrity: sha512-aqkH+xQxX+QGZtP5GIMmqqp16Y0v9muEf2VVeypv35kFsD5bqP1UeBanSshdfjMY+RTh2vN4mmK6nEOVRMEvHg==}
+
   parse5@7.3.0:
     resolution: {integrity: sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==}
+
+  parse5@8.0.1:
+    resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
 
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
@@ -1925,6 +1951,8 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@types/css-tree@3.2.0': {}
+
   '@types/debug@4.1.13':
     dependencies:
       '@types/ms': 2.1.0
@@ -2114,7 +2142,7 @@ snapshots:
     dependencies:
       cargo-cp-artifact: 0.1.9
 
-  agent-input-sanitizer@1.47.14:
+  agent-input-sanitizer@1.47.14(patch_hash=ec4b7ee694955682aaca20314871d6d8565d7fb0b6de4d578fa57de8f65969d1):
     dependencies:
       css-tree: 3.2.1
       rehype-parse: 9.0.1
@@ -2196,12 +2224,12 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  defuddle@0.19.4:
+  defuddle@0.19.4(patch_hash=f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6):
     dependencies:
       commander: 12.1.0
       mathml-to-latex: 1.8.0
     optionalDependencies:
-      linkedom: 0.18.13
+      linkedom: 0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590)
       temml: 0.13.5
       turndown: 7.2.4
     transitivePeerDependencies:
@@ -2510,7 +2538,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  linkedom@0.18.13:
+  linkedom@0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590):
     dependencies:
       css-select: 7.0.0
       cssom: 0.5.0
@@ -2910,9 +2938,18 @@ snapshots:
 
   package-manager-detector@1.9.0: {}
 
+  parse5-htmlparser2-tree-adapter@8.0.1:
+    dependencies:
+      domhandler: 6.0.1
+      parse5: 8.0.1
+
   parse5@7.3.0:
     dependencies:
       entities: 6.0.1
+
+  parse5@8.0.1:
+    dependencies:
+      entities: 8.1.0
 
   path-browserify@1.0.1: {}
 
