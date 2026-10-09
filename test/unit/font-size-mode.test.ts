@@ -3,12 +3,7 @@ import { describe, test } from 'node:test';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-
-async function sanitizeHtml(html: string) {
-  return new PromptInjectionRemoverSanitizer().invoke({
-    url: 'https://example.com/', html, removed: 0, skipped: 0,
-  });
-}
+import { sanitizeHtml } from '../helpers/sanitize-html.ts';
 
 describe('Font size and document mode', () => {
   test('keeps unitless font size in a full document without a doctype', async () => {

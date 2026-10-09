@@ -3,12 +3,7 @@ import { test } from 'node:test';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-
-async function sanitize(html: string) {
-  return new PromptInjectionRemoverSanitizer().invoke({
-    url: 'https://example.com/', html, removed: 0, skipped: 0,
-  });
-}
+import { sanitizeHtml } from '../helpers/sanitize-html.ts';
 
 const deferredSizes = [
   ['env fallback', 'env(missing,16px)'],
@@ -22,7 +17,7 @@ const deferredSizes = [
 for (const [label, declaration] of deferredSizes) {
   test(`keeps a child with a deferred ${label} size`, async () => {
     const property = declaration.startsWith('font:') ? declaration : `font-size:${declaration}`;
-    const result = await sanitize(
+    const result = await sanitizeHtml(
       `<div style="font-size:0"><p style="${property}">Visible child</p></div>`,
     );
 
@@ -35,7 +30,7 @@ for (const invalidSize of [
   'env(,16px)', 'attr(,16px)',
 ]) {
   test(`keeps invalid font-size ${invalidSize} hidden`, async () => {
-    const result = await sanitize(
+    const result = await sanitizeHtml(
       `<div style="font-size:0"><p style="font-size:0;font-size:${invalidSize}">Hidden invalid size</p></div>` +
       '<p>Visible sibling</p>',
     );
@@ -46,7 +41,7 @@ for (const invalidSize of [
 }
 
 test('uses a later deferred size and keeps important zero and display none hidden', async () => {
-  const result = await sanitize(
+  const result = await sanitizeHtml(
     '<div style="font-size:0">' +
     '<p style="font-size:0;font-size:env(missing,16px)">Visible later size</p>' +
     '<p style="font-size:0!important;font-size:env(missing,16px)">Hidden important zero</p>' +
@@ -59,7 +54,7 @@ test('uses a later deferred size and keeps important zero and display none hidde
 });
 
 test('keeps important zero and display none descendants hidden', async () => {
-  const result = await sanitize(
+  const result = await sanitizeHtml(
     '<p style="font-size:0!important;font-size:env(missing,16px)">Hidden important zero</p>' +
     '<div style="display:none"><p style="font-size:env(missing,16px)">Hidden display none</p></div>' +
     '<p>Visible control</p>',

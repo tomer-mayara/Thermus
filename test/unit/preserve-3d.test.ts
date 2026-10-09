@@ -3,14 +3,9 @@ import { describe, test } from 'node:test';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { sanitizeHtml } from '../helpers/sanitize-html.ts';
 
 const collapsedParentPlane = 'matrix3d(1,1,0,0,1,1,1,0,0,1,1,0,0,0,0,1)';
-
-async function sanitizeHtml(html: string) {
-  return new PromptInjectionRemoverSanitizer().invoke({
-    url: 'https://example.com/', html, removed: 0, skipped: 0,
-  });
-}
 
 describe('Preserved 3D descendants', () => {
   for (const transform of [collapsedParentPlane, 'rotateX(90deg)']) {
@@ -73,6 +68,9 @@ describe('Preserved 3D descendants', () => {
     'transform-style:preserve-3d;clip-path:inset(0px)',
     'transform-style:preserve-3d;opacity:.5!important;opacity:1',
     'transform-style:preserve-3d;position:absolute;clip:rect(0px,300px,100px,0px)',
+    'transform-style:preserve-3d;mask-image:url(mask.svg)',
+    'transform-style:preserve-3d;mask-border-source:url(mask.svg)',
+    'transform-style:preserve-3d;mix-blend-mode:multiply',
   ]) {
     test(`removes a collapsed flat subtree with ${style}`, async () => {
       const result = await sanitizeHtml(
