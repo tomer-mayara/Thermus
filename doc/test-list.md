@@ -39,13 +39,24 @@
 [V] Extracts the document title
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
-[V] Preserves local content and resolves relative links with the page URL
+[V] Preserves local content and resolves relative links with finalUrl
+[V] Resolves relative, root-relative, and protocol-relative links after same-host and cross-host redirects
+[V] Applies ad rules for the final host after redirects, in both host-change directions
+[V] Preserves direct content when requestedUrl and finalUrl match
+
+**HTML Fetcher**
+
+[V] Returns requestedUrl, finalUrl, and HTML for direct and redirected fetches
+[V] Preserves the exact requested URL
+[V] Rejects missing or invalid fetch metadata
 
 ## Interface
 
 **HTML Fetcher**
 
-[V] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
-[V] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
+[V] Fetches a page without JavaScript (https://quotes.toscrape.com) and returns rendered HTML
+[V] Fetches a page with JavaScript (https://quotes.toscrape.com/js/) and returns rendered HTML
+[V] Returns a direct fetch result through Lightpanda
+[V] Traces a redirect chain through Lightpanda and resolves Markdown links against the final URL
 
 ## Acceptance
