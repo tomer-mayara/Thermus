@@ -1,0 +1,33 @@
+diff --git a/dist/defuddle.js b/dist/defuddle.js
+index 5e615fba28bfc8c68a11f34a13ed29c947ee595b..16a39da253d8c40adf32fd250d718daf50279980 100644
+--- a/dist/defuddle.js
++++ b/dist/defuddle.js
+@@ -786,6 +786,7 @@ class Defuddle {
+                 if (extractor && extractor.canExtract()) {
+                     const extracted = extractor.extract();
+                     if (extracted.contentSelector) {
++                        this.options.processExtractedDom?.(this.doc.body);
+                         this._inExtractorPipelineRun = true;
+                         try {
+                             const pipelineResult = this.parseInternal({
+@@ -1647,6 +1648,7 @@ class Defuddle {
+             return html;
+         const container = this.doc.createElement('div');
+         container.appendChild((0, dom_1.parseHTML)(this.doc, html));
++        this.options.processExtractedDom?.(container);
+         this._stripUnsafeElements(container);
+         this.resolveRelativeUrls(container);
+         (0, standardize_1.standardizeExtractorOutput)(container, this.debug);
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+index efd595fe5b1adfdbb4aa3eae5c2bba4bda34bce5..ffdc84f3aa993c60b418c67fa5817a9024913aa5 100644
+--- a/dist/types.d.ts
++++ b/dist/types.d.ts
+@@ -39,6 +39,8 @@ export interface DefuddleResponse extends DefuddleMetadata {
+     };
+ }
+ export interface DefuddleOptions {
++    /** Process decoded extractor content before cleanup and URL conversion. Node build only. */
++    processExtractedDom?: (root: Element) => void;
+     /**
+      * Enable debug logging
+      * Defaults to false

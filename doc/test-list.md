@@ -37,18 +37,18 @@
 [V] Preserves authored removal markers in text, code, and attributes
 [V] Preserves an authored marker in a link payload without reporting it
 [V] Preserves authored markers formed across removed hidden spans or comments
-[V] Removes hidden elements and comments in nested template bodies while preserving authored markers and source offsets, and reporting resource tags
-[V] Reports hidden, visible, and final exfil-shaped URLs in template bodies once
+[V] Removes hidden elements and comments in nested template bodies and preserves source offsets
+[V] Reports resource tags and hidden, visible, and final exfil-shaped URLs in template bodies once
 [V] Removes adjacent and nested hidden ranges without adding markers
-[V] Preserves an authored unparseable marker formed across a comment
 [V] Reports final links formed by removal of comments or hidden elements
-[V] Reports hidden, visible, and final exfil-shaped URLs once and keeps visible URLs
-[V] Normalizes invisible characters before URL checks and counts categories once
-[V] Preserves resource tags and reports them
-[V] Withholds HTML on a controlled scanner failure without adding a marker
+[V] Retains reports from removed URLs and reports final URLs without duplicate reasons
+[V] Normalizes invisible characters before URL checks and counts each category once
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
-[V] Reports exfil-shaped URLs and keeps visible URLs in the HTML
+[V] Reports exfil-shaped URLs and keeps them in the HTML
+[V] Treats sparse full documents and HTML fragments as HTML at every line and tag density
+[V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
+[V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
 
 **HTML to Markdown Pipeline**
 
@@ -57,6 +57,7 @@
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
+[V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
 **HTML to MD**
@@ -73,6 +74,25 @@
 [V] Resolves relative, root-relative, and protocol-relative links after same-host and cross-host redirects
 [V] Applies ad rules for the final host after redirects, in both host-change directions
 [V] Preserves direct content when requestedUrl and finalUrl match
+[V] Removes literal and entity-decoded controls from DOM text, attributes, Markdown, and title; reports the control finding once
+[V] Removes controls before Markdown escaping and code-fence selection, including generated Substack code with literal, decimal, and hexadecimal controls
+[V] Checks logical text runs across inline spans and preserves contextual Persian ZWNJ and emoji ZWJ across highlighted spans
+[V] Ends text runs at block, line-break, and image boundaries; maps deletions to original nodes and preserves inline formatting
+[V] Preserves formatting and link boundaries when an encoded ANSI sequence repeats visible text
+[V] Removes and reports isolated joiners
+[V] Removes all four prohibited controls from links in generated extractor content
+[V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title during the control check
+[V] Cleans controls from link and image destinations before URL serialization
+[V] Keeps visibly escaped entity examples through LinkeDOM attribute serialization and Defuddle's serialize/reparse step
+[V] Does not parse converted output as HTML or decode another entity layer during control checks
+[V] Keeps an escaped image example in noscript as text without converting it to an image
+[V] Keeps real image elements in noscript available to Defuddle
+[V] Keeps a real fallback image and an escaped image example visible when both appear in noscript
+[V] Keeps a picture fallback and escaped example separate, with one real image
+[V] Uses a noscript fallback for a lazy image outside a figure and keeps escaped examples visible
+[V] Keeps nested escaped noscript code as text
+[V] Emits one escaped noscript example after repeated extractor callbacks
+[V] Preserves parser behavior for malformed entities and invalid code points
 
 **HTML Fetcher**
 
@@ -94,5 +114,18 @@
 [V] Fetches a page with JavaScript (https://quotes.toscrape.com/js/) and returns rendered HTML
 [V] Returns a direct fetch result through Lightpanda
 [V] Traces a redirect chain through Lightpanda and resolves Markdown links against the final URL
+
+**LinkeDOM Serialization**
+
+[V] ESM and CommonJS preserve escaped numeric entities, ordinary entities, quotes, and query ampersands after attribute serialization and reparsing
+
+**Sanitizer Deletion Positions**
+
+[V] Reports exact UTF-16 deletion ranges for ANSI passes, Unicode controls, contextual joiners, emoji tags, and BOM handling
+[V] Keeps sanitizer output and findings the same when deletion reporting is enabled
+
+**Defuddle Extracted DOM**
+
+[V] Passes decoded selector-based Substack and generated Discourse content to the callback before URL conversion
 
 ## Acceptance

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import type { PromptInjectionRemover } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 describe('PromptInjectionRemoverSanitizer template contents', () => {
   let sanitizer: PromptInjectionRemover;
@@ -10,15 +10,6 @@ describe('PromptInjectionRemoverSanitizer template contents', () => {
   beforeEach(() => {
     sanitizer = new PromptInjectionRemoverSanitizer();
   });
-
-  function createContext(html: string): Ctx {
-    return {
-      url: 'https://example.com/',
-      html,
-      removed: 0,
-      skipped: 0,
-    };
-  }
 
   test('scans nested template contents and keeps source offsets and resource reports', async () => {
     const html = '😀<template><span hidden>drop</span><!-- remove --><p>Keep</p>'

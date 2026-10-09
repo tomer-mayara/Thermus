@@ -10,3 +10,5 @@ overrides:
 
 patchedDependencies:
   agent-input-sanitizer@1.47.14: patches/agent-input-sanitizer@1.47.14.patch
+  defuddle@0.19.4: patches/defuddle@0.19.4.patch
+  linkedom@0.18.13: patches/linkedom@0.18.13.patch

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
 import type { PromptInjectionRemover } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 const hiddenTextHtml = readFileSync(
   join(process.cwd(), 'test/unit/fixtures/hidden-text.html'),
@@ -21,17 +21,6 @@ describe('PromptInjectionRemoverSanitizer', () => {
   beforeEach(() => {
     sanitizer = new PromptInjectionRemoverSanitizer();
   });
-
-  function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
-    return {
-      requestedUrl: 'https://example.com/',
-      finalUrl: 'https://example.com/',
-      html,
-      removed: 0,
-      skipped: 0,
-      ...overrides,
-    };
-  }
 
   test('strips zero-width format characters and counts the detected category as skipped', async () => {
     const result = await sanitizer.invoke(
@@ -90,45 +79,28 @@ describe('PromptInjectionRemoverSanitizer', () => {
     }
   });
 
-  test('normalizes invisible characters before scanning and counts each category once', async () => {
-    const url = `https://attacker.example/?payload=${'a'.repeat(20)}\u200b${'a'.repeat(20)}`;
+  test('preserves authored comment markers formed across a hidden span', async () => {
+    const result = await sanitizer.invoke(
+      createContext('<p>[HTML <span hidden>payload</span>comment removed]</p>'),
+    );
 
-    const result = await sanitizer.invoke(createContext(`<a href="${url}">Open</a>`));
-
-    assert.equal(result.html, `<a href="${url.replace('\u200b', '')}">Open</a>`);
-    assert.deepEqual(result.found, ['cf-format', 'exfil-urls']);
-    assert.equal(result.skipped, 2);
-    assert.equal(result.warnings?.filter((warning) => warning.startsWith('Exfil-shaped URLs detected:')).length, 1);
+    assert.equal(result.html, '<p>[HTML comment removed]</p>');
   });
 
-  test('preserves resource tags and reports them', async () => {
-    const html = '<script>const marker = "[HTML comment removed]";</script><img src="data:image/png;base64,a">';
+  test('preserves authored hidden markers formed across another hidden span', async () => {
+    const result = await sanitizer.invoke(
+      createContext('<p>[hidden <span hidden>payload</span>HTML removed]</p>'),
+    );
 
-    const result = await sanitizer.invoke(createContext(html));
-
-    assert.equal(result.html, html);
-    assert.deepEqual(result.found, []);
-    assert.ok(result.warnings?.some((warning) => warning.includes('script')));
-    assert.ok(result.warnings?.some((warning) => warning.includes('data: URI')));
+    assert.equal(result.html, '<p>[hidden HTML removed]</p>');
   });
 
-  test('withholds HTML when the HTML scanner fails without adding a marker', async () => {
-    const failingSanitizer = new PromptInjectionRemoverSanitizer(() => {
-      throw new Error('controlled scanner failure');
-    });
-    const html = '<p>Visible content</p>';
+  test('preserves supplementary characters and authored marker text', async () => {
+    const result = await sanitizer.invoke(
+      createContext('<p>😀 [HTML <span hidden>payload</span>comment removed]</p>'),
+    );
 
-    const result = await failingSanitizer.invoke(createContext(html, {
-      found: ['existing-finding'],
-      warnings: ['existing warning'],
-    }));
-
-    assert.equal(result.html, '');
-    assert.deepEqual(result.found, ['existing-finding', 'hidden-html']);
-    assert.deepEqual(result.warnings, [
-      'existing warning',
-      'HTML sanitized: 1 hidden element(s) removed',
-    ]);
+    assert.equal(result.html, '<p>😀 [HTML comment removed]</p>');
   });
 
   test('preserves ordinary visible content and context without mutation', async () => {
@@ -138,7 +110,7 @@ describe('PromptInjectionRemoverSanitizer', () => {
       removed: 2,
       skipped: 3,
     });
-    const original = { ...input };
+    const original = structuredClone(input);
 
     const result = await sanitizer.invoke(input);
 

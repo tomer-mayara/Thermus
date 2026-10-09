@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import type { PromptInjectionRemover } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 describe('PromptInjectionRemoverSanitizer markers and URL reports', () => {
   let sanitizer: PromptInjectionRemover;
@@ -10,16 +10,6 @@ describe('PromptInjectionRemoverSanitizer markers and URL reports', () => {
   beforeEach(() => {
     sanitizer = new PromptInjectionRemoverSanitizer();
   });
-
-  function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
-    return {
-      url: 'https://example.com/',
-      html,
-      removed: 0,
-      skipped: 0,
-      ...overrides,
-    };
-  }
 
   test('preserves comment markers formed across a hidden span', async () => {
     const result = await sanitizer.invoke(
@@ -72,6 +62,17 @@ describe('PromptInjectionRemoverSanitizer markers and URL reports', () => {
     assert.deepEqual(result.found, []);
     assert.deepEqual(result.warnings, []);
     assert.equal(result.skipped, 0);
+  });
+
+  test('normalizes invisible characters before scanning and counts each category once', async () => {
+    const url = `https://attacker.example/?payload=${'a'.repeat(20)}\u200b${'a'.repeat(20)}`;
+
+    const result = await sanitizer.invoke(createContext(`<a href="${url}">Open</a>`));
+
+    assert.equal(result.html, `<a href="${url.replace('\u200b', '')}">Open</a>`);
+    assert.deepEqual(result.found, ['cf-format', 'exfil-urls']);
+    assert.equal(result.skipped, 2);
+    assert.equal(result.warnings?.filter((warning) => warning.startsWith('Exfil-shaped URLs detected:')).length, 1);
   });
 
   test('removes adjacent and nested source ranges without adding markers', async () => {

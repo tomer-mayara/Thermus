@@ -1,20 +1,222 @@
-diff --git a/src/html.mjs b/src/html.mjs
-index 1d576a4923c3916b592c45f70f29b1cea2c696d3..7e11b802d2219fb1caf959618f89e335ca1640e4 100644
---- a/src/html.mjs
-+++ b/src/html.mjs
-@@ -1288,6 +1288,7 @@ export function scanHtmlFragment(html) {
-     if (node.type !== "element") return; // eslint-disable-line consistent-return -- unist visit: undefined return means "continue", same as falling off the end
-     if (REPORTED_TAGS.has(node.tagName)) countTag(warned, node.tagName);
-     if (hasDataSrc(node)) warned.dataSrc += 1;
-+    if (node.tagName === "template" && node.content) node.children = node.content.children;
-   });
-   return { ranges, warned };
+diff --git a/src/invisible.mjs b/src/invisible.mjs
+index 904b542ae9d19e440d48189d964d03edf60d6eaf..f8ad7c201185e59eed9c4f5dfb2b08f297475744 100644
+--- a/src/invisible.mjs
++++ b/src/invisible.mjs
+@@ -647,13 +647,18 @@ export function countPayloadInvisible(text) {
+  * capable char; `found` names the category codes present via `.search`
+  * (which ignores the `g` lastIndex).
+  * @param {string} body
++ * @param {(start: number, end: number) => void} [onStrip]
+  * @returns {{ cleaned: string, found: string[] }}
+  */
+-function bulkStrip(body) {
++function bulkStrip(body, onStrip) {
+   const found = CHECKS.filter(([, re]) => body.search(re) !== -1).map(
+     ([code]) => code,
+   );
+-  return { cleaned: body.replace(STRIP, ""), found };
++  const cleaned = onStrip ? body.replace(STRIP, (match, start) => {
++    onStrip(start, start + match.length);
++    return "";
++  }) : body.replace(STRIP, "");
++  return { cleaned, found };
  }
-@@ -2160,6 +2161,7 @@ function extractHtmlUrls(text) {
-       const url = metaRefreshUrl(props.content);
-       if (url) urls.push({ url, isImage: false, context: "refresh" });
+ 
+ /**
+@@ -795,9 +800,10 @@ function isPreservedBlankFiller(cps, i) {
+  * a strip that did not happen, and a stuffed channel surfaces as its category
+  * once it overruns the budget.
+  * @param {string} body
++ * @param {(start: number, end: number) => void} [onStrip]
+  * @returns {{ cleaned: string, found: string[] }}
+  */
+-function carveStrip(body) {
++function carveStrip(body, onStrip) {
+   const cps = Array.from(body);
+   // Pass 1: classify + evaluate the gate once (see analyzeCarve). Only PAYLOAD
+   // invisibles count toward the scatter floor, so a meaningful-joiner-dense text
+@@ -839,6 +845,7 @@ function carveStrip(body) {
+   let preservedTotal = 0;
+   let prevVisible = false;
+   let i = 0;
++  let offset = 0;
+   while (i < cps.length) {
+     const code = codes[i];
+     if (code === null) {
+@@ -850,6 +857,7 @@ function carveStrip(body) {
+       }
+       prevVisible = true;
+       out += cps[i]; // ordinary visible character
++      offset += cps[i].length;
+       i++;
+       continue;
      }
-+    if (node.tagName === "template" && node.content) node.children = node.content.children;
-   });
-   return urls;
+@@ -860,7 +868,11 @@ function carveStrip(body) {
+       const fits = allowCarveOut && preservedTotal + len <= maxPreserved;
+       for (let k = 0; k < len; k++) {
+         if (fits) out += cps[i + k];
+-        else foundCodes.add(codes[i + k]);
++        else {
++          foundCodes.add(codes[i + k]);
++          onStrip?.(offset, offset + cps[i + k].length);
++        }
++        offset += cps[i + k].length;
+       }
+       if (fits) preservedTotal += len;
+       prevVisible = false; // the sequence keeps the cluster open
+@@ -881,10 +893,13 @@ function carveStrip(body) {
+       preservedTotal++;
+       prevVisible = false; // a joiner/selector keeps the cluster open
+       out += cps[i];
++      offset += cps[i].length;
+       i++;
+       continue;
+     }
+     foundCodes.add(code);
++    onStrip?.(offset, offset + cps[i].length);
++    offset += cps[i].length;
+     prevVisible = false; // a stripped invisible neither opens nor closes a gap
+     i++;
+   }
+@@ -950,18 +965,27 @@ export function payloadInvisibleView(text) {
+  * legitimate leading marker. Defaults to `text` for the common single-arg call.
+  * @param {string} text
+  * @param {string} [originalText]
++ * @param {(ranges: {start: number, end: number}[]) => void} [onDelete]
+  * @returns {{ cleaned: string, found: string[] }}
+  */
+-export function stripInvisibleWithReport(text, originalText = text) {
++export function stripInvisibleWithReport(text, originalText = text, onDelete) {
+   // Leading only when the BOM leads the ORIGINAL text (not merely `text` after an
+   // ANSI strip shifted an interior BOM to index 0). The `text` guard keeps the
+   // slice sound when the two disagree.
+   const hasLeadingBom =
+     originalText.charCodeAt(0) === 0xfeff && text.charCodeAt(0) === 0xfeff;
+   const body = hasLeadingBom ? text.slice(1) : text;
++  const ranges = [];
++  const onStrip = onDelete ? (start, end) => {
++    const offset = hasLeadingBom ? 1 : 0;
++    const previous = ranges.at(-1);
++    if (previous?.end === start + offset) previous.end = end + offset;
++    else ranges.push({ start: start + offset, end: end + offset });
++  } : undefined;
+   const { cleaned, found } = needsCarveOut(body)
+-    ? carveStrip(body)
+-    : bulkStrip(body);
++    ? carveStrip(body, onStrip)
++    : bulkStrip(body, onStrip);
++  if (ranges.length) onDelete(ranges);
+   return { cleaned: hasLeadingBom ? BOM + cleaned : cleaned, found };
  }
+ 
+diff --git a/src/layer1.mjs b/src/layer1.mjs
+index f8d799a605b8f609cfa7a9ec68ebae0c3c11d43c..add5d3f1dd270a2f8cc92fffd94ccc8188d8b4ac 100644
+--- a/src/layer1.mjs
++++ b/src/layer1.mjs
+@@ -112,6 +112,17 @@ const ANSI_RE = new RegExp(`(?:${OSC_BRANCH}|${CSI_BRANCH})`, "gu");
+ export const LONE_SURROGATE_RE =
+   /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+ 
++function deleteMatches(input, pattern, onDelete) {
++  if (!onDelete) return input.replace(pattern, "");
++  const ranges = [];
++  const output = input.replace(pattern, (match, start) => {
++    ranges.push({ start, end: start + match.length });
++    return "";
++  });
++  if (ranges.length) onDelete(ranges);
++  return output;
++}
++
+ /**
+  * Strip ANSI escape sequences to a fixed point. Removing one sequence can
+  * reconstitute another around it (a lone ESC left of `ESC[32m[0m` gains the
+@@ -120,14 +131,15 @@ export const LONE_SURROGATE_RE =
+  * pass consumes at least one ESC introducer, so the pass count is bounded by
+  * the input's ESC count, and ANSI-free text exits after one pass.
+  * @param {string} input
++ * @param {(ranges: {start: number, end: number}[]) => void} [onDelete]
+  * @returns {string}
+  */
+-export function stripAnsiFully(input) {
++export function stripAnsiFully(input, onDelete) {
+   let prev = input;
+-  let out = prev.replace(ANSI_RE, "");
++  let out = deleteMatches(prev, ANSI_RE, onDelete);
+   while (out !== prev) {
+     prev = out;
+-    out = prev.replace(ANSI_RE, "");
++    out = deleteMatches(prev, ANSI_RE, onDelete);
+   }
+   return out;
+ }
+@@ -148,25 +160,26 @@ export function stripAnsiFully(input) {
+  * that no control introducer survives. `deAnsi` is the ANSI strip of the
+  * original (invisible runs intact), the scope a LONG_RUN payload check needs.
+  * @param {string} text
++ * @param {(ranges: {start: number, end: number}[]) => void} [onDelete] Sorted UTF-16 ranges in each removal pass.
+  * @returns {{ cleaned: string, deAnsi: string, found: string[] }}
+  */
+-export function applyLayer1(text) {
+-  const deAnsi = stripAnsiFully(text);
++export function applyLayer1(text, onDelete) {
++  const deAnsi = stripAnsiFully(text, onDelete);
+   // stripInvisibleWithReport returns `found` for exactly the categories it
+   // removed — so a ZWNJ/ZWJ the carve-out PRESERVES never registers as a strip,
+   // and the leading-BOM exception is already handled inside it. Pass the ORIGINAL
+   // `text` so a BOM that was interior before the ANSI strip (`ESC[m + interior U+FEFF`, now at
+   // index 0 of `deAnsi`) is treated as interior and stripped, not preserved.
+-  const { cleaned: afterInvis, found } = stripInvisibleWithReport(deAnsi, text);
++  const { cleaned: afterInvis, found } = stripInvisibleWithReport(deAnsi, text, onDelete);
+   let ansiFound = deAnsi.length !== text.length;
+ 
+   let cleaned = afterInvis;
+   if (afterInvis !== deAnsi) {
+-    const reStripped = stripAnsiFully(afterInvis);
++    const reStripped = stripAnsiFully(afterInvis, onDelete);
+     if (reStripped.length !== afterInvis.length) ansiFound = true;
+     cleaned = reStripped;
+   }
+-  const swept = cleaned.replace(CONTROL_INTRODUCER_RE, "");
++  const swept = deleteMatches(cleaned, CONTROL_INTRODUCER_RE, onDelete);
+   if (swept !== cleaned) {
+     cleaned = swept;
+     ansiFound = true;
+diff --git a/types/invisible.d.mts b/types/invisible.d.mts
+index fd58cc99f8eaeac4460f485ed7aaf4241ab6fe05..aefab502acf70af3cf101abc5d2058b375bf79d6 100644
+--- a/types/invisible.d.mts
++++ b/types/invisible.d.mts
+@@ -55,7 +55,7 @@ export function payloadInvisibleView(text: string): string;
+  * @param {string} [originalText]
+  * @returns {{ cleaned: string, found: string[] }}
+  */
+-export function stripInvisibleWithReport(text: string, originalText?: string): {
++export function stripInvisibleWithReport(text: string, originalText?: string, onDelete?: (ranges: { start: number; end: number }[]) => void): {
+     cleaned: string;
+     found: string[];
+ };
+diff --git a/types/layer1.d.mts b/types/layer1.d.mts
+index 796645eb952fbd641f64a79b8064bdcdc985c52a..2148cd77a182ac6d34a1c83cfb6bb19e4cf0310a 100644
+--- a/types/layer1.d.mts
++++ b/types/layer1.d.mts
+@@ -8,7 +8,7 @@
+  * @param {string} input
+  * @returns {string}
+  */
+-export function stripAnsiFully(input: string): string;
++export function stripAnsiFully(input: string, onDelete?: (ranges: { start: number; end: number }[]) => void): string;
+ /**
+  * Layer 1: ANSI + invisible-char strip with a result guaranteed free of every
+  * raw ANSI control introducer (7-bit ESC U+001B and the whole 8-bit C1 control
+@@ -25,9 +25,10 @@ export function stripAnsiFully(input: string): string;
+  * that no control introducer survives. `deAnsi` is the ANSI strip of the
+  * original (invisible runs intact), the scope a LONG_RUN payload check needs.
+  * @param {string} text
++ * @param {(ranges: {start: number, end: number}[]) => void} [onDelete] Sorted UTF-16 ranges in each removal pass.
+  * @returns {{ cleaned: string, deAnsi: string, found: string[] }}
+  */
+-export function applyLayer1(text: string): {
++export function applyLayer1(text: string, onDelete?: (ranges: { start: number; end: number }[]) => void): {
+     cleaned: string;
+     deAnsi: string;
+     found: string[];
