@@ -21,6 +21,21 @@
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML
 
+**Supported CSS Visibility Rules**
+
+[V] Applies inline and eligible local style rules after the default sanitizer pass
+[V] Applies importance, inline specificity, selector specificity, and source order
+[V] Handles type, universal, ID, class, attribute, and combinator selectors
+[V] Rejects a whole rule when its selector list has an unsupported selector
+[V] Skips pseudo selectors, namespace selectors, invalid selector forms, and inactive media rules
+[V] Handles uppercase and escaped units and function names
+[V] Keeps visible text for invalid declarations, malformed escaped values, and unresolved variables
+[V] Keeps same-color text visible when its background image is unresolved
+[V] Preserves visible text, unrelated attributes, and Layer 1 findings
+[V] Preserves attributes after a Unicode tag name in the source
+[V] Does not fetch linked stylesheets or CSS imports
+[V] Limits output growth from irrelevant stylesheet declarations
+
 **HTML to Markdown Pipeline**
 
 [V] Removes ad targets before Markdown conversion and keeps the removal count

@@ -178,6 +178,9 @@ importers:
       css-select:
         specifier: ^7.0.0
         version: 7.0.0
+      css-tree:
+        specifier: 3.2.1
+        version: 3.2.1
       defuddle:
         specifier: ^0.19.4
         version: 0.19.4
@@ -188,6 +191,9 @@ importers:
         specifier: ^0.18.13
         version: 0.18.13
     devDependencies:
+      '@types/css-tree':
+        specifier: 3.2.0
+        version: 3.2.0
       '@types/node':
         specifier: ^24.19.1
         version: 24.19.1
@@ -694,6 +700,9 @@ packages:
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
+
+  '@types/css-tree@3.2.0':
+    resolution: {integrity: sha512-J5KXmk6BFIepOT7280FdFyNs4c5fh0Uee0otjKEvzchrRs38Ii9qminqc4ds0L19X8Zd/rT+brR9jkBthygjWw==}
 
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
@@ -1924,6 +1933,8 @@ snapshots:
     dependencies:
       tslib: 2.8.1
     optional: true
+
+  '@types/css-tree@3.2.0': {}
 
   '@types/debug@4.1.13':
     dependencies:

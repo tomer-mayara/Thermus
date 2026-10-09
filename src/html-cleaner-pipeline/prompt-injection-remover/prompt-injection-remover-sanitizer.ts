@@ -1,9 +1,12 @@
 import { sanitize } from 'agent-input-sanitizer';
 import type { Ctx } from '../html-to-markdown-pipeline.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
+import { applyCssVisibility } from './css-visibility.ts';
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static readonly maxHtmlBytes = 10 * 1024 * 1024;
+  private static readonly placeholderEndCodeUnit = ']'.charCodeAt(0);
+  private static readonly outputChunkSize = 8192;
 
   private static readonly htmlPlaceholders = [
     '[HTML comment removed]',
@@ -16,15 +19,17 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitize(ctx.html, { html: true });
+    const normalized = await sanitize(ctx.html);
+    const sanitized = await sanitize(applyCssVisibility(normalized.cleaned), { html: true });
+    const found = [...new Set([...normalized.found, ...sanitized.found])];
     const html = PromptInjectionRemoverSanitizer.removeHtmlPlaceholders(sanitized.cleaned);
 
     return {
       ...ctx,
       html,
-      skipped: ctx.skipped + sanitized.found.length,
-      found: [...(ctx.found ?? []), ...sanitized.found],
-      warnings: [...(ctx.warnings ?? []), ...sanitized.warnings],
+      skipped: ctx.skipped + found.length,
+      found: [...(ctx.found ?? []), ...found],
+      warnings: [...(ctx.warnings ?? []), ...normalized.warnings, ...sanitized.warnings],
     };
   }
 
@@ -75,7 +80,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       const codeUnit = text.charCodeAt(index);
       output[outputLength] = codeUnit;
       outputLength++;
-      if (codeUnit !== 0x5d) {
+      if (codeUnit !== PromptInjectionRemoverSanitizer.placeholderEndCodeUnit) {
         continue;
       }
 
@@ -93,7 +98,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     }
 
     const chunks: string[] = [];
-    const chunkSize = 8192;
+    const chunkSize = PromptInjectionRemoverSanitizer.outputChunkSize;
     for (let start = 0; start < outputLength; start += chunkSize) {
       const end = Math.min(start + chunkSize, outputLength);
       chunks.push(String.fromCharCode(...output.subarray(start, end)));
