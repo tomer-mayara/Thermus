@@ -14,6 +14,8 @@ Lightpanda 1.1.0-nightly.10257+c3dfbaab3 supports [`--wait-until networkidle --w
 
 `WebsiteFetcher.fetchURL` returns `requestedUrl`, `finalUrl`, and `html`. `requestedUrl` keeps the URL as supplied. `finalUrl` is the URL of the returned page after redirects. Lightpanda still renders pages that need JavaScript.
 
+The Lightpanda fetcher returns rendered HTML for successful HTTP responses. It reports HTTP responses with status 400 or above as `WebsiteFetchHttpError`. See [the fetcher contract](docs/website-fetcher.md) for the error shape, CLI options, network policy, and local test requirements.
+
 HTML-to-Markdown conversion uses only the fetch result that the pipeline receives. It does not make network requests or fetch missing content. The pipeline uses `finalUrl` to resolve relative links and to apply host rules. Pass the fetch result directly to the pipeline:
 
 ```ts

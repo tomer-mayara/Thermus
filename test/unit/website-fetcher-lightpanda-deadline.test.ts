@@ -4,6 +4,7 @@ import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchHttpError } from '../../src/website-fetcher/website-fetcher.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 
@@ -33,7 +34,7 @@ function setExitState(child: ChildProcess, state: { exitCode?: number; signalCod
 }
 
 function successResult() {
-  return JSON.stringify({ url: 'https://example.com/', content: '<html>Ready</html>', error: null });
+  return JSON.stringify({ url: 'https://example.com/', http_status: 200, content: '<html>Ready</html>', error: null });
 }
 
 test('keeps a clean exit completed before the deadline when its callback is delayed', async (t) => {
@@ -80,4 +81,46 @@ test('rejects a clean callback when the still-running child reached the deadline
   assert.equal(kill.mock.callCount(), 1);
   renderer.finish(null, successResult(), '');
   await assert.rejects(result, /Lightpanda readiness limit exceeded after 5000 ms/);
+});
+
+test('keeps an HTTP failure when the renderer exits before the readiness deadline', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const renderer = mockRenderer(t);
+  const kill = t.mock.method(renderer.child, 'kill', () => true);
+  const result = renderer.fetcher.fetchURL('https://example.com/');
+  await renderer.launched;
+
+  setExitState(renderer.child, { exitCode: 22 });
+  t.mock.timers.tick(5_000);
+  assert.equal(kill.mock.callCount(), 0);
+  const cause = Object.assign(new Error('HTTP failure'), { code: 22 });
+  renderer.finish(cause, JSON.stringify({ http_status: 500, content: '<html>Error page</html>', error: null }), '');
+
+  await assert.rejects(result, (error) => {
+    assert.ok(error instanceof WebsiteFetchHttpError);
+    assert.equal(error.status, 500);
+    assert.equal(error.cause, cause);
+    return true;
+  });
+});
+
+test('keeps a readiness failure when the late callback reports HTTP failure', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const renderer = mockRenderer(t);
+  const kill = t.mock.method(renderer.child, 'kill', () => true);
+  const result = renderer.fetcher.fetchURL('https://example.com/');
+  await renderer.launched;
+
+  t.mock.timers.tick(5_000);
+  assert.equal(kill.mock.callCount(), 1);
+  const cause = Object.assign(new Error('HTTP failure'), { code: 22 });
+  renderer.finish(cause, JSON.stringify({ http_status: 500, content: '<html>Error page</html>', error: null }), '');
+
+  await assert.rejects(result, (error) => {
+    assert.ok(error instanceof Error);
+    assert.ok(!(error instanceof WebsiteFetchHttpError));
+    assert.equal(error.message, 'Lightpanda readiness limit exceeded after 5000 ms');
+    assert.equal(error.cause, cause);
+    return true;
+  });
 });

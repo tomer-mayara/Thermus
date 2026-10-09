@@ -13,7 +13,7 @@ function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null
     assert.equal(args[0], 'lightpanda');
     calls.push([...(args[1] ?? [])]);
     const url = args[1]?.at(-1) ?? 'https://public.test/';
-    args[3]?.(error, JSON.stringify({ url, content: '<html><body>Public page</body></html>', error: null }), '');
+    args[3]?.(error, JSON.stringify({ url, http_status: 200, content: '<html><body>Public page</body></html>', error: null }), '');
     return new ChildProcess();
   });
   syncBuiltinESMExports();
