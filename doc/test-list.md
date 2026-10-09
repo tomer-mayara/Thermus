@@ -14,6 +14,9 @@
 [V] Preserves the next paragraph and its source text when an ad paragraph omits its end tag
 [V] Preserves the next list item and its attributes when an ad item omits its end tag
 [V] Preserves following elements after omitted paragraph end tags inside list items and before dialog, search, menu, and hgroup
+[V] Preserves a table after an ad paragraph with an omitted end tag in a fragment without an explicit html element or doctype
+[V] Preserves non-ad tables between reconstructed formatting matches and counts overlapping selectors per DOM node
+[V] Removes an explicit ad body that reaches end of source, with and without a doctype
 [V] Preserves Unicode, comments, attributes, and source formatting
 [V] Preserves nested list boundaries and parent end tags around explicit, nested, adjacent, and overlapping ad matches
 [V] Preserves text and repeated body and html end tags during parser recovery

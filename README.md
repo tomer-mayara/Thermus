@@ -10,7 +10,7 @@ Fetching is deliberately not a disguise. The client announces itself as a bot. A
 
 HTML-to-Markdown conversion uses only the HTML that the pipeline supplies. It does not make network requests or fetch missing content. The page URL in the context resolves relative links in the supplied HTML. `WebsiteFetcher` still fetches pages, and Lightpanda still renders pages that need JavaScript.
 
-The ad cleaner removes matching elements from the HTML source. It preserves the next element and its source text when a paragraph or list item omits its end tag. This includes paragraphs inside list items and paragraphs before `dialog`, `search`, `menu`, and `hgroup`. It counts each matching element once, including overlapping selector matches, and honors element-hiding exceptions.
+The ad cleaner removes matching elements from the HTML source. It preserves adjacent source text when a paragraph or list item omits its end tag. This applies to paragraphs inside list items and before `dialog`, `search`, `menu`, `hgroup`, and `table`. Fragments without a doctype or an explicit `html` element use the same paragraph boundaries. It preserves tables between matched formatting elements that the parser reconstructs. It removes an ad body through the end of the source if the body has no end tag. It counts each matching element once, including overlapping selector matches, and honors element-hiding exceptions.
 
 The cleaned page is cached per tenant, keyed by URL with the query string removed. The cache is never keyed on the reason the agent gave. A hit does not fetch the page again.
 

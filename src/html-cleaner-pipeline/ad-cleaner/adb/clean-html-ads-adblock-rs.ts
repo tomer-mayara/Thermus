@@ -144,7 +144,7 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     document: HtmlNode,
     selectors: string[],
   ): StripHtmlResult {
-    const seen = new Set<string>();
+    const seen = new Set<HtmlNode>();
     const ranges: SourceRange[] = [];
     let removed = 0;
     let skipped = 0;
@@ -164,11 +164,10 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
           continue;
         }
         const { startOffset, endOffset } = location;
-        const key = `${startOffset}:${endOffset}`;
-        if (seen.has(key)) {
+        if (seen.has(node)) {
           continue;
         }
-        seen.add(key);
+        seen.add(node);
         removed += 1;
         ranges.push(CleanHtmlAdsAdblockRs.loneLineRange(html, startOffset, endOffset));
       }

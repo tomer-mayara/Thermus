@@ -1,4 +1,4 @@
-import { Parser, Token } from 'parse5';
+import { html, Parser, Token } from 'parse5';
 import { type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 
 type HtmlElement = Htmlparser2TreeAdapterMap['element'];
@@ -13,9 +13,38 @@ type EndTagIndex = {
 };
 
 export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
+  private readonly startLocations = new WeakSet<Token.LocationWithAttributes>();
+  private readonly reconstructedElements = new WeakSet<HtmlElement>();
   private readonly endTags = new WeakMap<HtmlNode, Token.Location[]>();
   private readonly endTagIndexes = new WeakMap<HtmlNode, EndTagIndex>();
   private lastEndTagOffset = 0;
+
+  public override _insertFakeRootElement(): void {
+    if (!this.document.children.some(node => this.treeAdapter.isDocumentTypeNode(node))) {
+      // An implicit root without a doctype can contain a fragment. Use normal paragraph boundaries.
+      this.treeAdapter.setDocumentMode(this.document, html.DOCUMENT_MODE.NO_QUIRKS);
+    }
+    super._insertFakeRootElement();
+  }
+
+  public override _attachElementToTree(element: HtmlElement, location: Token.LocationWithAttributes | null): void {
+    if (location !== null) {
+      if (this.startLocations.has(location)) {
+        this.reconstructedElements.add(element);
+      }
+      this.startLocations.add(location);
+    }
+    super._attachElementToTree(element, location);
+  }
+
+  public override onEof(token: Token.EOFToken): void {
+    super.onEof(token);
+    const body = this.openElements.tryPeekProperlyNestedBodyElement();
+    if (this.stopped && body !== null && body.sourceCodeLocation?.endTag === undefined) {
+      // parse5 can omit this close when the html element has no source location.
+      this._setEndLocation(body, token);
+    }
+  }
 
   public override _setEndLocation(element: HtmlElement, closingToken: Token.Token): void {
     const explicitEndTag = element.sourceCodeLocation?.endTag;
@@ -36,9 +65,41 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
       this.endTags.set(element, endTags);
       this.lastEndTagOffset = Math.max(this.lastEndTagOffset, closingLocation.startOffset);
     }
+    this.setReconstructedStart(element, closingLocation);
     if (closingToken.type === Token.TokenType.EOF) {
       this.excludeAncestorEndTags(element);
     }
+  }
+
+  private setReconstructedStart(element: HtmlElement, closingLocation: Token.Location | null): void {
+    if (!this.reconstructedElements.has(element) || closingLocation === null) {
+      return;
+    }
+    // A reconstructed element has no opening tag at its new position.
+    const start = SourceRangeParser.firstSourceLocation(element.children) ?? closingLocation;
+    this.treeAdapter.updateNodeSourceCodeLocation(element, {
+      startLine: start.startLine,
+      startCol: start.startCol,
+      startOffset: start.startOffset,
+      startTag: undefined,
+      attrs: undefined,
+    });
+  }
+
+  private static firstSourceLocation(nodes: HtmlNode[]): Token.Location | undefined {
+    const pending = [...nodes].reverse();
+    while (pending.length > 0) {
+      const node = pending.pop();
+      if (node?.sourceCodeLocation != null) {
+        return node.sourceCodeLocation;
+      }
+      if (node !== undefined && 'children' in node) {
+        for (let index = node.children.length - 1; index >= 0; index--) {
+          pending.push(node.children[index]);
+        }
+      }
+    }
+    return undefined;
   }
 
   private excludeAncestorEndTags(element: HtmlElement): void {
