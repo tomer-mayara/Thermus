@@ -1,24 +1,31 @@
+import { randomUUID } from 'node:crypto';
 import { Defuddle } from 'defuddle/node';
 import { parseHTML } from 'linkedom';
 import { type Ctx } from '../html-to-markdown-pipeline.ts';
 import { type CleanHtmlToMarkdown } from './clean-html-to-markdown.ts';
+import { plainTextMarkdown } from './plain-text-input.ts';
 
 type HtmlDocument = ReturnType<typeof parseHTML>['document'];
 const headElements = new Set(['TITLE', 'META', 'LINK', 'BASE', 'STYLE', 'SCRIPT', 'NOSCRIPT', 'TEMPLATE']);
 
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
+    const plainMarkdown = plainTextMarkdown(ctx.html);
+    if (plainMarkdown !== undefined) {
+      return { ...ctx, markdown: plainMarkdown, title: '' };
+    }
     const { document } = parseHTML(ctx.html);
     const isFragment = document.documentElement?.localName !== 'html' || !document.querySelector('body');
     CleanHtmlToMarkdownDefuddle.normalizeDocument(document);
     const preserveSuppliedContent = isFragment || !CleanHtmlToMarkdownDefuddle.hasBodyContent(document);
+    const codeStartMarker = `code-start-${randomUUID()}:\n`;
     if (preserveSuppliedContent) {
       CleanHtmlToMarkdownDefuddle.preserveFragmentHeadings(document);
-      CleanHtmlToMarkdownDefuddle.normalizeFragmentCode(document);
-      CleanHtmlToMarkdownDefuddle.prepareLocalExtraction(document, ctx.url);
+      CleanHtmlToMarkdownDefuddle.normalizeFragmentCode(document, codeStartMarker);
     }
+    CleanHtmlToMarkdownDefuddle.prepareLocalExtraction(document, ctx.url);
 
-    const result = await Defuddle(document, preserveSuppliedContent ? 'about:blank' : ctx.url, {
+    const result = await Defuddle(document, 'about:blank', {
       markdown: true,
       useAsync: false,
       standardize: !preserveSuppliedContent,
@@ -30,7 +37,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
     });
     return {
       ...ctx,
-      markdown: result.content ?? '',
+      markdown: (result.content ?? '').replace(new RegExp(`^.*${codeStartMarker}`, 'gm'), ''),
       title: result.title ?? null,
     };
   }
@@ -111,13 +118,26 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
     }
     // The generic BBCode extractor reads replacement content from this attribute.
     document.querySelector('#application_config')?.removeAttribute('data-partnereventstore');
-    // Schema articleBody can replace visible text even when site extractors are inactive.
-    for (const script of document.querySelectorAll('script')) {
-      script.remove();
+    CleanHtmlToMarkdownDefuddle.removeSchemaBodyText(document);
+  }
+
+  private static removeSchemaBodyText(document: HtmlDocument): void {
+    for (const script of document.querySelectorAll('script[type="application/ld+json"]')) {
+      try {
+        const json = (script.textContent ?? '')
+          .replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/gm, '')
+          .replace(/^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/, '$1');
+        const metadata: unknown = JSON.parse(json, (key, value: unknown) =>
+          key === 'articleBody' || key === 'text' ? undefined : value,
+        );
+        script.textContent = JSON.stringify(metadata);
+      } catch {
+        script.remove();
+      }
     }
   }
 
-  private static normalizeFragmentCode(document: HtmlDocument): void {
+  private static normalizeFragmentCode(document: HtmlDocument, codeStartMarker: string): void {
     for (const code of document.body.querySelectorAll('code')) {
       const preservesWhitespace = /(?:^|;)\s*white-space\s*:\s*(?:pre(?:-wrap)?|break-spaces)(?:\s*!important)?\s*(?:;|$)/i.test(code.getAttribute('style') ?? '');
       if (!code.closest('pre') && preservesWhitespace) {
@@ -126,25 +146,27 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
         pre.appendChild(code);
       }
     }
-    CleanHtmlToMarkdownDefuddle.normalizePreformattedBlocks(document);
+    CleanHtmlToMarkdownDefuddle.normalizePreformattedBlocks(document, codeStartMarker);
   }
 
-  private static normalizePreformattedBlocks(document: HtmlDocument): void {
+  private static normalizePreformattedBlocks(document: HtmlDocument, codeStartMarker: string): void {
     // Defuddle's Markdown converter requires a code child to make a fenced block.
     for (const pre of document.body.querySelectorAll('pre')) {
       for (const lineBreak of pre.querySelectorAll('br')) {
         lineBreak.replaceWith(document.createTextNode('\n'));
       }
-      const innerCode = pre.querySelector('code');
-      if (pre.childNodes.length === 1 && pre.firstChild === innerCode) {
-        continue;
+      const code = pre.querySelector('code') ?? document.createElement('code');
+      if (pre.childNodes.length !== 1 || pre.firstChild !== code) {
+        for (const child of pre.querySelectorAll('code')) {
+          child.replaceWith(...child.childNodes);
+        }
+        code.replaceChildren(...pre.childNodes);
+        pre.appendChild(code);
       }
-      const code = innerCode ? innerCode.cloneNode(false) : document.createElement('code');
-      for (const child of pre.querySelectorAll('code')) {
-        child.replaceWith(...child.childNodes);
+      // Defuddle trims code text. Protect its initial whitespace until Markdown is complete.
+      if (code.textContent?.trim()) {
+        code.prepend(document.createTextNode(codeStartMarker));
       }
-      code.append(...pre.childNodes);
-      pre.appendChild(code);
     }
   }
 
