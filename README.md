@@ -10,6 +10,8 @@ Fetching is deliberately not a disguise. The client announces itself as a bot. A
 
 HTML-to-Markdown conversion uses only the HTML that the pipeline supplies. It does not make network requests or fetch missing content. The page URL in the context resolves relative links in the supplied HTML. `WebsiteFetcher` still fetches pages, and Lightpanda still renders pages that need JavaScript.
 
+The converter removes prohibited invisible controls from the final Markdown and page title, including controls decoded from HTML character references. The output keeps ordinary ampersands, copyright signs, and supplementary characters. The control check treats the converted output as text. It does not parse the output as HTML or decode another layer of entities. It preserves visibly escaped entity examples.
+
 The cleaned page is cached per tenant, keyed by URL with the query string removed. The cache is never keyed on the reason the agent gave. A hit does not fetch the page again.
 
 ## Hidden-text sanitizer

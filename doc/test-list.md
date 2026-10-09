@@ -40,6 +40,10 @@
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
 [V] Preserves local content and resolves relative links with the page URL
+[V] Removes literal controls and controls from decimal and hexadecimal character references in final Markdown and title
+[V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title
+[V] Keeps visibly escaped entity examples; the control check does not parse output as HTML or decode another entity layer
+[V] Preserves parser behavior for malformed entities and invalid code points
 
 ## Interface
 
