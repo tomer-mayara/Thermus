@@ -1,7 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,76 +196,213 @@
+@@ -196,76 +196,257 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -116,6 +116,52 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  // Scale the rounding allowance to the determinant terms, not the visible area.
 +  const roundoff = Number.EPSILON * rows.length * rows.length * magnitude;
 +  return Number.isFinite(magnitude) && Math.abs(value) <= roundoff;
++}
++
++/** @param {bigint[][]} rows @returns {bigint} */
++function exactDeterminant(rows) {
++  if (rows.length === 1) return rows[0][0];
++  let value = 0n;
++  for (let column = 0; column < rows.length; column++) {
++    const coefficient = rows[0][column];
++    if (coefficient === 0n) continue;
++    const minor = rows.slice(1).map((row) => row.filter((_, index) => index !== column));
++    value += (column % 2 === 0 ? 1n : -1n) * coefficient * exactDeterminant(minor);
++  }
++  return value;
++}
++
++/** @param {string} value @returns {{ significand: bigint, exponent: number } | null} */
++function exactDecimal(value) {
++  // Bound the token and exponent before integer conversion or powers.
++  if (value.length > 128) return null;
++  const [mantissa, power = "0"] = value.toLowerCase().split("e");
++  const exponent = Number(power) - (mantissa.split(".")[1]?.length ?? 0);
++  if (!Number.isInteger(exponent) || Math.abs(exponent) > 400) return null;
++  return { significand: BigInt(mantissa.replace(".", "")), exponent };
++}
++
++/** @param {any} fn @returns {boolean} */
++function isProvenSingularTransform(fn) {
++  if (fn.type !== "Function") return false;
++  const name = csstree.ident.decode(fn.name).toLowerCase();
++  if (/^(?:scale|scale3d|scalex|scaley|scalez)$/.test(name))
++    return valueTokens(fn).some((factor) => exactDecimal(factor.value)?.significand === 0n);
++  if (name !== "matrix" && name !== "matrix3d") return false;
++  let tokens = functionArgs(fn).map((group) => group[0].value);
++  if (name === "matrix") {
++    const [a, b, c, d, e, f] = tokens;
++    tokens = [a, b, "0", "0", c, d, "0", "0", "0", "0", "1", "0", e, f, "0", "1"];
++  }
++  const values = tokens.map(exactDecimal);
++  if (values.some((value) => value === null)) return false;
++  // Use authored decimals. Binary rounding cannot prove that the matrix is singular.
++  const exponent = Math.min(...values.map((value) => value.exponent));
++  const integers = values.map((value) =>
++    value.significand * 10n ** BigInt(value.exponent - exponent));
++  const rows = MATRIX_AXES.map((row) =>
++    MATRIX_AXES.map((column) => integers[column * MATRIX_AXES.length + row]));
++  return exactDeterminant(rows) === 0n;
 +}
 +
 +/** @param {number[][]} rows @returns {boolean} */
@@ -238,13 +284,11 @@ diff --git a/src/html.mjs b/src/html.mjs
 +function isHidingTransformList(functions, ignorePlane, ignoreOffsets) {
 +  if (functions.length === 0) return false;
 +  const matrices = functions.map(transformRows);
-+  const rows = composeMatrices(matrices);
-+  // Other functions can restore the projected area, but not a singular matrix.
-+  if (!rows) return matrices.some((matrix) => matrix && isSingularMatrix(matrix)) ? true : null;
-+
-+  // A singular matrix hides the subtree.
++  // A singular operand hides the subtree. Rounded products cannot prove this.
 +  // https://www.w3.org/TR/css-transforms-1/#transform-function-lists
-+  if (isSingularMatrix(rows)) return true;
++  if (functions.some((fn, index) => matrices[index] && isProvenSingularTransform(fn))) return true;
++  const rows = composeMatrices(matrices);
++  if (!rows) return null;
 +  // A 3D child can occupy another plane. The local plane cannot hide its subtree.
 +  if (ignorePlane) return false;
 +  // A projective matrix needs origin and layout data before its plane can be resolved.
@@ -269,7 +313,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +977,141 @@
+@@ -840,26 +1021,141 @@
    return false;
  }
 
@@ -429,7 +473,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1159,13 @@
+@@ -907,11 +1203,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -444,7 +488,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1188,93 @@
+@@ -934,17 +1232,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -539,7 +583,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,19 +1312,18 @@
+@@ -982,19 +1356,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -566,7 +610,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1423,10 @@
+@@ -1094,9 +1467,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -578,7 +622,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1438,7 @@
+@@ -1108,7 +1482,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -587,7 +631,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1465,181 @@
+@@ -1135,8 +1509,185 @@
    return firstElement;
  }
 
@@ -716,6 +760,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    matrix: parent?.matrix ?? null,
 +    hiddenPlane, hasPerspective: parent?.hasPerspective ?? false,
 +    translation: parent ? parent.translation : [0, 0, 0], offscreen,
++    hiddenReplacedContent: false,
 +    hiddenElement: isHiddenElement(node, {
 +      ignoreFontSize: true, ignoreTransforms: true, ignorePositionedOffsets: true,
 +    }),
@@ -758,6 +803,9 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const { translation, offscreen } = resolveTranslation(declarations, parent, transform);
 +  return {
 +    fontSize, display, boxDisplay: display, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
++    hiddenReplacedContent: (offscreen || hiddenPlane) &&
++      REPLACED_ELEMENTS.has(node.tagName) && VOID_ELEMENTS.has(node.tagName) &&
++      (!node.namespace || node.namespace === "http://www.w3.org/1999/xhtml"),
 +    hiddenElement: isHiddenElement(node, {
 +      ignoreFontSize: true,
 +      in3dContext: in3dContext || Boolean(parent?.hasPerspective),
@@ -793,7 +841,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -115,3 +117,36 @@
+@@ -115,3 +117,38 @@
  import { SECRET_HINT_EXT } from "./gates.mjs";
  import { matchesSecretHint } from "./gates.mjs";
  export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };
@@ -815,6 +863,8 @@ diff --git a/types/html.d.mts b/types/html.d.mts
 +    matrix: number[][] | null;
 +    hiddenPlane: boolean;
 +    hasPerspective: boolean;
++    /** Hidden content in a void replaced element. */
++    hiddenReplacedContent: boolean;
 +    hiddenElement: boolean;
 +    hiddenText: boolean;
 +    translation: number[] | null;

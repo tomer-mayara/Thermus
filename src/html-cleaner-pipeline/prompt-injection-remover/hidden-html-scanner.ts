@@ -118,7 +118,7 @@ export class HiddenHtmlScanner {
   private static hasHiddenContent(node: HtmlElement, visibility?: ElementVisibility): boolean {
     if (!visibility || !adapter.getNodeSourceCodeLocation(node)) return false;
     if (visibility.hiddenPlane && !visibility.preserves3d) return true;
-    return node.name === 'img' && (visibility.offscreen || visibility.hiddenPlane);
+    return visibility.hiddenReplacedContent;
   }
 
   private recordVisibleElement(node: HtmlElement): void {

@@ -266,3 +266,6 @@
 [V] Keeps font overrides, perspective uncertainty, and restored translated children through display:contents wrappers
 [V] Ignores boxless wrapper offsets and keeps positioned descendants whose layout offsets are unresolved
 [V] Keeps projective planes with unresolved Z origins and still removes singular full matrices
+[V] Removes local and inherited offscreen input values, keeps visible inputs, and keeps descendants whose transforms return them to view
+[V] Keeps a nearly singular matrix with a resolved or unresolved inverse, and keeps a preserved child whose inverse restores the parent plane
+[V] Removes a truly singular operand even when another transform is unresolved
