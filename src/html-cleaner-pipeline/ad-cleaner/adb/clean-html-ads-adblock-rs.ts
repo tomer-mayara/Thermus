@@ -2,21 +2,17 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import adblockRust from 'adblock-rs';
 import { selectAll } from 'css-select';
-import { ElementType, parseDocument } from 'htmlparser2';
+import { type DomHandler, ElementType, Parser } from 'htmlparser2';
 import { type Ctx } from '../../html-to-markdown-pipeline.ts';
 import { type CleanHtmlAds } from '../clean-html-ads.ts';
+import { SourceRangeDomHandler } from './source-range-dom-handler.ts';
 
 type StripHtmlResult = Pick<Ctx, 'html' | 'removed' | 'skipped'>;
 
 type AdblockEngine = InstanceType<typeof adblockRust.Engine>;
 
-type HtmlNode = {
-  type?: string;
-  attribs?: { class?: string; id?: string };
-  children?: HtmlNode[];
-  startIndex?: number | null;
-  endIndex?: number | null;
-};
+type HtmlDocument = DomHandler['root'];
+type HtmlNode = HtmlDocument | HtmlDocument['children'][number];
 
 type SourceRange = {
   start: number;
@@ -57,12 +53,17 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     return CleanHtmlAdsAdblockRs.engine;
   }
 
-  private static parseHtml(html: string): HtmlNode {
-    return parseDocument(html, { withStartIndices: true, withEndIndices: true }) as HtmlNode;
+  private static parseHtml(html: string): HtmlDocument {
+    const handler = new SourceRangeDomHandler(undefined, {
+      withStartIndices: true,
+      withEndIndices: true,
+    });
+    new Parser(handler).end(html);
+    return handler.root;
   }
 
   private static collectClassAndId(node: HtmlNode, classes: Set<string>, ids: Set<string>): void {
-    if (node.type === ElementType.Tag && node.attribs !== undefined) {
+    if (node.type === ElementType.Tag) {
       const id = node.attribs.id;
       if (id !== undefined && id !== '') {
         ids.add(id);
@@ -76,8 +77,10 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
         }
       }
     }
-    for (const child of node.children ?? []) {
-      CleanHtmlAdsAdblockRs.collectClassAndId(child, classes, ids);
+    if ('children' in node) {
+      for (const child of node.children) {
+        CleanHtmlAdsAdblockRs.collectClassAndId(child, classes, ids);
+      }
     }
   }
 
@@ -150,7 +153,7 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     for (const selector of selectors) {
       let nodes: HtmlNode[];
       try {
-        nodes = selectAll(selector, document) as HtmlNode[];
+        nodes = selectAll<HtmlNode, HtmlNode>(selector, document);
       } catch {
         skipped += 1;
         continue;
