@@ -166,7 +166,7 @@ overrides:
   ts-api-utils>typescript: 6.0.3
 
 patchedDependencies:
-  agent-input-sanitizer@1.47.14: 2e74b25fe5af704d220e815025ada026cdf6b779937cd2587c6fe4961dfa3170
+  agent-input-sanitizer@1.47.14: cbf9e580c58a8bdabb52c2c461235b4a1defbd0bd440585565aae2d03ee1c210
   hast-util-from-parse5@8.0.3: 123299b3b5c5e16366ae7386b9356fda36cad3839117230fbd68de971758d09a
 
 importers:
@@ -178,7 +178,7 @@ importers:
         version: 0.13.3
       agent-input-sanitizer:
         specifier: 1.47.14
-        version: 1.47.14(patch_hash=2e74b25fe5af704d220e815025ada026cdf6b779937cd2587c6fe4961dfa3170)
+        version: 1.47.14(patch_hash=cbf9e580c58a8bdabb52c2c461235b4a1defbd0bd440585565aae2d03ee1c210)
       css-select:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2118,7 +2118,7 @@ snapshots:
     dependencies:
       cargo-cp-artifact: 0.1.9
 
-  agent-input-sanitizer@1.47.14(patch_hash=2e74b25fe5af704d220e815025ada026cdf6b779937cd2587c6fe4961dfa3170):
+  agent-input-sanitizer@1.47.14(patch_hash=cbf9e580c58a8bdabb52c2c461235b4a1defbd0bd440585565aae2d03ee1c210):
     dependencies:
       css-tree: 3.2.1
       rehype-parse: 9.0.1

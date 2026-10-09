@@ -27,7 +27,7 @@
 [V] Keeps sizes with named deferred `var()`, `env()`, and `attr()` functions unknown, including typed `attr()` raw syntax; invalid raw values and nameless `env()` or `attr()` do not replace an earlier size
 [V] Removes whole subtrees for display:none, zero opacity, content-visibility:hidden, zero scale, and collapsed height with hidden overflow
 [V] Composes supported matrix, scale, rotation, and resolvable translate functions in CSS order before checking the projected plane
-[V] Checks composed pure-translation X/Y offsets, keeps cancelling X/Y and `em` translations and matrix compensation, removes truly offscreen results, and keeps a mirrored wide plane visible
+[V] Checks composed pure-translation X/Y offsets, keeps cancelling X/Y and `em` translations and matrix compensation, removes truly offscreen results, keeps a mirrored wide plane visible, and applies the unresolved `translate3d()` offscreen heuristic to X/Y only
 [V] Removes collapsed composed transforms and known singular operands, but keeps unresolved lists when they do not prove collapse
 [V] Keeps transforms whose combined projection is visible, including rotations in the rendered plane with zero diagonal matrix values
 [V] Keeps content visible when matrix lists use invalid comma or plus separators
@@ -35,8 +35,11 @@
 [V] Decodes escaped transform names before visibility checks and recognizes collapsed matrices
 [V] Applies transform declaration order and `!important`, and leaves deferred `var()`, `env()`, and `attr()` values unknown
 [V] Hides zero numeric or percentage Z scales, keeps small nonzero numeric or percentage Z scales, and checks near-zero X and Y scales
-[V] Applies `transform-style` declaration order and `!important`; supported grouping values make `preserve-3d` effective style flat for opacity, overflow, filters, clipping, isolation, masking, blend mode, and paint containment
-[V] Skips the local-plane check when an element can preserve 3D planes or participates in an ancestor's 3D context
+[V] Applies `transform-style` declaration order and `!important`; supported opacity, overflow, filter, clipping, isolation, masking, blend, and paint-containment values flatten `preserve-3d`
+[V] Applies `clip` grouping only with a valid winning `position:absolute` or `fixed`
+[V] Composes affine parent and child planes in confirmed preserved 3D contexts; a collapsed parent plane alone does not hide the full subtree
+[V] Removes hidden direct text and flat descendants, including images, while continuing through preserved wrappers to visible child planes
+[V] Keeps child planes unknown when transform-style, grouping values, or perspective need unresolved layout or style data
 [V] Still removes singular transforms and whole subtrees hidden by display or opacity rules in a preserved 3D context
 [V] Keeps a collapsed flat subtree hidden
 

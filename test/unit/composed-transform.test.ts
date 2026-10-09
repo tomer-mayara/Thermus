@@ -20,6 +20,8 @@ describe('Composed transform visibility', () => {
     'translateX(-2000000px) translateX(1000000px)',
     'matrix(1,0,0,1,0,-1000000)',
     'translateY(-10000em)',
+    'translate3d(-10000em,0,0)',
+    'translate3d(0,-10000em,0)',
   ]) {
     test(`removes the collapsed composition ${transform}`, async () => {
       const result = await sanitizeHtml(
@@ -49,6 +51,7 @@ describe('Composed transform visibility', () => {
     'translateY(-1000000px) translateY(1000000px)',
     'matrix(1,0,0,1,1000000,0) translateX(-1000000px)',
     'translateX(-10000em) translateX(10000em)',
+    'translate3d(0,0,-10000em)',
   ]) {
     test(`keeps the visible or unresolved composition ${transform}`, async () => {
       const result = await sanitizeHtml(`<div style="transform:${transform}">Visible content</div>`);

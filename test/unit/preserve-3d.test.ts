@@ -68,6 +68,7 @@ describe('Preserved 3D descendants', () => {
     'transform-style:preserve-3d;clip-path:inset(0px)',
     'transform-style:preserve-3d;opacity:.5!important;opacity:1',
     'transform-style:preserve-3d;position:absolute;clip:rect(0px,300px,100px,0px)',
+    'transform-style:preserve-3d;position:absolute!important;position:relative;clip:rect(0px,300px,100px,0px)',
     'transform-style:preserve-3d;mask-image:url(mask.svg)',
     'transform-style:preserve-3d;mask-border-source:url(mask.svg)',
     'transform-style:preserve-3d;mix-blend-mode:multiply',
@@ -95,6 +96,7 @@ describe('Preserved 3D descendants', () => {
     'transform-style:preserve-3d;opacity:1!important;opacity:.5',
     'transform-style:preserve-3d;clip:rect(0px,300px,100px,0px)',
     'transform-style:preserve-3d;position:relative;clip:rect(0px,300px,100px,0px)',
+    'transform-style:preserve-3d;position:relative!important;position:absolute;clip:rect(0px,300px,100px,0px)',
     'transform-style:preserve-3d;mask-image:none,none',
   ]) {
     test(`keeps visible or unresolved child planes with ${style}`, async () => {

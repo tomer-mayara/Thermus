@@ -54,6 +54,7 @@ describe('Transform list context', () => {
     'scaleZ(0%)',
     'scale3d(1,1,0%)',
     'scaleZ(0) matrix(0,1,-1,0,0,0)',
+    'scale(0) translateX(1em)',
     'rotateX(90deg)',
     'rotateY(90deg)',
     'matrix(1,2,2,4,0,0)',
