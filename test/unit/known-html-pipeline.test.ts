@@ -2,10 +2,39 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { HiddenHtmlScanner } from '../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { HtmlToMarkdownPipeline, type Step } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 
 describe('Known HTML pipeline output', () => {
+  test('withholds HTML when the scanner fails before markdown conversion', async (t) => {
+    t.mock.method(HiddenHtmlScanner, 'scan', () => {
+      throw new RangeError('HTML parser failure');
+    });
+    let seenHtml: string | undefined;
+    const markdowner: Step = {
+      async invoke(ctx) {
+        seenHtml = ctx.html;
+        return { ...ctx, markdown: '' };
+      },
+    };
+    const local = new HtmlToMarkdownPipeline([new PromptInjectionRemoverSanitizer(), markdowner]);
+    const html = '<p>Visible content</p>';
+
+    const result = await local.process({
+      requestedUrl: 'https://example.com/',
+      finalUrl: 'https://example.com/',
+      html,
+    });
+
+    assert.equal(seenHtml, '');
+    assert.equal(result.html, '');
+    assert.equal(result.markdown, '');
+    assert.equal(result.skipped, 0);
+    assert.equal(result.found?.includes('hidden-html'), false);
+    assert.deepEqual(result.warnings, ['HTML scan failed; remaining HTML withheld']);
+  });
+
   test('withholds HTML with an unsourced hidden body before markdown conversion', async () => {
     let seenHtml: string | undefined;
     const markdowner: Step = {

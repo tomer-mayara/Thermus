@@ -39,7 +39,7 @@ export class HiddenHtmlScanner {
       }
     }
     for (const node of scanner.hiddenNodes) scanner.recordSource(node);
-    provenance.retain(contexts, scanner.visibleNodes, scanner.ranges, styles);
+    provenance.retain(contexts, scanner.visibleNodes, scanner.ranges);
     return {
       ranges: scanner.ranges,
       removed: scanner.removed,
@@ -62,10 +62,14 @@ export class HiddenHtmlScanner {
       this.visibleSources.add(this.tree.sourceElement(node));
       this.visibleNodes.add(node);
     }
-    const children = adapter.isElementNode(node) && node.name === 'template'
-      ? adapter.getTemplateContent(node).children
-      : 'children' in node ? node.children : [];
-    for (const child of children) this.visit(child, removed, visibility);
+    for (const child of HiddenHtmlScanner.childNodes(node)) this.visit(child, removed, visibility);
+  }
+
+  private static childNodes(node: HtmlNode): HtmlNode[] {
+    if (adapter.isElementNode(node) && node.name === 'template') {
+      return adapter.getTemplateContent(node).children;
+    }
+    return 'children' in node ? node.children : [];
   }
 
   private elementVisibility(node: HtmlElement, parent?: ElementVisibility): ElementVisibility {
@@ -144,18 +148,22 @@ export class HiddenHtmlScanner {
       return;
     }
     if (adapter.isElementNode(node)) {
-      if (this.visibleSources.has(this.tree.sourceElement(node))) return;
-      for (const source of this.tree.adoptedSources.get(node) ?? []) {
-        this.ranges.push({ start: source.startOffset, end: source.endOffset });
-      }
+      this.recordElementSource(node);
+      return;
+    }
+    const location = adapter.getNodeSourceCodeLocation(node);
+    if (location) this.ranges.push({ start: location.startOffset, end: location.endOffset });
+  }
+
+  private recordElementSource(node: HtmlElement): void {
+    if (this.visibleSources.has(this.tree.sourceElement(node))) return;
+    for (const source of this.tree.adoptedSources.get(node) ?? []) {
+      this.ranges.push({ start: source.startOffset, end: source.endOffset });
     }
     const location = adapter.getNodeSourceCodeLocation(node);
     if (location == null) return;
     // A whole element interval can also contain visible nodes outside its parsed subtree.
-    const sources = adapter.isElementNode(node)
-      ? [location.startTag, location.endTag]
-      : [location];
-    for (const source of sources) {
+    for (const source of [location.startTag, location.endTag]) {
       if (source) this.ranges.push({ start: source.startOffset, end: source.endOffset });
     }
   }

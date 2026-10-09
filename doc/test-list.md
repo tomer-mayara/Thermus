@@ -174,13 +174,22 @@
 [V] Preserves the exact requested URL
 [V] Rejects missing or invalid fetch metadata
 
+**Lightpanda Website Fetcher**
+
+[V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
+[V] Returns HTML with the requested and final URLs on immediate success
+[V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
+[V] Preserves a child result or error when the child has already exited at the deadline, and rejects a late success when the child was still running at the deadline
+[V] Cancels the readiness timer after success or a process error
+[V] Preserves process timeout and output limit errors, and handles missing executable (ENOENT), permission error (EACCES), and synchronous launch failure
+
 ## Interface
 
 **Renderer network policy**
 
 [V] Blocks literal and DNS loopback targets before a connection
 [V] Blocks a DNS change, IPv6 loopback, a redirect, a script resource, fetch, XHR, and WebSocket to a blocked address
-[V] Allows an IPv4 loopback fixture only inside the test scope and ignores proxy environment settings
+[V] Allows an IPv4 loopback fixture only inside the test scope, preserves production readiness options, and ignores proxy environment settings
 
 **HTML Fetcher**
 
@@ -201,6 +210,11 @@
 **Defuddle Extracted DOM**
 
 [V] Passes decoded selector-based Substack and generated Discourse content to the callback before URL conversion
+
+**Website Fetcher Readiness** (`test/interface/website-fetcher-readiness.test.ts`)
+
+[V] Returns the completed asynchronous DOM after its 500 ms request delay, before the full wait budget
+[V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
 
 ## Acceptance
 

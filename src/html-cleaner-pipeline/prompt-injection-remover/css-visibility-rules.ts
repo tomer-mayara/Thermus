@@ -70,20 +70,25 @@ function isValidFilterToken(token: CssNode): boolean {
   return nonNegative.every((length) => Number(length.value) >= 0);
 }
 
+function normalizeDeclaration(node: Declaration, quirksMode: boolean): ParsedDeclaration | undefined {
+  node.property = normalizedIdent(node.property);
+  if (!visibilityProperties.has(node.property) && !/^(?:margin|inset)(?:-|$)/.test(node.property)) return undefined;
+  if (typeof node.important === 'string') {
+    if (normalizedIdent(node.important) !== 'important') return undefined;
+    node.important = true;
+  }
+  const resolved = normalizeValue(node.value);
+  if (!isValidVisibilityValue(node.property, node.value, quirksMode)) return undefined;
+  if (node.property === 'filter' && resolved && !isValidValue(node)) return undefined;
+  return { declaration: node, resolved };
+}
+
 export function normalizeDeclarations(nodes: CssNode[], quirksMode = false): ParsedDeclaration[] {
   const declarations: ParsedDeclaration[] = [];
   for (const node of nodes) {
     if (node.type !== 'Declaration') continue;
-    node.property = normalizedIdent(node.property);
-    if (!visibilityProperties.has(node.property) && !/^(?:margin|inset)(?:-|$)/.test(node.property)) continue;
-    if (typeof node.important === 'string') {
-      if (normalizedIdent(node.important) !== 'important') continue;
-      node.important = true;
-    }
-    const resolved = normalizeValue(node.value);
-    if (!isValidVisibilityValue(node.property, node.value, quirksMode)) continue;
-    if (node.property === 'filter' && resolved && !isValidValue(node)) continue;
-    declarations.push({ declaration: node, resolved });
+    const declaration = normalizeDeclaration(node, quirksMode);
+    if (declaration) declarations.push(declaration);
   }
   return declarations;
 }
