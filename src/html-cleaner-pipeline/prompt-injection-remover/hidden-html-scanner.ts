@@ -2,7 +2,7 @@ import { isHiddenElement, REPORTED_TAGS } from 'agent-input-sanitizer/html';
 import { html, serializeOuter } from 'parse5';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { resolveCssVisibility, type VisibilityStyle } from './css-visibility.ts';
-import { parseSourceDocument, type SourceElement, type CssHtmlDocument } from './css-visibility-tree.ts';
+import { parseSourceDocument, type CssHtmlDocument } from './css-visibility-tree.ts';
 import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 
 type HtmlNode = Htmlparser2TreeAdapterMap['node'];
@@ -22,16 +22,14 @@ export class HiddenHtmlScanner {
 
   private constructor(
     private readonly styles: Map<HtmlElement, VisibilityStyle>,
-    private readonly sourceElement: SourceElement,
-    private readonly adoptedSources: CssHtmlDocument['adoptedSources'],
-    private readonly decodedStyleValues: CssHtmlDocument['decodedStyleValues'],
+    private readonly tree: CssHtmlDocument,
   ) {}
 
   public static scan(text: string, provenance = new CssVisibilityProvenance()) {
     const tree = parseSourceDocument(text);
     const styles = resolveCssVisibility(tree);
     const contexts = provenance.apply(tree, styles);
-    const scanner = new HiddenHtmlScanner(styles, tree.sourceElement, tree.adoptedSources, tree.decodedStyleValues);
+    const scanner = new HiddenHtmlScanner(styles, tree);
     scanner.visit(tree.document, false);
     const root = tree.document.children.find(adapter.isElementNode);
     if (root && scanner.hiddenNodes.includes(root)) {
@@ -58,7 +56,7 @@ export class HiddenHtmlScanner {
     const removed = removedAncestor || this.recordNode(node);
     if (removed) this.hiddenNodes.push(node);
     else if (adapter.isElementNode(node)) {
-      this.visibleSources.add(this.sourceElement(node));
+      this.visibleSources.add(this.tree.sourceElement(node));
       this.visibleNodes.add(node);
     }
     const children = adapter.isElementNode(node) && node.name === 'template'
@@ -103,21 +101,21 @@ export class HiddenHtmlScanner {
 
   private recordVisibleStyles(node: HtmlElement): void {
     const locations = [
-      adapter.getNodeSourceCodeLocation(this.sourceElement(node)),
-      ...this.adoptedSources.get(node) ?? [],
+      adapter.getNodeSourceCodeLocation(this.tree.sourceElement(node)),
+      ...this.tree.adoptedSources.get(node) ?? [],
     ];
     for (const location of locations) {
       const style = location?.attrs?.style;
       if (!style) continue;
       this.visibleStyles.set(style.startOffset, { start: style.startOffset, end: style.endOffset });
-      this.visibleStyleValues.push(...this.decodedStyleValues.get(style.startOffset) ?? []);
+      this.visibleStyleValues.push(...this.tree.decodedStyleValues.get(style.startOffset) ?? []);
     }
   }
 
   private recordSource(node: HtmlNode): void {
     if (adapter.isElementNode(node)) {
-      if (this.visibleSources.has(this.sourceElement(node))) return;
-      for (const source of this.adoptedSources.get(node) ?? []) {
+      if (this.visibleSources.has(this.tree.sourceElement(node))) return;
+      for (const source of this.tree.adoptedSources.get(node) ?? []) {
         this.ranges.push({ start: source.startOffset, end: source.endOffset });
       }
     }
