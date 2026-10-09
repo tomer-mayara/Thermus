@@ -1,23 +1,37 @@
-import { sanitize } from 'agent-input-sanitizer';
+import { CATEGORY, sanitize } from 'agent-input-sanitizer';
+import { detectExfil, scanHtmlFragment } from 'agent-input-sanitizer/html';
+import { describeRemoved, describeWarned } from 'agent-input-sanitizer/output';
 import type { Ctx } from '../html-to-markdown-pipeline.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static readonly maxHtmlBytes = 10 * 1024 * 1024;
 
-  private static readonly htmlPlaceholders = [
-    '[HTML comment removed]',
-    '[hidden HTML removed]',
-    '[HTML unparseable — withheld]',
-  ] as const;
-
   public async invoke(ctx: Ctx): Promise<Ctx> {
     if (Buffer.byteLength(ctx.html, 'utf8') > PromptInjectionRemoverSanitizer.maxHtmlBytes) {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitize(ctx.html, { html: true });
-    const html = PromptInjectionRemoverSanitizer.removeHtmlPlaceholders(sanitized.cleaned);
+    const sanitized = await sanitize(ctx.html);
+    const { html, removed, warned } = PromptInjectionRemoverSanitizer.removeHiddenHtml(
+      sanitized.cleaned,
+    );
+    if (removed.comments > 0) sanitized.found.push(CATEGORY.HTML_COMMENTS);
+    if (removed.hidden > 0) sanitized.found.push(CATEGORY.HIDDEN_HTML);
+    if (removed.comments > 0 || removed.hidden > 0) {
+      sanitized.warnings.push(`HTML sanitized: ${describeRemoved(removed)} removed`);
+    }
+    const preserved = describeWarned(warned);
+    if (preserved) sanitized.warnings.push(preserved);
+
+    const exfilWarning = PromptInjectionRemoverSanitizer.describeExfilUrls(
+      sanitized.cleaned,
+      html,
+    );
+    if (exfilWarning) {
+      sanitized.found.push(CATEGORY.EXFIL_URLS);
+      sanitized.warnings.push(exfilWarning);
+    }
 
     return {
       ...ctx,
@@ -28,76 +42,47 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     };
   }
 
-  private static matchesSuffix(
-    output: Uint16Array,
-    outputLength: number,
-    placeholder: string,
-  ): boolean {
-    const start = outputLength - placeholder.length;
-    if (start < 0) {
-      return false;
-    }
+  private static describeExfilUrls(input: string, html: string): string | undefined {
+    const threats = [
+      ...(detectExfil(input) ?? []),
+      ...(html === input ? [] : (detectExfil(html) ?? [])),
+    ];
+    if (threats.length === 0) return undefined;
 
-    for (let offset = 0; offset < placeholder.length; offset++) {
-      if (output[start + offset] !== placeholder.charCodeAt(offset)) {
-        return false;
-      }
-    }
-    return true;
+    const reasons = new Set(
+      threats.map(
+        (threat) =>
+          `${threat.isImage ? 'image' : 'link'} to ${threat.target}: ${threat.reason}`,
+      ),
+    );
+    return `Exfil-shaped URLs detected: ${[...reasons].join('; ')}`;
   }
 
-  private static removeSuffixPlaceholder(
-    output: Uint16Array,
-    outputLength: number,
-  ): number | undefined {
-    for (const placeholder of PromptInjectionRemoverSanitizer.htmlPlaceholders) {
-      if (!PromptInjectionRemoverSanitizer.matchesSuffix(output, outputLength, placeholder)) {
-        continue;
-      }
-
-      return outputLength - placeholder.length;
-    }
-    return undefined;
-  }
-
-  private static removeHtmlPlaceholders(text: string): string {
-    if (
-      !PromptInjectionRemoverSanitizer.htmlPlaceholders.some((placeholder) =>
-        text.includes(placeholder),
-      )
-    ) {
-      return text;
+  private static removeHiddenHtml(text: string): {
+    html: string;
+    removed: { comments: number; hidden: number };
+    warned: ReturnType<typeof scanHtmlFragment>['warned'];
+  } {
+    let scan: ReturnType<typeof scanHtmlFragment>;
+    try {
+      scan = scanHtmlFragment(text);
+    } catch {
+      return {
+        html: '',
+        removed: { comments: 0, hidden: 1 },
+        warned: { tags: {}, dataSrc: 0 },
+      };
     }
 
-    const output = new Uint16Array(text.length);
-    let outputLength = 0;
-    for (let index = 0; index < text.length; index++) {
-      const codeUnit = text.charCodeAt(index);
-      output[outputLength] = codeUnit;
-      outputLength++;
-      if (codeUnit !== 0x5d) {
-        continue;
-      }
-
-      let nextLength = PromptInjectionRemoverSanitizer.removeSuffixPlaceholder(
-        output,
-        outputLength,
-      );
-      while (nextLength !== undefined) {
-        outputLength = nextLength;
-        nextLength = PromptInjectionRemoverSanitizer.removeSuffixPlaceholder(
-          output,
-          outputLength,
-        );
-      }
+    const removed = { comments: 0, hidden: 0 };
+    const parts: string[] = [];
+    let cursor = 0;
+    for (const range of scan.ranges.sort((left, right) => left.start - right.start)) {
+      removed[range.kind === 'comment' ? 'comments' : 'hidden']++;
+      if (range.start > cursor) parts.push(text.slice(cursor, range.start));
+      cursor = Math.max(cursor, range.end);
     }
-
-    const chunks: string[] = [];
-    const chunkSize = 8192;
-    for (let start = 0; start < outputLength; start += chunkSize) {
-      const end = Math.min(start + chunkSize, outputLength);
-      chunks.push(String.fromCharCode(...output.subarray(start, end)));
-    }
-    return chunks.join('');
+    parts.push(text.slice(cursor));
+    return { html: parts.join(''), removed, warned: scan.warned };
   }
 }

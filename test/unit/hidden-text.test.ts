@@ -90,28 +90,36 @@ describe('PromptInjectionRemoverSanitizer', () => {
     }
   });
 
-  test('removes comment markers formed across a hidden span', async () => {
-    const result = await sanitizer.invoke(
-      createContext('<p>[HTML <span hidden>payload</span>comment removed]</p>'),
-    );
+  test('normalizes invisible characters before scanning and counts each category once', async () => {
+    const url = `https://attacker.example/?payload=${'a'.repeat(20)}\u200b${'a'.repeat(20)}`;
 
-    assert.equal(result.html, '<p></p>');
+    const result = await sanitizer.invoke(createContext(`<a href="${url}">Open</a>`));
+
+    assert.equal(result.html, `<a href="${url.replace('\u200b', '')}">Open</a>`);
+    assert.deepEqual(result.found, ['cf-format', 'exfil-urls']);
+    assert.equal(result.skipped, 2);
+    assert.equal(result.warnings?.filter((warning) => warning.startsWith('Exfil-shaped URLs detected:')).length, 1);
   });
 
-  test('removes hidden markers formed across another hidden span', async () => {
-    const result = await sanitizer.invoke(
-      createContext('<p>[hidden <span hidden>payload</span>HTML removed]</p>'),
-    );
+  test('preserves resource tags and reports them', async () => {
+    const html = '<script>const marker = "[HTML comment removed]";</script><img src="data:image/png;base64,a">';
 
-    assert.equal(result.html, '<p></p>');
+    const result = await sanitizer.invoke(createContext(html));
+
+    assert.equal(result.html, html);
+    assert.deepEqual(result.found, []);
+    assert.ok(result.warnings?.some((warning) => warning.includes('script')));
+    assert.ok(result.warnings?.some((warning) => warning.includes('data: URI')));
   });
 
-  test('preserves supplementary characters while removing placeholders', async () => {
-    const result = await sanitizer.invoke(
-      createContext('<p>😀 [HTML <span hidden>payload</span>comment removed]</p>'),
-    );
+  test('withholds HTML when source parsing fails without adding a marker', async () => {
+    const html = '<div>'.repeat(6000) + 'payload' + '</div>'.repeat(6000);
 
-    assert.equal(result.html, '<p>😀 </p>');
+    const result = await sanitizer.invoke(createContext(html));
+
+    assert.equal(result.html, '');
+    assert.ok(result.found?.includes('hidden-html'));
+    assert.ok(result.warnings?.some((warning) => warning.includes('hidden element(s)')));
   });
 
   test('preserves ordinary visible content and context without mutation', async () => {
