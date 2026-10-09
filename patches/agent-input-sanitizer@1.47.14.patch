@@ -247,10 +247,10 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  if (isSingularMatrix(rows)) return true;
 +  // A 3D child can occupy another plane. The local plane cannot hide its subtree.
 +  if (ignorePlane) return false;
++  // A projective matrix needs origin and layout data before its plane can be resolved.
++  if (!rows[3].every((value, column) => value === Number(column === 3))) return false;
 +  // Text lies in the local z=0 plane. Check its projection onto the screen.
 +  if (isCollapsedPlane(rows)) return true;
-+  const affine = rows[3][0] === 0 && rows[3][1] === 0 && rows[3][3] === 1;
-+  if (!affine) return false;
 +  // Rotation and scale also move the box around its layout-dependent origin.
 +  const translationOnly = isPureTranslation(rows);
 +  const offscreen = !ignoreOffsets && translationOnly &&
@@ -269,7 +269,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +977,123 @@
+@@ -840,26 +977,141 @@
    return false;
  }
 
@@ -308,6 +308,24 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const token = valueTokens(node).find((value) => match.isProperty(value, "font-size"));
 +  if (!token) return node;
 +  return { type: "Value", children: new csstree.List().fromArray([token]) };
++}
++
++/** @param {string} property @param {any} value @returns {any} */
++function maskSourceValue(property, value) {
++  const target = property === "mask" ? "mask-image" : "mask-border-source";
++  if (csstree.lexer.matchProperty(target, value).matched) return value;
++  const match = csstree.lexer.matchProperty(property, value);
++  if (!match.matched) return { type: "Raw", value: "" };
++  const sources = [{ type: "Identifier", name: "none" }];
++  for (const token of value.children) {
++    if (token.type === "Operator" && token.value === ",") {
++      sources.push(token, { type: "Identifier", name: "none" });
++    } else if (property === "mask" ? match.isType(token, "mask-reference") :
++      match.isProperty(token, "mask-border-source")) {
++      sources[sources.length - 1] = token;
++    }
++  }
++  return { type: "Value", children: new csstree.List().fromArray(sources) };
 +}
 +
 +/** @param {any} value @returns {boolean} */
@@ -411,7 +429,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1141,13 @@
+@@ -907,11 +1159,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -426,7 +444,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1170,94 @@
+@@ -934,17 +1188,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -439,8 +457,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +        const entries = [[key, value]];
 +        if (property === "mask" || property === "mask-border") {
 +          const target = property === "mask" ? "mask-image" : "mask-border-source";
-+          const known = csstree.lexer.matchProperty(target, value).matched;
-+          entries.push([target, known ? value : { type: "Raw", value: "" }]);
++          entries.push([target, maskSourceValue(property, value)]);
 +          if (property === "mask")
 +            entries.push(["mask-border-source", csstree.parse("none", { context: "value" })]);
 +        }
@@ -518,11 +535,11 @@ diff --git a/src/html.mjs b/src/html.mjs
   * @returns {boolean}
   */
 -export function isHiddenStyle(styleStr) {
-+export function isHiddenStyle(styleStr, { ignoreFontSize = false, in3dContext = false, ignoreTransformOffsets = false, ignoreTransforms = false } = {}) {
++export function isHiddenStyle(styleStr, { ignoreFontSize = false, in3dContext = false, ignoreTransformOffsets = false, ignoreTransforms = false, ignorePositionedOffsets = false } = {}) {
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,11 +1295,8 @@
+@@ -982,19 +1312,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -531,12 +548,14 @@ diff --git a/src/html.mjs b/src/html.mjs
 -  // The `font` shorthand also carries the font-size, so a `font:0px/1 serif`
 -  // collapses text just like the longhand — check its size token too.
 -  if (isFontShorthandHidden(nodeOf("font"))) return true;
+-
+-  if (isPositionedOffscreen(nodeOf, textOf)) return true;
 +  // Font size hides text, but a descendant can set a visible size.
 +  if (!ignoreFontSize && isNearZeroLength(nodeOf("font-size"))) return true;
++
++  if (!ignorePositionedOffsets && isPositionedOffscreen(nodeOf, textOf)) return true;
 
-   if (isPositionedOffscreen(nodeOf, textOf)) return true;
-
-@@ -994,7 +1304,9 @@
+   if (isOffscreenOffset(nodeOf("text-indent"))) return true;
 
    // Clipped to nothing: the modern equivalent of the legacy `clip: rect(0…)`.
    if (isClipPathHidden(nodeOf("clip-path"))) return true;
@@ -547,7 +566,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1406,10 @@
+@@ -1094,9 +1423,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -559,7 +578,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1421,7 @@
+@@ -1108,7 +1438,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -568,7 +587,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1448,150 @@
+@@ -1135,8 +1465,181 @@
    return firstElement;
  }
 
@@ -636,10 +655,10 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  // https://www.w3.org/TR/css-display-3/#transformations
 +  if (["absolute", "fixed"].includes(position) ||
 +      ["left", "right", "inline-start", "inline-end"].includes(floating) ||
-+      /(?:^|[- ])(?:flex|grid)(?:$| )/.test(parent?.display ?? "")) return true;
++      /(?:^|[- ])(?:flex|grid)(?:$| )/.test(parent?.boxDisplay ?? "")) return true;
 +  const inline = ["inline", "inline flow", "flow inline"].includes(display);
 +  if (inline && !REPLACED_ELEMENTS.has(node.tagName)) {
-+    if (parent?.display === null ||
++    if (parent?.boxDisplay === null ||
 +        !["", "static", "relative", "sticky", "initial", "unset"].includes(position) ||
 +        !["", "none", "initial", "unset"].includes(floating)) return null;
 +    return false;
@@ -674,6 +693,36 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return { translation: null, offscreen };
 +}
 +
++/** @param {any} node @param {string | null} display @returns {boolean} */
++function isContentsWrapper(node, display) {
++  if (display !== "contents" || (node.namespace && node.namespace !== "http://www.w3.org/1999/xhtml")) return false;
++  return !REPLACED_ELEMENTS.has(node.tagName) &&
++    !["html", "br", "wbr", "meter", "progress", "frame", "frameset"].includes(node.tagName);
++}
++
++/**
++ * Keep font inheritance on the element tree and pass the box context through.
++ * @param {any} node
++ * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
++ * @param {number | null} fontSize
++ * @returns {import("../types/html.d.mts").ElementVisibility}
++ */
++function contentsVisibility(node, parent, fontSize) {
++  const hiddenPlane = parent?.hiddenPlane ?? false;
++  const offscreen = parent?.offscreen ?? false;
++  return {
++    fontSize, display: "contents", boxDisplay: parent?.boxDisplay ?? null,
++    preserves3d: parent?.preserves3d ?? false,
++    matrix: parent?.matrix ?? null,
++    hiddenPlane, hasPerspective: parent?.hasPerspective ?? false,
++    translation: parent ? parent.translation : [0, 0, 0], offscreen,
++    hiddenElement: isHiddenElement(node, {
++      ignoreFontSize: true, ignoreTransforms: true, ignorePositionedOffsets: true,
++    }),
++    hiddenText: offscreen || hiddenPlane || (fontSize !== null && fontSize < NEAR_ZERO_EPSILON),
++  };
++}
++
 +/**
 + * Resolve one element without changing its source or its descendants.
 + * @param {any} node
@@ -687,6 +736,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const declarations = parseDeclarations(node.properties?.style ?? "", options.quirksMode);
 +  const fontSize = resolveFontSize(declarations.get("font-size"), inherited, options.rootSize ?? null);
 +  const display = resolveDisplay(node, declarations);
++  if (isContentsWrapper(node, display)) return contentsVisibility(node, parent, fontSize);
 +  const transformable = appliesTransform(node, declarations, parent, display);
 +  const transform = transformable === false ? undefined : transformable === null
 +    ? { type: "Raw", value: "" } : declarations.get("transform");
@@ -707,7 +757,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  }
 +  const { translation, offscreen } = resolveTranslation(declarations, parent, transform);
 +  return {
-+    fontSize, display, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
++    fontSize, display, boxDisplay: display, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
 +    hiddenElement: isHiddenElement(node, {
 +      ignoreFontSize: true,
 +      in3dContext: in3dContext || Boolean(parent?.hasPerspective),
@@ -743,7 +793,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -115,3 +117,32 @@
+@@ -115,3 +117,36 @@
  import { SECRET_HINT_EXT } from "./gates.mjs";
  import { matchesSecretHint } from "./gates.mjs";
  export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };
@@ -753,10 +803,14 @@ diff --git a/types/html.d.mts b/types/html.d.mts
 +    in3dContext?: boolean;
 +    ignoreTransformOffsets?: boolean;
 +    ignoreTransforms?: boolean;
++    /** Ignore positioned offsets and legacy clip when the element has no box. */
++    ignorePositionedOffsets?: boolean;
 +}
 +export interface ElementVisibility {
 +    fontSize: number | null;
 +    display: string | null;
++    /** Display of the nearest box. Contents wrappers pass this value through. */
++    boxDisplay: string | null;
 +    preserves3d: boolean;
 +    matrix: number[][] | null;
 +    hiddenPlane: boolean;

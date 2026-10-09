@@ -242,3 +242,9 @@
 [V] Applies a formed font-size parent to retained descendants and keeps their visible overrides
 [V] Keeps distinct saved declarations for reconstructed formatting copies, including nested copies that share source tags
 [V] Rejects empty env() and attr() transform values so they cannot replace a valid hiding transform
+[V] Resolves compound mask and mask-border sources, omitted sources, multiple layers, deferred values, and declaration priority
+[V] Keeps non-collapsed child planes after compound masks flatten the parent
+[V] Keeps flex/grid applicability and preserved transform context through nested display:contents wrappers
+[V] Keeps font overrides, perspective uncertainty, and restored translated children through display:contents wrappers
+[V] Ignores boxless wrapper offsets and keeps positioned descendants whose layout offsets are unresolved
+[V] Keeps projective planes with unresolved Z origins and still removes singular full matrices
