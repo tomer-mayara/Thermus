@@ -20,6 +20,7 @@
 [V] Keeps nested selector matches within the 256 element depth limit
 [V] Rejects 5,000 nested elements before it gets selectors for the page URL, for matching and non-matching hosts
 [V] Rejects 5,000 unclosed nested template elements followed by text for matching and non-matching hosts without a parser stack overflow
+[V] Completes EOF recovery for an unclosed HTML template inside an SVG title and preserves the source content
 [V] Checks depth when generic hiding is disabled
 [V] Collects nested class and ID tokens for generic selectors
 [V] Accepts parsed element depth 256 and rejects depth 257 (254 and 255 nested divs in the body)

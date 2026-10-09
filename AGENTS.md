@@ -140,4 +140,4 @@ you keep a smell.
 Do not put an entry in the snooze file to make a run clean. One entry silences
 that file for EVERY smell that the file is the key for.
 
-`docs/habit-hooks.md` gives the installation steps and the design.
+`.habit-hooks/config.toml` and `.habit-hooks/hook.config.toml` configure habit-hooks. `.habit-hooks/eslint.config.mjs` defines its ESLint rules.

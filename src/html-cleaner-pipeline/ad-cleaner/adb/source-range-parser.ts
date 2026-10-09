@@ -19,6 +19,7 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
   private readonly endTagIndexes = new WeakMap<HtmlNode, EndTagIndex>();
   private lastEndTagOffset = 0;
   private processingEof = false;
+  private eofPassRequested = false;
 
   public override _insertFakeRootElement(): void {
     if (!this.document.children.some(node => this.treeAdapter.isDocumentTypeNode(node))) {
@@ -42,15 +43,17 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
 
   public override onEof(token: Token.EOFToken): void {
     if (this.processingEof) {
+      this.eofPassRequested = true;
       return;
     }
     this.processingEof = true;
     try {
       // parse5 requests another EOF pass for each unclosed template.
       // Run each pass after the previous pass returns to bound the call stack.
-      while (!this.stopped) {
+      do {
+        this.eofPassRequested = false;
         super.onEof(token);
-      }
+      } while (this.eofPassRequested && !this.stopped);
     } finally {
       this.processingEof = false;
     }
