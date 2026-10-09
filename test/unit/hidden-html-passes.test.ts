@@ -1,14 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { HiddenHtmlScanner } from '../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 const threatUrl = `https://attacker.example/?payload=${'a'.repeat(128)}`;
 const scanLimitWarning = 'HTML scan limit reached; remaining HTML withheld';
-
-function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
-  return { url: 'https://example.com/', html, removed: 0, skipped: 0, ...overrides };
-}
 
 function hiddenAfterPasses(removalPasses: number): string {
   let html = '<span hidden>secret</span>';
@@ -72,7 +69,7 @@ describe('hidden HTML removal passes', () => {
         title: 'Existing title',
       },
     );
-    const original = { ...input };
+    const original = structuredClone(input);
 
     const result = await new PromptInjectionRemoverSanitizer().invoke(input);
 
@@ -130,10 +127,11 @@ describe('hidden HTML removal passes', () => {
     assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);
   });
 
-  test('reports a failed HTML scan without inventing hidden removals', async () => {
-    const depth = 8000;
-    const html = `${'<div>'.repeat(depth)}visible\u200b${'</div>'.repeat(depth)}`;
-    const input = createContext(html, {
+  test('reports a failed HTML scan without inventing hidden removals', async (t) => {
+    t.mock.method(HiddenHtmlScanner, 'scan', () => {
+      throw new RangeError('HTML parser failure');
+    });
+    const input = createContext('<p>visible\u200b</p>', {
       found: ['existing-finding'],
       warnings: ['existing warning'],
       skipped: 4,
@@ -141,7 +139,7 @@ describe('hidden HTML removal passes', () => {
       markdown: 'Existing markdown',
       title: 'Existing title',
     });
-    const original = { ...input };
+    const original = structuredClone(input);
 
     const result = await new PromptInjectionRemoverSanitizer().invoke(input);
 
@@ -154,7 +152,7 @@ describe('hidden HTML removal passes', () => {
     assert.equal(result.found?.[0], 'existing-finding');
     assert.equal(result.found?.includes('cf-format'), true);
     assert.equal(result.found?.includes('hidden-html'), false);
-    assert.equal(result.skipped, 5 + (result.found?.includes('exfil-urls') ? 1 : 0));
+    assert.equal(result.skipped, 5);
     assert.equal(result.warnings?.[0], 'existing warning');
     assert.equal(
       result.warnings?.filter((warning) => warning === 'HTML scan failed; remaining HTML withheld').length,

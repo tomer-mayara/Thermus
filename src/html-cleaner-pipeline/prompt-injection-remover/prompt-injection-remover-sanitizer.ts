@@ -1,10 +1,17 @@
 import { CATEGORY, sanitize } from 'agent-input-sanitizer';
-import { detectExfil, scanHtmlFragment } from 'agent-input-sanitizer/html';
+import { detectExfil } from 'agent-input-sanitizer/html';
 import { describeRemoved, describeWarned } from 'agent-input-sanitizer/output';
 import type { Ctx } from '../html-to-markdown-pipeline.ts';
+import { HiddenHtmlScanner } from './hidden-html-scanner.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 
-type HtmlScan = ReturnType<typeof scanHtmlFragment>;
+type HtmlScan = ReturnType<typeof HiddenHtmlScanner.scan>;
+type HtmlRemoval = {
+  html: string;
+  removed: { comments: number; hidden: number };
+  warned: HtmlScan['warned'];
+  exfilReasons: Set<string>;
+};
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static readonly maxHtmlBytes = 10 * 1024 * 1024;
@@ -43,10 +50,10 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   }
 
   private static removeHiddenHtml(text: string) {
-    const result = {
+    const result: HtmlRemoval = {
       html: text,
       removed: { comments: 0, hidden: 0 },
-      warned: { tags: {} as Record<string, number>, dataSrc: 0 },
+      warned: { tags: {}, dataSrc: 0 },
       exfilReasons: new Set<string>(),
     };
 
@@ -60,11 +67,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       if (!scan) {
         return { ...result, html: '', withholdWarning: 'HTML scan failed; remaining HTML withheld' };
       }
-      // Keep the largest count for each reason. A new scan can see the same tag.
-      for (const [tag, count] of Object.entries(scan.warned.tags)) {
-        result.warned.tags[tag] = Math.max(result.warned.tags[tag] ?? 0, count);
-      }
-      result.warned.dataSrc = Math.max(result.warned.dataSrc, scan.warned.dataSrc);
+      PromptInjectionRemoverSanitizer.recordScanWarnings(scan, result);
       if (scan.ranges.length === 0) return { ...result, withholdWarning: undefined };
 
       result.html = PromptInjectionRemoverSanitizer.removeRanges(
@@ -78,9 +81,22 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     return { ...result, html: '', withholdWarning: 'HTML scan limit reached; remaining HTML withheld' };
   }
 
+  private static recordScanWarnings(scan: HtmlScan, result: HtmlRemoval): void {
+    for (const threat of detectExfil(scan.urlSource) ?? []) {
+      result.exfilReasons.add(
+        `${threat.isImage ? 'image' : 'link'} to ${threat.target}: ${threat.reason}`,
+      );
+    }
+    // Keep the largest count for each reason. A new scan can see the same tag.
+    for (const [tag, count] of Object.entries(scan.warned.tags)) {
+      result.warned.tags[tag] = Math.max(result.warned.tags[tag] ?? 0, count);
+    }
+    result.warned.dataSrc = Math.max(result.warned.dataSrc, scan.warned.dataSrc);
+  }
+
   private static tryScanHtml(text: string): HtmlScan | undefined {
     try {
-      return scanHtmlFragment(text);
+      return HiddenHtmlScanner.scan(text);
     } catch {
       return undefined;
     }
