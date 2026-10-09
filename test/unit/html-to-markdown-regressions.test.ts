@@ -6,7 +6,8 @@ import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline
 
 function createContext(html: string): Ctx {
   return {
-    url: 'https://example.com/article',
+    requestedUrl: 'https://example.com/start',
+    finalUrl: 'https://example.com/article',
     html,
     removed: 2,
     skipped: 3,

@@ -15,6 +15,7 @@
     "build": "tsc",
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run test:unit",
     "test": "tsc && node --test \"dist/test/**/*.test.js\"",
     "test:unit": "tsc && node --test \"dist/test/unit/**/*.test.js\"",
     "test:interface": "tsc && node --test \"dist/test/interface/**/*.test.js\""
@@ -37,7 +38,8 @@
     "agent-input-sanitizer": "1.47.14",
     "css-select": "^7.0.0",
     "defuddle": "^0.19.4",
-    "htmlparser2": "^12.0.0",
-    "linkedom": "^0.18.13"
+    "linkedom": "^0.18.13",
+    "parse5": "8.0.1",
+    "parse5-htmlparser2-tree-adapter": "8.0.1"
   }
 }

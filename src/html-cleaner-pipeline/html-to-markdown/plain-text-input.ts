@@ -15,13 +15,13 @@ const htmlTags = new Set([
   'u', 'ul', 'var', 'video', 'wbr', 'xmp',
 ]);
 
-export function plainTextMarkdown(input: string): string | undefined {
+export function plainTextMarkdown(input: string, sanitizeText: (text: string) => string): string | undefined {
   if (/<!--|<!doctype\b|<!\[CDATA\[|<\?xml\b/i.test(input)) {
     return undefined;
   }
 
   const openingTags = new Set<string>();
-  for (const match of input.matchAll(/<\/?([a-z][\w:-]*)(?=[\s/>])[^<>]*>/gi)) {
+  for (const match of input.matchAll(/<\/?([a-z][\w:-]*)(?=[\s/>])(?:[^<>"']|"[^"]*"|'[^']*')*>/gi)) {
     const name = match[1].toLowerCase();
     if (htmlTags.has(name) || name.includes('-')) {
       return undefined;
@@ -35,10 +35,10 @@ export function plainTextMarkdown(input: string): string | undefined {
     }
   }
 
-  return input.trim()
+  return sanitizeText(input).trim()
     .replace(/[\\`*_\[\]~]/g, '\\$&')
     .replace(/&(?=(?:#[0-9]+|#x[0-9a-f]+|[a-z][a-z0-9]+);)/gi, '\\&')
     .replace(/<(?=\S)[^<>]+>/g, (token) => `\\${token.slice(0, -1)}\\>`)
-    .replace(/^([ \t]*)(>|#{1,6}(?=[ \t]|$)|[-+](?=[ \t]|$)|[-=]{2,}(?=[ \t]*$))/gm, '$1\\$2')
+    .replace(/^([ \t]*)(>|#{1,6}(?=[ \t]|$)|[-+](?=[ \t]|$)|[-=]+(?=[ \t]*$))/gm, '$1\\$2')
     .replace(/^([ \t]*\d+)([.)])(?=[ \t])/gm, '$1\\$2');
 }
