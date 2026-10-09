@@ -4,6 +4,7 @@ import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static readonly maxHtmlBytes = 10 * 1024 * 1024;
+  private static readonly placeholderEnd = ']'.charCodeAt(0);
 
   private static readonly htmlPlaceholders = [
     '[HTML comment removed]',
@@ -16,7 +17,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitize(ctx.html, { html: true });
+    const sanitized = await sanitize(ctx.html, { html: true, htmlSource: true });
     const html = PromptInjectionRemoverSanitizer.removeHtmlPlaceholders(sanitized.cleaned);
 
     return {
@@ -75,7 +76,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       const codeUnit = text.charCodeAt(index);
       output[outputLength] = codeUnit;
       outputLength++;
-      if (codeUnit !== 0x5d) {
+      if (codeUnit !== PromptInjectionRemoverSanitizer.placeholderEnd) {
         continue;
       }
 

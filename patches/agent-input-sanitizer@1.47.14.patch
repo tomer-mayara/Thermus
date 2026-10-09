@@ -1,0 +1,365 @@
+diff --git a/src/html.mjs b/src/html.mjs
+index 1d576a4923c3916b592c45f70f29b1cea2c696d3..66bc21c95c277ca556cd32fe87343613da3f9ed6 100644
+--- a/src/html.mjs
++++ b/src/html.mjs
+@@ -208,25 +208,14 @@ function isHidingTransform(node) {
+     if (fn.type !== "Function") continue;
+     const name = fn.name.toLowerCase();
+     const args = valueTokens(fn);
+-    if (/^(?:scale|scale3d|scalex|scaley|matrix|matrix3d)$/.test(name)) {
+-      // scale/matrix collapse to nothing when EITHER axis factor is (near-)zero —
+-      // `scale(1,0)` / `scale3d(1,0,1)` collapse the Y axis, `matrix(1,0,0,0,…)`
+-      // sets scaleY (d) to 0 — so testing only the first factor missed the
+-      // multi-arg Y-collapse forms. css-tree reads the exponent form (`1e-3`) at
+-      // full value; scale()/matrix() factors are <number>s (never lengths). For
+-      // `matrix(a,b,c,d,…)` the two scale factors are a (index 0) and d (index 3).
+-      // The two scale factors' positions differ per function: scale/scale3d/
+-      // scaleX/scaleY carry them first (a single scaleX(0)/scaleY(0) sits at 0);
+-      // `matrix(a,b,c,d,…)` puts scaleX=a (0) and scaleY=d (3); `matrix3d` puts
+-      // scaleX=m11 (0) and scaleY=m22 (5). Do NOT use index 3 for matrix3d — that
+-      // is m14, which is legitimately 0 on the identity matrix (false positive).
++    if (name === "matrix" || name === "matrix3d") {
++      if (isHidingMatrix(fn)) return true;
++    } else if (/^(?:scale|scale3d|scalex|scaley)$/.test(name)) {
+       const numbers = args.filter(
+         (/** @type {any} */ a) => a.type === "Number",
+       );
+-      const factorIdx =
+-        name === "matrix" ? [0, 3] : name === "matrix3d" ? [0, 5] : [0, 1];
+       if (
+-        factorIdx.some((/** @type {number} */ i) => {
++        [0, 1].some((/** @type {number} */ i) => {
+           const f = numbers[i];
+           return f && Math.abs(parseFloat(f.value)) < NEAR_ZERO_EPSILON;
+         })
+@@ -268,6 +257,45 @@ function isHidingTransform(node) {
+   return false;
+ }
+ 
++/** @param {number[][]} rows @returns {number} */
++function determinant(rows) {
++  if (rows.length === 1) return rows[0][0];
++  return rows[0].reduce((sum, value, column) => {
++    const minor = rows.slice(1).map((row) => row.filter((_, i) => i !== column));
++    return sum + (column % 2 === 0 ? 1 : -1) * value * determinant(minor);
++  }, 0);
++}
++
++/** @param {number[]} coefficients @returns {boolean} */
++function isCollapsedPlane([a, b, c, d]) {
++  return a * d - b * c === 0 ||
++    Math.hypot(a, b) < NEAR_ZERO_EPSILON ||
++    Math.hypot(c, d) < NEAR_ZERO_EPSILON;
++}
++
++/** @param {any} fn @returns {boolean} */
++function isHidingMatrix(fn) {
++  const groups = functionArgs(fn);
++  const size = fn.name.toLowerCase() === "matrix" ? 6 : 16;
++  if (groups.length !== size ||
++      groups.some((group) => group.length !== 1 || group[0].type !== "Number"))
++    return false;
++  const values = groups.map((group) => Number(group[0].value));
++  if (!values.every(Number.isFinite)) return false;
++  if (size === 6) return isCollapsedPlane(values);
++
++  // CSS stores matrix columns in order. A singular matrix hides the subtree.
++  const rows = [0, 1, 2, 3].map((row) =>
++    [0, 1, 2, 3].map((column) => values[column * 4 + row]));
++  if (determinant(rows) === 0) return true;
++  // Text lies in the local z=0 plane. Check its projection onto the screen.
++  const projected = [0, 1, 3].map((row) =>
++    [0, 1, 3].map((column) => rows[row][column]));
++  if (determinant(projected) === 0) return true;
++  const affine = values[3] === 0 && values[7] === 0 && values[15] === 1;
++  return affine && isCollapsedPlane([values[0], values[1], values[4], values[5]]);
++}
++
+ /**
+  * True when a `filter` renders content invisible: an `opacity()` function drops
+  * the element to fully transparent. The amount is a <number-percentage>; a
+@@ -840,26 +868,63 @@ function isOverflowHidden(nodeOf, textOf) {
+   return false;
+ }
+ 
+-// The length units that denote a font-size in a `font` SHORTHAND. Only a length
+-// with one of these units is a size (a bare number there is a weight, a `%` a
+-// stretch), so those never misread as a zero size. `q` (quarter-mm) is a font
+-// length unit too, though it never gates an offset above.
+-const FONT_SIZE_UNITS = new Set([...ABSOLUTE_UNITS, "q"]);
++/** @param {any} node @returns {any} */
++function fontSizeValue(node) {
++  const match = csstree.lexer.matchProperty("font", node);
++  const token = valueTokens(node).find((value) => match.isProperty(value, "font-size"));
++  if (!token) return node;
++  return { type: "Value", children: new csstree.List().fromArray([token]) };
++}
++
++/** @param {string} property @param {any} value @returns {any} */
++function parseFontSize(property, value) {
++  const decoded = csstree.clone(value);
++  csstree.walk(decoded, (/** @type {any} */ token) => {
++    if (token.type === "Identifier" || token.type === "Function")
++      token.name = csstree.ident.decode(token.name);
++    if (token.type === "Dimension") token.unit = csstree.ident.decode(token.unit);
++  });
++  const match = csstree.lexer.matchProperty(property, decoded);
++  const variable = csstree.find(decoded, (/** @type {any} */ token) =>
++    token.type === "Function" && token.name.toLowerCase() === "var");
++  // Invalid values do not override an inherited size. Variables stay unknown.
++  if (!match.matched && !variable) return undefined;
++  return property === "font" ? fontSizeValue(decoded) : decoded;
++}
++
++const FONT_PIXELS_PER_UNIT = { px: 1, pt: 96 / 72, pc: 16, in: 96, cm: 96 / 2.54,
++  mm: 96 / 25.4, q: 96 / 101.6 };
+ 
+ /**
+- * True when a `font` SHORTHAND's font-size collapses the text to nothing. The
+- * font-size is the FIRST length token in the shorthand (it precedes an optional
+- * `/line-height` and the family); a near-zero one hides the text just like the
+- * `font-size` longhand.
+- * @param {any} node value node for `font`
+- * @returns {boolean}
++ * Resolve inline font sizes. A null value needs stylesheet or layout data.
++ * @param {any} node
++ * @param {number | null} inherited
++ * @param {number | null} rootSize
++ * @returns {number | null}
+  */
+-function isFontShorthandHidden(node) {
+-  if (!node) return false;
+-  for (const token of valueTokens(node))
+-    if (token.type === "Dimension" && FONT_SIZE_UNITS.has(token.unit))
+-      return Math.abs(parseFloat(token.value)) < NEAR_ZERO_EPSILON;
+-  return false;
++function resolveFontSize(node, inherited, rootSize) {
++  if (!node) return inherited;
++  const token = soleToken(node);
++  if (!token) return null;
++  if (token.type === "Identifier") {
++    const name = csstree.ident.decode(token.name).toLowerCase();
++    if (name === "inherit" || name === "unset") return inherited;
++    if ((name === "larger" || name === "smaller") && inherited === 0) return 0;
++    return null;
++  }
++  const value = Number(token.value);
++  if (!Number.isFinite(value) || value < 0) return null;
++  if (value === 0) return 0;
++  if (token.type === "Percentage")
++    return inherited === null ? null : inherited * value / 100;
++  if (token.type !== "Dimension") return null;
++  const unit = csstree.ident.decode(token.unit).toLowerCase();
++  const ratio = FONT_PIXELS_PER_UNIT[unit];
++  if (ratio) return value * ratio;
++  if (unit === "rem") return rootSize === null ? null : rootSize * value;
++  if (unit === "em") return inherited === null ? null : inherited * value;
++  if (["ex", "ch", "cap", "ic"].includes(unit) && inherited === 0) return 0;
++  return null;
+ }
+ 
+ // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
+@@ -912,6 +977,7 @@ function declText(valueNode) {
+ function parseDeclarations(styleStr) {
+   /** @type {Map<string, any>} */
+   const decls = new Map();
++  let fontImportant = false;
+   let ast;
+   try {
+     ast = csstree.parse(styleStr, {
+@@ -934,6 +1000,14 @@ function parseDeclarations(styleStr) {
+       // token; property is escape-decoded then gated to a clean CSS ident.
+       const property = csstree.ident.decode(node.property).trim().toLowerCase();
+       if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
++      if (property === "font-size" || property === "font") {
++        if (fontImportant && !node.important) return;
++        const size = parseFontSize(property, node.value);
++        if (!size) return;
++        decls.set("font-size", size);
++        fontImportant = Boolean(node.important);
++        return;
++      }
+       decls.set(property, node.value);
+     },
+   });
+@@ -942,9 +1016,10 @@ function parseDeclarations(styleStr) {
+ 
+ /**
+  * @param {string} styleStr
++ * @param {boolean} [ignoreFontSize]
+  * @returns {boolean}
+  */
+-export function isHiddenStyle(styleStr) {
++export function isHiddenStyle(styleStr, ignoreFontSize = false) {
+   const decls = parseDeclarations(styleStr);
+   if (decls.size === 0) return false;
+ 
+@@ -982,11 +1057,8 @@ export function isHiddenStyle(styleStr) {
+   // children, so a bare `width:0`/`height:0` leaves content on screen.
+   // `isOverflowHidden` below already covers the case where a zero dimension
+   // DOES hide content — gated on `overflow:hidden` also being present.
+-  // `font-size:0`, in contrast, reliably collapses text to nothing on its own.
+-  if (isNearZeroLength(nodeOf("font-size"))) return true;
+-  // The `font` shorthand also carries the font-size, so a `font:0px/1 serif`
+-  // collapses text just like the longhand — check its size token too.
+-  if (isFontShorthandHidden(nodeOf("font"))) return true;
++  // Font size hides text, but a descendant can set a visible size.
++  if (!ignoreFontSize && isNearZeroLength(nodeOf("font-size"))) return true;
+ 
+   if (isPositionedOffscreen(nodeOf, textOf)) return true;
+ 
+@@ -1094,9 +1166,10 @@ const RAW_TEXT_ELEMENTS = new Set([
+  * True for an element a rendered page would not show: `hidden` attribute or a
+  * hiding inline style. Works on both hast nodes and parseHtmlTag results.
+  * @param {any} node
++ * @param {boolean} [ignoreFontSize]
+  * @returns {boolean}
+  */
+-export function isHiddenElement(node) {
++export function isHiddenElement(node, ignoreFontSize = false) {
+   if (node.type !== "element") return false;
+   const { properties = {} } = node;
+   if (properties.hidden !== undefined && properties.hidden !== null)
+@@ -1108,7 +1181,7 @@ export function isHiddenElement(node) {
+   // duplicated for screen-reader dedup). Splicing on it would delete content
+   // a human plainly sees, which is real harm under the precision-over-recall
+   // doctrine for this layer.
+-  if (properties.style && isHiddenStyle(properties.style)) return true;
++  if (properties.style && isHiddenStyle(properties.style, ignoreFontSize)) return true;
+   return false;
+ }
+ 
+@@ -1256,18 +1329,30 @@ function hasWarned(warned) {
+  * through matching close, and parse5 extends an unclosed element to the end
+  * of the fragment — fail-closed for truncated markup).
+  * @param {string} html
++ * @param {boolean} [document]
+  * @returns {{ ranges: Array<{start: number, end: number, kind: "comment" | "hidden"}>, warned: ReturnType<typeof newWarned> }}
+  */
+-export function scanHtmlFragment(html) {
+-  const tree = unified().use(rehypeParse, { fragment: true }).parse(html);
++export function scanHtmlFragment(html, document = false) {
++  const tree = unified().use(rehypeParse, { fragment: !document }).parse(html);
+   /** @type {Array<{start: number, end: number, kind: "comment" | "hidden"}>} */
+   const ranges = [];
+   const warned = newWarned();
++  const fontSizes = new WeakMap();
++  let rootSize = null;
+   // @ts-ignore -- visit callback returns EXIT/SKIP only on matches; implicit undefined return is intentional
+   // eslint-disable-next-line consistent-return
+-  visit(tree, (/** @type {any} */ node) => {
++  visit(tree, (/** @type {any} */ node, _index, parent) => {
++    const inherited = fontSizes.get(parent) ?? null;
++    if (node.type === "element") {
++      const declarations = parseDeclarations(node.properties?.style ?? "");
++      const size = resolveFontSize(declarations.get("font-size"), inherited, rootSize);
++      fontSizes.set(node, size);
++      if (node.tagName === "html") rootSize = size;
++    }
+     const isComment = node.type === "comment";
+-    if (isComment || isHiddenElement(node)) {
++    const hiddenText = node.type === "text" && inherited !== null &&
++      inherited < NEAR_ZERO_EPSILON && node.value.trim() !== "";
++    if (isComment || hiddenText || isHiddenElement(node, true)) {
+       /* c8 ignore start -- parse5 omits positions only on recovery-synthesized
+          elements (tbody and friends), which carry no attributes and so can
+          never be hidden; fail closed on the whole fragment if that assumption
+@@ -1631,15 +1716,16 @@ export function looksLikeHtmlSource(text) {
+  * count preserved scripting/resource tags for the caller's warning. Returns
+  * null when there is nothing to strip and nothing to report.
+  * @param {string} text
++ * @param {boolean} [htmlSource]
+  * @returns {{ text: string, removed: { comments: number, hidden: number }, warned: { tags: Record<string, number>, dataSrc: number } } | null}
+  */
+-export function sanitizeHtml(text) {
++export function sanitizeHtml(text, htmlSource = false) {
+   if (!HTML_TAG_PRESENT.test(text)) return null;
+   /** @type {{ ranges: Array<{start: number, end: number, kind: "comment" | "hidden"}>, warned: ReturnType<typeof newWarned> }} */
+   let scan;
+   try {
+-    scan = looksLikeHtmlSource(text)
+-      ? scanHtmlFragment(text)
++    scan = htmlSource || looksLikeHtmlSource(text)
++      ? scanHtmlFragment(text, htmlSource)
+       : scanMarkdown(text);
+   } catch {
+     // The parse/visit blew up (stack overflow on pathological nesting, or any
+diff --git a/src/index.mjs b/src/index.mjs
+index fecfde7e1445c989f356dd18d7bb6f6718cd252f..ccc413f9629531bcba1a0c107f6af1428e4f7a95 100644
+--- a/src/index.mjs
++++ b/src/index.mjs
+@@ -87,7 +87,7 @@ function describeWarned(warned) {
+  * of an internal TypeError leaking implementation details (or a silent, wrong
+  * coercion of e.g. a number to a string).
+  * @param {string} text
+- * @param {{ html?: boolean } | null} [options]
++ * @param {{ html?: boolean, htmlSource?: boolean } | null} [options]
+  * @returns {Promise<{ cleaned: string, found: string[], warnings: string[] }>}
+  */
+ export async function sanitize(text, options) {
+@@ -134,7 +134,7 @@ export async function sanitize(text, options) {
+   // less, yet Layer 2 would otherwise remove it from view before the scan.
+   const preSplice = cleaned;
+ 
+-  const layer2 = sanitizeHtml(cleaned);
++  const layer2 = sanitizeHtml(cleaned, options?.htmlSource);
+   if (layer2) {
+     if (layer2.text !== cleaned) {
+       cleaned = layer2.text;
+diff --git a/types/html.d.mts b/types/html.d.mts
+index e6e6478a464159700f9320b5c8060d9c6a844426..b228f9c12c42690047f6a40612ecc5020867dca9 100644
+--- a/types/html.d.mts
++++ b/types/html.d.mts
+@@ -2,14 +2,14 @@
+  * @param {string} styleStr
+  * @returns {boolean}
+  */
+-export function isHiddenStyle(styleStr: string): boolean;
++export function isHiddenStyle(styleStr: string, ignoreFontSize?: boolean): boolean;
+ /**
+  * True for an element a rendered page would not show: `hidden` attribute or a
+  * hiding inline style. Works on both hast nodes and parseHtmlTag results.
+  * @param {any} node
+  * @returns {boolean}
+  */
+-export function isHiddenElement(node: any): boolean;
++export function isHiddenElement(node: any, ignoreFontSize?: boolean): boolean;
+ /**
+  * @param {string} htmlValue
+  * @returns {string | null}
+@@ -42,7 +42,7 @@ export function spliceRanges(text: string, ranges: Array<{
+  * @param {string} html
+  * @returns {{ ranges: Array<{start: number, end: number, kind: "comment" | "hidden"}>, warned: ReturnType<typeof newWarned> }}
+  */
+-export function scanHtmlFragment(html: string): {
++export function scanHtmlFragment(html: string, document?: boolean): {
+     ranges: Array<{
+         start: number;
+         end: number;
+@@ -63,7 +63,7 @@ export function looksLikeHtmlSource(text: string): boolean;
+  * @param {string} text
+  * @returns {{ text: string, removed: { comments: number, hidden: number }, warned: { tags: Record<string, number>, dataSrc: number } } | null}
+  */
+-export function sanitizeHtml(text: string): {
++export function sanitizeHtml(text: string, htmlSource?: boolean): {
+     text: string;
+     removed: {
+         comments: number;
+diff --git a/types/index.d.mts b/types/index.d.mts
+index 741cfb37d8674b31ee36b809c80b9fe60804448d..e23da87b54350606db14893eefc36450a3de3613 100644
+--- a/types/index.d.mts
++++ b/types/index.d.mts
+@@ -18,11 +18,12 @@
+  * of an internal TypeError leaking implementation details (or a silent, wrong
+  * coercion of e.g. a number to a string).
+  * @param {string} text
+- * @param {{ html?: boolean } | null} [options]
++ * @param {{ html?: boolean, htmlSource?: boolean } | null} [options]
+  * @returns {Promise<{ cleaned: string, found: string[], warnings: string[] }>}
+  */
+ export function sanitize(text: string, options?: {
+     html?: boolean;
++    htmlSource?: boolean;
+ } | null): Promise<{
+     cleaned: string;
+     found: string[];

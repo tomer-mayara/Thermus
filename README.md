@@ -16,6 +16,12 @@ The cleaned page is cached per tenant, keyed by URL with the query string remove
 
 `PromptInjectionRemoverSanitizer` is a pipeline step. It removes hidden HTML, comments, invisible characters, and sanitizer placeholders. It rejects HTML larger than 10 MiB in UTF-8 bytes. It adds the number of detected categories to `skipped` and keeps findings and warnings in the context. It reports exfil-shaped URLs. A finding alone does not remove a URL. A URL in removed hidden HTML is removed with that HTML.
 
+The step uses `htmlSource:true` to parse HTML fragments and documents with document parsing. For inline `font-size` and `font` declarations, it resolves absolute lengths, inherited `em` and `%` values, and root-relative `rem` values. It removes text with a resolved zero font size. It keeps descendants that set a visible font size, and it keeps visible images. A zero font size alone does not remove a whole subtree. The step does not compute stylesheet rules or layout expressions such as `calc()` and `var()`. These font sizes remain unknown.
+
+Rules such as `display:none`, zero opacity, and collapsed transforms still remove the whole subtree. Matrix transforms keep visible content, including rotations in the rendered plane with zero diagonal values. Singular matrices and supported transforms that collapse the rendered plane remove content. The existing rule for near-zero scale also applies.
+
+The project pins `agent-input-sanitizer` to `1.47.14` and applies [a local pnpm patch](patches/agent-input-sanitizer@1.47.14.patch) for these visibility rules and raw HTML parsing. The patch keeps the package's HTML parser, CSS parser, and other hiding rules. Use `pnpm install` to install or reinstall the package with the patch. Keep the patch and pnpm configuration when you update dependencies.
+
 The step does not enable the span-deleting filter, secret redaction, visible-text filtering, or homoglyph normalization. It does not fetch pages or call a model. Pipeline composition and startup warm-up are deferred to loader and acceptance tests.
 
 **MVP.** One tool, `fetch`. Allowlist, denylist, and outbound redaction. Boilerplate and hidden-text stripping. Per-tenant content cache. Audit log. A container that runs the server and Lightpanda on localhost, and a hosted version of the same container.

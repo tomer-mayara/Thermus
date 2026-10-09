@@ -20,6 +20,10 @@
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML
+[V] Removes inherited zero-font-size text and keeps descendants with visible font-size or font shorthand overrides
+[V] Keeps visible images inside zero-font-size parents and removes hidden images
+[V] Removes whole subtrees for display:none, zero opacity, content-visibility:hidden, zero scale, and collapsed height with hidden overflow
+[V] Keeps visible matrix and matrix3d content, including rotations in the rendered plane with zero diagonal values, and removes singular or collapsed transforms
 
 **HTML to Markdown Pipeline**
 
@@ -28,6 +32,7 @@
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
+[V] Keeps visible descendants, images, and rotated content in the final Markdown and removes hidden text and collapsed content
 
 **HTML to MD**
 
