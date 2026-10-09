@@ -129,4 +129,19 @@ describe('hidden HTML document and template handling', () => {
     assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);
     assert.equal(new Set(result.warnings).size, result.warnings?.length);
   });
+
+  test('reports image and link threat URLs in template content once each', async () => {
+    const html = `<template><img src="${threatUrl}"><a href="${threatUrl}">Open</a></template><p>visible</p>`;
+    const result = await new PromptInjectionRemoverSanitizer().invoke(
+      createContext(html),
+    );
+
+    assert.equal(result.html, html);
+    assert.deepEqual(result.found, ['exfil-urls']);
+    const warnings = result.warnings?.join('\n') ?? '';
+    assert.equal(warnings.match(/image to attacker\.example: suspicious query parameter/g)?.length, 1);
+    assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);
+    assert.equal(new Set(result.found).size, result.found?.length);
+    assert.equal(new Set(result.warnings).size, result.warnings?.length);
+  });
 });

@@ -5,6 +5,7 @@ type HtmlNode = DefaultTreeAdapterTypes.Node;
 type HtmlElement = DefaultTreeAdapterTypes.Element;
 
 export class HiddenHtmlScanner {
+  private static readonly exfilTagsToPreserve = new Set(['img', 'meta']);
   private static readonly treeAdapter = {
     ...defaultTreeAdapter,
     setDocumentMode(document: DefaultTreeAdapterTypes.Document, mode: html.DOCUMENT_MODE): void {
@@ -83,7 +84,7 @@ export class HiddenHtmlScanner {
   private static urlSource(node: HtmlElement): string {
     // The URL detector skips document elements and template contents.
     // Separate attribute sources keep these URLs visible to that detector.
-    const tag = node.tagName === 'img' || node.tagName === 'meta' ? node.tagName : 'div';
+    const tag = HiddenHtmlScanner.exfilTagsToPreserve.has(node.tagName) ? node.tagName : 'div';
     return serializeOuter(defaultTreeAdapter.createElement(tag, html.NS.HTML, node.attrs));
   }
 }
