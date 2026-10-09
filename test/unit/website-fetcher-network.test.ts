@@ -25,7 +25,7 @@ function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null
 const forbiddenAddresses = [
   '0.0.0.0', '0.1.2.3', '10.0.0.1', '100.64.0.1', '100.127.255.254',
   '127.0.0.1', '127.255.255.254', '169.254.169.254', '172.16.0.1', '172.31.255.254',
-  '192.0.0.1', '192.0.2.1', '192.168.0.1', '198.18.0.1', '198.19.255.254',
+  '192.0.0.1', '192.0.2.1', '192.88.99.1', '192.168.0.1', '198.18.0.1', '198.19.255.254',
   '198.51.100.1', '203.0.113.1', '224.0.0.1', '239.255.255.254', '240.0.0.1', '255.255.255.255',
   '[::]', '[::1]', '[::127.0.0.1]', '[::ffff:127.0.0.1]', '[::ffff:10.0.0.1]',
   '[::ffff:169.254.169.254]', '[64:ff9b::7f00:1]', '[64:ff9b:1::a00:1]',
@@ -71,6 +71,16 @@ test('checks every DNS answer and rejects a mixed public and private result', as
   ]);
   await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://mixed.test/'), /not a public network address/);
   assert.deepEqual(lookup.mock.calls[0]?.arguments, ['mixed.test', { all: true }]);
+  assert.deepEqual(calls, []);
+});
+
+test('blocks private IPv4 addresses in mapped IPv6 DNS answers before launch', async (t) => {
+  const calls = stubRenderer(t);
+  let address = '';
+  t.mock.method(dns, 'lookup', async () => [{ address, family: 6 }]);
+  for (address of ['::ffff:127.0.0.1', '::ffff:7f00:1', '::ffff:10.0.0.1', '::ffff:a9fe:a9fe']) {
+    await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://mapped.test/'), /not a public network address/);
+  }
   assert.deepEqual(calls, []);
 });
 

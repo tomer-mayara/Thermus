@@ -8,6 +8,8 @@ The renderer can open network connections while it loads a page. The fetcher che
 
 For a hostname, the fetcher runs a new DNS lookup with all answers before each render. It rejects the request if any answer is in a blocked range. It checks an IP address directly when the URL contains one.
 
+Node's `BlockList.check` applies IPv4 rules to IPv4-mapped IPv6 addresses. This includes hexadecimal forms such as `::ffff:7f00:1`. The preflight does not need a separate parser for these addresses. See the [Node 24.20 `BlockList.check` documentation](https://nodejs.org/download/release/v24.20.0/docs/api/net.html#blocklistcheckaddress-type).
+
 Lightpanda applies its IP filter to the resolved socket address before it opens the socket. This check covers DNS changes between the initial check and connection. It also covers redirects, page resources and scripts, `fetch`, XHR, and WebSocket connections. Lightpanda uses an empty `--http-proxy` value to disable proxy environment settings.
 
 The reviewed Lightpanda build is `1.1.0-nightly.10257+c3dfbaab3`. Its source at [commit c3dfbaab3](https://github.com/lightpanda-io/browser/tree/c3dfbaab3bc112c1780d798a4306905f7a166dcb) implements `--block-private-networks` and `--block-cidrs`. See [the IP filter](https://github.com/lightpanda-io/browser/blob/c3dfbaab3bc112c1780d798a4306905f7a166dcb/src/network/IpFilter.zig), [the socket callback](https://github.com/lightpanda-io/browser/blob/c3dfbaab3bc112c1780d798a4306905f7a166dcb/src/network/http.zig), and [network setup](https://github.com/lightpanda-io/browser/blob/c3dfbaab3bc112c1780d798a4306905f7a166dcb/src/network/Network.zig).
