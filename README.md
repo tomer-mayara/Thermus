@@ -8,6 +8,10 @@ The server does four things with each call. It checks the tenant's allowlist and
 
 Fetching is deliberately not a disguise. The client announces itself as a bot. A normal HTTP fetch is tried first. If the body is an empty shell, a local Lightpanda process runs the JavaScript and returns the DOM as HTML. The same cleaner handles both. A site that refuses bots stays refused.
 
+Lightpanda waits for `networkidle`. The fetcher allows five seconds from process launch for readiness, including navigation. It can return as soon as the page is ready. If the five-second limit expires, the fetcher sends `SIGKILL` and waits for the child process to exit. It then rejects with `Lightpanda readiness limit exceeded after 5000 ms`. It does not return partial HTML.
+
+Lightpanda 1.1.0-nightly.10257+c3dfbaab3 supports [`--wait-until networkidle --wait-ms 60000`](https://lightpanda.io/docs/reference/cli/fetch). Lightpanda can return partial HTML with success when its native wait limit expires. The fetcher's five-second readiness limit prevents that output from being returned. The separate process timeout is 60000 ms, and the output limit is 32 MiB. Readiness does not guarantee that scripts or content that appear much later will be present.
+
 HTML-to-Markdown conversion uses only the HTML that the pipeline supplies. It does not make network requests or fetch missing content. The page URL in the context resolves relative links in the supplied HTML. `WebsiteFetcher` still fetches pages, and Lightpanda still renders pages that need JavaScript.
 
 The cleaned page is cached per tenant, keyed by URL with the query string removed. The cache is never keyed on the reason the agent gave. A hit does not fetch the page again.

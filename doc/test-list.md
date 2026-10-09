@@ -41,11 +41,24 @@
 [V] Makes no network requests when the API fallback receives an empty document
 [V] Preserves local content and resolves relative links with the page URL
 
+**Lightpanda Website Fetcher**
+
+[V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
+[V] Returns stdout on immediate success
+[V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
+[V] Cancels the readiness timer after success or a process error
+[V] Preserves process timeout and output limit errors, and handles missing executable (ENOENT), permission error (EACCES), and synchronous launch failure
+
 ## Interface
 
 **HTML Fetcher**
 
 [V] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
 [V] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
+
+**Website Fetcher Readiness** (`test/interface/website-fetcher-readiness.test.ts`)
+
+[V] Returns the DOM from a local fixture after its 500 ms asynchronous content appears, without waiting for the full readiness limit
+[V] Stops a local fixture that keeps making network requests at five seconds, waits for the child to exit, and rejects without partial HTML
 
 ## Acceptance
