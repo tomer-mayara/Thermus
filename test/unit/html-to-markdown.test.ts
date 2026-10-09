@@ -214,6 +214,26 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     }
   });
 
+  describe('document code formatting', () => {
+    test('keeps fenced multiline code from a bare pre element', async () => {
+      const html = '<html><head><title>Document code</title></head><body><pre>if ready:\n    run()\nelse:\n    stop()</pre></body></html>';
+
+      const result = await converter.invoke(createContext(html));
+
+      assert.equal(result.title, 'Document code');
+      assert.equal(result.markdown, '```\nif ready:\n    run()\nelse:\n    stop()\n```');
+    });
+
+    test('keeps fenced multiline code from a standalone styled code element', async () => {
+      const html = '<html><head><title>Document code</title></head><body><code style="white-space: pre">if ready:\n    run()\nelse:\n    stop()</code></body></html>';
+
+      const result = await converter.invoke(createContext(html));
+
+      assert.equal(result.title, 'Document code');
+      assert.equal(result.markdown, '```\nif ready:\n    run()\nelse:\n    stop()\n```');
+    });
+  });
+
   test('keeps image-only fragments', async () => {
     const result = await converter.invoke(createContext('<img src="/visible.png" alt="Visible image">'));
 
