@@ -37,6 +37,9 @@
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML
+[V] Treats sparse full documents and HTML fragments as HTML at every line and tag density
+[V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
+[V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
 
 **HTML to Markdown Pipeline**
 
@@ -45,6 +48,7 @@
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
+[V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
 **HTML to MD**
@@ -57,12 +61,40 @@
 [V] Extracts the document title
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
-[V] Preserves local content and resolves relative links with the page URL
+[V] Preserves local content and resolves relative links with finalUrl
+[V] Resolves relative, root-relative, and protocol-relative links after same-host and cross-host redirects
+[V] Applies ad rules for the final host after redirects, in both host-change directions
+[V] Preserves direct content when requestedUrl and finalUrl match
+[V] Removes literal and entity-decoded controls from DOM text, attributes, Markdown, and title; reports the control finding once
+[V] Removes controls before Markdown escaping and code-fence selection, including generated Substack code with literal, decimal, and hexadecimal controls
+[V] Checks logical text runs across inline spans and preserves contextual Persian ZWNJ and emoji ZWJ across highlighted spans
+[V] Ends text runs at block, line-break, and image boundaries; maps deletions to original nodes and preserves inline formatting
+[V] Preserves formatting and link boundaries when an encoded ANSI sequence repeats visible text
+[V] Removes and reports isolated joiners
+[V] Removes all four prohibited controls from links in generated extractor content
+[V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title during the control check
+[V] Cleans controls from link and image destinations before URL serialization
+[V] Keeps visibly escaped entity examples through LinkeDOM attribute serialization and Defuddle's serialize/reparse step
+[V] Does not parse converted output as HTML or decode another entity layer during control checks
+[V] Keeps an escaped image example in noscript as text without converting it to an image
+[V] Keeps real image elements in noscript available to Defuddle
+[V] Keeps a real fallback image and an escaped image example visible when both appear in noscript
+[V] Keeps a picture fallback and escaped example separate, with one real image
+[V] Uses a noscript fallback for a lazy image outside a figure and keeps escaped examples visible
+[V] Keeps nested escaped noscript code as text
+[V] Emits one escaped noscript example after repeated extractor callbacks
+[V] Preserves parser behavior for malformed entities and invalid code points
+
+**HTML Fetcher**
+
+[V] Returns requestedUrl, finalUrl, and HTML for direct and redirected fetches
+[V] Preserves the exact requested URL
+[V] Rejects missing or invalid fetch metadata
 
 **Lightpanda Website Fetcher**
 
 [V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
-[V] Returns stdout on immediate success
+[V] Returns HTML with the requested and final URLs on immediate success
 [V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
 [V] Cancels the readiness timer after success or a process error
 [V] Preserves process timeout and output limit errors, and handles missing executable (ENOENT), permission error (EACCES), and synchronous launch failure
@@ -77,8 +109,23 @@
 
 **HTML Fetcher**
 
-[V] Can get a plan URL (https://quotes.toscrape.com) and return a rendered HTML
-[V] Can get a JS based page (https://quotes.toscrape.com/js/) and return a rendered HTML
+[V] Fetches a page without JavaScript (https://quotes.toscrape.com) and returns rendered HTML
+[V] Fetches a page with JavaScript (https://quotes.toscrape.com/js/) and returns rendered HTML
+[V] Returns a direct fetch result through Lightpanda
+[V] Traces a redirect chain through Lightpanda and resolves Markdown links against the final URL
+
+**LinkeDOM Serialization**
+
+[V] ESM and CommonJS preserve escaped numeric entities, ordinary entities, quotes, and query ampersands after attribute serialization and reparsing
+
+**Sanitizer Deletion Positions**
+
+[V] Reports exact UTF-16 deletion ranges for ANSI passes, Unicode controls, contextual joiners, emoji tags, and BOM handling
+[V] Keeps sanitizer output and findings the same when deletion reporting is enabled
+
+**Defuddle Extracted DOM**
+
+[V] Passes decoded selector-based Substack and generated Discourse content to the callback before URL conversion
 
 **Website Fetcher Readiness** (`test/interface/website-fetcher-readiness.test.ts`)
 

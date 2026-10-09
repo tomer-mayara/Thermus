@@ -111,10 +111,13 @@ describe('WebsiteFetcherLightpanda readiness', { concurrency: false }, () => {
 
   test('returns the completed asynchronous DOM before the full wait budget', { timeout: TEST_TIMEOUT_MS }, async (context) => {
     const started = performance.now();
-    const html = await fetcher.fetchURL(`${origin}/delayed-page`);
+    const requestedUrl = `${origin}/delayed-page`;
+    const page = await fetcher.fetchURL(requestedUrl);
     const elapsed = performance.now() - started;
 
-    assert.match(html, /<div id="status">completed asynchronous content<\/div>/);
+    assert.match(page.html, /<div id="status">completed asynchronous content<\/div>/);
+    assert.equal(page.requestedUrl, requestedUrl);
+    assert.equal(page.finalUrl, requestedUrl);
     assert.equal(delayedResponseComplete, true);
     assert.ok(elapsed < READINESS_WAIT_MS - TIMING_TOLERANCE_MS, `Fetch took ${elapsed} ms`);
     assert.equal(children.length, 1);

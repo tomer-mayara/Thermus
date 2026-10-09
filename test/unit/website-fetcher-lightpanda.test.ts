@@ -10,6 +10,13 @@ import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
 
 describe('WebsiteFetcherLightpanda', () => {
+  const htmlResult = (url: string, html: string) => JSON.stringify({ url, content: html, error: null });
+  const expectedPage = (requestedUrl: string, html: string, finalUrl = requestedUrl) => ({
+    requestedUrl,
+    finalUrl,
+    html,
+  });
+
   let command: string;
   let args: readonly string[];
   let options: ExecFileOptionsWithStringEncoding;
@@ -47,12 +54,14 @@ describe('WebsiteFetcherLightpanda', () => {
   });
 
   test('uses bounded network idle and native network policies while preserving process limits', async () => {
-    const result = fetcher.fetchURL('https://example.com');
+    const requestedUrl = 'https://example.com';
+    const finalUrl = 'https://redirected.example/final';
+    const result = fetcher.fetchURL(requestedUrl);
     await rendererLaunched;
 
     assert.equal(command, 'lightpanda');
-    assert.deepEqual(args.slice(0, 8), [
-      'fetch', '--dump', 'html', '--wait-until', 'networkidle', '--wait-ms', '60000',
+    assert.deepEqual(args.slice(0, 9), [
+      'fetch', '--json', '--dump', 'html', '--wait-until', 'networkidle', '--wait-ms', '60000',
       '--block-private-networks',
     ]);
     assert.ok(args.includes('--block-cidrs'));
@@ -64,19 +73,19 @@ describe('WebsiteFetcherLightpanda', () => {
       maxBuffer: 32 * 1024 * 1024,
       timeout: 60_000,
     });
-    finish(null, '<html>Ready</html>', '');
-    assert.equal(await result, '<html>Ready</html>');
+    finish(null, htmlResult(finalUrl, '<html>Ready</html>'), '');
+    assert.deepEqual(await result, expectedPage(requestedUrl, '<html>Ready</html>', finalUrl));
   });
 
   test('returns HTML as soon as the process completes', async () => {
     const result = fetcher.fetchURL('https://example.com/');
     await rendererLaunched;
-    finish(null, '<html>Ready early</html>', '');
+    finish(null, htmlResult('https://example.com/', '<html>Ready early</html>'), '');
 
-    const nextTurn = new Promise<string>((resolve) => {
+    const nextTurn = new Promise<unknown>((resolve) => {
       setImmediate(() => resolve('HTML did not return after process completion'));
     });
-    assert.equal(await Promise.race([result, nextTurn]), '<html>Ready early</html>');
+    assert.deepEqual(await Promise.race([result, nextTurn]), expectedPage('https://example.com/', '<html>Ready early</html>'));
   });
 
   const processErrors: Array<[string, ExecFileException, string?]> = [
@@ -138,9 +147,9 @@ describe('WebsiteFetcherLightpanda', () => {
       const kill = mock.method(child, 'kill', () => true);
       const result = fetcher.fetchURL('https://example.com/');
       await rendererLaunched;
-      finish(error, '<html>Ready</html>', '');
+      finish(error, htmlResult('https://example.com/', '<html>Ready</html>'), '');
       if (error === null) {
-        assert.equal(await result, '<html>Ready</html>');
+        assert.deepEqual(await result, expectedPage('https://example.com/', '<html>Ready</html>'));
       } else {
         await assert.rejects(result, (caught) => caught === error);
       }
