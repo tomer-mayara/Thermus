@@ -32,7 +32,8 @@ test('a deployment without test fixtures applies supplied rules across working d
     const rules = 'example.com##.advert';
     const cleaner = new CleanHtmlAdsAdblockRs(rules);
     const input = {
-      url: 'https://example.com/article',
+      requestedUrl: 'https://example.com/article',
+      finalUrl: 'https://example.com/article',
       html: '<p>Story</p><aside class="advert">Ad</aside>',
       removed: 0,
       skipped: 0,
@@ -50,7 +51,8 @@ test('a deployment without test fixtures applies supplied rules across working d
     assert.equal(child.error, undefined);
     assert.equal(child.status, 0, child.stderr);
     assert.deepEqual(JSON.parse(child.stdout), Array.from({ length: 3 }, () => ({
-      url: 'https://example.com/article',
+      requestedUrl: 'https://example.com/article',
+      finalUrl: 'https://example.com/article',
       html: '<p>Story</p>',
       removed: 1,
       skipped: 0,

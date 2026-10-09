@@ -3,6 +3,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { createContextForUrl } from '../support/html-cleaner-context.ts';
 
 describe('Supplied ad rules', () => {
   test('uses supplied rules on an ordinary host and honors exceptions', async () => {
@@ -13,8 +14,8 @@ describe('Supplied ad rules', () => {
     ].join('\n'));
     const html = '<div class="ad">Ad</div><div class="keep">Keep</div><p>Content</p>';
 
-    const result = await supplied.invoke({ url: 'https://example.com/', html, removed: 0, skipped: 0 });
-    const unmatched = await supplied.invoke({ url: 'https://other.example/', html, removed: 0, skipped: 0 });
+    const result = await supplied.invoke(createContextForUrl(html, 'https://example.com/'));
+    const unmatched = await supplied.invoke(createContextForUrl(html, 'https://other.example/'));
 
     assert.equal(result.html, '<div class="keep">Keep</div><p>Content</p>');
     assert.equal(result.removed, 1);
@@ -32,8 +33,8 @@ describe('Supplied ad rules', () => {
     ].join('\n'));
     const html = '<div class="ad">Ad</div><div class="keep">Keep</div><p>Content</p>';
 
-    const result = await supplied.invoke({ url: 'https://example.com/', html, removed: 0, skipped: 0 });
-    const exception = await supplied.invoke({ url: 'https://other.example/', html, removed: 0, skipped: 0 });
+    const result = await supplied.invoke(createContextForUrl(html, 'https://example.com/'));
+    const exception = await supplied.invoke(createContextForUrl(html, 'https://other.example/'));
 
     assert.equal(result.html, '<div class="keep">Keep</div><p>Content</p>');
     assert.equal(result.removed, 1);
@@ -52,7 +53,7 @@ describe('Supplied ad rules', () => {
       for (const label of order) {
         const cleaner = instances.get(label);
         assert.ok(cleaner);
-        const result = await cleaner.invoke({ url: 'https://example.com/', html, removed: 0, skipped: 0 });
+        const result = await cleaner.invoke(createContextForUrl(html, 'https://example.com/'));
 
         assert.equal(result.html, label === 'A'
           ? '<div class="b">B</div><p>Content</p>'
@@ -87,12 +88,9 @@ describe('Supplied ad rules', () => {
   ]) {
     test(`accepts ${label} rules as a no-op`, async () => {
       const supplied = new CleanHtmlAdsAdblockRs(rules);
-      const input = {
-        url: 'https://abptestpages.org/',
-        html: '<div id="eh-id">Ad</div><p>Content</p>',
-        removed: 2,
-        skipped: 3,
-      };
+      const input = createContextForUrl('<div id="eh-id">Ad</div><p>Content</p>', 'https://abptestpages.org/');
+      input.removed = 2;
+      input.skipped = 3;
       const expected = { ...input };
 
       const result = await supplied.invoke(input);
@@ -111,12 +109,10 @@ describe('Supplied ad rules', () => {
       'example.com##.keep',
       'example.com#@#.keep',
     ].join('\n'));
-    const result = await supplied.invoke({
-      url: 'https://example.com/',
-      html: '<div class="ad">Ad</div><div class="keep">Keep</div>',
-      removed: 0,
-      skipped: 0,
-    });
+    const result = await supplied.invoke(createContextForUrl(
+      '<div class="ad">Ad</div><div class="keep">Keep</div>',
+      'https://example.com/',
+    ));
 
     assert.equal(result.html, '<div class="keep">Keep</div>');
     assert.equal(result.removed, 1);
@@ -141,19 +137,19 @@ describe('Supplied ad rules', () => {
     assert.throws(() => Reflect.construct(CleanHtmlAdsAdblockRs, []), TypeError);
     assert.throws(() => Reflect.construct(CleanHtmlAdsAdblockRs, [null]), TypeError);
     for (const rules of ['', 'example.com##\n||example.com^$unknown-filter-option']) {
-      const input = { url: 'https://example.com/', html: '<div class="ad">Ad</div>', removed: 2, skipped: 3 };
+      const input = createContextForUrl('<div class="ad">Ad</div>', 'https://example.com/');
+      input.removed = 2;
+      input.skipped = 3;
       const expected = { ...input };
       const result = await new CleanHtmlAdsAdblockRs(rules).invoke(input);
 
       assert.deepEqual(result, expected);
       assert.deepEqual(input, expected);
     }
-    const result = await supplied.invoke({
-      url: 'https://example.com/',
-      html: '<div class="ad">Ad</div><p>Content</p>',
-      removed: 0,
-      skipped: 0,
-    });
+    const result = await supplied.invoke(createContextForUrl(
+      '<div class="ad">Ad</div><p>Content</p>',
+      'https://example.com/',
+    ));
 
     assert.equal(result.html, '<p>Content</p>');
     for (const request of requests) {

@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
@@ -9,17 +8,10 @@ import {
   type Ctx,
   type Step,
 } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { elementHidingRules, readAdFixture } from '../support/ad-rules.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
-const fixturesDirectory = new URL(
-  import.meta.url.endsWith('.ts') ? './fixtures/' : '../../../test/unit/fixtures/',
-  import.meta.url,
-);
-const elementHidingRules = readFileSync(new URL('element-hiding.filters.txt', fixturesDirectory), 'utf8');
-const elementHidingHtml = readFileSync(
-  new URL('element-hiding.html', fixturesDirectory),
-  'utf8',
-);
+const elementHidingHtml = readAdFixture('element-hiding.html');
 const elementHidingPage = {
   requestedUrl: elementHidingUrl,
   finalUrl: elementHidingUrl,
