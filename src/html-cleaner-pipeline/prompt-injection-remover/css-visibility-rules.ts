@@ -98,7 +98,10 @@ function selectorWeight(node: CssNode): Specificity | undefined {
     case 'ClassSelector': return [0, 0, 1, 0];
     case 'AttributeSelector':
       if (hasNamespace(node.name.name)) return undefined;
-      if (node.flags !== null && !/^[is]$/i.test(node.flags)) return undefined;
+      if (node.flags !== null) {
+        node.flags = normalizedIdent(node.flags);
+        if (!/^[is]$/.test(node.flags)) return undefined;
+      }
       return [0, 0, 1, 0];
     case 'TypeSelector':
       if (hasNamespace(node.name)) return undefined;

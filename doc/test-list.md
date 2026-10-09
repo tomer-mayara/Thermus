@@ -26,15 +26,21 @@
 [V] Applies inline and eligible local style rules after the default sanitizer pass
 [V] Applies importance, inline specificity, selector specificity, and source order
 [V] Handles type, universal, ID, class, attribute, and combinator selectors
+[V] Matches selectors against the browser-compatible HTML tree, including implied table bodies
+[V] Removes direct text hidden by an implied body element
+[V] Decodes escaped attribute selector `i` and `s` flags
 [V] Rejects a whole rule when its selector list has an unsupported selector
 [V] Skips pseudo selectors, namespace selectors, invalid selector forms, and inactive media rules
+[V] Rejects selector matching when a selector or document exceeds its stated complexity budget
+[V] Rejects over-budget documents without returning partial HTML or Markdown
 [V] Handles uppercase and escaped units and function names
 [V] Keeps visible text for invalid declarations, malformed escaped values, and unresolved variables
 [V] Keeps same-color text visible when its background image is unresolved
 [V] Preserves visible text, unrelated attributes, and Layer 1 findings
 [V] Preserves attributes after a Unicode tag name in the source
 [V] Does not fetch linked stylesheets or CSS imports
-[V] Limits output growth from irrelevant stylesheet declarations
+[V] Limits output growth from a selected shared background image while preserving visible Markdown text
+[V] Rejects repeated descendant selectors within a subprocess time limit and keeps ordinary combinators working
 
 **HTML to Markdown Pipeline**
 

@@ -1,45 +1,38 @@
 import { isHiddenStyle } from 'agent-input-sanitizer/html';
-import { compile, selectAll } from 'css-select';
 import { generate, type CssNode, type Declaration } from 'css-tree';
-import { DomUtils, Parser, parseDocument } from 'htmlparser2';
+import { DomUtils } from 'htmlparser2';
+import { parse } from 'parse5';
+import { adapter } from 'parse5-htmlparser2-tree-adapter';
 import {
-  applyDeclarations, normalizeDeclarations, parseCss, selectorSpecificity, type Declarations,
+  applyDeclarations, normalizeDeclarations, parseCss, type Declarations,
 } from './css-visibility-rules.ts';
+import {
+  createSelectorMatcher, documentElements, type HtmlElement,
+} from './css-visibility-selectors.ts';
 
-type HtmlElement = ReturnType<typeof DomUtils.getElementsByTagName>[number];
-type HtmlNode = ReturnType<typeof parseDocument> | HtmlElement;
 type StyleMap = Map<HtmlElement, Declarations>;
-type Range = { start: number; end: number };
+type HtmlEdit = { start: number; end: number; replacement: string };
 type VisibilityStyle = '' | 'display:none';
+type VisibilityMap = Map<HtmlElement, VisibilityStyle>;
 
-function compileSelectors(prelude: CssNode) {
-  if (prelude.type !== 'SelectorList') return undefined;
-  const selectors = [];
-  try {
-    for (const selector of prelude.children) {
-      if (selector.type !== 'Selector') return undefined;
-      const specificity = selectorSpecificity(selector);
-      if (specificity === undefined) return undefined;
-      selectors.push({ specificity, query: compile<HtmlNode, HtmlElement>(generate(selector)) });
-    }
-  } catch {
-    return undefined;
-  }
-  return selectors;
-}
+type RuleContext = {
+  elements: HtmlElement[];
+  compileSelectors: ReturnType<typeof createSelectorMatcher>;
+  styles: StyleMap;
+};
 
-function applyRule(rule: CssNode, document: ReturnType<typeof parseDocument>, styles: StyleMap): void {
+function applyRule(rule: CssNode, context: RuleContext): void {
   if (rule.type !== 'Rule') return;
-  const selectors = compileSelectors(rule.prelude);
+  const selectors = context.compileSelectors(rule.prelude);
   if (selectors === undefined) return;
   const declarations = normalizeDeclarations(rule.block.children.toArray());
   if (declarations.length === 0) return;
   for (const { specificity, query } of selectors) {
-    const matches = selectAll<HtmlNode, HtmlElement>(query, document);
+    const matches = context.elements.filter(query);
     for (const element of matches) {
-      const target = styles.get(element) ?? new Map();
+      const target = context.styles.get(element) ?? new Map();
       applyDeclarations(target, declarations, specificity);
-      styles.set(element, target);
+      context.styles.set(element, target);
     }
   }
 }
@@ -49,9 +42,6 @@ function isActiveStylesheet(element: HtmlElement): boolean {
   const media = (element.attribs.media ?? '').trim().toLowerCase();
   if (type !== '' && type !== 'text/css') return false;
   if (media !== '' && media !== 'all') return false;
-  for (let parent = element.parent; parent !== null; parent = parent.parent) {
-    if ('name' in parent && parent.name === 'template') return false;
-  }
   return true;
 }
 
@@ -79,57 +69,88 @@ function createStyleClassifier() {
   };
 }
 
-function resolveStyles(html: string): Map<number, VisibilityStyle> {
-  const document = parseDocument(html, { withStartIndices: true });
+function resolveStyles(html: string): VisibilityMap {
+  const document = parse(html, { treeAdapter: adapter, sourceCodeLocationInfo: true });
+  const elements = documentElements(document);
   const styles: StyleMap = new Map();
-  for (const element of selectAll<HtmlNode, HtmlElement>('style', document)) {
+  const context = { elements, styles, compileSelectors: createSelectorMatcher(document) };
+  for (const element of elements) {
+    if (element.name !== 'style') continue;
     if (!isActiveStylesheet(element)) continue;
     for (const rule of parseCss(DomUtils.textContent(element), 'stylesheet')) {
-      applyRule(rule, document, styles);
+      applyRule(rule, context);
     }
   }
-  for (const element of selectAll<HtmlNode, HtmlElement>('[style]', document)) {
+  for (const element of elements) {
+    if (!Object.hasOwn(element.attribs, 'style')) continue;
     const target = styles.get(element) ?? new Map();
     const declarations = normalizeDeclarations(parseCss(element.attribs.style, 'declarationList'));
     applyDeclarations(target, declarations, [1, 0, 0, 0]);
     styles.set(element, target);
   }
-  const resolved = new Map<number, VisibilityStyle>();
+  return classifyElements(elements, styles);
+}
+
+function classifyElements(elements: HtmlElement[], styles: StyleMap): VisibilityMap {
+  const resolved: VisibilityMap = new Map();
   const classify = createStyleClassifier();
-  for (const [element, declarations] of styles) {
-    if (element.startIndex === null) continue;
-    resolved.set(element.startIndex, classify(declarations));
+  const hiddenImpliedElements = new Set<HtmlElement>();
+  for (const element of elements) {
+    const parentIsHidden = element.parent !== null && adapter.isElementNode(element.parent)
+      && hiddenImpliedElements.has(element.parent);
+    const declarations = styles.get(element);
+    const css = parentIsHidden ? 'display:none' : declarations && classify(declarations);
+    if (css === undefined) continue;
+    resolved.set(element, css);
+    if (element.startIndex === null && css === 'display:none') hiddenImpliedElements.add(element);
   }
   return resolved;
 }
 
+function elementStyleEdit(element: HtmlElement, css: VisibilityStyle): HtmlEdit | undefined {
+  const location = adapter.getNodeSourceCodeLocation(element);
+  if (location?.startTag === undefined) return undefined;
+  const style = location.attrs?.style;
+  const start = style?.startOffset ?? location.startOffset + 1 + element.name.length;
+  const end = style?.endOffset ?? start;
+  const separator = style === undefined ? ' ' : '';
+  return { start, end, replacement: `${separator}style="${css}"` };
+}
+
+function hiddenImpliedTextEdits(element: HtmlElement): HtmlEdit[] {
+  const edits: HtmlEdit[] = [];
+  for (const node of element.children) {
+    if (!adapter.isTextNode(node)) continue;
+    const location = adapter.getNodeSourceCodeLocation(node);
+    if (location === undefined || location === null) continue;
+    const { startOffset: start, endOffset: end } = location;
+    edits.push(
+      { start, end: start, replacement: '<span style="display:none">' },
+      { start: end, end, replacement: '</span>' },
+    );
+  }
+  return edits;
+}
+
 export function applyCssVisibility(html: string): string {
-  const styles = resolveStyles(html);
-  if (styles.size === 0) return html;
+  const edits = new Map<number, HtmlEdit>();
+  for (const [element, css] of resolveStyles(html)) {
+    const edit = elementStyleEdit(element, css);
+    if (edit !== undefined) {
+      edits.set(edit.start, edit);
+    } else if (css === 'display:none') {
+      for (const textEdit of hiddenImpliedTextEdits(element)) {
+        edits.set(textEdit.start, textEdit);
+      }
+    }
+  }
+  if (edits.size === 0) return html;
   const chunks: string[] = [];
   let copiedThrough = 0;
-  let tagNameEnd = 0;
-  let styleRange: Range | undefined;
-  const parser = new Parser({
-    onopentagname() {
-      tagNameEnd = parser.endIndex;
-      styleRange = undefined;
-    },
-    onattribute(name) {
-      if (name === 'style' && styleRange === undefined) {
-        styleRange = { start: parser.startIndex, end: parser.endIndex };
-      }
-    },
-    onopentag(_name, _attributes, implied) {
-      const css = styles.get(parser.startIndex);
-      if (implied || css === undefined) return;
-      const range = styleRange ?? { start: tagNameEnd, end: tagNameEnd };
-      const separator = styleRange === undefined ? ' ' : '';
-      chunks.push(html.slice(copiedThrough, range.start), `${separator}style="${css}"`);
-      copiedThrough = range.end;
-    },
-  });
-  parser.end(html);
+  for (const { start, end, replacement } of [...edits.values()].sort((left, right) => left.start - right.start)) {
+    chunks.push(html.slice(copiedThrough, start), replacement);
+    copiedThrough = end;
+  }
   chunks.push(html.slice(copiedThrough));
   return chunks.join('');
 }

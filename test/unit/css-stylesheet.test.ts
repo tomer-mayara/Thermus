@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import https from 'node:https';
 import { describe, test } from 'node:test';
-import { applyCssVisibility } from '../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility.ts';
 import { createPipeline } from './helpers/css-pipeline.ts';
 
 describe('stylesheet CSS visibility rules', () => {
@@ -102,18 +101,27 @@ describe('stylesheet CSS visibility rules', () => {
     assert.equal(result.skipped, 0);
   });
 
-  test('limits output growth from irrelevant stylesheet declarations', () => {
+  test('limits output growth from a selected shared background image', async () => {
+    const gradient = Array.from({ length: 128 }, (_, index) => {
+      const color = index.toString(16).padStart(6, '0');
+      return `#${color} ${index}%`;
+    }).join(',');
     const html = [
-      '<!doctype html><html><head><style>*{--unused:',
-      'x'.repeat(4096),
-      '}</style></head><body><main>',
-      '<p>Visible</p>'.repeat(100),
+      '<!doctype html><html><head><style>',
+      `.painted{background-image:linear-gradient(${gradient})}`,
+      '</style></head><body><main>',
+      Array.from({ length: 100 }, (_, index) => `<p class="painted">Visible paragraph ${index}</p>`).join(''),
       '</main></body></html>',
     ].join('');
 
-    const rewritten = applyCssVisibility(html);
+    const result = await createPipeline().process('https://example.com/shared-style', html);
+    const markdown = result.markdown ?? '';
 
-    assert.ok(rewritten.length <= html.length + 100 * 40);
-    assert.equal((rewritten.match(/<p>Visible<\/p>/g) ?? []).length, 100);
+    assert.ok(Buffer.byteLength(result.html, 'utf8') <= Buffer.byteLength(html, 'utf8') + 100 * 40);
+    for (let index = 0; index < 100; index++) {
+      assert.ok(markdown.includes(`Visible paragraph ${index}`));
+    }
+    assert.deepEqual(result.found, []);
+    assert.equal(result.skipped, 0);
   });
 });
