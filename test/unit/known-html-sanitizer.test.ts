@@ -1,18 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-
-function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
-  return {
-    requestedUrl: 'https://example.com/',
-    finalUrl: 'https://example.com/',
-    html,
-    removed: 0,
-    skipped: 0,
-    ...overrides,
-  };
-}
+import { createContext } from '../support/html-cleaner-context.ts';
 
 describe('Known HTML sanitizer parsing', () => {
   const sanitizer = new PromptInjectionRemoverSanitizer();
@@ -46,7 +35,7 @@ describe('Known HTML sanitizer parsing', () => {
       assert.deepEqual(result.found, ['hidden-html']);
       assert.equal(result.skipped, 1);
       assert.deepEqual(result.warnings, [
-        'HTML sanitized: 1 hidden element(s) replaced with placeholders',
+        'HTML sanitized: 1 hidden element(s) removed',
       ]);
     });
   }

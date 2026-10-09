@@ -26,6 +26,10 @@ describe('Known HTML pipeline output', () => {
     assert.equal(seenHtml, '');
     assert.deepEqual(result.found, ['hidden-html', 'exfil-urls']);
     assert.equal(result.skipped, 2);
+    assert.ok(result.warnings?.includes('HTML scan failed; remaining HTML withheld'));
+    assert.ok(result.warnings?.some((warning) =>
+      warning.includes('input too deeply nested to scan for exfil URLs'),
+    ));
   });
 
   test('the real pipeline removes fenced hidden HTML from a complete document with few tags', async () => {
@@ -64,7 +68,7 @@ describe('Known HTML pipeline output', () => {
     assert.deepEqual(result.found, ['hidden-html']);
     assert.equal(result.skipped, 1);
     assert.deepEqual(result.warnings, [
-      'HTML sanitized: 1 hidden element(s) replaced with placeholders',
+      'HTML sanitized: 1 hidden element(s) removed',
     ]);
   });
 
