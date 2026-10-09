@@ -7,3 +7,6 @@ allowBuilds:
 
 overrides:
   "ts-api-utils>typescript": "6.0.3"
+
+patchedDependencies:
+  linkedom@0.18.13: patches/linkedom@0.18.13.patch

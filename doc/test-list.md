@@ -40,9 +40,12 @@
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
 [V] Preserves local content and resolves relative links with the page URL
-[V] Removes literal controls and controls from decimal and hexadecimal character references in final Markdown and title
-[V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title
-[V] Keeps visibly escaped entity examples; the control check does not parse output as HTML or decode another entity layer
+[V] Removes literal and entity-decoded controls from DOM text, attributes, Markdown, and title; reports the control finding once
+[V] Removes controls before Markdown escaping and code-fence selection
+[V] Merges adjacent text nodes before checks and preserves valid emoji joiners during the control check
+[V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title during the control check
+[V] Keeps visibly escaped entity examples through LinkeDOM attribute serialization and Defuddle's serialize/reparse step
+[V] Does not parse converted output as HTML or decode another entity layer during control checks
 [V] Preserves parser behavior for malformed entities and invalid code points
 
 ## Interface

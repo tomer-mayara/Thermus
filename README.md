@@ -10,7 +10,9 @@ Fetching is deliberately not a disguise. The client announces itself as a bot. A
 
 HTML-to-Markdown conversion uses only the HTML that the pipeline supplies. It does not make network requests or fetch missing content. The page URL in the context resolves relative links in the supplied HTML. `WebsiteFetcher` still fetches pages, and Lightpanda still renders pages that need JavaScript.
 
-The converter removes prohibited invisible controls from the final Markdown and page title, including controls decoded from HTML character references. The output keeps ordinary ampersands, copyright signs, and supplementary characters. The control check treats the converted output as text. It does not parse the output as HTML or decode another layer of entities. It preserves visibly escaped entity examples.
+The converter removes prohibited invisible controls from decoded text and attribute values before Defuddle converts the page. It cleans link and image destinations before URL serialization. This check runs before Markdown escaping and code-fence selection. The converter also checks the final Markdown and page title. It reports each finding once across these stages. `document.normalize()` joins adjacent text nodes before checks, so valid emoji joiners stay intact during the control check. The checks do not decode another layer of HTML entities. Escaped entity examples, ordinary ampersands, copyright signs, and supplementary characters stay visible.
+
+The pinned LinkeDOM 0.18.13 patch makes HTML attribute serialization escape values in both ESM and CommonJS builds. Keep the patch until a dependency upgrade passes the encoded-control regression tests. It preserves escaped entity examples during Defuddle's serialize and reparse step.
 
 The cleaned page is cached per tenant, keyed by URL with the query string removed. The cache is never keyed on the reason the agent gave. A hit does not fetch the page again.
 
