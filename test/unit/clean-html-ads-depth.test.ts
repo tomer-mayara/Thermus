@@ -115,6 +115,14 @@ describe('ad cleaner depth limit', () => {
     assert.deepEqual(await new CleanHtmlAdsAdblockRs().invoke(input), input);
   });
 
+  test('rejects template children beyond the depth limit', async () => {
+    const html = nestedHtml(253, '<template><span>x</span></template>');
+
+    await assert.rejects(new CleanHtmlAdsAdblockRs().invoke(createContext(
+      html, { finalUrl: 'https://example.com/' },
+    )), limitError);
+  });
+
   test('enforces the limit when generic hiding is disabled', async (t) => {
     t.mock.method(adblockRust.Engine.prototype, 'urlCosmeticResources', () => ({
       hide_selectors: [], procedural_actions: [], exceptions: [], injected_script: '',
