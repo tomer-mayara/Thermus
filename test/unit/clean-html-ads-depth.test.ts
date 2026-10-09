@@ -46,25 +46,59 @@ describe('ad cleaner depth limit', () => {
       assert.equal(selectors.mock.callCount(), 0);
       assert.deepEqual(input, original);
     });
-  }
 
-  for (const depth of [255, 256, 257]) {
-    test(`checks the depth boundary at ${depth} elements`, async () => {
-      // parse5 adds html and body elements when the input omits them.
-      const html = nestedHtml(depth - 2, 'text<!-- comment -->');
-      const input = createContext(html, {
-        requestedUrl: 'https://example.com/',
-        finalUrl: 'https://example.com/',
+    test(`rejects 5,000 unclosed templates at ${url}`, async (t) => {
+      const input = createContext('<template>'.repeat(5000) + 'text', {
+        finalUrl: url,
+        removed: 3,
+        skipped: 5,
       });
-      const operation = new CleanHtmlAdsAdblockRs().invoke(input);
+      const original = { ...input };
+      const selectors = t.mock.method(adblockRust.Engine.prototype, 'urlCosmeticResources');
 
-      if (depth > 256) {
-        await assert.rejects(operation, limitError);
-      } else {
-        assert.deepEqual(await operation, input);
-      }
+      await assert.rejects(new CleanHtmlAdsAdblockRs().invoke(input), (error: unknown) => {
+        assert.ok(error instanceof HtmlDepthLimitError);
+        assert.equal(error.message, limitError.message);
+        return true;
+      });
+      assert.equal(selectors.mock.callCount(), 0);
+      assert.deepEqual(input, original);
     });
   }
+
+  for (const [element, makeHtml] of [
+    ['div', (depth: number) => nestedHtml(depth - 2, 'text<!-- comment -->')],
+    ['template', (depth: number) => '<template>'.repeat(depth - 2) + 'text'],
+  ] as const) {
+    for (const depth of [255, 256, 257]) {
+      test(`checks the ${element} depth boundary at ${depth} elements`, async () => {
+        // parse5 adds two elements when the input omits html, head, and body.
+        const html = makeHtml(depth);
+        const input = createContext(html, {
+          requestedUrl: 'https://example.com/',
+          finalUrl: 'https://example.com/',
+        });
+        const operation = new CleanHtmlAdsAdblockRs().invoke(input);
+
+        if (depth > 256) {
+          await assert.rejects(operation, limitError);
+        } else {
+          assert.deepEqual(await operation, input);
+        }
+      });
+    }
+  }
+
+  test('removes a matching sibling and keeps unclosed templates at the limit', async () => {
+    const html = '<div class="eh-class">ad</div>' + '<template>'.repeat(254) + 'keep';
+    const result = await new CleanHtmlAdsAdblockRs().invoke(createContext(
+      html, { finalUrl: elementHidingUrl },
+    ));
+
+    assert.equal(result.html, '<template>'.repeat(254) + 'keep');
+    assert.equal(result.removed, 1);
+    assert.equal(result.skipped, 1);
+  });
 
   test('removes nested selector targets at the limit and keeps other content', async () => {
     const content = '<section class="testcase-area"><b class="eh-descendant">ad</b>'

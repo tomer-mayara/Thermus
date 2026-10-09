@@ -18,6 +18,7 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
   private readonly endTags = new WeakMap<HtmlNode, Token.Location[]>();
   private readonly endTagIndexes = new WeakMap<HtmlNode, EndTagIndex>();
   private lastEndTagOffset = 0;
+  private processingEof = false;
 
   public override _insertFakeRootElement(): void {
     if (!this.document.children.some(node => this.treeAdapter.isDocumentTypeNode(node))) {
@@ -40,9 +41,21 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
   }
 
   public override onEof(token: Token.EOFToken): void {
-    super.onEof(token);
+    if (this.processingEof) {
+      return;
+    }
+    this.processingEof = true;
+    try {
+      // parse5 requests another EOF pass for each unclosed template.
+      // Run each pass after the previous pass returns to bound the call stack.
+      while (!this.stopped) {
+        super.onEof(token);
+      }
+    } finally {
+      this.processingEof = false;
+    }
     const body = this.openElements.tryPeekProperlyNestedBodyElement();
-    if (this.stopped && body !== null && body.sourceCodeLocation?.endTag === undefined) {
+    if (body !== null && body.sourceCodeLocation?.endTag === undefined) {
       // parse5 can omit this close when the html element has no source location.
       this._setEndLocation(body, token);
     }

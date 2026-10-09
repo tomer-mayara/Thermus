@@ -41,7 +41,7 @@ Use this sequence for ticket work that does not start from a Delamain board
 `code` prompt. For board tickets, follow the prompt's sequence and apply the
 rules and conditions below at the matching steps. The prompt determines when
 to open and merge a pull request. Check the repository's effective
-`.delamain/config.json` for product behavior. 
+`.delamain/config.json` for product behavior.
 
 For each ticket, do the steps that follow:
 
@@ -68,7 +68,13 @@ For each ticket, do the steps that follow:
    Ready pull request. Manual workflow dispatch remains available. A missing,
    pending, skipped, cancelled, failed, or mismatched result is not passing
    evidence.
-8. If a fix changes the head after Ready
+8. If a fix changes the head after Ready, return the pull request to Draft
+   before you push. Run `habit-hooks`, `pnpm check`, and every new or edited
+   test on the changed candidate. Run all four reviewers on the new head and
+   fix each confirmed defect. Mark the pull request Ready again. Wait for each
+   configured unit and integration job to pass on that exact head. Record the
+   full head SHA, each command or run ID, status, and result. Do not use a
+   result for a different head as passing evidence.
 9.  Do not merge if a required test failed or a reviewer defect remains. Merge a clean pull request once.
 
 
