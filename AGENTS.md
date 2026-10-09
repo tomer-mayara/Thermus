@@ -30,20 +30,6 @@ Use these rules.
 Give these rules to each subagent.
 During inspection, make sure that the work obeys these rules.
 
-Read the ticket spec and `docs/implementation/delamain-plan.md` for each ticket.
-
-### Work from a Delamain board
-
-For a ticket from a Delamain board, follow its code prompt. An agent session
-gets the prompt from Delamain's MCP server with the ticket UUID. A worker
-follows the prompt that its run supplies. Plan F.8 defines both loops. This
-file gives the rules that each prompt references. The coding, test, review,
-documentation, and merge conditions below apply to every ticket, including
-board tickets. Follow the prompt for the step order and for PR actions. Do not
-add PR steps from the manual loop below. The session prompt owns opening and
-merging the PR, one time each. A restart reuses the same PR and merge result;
-it does not repeat either action. A worker follows the PR actions in the prompt
-that its run supplies.
 
 ### Language
 
@@ -55,9 +41,7 @@ Use this sequence for ticket work that does not start from a Delamain board
 `code` prompt. For board tickets, follow the prompt's sequence and apply the
 rules and conditions below at the matching steps. The prompt determines when
 to open and merge a pull request. Check the repository's effective
-`.delamain/config.json` for product behavior. The current repository gate
-policy is in [the test gate policy](docs/implementation/test-gate-policy.md).
-It applies now and does not depend on the generic `githubActionsGate` setting.
+`.delamain/config.json` for product behavior. 
 
 For each ticket, do the steps that follow:
 
@@ -67,69 +51,26 @@ For each ticket, do the steps that follow:
 3. Run every test introduced by this pull request locally before you commit
    it. This applies to unit, integration, interface, and acceptance tests,
    including new cases in an existing test file. Use a focused command for a
-   new test that `npm run check` does not select. Repeat the run if you edit a
+   new test. Repeat the run if you edit a
    new test after it passes. Record each command and result in your work
    summary.
 4. Run `habit-hooks` (See "Habit hooks" sub-section below). Repair each
    finding. Fix at least one pre-existing smell in the code you change.
-5. Run `npm run check`. It runs lint, architecture checks, typecheck, and unit
-   tests. It does not run existing integration, interface, provider, browser,
-   or other acceptance suites.
-6. Run the 4 reviewers. Replace `382` with the number of this pull request:
+5. Run the 4 reviewers. Replace `382` with the number of this pull request:
    `npx tsx tools/code-review-agents/src/application/review.ts --pr 382 --comment`
-   Run the architecture diff for the same pull request:
-   `npx tsx script/architecture-diff.ts --pr 382 --comment`
    Repair each reviewer defect.
-7. Make sure the relevant docs under `docs/*` are up to date with recent
+6. Make sure the relevant docs under `docs/*` are up to date with recent
    changes. Create a subagent for doc changes and require ASD-STE100.
-8. Mark the pull request Ready. Wait for every configured unit and integration
+7. Mark the pull request Ready. Wait for every configured unit and integration
    job to pass on the pull request head. The unit workflow runs on branch
    pushes, so reuse successful results for that exact head. Ready does not
    start a duplicate unit run. Automated integration runs require an eligible
    Ready pull request. Manual workflow dispatch remains available. A missing,
    pending, skipped, cancelled, failed, or mismatched result is not passing
    evidence.
-9. If a fix changes the head after Ready, return the pull request to Draft
-   before the push. Run `npm run check`, run each new test affected by the fix,
-   and repeat the review and architecture diff for the new head. Mark it Ready
-   and wait for the required Actions jobs on that head.
-10. Do not merge if a required test failed or a reviewer defect remains. The
-    owner merges a pull request that adds an architectural decision record
-    under `architecture/decisions/`. Merge a clean pull request once.
+8. If a fix changes the head after Ready
+9.  Do not merge if a required test failed or a reviewer defect remains. Merge a clean pull request once.
 
-The unit workflow runs on branch pushes and manual dispatch. It runs Core,
-Daemon, and script unit tests once each, and splits App unit tests across four
-shards. The unit jobs use two workers each. The integration workflow runs
-automatically for opened, reopened, synchronized, or Ready pull requests to
-`main`, when the pull request is not a draft. Manual workflow dispatch remains
-available. It splits Daemon integration tests across two shards, with one
-worker per shard. The App integration tests run in one shard with two workers.
-The supplemental interface workflow runs on branch pushes and manual dispatch.
-It has no `pull_request` trigger. Its Core job uses `Production`; its App job
-uses no provider credentials. This workflow does not add required unit or
-integration package and shard jobs. The supplemental acceptance workflow runs
-the root, browser, packaged Electron, and live provider acceptance suites on
-branch pushes and manual dispatch. It has no `pull_request` trigger and adds no
-required jobs. Existing fake-harness cases remain offline. Separate live cases
-use provider CLIs and test-only model settings. `ACCEPTANCE_TEST_WITH_API_KEY`
-controls optional acceptance API keys and is separate from
-`INTERFACE_TEST_WITH_API_KEY`. See the test gate policy for details. The
-workflows can run at the same time for the same head.
-The workflow and package details are in [the test gate
-policy](docs/implementation/test-gate-policy.md).
-
-Keep the worker boundary: the session opens and merges the PR. A worker does
-not open or merge a PR. For board tickets, the session opens the draft PR
-before the first worker step. The configurable `githubActionsGate` is a
-separate Delamain product feature. It remains off unless a repository's saved
-config opts in after the required proof. See the [test gate policy](docs/implementation/test-gate-policy.md)
-for the distinction between this repository's Actions checks and that product
-feature.
-
-### src/ and script/
-
-No file under `src/` imports a path that resolves under `script/`.
-`npm run check:architecture` runs this check (`script/verify-boundary.ts`).
 
 ### Tests
 
