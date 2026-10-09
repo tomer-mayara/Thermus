@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
 import { type WebsiteFetcher } from './website-fetcher.ts';
 
 const LIGHTPANDA_BIN = 'lightpanda';
@@ -11,11 +12,17 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       throw new Error(`Fetch URL must use http or https: ${url}`);
     }
+    await assertPublicDestination(parsed);
 
     return new Promise((resolve, reject) => {
       execFile(
         LIGHTPANDA_BIN,
-        ['fetch', '--dump', 'html', parsed.href],
+        [
+          'fetch', '--dump', 'html',
+          '--block-private-networks', '--block-cidrs', LIGHTPANDA_BLOCKED_CIDRS,
+          '--http-proxy', '',
+          parsed.href,
+        ],
         {
           encoding: 'utf8',
           maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
@@ -23,11 +30,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
         },
         (error, stdout) => {
           if (error !== null) {
-            if (error.code === 'ENOENT') {
-              reject(new Error('lightpanda is not available on PATH'));
-              return;
-            }
-            reject(error);
+            reject(error.code === 'ENOENT' ? new Error('lightpanda is not available on PATH') : error);
             return;
           }
           resolve(stdout);

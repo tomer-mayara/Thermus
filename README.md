@@ -10,6 +10,8 @@ Fetching is deliberately not a disguise. The client announces itself as a bot. A
 
 HTML-to-Markdown conversion uses only the HTML that the pipeline supplies. It does not make network requests or fetch missing content. The page URL in the context resolves relative links in the supplied HTML. `WebsiteFetcher` still fetches pages, and Lightpanda still renders pages that need JavaScript.
 
+The renderer checks the destination before launch and blocks private network addresses when it opens a connection. See the [renderer network policy](docs/renderer-network-policy.md).
+
 The cleaned page is cached per tenant, keyed by URL with the query string removed. The cache is never keyed on the reason the agent gave. A hit does not fetch the page again.
 
 ## Hidden-text sanitizer
