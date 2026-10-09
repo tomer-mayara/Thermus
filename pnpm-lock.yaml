@@ -166,6 +166,7 @@ overrides:
   ts-api-utils>typescript: 6.0.3
 
 patchedDependencies:
+  defuddle@0.19.4: f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6
   linkedom@0.18.13: ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590
 
 importers:
@@ -183,7 +184,7 @@ importers:
         version: 7.0.0
       defuddle:
         specifier: ^0.19.4
-        version: 0.19.4
+        version: 0.19.4(patch_hash=f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6)
       htmlparser2:
         specifier: ^12.0.0
         version: 12.0.0
@@ -2199,7 +2200,7 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  defuddle@0.19.4:
+  defuddle@0.19.4(patch_hash=f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6):
     dependencies:
       commander: 12.1.0
       mathml-to-latex: 1.8.0

@@ -41,12 +41,18 @@
 [V] Makes no network requests when the API fallback receives an empty document
 [V] Preserves local content and resolves relative links with the page URL
 [V] Removes literal and entity-decoded controls from DOM text, attributes, Markdown, and title; reports the control finding once
-[V] Removes controls before Markdown escaping and code-fence selection
-[V] Merges adjacent text nodes before checks and preserves valid emoji joiners during the control check
+[V] Removes controls before Markdown escaping and code-fence selection, including generated Substack code with literal, decimal, and hexadecimal controls
+[V] Checks logical text runs across inline spans and preserves contextual Persian ZWNJ and emoji ZWJ across highlighted spans
+[V] Ends text runs at block and line-break boundaries, maps deletions to original nodes, and preserves inline formatting
+[V] Removes and reports isolated joiners
+[V] Removes all four prohibited controls from links in generated extractor content
 [V] Preserves ordinary ampersands, copyright signs, and supplementary characters; preserves valid emoji joiners in the title during the control check
 [V] Cleans controls from link and image destinations before URL serialization
 [V] Keeps visibly escaped entity examples through LinkeDOM attribute serialization and Defuddle's serialize/reparse step
 [V] Does not parse converted output as HTML or decode another entity layer during control checks
+[V] Keeps an escaped image example in noscript as text without converting it to an image
+[V] Keeps real image elements in noscript available to Defuddle
+[V] Keeps nested escaped noscript code as text
 [V] Preserves parser behavior for malformed entities and invalid code points
 
 ## Interface
@@ -59,5 +65,9 @@
 **LinkeDOM Serialization**
 
 [V] ESM and CommonJS preserve escaped numeric entities, ordinary entities, quotes, and query ampersands after attribute serialization and reparsing
+
+**Defuddle Extracted DOM**
+
+[V] Passes decoded selector-based Substack and generated Discourse content to the callback before URL conversion
 
 ## Acceptance

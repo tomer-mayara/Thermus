@@ -9,4 +9,5 @@ overrides:
   "ts-api-utils>typescript": "6.0.3"
 
 patchedDependencies:
+  defuddle@0.19.4: patches/defuddle@0.19.4.patch
   linkedom@0.18.13: patches/linkedom@0.18.13.patch
