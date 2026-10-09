@@ -145,6 +145,7 @@
 [V] Keeps visibly escaped entity examples through LinkeDOM attribute serialization and Defuddle's serialize/reparse step
 [V] Does not parse converted output as HTML or decode another entity layer during control checks
 [V] Keeps an escaped image example in noscript as text without converting it to an image
+[V] Keeps top-level noscript fragment text and escaped image examples in body order and preserves metadata in an explicit or unclosed head
 [V] Keeps real image elements in noscript available to Defuddle
 [V] Keeps a real fallback image and an escaped image example visible when both appear in noscript
 [V] Keeps a picture fallback and escaped example separate, with one real image

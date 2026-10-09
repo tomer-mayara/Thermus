@@ -65,7 +65,7 @@ function normalizeDocument(document: HtmlDocument): void {
         target.appendChild(child);
       }
       node.remove();
-    } else if (headElements.has(node.nodeName)) {
+    } else if (node.nodeName !== 'NOSCRIPT' && headElements.has(node.nodeName)) {
       head.appendChild(node);
     } else {
       body.appendChild(node);
