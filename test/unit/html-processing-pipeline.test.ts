@@ -168,6 +168,23 @@ describe('HTML to Markdown Pipeline', () => {
     });
   }
 
+  test('keeps an attributed heading after the sanitizer removes hidden fragment content', async () => {
+    const local = new HtmlToMarkdownPipeline([
+      new PromptInjectionRemoverSanitizer(),
+      new CleanHtmlToMarkdownDefuddle(),
+    ]);
+    const html = '<h1 id="title">Visible heading</h1><div hidden>Removed hidden payload</div>';
+
+    const result = await local.process('https://example.com/', html);
+
+    assert.match(result.markdown ?? '', /^#{1,6}\s+Visible heading$/m);
+    assert.equal(result.title, 'Visible heading');
+    assert.equal(result.skipped, 1);
+    assert.ok(result.found?.includes('hidden-html'));
+    assert.doesNotMatch(result.html, /Removed hidden payload/);
+    assert.doesNotMatch(result.markdown ?? '', /Removed hidden payload|HTML.*removed/);
+  });
+
   test('an oversized document fails before markdown conversion', async () => {
     let markdownerCalled = false;
     const markdowner: Step = {

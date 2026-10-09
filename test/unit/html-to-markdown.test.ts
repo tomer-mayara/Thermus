@@ -108,7 +108,7 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     const result = await converter.invoke(createContext('<h1>Fragment heading</h1>'));
 
     assert.equal(result.title, 'Fragment heading');
-    assert.match(result.markdown ?? '', /Fragment heading/);
+    assert.match(result.markdown ?? '', /^#{1,6}\s+Fragment heading$/m);
   });
 
   test('keeps text that follows a heading fragment', async () => {
@@ -117,7 +117,7 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     );
 
     assert.equal(result.title, 'Fragment heading');
-    assert.match(result.markdown ?? '', /Fragment heading/);
+    assert.match(result.markdown ?? '', /^#{1,6}\s+Fragment heading$/m);
     assert.match(result.markdown ?? '', /Fragment text\./);
   });
 
@@ -131,7 +131,7 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
       const result = await converter.invoke(createContext(html));
 
       assert.equal(result.title, 'Visible heading');
-      assert.match(result.markdown ?? '', /Visible heading/);
+      assert.match(result.markdown ?? '', /^#{1,6}\s+Visible heading$/m);
       if (html.includes('<p>')) {
         assert.match(result.markdown ?? '', /Visible text\./);
       }
@@ -144,8 +144,42 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     const result = await converter.invoke(createContext(html));
 
     assert.equal(result.title, 'Document title');
-    assert.match(result.markdown ?? '', /Visible heading/);
+    assert.match(result.markdown ?? '', /^#{1,6}\s+Visible heading$/m);
     assert.match(result.markdown ?? '', /Visible text\./);
+  });
+
+  for (const html of [
+    '<h1 id="title">Visible heading</h1>',
+    '<p id="title">Visible paragraph</p>',
+    '<p class="sidebar">Visible paragraph</p>',
+    '<p class="ad-container">Visible paragraph</p>',
+  ]) {
+    test(`keeps visible fragments with article cleanup attributes: ${html}`, async () => {
+      const result = await converter.invoke(createContext(html));
+
+      if (html.startsWith('<h1')) {
+        assert.match(result.markdown ?? '', /^#{1,6}\s+Visible heading$/m);
+      } else {
+        assert.equal(result.markdown, 'Visible paragraph');
+      }
+    });
+  }
+
+  test('keeps attributed text in a long fragment', async () => {
+    const html = `<p>${'Visible body text. '.repeat(80)}</p><p class="post-title">Visible attributed paragraph.</p>`;
+
+    const result = await converter.invoke(createContext(html));
+
+    assert.match(result.markdown ?? '', /Visible body text\./);
+    assert.match(result.markdown ?? '', /Visible attributed paragraph\./);
+  });
+
+  test('keeps visible fragment text outside the main element', async () => {
+    const html = '<p>Visible before.</p><main><p>Visible main.</p></main><p>Visible after.</p>';
+
+    const result = await converter.invoke(createContext(html));
+
+    assert.equal(result.markdown, 'Visible before.\n\nVisible main.\n\nVisible after.');
   });
 
   for (const html of [

@@ -19,6 +19,10 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
       useAsync: false,
       standardize: !isFragment,
       removeContentPatterns: !isFragment,
+      removeExactSelectors: !isFragment,
+      removePartialSelectors: !isFragment,
+      removeLowScoring: !isFragment,
+      contentSelector: isFragment ? 'body' : undefined,
     });
     return {
       ...ctx,
@@ -42,6 +46,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
 
   private static normalizeDocument(document: HtmlDocument): void {
     CleanHtmlToMarkdownDefuddle.ensureDocumentRoot(document);
+    // LinkeDOM inserts missing head and body elements through these getters after the root exists.
     const head = document.head;
     const body = document.body;
     for (const node of [...document.documentElement.childNodes]) {
