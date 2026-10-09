@@ -20,7 +20,8 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
   function createContext(html: string, url = 'https://example.com/'): Ctx {
     return {
-      url,
+      requestedUrl: url,
+      finalUrl: url,
       html,
       removed: 0,
       skipped: 0,
@@ -115,7 +116,8 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
   test('preserves context and converts relative links using its URL', async () => {
     const input: Ctx = {
-      url: 'https://example.com/base/',
+      requestedUrl: 'https://example.com/base/',
+      finalUrl: 'https://example.com/base/',
       html: '<html><head><title>Relative</title></head><body><main><p><a href="/docs/page">Relative link</a></p></main></body></html>',
       markdown: 'old markdown',
       title: 'Old title',
@@ -128,7 +130,8 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
     assert.deepEqual(input, original);
     assert.notEqual(result, input);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(result.html, input.html);
     assert.equal(result.removed, input.removed);
     assert.equal(result.skipped, input.skipped);

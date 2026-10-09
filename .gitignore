@@ -149,4 +149,5 @@ vite.config.ts.timestamp-*
 .turbo
 
 # Reviews and per-repo config for tools/code-review-agents
-.agent/
+.agent/reviews/
+

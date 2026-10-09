@@ -31,7 +31,7 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     const document = CleanHtmlAdsAdblockRs.parseHtml(ctx.html);
     const selected = CleanHtmlAdsAdblockRs.selectorsFor(
       CleanHtmlAdsAdblockRs.getEngine(),
-      ctx.url,
+      ctx.finalUrl,
       document,
     );
     const stripped = CleanHtmlAdsAdblockRs.stripHtml(ctx.html, document, selected.hide);
