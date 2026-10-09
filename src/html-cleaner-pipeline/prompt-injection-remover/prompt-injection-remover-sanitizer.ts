@@ -7,15 +7,17 @@ import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static readonly maxHtmlBytes = 10 * 1024 * 1024;
 
+  public constructor(
+    private readonly scanHtml: typeof scanHtmlFragment = scanHtmlFragment,
+  ) {}
+
   public async invoke(ctx: Ctx): Promise<Ctx> {
     if (Buffer.byteLength(ctx.html, 'utf8') > PromptInjectionRemoverSanitizer.maxHtmlBytes) {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
     const sanitized = await sanitize(ctx.html);
-    const { html, removed, warned } = PromptInjectionRemoverSanitizer.removeHiddenHtml(
-      sanitized.cleaned,
-    );
+    const { html, removed, warned } = this.removeHiddenHtml(sanitized.cleaned);
     if (removed.comments > 0) sanitized.found.push(CATEGORY.HTML_COMMENTS);
     if (removed.hidden > 0) sanitized.found.push(CATEGORY.HIDDEN_HTML);
     if (removed.comments > 0 || removed.hidden > 0) {
@@ -58,14 +60,14 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     return `Exfil-shaped URLs detected: ${[...reasons].join('; ')}`;
   }
 
-  private static removeHiddenHtml(text: string): {
+  private removeHiddenHtml(text: string): {
     html: string;
     removed: { comments: number; hidden: number };
     warned: ReturnType<typeof scanHtmlFragment>['warned'];
   } {
     let scan: ReturnType<typeof scanHtmlFragment>;
     try {
-      scan = scanHtmlFragment(text);
+      scan = this.scanHtml(text);
     } catch {
       return {
         html: '',

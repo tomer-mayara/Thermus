@@ -1,0 +1,20 @@
+diff --git a/src/html.mjs b/src/html.mjs
+index 1d576a4923c3916b592c45f70f29b1cea2c696d3..7e11b802d2219fb1caf959618f89e335ca1640e4 100644
+--- a/src/html.mjs
++++ b/src/html.mjs
+@@ -1288,6 +1288,7 @@ export function scanHtmlFragment(html) {
+     if (node.type !== "element") return; // eslint-disable-line consistent-return -- unist visit: undefined return means "continue", same as falling off the end
+     if (REPORTED_TAGS.has(node.tagName)) countTag(warned, node.tagName);
+     if (hasDataSrc(node)) warned.dataSrc += 1;
++    if (node.tagName === "template" && node.content) node.children = node.content.children;
+   });
+   return { ranges, warned };
+ }
+@@ -2160,6 +2161,7 @@ function extractHtmlUrls(text) {
+       const url = metaRefreshUrl(props.content);
+       if (url) urls.push({ url, isImage: false, context: "refresh" });
+     }
++    if (node.tagName === "template" && node.content) node.children = node.content.children;
+   });
+   return urls;
+ }

@@ -23,7 +23,9 @@ The cleaned page is cached per tenant, keyed by URL with the query string remove
 
 ## Hidden-text sanitizer
 
-`PromptInjectionRemoverSanitizer` is a pipeline step. It removes hidden HTML, comments, and invisible characters. Removed HTML and comments leave no generated markers. Text that matches a marker but was written by the page stays unchanged. It rejects HTML larger than 10 MiB in UTF-8 bytes.
+`PromptInjectionRemoverSanitizer` is a pipeline step. It removes hidden HTML, comments, and invisible characters. This includes hidden elements and comments inside `template` bodies. Removed HTML and comments leave no generated markers. Text that matches a marker but was written by the page stays unchanged. It rejects HTML larger than 10 MiB in UTF-8 bytes.
+
+The pinned `agent-input-sanitizer@1.47.14` dependency has a local patch. The patch makes removal and URL scans visit template bodies.
 
 The step checks URLs in normalized input and in the final HTML. The first check retains threats found in hidden HTML. The second check finds URLs formed by HTML removal. It adds each newly detected category and warning reason once across both checks, and adds the number of detected categories to `skipped` once. It keeps findings and warnings already in the context. It reports exfil-shaped URLs. A finding alone does not remove a URL. A flagged visible URL stays in the HTML. A URL in removed hidden HTML is removed with that HTML.
 

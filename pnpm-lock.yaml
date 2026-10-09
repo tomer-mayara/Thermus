@@ -165,6 +165,9 @@ settings:
 overrides:
   ts-api-utils>typescript: 6.0.3
 
+patchedDependencies:
+  agent-input-sanitizer@1.47.14: aa4fb599dba8254224099abad2c14260f12069e830033d66ebd8f8ea1dcc40b3
+
 importers:
 
   .:
@@ -174,7 +177,7 @@ importers:
         version: 0.13.3
       agent-input-sanitizer:
         specifier: 1.47.14
-        version: 1.47.14
+        version: 1.47.14(patch_hash=aa4fb599dba8254224099abad2c14260f12069e830033d66ebd8f8ea1dcc40b3)
       css-select:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2119,7 +2122,7 @@ snapshots:
     dependencies:
       cargo-cp-artifact: 0.1.9
 
-  agent-input-sanitizer@1.47.14:
+  agent-input-sanitizer@1.47.14(patch_hash=aa4fb599dba8254224099abad2c14260f12069e830033d66ebd8f8ea1dcc40b3):
     dependencies:
       css-tree: 3.2.1
       rehype-parse: 9.0.1

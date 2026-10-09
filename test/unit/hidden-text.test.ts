@@ -112,14 +112,23 @@ describe('PromptInjectionRemoverSanitizer', () => {
     assert.ok(result.warnings?.some((warning) => warning.includes('data: URI')));
   });
 
-  test('withholds HTML when source parsing fails without adding a marker', async () => {
-    const html = '<div>'.repeat(6000) + 'payload' + '</div>'.repeat(6000);
+  test('withholds HTML when the HTML scanner fails without adding a marker', async () => {
+    const failingSanitizer = new PromptInjectionRemoverSanitizer(() => {
+      throw new Error('controlled scanner failure');
+    });
+    const html = '<p>Visible content</p>';
 
-    const result = await sanitizer.invoke(createContext(html));
+    const result = await failingSanitizer.invoke(createContext(html, {
+      found: ['existing-finding'],
+      warnings: ['existing warning'],
+    }));
 
     assert.equal(result.html, '');
-    assert.ok(result.found?.includes('hidden-html'));
-    assert.ok(result.warnings?.some((warning) => warning.includes('hidden element(s)')));
+    assert.deepEqual(result.found, ['existing-finding', 'hidden-html']);
+    assert.deepEqual(result.warnings, [
+      'existing warning',
+      'HTML sanitized: 1 hidden element(s) removed',
+    ]);
   });
 
   test('preserves ordinary visible content and context without mutation', async () => {

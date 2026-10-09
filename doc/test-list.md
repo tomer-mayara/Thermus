@@ -37,13 +37,15 @@
 [V] Preserves authored removal markers in text, code, and attributes
 [V] Preserves an authored marker in a link payload without reporting it
 [V] Preserves authored markers formed across removed hidden spans or comments
+[V] Removes hidden elements and comments in nested template bodies while preserving authored markers and source offsets, and reporting resource tags
+[V] Reports hidden, visible, and final exfil-shaped URLs in template bodies once
 [V] Removes adjacent and nested hidden ranges without adding markers
 [V] Preserves an authored unparseable marker formed across a comment
 [V] Reports final links formed by removal of comments or hidden elements
 [V] Reports hidden, visible, and final exfil-shaped URLs once and keeps visible URLs
 [V] Normalizes invisible characters before URL checks and counts categories once
 [V] Preserves resource tags and reports them
-[V] Withholds HTML on a source parsing failure without adding a marker
+[V] Withholds HTML on a controlled scanner failure without adding a marker
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps visible URLs in the HTML
