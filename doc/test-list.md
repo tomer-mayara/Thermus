@@ -17,6 +17,7 @@
 [V] Preserves Unicode, comments, attributes, and source formatting
 [V] Preserves nested list boundaries and parent end tags around explicit, nested, adjacent, and overlapping ad matches
 [V] Preserves text and repeated body and html end tags during parser recovery
+[V] Keeps parent reads bounded for deeply nested malformed HTML at end of file
 [V] Counts each ad element once and keeps selector exceptions
 
 **Prompt Injection Remover**
