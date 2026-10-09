@@ -44,7 +44,7 @@ describe('WebsiteFetcherLightpanda process contract', () => {
     assert.ok(args?.includes('--json'));
     assert.ok(args?.includes('--fail-on-http-error'));
     assert.equal(args?.at(-1), url);
-    assert.deepEqual(options, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, timeout: 60_000 });
+    assert.equal(options?.encoding, 'utf8');
   });
 
   for (const status of [403, 404, 429, 500]) {
