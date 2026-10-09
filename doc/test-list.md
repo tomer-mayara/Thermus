@@ -5,6 +5,12 @@
 
 ## Unit
 
+**Renderer network policy**
+
+[V] Rejects blocked IPv4 and IPv6 ranges, obfuscated loopback addresses, mixed DNS answers, and failed DNS before renderer launch
+[V] Accepts public addresses and checks every DNS answer again on each fetch
+[V] Passes the native network policy and disables proxy environment settings on every renderer launch
+[V] Rejects URL-supplied flags and unsupported schemes; fails when Lightpanda is missing or cannot apply the required policy
 
 **Clean HTML Ads**
 
@@ -54,6 +60,12 @@
 [V] Preserves local content and resolves relative links with the page URL
 
 ## Interface
+
+**Renderer network policy**
+
+[V] Blocks literal and DNS loopback targets before a connection
+[V] Blocks a DNS change, IPv6 loopback, a redirect, a script resource, fetch, XHR, and WebSocket to a blocked address
+[V] Allows an IPv4 loopback fixture only inside the test scope and ignores proxy environment settings
 
 **HTML Fetcher**
 
