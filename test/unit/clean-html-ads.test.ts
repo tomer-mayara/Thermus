@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { type CleanHtmlAds } from '../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
 import { type Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 
-const fixturesDirectory = join(process.cwd(), 'test/unit/fixtures');
+const fixturesDirectory = new URL(
+  import.meta.url.endsWith('.ts') ? './fixtures/' : '../../../test/unit/fixtures/',
+  import.meta.url,
+);
 
 function readFixture(name: string): string {
-  return readFileSync(join(fixturesDirectory, name), 'utf8');
+  return readFileSync(new URL(name, fixturesDirectory), 'utf8');
 }
 
+const elementHidingRules = readFixture('element-hiding.filters.txt');
 const elementHidingHtml = readFixture('element-hiding.html');
 const elementHidingCleanedHtml = readFixture('element-hiding.cleaned.html');
 const elementHidingExceptionHtml = readFixture('element-hiding-exception.html');
@@ -24,7 +27,7 @@ describe('CleanHtmlAdsAdblockRs', () => {
   let cleaner: CleanHtmlAds;
 
   beforeEach(() => {
-    cleaner = new CleanHtmlAdsAdblockRs();
+    cleaner = new CleanHtmlAdsAdblockRs(elementHidingRules);
   });
 
   test('hides the documented targets', async () => {

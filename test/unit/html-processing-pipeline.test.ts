@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
@@ -12,8 +11,13 @@ import {
 } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
+const fixturesDirectory = new URL(
+  import.meta.url.endsWith('.ts') ? './fixtures/' : '../../../test/unit/fixtures/',
+  import.meta.url,
+);
+const elementHidingRules = readFileSync(new URL('element-hiding.filters.txt', fixturesDirectory), 'utf8');
 const elementHidingHtml = readFileSync(
-  join(process.cwd(), 'test/unit/fixtures/element-hiding.html'),
+  new URL('element-hiding.html', fixturesDirectory),
   'utf8',
 );
 const elementHidingPage = {
@@ -32,7 +36,7 @@ describe('HTML to Markdown Pipeline', () => {
   let pipeline: HtmlToMarkdownPipeline;
 
   beforeEach(() => {
-    pipeline = new HtmlToMarkdownPipeline([new CleanHtmlAdsAdblockRs(), new CleanHtmlToMarkdownDefuddle()]);
+    pipeline = new HtmlToMarkdownPipeline([new CleanHtmlAdsAdblockRs(elementHidingRules), new CleanHtmlToMarkdownDefuddle()]);
   });
 
   test('removes element-hiding targets before markdown conversion', async () => {
@@ -62,7 +66,7 @@ describe('HTML to Markdown Pipeline', () => {
   });
 
   test('counts survive', async () => {
-    const cleaned = await new CleanHtmlAdsAdblockRs().invoke({
+    const cleaned = await new CleanHtmlAdsAdblockRs(elementHidingRules).invoke({
       requestedUrl: elementHidingUrl,
       finalUrl: elementHidingUrl,
       html: elementHidingHtml,
@@ -89,7 +93,7 @@ describe('HTML to Markdown Pipeline', () => {
       },
     };
     const local = new HtmlToMarkdownPipeline([
-      new CleanHtmlAdsAdblockRs(),
+      new CleanHtmlAdsAdblockRs(elementHidingRules),
       new PromptInjectionRemoverSanitizer(),
       markdowner,
     ]);
@@ -180,7 +184,7 @@ describe('HTML to Markdown Pipeline', () => {
     const first: Step = {
       async invoke(ctx) {
         handed = ctx;
-        return new CleanHtmlAdsAdblockRs().invoke(ctx);
+        return new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(ctx);
       },
     };
     const local = new HtmlToMarkdownPipeline([first, new CleanHtmlToMarkdownDefuddle()]);
