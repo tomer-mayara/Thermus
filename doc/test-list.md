@@ -24,6 +24,7 @@
 **HTML to Markdown Pipeline**
 
 [V] Removes ad targets before Markdown conversion and keeps the removal count
+[V] Returns empty Markdown when sanitization removes all content
 [V] Propagates a step error without calling the next step
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
@@ -32,11 +33,13 @@
 **HTML to MD**
 
 [V] Converts surviving HTML text to Markdown
+[V] Preserves visible plain text and HTML fragments without `html` or `body` tags
 [V] Keeps removed ad targets out of the Markdown
 [V] Returns Markdown instead of raw HTML
 [V] Returns empty output for a document with an empty body
+[V] Returns empty Markdown for empty, whitespace-only, and sanitizer-removed content
 [V] Preserves URL, HTML, and existing counts in a new context without mutating the input
-[V] Extracts the document title
+[V] Extracts the title from a full document
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
 [V] Preserves local content and resolves relative links with the page URL

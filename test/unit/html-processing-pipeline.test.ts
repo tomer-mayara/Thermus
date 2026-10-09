@@ -146,6 +146,28 @@ describe('HTML to Markdown Pipeline', () => {
     assert.equal(result.markdown, 'Visible link');
   });
 
+  for (const [html, finding] of [
+    ['<!-- Removed comment payload -->', 'html-comments'],
+    ['<div hidden>Removed hidden payload</div>', 'hidden-html'],
+  ] as const) {
+    test(`returns empty markdown after the sanitizer removes ${finding}`, async () => {
+      const local = new HtmlToMarkdownPipeline([
+        new PromptInjectionRemoverSanitizer(),
+        new CleanHtmlToMarkdownDefuddle(),
+      ]);
+
+      const result = await local.process('https://example.com/', html);
+
+      assert.equal(result.html, '');
+      assert.equal(result.markdown, '');
+      assert.equal(result.title, '');
+      assert.equal(result.skipped, 1);
+      assert.ok(result.found?.includes(finding));
+      assert.ok(result.warnings?.length);
+      assert.doesNotMatch(result.markdown, /Removed|payload|HTML.*removed/);
+    });
+  }
+
   test('an oversized document fails before markdown conversion', async () => {
     let markdownerCalled = false;
     const markdowner: Step = {

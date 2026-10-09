@@ -8,7 +8,7 @@ The server does four things with each call. It checks the tenant's allowlist and
 
 Fetching is deliberately not a disguise. The client announces itself as a bot. A normal HTTP fetch is tried first. If the body is an empty shell, a local Lightpanda process runs the JavaScript and returns the DOM as HTML. The same cleaner handles both. A site that refuses bots stays refused.
 
-HTML-to-Markdown conversion uses only the HTML that the pipeline supplies. It does not make network requests or fetch missing content. The page URL in the context resolves relative links in the supplied HTML. `WebsiteFetcher` still fetches pages, and Lightpanda still renders pages that need JavaScript.
+HTML-to-Markdown conversion uses only the HTML that the pipeline supplies. Empty or whitespace-only input, and input with all content removed by sanitization, produce empty Markdown. The converter preserves visible plain text and HTML fragments without `html` or `body` tags. For full documents, it extracts the title; the page URL in the context resolves relative links. It does not make network requests or fetch missing content, and it does not mutate the input context. `WebsiteFetcher` still fetches pages, and Lightpanda still renders pages that need JavaScript.
 
 The cleaned page is cached per tenant, keyed by URL with the query string removed. The cache is never keyed on the reason the agent gave. A hit does not fetch the page again.
 

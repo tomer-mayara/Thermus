@@ -69,6 +69,98 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     assert.equal(result.markdown, '');
   });
 
+  for (const html of ['', ' \n\t ']) {
+    test(`returns empty markdown for ${html === '' ? 'empty' : 'whitespace'} input`, async () => {
+      const input: Ctx = {
+        ...createContext(html),
+        markdown: 'Old content',
+        title: 'Old title',
+        removed: 2,
+        skipped: 3,
+        found: ['html-comments'],
+        warnings: ['Existing warning'],
+      };
+      const original = structuredClone(input);
+
+      const result = await converter.invoke(Object.freeze(input));
+
+      assert.deepEqual(input, original);
+      assert.notEqual(result, input);
+      assert.deepEqual(result, { ...original, markdown: '', title: '' });
+    });
+  }
+
+  for (const [html, markdown] of [
+    ['Visible plain text', 'Visible plain text'],
+    ['3 < 5 & 7 > 4', '3 < 5 & 7 > 4'],
+    ['*literal* [text] # heading', '\\*literal\\* \\[text\\] # heading'],
+    ['<p>Visible paragraph</p>', 'Visible paragraph'],
+  ]) {
+    test(`converts visible input: ${html}`, async () => {
+      const result = await converter.invoke(createContext(html));
+
+      assert.equal(result.markdown, markdown);
+      assert.equal(result.html, html);
+    });
+  }
+
+  test('keeps a heading fragment in markdown and title', async () => {
+    const result = await converter.invoke(createContext('<h1>Fragment heading</h1>'));
+
+    assert.equal(result.title, 'Fragment heading');
+    assert.match(result.markdown ?? '', /Fragment heading/);
+  });
+
+  test('keeps text that follows a heading fragment', async () => {
+    const result = await converter.invoke(
+      createContext('<h1>Fragment heading</h1><p>Fragment text.</p>'),
+    );
+
+    assert.equal(result.title, 'Fragment heading');
+    assert.match(result.markdown ?? '', /Fragment heading/);
+    assert.match(result.markdown ?? '', /Fragment text\./);
+  });
+
+  for (const html of [
+    '<body><h1>Visible heading</h1></body>',
+    '<html><h1>Visible heading</h1></html>',
+    '<body><h1>Visible heading</h1><p>Visible text.</p></body>',
+    '<html><h1>Visible heading</h1><p>Visible text.</p></html>',
+  ]) {
+    test(`keeps headings with omitted document tags: ${html}`, async () => {
+      const result = await converter.invoke(createContext(html));
+
+      assert.equal(result.title, 'Visible heading');
+      assert.match(result.markdown ?? '', /Visible heading/);
+      if (html.includes('<p>')) {
+        assert.match(result.markdown ?? '', /Visible text\./);
+      }
+    });
+  }
+
+  test('keeps the supplied title and visible heading when the body tag is omitted', async () => {
+    const html = '<html><head><title>Document title</title></head><h1>Visible heading</h1><p>Visible text.</p></html>';
+
+    const result = await converter.invoke(createContext(html));
+
+    assert.equal(result.title, 'Document title');
+    assert.match(result.markdown ?? '', /Visible heading/);
+    assert.match(result.markdown ?? '', /Visible text\./);
+  });
+
+  for (const html of [
+    '<head><title>Omitted tags</title></head><body><main><p>Visible <a href="relative">link</a></p></main></body>',
+    '<html><head><title>Omitted tags</title></head><main><p>Visible <a href="relative">link</a></p></main></html>',
+    '<title>Omitted tags</title><main><p>Visible <a href="relative">link</a></p></main>',
+  ]) {
+    test(`keeps metadata and content with omitted document tags: ${html}`, async () => {
+      const result = await converter.invoke(createContext(html, 'https://example.com/base/'));
+
+      assert.equal(result.title, 'Omitted tags');
+      assert.equal(result.markdown, 'Visible [link](https://example.com/base/relative)');
+    });
+  }
+
   test('uses local HTML for X posts without making network requests', async (t) => {
     const fetchCalls: string[] = [];
     t.mock.method(globalThis, 'fetch', async (input: string | URL | Request) => {
