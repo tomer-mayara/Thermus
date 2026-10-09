@@ -5,7 +5,7 @@ import { type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.
 const LIGHTPANDA_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
-const LIGHTPANDA_WAIT_MS = 5_000;
+const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   public async fetchURL(url: string): Promise<WebsiteFetchResult> {
@@ -37,7 +37,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
           completed = true;
           clearTimeout(readinessTimer);
           if (readinessLimitReached) {
-            reject(new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_WAIT_MS} ms`, {
+            reject(new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
               cause: error ?? undefined,
             }));
             return;
@@ -55,9 +55,10 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       );
       if (!completed) {
         readinessTimer = setTimeout(() => {
+          if (completed || child.exitCode !== null || child.signalCode !== null) return;
           readinessLimitReached = true;
           child.kill('SIGKILL');
-        }, LIGHTPANDA_WAIT_MS);
+        }, LIGHTPANDA_READINESS_DEADLINE_MS);
       }
     });
     return WebsiteFetcherLightpanda.parseResult(url, stdout);

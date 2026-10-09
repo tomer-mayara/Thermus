@@ -3,6 +3,8 @@ import { detectExfil } from 'agent-input-sanitizer/html';
 import { describeRemoved, describeWarned } from 'agent-input-sanitizer/output';
 import type { Ctx } from '../html-to-markdown-pipeline.ts';
 import { HiddenHtmlScanner } from './hidden-html-scanner.ts';
+import { CssSelectorLimitError } from './css-visibility-selectors.ts';
+import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 
 type HtmlScan = ReturnType<typeof HiddenHtmlScanner.scan>;
@@ -11,6 +13,7 @@ type HtmlRemoval = {
   removed: { comments: number; hidden: number };
   warned: HtmlScan['warned'];
   exfilReasons: Set<string>;
+  visibleStyleValues: string[];
 };
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
@@ -24,8 +27,9 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
 
     const sanitized = await sanitize(ctx.html, { html: false });
     const result = PromptInjectionRemoverSanitizer.removeHiddenHtml(sanitized.cleaned);
-    const found = new Set(sanitized.found);
-    const warnings = new Set(sanitized.warnings);
+    const styleReports = await Promise.all([...new Set(result.visibleStyleValues)].map((value) => sanitize(` ${value}`)));
+    const found = new Set([...sanitized.found, ...styleReports.flatMap((report) => report.found)]);
+    const warnings = new Set([...sanitized.warnings, ...styleReports.flatMap((report) => report.warnings)]);
     if (result.removed.comments > 0) found.add(CATEGORY.HTML_COMMENTS);
     if (result.removed.hidden > 0) found.add(CATEGORY.HIDDEN_HTML);
     const removed = describeRemoved(result.removed);
@@ -50,11 +54,13 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   }
 
   private static removeHiddenHtml(text: string) {
+    const provenance = new CssVisibilityProvenance();
     const result: HtmlRemoval = {
       html: text,
       removed: { comments: 0, hidden: 0 },
       warned: { tags: {}, dataSrc: 0 },
       exfilReasons: new Set<string>(),
+      visibleStyleValues: [],
     };
 
     for (let pass = 0; pass < PromptInjectionRemoverSanitizer.maxHtmlScans; pass++) {
@@ -63,12 +69,15 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
           `${threat.isImage ? 'image' : 'link'} to ${threat.target}: ${threat.reason}`,
         );
       }
-      const scan = PromptInjectionRemoverSanitizer.tryScanHtml(result.html);
+      const scan = PromptInjectionRemoverSanitizer.tryScanHtml(result.html, provenance);
       if (!scan) {
         return { ...result, html: '', withholdWarning: 'HTML scan failed; remaining HTML withheld' };
       }
       PromptInjectionRemoverSanitizer.recordScanWarnings(scan, result);
-      if (scan.ranges.length === 0) return { ...result, withholdWarning: undefined };
+      if (scan.ranges.length === 0) {
+        const html = PromptInjectionRemoverSanitizer.removeRanges(result.html, scan.visibleStyles, 'style=""');
+        return { ...result, html, visibleStyleValues: scan.visibleStyleValues, withholdWarning: undefined };
+      }
 
       result.removed.comments += scan.removed.comments;
       result.removed.hidden += scan.removed.hidden;
@@ -95,10 +104,11 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     result.warned.dataSrc = Math.max(result.warned.dataSrc, scan.warned.dataSrc);
   }
 
-  private static tryScanHtml(text: string): HtmlScan | undefined {
+  private static tryScanHtml(text: string, provenance: CssVisibilityProvenance): HtmlScan | undefined {
     try {
-      return HiddenHtmlScanner.scan(text);
-    } catch {
+      return HiddenHtmlScanner.scan(text, provenance);
+    } catch (error) {
+      if (error instanceof CssSelectorLimitError) throw error;
       return undefined;
     }
   }
@@ -106,11 +116,12 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static removeRanges(
     text: string,
     ranges: HtmlScan['ranges'],
+    replacement = '',
   ): string {
     const parts: string[] = [];
     let cursor = 0;
     for (const range of ranges.sort((left, right) => left.start - right.start)) {
-      if (range.start > cursor) parts.push(text.slice(cursor, range.start));
+      if (range.start >= cursor) parts.push(text.slice(cursor, range.start), replacement);
       cursor = Math.max(cursor, range.end);
     }
     parts.push(text.slice(cursor));
