@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import adblockRust from 'adblock-rs';
 import { selectAll } from 'css-select';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
@@ -20,17 +18,21 @@ type SourceRange = {
 };
 
 export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
-  private static readonly rulesPath = join(
-    process.cwd(),
-    'test/unit/fixtures/element-hiding.filters.txt',
-  );
+  private readonly engine: AdblockEngine;
 
-  private static engine: AdblockEngine | undefined;
+  public constructor(rules: string) {
+    if (typeof rules !== 'string') {
+      throw new TypeError('Ad rules must be supplied as a string');
+    }
+    const filterSet = new adblockRust.FilterSet(false);
+    filterSet.addFilters(rules);
+    this.engine = new adblockRust.Engine(filterSet);
+  }
 
   public async invoke(ctx: Ctx): Promise<Ctx> {
     const document = CleanHtmlAdsAdblockRs.parseHtml(ctx.html);
     const selected = CleanHtmlAdsAdblockRs.selectorsFor(
-      CleanHtmlAdsAdblockRs.getEngine(),
+      this.engine,
       ctx.finalUrl,
       document,
     );
@@ -43,16 +45,6 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     };
   }
 
-  private static getEngine(): AdblockEngine {
-    if (CleanHtmlAdsAdblockRs.engine === undefined) {
-      const rules = readFileSync(CleanHtmlAdsAdblockRs.rulesPath, 'utf8');
-      const filterSet = new adblockRust.FilterSet(false);
-      filterSet.addFilters(rules);
-      CleanHtmlAdsAdblockRs.engine = new adblockRust.Engine(filterSet);
-    }
-    return CleanHtmlAdsAdblockRs.engine;
-  }
-
   private static parseHtml(html: string): HtmlDocument {
     return SourceRangeParser.parse(html, {
       treeAdapter: adapter,
@@ -62,24 +54,20 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
   }
 
   private static collectClassAndId(node: HtmlNode, classes: Set<string>, ids: Set<string>): void {
-    if (node.type === 'tag') {
-      const id = node.attribs.id;
-      if (id !== undefined && id !== '') {
-        ids.add(id);
-      }
-      const className = node.attribs.class;
-      if (className !== undefined) {
-        for (const token of className.split(/\s+/)) {
-          if (token !== '') {
-            classes.add(token);
-          }
-        }
-      }
-    }
     if ('children' in node) {
       for (const child of node.children) {
         CleanHtmlAdsAdblockRs.collectClassAndId(child, classes, ids);
       }
+    }
+    if (node.type !== 'tag') {
+      return;
+    }
+    const id = node.attribs.id;
+    if (id !== undefined && id !== '') {
+      ids.add(id);
+    }
+    for (const token of node.attribs.class?.match(/\S+/g) ?? []) {
+      classes.add(token);
     }
   }
 

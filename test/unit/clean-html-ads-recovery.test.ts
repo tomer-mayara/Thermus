@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { type CleanHtmlAds } from '../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
+import { elementHidingRules } from '../support/ad-rules.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/';
 
@@ -9,7 +10,7 @@ describe('CleanHtmlAdsAdblockRs adjacent HTML recovery', () => {
   let cleaner: CleanHtmlAds;
 
   beforeEach(() => {
-    cleaner = new CleanHtmlAdsAdblockRs();
+    cleaner = new CleanHtmlAdsAdblockRs(elementHidingRules);
   });
 
   const sourceCases = [
