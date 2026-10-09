@@ -55,6 +55,33 @@ describe('hidden HTML removal passes', () => {
     assert.match(result.warnings?.join('\n') ?? '', /link to attacker\.example: suspicious query parameter/);
   });
 
+  test('keeps first-scan findings when a later scan fails', async (t) => {
+    const scan = HiddenHtmlScanner.scan;
+    let scanCount = 0;
+    t.mock.method(HiddenHtmlScanner, 'scan', (html: string) => {
+      scanCount++;
+      if (scanCount === 2) throw new RangeError('HTML parser failure');
+      return scan(html);
+    });
+    const result = await new PromptInjectionRemoverSanitizer().invoke(
+      createContext(`<template><span hidden><a href="${threatUrl}">Open</a></span></template><p>visible</p>`),
+    );
+
+    assert.equal(result.html, '');
+    assert.deepEqual([...result.found ?? []].sort(), ['exfil-urls', 'hidden-html']);
+    assert.equal(result.skipped, 2);
+    assert.equal(scanCount, 2);
+    const warnings = result.warnings?.join('\n') ?? '';
+    assert.equal(
+      result.warnings?.filter((warning) => warning === 'HTML scan failed; remaining HTML withheld').length,
+      1,
+    );
+    assert.equal(
+      warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length,
+      1,
+    );
+  });
+
   test('preserves authored markers, supplementary characters, and visible flagged URLs', async () => {
     const markers = '[HTML comment removed] [hidden HTML removed] [HTML unparseable — withheld]';
     const visible = `<p>😀 ${markers} <a href="${threatUrl}">Open</a> 𐐀 text</p>`;
