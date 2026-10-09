@@ -166,7 +166,7 @@ overrides:
   ts-api-utils>typescript: 6.0.3
 
 patchedDependencies:
-  agent-input-sanitizer@1.47.14: 96b63ca82db4767c5f703687a5b664ced6d1059e15f25f63f16402b13286ce81
+  agent-input-sanitizer@1.47.14: 913d1ecd0e1182827c0692993c9a1f3fdcf751713f303d6c0b73d09acf2f9c74
   defuddle@0.19.4: f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6
   linkedom@0.18.13: ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590
 
@@ -179,13 +179,19 @@ importers:
         version: 0.13.3
       agent-input-sanitizer:
         specifier: 1.47.14
-        version: 1.47.14(patch_hash=96b63ca82db4767c5f703687a5b664ced6d1059e15f25f63f16402b13286ce81)
+        version: 1.47.14(patch_hash=913d1ecd0e1182827c0692993c9a1f3fdcf751713f303d6c0b73d09acf2f9c74)
       css-select:
         specifier: ^7.0.0
         version: 7.0.0
+      css-tree:
+        specifier: 3.2.1
+        version: 3.2.1
       defuddle:
         specifier: ^0.19.4
         version: 0.19.4(patch_hash=f5559e12eb2d4a23b75f29683c7e1032571c9f18f7f0344f4925fdd49f157bf6)
+      htmlparser2:
+        specifier: ^12.0.0
+        version: 12.0.0
       linkedom:
         specifier: ^0.18.13
         version: 0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590)
@@ -196,6 +202,9 @@ importers:
         specifier: 8.0.1
         version: 8.0.1
     devDependencies:
+      '@types/css-tree':
+        specifier: 3.2.0
+        version: 3.2.0
       '@types/node':
         specifier: ^24.19.1
         version: 24.19.1
@@ -703,6 +712,9 @@ packages:
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
 
+  '@types/css-tree@3.2.0':
+    resolution: {integrity: sha512-J5KXmk6BFIepOT7280FdFyNs4c5fh0Uee0otjKEvzchrRs38Ii9qminqc4ds0L19X8Zd/rT+brR9jkBthygjWw==}
+
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
 
@@ -1199,6 +1211,10 @@ packages:
 
   htmlparser2@10.1.0:
     resolution: {integrity: sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==}
+
+  htmlparser2@12.0.0:
+    resolution: {integrity: sha512-Tz7u1i95/g2x2jz81+x0FBVhBhY5aRTvD3tXXdFaljuNdzDLJ8UGNRrTcj2cgQvAg3iW/h77Fz15nLW0L0CrZw==}
+    engines: {node: '>=20.19.0'}
 
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
@@ -1935,6 +1951,8 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@types/css-tree@3.2.0': {}
+
   '@types/debug@4.1.13':
     dependencies:
       '@types/ms': 2.1.0
@@ -2124,7 +2142,7 @@ snapshots:
     dependencies:
       cargo-cp-artifact: 0.1.9
 
-  agent-input-sanitizer@1.47.14(patch_hash=96b63ca82db4767c5f703687a5b664ced6d1059e15f25f63f16402b13286ce81):
+  agent-input-sanitizer@1.47.14(patch_hash=913d1ecd0e1182827c0692993c9a1f3fdcf751713f303d6c0b73d09acf2f9c74):
     dependencies:
       css-tree: 3.2.1
       rehype-parse: 9.0.1
@@ -2463,6 +2481,13 @@ snapshots:
       domhandler: 5.0.3
       domutils: 3.2.2
       entities: 7.0.1
+
+  htmlparser2@12.0.0:
+    dependencies:
+      domelementtype: 3.0.0
+      domhandler: 6.0.1
+      domutils: 4.0.2
+      entities: 8.1.0
 
   ignore@5.3.2: {}
 

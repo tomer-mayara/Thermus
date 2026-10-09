@@ -14,7 +14,7 @@ async function cleanDocument(body: string) {
 
 describe('visibility review regressions', () => {
   test('keeps visible table markup between merged hidden text segments', async () => {
-    const cell = '<table><tr><td style="font-size:16px">VISIBLE CONTENT</td></tr></table>';
+    const cell = '<table><tr><td style="">VISIBLE CONTENT</td></tr></table>';
     const result = await cleanDocument(
       '<div style="font-size:0">Hidden start<table><tr>' +
       '<td style="font-size:16px">VISIBLE CONTENT</td></tr>' +
@@ -22,7 +22,7 @@ describe('visibility review regressions', () => {
     );
 
     assert.equal(result.html,
-      '<!doctype html><html><body><main><div style="font-size:0">' +
+      '<!doctype html><html><body><main><div style="">' +
       `${cell}</div><p>Visible sibling</p></main></body></html>`);
     assert.equal(result.markdown, 'VISIBLE CONTENT\n\nVisible sibling');
     assert.deepEqual(result.found, ['hidden-html']);

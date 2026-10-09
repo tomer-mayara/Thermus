@@ -269,7 +269,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +977,112 @@
+@@ -840,26 +977,123 @@
    return false;
  }
 
@@ -285,14 +285,6 @@ diff --git a/src/html.mjs b/src/html.mjs
 - * `/line-height` and the family); a near-zero one hides the text just like the
 - * `font-size` longhand.
 - * @param {any} node value node for `font`
-- * @returns {boolean}
-- */
--function isFontShorthandHidden(node) {
--  if (!node) return false;
--  for (const token of valueTokens(node))
--    if (token.type === "Dimension" && FONT_SIZE_UNITS.has(token.unit))
--      return Math.abs(parseFloat(token.value)) < NEAR_ZERO_EPSILON;
--  return false;
 +/** @param {string} property @param {any} value @returns {any} */
 +function parseCssProperty(property, value) {
 +  // Keep named deferred values. Discard plainly invalid raw syntax.
@@ -304,8 +296,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    if (token.type === "Dimension") token.unit = csstree.ident.decode(token.unit);
 +  });
 +  if (property === "perspective" && Number(soleToken(decoded)?.value) < 0) return undefined;
-+  const deferred = csstree.find(decoded, (/** @type {any} */ token) =>
-+    token.type === "Function" && ["var", "env", "attr"].includes(token.name.toLowerCase()));
++  const deferred = hasNamedDeferredFunction(decoded);
 +  // Deferred values replace earlier declarations, but their computed value is unknown.
 +  return csstree.lexer.matchProperty(property, decoded).matched || deferred
 +    ? decoded : undefined;
@@ -366,6 +357,24 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return property === "font" ? fontSizeValue(decoded) : decoded;
 +}
 +
++/**
++ * Validate a value before an external cascade selects it.
++ * @param {string} property
++ * @param {any} value
++ * @param {boolean} [quirksMode]
+  * @returns {boolean}
+  */
+-function isFontShorthandHidden(node) {
+-  if (!node) return false;
+-  for (const token of valueTokens(node))
+-    if (token.type === "Dimension" && FONT_SIZE_UNITS.has(token.unit))
+-      return Math.abs(parseFloat(token.value)) < NEAR_ZERO_EPSILON;
+-  return false;
++export function isValidVisibilityValue(property, value, quirksMode = false) {
++  const font = property === "font-size" || property === "font";
++  return (font ? parseFontSize(property, value, quirksMode) : parseCssProperty(property, value)) !== undefined;
++}
++
 +const PIXELS_PER_UNIT = { px: 1, pt: 96 / 72, pc: 16, in: 96, cm: 96 / 2.54,
 +  mm: 96 / 25.4, q: 96 / 101.6 };
 +
@@ -402,7 +411,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1130,13 @@
+@@ -907,11 +1141,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -417,7 +426,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1159,94 @@
+@@ -934,17 +1170,94 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -513,7 +522,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,11 +1284,8 @@
+@@ -982,11 +1295,8 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -527,7 +536,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 
    if (isPositionedOffscreen(nodeOf, textOf)) return true;
 
-@@ -994,7 +1293,9 @@
+@@ -994,7 +1304,9 @@
 
    // Clipped to nothing: the modern equivalent of the legacy `clip: rect(0…)`.
    if (isClipPathHidden(nodeOf("clip-path"))) return true;
@@ -538,7 +547,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1395,10 @@
+@@ -1094,9 +1406,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -550,7 +559,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1410,7 @@
+@@ -1108,7 +1421,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -559,7 +568,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1437,150 @@
+@@ -1135,8 +1448,150 @@
    return firstElement;
  }
 
@@ -715,12 +724,14 @@ diff --git a/src/html.mjs b/src/html.mjs
 diff --git a/types/html.d.mts b/types/html.d.mts
 --- a/types/html.d.mts
 +++ b/types/html.d.mts
-@@ -2,14 +2,14 @@
+@@ -2,14 +2,16 @@
   * @param {string} styleStr
   * @returns {boolean}
   */
 -export function isHiddenStyle(styleStr: string): boolean;
 +export function isHiddenStyle(styleStr: string, options?: VisibilityOptions): boolean;
++/** Validate a parsed CSS value before the cascade selects it. */
++export function isValidVisibilityValue(property: string, value: unknown, quirksMode?: boolean): boolean;
  /**
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
@@ -732,7 +743,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -115,3 +115,32 @@
+@@ -115,3 +117,32 @@
  import { SECRET_HINT_EXT } from "./gates.mjs";
  import { matchesSecretHint } from "./gates.mjs";
  export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };

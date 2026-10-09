@@ -42,7 +42,7 @@ describe('visibility in parsed HTML source ranges', () => {
       `<table style="display:none">${visible}<tr><td>Hidden cell</td></tr></table>`,
     );
 
-    assert.equal(result.html, visible);
+    assert.equal(result.html, '<p style="">Visible fostered child</p>');
     assert.deepEqual(result.found, ['hidden-html']);
     assert.equal(result.skipped, 1);
   });
@@ -67,7 +67,8 @@ describe('visibility in parsed HTML source ranges', () => {
       'Hidden &#x1f600; fostered</table>&NotEqualTilde; Hidden tail</div>',
     );
 
-    assert.equal(result.html, `<div style="font-size:0"><table>${cell}</table></div>`);
+    assert.equal(result.html,
+      '<div style=""><table><tr><td style="">Visible &amp; &#32; 😀 content</td></tr></table></div>');
     assert.deepEqual(result.found, ['hidden-html']);
     assert.equal(result.skipped, 1);
     assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);

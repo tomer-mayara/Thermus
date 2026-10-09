@@ -1,90 +1,105 @@
 import { resolveElementVisibility, REPORTED_TAGS, type ElementVisibility } from 'agent-input-sanitizer/html';
-import { defaultTreeAdapter, html, parse, serializeOuter, type DefaultTreeAdapterTypes } from 'parse5';
-import { HtmlTextSourceRanges } from './html-text-source-ranges.ts';
+import { html, serializeOuter } from 'parse5';
+import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
+import { resolveCssVisibility, type VisibilityStyle } from './css-visibility.ts';
+import { parseSourceDocument, type CssHtmlDocument } from './css-visibility-tree.ts';
+import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 
-type HtmlNode = DefaultTreeAdapterTypes.Node;
-type HtmlElement = DefaultTreeAdapterTypes.Element;
+type HtmlNode = Htmlparser2TreeAdapterMap['node'];
+type HtmlElement = Htmlparser2TreeAdapterMap['element'];
 
 export class HiddenHtmlScanner {
   private static readonly exfilTagsToPreserve = new Set(['img', 'meta']);
-  private quirksMode = false;
   private rootSize: number | null = null;
   private readonly ranges: { start: number; end: number }[] = [];
   private readonly removed = { comments: 0, hidden: 0 };
   private readonly warned = { tags: {} as Record<string, number>, dataSrc: 0 };
   private readonly urlSources: string[] = [];
-  private readonly textSources = new HtmlTextSourceRanges();
+  private readonly hiddenNodes: HtmlNode[] = [];
+  private readonly visibleSources = new Set<HtmlElement>();
+  private readonly visibleNodes = new Set<HtmlElement>();
+  private readonly visibleStyles = new Map<number, { start: number; end: number }>();
+  private readonly visibleStyleValues: string[] = [];
 
-  private constructor() {}
+  private constructor(
+    private readonly styles: Map<HtmlElement, VisibilityStyle>,
+    private readonly tree: CssHtmlDocument,
+  ) {}
 
-  public static scan(text: string) {
-    const scanner = new HiddenHtmlScanner();
-    const document = parse(text, {
-      treeAdapter: {
-        ...scanner.textSources.adapter,
-        setDocumentMode(document, mode): void {
-          // Use the original mode for CSS. Keep the existing table boundaries.
-          scanner.quirksMode = mode === html.DOCUMENT_MODE.QUIRKS;
-          const hasDoctype = document.childNodes.some(defaultTreeAdapter.isDocumentTypeNode);
-          defaultTreeAdapter.setDocumentMode(document, hasDoctype ? mode : html.DOCUMENT_MODE.NO_QUIRKS);
-        },
-      },
-      sourceCodeLocationInfo: true,
-      scriptingEnabled: false,
-    });
-    scanner.visit(document, false);
+  public static scan(text: string, provenance = new CssVisibilityProvenance()) {
+    const tree = parseSourceDocument(text);
+    const styles = resolveCssVisibility(tree);
+    const contexts = provenance.apply(tree, styles);
+    const scanner = new HiddenHtmlScanner(styles, tree);
+    scanner.visit(tree.document, false);
+    const root = tree.document.children.find(adapter.isElementNode);
+    if (root && scanner.hiddenNodes.includes(root)) {
+      for (const node of tree.document.children.filter(adapter.isDocumentTypeNode)) {
+        scanner.hiddenNodes.push(node);
+      }
+    }
+    for (const node of scanner.hiddenNodes) scanner.recordSource(node);
+    provenance.retain(contexts, scanner.visibleNodes, scanner.ranges, styles);
     return {
       ranges: scanner.ranges,
       removed: scanner.removed,
       warned: scanner.warned,
       urlSource: scanner.urlSources.join(''),
+      visibleStyles: [...scanner.visibleStyles.values()],
+      visibleStyleValues: scanner.visibleStyleValues,
     };
   }
 
   private visit(node: HtmlNode, removedAncestor: boolean, parent?: ElementVisibility): void {
-    if (defaultTreeAdapter.isElementNode(node) && node.attrs.length > 0) {
+    if (adapter.isElementNode(node) && Object.keys(node.attribs).length > 0) {
       this.urlSources.push(HiddenHtmlScanner.urlSource(node));
     }
-    const visibility = !removedAncestor && defaultTreeAdapter.isElementNode(node)
+    const visibility = !removedAncestor && adapter.isElementNode(node)
       ? this.elementVisibility(node, parent) : parent;
     const removed = removedAncestor || this.recordNode(node, visibility);
-    if (removed) this.recordSource(node);
-    const children = 'content' in node
-      ? node.content.childNodes
-      : 'childNodes' in node ? node.childNodes : [];
+    if (removed) this.hiddenNodes.push(node);
+    else if (adapter.isElementNode(node)) {
+      this.visibleSources.add(this.tree.sourceElement(node));
+      this.visibleNodes.add(node);
+    }
+    const children = adapter.isElementNode(node) && node.name === 'template'
+      ? adapter.getTemplateContent(node).children
+      : 'children' in node ? node.children : [];
     for (const child of children) this.visit(child, removed, visibility);
   }
 
   private elementVisibility(node: HtmlElement, parent?: ElementVisibility): ElementVisibility {
-    const properties = Object.fromEntries(node.attrs.map(({ name, value }) => [name, value]));
     const visibility = resolveElementVisibility({
-      type: 'element', tagName: node.tagName, namespace: node.namespaceURI, properties,
+      type: 'element', tagName: node.name, namespace: node.namespace,
+      properties: { style: this.styles.get(node) ?? node.attribs.style ?? '' },
     }, parent, {
       rootSize: this.rootSize,
-      quirksMode: this.quirksMode,
+      quirksMode: this.tree.document['x-mode'] === 'quirks',
     });
-    if (node.tagName === 'html') this.rootSize = visibility.fontSize;
+    if (node.name === 'html') this.rootSize = visibility.fontSize;
     return visibility;
   }
 
   private recordNode(node: HtmlNode, visibility?: ElementVisibility): boolean {
-    if (defaultTreeAdapter.isCommentNode(node)) {
-      if (node.sourceCodeLocation == null) throw new Error('HTML comment has no source range');
+    if (adapter.isCommentNode(node)) {
+      if (adapter.getNodeSourceCodeLocation(node) == null) throw new Error('HTML comment has no source range');
       this.removed.comments++;
       return true;
     }
-    if (defaultTreeAdapter.isTextNode(node) && node.value.trim() && visibility?.hiddenText) {
-      if (node.sourceCodeLocation == null) throw new Error('Hidden HTML text has no source range');
+    if (adapter.isTextNode(node) && node.data.trim() && visibility?.hiddenText) {
+      if (adapter.getNodeSourceCodeLocation(node) == null) throw new Error('Hidden HTML text has no source range');
       this.removed.hidden++;
       return true;
     }
-    if (!defaultTreeAdapter.isElementNode(node)) return false;
+    if (!adapter.isElementNode(node)) return false;
     return this.recordElement(node, visibility);
   }
 
   private recordElement(node: HtmlElement, visibility?: ElementVisibility): boolean {
-    if (visibility?.hiddenElement) {
-      if (node.sourceCodeLocation == null) throw new Error('Hidden HTML element has no source range');
+    if (Object.hasOwn(node.attribs, 'hidden') || visibility?.hiddenElement) {
+      if (adapter.getNodeSourceCodeLocation(node) == null && !visibility?.hiddenElement) {
+        throw new Error('Hidden HTML element has no source range');
+      }
       this.removed.hidden++;
       return true;
     }
@@ -92,35 +107,53 @@ export class HiddenHtmlScanner {
       this.removed.hidden++;
       return true;
     }
-    this.recordWarnings(node);
+    this.recordVisibleElement(node);
     return false;
   }
 
   private static hasHiddenContent(node: HtmlElement, visibility?: ElementVisibility): boolean {
-    if (!visibility || !node.sourceCodeLocation) return false;
+    if (!visibility || !adapter.getNodeSourceCodeLocation(node)) return false;
     if (visibility.hiddenPlane && !visibility.preserves3d) return true;
-    return node.tagName === 'img' && (visibility.offscreen || visibility.hiddenPlane);
+    return node.name === 'img' && (visibility.offscreen || visibility.hiddenPlane);
   }
 
-  private recordWarnings(node: HtmlElement): void {
-    const properties = Object.fromEntries(node.attrs.map(({ name, value }) => [name, value]));
-    if (REPORTED_TAGS.has(node.tagName)) {
-      this.warned.tags[node.tagName] = (this.warned.tags[node.tagName] ?? 0) + 1;
+  private recordVisibleElement(node: HtmlElement): void {
+    if (this.styles.has(node)) this.recordVisibleStyles(node);
+    if (REPORTED_TAGS.has(node.name)) {
+      this.warned.tags[node.name] = (this.warned.tags[node.name] ?? 0) + 1;
     }
-    if (properties.src?.startsWith('data:')) this.warned.dataSrc++;
+    if (node.attribs.src?.startsWith('data:')) this.warned.dataSrc++;
+  }
+
+  private recordVisibleStyles(node: HtmlElement): void {
+    const locations = [
+      adapter.getNodeSourceCodeLocation(this.tree.sourceElement(node)),
+      ...this.tree.adoptedSources.get(node) ?? [],
+    ];
+    for (const location of locations) {
+      const style = location?.attrs?.style;
+      if (!style) continue;
+      this.visibleStyles.set(style.startOffset, { start: style.startOffset, end: style.endOffset });
+      this.visibleStyleValues.push(...this.tree.decodedStyleValues.get(style.startOffset) ?? []);
+    }
   }
 
   private recordSource(node: HtmlNode): void {
-    if (defaultTreeAdapter.isTextNode(node)) {
-      for (const range of this.textSources.get(node)) this.ranges.push(range);
+    if (adapter.isTextNode(node)) {
+      for (const range of this.tree.textSources.get(node)) this.ranges.push(range);
       return;
     }
-    const location = node.sourceCodeLocation;
+    if (adapter.isElementNode(node)) {
+      if (this.visibleSources.has(this.tree.sourceElement(node))) return;
+      for (const source of this.tree.adoptedSources.get(node) ?? []) {
+        this.ranges.push({ start: source.startOffset, end: source.endOffset });
+      }
+    }
+    const location = adapter.getNodeSourceCodeLocation(node);
     if (location == null) return;
-    // Element intervals can include visible nodes or exclude hidden descendants.
-    // Record each tag and text range under the parsed hidden ancestor instead.
-    const sources = defaultTreeAdapter.isElementNode(node)
-      ? [node.sourceCodeLocation?.startTag, node.sourceCodeLocation?.endTag]
+    // A whole element interval can also contain visible nodes outside its parsed subtree.
+    const sources = adapter.isElementNode(node)
+      ? [location.startTag, location.endTag]
       : [location];
     for (const source of sources) {
       if (source) this.ranges.push({ start: source.startOffset, end: source.endOffset });
@@ -129,8 +162,8 @@ export class HiddenHtmlScanner {
 
   private static urlSource(node: HtmlElement): string {
     // The URL detector skips document elements and template contents.
-    // Separate attribute sources keep these URLs visible to that detector.
-    const tag = HiddenHtmlScanner.exfilTagsToPreserve.has(node.tagName) ? node.tagName : 'div';
-    return serializeOuter(defaultTreeAdapter.createElement(tag, html.NS.HTML, node.attrs));
+    const tag = HiddenHtmlScanner.exfilTagsToPreserve.has(node.name) ? node.name : 'div';
+    const element = adapter.createElement(tag, html.NS.HTML, adapter.getAttrList(node));
+    return serializeOuter(element, { treeAdapter: adapter });
   }
 }

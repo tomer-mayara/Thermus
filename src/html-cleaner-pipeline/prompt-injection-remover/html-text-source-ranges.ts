@@ -1,24 +1,24 @@
-import { defaultTreeAdapter, type DefaultTreeAdapterMap, type DefaultTreeAdapterTypes, type TreeAdapter } from 'parse5';
+import { adapter as baseAdapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 
 type SourceRange = { start: number; end: number };
-type TextNode = DefaultTreeAdapterTypes.TextNode;
+type TextNode = Htmlparser2TreeAdapterMap['textNode'];
 
 export class HtmlTextSourceRanges {
   private readonly ranges = new WeakMap<TextNode, SourceRange[]>();
 
-  public readonly adapter: TreeAdapter<DefaultTreeAdapterMap> = {
-    ...defaultTreeAdapter,
+  public readonly adapter: typeof baseAdapter = {
+    ...baseAdapter,
     insertText: (parent, text): void => {
-      defaultTreeAdapter.insertText(parent, text);
-      this.clearTextLocation(parent.childNodes.at(-1));
+      baseAdapter.insertText(parent, text);
+      this.clearTextLocation(parent.children.at(-1));
     },
     insertTextBefore: (parent, text, reference): void => {
-      defaultTreeAdapter.insertTextBefore(parent, text, reference);
-      this.clearTextLocation(parent.childNodes[parent.childNodes.indexOf(reference) - 1]);
+      baseAdapter.insertTextBefore(parent, text, reference);
+      this.clearTextLocation(parent.children[parent.children.indexOf(reference) - 1]);
     },
     setNodeSourceCodeLocation: (node, location): void => {
-      defaultTreeAdapter.setNodeSourceCodeLocation(node, location);
-      if (defaultTreeAdapter.isTextNode(node) && location !== null) {
+      baseAdapter.setNodeSourceCodeLocation(node, location);
+      if (baseAdapter.isTextNode(node) && location !== null) {
         this.record(node, { start: location.startOffset, end: location.endOffset });
       }
     },
@@ -30,12 +30,12 @@ export class HtmlTextSourceRanges {
     return ranges;
   }
 
-  private clearTextLocation(node: DefaultTreeAdapterTypes.ChildNode | undefined): void {
-    if (node === undefined || !defaultTreeAdapter.isTextNode(node)) {
+  private clearTextLocation(node: Htmlparser2TreeAdapterMap['childNode'] | undefined): void {
+    if (node === undefined || !baseAdapter.isTextNode(node)) {
       throw new Error('HTML text insertion has no text node');
     }
     // Clear the previous location so the parser supplies each full token range.
-    defaultTreeAdapter.setNodeSourceCodeLocation(node, null);
+    baseAdapter.setNodeSourceCodeLocation(node, null);
   }
 
   private record(node: TextNode, range: SourceRange): void {
