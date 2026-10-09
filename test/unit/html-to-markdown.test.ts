@@ -172,6 +172,18 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
   describe('fragment code formatting', () => {
     for (const html of [
+      '<pre>first<br>  second</pre>',
+      '<pre><code>first<br>  second</code></pre>',
+      '<code style="white-space: pre">first<br>  second</code>',
+    ]) {
+      test(`keeps line breaks in a code fragment: ${html}`, async () => {
+        const result = await converter.invoke(createContext(html));
+
+        assert.equal(result.markdown, '```\nfirst\n  second\n```');
+      });
+    }
+
+    for (const html of [
       '<main><code style="white-space: pre">if ready:\n    run()\nelse:\n    stop()</code></main>',
       '<pre>if ready:\n    run()\nelse:\n    stop()</pre>',
       '<p>Visible before.</p><pre>if ready:\n    run()\nelse:\n    stop()</pre><h2>Visible after.</h2>',

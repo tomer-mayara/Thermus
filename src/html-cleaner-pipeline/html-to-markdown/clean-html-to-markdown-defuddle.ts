@@ -126,8 +126,15 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
         pre.appendChild(code);
       }
     }
+    CleanHtmlToMarkdownDefuddle.normalizePreformattedBlocks(document);
+  }
+
+  private static normalizePreformattedBlocks(document: HtmlDocument): void {
     // Defuddle's Markdown converter requires a code child to make a fenced block.
     for (const pre of document.body.querySelectorAll('pre')) {
+      for (const lineBreak of pre.querySelectorAll('br')) {
+        lineBreak.replaceWith(document.createTextNode('\n'));
+      }
       const innerCode = pre.querySelector('code');
       if (pre.childNodes.length === 1 && pre.firstChild === innerCode) {
         continue;
