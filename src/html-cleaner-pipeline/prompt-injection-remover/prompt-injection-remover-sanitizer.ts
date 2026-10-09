@@ -16,7 +16,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitize(ctx.html);
+    const sanitized = await sanitize(ctx.html, { html: false });
     const { html, removed, warned } = this.removeHiddenHtml(sanitized.cleaned);
     if (removed.comments > 0) sanitized.found.push(CATEGORY.HTML_COMMENTS);
     if (removed.hidden > 0) sanitized.found.push(CATEGORY.HIDDEN_HTML);
