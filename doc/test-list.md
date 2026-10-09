@@ -275,3 +275,9 @@
 [V] Keeps known inherited offsets and planes through unstyled elements with unknown box defaults
 [V] Keeps inherited offsets when an unknown box has an explicit none, initial, or unset transform
 [V] Removes replaced HTML images with display:contents and keeps visible images with default or unresolved display
+[V] Keeps invertible local and accumulated planar matrices, including matrix3d values and nested preserved contexts
+[V] Removes meter and progress fallback text with display:contents and respects display declaration priority
+[V] Rejects malformed deferred function headers, reserved variable names, and empty attribute namespace prefixes
+[V] Keeps valid deferred values unknown, including nested and empty fallbacks, escaped names, and typed attributes
+[V] Keeps native control text under zero-font parents unless an effective author font rule hides it
+[V] Keeps a visible table formatting copy when copies with the same parent and source have conflicting styles

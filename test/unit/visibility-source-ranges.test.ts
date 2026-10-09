@@ -1,8 +1,27 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { sanitizeHtml } from '../helpers/sanitize-html.ts';
+import { createPipeline } from './helpers/css-pipeline.ts';
 
 describe('visibility in parsed HTML source ranges', () => {
+  for (const hiddenTail of [true, false]) {
+    test(`keeps a visible table formatting copy ${hiddenTail ? 'after hidden tail removal' : 'without a hidden tail'}`, async () => {
+      const result = await createPipeline().process('https://example.com/',
+        '<!doctype html><html><body><main>' +
+        '<style>.x{font-size:16px}.x+.x{font-size:0}</style>' +
+        '<div><table><b class="x">VISIBLE<tr><td>Cell</td></tr>' +
+        `${hiddenTail ? 'Hidden tail' : ''}</b></table></div>` +
+        '<p>Visible sibling</p></main></body></html>',
+      );
+
+      assert.match(result.html, /VISIBLE/);
+      assert.match(result.html, /Cell/);
+      assert.doesNotMatch(result.html, /Hidden tail/);
+      assert.equal(result.markdown, 'Cell\n\nVisible sibling');
+      assert.deepEqual(result.found, hiddenTail ? ['hidden-html'] : []);
+    });
+  }
+
   test('keeps a font override and image in a zero-font-size parent formed by removal', async () => {
     const result = await sanitizeHtml(
       '<<span hidden>Hidden cut</span>div style="font-size:0">Hidden parent' +

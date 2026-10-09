@@ -111,7 +111,7 @@ function captureStyles(
 
 export class CssVisibilityProvenance {
   private tags = new Map<string, VisibilityStyle | null>();
-  private copies = new Map<string, VisibilityStyle>();
+  private copies = new Map<string, VisibilityStyle | null>();
   private witnesses = new Map<string, VisibilityStyle>();
   private documents = new Map<number, VisibilityStyle>();
   private readonly identities = new Map<string, number>();
@@ -183,7 +183,10 @@ export class CssVisibilityProvenance {
     context: StyledElementContext, range: Source, remap: ReturnType<typeof rangeRemapper>,
   ): void {
     const copyParent = context.copyParent ? remap(context.copyParent) : undefined;
-    if (!context.copyParent || copyParent) this.copies.set(witnessKey(copyParent, '', range), context.style);
+    if (context.copyParent && !copyParent) return;
+    const key = witnessKey(copyParent, '', range);
+    const previous = this.copies.get(key);
+    this.copies.set(key, previous === undefined || previous === context.style ? context.style : null);
   }
 
   private retainImpliedStyles(
