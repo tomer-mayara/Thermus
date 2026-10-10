@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { extname } from 'node:path';
 import { test } from 'node:test';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { SourceRangeParser } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser.ts';
@@ -66,4 +68,89 @@ test('keeps EOF ancestor visits bounded for deeply nested unclosed elements', ()
     [],
     'Every input must stay within the linear parent-read budget.',
   );
+});
+
+test('recovers nested templates with bounded EOF stack depth', () => {
+  const html = '<template>'.repeat(5000) + 'text';
+  const document = SourceRangeParser.parse<Htmlparser2TreeAdapterMap>(html, {
+    treeAdapter: adapter,
+    sourceCodeLocationInfo: true,
+    scriptingEnabled: false,
+  });
+
+  const htmlElement = document.children[0];
+  assert.ok(htmlElement !== undefined && adapter.isElementNode(htmlElement));
+  const head = htmlElement.children[0];
+  assert.ok(head !== undefined && adapter.isElementNode(head));
+  const outerTemplate = head.children[0];
+  assert.ok(outerTemplate !== undefined && adapter.isElementNode(outerTemplate));
+  assert.equal(outerTemplate.name, 'template');
+  assert.equal(outerTemplate.sourceCodeLocation?.startOffset, 0);
+  let template = outerTemplate;
+  for (let depth = 0; depth < 4999; depth += 1) {
+    assert.equal(template.name, 'template');
+    const next = adapter.getTemplateContent(template).children[0];
+    assert.ok(next !== undefined && adapter.isElementNode(next));
+    template = next;
+  }
+  assert.equal(template.name, 'template');
+  const text = adapter.getTemplateContent(template).children[0];
+  assert.ok(text !== undefined && adapter.isTextNode(text));
+  assert.equal(text.data, 'text');
+});
+
+test('stops EOF processing when parse5 has no next pass to request', () => {
+  const extension = extname(import.meta.filename);
+  const parserUrl = new URL(`../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser${extension}`, import.meta.url);
+  const childArguments = extension === '.ts' ? ['--import=tsx', '--input-type=module'] : ['--input-type=module'];
+  const child = spawnSync(process.execPath, childArguments, {
+    input: `
+      import assert from 'node:assert/strict';
+      import { adapter } from 'parse5-htmlparser2-tree-adapter';
+      import { SourceRangeParser } from ${JSON.stringify(parserUrl.href)};
+      for (const [html, hasText] of [
+        ['<svg><template><title><template>', false],
+        ['<svg><template><title><template>text', true],
+      ]) {
+        const document = SourceRangeParser.parse(html, {
+          treeAdapter: adapter,
+          sourceCodeLocationInfo: true,
+          scriptingEnabled: false,
+        });
+        const htmlElement = document.children[0];
+        assert.ok(htmlElement !== undefined && adapter.isElementNode(htmlElement));
+        const body = htmlElement.children[1];
+        assert.ok(body !== undefined && adapter.isElementNode(body));
+        const svg = body.children[0];
+        assert.ok(svg !== undefined && adapter.isElementNode(svg));
+        assert.equal(svg.name, 'svg');
+        assert.equal(svg.sourceCodeLocation?.startOffset, 0);
+        const template = svg.children[0];
+        assert.ok(template !== undefined && adapter.isElementNode(template));
+        assert.equal(template.name, 'template');
+        assert.equal(template.sourceCodeLocation?.startOffset, 5);
+        const title = template.children[0];
+        assert.ok(title !== undefined && adapter.isElementNode(title));
+        assert.equal(title.name, 'title');
+        assert.equal(title.sourceCodeLocation?.startOffset, 15);
+        const innerTemplate = title.children[0];
+        assert.ok(innerTemplate !== undefined && adapter.isElementNode(innerTemplate));
+        assert.equal(innerTemplate.name, 'template');
+        assert.equal(innerTemplate.sourceCodeLocation?.startOffset, 22);
+        const text = adapter.getTemplateContent(innerTemplate).children[0];
+        if (hasText) {
+          assert.ok(text !== undefined && adapter.isTextNode(text));
+          assert.equal(text.data, 'text');
+          assert.equal(text.sourceCodeLocation?.startOffset, 32);
+        } else {
+          assert.equal(text, undefined);
+        }
+      }
+    `,
+    encoding: 'utf8',
+    timeout: 3000,
+  });
+
+  assert.ifError(child.error);
+  assert.equal(child.status, 0, child.stderr);
 });

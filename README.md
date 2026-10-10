@@ -85,6 +85,8 @@ This check does not fetch linked stylesheets or `@import` rules. It skips at-rul
 
 The step does not enable the span-deleting filter, secret redaction, visible-text filtering, or homoglyph normalization. It does not fetch pages or call a model. Pipeline composition and startup warm-up are deferred to loader and acceptance tests.
 
+The ad cleaner limits parsed HTML to 256 element levels. See [HTML processing limits](docs/html-processing-limits.md) for the depth rule and error behavior.
+
 **MVP.** One tool, `fetch`. Allowlist, denylist, and outbound redaction. Boilerplate and hidden-text stripping. Per-tenant content cache. Audit log. A container that runs the server and Lightpanda on localhost, and a hosted version of the same container.
 
 Out of scope: step-up approval, a second renderer, request-level ad blocking, and any connector other than the web. Done when an admin can disable native search, point an agent at DongAI, and get a cleaned page back with a log line for every fetch.
