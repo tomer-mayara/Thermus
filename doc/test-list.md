@@ -314,3 +314,4 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Accumulates flat parent and child transforms while retaining true edge-on flat collapse
 [V] Applies known singular transforms to roots with inherited or deferred display and keeps identity controls
 [V] Keeps restored child planes through unresolved contents boundaries and ignores a contents wrapper's own transform
+[V] Keeps deferred overflow axes unknown, respects longhand order and importance, and retains confirmed flattening controls

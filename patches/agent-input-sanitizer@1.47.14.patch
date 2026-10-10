@@ -704,7 +704,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +            entries.push(["mask-border-source", csstree.parse("none", { context: "value" })]);
 +        }
 +        if (property === "overflow") {
-+          const tokens = valueTokens(value);
++          const tokens = csstree.lexer.matchProperty("overflow", value).matched ? valueTokens(value) : [];
 +          for (const [index, axis] of ["overflow-x", "overflow-y"].entries()) {
 +            const token = tokens[index] ?? tokens[0];
 +            entries.push([axis, token ? { type: "Value", children: new csstree.List().fromArray([token]) } : value]);
