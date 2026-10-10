@@ -1,7 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,76 +196,389 @@
+@@ -196,76 +196,393 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -149,11 +149,15 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return rows !== null && exactDeterminant(rows) === 0n;
 +}
 +
++/** @param {bigint[][] | null} exactLinear @returns {boolean} */
++function hasCollapsedPlaneRank(exactLinear) {
++  return exactLinear !== null && exactDeterminant(exactLinear.slice(0, 2).map((row) => row.slice(0, 2))) === 0n;
++}
++
 +/** @param {number[][]} rows @param {bigint[][] | null} exactLinear @param {number[][] | null} linearError @returns {boolean} */
 +function isCollapsedPlane(rows, exactLinear, linearError) {
 +  // Rounded products cannot prove rank loss. Small projected axes still count.
-+  if (exactLinear && exactDeterminant(exactLinear.slice(0, 2).map((row) => row.slice(0, 2))) === 0n)
-+    return true;
++  if (hasCollapsedPlaneRank(exactLinear)) return true;
 +  if (!linearError) return false;
 +  const affine = rows[3][0] === 0 && rows[3][1] === 0 && rows[3][3] === 1;
 +  return affine && [0, 1].some((column) => {
@@ -445,7 +449,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +1153,203 @@
+@@ -840,26 +1157,203 @@
    return false;
  }
 
@@ -667,7 +671,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1397,13 @@
+@@ -907,11 +1401,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -682,7 +686,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1426,93 @@
+@@ -934,17 +1430,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -777,7 +781,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,19 +1550,18 @@
+@@ -982,19 +1554,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -804,7 +808,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1661,10 @@
+@@ -1094,9 +1665,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -816,7 +820,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1676,7 @@
+@@ -1108,7 +1680,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -825,7 +829,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1703,228 @@
+@@ -1135,8 +1707,247 @@
    return firstElement;
  }
 
@@ -893,10 +897,10 @@ diff --git a/src/html.mjs b/src/html.mjs
 + */
 +function appliesTransform(node, declarations, parent, display) {
 +  if (node.namespace && node.namespace !== "http://www.w3.org/1999/xhtml") return true;
-+  if (display === null) return null;
 +  if (display === "none") return false;
-+  // The HTML document element has a blockified box.
++  // The HTML document element has a blockified box, even when display is unresolved.
 +  if (node.tagName === "html" && !parent) return true;
++  if (display === null) return null;
 +  if (display === "contents") return false;
 +  const position = declText(declarations.get("position")).trim().toLowerCase();
 +  const floating = declText(declarations.get("float")).trim().toLowerCase();
@@ -987,6 +991,37 @@ diff --git a/src/html.mjs b/src/html.mjs
 +}
 +
 +/**
++ * Project descendants into a flat parent's local XY plane before composition.
++ * @template {number | bigint} T
++ * @param {T[][] | null} rows
++ * @param {T} zero
++ * @returns {T[][] | null}
++ */
++function flattenPlane(rows, zero) {
++  return rows?.map((row) => row.map((value, column) => column === 2 ? zero : value)) ?? null;
++}
++
++/**
++ * @param {any} transform
++ * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
++ * @returns {{ matrix: number[][] | null, exactLinearMatrix: bigint[][] | null, linearError: number[][] | null }}
++ */
++function resolvePlane(transform, parent) {
++  let matrix = localPlaneRows(transform);
++  let exactLinearMatrix = matrix ? localExactLinearRows(transform) : null;
++  let linearError = matrix ? localLinearError(transform) : null;
++  if (parent) {
++    const prefix = parent.preserves3d ? parent.matrix : flattenPlane(parent.matrix, 0);
++    const exactPrefix = parent.preserves3d ? parent.exactLinearMatrix : flattenPlane(parent.exactLinearMatrix, 0n);
++    const errorPrefix = parent.preserves3d ? parent.linearError : flattenPlane(parent.linearError, 0);
++    linearError = composeLinearError(prefix, matrix, errorPrefix, linearError);
++    matrix = composeMatrices([prefix, matrix]);
++    exactLinearMatrix = composeExactLinearMatrices([exactPrefix, exactLinearMatrix]);
++  }
++  return { matrix, exactLinearMatrix, linearError };
++}
++
++/**
 + * Resolve one element without changing its source or its descendants.
 + * @param {any} node
 + * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
@@ -995,7 +1030,6 @@ diff --git a/src/html.mjs b/src/html.mjs
 + */
 +export function resolveElementVisibility(node, parent, options = {}) {
 +  const inherited = parent?.fontSize ?? null;
-+  const in3dContext = parent?.preserves3d ?? false;
 +  const declarations = parseDeclarations(node.properties?.style ?? "", options.quirksMode);
 +  const htmlElement = !node.namespace || node.namespace === "http://www.w3.org/1999/xhtml";
 +  const nativeFont = htmlElement && NATIVE_FONT_ELEMENTS.has(node.tagName) && !declarations.has("font-size");
@@ -1016,26 +1050,15 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const preserves3d = Boolean(transformStyle && !FLAT_TRANSFORM_STYLES.has(style));
 +  const perspective = transformable === false ? "" : declText(declarations.get("perspective")).trim().toLowerCase();
 +  const hasPerspective = Boolean(perspective && !["none", "initial", "unset"].includes(perspective));
-+  let hiddenPlane = Boolean(parent?.hiddenPlane && !in3dContext);
-+  let matrix = null;
-+  let exactLinearMatrix = null;
-+  let linearError = null;
-+  if (in3dContext || preserves3d) {
-+    let rows = localPlaneRows(transform);
-+    let exactRows = rows ? localExactLinearRows(transform) : null;
-+    let errors = rows ? localLinearError(transform) : null;
-+    if (in3dContext) {
-+      errors = composeLinearError(parent?.matrix ?? null, rows, parent?.linearError ?? null, errors);
-+      rows = composeMatrices([parent?.matrix ?? null, rows]);
-+      exactRows = composeExactLinearMatrices([parent?.exactLinearMatrix ?? null, exactRows]);
-+    }
-+    if (parent?.hasPerspective) rows = null;
-+    if (rows && isCollapsedPlane(rows, exactRows, errors)) hiddenPlane = true;
-+    const unknownContext = hasPerspective || (preserves3d && (style !== "preserve-3d" || transformable === null));
-+    matrix = unknownContext ? null : rows;
-+    exactLinearMatrix = matrix ? exactRows : null;
-+    linearError = matrix ? errors : null;
-+  }
++  const plane = resolvePlane(transform, parent);
++  const hiddenPlane = Boolean(plane.matrix &&
++    isCollapsedPlane(plane.matrix, plane.exactLinearMatrix, plane.linearError));
++  const unknownContext = hasPerspective || transformable === null || (preserves3d && style !== "preserve-3d");
++  // An exact rank loss at a known flat boundary cannot be undone by descendants.
++  const collapsedFlatPlane = !unknownContext && !preserves3d && hasCollapsedPlaneRank(plane.exactLinearMatrix);
++  const matrix = unknownContext ? null : plane.matrix;
++  const exactLinearMatrix = matrix ? plane.exactLinearMatrix : null;
++  const linearError = matrix ? plane.linearError : null;
 +  const { translation, offscreen } = resolveTranslation(declarations, parent, transform);
 +  const htmlReplaced = htmlElement && REPLACED_ELEMENTS.has(node.tagName);
 +  return {
@@ -1043,9 +1066,9 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    hiddenPlane, hasPerspective, translation, offscreen,
 +    hiddenReplacedContent: htmlReplaced && (((offscreen || hiddenPlane) && VOID_ELEMENTS.has(node.tagName)) ||
 +      hasHiddenInputValue(node, declarations, fontSize)),
-+    hiddenElement: (htmlElement && display === "contents" && CONTENTS_SUPPRESSED_ELEMENTS.has(node.tagName)) || isHiddenElement(node, {
++    hiddenElement: collapsedFlatPlane || (htmlElement && display === "contents" && CONTENTS_SUPPRESSED_ELEMENTS.has(node.tagName)) || isHiddenElement(node, {
 +      ignoreFontSize: true,
-+      in3dContext: in3dContext || Boolean(parent?.hasPerspective),
++      in3dContext: true,
 +      ignoreTransformOffsets: true,
 +      ignoreTransforms: transformable !== true,
 +    }),
@@ -1078,7 +1101,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -115,3 +117,42 @@
+@@ -115,3 +117,43 @@
  import { SECRET_HINT_EXT } from "./gates.mjs";
  import { matchesSecretHint } from "./gates.mjs";
  export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };
@@ -1097,6 +1120,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
 +    /** Display of the nearest box. Contents wrappers pass this value through. */
 +    boxDisplay: string | null;
 +    preserves3d: boolean;
++    /** Accumulated affine plane across known flat and preserved boundaries. Null means unknown. */
 +    matrix: number[][] | null;
 +    /** Exact affine linear coefficients, up to a common scale. Null means unknown. */
 +    exactLinearMatrix: bigint[][] | null;

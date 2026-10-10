@@ -64,7 +64,7 @@
 [V] Applies `transform-style` declaration order and `!important`; supported opacity, overflow, filter, clipping, isolation, masking, blend, and paint-containment values flatten `preserve-3d`
 [V] Applies `clip` grouping only with a valid winning `position:absolute` or `fixed`
 [V] Composes affine parent and child planes in confirmed preserved 3D contexts; a collapsed parent plane alone does not hide the full subtree
-[V] Removes hidden direct text and flat descendants, including images, while continuing through preserved wrappers to visible child planes
+[V] Removes hidden direct text and images while checking flat and preserved descendants for restored visible planes
 [V] Keeps child planes unknown when transform-style, grouping values, or perspective need unresolved layout or style data
 [V] Still removes singular transforms and whole subtrees hidden by display or opacity rules in a preserved 3D context
 [V] Keeps a collapsed flat subtree hidden
@@ -310,3 +310,7 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Keeps visible axes after numeric cancellation in local and preserved matrix compositions, including unknown exact proof
 [V] Ignores transforms on inline and run-in flow list items and applies them to atomic inline flow-root list items
 [V] Keeps preserved child planes unknown when box applicability is unresolved, including identity transforms and contents wrappers
+[V] Keeps descendants that invert near-zero flat scales, including intermediate wrappers and near-edge-on rotations
+[V] Accumulates flat parent and child transforms while retaining true edge-on flat collapse
+[V] Applies known singular transforms to roots with inherited or deferred display and keeps identity controls
+[V] Keeps restored child planes through unresolved contents boundaries and ignores a contents wrapper's own transform
