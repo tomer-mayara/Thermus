@@ -1,10 +1,12 @@
 import { html as htmlNames, Parser, type Token } from 'parse5';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { documentElements, type HtmlElement } from './css-visibility-selectors.ts';
+import { HtmlTextSourceRanges } from './html-text-source-ranges.ts';
 
 type SourceElement = (element: HtmlElement) => HtmlElement;
 
 export function parseSourceDocument(html: string) {
+  const textSources = new HtmlTextSourceRanges();
   const tokenSources = new WeakMap<Parameters<typeof adapter.createElement>[2], HtmlElement>();
   const tokenLocations = new WeakMap<Token.Attribute[], Token.LocationWithAttributes>();
   const decodedStyleValues = new Map<number, string[]>();
@@ -12,7 +14,7 @@ export function parseSourceDocument(html: string) {
   const adoptedSources = new Map<HtmlElement, Token.LocationWithAttributes[]>();
   let authoredMode = htmlNames.DOCUMENT_MODE.NO_QUIRKS;
   const treeAdapter: typeof adapter = {
-    ...adapter,
+    ...textSources.adapter,
     setDocumentMode(document, mode) {
       authoredMode = mode;
       const hasDoctype = document.children.some(adapter.isDocumentTypeNode);
@@ -58,7 +60,7 @@ export function parseSourceDocument(html: string) {
   // Source recovery uses standards parsing; selectors still need the authored mode.
   adapter.setDocumentMode(document, authoredMode);
   const sourceElement: SourceElement = (element) => sources.get(element) ?? element;
-  return { document, elements: documentElements(document), sourceElement, adoptedSources, decodedStyleValues };
+  return { document, elements: documentElements(document), sourceElement, adoptedSources, decodedStyleValues, textSources };
 }
 
 export type CssHtmlDocument = ReturnType<typeof parseSourceDocument>;

@@ -2,6 +2,7 @@ import {
   ident, lexer, parse, tokenize, tokenTypes, walk,
   type AttributeSelector, type CssNode, type Declaration, type Selector,
 } from 'css-tree';
+import { isValidVisibilityValue } from 'agent-input-sanitizer/html';
 
 type Specificity = readonly [inline: number, ids: number, classes: number, types: number];
 type ParsedDeclaration = { declaration: Declaration; resolved: boolean };
@@ -15,6 +16,8 @@ const visibilityProperties = new Set([
   'background', 'background-image', 'background-clip', '-webkit-background-clip',
   '-webkit-text-stroke', '-webkit-text-stroke-color', 'overflow',
   'height', 'width', 'max-height', 'max-width',
+  'float', 'transform-style', 'perspective', 'overflow-x', 'overflow-y',
+  'isolation', 'mask', 'mask-image', 'mask-border', 'mask-border-source', 'mix-blend-mode', 'contain',
 ]);
 
 function normalizedIdent(value: string): string {
@@ -42,7 +45,7 @@ function normalizeValue(value: CssNode): boolean {
     }
     if (token.type === 'Function') {
       token.name = normalizedIdent(token.name);
-      if (token.name === 'var' || token.name === 'env') resolved = false;
+      if (['var', 'env', 'attr'].includes(token.name)) resolved = false;
     }
   });
   return resolved;
@@ -67,19 +70,25 @@ function isValidFilterToken(token: CssNode): boolean {
   return nonNegative.every((length) => Number(length.value) >= 0);
 }
 
-export function normalizeDeclarations(nodes: CssNode[]): ParsedDeclaration[] {
+function normalizeDeclaration(node: Declaration, quirksMode: boolean): ParsedDeclaration | undefined {
+  node.property = normalizedIdent(node.property);
+  if (!visibilityProperties.has(node.property) && !/^(?:margin|inset)(?:-|$)/.test(node.property)) return undefined;
+  if (typeof node.important === 'string') {
+    if (normalizedIdent(node.important) !== 'important') return undefined;
+    node.important = true;
+  }
+  const resolved = normalizeValue(node.value);
+  if (!isValidVisibilityValue(node.property, node.value, quirksMode)) return undefined;
+  if (node.property === 'filter' && resolved && !isValidValue(node)) return undefined;
+  return { declaration: node, resolved };
+}
+
+export function normalizeDeclarations(nodes: CssNode[], quirksMode = false): ParsedDeclaration[] {
   const declarations: ParsedDeclaration[] = [];
   for (const node of nodes) {
     if (node.type !== 'Declaration') continue;
-    node.property = normalizedIdent(node.property);
-    if (!visibilityProperties.has(node.property)) continue;
-    if (typeof node.important === 'string') {
-      if (normalizedIdent(node.important) !== 'important') continue;
-      node.important = true;
-    }
-    const resolved = normalizeValue(node.value);
-    if (resolved && !isValidValue(node)) continue;
-    declarations.push({ declaration: node, resolved });
+    const declaration = normalizeDeclaration(node, quirksMode);
+    if (declaration) declarations.push(declaration);
   }
   return declarations;
 }
@@ -134,16 +143,16 @@ export function selectorSpecificity(selector: Selector): Specificity | undefined
   return compoundStart ? undefined : specificity;
 }
 
-function takesPrecedence(next: RankedDeclaration, previous: RankedDeclaration): boolean {
+export function comparePrecedence(next: RankedDeclaration, previous: RankedDeclaration): number {
   if (next.declaration.important !== previous.declaration.important) {
-    return Boolean(next.declaration.important);
+    return Number(Boolean(next.declaration.important)) - Number(Boolean(previous.declaration.important));
   }
   for (let index = 0; index < next.specificity.length; index++) {
     if (next.specificity[index] !== previous.specificity[index]) {
-      return next.specificity[index] > previous.specificity[index];
+      return next.specificity[index] - previous.specificity[index];
     }
   }
-  return true;
+  return 0;
 }
 
 export function applyDeclarations(
@@ -154,7 +163,9 @@ export function applyDeclarations(
   for (const parsed of declarations) {
     const candidate = { ...parsed, specificity };
     const previous = target.get(parsed.declaration.property);
-    if (previous === undefined || takesPrecedence(candidate, previous)) {
+    if (previous === undefined || comparePrecedence(candidate, previous) >= 0) {
+      // Keep the winning source order for related shorthand and longhand values.
+      target.delete(parsed.declaration.property);
       target.set(parsed.declaration.property, candidate);
     }
   }

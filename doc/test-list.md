@@ -59,6 +59,28 @@
 [V] Preserves visible content and context without mutating the input
 [V] Rejects HTML larger than 10 MiB by UTF-8 byte size
 [V] Reports exfil-shaped URLs and keeps them in the HTML
+[V] Removes inherited zero-font-size text and keeps descendants with visible font-size or font shorthand overrides
+[V] Keeps visible images inside zero-font-size parents and removes hidden images
+[V] Uses unitless `font-size` in full quirks mode and rejects nonzero unitless sizes in standards and limited-quirks modes
+[V] Resolves font-size declaration order and `!important` rules without changing the font shorthand grammar
+[V] Keeps sizes with named deferred `var()`, `env()`, and `attr()` functions unknown, including typed `attr()` raw syntax; invalid raw values and nameless `env()` or `attr()` do not replace an earlier size
+[V] Removes whole subtrees for display:none, zero opacity, content-visibility:hidden, zero scale, and collapsed height with hidden overflow
+[V] Composes supported matrix, scale, rotation, and resolvable translate functions in CSS order before checking the projected plane
+[V] Checks composed pure-translation X/Y offsets, keeps cancelling X/Y and `em` translations and matrix compensation, removes truly offscreen results, keeps a mirrored wide plane visible, and applies the unresolved `translate3d()` offscreen heuristic to X/Y only
+[V] Removes collapsed composed transforms and known singular operands, but keeps unresolved lists when they do not prove collapse
+[V] Keeps transforms whose combined projection is visible, including rotations in the rendered plane with zero diagonal matrix values
+[V] Keeps content visible when matrix lists use invalid comma or plus separators
+[V] Keeps content visible for invalid lists with singular operands, malformed matrices, or invalid function arguments
+[V] Decodes escaped transform names before visibility checks and recognizes collapsed matrices
+[V] Applies transform declaration order and `!important`, and leaves deferred `var()`, `env()`, and `attr()` values unknown
+[V] Hides zero numeric or percentage Z scales, keeps small nonzero numeric or percentage Z scales, and checks near-zero X and Y scales
+[V] Applies `transform-style` declaration order and `!important`; supported opacity, overflow, filter, clipping, isolation, masking, blend, and paint-containment values flatten `preserve-3d`
+[V] Applies `clip` grouping only with a valid winning `position:absolute` or `fixed`
+[V] Composes affine parent and child planes in confirmed preserved 3D contexts; a collapsed parent plane alone does not hide the full subtree
+[V] Removes hidden direct text and images while checking flat and preserved descendants for restored visible planes
+[V] Keeps child planes unknown when transform-style, grouping values, or perspective need unresolved layout or style data
+[V] Still removes singular transforms and whole subtrees hidden by display or opacity rules in a preserved 3D context
+[V] Keeps a collapsed flat subtree hidden
 [V] Treats sparse full documents and HTML fragments as HTML at every line and tag density
 [V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
 [V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
@@ -118,6 +140,10 @@
 [V] Does not mutate the input context
 [V] Preserves sanitizer findings and warnings through Markdown conversion
 [V] Rejects oversized HTML before Markdown conversion
+[V] Withholds HTML with an unsourced hidden body before Markdown conversion and keeps URL findings
+[V] Keeps hidden payload out of the next step for deeply nested HTML, with safe output or complete withholding
+[V] Keeps visible descendants, images, and rotated content in the final Markdown and removes hidden text and collapsed content
+[V] Checks exact final Markdown for deferred font sizes, composed transforms and offsets, preserved 3D descendants, and quirks-mode font sizes
 [V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
@@ -239,3 +265,76 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
 
 ## Acceptance
+
+**Visibility and parsed source ranges**
+
+[V] Keeps visible font overrides and images when an earlier removal forms a zero-font-size parent
+[V] Removes hidden local text and keeps visible child planes when an earlier removal forms a preserved 3D parent
+[V] Uses parsed parents for font inheritance around tables and in template content
+[V] Keeps a visible override under a zero-font-size document body in quirks mode
+[V] Keeps visible content outside hidden tables and removes overrides inside display-none ancestors
+[V] Keeps visible table cells between hidden merged text segments, including character references
+[V] Keeps visible children under mask shorthands and parent perspective
+[V] Removes offscreen text and images while it keeps descendants restored by transforms or layout offsets
+[V] Resolves mask shorthand order and important mask-image declarations
+[V] Keeps valid transform declarations when later raw syntax is invalid, and keeps named deferred values unknown
+[V] Applies perspective declaration order and important priority; rejects invalid raw values and negative lengths
+[V] Keeps non-replaced inline text when its own transform does not apply, and uses display declaration order and important priority
+[V] Removes collapsed inline-block boxes, images, and boxes made block by positioning, float, or flex/grid rules
+[V] Keeps transforms with unknown display applicability unresolved, and still removes display-none content
+[V] Keeps default inline del and ins text and unclassified element defaults; applies a known display value on a custom element
+[V] Keeps font-size overrides and images inside a zero-font-size class, including when an important CSS rule overrides inline display
+[V] Applies importance, specificity, and source order across font and font-size declarations
+[V] Keeps visible class rotations, preserved child planes, and parent perspective while removing collapsed class subtrees
+[V] Keeps exact table source between merged hidden text segments with class font sizes
+[V] Applies a formed font-size parent to retained descendants and keeps their visible overrides
+[V] Keeps distinct saved declarations for reconstructed formatting copies, including nested copies that share source tags
+[V] Rejects empty env() and attr() transform values so they cannot replace a valid hiding transform
+[V] Resolves compound mask and mask-border sources, omitted sources, multiple layers, deferred values, and declaration priority
+[V] Keeps non-collapsed child planes after compound masks flatten the parent
+[V] Keeps flex/grid applicability and preserved transform context through nested display:contents wrappers
+[V] Keeps font overrides, perspective uncertainty, and restored translated children through display:contents wrappers
+[V] Ignores boxless wrapper offsets and keeps positioned descendants whose layout offsets are unresolved
+[V] Keeps projective planes with unresolved Z origins and still removes singular full matrices
+[V] Removes local and inherited offscreen input values, keeps visible inputs, and keeps descendants whose transforms return them to view
+[V] Keeps a nearly singular matrix with a resolved or unresolved inverse, and keeps a preserved child whose inverse restores the parent plane
+[V] Removes a truly singular operand when another transform has unresolved geometry but the complete declaration has a supported valid form
+[V] Keeps a flat child restored by an inverse transform, including finite coefficients that exceed the exact decimal proof budget
+[V] Removes zero-font text-entry input values from effective author rules, including class rules and explicit font inheritance
+[V] Keeps input values with default, visible, or unresolved fonts under zero-font parents, and keeps images and native input controls
+[V] Keeps known inherited offsets and planes through unstyled elements with unknown box defaults
+[V] Keeps inherited offsets when an unknown box has an explicit none, initial, or unset transform
+[V] Removes replaced HTML images with display:contents and keeps visible images with default or unresolved display
+[V] Keeps invertible local and accumulated matrices, including Z translations, non-planar matrix3d values, and nested preserved contexts
+[V] Removes meter and progress fallback text with display:contents and respects display declaration priority
+[V] Rejects malformed deferred function headers, reserved variable names, and empty attribute namespace prefixes
+[V] Keeps valid deferred values unknown, including nested and empty fallbacks, escaped names, and typed attributes
+[V] Keeps native control text under zero-font parents unless an effective author font rule hides it
+[V] Keeps a visible table formatting copy when copies with the same parent and source have conflicting styles
+[V] Uses ASCII case matching for input types and treats a Unicode lookalike as an invalid text type
+[V] Applies a collapsed transform to the blockified HTML root and keeps its visible identity controls
+[V] Keeps a visible button label when display:contents removes its box
+[V] Flattens preserved 3D contexts for content-visibility:auto, respects class, reset, and important declarations, and keeps deferred grouping unknown
+[V] Applies deferred class font and transform replacements and class unitless font sizes in each parser mode
+[V] Applies overflow axis grouping, shorthand resets, and important declarations from class rules
+[V] Keeps finite composed transforms when binary rounding makes distinct projected columns equal
+[V] Keeps the true root font size when an SVG element is named html, for visible and zero rem sizes
+[V] Keeps zero-font input elements with missing or empty values and reports no hidden payload
+[V] Keeps visible axes after numeric cancellation in local and preserved matrix compositions, including unknown exact proof
+[V] Ignores transforms on inline and run-in flow list items and applies them to atomic inline flow-root list items
+[V] Keeps preserved child planes unknown when box applicability is unresolved, including identity transforms and contents wrappers
+[V] Keeps descendants that invert near-zero flat scales, including intermediate wrappers and near-edge-on rotations
+[V] Accumulates flat parent and child transforms while retaining true edge-on flat collapse
+[V] Applies known singular transforms to roots with inherited or deferred display and keeps identity controls
+[V] Keeps restored child planes through unresolved contents boundaries and ignores a contents wrapper's own transform
+[V] Keeps deferred overflow axes unknown, respects longhand order and importance, and retains confirmed flattening controls
+[V] Removes exact zero scales with supported scalar calc wrappers and keeps deferred and compound math unknown
+[V] Applies transforms to default native control and fieldset boxes, with explicit display and native font controls
+[V] Rejects known invalid math siblings before singularity proof and cascade selection, with source-order and important controls
+[V] Keeps projective coefficients unknown when they underflow or round to an affine row
+[V] Preserves inherited local state through exact identity lists at unknown box boundaries while keeping child planes unknown
+[V] Removes edge-on text and images after in-plane rotations while keeping restored planes and exact nonzero matrix controls
+[V] Keeps matrix offsets unresolved when the authored linear part only rounds to a pure translation
+[V] Keeps visible text and images after local and inherited offset cancellation or overflow, including embedded CSS and contents wrappers
+[V] Requires proven zero ancestor offsets before a relative-unit fallback and retains actual offscreen and restored-child controls
+[V] Applies offset error bounds through the independent public hidden-element check
