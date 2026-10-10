@@ -83,7 +83,9 @@ export class HiddenHtmlScanner {
       rootSize: this.rootSize,
       quirksMode: this.tree.document['x-mode'] === 'quirks',
     });
-    if (node.name === 'html') this.rootSize = visibility.fontSize;
+    if (!parent && node.name === 'html' && node.namespace === html.NS.HTML) {
+      this.rootSize = visibility.fontSize;
+    }
     return visibility;
   }
 

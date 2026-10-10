@@ -305,3 +305,8 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Applies deferred class font and transform replacements and class unitless font sizes in each parser mode
 [V] Applies overflow axis grouping, shorthand resets, and important declarations from class rules
 [V] Keeps finite composed transforms when binary rounding makes distinct projected columns equal
+[V] Keeps the true root font size when an SVG element is named html, for visible and zero rem sizes
+[V] Keeps zero-font input elements with missing or empty values and reports no hidden payload
+[V] Keeps visible axes after numeric cancellation in local and preserved matrix compositions, including unknown exact proof
+[V] Ignores transforms on inline and run-in flow list items and applies them to atomic inline flow-root list items
+[V] Keeps preserved child planes unknown when box applicability is unresolved, including identity transforms and contents wrappers
