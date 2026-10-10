@@ -1,7 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,76 +196,411 @@
+@@ -196,76 +196,517 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -20,9 +20,9 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (!node) return false;
 -  for (const fn of valueTokens(node)) {
 +  // Unresolved declarations cannot prove that content is hidden.
-+  if (!csstree.lexer.matchProperty("transform", node).matched) return false;
++  if (transformValueStatus(node) !== "valid") return false;
 +  const functions = valueTokens(node);
-+  const hidden = isHidingTransformList(functions, ignorePlane, ignoreOffsets);
++  const hidden = isHidingTransformList(node, ignorePlane, ignoreOffsets);
 +  if (hidden !== null) return hidden;
 +  // A layout-dependent list can restore an offset. Only judge a lone function.
 +  if (ignoreOffsets || functions.length !== 1) return false;
@@ -126,8 +126,8 @@ diff --git a/src/html.mjs b/src/html.mjs
 +
 +/** @param {any} fn @returns {bigint[][] | null} */
 +function exactMatrixRows(fn) {
++  if (!matrixRows(fn)) return null;
 +  const name = csstree.ident.decode(fn.name).toLowerCase();
-+  if (name !== "matrix" && name !== "matrix3d") return null;
 +  let tokens = functionArgs(fn).map((group) => group[0].value);
 +  if (name === "matrix") {
 +    const [a, b, c, d, e, f] = tokens;
@@ -139,18 +139,51 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    MATRIX_AXES.map((column) => integers[column * MATRIX_AXES.length + row]));
 +}
 +
-+/** @param {any} factor @returns {any | null} */
-+function literalScaleFactor(factor) {
++/** @param {any} factor @returns {any | "invalid" | null} */
++function scalarMathValue(factor) {
 +  for (let depth = 0; depth < 32; depth++) {
-+    if (factor.type === "Number" || factor.type === "Percentage")
++    if (["Number", "Percentage", "Dimension"].includes(factor.type))
 +      return Number.isFinite(Number(factor.value)) ? factor : null;
++    if (factor.type === "Identifier")
++      return csstree.lexer.match("<calc-constant>", factor).matched ? null : "invalid";
 +    if (factor.type !== "Parentheses" &&
 +        !(factor.type === "Function" && csstree.ident.decode(factor.name).toLowerCase() === "calc")) return null;
 +    const groups = functionArgs(factor);
-+    if (groups.length !== 1 || groups[0].length !== 1) return null;
++    if (groups.length !== 1 || groups[0].length === 0 || groups[0].at(-1).type === "Operator")
++      return "invalid";
++    if (groups[0].length !== 1) return null;
 +    factor = groups[0][0];
 +  }
 +  return null;
++}
++
++/** @param {any} factor @returns {any | null} */
++function literalScaleFactor(factor) {
++  const value = scalarMathValue(factor);
++  return value && ["Number", "Percentage"].includes(value.type) ? value : null;
++}
++
++/** @param {any} node @param {boolean | null} [deferred] @returns {"valid" | "invalid" | "unknown"} */
++function transformValueStatus(node, deferred = deferredFunctionStatus(node)) {
++  if (deferred === null) return "invalid";
++  if (deferred) return "unknown";
++  if (!csstree.lexer.matchProperty("transform", node).matched) return "invalid";
++  const witness = csstree.clone(node);
++  let unknown = false;
++  let invalid = false;
++  for (const fn of valueTokens(witness)) {
++    if (fn.type !== "Function") continue;
++    fn.children.forEach((argument, item) => {
++      if (argument.type !== "Function" && argument.type !== "Parentheses") return;
++      const scalar = scalarMathValue(argument);
++      if (scalar === "invalid") invalid = true;
++      else if (!scalar) unknown = true;
++      // Check the type in its argument slot, without evaluating or clamping math.
++      else item.data = { ...scalar, value: "1" };
++    });
++  }
++  if (invalid || !csstree.lexer.matchProperty("transform", witness).matched) return "invalid";
++  return unknown ? "unknown" : "valid";
 +}
 +
 +/** @param {any} fn @returns {boolean} */
@@ -177,12 +210,15 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  // Rounded products cannot prove rank loss. Small projected axes still count.
 +  if (hasCollapsedPlaneRank(exactLinear)) return true;
 +  if (!linearError) return false;
-+  const affine = rows[3][0] === 0 && rows[3][1] === 0 && rows[3][3] === 1;
-+  return affine && [0, 1].some((column) => {
++  const affine = rows[3].every((value, column) => value === Number(column === 3));
++  if (!affine) return false;
++  const smallColumn = [0, 1].some((column) => {
 +    const extent = Math.hypot(...[0, 1].map((row) =>
 +      sumBounds([Math.abs(rows[row][column]), linearError[row][column]])));
 +    return sumBounds([extent, numericRoundoff(extent)]) < NEAR_ZERO_EPSILON;
 +  });
++  // Bound only the local plane. This estimate cannot prove subtree rank loss.
++  return smallColumn || (!exactLinear && smallestPlaneAxisBound(rows, linearError) < NEAR_ZERO_EPSILON);
 +}
 +
 +const MATRIX_AXES = [0, 1, 2, 3];
@@ -265,44 +301,90 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return LINEAR_AXES.map((row) => LINEAR_AXES.map((column) => BigInt(row === column)));
 +}
 +
-+/** @param {any} fn @returns {bigint[][] | null} */
-+function exactLinearRows(fn) {
-+  if (fn.type !== "Function") return null;
-+  const matrix = exactMatrixRows(fn);
-+  if (matrix) {
-+    // Test the authored bottom row. A rounded zero cannot prove that a matrix is affine.
-+    if (matrix[3].slice(0, 3).some((value) => value !== 0n) || matrix[3][3] === 0n) return null;
-+    return matrix.slice(0, 3).map((row) => row.slice(0, 3));
-+  }
++/** @param {any} fn @returns {boolean} */
++function isAuthoredAffine(fn) {
++  if (fn.type !== "Function") return false;
 +  const name = csstree.ident.decode(fn.name).toLowerCase();
-+  if (/^(?:translate|translate3d|translatex|translatey|translatez)$/.test(name))
-+    return exactLinearIdentity();
++  if (name === "matrix") return matrixRows(fn) !== null;
++  if (name === "matrix3d") {
++    if (!matrixRows(fn)) return false;
++    const args = functionArgs(fn);
++    const bottom = exactScaledIntegers([
++      ...[3, 7, 11, 15].map((index) => exactDecimal(args[index][0].value)),
++      exactDecimal("1"),
++    ]);
++    return bottom !== null && bottom.slice(0, 3).every((value) => value === 0n) && bottom[3] === bottom[4];
++  }
++  return /^(?:scale|translate|rotate|skew)(?:3d|x|y|z)?$/.test(name);
++}
++
++/** @returns {bigint[][]} */
++function exactTransformIdentity() {
++  return MATRIX_AXES.map((row) => MATRIX_AXES.map((column) => BigInt(row === column)));
++}
++
++/** @param {any} fn @param {boolean} linearOnly @returns {bigint[][] | null} */
++function exactTransformRows(fn, linearOnly) {
++  if (!isAuthoredAffine(fn)) return null;
++  const matrix = exactMatrixRows(fn);
++  if (matrix) return linearOnly
++    ? matrix.map((row, index) => row.map((value, column) => column === 3 && index < 3 ? 0n : value))
++    : matrix;
++  const name = csstree.ident.decode(fn.name).toLowerCase();
++  if (/^(?:translate|translate3d|translatex|translatey|translatez)$/.test(name)) {
++    const zeroOffsets = linearOnly || valueTokens(fn).every((argument) => {
++      const scalar = scalarMathValue(argument);
++      return scalar && scalar !== "invalid" && exactDecimal(scalar.value)?.significand === 0n;
++    });
++    return zeroOffsets ? exactTransformIdentity() : null;
++  }
 +  if (!/^(?:scale|scale3d|scalex|scaley|scalez)$/.test(name)) return null;
-+  const factors = valueTokens(fn).map((arg) => {
-+    const value = exactDecimal(arg.value);
-+    return value && { ...value, exponent: value.exponent - (arg.type === "Percentage" ? 2 : 0) };
++  const factors = valueTokens(fn).map((argument) => {
++    const scalar = literalScaleFactor(argument);
++    const value = scalar && exactDecimal(scalar.value);
++    return value && { ...value, exponent: value.exponent - (scalar.type === "Percentage" ? 2 : 0) };
 +  });
 +  const one = { significand: 1n, exponent: 0 };
 +  const axes = name === "scale" ? [factors[0], factors.length > 1 ? factors[1] : factors[0], one] :
 +    name === "scale3d" ? factors :
 +    ["scalex", "scaley", "scalez"].map((axis) => axis === name ? factors[0] : one);
-+  const integers = exactScaledIntegers(axes);
-+  return integers && LINEAR_AXES.map((row) =>
-+    LINEAR_AXES.map((column) => row === column ? integers[row] : 0n));
++  // Keep the homogeneous unit. A common scale is not an identity transform.
++  const integers = exactScaledIntegers([...axes, one]);
++  return integers && MATRIX_AXES.map((row) =>
++    MATRIX_AXES.map((column) => row === column ? integers[row] : 0n));
 +}
 +
-+/** @param {(bigint[][] | null)[]} matrices @returns {bigint[][] | null} */
-+function composeExactLinearMatrices(matrices) {
-+  let rows = exactLinearIdentity();
++/** @param {any} fn @returns {bigint[][] | null} */
++function exactLinearRows(fn) {
++  return exactTransformRows(fn, true)?.slice(0, 3).map((row) => row.slice(0, 3)) ?? null;
++}
++
++/** @param {(bigint[][] | null)[]} matrices @param {bigint[][]} rows @returns {bigint[][] | null} */
++function composeExactMatrices(matrices, rows) {
 +  for (const matrix of matrices) {
 +    if (!matrix) return null;
-+    rows = rows.map((row) => LINEAR_AXES.map((column) =>
++    rows = rows.map((row) => row.map((_, column) =>
 +      row.reduce((sum, value, index) => sum + value * matrix[index][column], 0n)));
 +    // Keep the proof bounded across long lists and deeply nested preserved contexts.
 +    if (rows.some((row) => row.some((value) => value <= -EXACT_INTEGER_LIMIT || value >= EXACT_INTEGER_LIMIT)))
 +      return null;
 +  }
 +  return rows;
++}
++
++/** @param {(bigint[][] | null)[]} matrices @returns {bigint[][] | null} */
++function composeExactLinearMatrices(matrices) {
++  return composeExactMatrices(matrices, exactLinearIdentity());
++}
++
++/** @param {any} transform @param {boolean} linearOnly @returns {boolean} */
++function isExactTransformIdentity(transform, linearOnly) {
++  if (!transform || ["none", "initial", "unset"].includes(declText(transform).trim().toLowerCase())) return true;
++  if (transformValueStatus(transform) !== "valid") return false;
++  const rows = composeExactMatrices(valueTokens(transform).map((fn) => exactTransformRows(fn, linearOnly)),
++    exactTransformIdentity());
++  return rows !== null && rows[3][3] !== 0n && rows.every((row, index) =>
++    row.every((value, column) => value === (index === column ? rows[3][3] : 0n)));
 +}
 +
 +/** @param {number} value @returns {number} */
@@ -324,6 +406,32 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return upperBound(magnitude * (8 * Number.EPSILON) + Number.MIN_VALUE);
 +}
 +
++/** @param {number} value @returns {number} */
++function lowerBound(value) {
++  if (!Number.isFinite(value) || value <= 0) return 0;
++  ROUNDING_VIEW.setFloat64(0, value);
++  ROUNDING_VIEW.setBigUint64(0, ROUNDING_VIEW.getBigUint64(0) - 1n);
++  return ROUNDING_VIEW.getFloat64(0);
++}
++
++/** @param {number[][]} rows @param {number[][]} errors @returns {number} */
++function smallestPlaneAxisBound(rows, errors) {
++  const pairs = [[[0, 0], [1, 1]], [[0, 1], [1, 0]]];
++  const products = pairs.map(([[r1, c1], [r2, c2]]) => rows[r1][c1] * rows[r2][c2]);
++  const uncertainty = pairs.map(([[r1, c1], [r2, c2]]) => sumBounds([
++    upperBound(Math.abs(rows[r1][c1]) * errors[r2][c2]),
++    upperBound(Math.abs(rows[r2][c2]) * errors[r1][c1]),
++    upperBound(errors[r1][c1] * errors[r2][c2]),
++  ]));
++  const determinant = sumBounds([
++    Math.abs(products[0] - products[1]), ...uncertainty,
++    numericRoundoff(sumBounds(products.map(Math.abs))),
++  ]);
++  const largest = Math.max(...pairs.flat().map(([row, column]) =>
++    lowerBound(Math.abs(rows[row][column]) - errors[row][column])));
++  return largest > 0 ? upperBound(determinant / largest) : Infinity;
++}
++
 +/** @returns {number[][]} */
 +function zeroLinearError() {
 +  return LINEAR_AXES.map(() => LINEAR_AXES.map(() => 0));
@@ -332,12 +440,9 @@ diff --git a/src/html.mjs b/src/html.mjs
 +/** @param {any} fn @param {number[][] | null} rows @returns {number[][] | null} */
 +function transformLinearError(fn, rows) {
 +  if (!rows || !rows.every((row) => row.every(Number.isFinite))) return null;
++  // Projective operands can mix translation into the linear product.
++  if (!isAuthoredAffine(fn)) return null;
 +  const name = csstree.ident.decode(fn.name).toLowerCase();
-+  if (name === "matrix3d") {
-+    const args = functionArgs(fn);
-+    // Projective operands can mix translation into the linear product.
-+    if ([3, 7, 11].some((index) => exactDecimal(args[index][0].value)?.significand !== 0n)) return null;
-+  }
 +  if (/^(?:translate|translate3d|translatex|translatey|translatez)$/.test(name)) return zeroLinearError();
 +  if (/^(?:rotate|rotatex|rotatey|rotatez)$/.test(name)) {
 +    const angle = valueTokens(fn)[0];
@@ -419,24 +524,25 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return rows;
 +}
 +
-+/** @param {any[]} functions @param {boolean} ignorePlane @param {boolean} ignoreOffsets @returns {boolean | null} */
-+function isHidingTransformList(functions, ignorePlane, ignoreOffsets) {
++/** @param {any} transform @param {boolean} ignorePlane @param {boolean} ignoreOffsets @returns {boolean | null} */
++function isHidingTransformList(transform, ignorePlane, ignoreOffsets) {
++  const functions = valueTokens(transform);
 +  if (functions.length === 0) return false;
 +  const matrices = functions.map(transformRows);
 +  // A singular operand hides the subtree. Rounded products cannot prove this.
 +  // https://www.w3.org/TR/css-transforms-1/#transform-function-lists
 +  if (functions.some(isProvenSingularTransform)) return true;
++  // Test authored values before numeric rounding can erase a projective component.
++  if (!functions.every(isAuthoredAffine)) return false;
 +  const rows = composeMatrices(matrices);
 +  if (!rows) return null;
 +  // A 3D child can occupy another plane. The local plane cannot hide its subtree.
 +  if (ignorePlane) return false;
-+  // A projective matrix needs origin and layout data before its plane can be resolved.
-+  if (!rows[3].every((value, column) => value === Number(column === 3))) return false;
 +  // Text lies in the local z=0 plane. Check its projection onto the screen.
 +  if (isCollapsedPlane(rows, composeExactLinearMatrices(functions.map(exactLinearRows)),
 +      transformListLinearError(functions))) return true;
 +  // Rotation and scale also move the box around its layout-dependent origin.
-+  const translationOnly = isPureTranslation(rows);
++  const translationOnly = isPureTranslation(rows, transform);
 +  const offscreen = !ignoreOffsets && translationOnly &&
 +    (rows[0][3] < OFFSCREEN_ABSOLUTE_THRESHOLD || rows[1][3] < OFFSCREEN_ABSOLUTE_THRESHOLD);
 +  return offscreen;
@@ -446,10 +552,10 @@ diff --git a/src/html.mjs b/src/html.mjs
 +function localPlaneRows(transform) {
 +  const text = declText(transform).trim().toLowerCase();
 +  if (!transform || ["none", "initial", "unset"].includes(text)) return identityMatrix();
-+  if (!csstree.lexer.matchProperty("transform", transform).matched) return null;
-+  const rows = composeMatrices(valueTokens(transform).map(transformRows));
++  if (transformValueStatus(transform) !== "valid") return null;
++  const functions = valueTokens(transform);
 +  // Perspective needs origin and layout data before child planes can be resolved.
-+  return rows && rows[3].every((value, column) => value === Number(column === 3)) ? rows : null;
++  return functions.every(isAuthoredAffine) ? composeMatrices(functions.map(transformRows)) : null;
 +}
 +
 +/** @param {any} transform @returns {bigint[][] | null} */
@@ -467,7 +573,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +1175,203 @@
+@@ -840,26 +1281,204 @@
    return false;
  }
 
@@ -496,6 +602,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  if (property === "perspective" && Number(soleToken(decoded)?.value) < 0) return undefined;
 +  const deferred = deferredFunctionStatus(decoded);
 +  if (deferred === null) return undefined;
++  if (property === "transform" && transformValueStatus(decoded, deferred) === "invalid") return undefined;
 +  // Deferred values replace earlier declarations, but their computed value is unknown.
 +  return csstree.lexer.matchProperty(property, decoded).matched || deferred
 +    ? decoded : undefined;
@@ -689,7 +796,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1419,13 @@
+@@ -907,11 +1526,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -704,7 +811,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1448,93 @@
+@@ -934,17 +1555,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -799,7 +906,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,19 +1572,18 @@
+@@ -982,19 +1679,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -826,7 +933,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1683,10 @@
+@@ -1094,9 +1790,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -838,7 +945,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1698,7 @@
+@@ -1108,7 +1805,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -847,16 +954,17 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1725,249 @@
+@@ -1135,8 +1832,249 @@
    return firstElement;
  }
 
 -// Returns null on a closing tag: `</x>` alone can never be the *start* of a
 -// hidden element, so only opens drive the surrounding loop's removal mode.
-+/** @param {number[][]} rows @returns {boolean} */
-+function isPureTranslation(rows) {
++/** @param {number[][]} rows @param {any} transform @returns {boolean} */
++function isPureTranslation(rows, transform) {
 +  return rows.every((row, rowIndex) => row.every((value, column) =>
-+    (column === 3 && rowIndex < 3) || value === Number(rowIndex === column)));
++    (column === 3 && rowIndex < 3) || value === Number(rowIndex === column))) &&
++    isExactTransformIdentity(transform, true);
 +}
 +
 +const INLINE_ELEMENTS = new Set([
@@ -955,13 +1063,13 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  if (layoutOffset || parent?.hasPerspective) return { translation: null, offscreen: false };
 +  const rows = localPlaneRows(transform);
 +  const inherited = parent ? parent.translation : [0, 0, 0];
-+  if (rows && isPureTranslation(rows) && inherited) {
++  if (rows && isPureTranslation(rows, transform) && inherited) {
 +    const translation = inherited.map((value, axis) => value + rows[axis][3]);
 +    return { translation, offscreen: translation[0] < OFFSCREEN_ABSOLUTE_THRESHOLD ||
 +      translation[1] < OFFSCREEN_ABSOLUTE_THRESHOLD };
 +  }
 +  // An unchanged child retains an unresolved offscreen translation.
-+  if (rows && isPureTranslation(rows) && rows.every((row, axis) => axis === 3 || row[3] === 0))
++  if (rows && isPureTranslation(rows, transform) && rows.every((row, axis) => axis === 3 || row[3] === 0))
 +    return { translation: null, offscreen: parent?.offscreen ?? false };
 +  const unshiftedParent = inherited?.every((value) => value === 0);
 +  const offscreen = !rows && Boolean(unshiftedParent) && isHidingTransform(transform, true);
@@ -1061,10 +1169,9 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  if (isContentsWrapper(node, display)) return contentsVisibility(node, parent, fontSize);
 +  const transformable = appliesTransform(node, declarations, parent, display);
 +  const localTransform = declarations.get("transform");
-+  const unknownTransform = transformable === null && localTransform &&
-+    !["none", "initial", "unset"].includes(declText(localTransform).trim().toLowerCase());
-+  const transform = transformable === false ? undefined : unknownTransform
-+    ? { type: "Raw", value: "" } : localTransform;
++  const transform = transformable === false ? undefined : transformable === null
++    ? isExactTransformIdentity(localTransform, false) ? undefined : { type: "Raw", value: "" }
++    : localTransform;
 +  const transformStyle = transformable === false ? undefined : declarations.get("transform-style");
 +  const style = declText(transformStyle).trim().toLowerCase();
 +  const preserves3d = Boolean(transformStyle && !FLAT_TRANSFORM_STYLES.has(style));

@@ -298,7 +298,7 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Keeps projective planes with unresolved Z origins and still removes singular full matrices
 [V] Removes local and inherited offscreen input values, keeps visible inputs, and keeps descendants whose transforms return them to view
 [V] Keeps a nearly singular matrix with a resolved or unresolved inverse, and keeps a preserved child whose inverse restores the parent plane
-[V] Removes a truly singular operand even when another transform is unresolved
+[V] Removes a truly singular operand when another transform has unresolved geometry but the complete declaration has a supported valid form
 [V] Keeps a flat child restored by an inverse transform, including finite coefficients that exceed the exact decimal proof budget
 [V] Removes zero-font text-entry input values from effective author rules, including class rules and explicit font inheritance
 [V] Keeps input values with default, visible, or unresolved fonts under zero-font parents, and keeps images and native input controls
@@ -328,5 +328,10 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Applies known singular transforms to roots with inherited or deferred display and keeps identity controls
 [V] Keeps restored child planes through unresolved contents boundaries and ignores a contents wrapper's own transform
 [V] Keeps deferred overflow axes unknown, respects longhand order and importance, and retains confirmed flattening controls
-[V] Removes exact zero scales with supported scalar calc wrappers and keeps invalid, deferred, and compound math unknown
+[V] Removes exact zero scales with supported scalar calc wrappers and keeps deferred and compound math unknown
 [V] Applies transforms to default native control and fieldset boxes, with explicit display and native font controls
+[V] Rejects known invalid math siblings before singularity proof and cascade selection, with source-order and important controls
+[V] Keeps projective coefficients unknown when they underflow or round to an affine row
+[V] Preserves inherited local state through exact identity lists at unknown box boundaries while keeping child planes unknown
+[V] Removes edge-on text and images after in-plane rotations while keeping restored planes and exact nonzero matrix controls
+[V] Keeps matrix offsets unresolved when the authored linear part only rounds to a pure translation
