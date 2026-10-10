@@ -1,7 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,76 +196,393 @@
+@@ -196,76 +196,411 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -139,12 +139,30 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    MATRIX_AXES.map((column) => integers[column * MATRIX_AXES.length + row]));
 +}
 +
++/** @param {any} factor @returns {any | null} */
++function literalScaleFactor(factor) {
++  for (let depth = 0; depth < 32; depth++) {
++    if (factor.type === "Number" || factor.type === "Percentage")
++      return Number.isFinite(Number(factor.value)) ? factor : null;
++    if (factor.type !== "Parentheses" &&
++        !(factor.type === "Function" && csstree.ident.decode(factor.name).toLowerCase() === "calc")) return null;
++    const groups = functionArgs(factor);
++    if (groups.length !== 1 || groups[0].length !== 1) return null;
++    factor = groups[0][0];
++  }
++  return null;
++}
++
 +/** @param {any} fn @returns {boolean} */
 +function isProvenSingularTransform(fn) {
 +  if (fn.type !== "Function") return false;
 +  const name = csstree.ident.decode(fn.name).toLowerCase();
-+  if (/^(?:scale|scale3d|scalex|scaley|scalez)$/.test(name))
-+    return valueTokens(fn).some((factor) => exactDecimal(factor.value)?.significand === 0n);
++  if (/^(?:scale|scale3d|scalex|scaley|scalez)$/.test(name)) {
++    const factors = valueTokens(fn).map(literalScaleFactor);
++    return factors.every((factor) => factor !== null) &&
++      factors.some((factor) => exactDecimal(factor.value)?.significand === 0n);
++  }
++  if (!matrixRows(fn)) return false;
 +  const rows = exactMatrixRows(fn);
 +  return rows !== null && exactDeterminant(rows) === 0n;
 +}
@@ -407,7 +425,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const matrices = functions.map(transformRows);
 +  // A singular operand hides the subtree. Rounded products cannot prove this.
 +  // https://www.w3.org/TR/css-transforms-1/#transform-function-lists
-+  if (functions.some((fn, index) => matrices[index] && isProvenSingularTransform(fn))) return true;
++  if (functions.some(isProvenSingularTransform)) return true;
 +  const rows = composeMatrices(matrices);
 +  if (!rows) return null;
 +  // A 3D child can occupy another plane. The local plane cannot hide its subtree.
@@ -449,7 +467,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  /**
-@@ -840,26 +1157,203 @@
+@@ -840,26 +1175,203 @@
    return false;
  }
 
@@ -671,7 +689,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1401,13 @@
+@@ -907,11 +1419,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -686,7 +704,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1430,93 @@
+@@ -934,17 +1448,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -781,7 +799,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,19 +1554,18 @@
+@@ -982,19 +1572,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -808,7 +826,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1665,10 @@
+@@ -1094,9 +1683,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -820,7 +838,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1680,7 @@
+@@ -1108,7 +1698,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -829,7 +847,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1707,247 @@
+@@ -1135,8 +1725,249 @@
    return firstElement;
  }
 
@@ -859,11 +877,12 @@ diff --git a/src/html.mjs b/src/html.mjs
 +]);
 +const BLOCK_ELEMENTS = new Set([
 +  "address", "article", "aside", "blockquote", "body", "center", "dd", "details", "dialog",
-+  "dir", "div", "dl", "dt", "figcaption", "figure", "footer", "form", "h1", "h2", "h3",
++  "dir", "div", "dl", "dt", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3",
 +  "h4", "h5", "h6", "header", "hgroup", "hr", "html", "legend", "listing", "main", "menu",
 +  "nav", "ol", "p", "plaintext", "pre", "search", "section", "ul", "xmp",
 +]);
 +const STRUCTURED_DISPLAYS = new Map([
++  ["button", "inline-block"], ["meter", "inline-block"], ["progress", "inline-block"],
 +  ["li", "list-item"], ["summary", "list-item"], ["table", "table"],
 +  ["caption", "table-caption"], ["col", "table-column"], ["colgroup", "table-column-group"],
 +  ["tbody", "table-row-group"], ["thead", "table-header-group"], ["tfoot", "table-footer-group"],
@@ -902,6 +921,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  if (node.tagName === "html" && !parent) return true;
 +  if (display === null) return null;
 +  if (display === "contents") return false;
++  if (node.tagName === "button" || node.tagName === "fieldset") return true;
 +  const position = declText(declarations.get("position")).trim().toLowerCase();
 +  const floating = declText(declarations.get("float")).trim().toLowerCase();
 +  // Positioning, floating, and flex/grid items can turn inline boxes into blocks.

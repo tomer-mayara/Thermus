@@ -328,3 +328,5 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Applies known singular transforms to roots with inherited or deferred display and keeps identity controls
 [V] Keeps restored child planes through unresolved contents boundaries and ignores a contents wrapper's own transform
 [V] Keeps deferred overflow axes unknown, respects longhand order and importance, and retains confirmed flattening controls
+[V] Removes exact zero scales with supported scalar calc wrappers and keeps invalid, deferred, and compound math unknown
+[V] Applies transforms to default native control and fieldset boxes, with explicit display and native font controls
