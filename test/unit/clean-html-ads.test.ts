@@ -1,21 +1,14 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { type CleanHtmlAds } from '../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
 import { type Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { elementHidingRules, readAdFixture } from '../support/ad-rules.ts';
 
-const fixturesDirectory = join(process.cwd(), 'test/unit/fixtures');
-
-function readFixture(name: string): string {
-  return readFileSync(join(fixturesDirectory, name), 'utf8');
-}
-
-const elementHidingHtml = readFixture('element-hiding.html');
-const elementHidingCleanedHtml = readFixture('element-hiding.cleaned.html');
-const elementHidingExceptionHtml = readFixture('element-hiding-exception.html');
-const elementHidingExceptionCleanedHtml = readFixture('element-hiding-exception.cleaned.html');
+const elementHidingHtml = readAdFixture('element-hiding.html');
+const elementHidingCleanedHtml = readAdFixture('element-hiding.cleaned.html');
+const elementHidingExceptionHtml = readAdFixture('element-hiding-exception.html');
+const elementHidingExceptionCleanedHtml = readAdFixture('element-hiding-exception.cleaned.html');
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
 const elementHidingExceptionUrl = 'https://abptestpages.org/en/exceptions/element-hiding';
@@ -24,7 +17,7 @@ describe('CleanHtmlAdsAdblockRs', () => {
   let cleaner: CleanHtmlAds;
 
   beforeEach(() => {
-    cleaner = new CleanHtmlAdsAdblockRs();
+    cleaner = new CleanHtmlAdsAdblockRs(elementHidingRules);
   });
 
   test('hides the documented targets', async () => {

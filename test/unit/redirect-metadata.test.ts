@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { elementHidingRules } from '../support/ad-rules.ts';
 
 const html = '<html><head><title>Links</title></head><body><main><p>Links to related content: <a href="child">Child</a>, <a href="/root">Root</a>, <a href="//other.example/page">Other host</a>.</p></main></body></html>';
 
@@ -32,7 +33,7 @@ test('uses the final host for domain rules after a cross-host redirect', async (
     finalUrl: 'https://abptestpages.org/directory/page',
     html: '<html><body><main><p id="eh-id">Ad target</p><p>Visible content</p></main></body></html>',
   };
-  const pipeline = new HtmlToMarkdownPipeline([new CleanHtmlAdsAdblockRs(), new CleanHtmlToMarkdownDefuddle()]);
+  const pipeline = new HtmlToMarkdownPipeline([new CleanHtmlAdsAdblockRs(elementHidingRules), new CleanHtmlToMarkdownDefuddle()]);
 
   const result = await pipeline.process(page);
 
@@ -51,7 +52,7 @@ test('does not use the requested host for domain rules', async () => {
     html: '<html><body><p id="eh-id">Visible content</p></body></html>',
   };
 
-  const result = await new HtmlToMarkdownPipeline([new CleanHtmlAdsAdblockRs()]).process(page);
+  const result = await new HtmlToMarkdownPipeline([new CleanHtmlAdsAdblockRs(elementHidingRules)]).process(page);
 
   assert.equal(result.html, page.html);
   assert.equal(result.removed, 0);

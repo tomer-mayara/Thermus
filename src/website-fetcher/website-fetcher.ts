@@ -5,5 +5,15 @@ export interface WebsiteFetchResult {
 }
 
 export interface WebsiteFetcher {
+  /** @throws {WebsiteFetchHttpError} If the HTTP response fails. */
   fetchURL(url: string): Promise<WebsiteFetchResult>;
+}
+
+export class WebsiteFetchHttpError extends Error {
+  public readonly kind = 'http';
+
+  public constructor(public readonly status: number | undefined, options?: ErrorOptions) {
+    super(status === undefined ? 'HTTP request failed' : `HTTP request failed with status ${status}`, options);
+    this.name = 'WebsiteFetchHttpError';
+  }
 }

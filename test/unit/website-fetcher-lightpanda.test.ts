@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
 
 describe('WebsiteFetcherLightpanda', () => {
-  const htmlResult = (url: string, html: string) => JSON.stringify({ url, content: html, error: null });
+  const htmlResult = (url: string, html: string) => JSON.stringify({ url, http_status: 200, content: html, error: null });
   const expectedPage = (requestedUrl: string, html: string, finalUrl = requestedUrl) => ({
     requestedUrl,
     finalUrl,
@@ -60,8 +60,8 @@ describe('WebsiteFetcherLightpanda', () => {
     await rendererLaunched;
 
     assert.equal(command, 'lightpanda');
-    assert.deepEqual(args.slice(0, 9), [
-      'fetch', '--json', '--dump', 'html', '--wait-until', 'networkidle', '--wait-ms', '60000',
+    assert.deepEqual(args.slice(0, 10), [
+      'fetch', '--json', '--dump', 'html', '--fail-on-http-error', '--wait-until', 'networkidle', '--wait-ms', '60000',
       '--block-private-networks',
     ]);
     assert.ok(args.includes('--block-cidrs'));

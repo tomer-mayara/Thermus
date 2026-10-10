@@ -14,6 +14,8 @@ Lightpanda 1.1.0-nightly.10257+c3dfbaab3 supports [`--wait-until networkidle --w
 
 `WebsiteFetcher.fetchURL` returns `requestedUrl`, `finalUrl`, and `html`. `requestedUrl` keeps the URL as supplied. `finalUrl` is the URL of the returned page after redirects. Lightpanda still renders pages that need JavaScript.
 
+The Lightpanda fetcher returns rendered HTML for successful HTTP responses. It reports HTTP responses with status 400 or above as `WebsiteFetchHttpError`. See [the fetcher contract](docs/website-fetcher.md) for the error shape, CLI options, network policy, and local test requirements.
+
 HTML-to-Markdown conversion uses only the fetch result that the pipeline receives. It does not make network requests or fetch missing content. The pipeline uses `finalUrl` to resolve relative links and to apply host rules. Pass the fetch result directly to the pipeline:
 
 ```ts
@@ -22,6 +24,8 @@ const result = await pipeline.process(page);
 ```
 
 The ad cleaner removes matching elements from the HTML source. It preserves adjacent source text when a paragraph or list item omits its end tag. This applies to paragraphs inside list items and before `dialog`, `search`, `menu`, `hgroup`, and `table`. Fragments without a doctype or an explicit `html` element use the same paragraph boundaries. It preserves tables between matched formatting elements that the parser reconstructs. It removes an ad body through the end of the source if the body has no end tag. It counts each matching element once, including overlapping selector matches, and honors element-hiding exceptions.
+
+The ad cleaner takes trusted ABP rules as a constructor string. The application owns rule loading and updates. It applies domain rules using the fetched page's `finalUrl`. See [Ad rules](docs/ad-rules.md) for examples and no-op behavior.
 
 The converter removes prohibited invisible controls from decoded text and attribute values before Defuddle converts the page. It checks logical text runs across inline elements and maps deletions back to the original text nodes. Block elements, line breaks, and images end a run. This keeps valid Persian ZWNJ and emoji ZWJ sequences when syntax highlighting splits them across spans. The converter also cleans link and image destinations before URL serialization. These checks run before Markdown escaping and code-fence selection. It checks the final Markdown and page title, then reports each finding once. The checks do not decode another layer of HTML entities. Escaped entity examples, ordinary ampersands, copyright signs, and supplementary characters stay visible.
 
