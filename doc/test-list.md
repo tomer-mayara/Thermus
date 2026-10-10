@@ -22,6 +22,7 @@
 [V] Rejects 5,000 unclosed nested template elements followed by text for matching and non-matching hosts without a parser stack overflow
 [V] Completes EOF recovery for an unclosed HTML template inside an SVG title and preserves the source content
 [V] Removes an unclosed matching ancestor and its template content at EOF, while preserving preceding content
+[V] Removes the matched explicit body after foreign-content and template EOF recovery
 [V] Checks depth when generic hiding is disabled
 [V] Collects nested class and ID tokens for generic selectors
 [V] Accepts parsed element depth 256 and rejects depth 257 (254 and 255 nested divs in the body)
