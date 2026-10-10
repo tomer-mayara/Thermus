@@ -6,6 +6,7 @@ import {
   HtmlDepthLimitError,
   MAX_HTML_ELEMENT_DEPTH,
 } from '../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts';
+import { elementHidingRules } from '../support/ad-rules.ts';
 import { createContext } from '../support/html-cleaner-context.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
@@ -38,7 +39,7 @@ describe('ad cleaner depth limit', () => {
       const original = { ...input };
       const selectors = t.mock.method(adblockRust.Engine.prototype, 'urlCosmeticResources');
 
-      await assert.rejects(new CleanHtmlAdsAdblockRs().invoke(input), (error: unknown) => {
+      await assert.rejects(new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(input), (error: unknown) => {
         assert.ok(error instanceof HtmlDepthLimitError);
         assert.equal(error.message, limitError.message);
         return true;
@@ -56,7 +57,7 @@ describe('ad cleaner depth limit', () => {
       const original = { ...input };
       const selectors = t.mock.method(adblockRust.Engine.prototype, 'urlCosmeticResources');
 
-      await assert.rejects(new CleanHtmlAdsAdblockRs().invoke(input), (error: unknown) => {
+      await assert.rejects(new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(input), (error: unknown) => {
         assert.ok(error instanceof HtmlDepthLimitError);
         assert.equal(error.message, limitError.message);
         return true;
@@ -78,7 +79,7 @@ describe('ad cleaner depth limit', () => {
           requestedUrl: 'https://example.com/',
           finalUrl: 'https://example.com/',
         });
-        const operation = new CleanHtmlAdsAdblockRs().invoke(input);
+        const operation = new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(input);
 
         if (depth > 256) {
           await assert.rejects(operation, limitError);
@@ -91,7 +92,7 @@ describe('ad cleaner depth limit', () => {
 
   test('removes a matching sibling and keeps unclosed templates at the limit', async () => {
     const html = '<div class="eh-class">ad</div>' + '<template>'.repeat(254) + 'keep';
-    const result = await new CleanHtmlAdsAdblockRs().invoke(createContext(
+    const result = await new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(createContext(
       html, { finalUrl: elementHidingUrl },
     ));
 
@@ -105,7 +106,7 @@ describe('ad cleaner depth limit', () => {
       + '<b id="eh-id">id ad</b><b class="eh-class">class ad</b>'
       + '<i class="testcase-examplecontent">keep</i><b class="eh-sibling">sibling ad</b>'
       + '<p>visible</p></section>';
-    const result = await new CleanHtmlAdsAdblockRs().invoke(createContext(
+    const result = await new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(createContext(
       nestedHtml(252, content), { finalUrl: elementHidingUrl },
     ));
 
@@ -130,7 +131,7 @@ describe('ad cleaner depth limit', () => {
     const content = '<section id="outer-id" class="outer inner">'
       + '<b id="target-id" class=" target\tinner\n ">ad</b>'
       + '<p id="" class="keep">keep</p></section>';
-    const result = await new CleanHtmlAdsAdblockRs().invoke(createContext(
+    const result = await new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(createContext(
       nestedHtml(252, content), { finalUrl: 'https://example.com/' },
     ));
 
@@ -146,13 +147,13 @@ describe('ad cleaner depth limit', () => {
     const html = nestedHtml(252, '<template><span>keep</span></template>');
     const input = createContext(html, { finalUrl: 'https://example.com/' });
 
-    assert.deepEqual(await new CleanHtmlAdsAdblockRs().invoke(input), input);
+    assert.deepEqual(await new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(input), input);
   });
 
   test('rejects template children beyond the depth limit', async () => {
     const html = nestedHtml(253, '<template><span>x</span></template>');
 
-    await assert.rejects(new CleanHtmlAdsAdblockRs().invoke(createContext(
+    await assert.rejects(new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(createContext(
       html, { finalUrl: 'https://example.com/' },
     )), limitError);
   });
@@ -164,7 +165,7 @@ describe('ad cleaner depth limit', () => {
     }));
     const hidden = t.mock.method(adblockRust.Engine.prototype, 'hiddenClassIdSelectors');
 
-    await assert.rejects(new CleanHtmlAdsAdblockRs().invoke(createContext(
+    await assert.rejects(new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(createContext(
       nestedHtml(255), { finalUrl: 'https://example.com/' },
     )), limitError);
     assert.equal(hidden.mock.callCount(), 0);
@@ -172,7 +173,7 @@ describe('ad cleaner depth limit', () => {
 
   for (const tag of ['script', 'style', 'span', 'template']) {
     test(`counts ${tag} elements in the depth limit`, async () => {
-      await assert.rejects(new CleanHtmlAdsAdblockRs().invoke(createContext(
+      await assert.rejects(new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(createContext(
         nestedHtml(254, `<${tag}>text</${tag}>`),
         { finalUrl: 'https://example.com/' },
       )), limitError);

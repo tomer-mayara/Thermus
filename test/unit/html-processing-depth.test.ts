@@ -6,6 +6,7 @@ import {
   HtmlToMarkdownPipeline,
   type Ctx,
 } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { elementHidingRules } from '../support/ad-rules.ts';
 
 describe('HTML to Markdown pipeline depth limit', () => {
   for (const { label, html } of [
@@ -15,7 +16,7 @@ describe('HTML to Markdown pipeline depth limit', () => {
     test(`an ad cleaner depth failure for ${label} stops all later steps`, async (t) => {
       const later = t.mock.fn(async (ctx: Ctx) => ({ ...ctx, markdown: 'cleaned' }));
       const local = new HtmlToMarkdownPipeline([
-        new CleanHtmlAdsAdblockRs(), { invoke: later }, { invoke: later },
+        new CleanHtmlAdsAdblockRs(elementHidingRules), { invoke: later }, { invoke: later },
       ]);
 
       await assert.rejects(local.process({
