@@ -3,6 +3,7 @@ import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { type CleanHtmlAds } from '../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
 import { elementHidingRules } from '../support/ad-rules.ts';
+import { createContext } from '../support/html-cleaner-context.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
 
@@ -108,4 +109,15 @@ describe('CleanHtmlAdsAdblockRs document boundaries', () => {
       assert.equal(result.removed, 3 + sourceCase.removed);
     });
   }
+});
+
+test('removes a matching body after nested template EOF recovery', async () => {
+  const cleaner = new CleanHtmlAdsAdblockRs('example.com###ad');
+  const result = await cleaner.invoke(createContext(
+    '<body id="ad"><svg><template><title><template>text',
+    { finalUrl: 'https://example.com/' },
+  ));
+
+  assert.equal(result.html, '');
+  assert.equal(result.removed, 1);
 });
