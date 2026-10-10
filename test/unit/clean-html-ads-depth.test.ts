@@ -101,6 +101,16 @@ describe('ad cleaner depth limit', () => {
     assert.equal(result.skipped, 1);
   });
 
+  test('removes an unclosed matching ancestor after template EOF recovery', async () => {
+    const result = await new CleanHtmlAdsAdblockRs(elementHidingRules).invoke(createContext(
+      '<p>keep</p><div id="eh-id"><template><template>ad',
+      { finalUrl: elementHidingUrl },
+    ));
+
+    assert.equal(result.html, '<p>keep</p>');
+    assert.equal(result.removed, 1);
+  });
+
   test('removes nested selector targets at the limit and keeps other content', async () => {
     const content = '<section class="testcase-area"><b class="eh-descendant">ad</b>'
       + '<b id="eh-id">id ad</b><b class="eh-class">class ad</b>'
