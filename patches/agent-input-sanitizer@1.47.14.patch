@@ -1,7 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,76 +196,517 @@
+@@ -196,76 +196,576 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -414,15 +414,21 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return ROUNDING_VIEW.getFloat64(0);
 +}
 +
++/** @param {number} left @param {number} right @param {number} leftError @param {number} rightError @returns {number} */
++function productUncertainty(left, right, leftError, rightError) {
++  return sumBounds([
++    upperBound(Math.abs(left) * rightError),
++    upperBound(leftError * Math.abs(right)),
++    upperBound(leftError * rightError),
++  ]);
++}
++
 +/** @param {number[][]} rows @param {number[][]} errors @returns {number} */
 +function smallestPlaneAxisBound(rows, errors) {
 +  const pairs = [[[0, 0], [1, 1]], [[0, 1], [1, 0]]];
 +  const products = pairs.map(([[r1, c1], [r2, c2]]) => rows[r1][c1] * rows[r2][c2]);
-+  const uncertainty = pairs.map(([[r1, c1], [r2, c2]]) => sumBounds([
-+    upperBound(Math.abs(rows[r1][c1]) * errors[r2][c2]),
-+    upperBound(Math.abs(rows[r2][c2]) * errors[r1][c1]),
-+    upperBound(errors[r1][c1] * errors[r2][c2]),
-+  ]));
++  const uncertainty = pairs.map(([[r1, c1], [r2, c2]]) =>
++    productUncertainty(rows[r1][c1], rows[r2][c2], errors[r1][c1], errors[r2][c2]));
 +  const determinant = sumBounds([
 +    Math.abs(products[0] - products[1]), ...uncertainty,
 +    numericRoundoff(sumBounds(products.map(Math.abs))),
@@ -456,6 +462,43 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return rows.slice(0, 3).map((row) => row.slice(0, 3).map((value) => numericRoundoff(Math.abs(value))));
 +}
 +
++/** @param {any} token @returns {number | null} */
++function translationLengthError(token) {
++  const value = Number(token.value);
++  if (!Number.isFinite(value)) return null;
++  if (exactDecimal(token.value)?.significand === 0n) return 0;
++  const ratio = token.type === "Dimension" ? PIXELS_PER_UNIT[token.unit.toLowerCase()] : undefined;
++  if (!ratio) return null;
++  // Include input conversion before unit conversion. A rounded zero is not exact.
++  return sumBounds([
++    productUncertainty(value, ratio, numericRoundoff(Math.abs(value)), numericRoundoff(ratio)),
++    numericRoundoff(upperBound(Math.abs(value * ratio))),
++  ]);
++}
++
++/** @param {any} fn @param {number[][]} rows @returns {number[] | null} */
++function transformOffsetError(fn, rows) {
++  const name = csstree.ident.decode(fn.name).toLowerCase();
++  if (name === "matrix" || name === "matrix3d")
++    return rows.slice(0, 3).map((row) => numericRoundoff(Math.abs(row[3])));
++  if (!/^(?:translate|translate3d|translatex|translatey|translatez)$/.test(name)) return [0, 0, 0];
++  const errors = valueTokens(fn).map(translationLengthError);
++  if (errors.some((error) => error === null)) return null;
++  return name === "translate" ? [errors[0], errors[1] ?? 0, 0] :
++    name === "translate3d" ? errors :
++    ["translatex", "translatey", "translatez"].map((axis) => axis === name ? errors[0] : 0);
++}
++
++/** @param {any} fn @param {number[][] | null} rows @returns {number[][] | null} */
++function transformMatrixError(fn, rows) {
++  const linear = transformLinearError(fn, rows);
++  if (!linear) return null;
++  const offsets = transformOffsetError(fn, rows);
++  if (!offsets || !offsets.every(Number.isFinite)) return null;
++  return MATRIX_AXES.map((row) => MATRIX_AXES.map((column) =>
++    row === 3 ? 0 : column === 3 ? offsets[row] : linear[row][column]));
++}
++
 +/**
 + * @param {number[][] | null} left
 + * @param {number[][] | null} right
@@ -463,32 +506,48 @@ diff --git a/src/html.mjs b/src/html.mjs
 + * @param {number[][] | null} rightError
 + * @returns {number[][] | null}
 + */
-+function composeLinearError(left, right, leftError, rightError) {
++function composeMatrixError(left, right, leftError, rightError) {
 +  if (!left || !right || !leftError || !rightError) return null;
-+  const errors = LINEAR_AXES.map((row) => LINEAR_AXES.map((column) => {
-+    const magnitude = sumBounds(LINEAR_AXES.map((index) => upperBound(Math.abs(left[row][index] * right[index][column]))));
-+    const propagated = LINEAR_AXES.map((index) => sumBounds([
-+      upperBound(Math.abs(left[row][index]) * rightError[index][column]),
-+      upperBound(leftError[row][index] * Math.abs(right[index][column])),
-+      upperBound(leftError[row][index] * rightError[index][column]),
-+    ]));
++  const axes = leftError.map((_, index) => index);
++  const errors = axes.map((row) => axes.map((column) => {
++    const magnitude = sumBounds(axes.map((index) => upperBound(Math.abs(left[row][index] * right[index][column]))));
++    const propagated = axes.map((index) =>
++      productUncertainty(left[row][index], right[index][column], leftError[row][index], rightError[index][column]));
 +    return sumBounds([...propagated, numericRoundoff(magnitude)]);
 +  }));
 +  return errors.every((row) => row.every(Number.isFinite)) ? errors : null;
 +}
 +
-+/** @param {any[]} functions @returns {number[][] | null} */
-+function transformListLinearError(functions) {
++/** @param {any[]} functions @param {boolean} [includeOffsets] @returns {number[][] | null} */
++function transformListError(functions, includeOffsets = false) {
 +  let rows = identityMatrix();
-+  let errors = zeroLinearError();
++  let errors = includeOffsets ? MATRIX_AXES.map(() => MATRIX_AXES.map(() => 0)) : zeroLinearError();
 +  for (const fn of functions) {
 +    const local = transformRows(fn);
-+    const next = composeLinearError(rows, local, errors, transformLinearError(fn, local));
++    const localError = includeOffsets ? transformMatrixError(fn, local) : transformLinearError(fn, local);
++    const next = composeMatrixError(rows, local, errors, localError);
 +    if (!next) return null;
 +    errors = next;
 +    rows = composeMatrices([rows, local]);
 +  }
 +  return errors;
++}
++
++/** @param {any} transform @returns {number[] | null} */
++function localTranslationError(transform) {
++  return transformListError(valueTokens(transform), true)?.slice(0, 3).map((row) => row[3]) ?? null;
++}
++
++/** @param {number[]} translation @param {number[] | null} error @returns {boolean} */
++function isOffscreenTranslation(translation, error) {
++  if (!error || !translation.every(Number.isFinite) ||
++      !error.every((value) => Number.isFinite(value) && value >= 0)) return false;
++  return [0, 1].some((axis) => {
++    const sum = translation[axis] + error[axis];
++    if (!Number.isFinite(sum)) return false;
++    const upper = sum < 0 ? -lowerBound(-sum) : upperBound(sum);
++    return upper < OFFSCREEN_ABSOLUTE_THRESHOLD;
++  });
 +}
 +
 +/** @param {string} name @param {any} angle @returns {number[][] | null} */
@@ -540,11 +599,11 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  if (ignorePlane) return false;
 +  // Text lies in the local z=0 plane. Check its projection onto the screen.
 +  if (isCollapsedPlane(rows, composeExactLinearMatrices(functions.map(exactLinearRows)),
-+      transformListLinearError(functions))) return true;
++      transformListError(functions))) return true;
 +  // Rotation and scale also move the box around its layout-dependent origin.
 +  const translationOnly = isPureTranslation(rows, transform);
 +  const offscreen = !ignoreOffsets && translationOnly &&
-+    (rows[0][3] < OFFSCREEN_ABSOLUTE_THRESHOLD || rows[1][3] < OFFSCREEN_ABSOLUTE_THRESHOLD);
++    isOffscreenTranslation(rows.slice(0, 3).map((row) => row[3]), localTranslationError(transform));
 +  return offscreen;
 +}
 +
@@ -569,11 +628,11 @@ diff --git a/src/html.mjs b/src/html.mjs
 +function localLinearError(transform) {
 +  const text = declText(transform).trim().toLowerCase();
 +  if (!transform || ["none", "initial", "unset"].includes(text)) return zeroLinearError();
-+  return transformListLinearError(valueTokens(transform));
++  return transformListError(valueTokens(transform));
  }
 
  /**
-@@ -840,26 +1281,204 @@
+@@ -840,26 +1340,204 @@
    return false;
  }
 
@@ -796,7 +855,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1526,13 @@
+@@ -907,11 +1585,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -811,7 +870,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1555,93 @@
+@@ -934,17 +1614,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -906,7 +965,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,19 +1679,18 @@
+@@ -982,19 +1738,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -933,7 +992,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1790,10 @@
+@@ -1094,9 +1849,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -945,7 +1004,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1805,7 @@
+@@ -1108,7 +1864,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -954,7 +1013,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1832,249 @@
+@@ -1135,8 +1891,270 @@
    return firstElement;
  }
 
@@ -1050,30 +1109,50 @@ diff --git a/src/html.mjs b/src/html.mjs
 +}
 +
 +/**
++ * @param {number[]} left
++ * @param {number[]} right
++ * @param {number[]} leftError
++ * @param {number[]} rightError
++ * @returns {{ translation: number[], translationError: number[] } | null}
++ */
++function addTranslations(left, right, leftError, rightError) {
++  const translation = left.map((value, axis) => value + right[axis]);
++  const translationError = leftError.map((value, axis) => sumBounds([
++    value, rightError[axis], numericRoundoff(sumBounds([Math.abs(left[axis]), Math.abs(right[axis])])),
++  ]));
++  return translation.every(Number.isFinite) && translationError.every(Number.isFinite)
++    ? { translation, translationError } : null;
++}
++
++/**
 + * Track pure translations through flat and preserved descendants.
 + * Layout-dependent offsets remain unknown.
 + * @param {Map<string, any>} declarations
 + * @param {import("../types/html.d.mts").ElementVisibility | undefined} parent
 + * @param {any} transform
-+ * @returns {{ translation: number[] | null, offscreen: boolean }}
++ * @returns {{ translation: number[] | null, translationError: number[] | null, offscreen: boolean }}
 + */
 +function resolveTranslation(declarations, parent, transform) {
++  const unknown = { translation: null, translationError: null, offscreen: false };
 +  const layoutOffset = [...declarations.keys()].some((property) =>
 +    /^(?:margin(?:-|$)|inset(?:-|$)|left$|right$|top$|bottom$|position$)/.test(property));
-+  if (layoutOffset || parent?.hasPerspective) return { translation: null, offscreen: false };
-+  const rows = localPlaneRows(transform);
++  if (layoutOffset || parent?.hasPerspective) return unknown;
 +  const inherited = parent ? parent.translation : [0, 0, 0];
-+  if (rows && isPureTranslation(rows, transform) && inherited) {
-+    const translation = inherited.map((value, axis) => value + rows[axis][3]);
-+    return { translation, offscreen: translation[0] < OFFSCREEN_ABSOLUTE_THRESHOLD ||
-+      translation[1] < OFFSCREEN_ABSOLUTE_THRESHOLD };
++  const inheritedError = parent ? parent.translationError : [0, 0, 0];
++  // An exact identity keeps both known zero and unresolved offscreen state.
++  if (isExactTransformIdentity(transform, false))
++    return { translation: inherited, translationError: inheritedError, offscreen: parent?.offscreen ?? false };
++  const rows = localPlaneRows(transform);
++  if (rows && isPureTranslation(rows, transform) && inherited && inheritedError) {
++    const localError = localTranslationError(transform);
++    if (!localError) return unknown;
++    const combined = addTranslations(inherited, rows.slice(0, 3).map((row) => row[3]), inheritedError, localError);
++    return combined ? { ...combined, offscreen: isOffscreenTranslation(combined.translation, combined.translationError) }
++      : unknown;
 +  }
-+  // An unchanged child retains an unresolved offscreen translation.
-+  if (rows && isPureTranslation(rows, transform) && rows.every((row, axis) => axis === 3 || row[3] === 0))
-+    return { translation: null, offscreen: parent?.offscreen ?? false };
-+  const unshiftedParent = inherited?.every((value) => value === 0);
++  const unshiftedParent = inherited?.every((value) => value === 0) && inheritedError?.every((value) => value === 0);
 +  const offscreen = !rows && Boolean(unshiftedParent) && isHidingTransform(transform, true);
-+  return { translation: null, offscreen };
++  return { ...unknown, offscreen };
 +}
 +
 +/** @param {any} node @param {string | null} display @returns {boolean} */
@@ -1099,7 +1178,8 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    exactLinearMatrix: parent?.exactLinearMatrix ?? null,
 +    linearError: parent?.linearError ?? null,
 +    hiddenPlane, hasPerspective: parent?.hasPerspective ?? false,
-+    translation: parent ? parent.translation : [0, 0, 0], offscreen,
++    translation: parent ? parent.translation : [0, 0, 0],
++    translationError: parent ? parent.translationError : [0, 0, 0], offscreen,
 +    hiddenReplacedContent: false,
 +    hiddenElement: isHiddenElement(node, {
 +      ignoreFontSize: true, ignoreTransforms: true, ignorePositionedOffsets: true,
@@ -1142,7 +1222,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    const prefix = parent.preserves3d ? parent.matrix : flattenPlane(parent.matrix, 0);
 +    const exactPrefix = parent.preserves3d ? parent.exactLinearMatrix : flattenPlane(parent.exactLinearMatrix, 0n);
 +    const errorPrefix = parent.preserves3d ? parent.linearError : flattenPlane(parent.linearError, 0);
-+    linearError = composeLinearError(prefix, matrix, errorPrefix, linearError);
++    linearError = composeMatrixError(prefix, matrix, errorPrefix, linearError);
 +    matrix = composeMatrices([prefix, matrix]);
 +    exactLinearMatrix = composeExactLinearMatrices([exactPrefix, exactLinearMatrix]);
 +  }
@@ -1186,11 +1266,11 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const matrix = unknownContext ? null : plane.matrix;
 +  const exactLinearMatrix = matrix ? plane.exactLinearMatrix : null;
 +  const linearError = matrix ? plane.linearError : null;
-+  const { translation, offscreen } = resolveTranslation(declarations, parent, transform);
++  const { translation, translationError, offscreen } = resolveTranslation(declarations, parent, transform);
 +  const htmlReplaced = htmlElement && REPLACED_ELEMENTS.has(node.tagName);
 +  return {
 +    fontSize, display, boxDisplay: display, preserves3d, matrix, exactLinearMatrix, linearError,
-+    hiddenPlane, hasPerspective, translation, offscreen,
++    hiddenPlane, hasPerspective, translation, translationError, offscreen,
 +    hiddenReplacedContent: htmlReplaced && (((offscreen || hiddenPlane) && VOID_ELEMENTS.has(node.tagName)) ||
 +      hasHiddenInputValue(node, declarations, fontSize)),
 +    hiddenElement: collapsedFlatPlane || (htmlElement && display === "contents" && CONTENTS_SUPPRESSED_ELEMENTS.has(node.tagName)) || isHiddenElement(node, {
@@ -1228,7 +1308,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -115,3 +117,43 @@
+@@ -115,3 +117,45 @@
  import { SECRET_HINT_EXT } from "./gates.mjs";
  import { matchesSecretHint } from "./gates.mjs";
  export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };
@@ -1260,6 +1340,8 @@ diff --git a/types/html.d.mts b/types/html.d.mts
 +    hiddenElement: boolean;
 +    hiddenText: boolean;
 +    translation: number[] | null;
++    /** Absolute error bounds for known translations. Null means unresolved. */
++    translationError: number[] | null;
 +    offscreen: boolean;
 +}
 +/** Resolve inline visibility. The caller supplies the parsed parent state. */

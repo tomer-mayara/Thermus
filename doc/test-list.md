@@ -335,3 +335,6 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Preserves inherited local state through exact identity lists at unknown box boundaries while keeping child planes unknown
 [V] Removes edge-on text and images after in-plane rotations while keeping restored planes and exact nonzero matrix controls
 [V] Keeps matrix offsets unresolved when the authored linear part only rounds to a pure translation
+[V] Keeps visible text and images after local and inherited offset cancellation or overflow, including embedded CSS and contents wrappers
+[V] Requires proven zero ancestor offsets before a relative-unit fallback and retains actual offscreen and restored-child controls
+[V] Applies offset error bounds through the independent public hidden-element check
