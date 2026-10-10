@@ -1,7 +1,7 @@
 diff --git a/src/html.mjs b/src/html.mjs
 --- a/src/html.mjs
 +++ b/src/html.mjs
-@@ -196,76 +196,264 @@
+@@ -196,76 +196,295 @@
 
  /**
   * True when a `transform` renders text invisible: scaled to (near) nothing,
@@ -94,30 +94,6 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
 +}
 +
-+/** @param {number[][]} rows @returns {{ value: number, magnitude: number }} */
-+function determinant(rows) {
-+  if (rows.length === 1)
-+    return { value: rows[0][0], magnitude: Math.abs(rows[0][0]) };
-+  let value = 0;
-+  let magnitude = 0;
-+  for (let column = 0; column < rows.length; column++) {
-+    const coefficient = rows[0][column];
-+    const minor = rows.slice(1).map((row) => row.filter((_, i) => i !== column));
-+    const term = determinant(minor);
-+    value += (column % 2 === 0 ? 1 : -1) * coefficient * term.value;
-+    magnitude += Math.abs(coefficient) * term.magnitude;
-+  }
-+  return { value, magnitude };
-+}
-+
-+/** @param {number[][]} rows @returns {boolean} */
-+function isSingularMatrix(rows) {
-+  const { value, magnitude } = determinant(rows);
-+  // Scale the rounding allowance to the determinant terms, not the visible area.
-+  const roundoff = Number.EPSILON * rows.length * rows.length * magnitude;
-+  return Number.isFinite(magnitude) && Math.abs(value) <= roundoff;
-+}
-+
 +/** @param {bigint[][]} rows @returns {bigint} */
 +function exactDeterminant(rows) {
 +  if (rows.length === 1) return rows[0][0];
@@ -141,54 +117,57 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return { significand: BigInt(mantissa.replace(".", "")), exponent };
 +}
 +
++/** @param {({ significand: bigint, exponent: number } | null)[]} values @returns {bigint[] | null} */
++function exactScaledIntegers(values) {
++  if (values.some((value) => value === null)) return null;
++  const exponent = Math.min(...values.map((value) => value.exponent));
++  return values.map((value) => value.significand * 10n ** BigInt(value.exponent - exponent));
++}
++
++/** @param {any} fn @returns {bigint[][] | null} */
++function exactMatrixRows(fn) {
++  const name = csstree.ident.decode(fn.name).toLowerCase();
++  if (name !== "matrix" && name !== "matrix3d") return null;
++  let tokens = functionArgs(fn).map((group) => group[0].value);
++  if (name === "matrix") {
++    const [a, b, c, d, e, f] = tokens;
++    tokens = [a, b, "0", "0", c, d, "0", "0", "0", "0", "1", "0", e, f, "0", "1"];
++  }
++  // Use authored decimals. Binary rounding cannot prove that the matrix is singular.
++  const integers = exactScaledIntegers(tokens.map(exactDecimal));
++  return integers && MATRIX_AXES.map((row) =>
++    MATRIX_AXES.map((column) => integers[column * MATRIX_AXES.length + row]));
++}
++
 +/** @param {any} fn @returns {boolean} */
 +function isProvenSingularTransform(fn) {
 +  if (fn.type !== "Function") return false;
 +  const name = csstree.ident.decode(fn.name).toLowerCase();
 +  if (/^(?:scale|scale3d|scalex|scaley|scalez)$/.test(name))
 +    return valueTokens(fn).some((factor) => exactDecimal(factor.value)?.significand === 0n);
-+  if (name !== "matrix" && name !== "matrix3d") return false;
-+  let tokens = functionArgs(fn).map((group) => group[0].value);
-+  if (name === "matrix") {
-+    const [a, b, c, d, e, f] = tokens;
-+    tokens = [a, b, "0", "0", c, d, "0", "0", "0", "0", "1", "0", e, f, "0", "1"];
-+  }
-+  const values = tokens.map(exactDecimal);
-+  if (values.some((value) => value === null)) return false;
-+  // Use authored decimals. Binary rounding cannot prove that the matrix is singular.
-+  const exponent = Math.min(...values.map((value) => value.exponent));
-+  const integers = values.map((value) =>
-+    value.significand * 10n ** BigInt(value.exponent - exponent));
-+  const rows = MATRIX_AXES.map((row) =>
-+    MATRIX_AXES.map((column) => integers[column * MATRIX_AXES.length + row]));
-+  return exactDeterminant(rows) === 0n;
++  const rows = exactMatrixRows(fn);
++  return rows !== null && exactDeterminant(rows) === 0n;
 +}
 +
-+/** @param {number[][]} rows @returns {boolean} */
-+function isPlanarMatrix(rows) {
-+  return rows.every((row, rowIndex) => row.every((value, column) =>
-+    (rowIndex < 2 && column !== 2) || value === Number(rowIndex === column)));
-+}
-+
-+/** @param {number[][]} rows @returns {boolean} */
-+function isCollapsedPlane(rows) {
-+  const projected = PROJECTED_AXES.map((row) =>
-+    PROJECTED_AXES.map((column) => rows[row][column]));
-+  // A planar rank loss needs exact operand proof. Small projected axes still count.
-+  if (!isPlanarMatrix(rows) && isSingularMatrix(projected)) return true;
++/** @param {number[][]} rows @param {bigint[][] | null} exactLinear @returns {boolean} */
++function isCollapsedPlane(rows, exactLinear) {
++  // Rounded products cannot prove rank loss. Small projected axes still count.
++  if (exactLinear && exactDeterminant(exactLinear.slice(0, 2).map((row) => row.slice(0, 2))) === 0n)
++    return true;
 +  const affine = rows[3][0] === 0 && rows[3][1] === 0 && rows[3][3] === 1;
 +  return affine && (Math.hypot(rows[0][0], rows[1][0]) < NEAR_ZERO_EPSILON ||
 +    Math.hypot(rows[0][1], rows[1][1]) < NEAR_ZERO_EPSILON);
 +}
 +
 +const MATRIX_AXES = [0, 1, 2, 3];
-+const PROJECTED_AXES = [0, 1, 3];
++const LINEAR_AXES = [0, 1, 2];
++const EXACT_INTEGER_LIMIT = 1n << 4096n;
 +const FLAT_TRANSFORM_STYLES = new Set(["flat", "initial", "unset"]);
 +const GROUPING_DEFAULTS = {
 +  "overflow-x": ["visible", "clip"], "overflow-y": ["visible", "clip"],
 +  filter: ["none"], clip: ["auto"], "clip-path": ["none"], isolation: ["auto"],
 +  "mask-image": ["none"], "mask-border-source": ["none"], "mix-blend-mode": ["normal"],
-+  opacity: [], contain: [],
++  opacity: [], contain: [], "content-visibility": ["visible"],
 +};
 +const GROUPING_PROPERTIES = new Set(["overflow", "mask", "mask-border", ...Object.keys(GROUPING_DEFAULTS)]);
 +
@@ -254,6 +233,51 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  return null;
 +}
 +
++/** @returns {bigint[][]} */
++function exactLinearIdentity() {
++  return LINEAR_AXES.map((row) => LINEAR_AXES.map((column) => BigInt(row === column)));
++}
++
++/** @param {any} fn @returns {bigint[][] | null} */
++function exactLinearRows(fn) {
++  if (fn.type !== "Function") return null;
++  const matrix = exactMatrixRows(fn);
++  if (matrix) {
++    // Test the authored bottom row. A rounded zero cannot prove that a matrix is affine.
++    if (matrix[3].slice(0, 3).some((value) => value !== 0n) || matrix[3][3] === 0n) return null;
++    return matrix.slice(0, 3).map((row) => row.slice(0, 3));
++  }
++  const name = csstree.ident.decode(fn.name).toLowerCase();
++  if (/^(?:translate|translate3d|translatex|translatey|translatez)$/.test(name))
++    return exactLinearIdentity();
++  if (!/^(?:scale|scale3d|scalex|scaley|scalez)$/.test(name)) return null;
++  const factors = valueTokens(fn).map((arg) => {
++    const value = exactDecimal(arg.value);
++    return value && { ...value, exponent: value.exponent - (arg.type === "Percentage" ? 2 : 0) };
++  });
++  const one = { significand: 1n, exponent: 0 };
++  const axes = name === "scale" ? [factors[0], factors.length > 1 ? factors[1] : factors[0], one] :
++    name === "scale3d" ? factors :
++    ["scalex", "scaley", "scalez"].map((axis) => axis === name ? factors[0] : one);
++  const integers = exactScaledIntegers(axes);
++  return integers && LINEAR_AXES.map((row) =>
++    LINEAR_AXES.map((column) => row === column ? integers[row] : 0n));
++}
++
++/** @param {(bigint[][] | null)[]} matrices @returns {bigint[][] | null} */
++function composeExactLinearMatrices(matrices) {
++  let rows = exactLinearIdentity();
++  for (const matrix of matrices) {
++    if (!matrix) return null;
++    rows = rows.map((row) => LINEAR_AXES.map((column) =>
++      row.reduce((sum, value, index) => sum + value * matrix[index][column], 0n)));
++    // Keep the proof bounded across long lists and deeply nested preserved contexts.
++    if (rows.some((row) => row.some((value) => value <= -EXACT_INTEGER_LIMIT || value >= EXACT_INTEGER_LIMIT)))
++      return null;
++  }
++  return rows;
++}
++
 +/** @param {string} name @param {any} angle @returns {number[][] | null} */
 +function rotationRows(name, angle) {
 +  if (!angle) return null;
@@ -301,7 +325,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  // A projective matrix needs origin and layout data before its plane can be resolved.
 +  if (!rows[3].every((value, column) => value === Number(column === 3))) return false;
 +  // Text lies in the local z=0 plane. Check its projection onto the screen.
-+  if (isCollapsedPlane(rows)) return true;
++  if (isCollapsedPlane(rows, composeExactLinearMatrices(functions.map(exactLinearRows)))) return true;
 +  // Rotation and scale also move the box around its layout-dependent origin.
 +  const translationOnly = isPureTranslation(rows);
 +  const offscreen = !ignoreOffsets && translationOnly &&
@@ -317,10 +341,17 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const rows = composeMatrices(valueTokens(transform).map(transformRows));
 +  // Perspective needs origin and layout data before child planes can be resolved.
 +  return rows && rows[3].every((value, column) => value === Number(column === 3)) ? rows : null;
++}
++
++/** @param {any} transform @returns {bigint[][] | null} */
++function localExactLinearRows(transform) {
++  const text = declText(transform).trim().toLowerCase();
++  if (!transform || ["none", "initial", "unset"].includes(text)) return exactLinearIdentity();
++  return composeExactLinearMatrices(valueTokens(transform).map(exactLinearRows));
  }
 
  /**
-@@ -840,26 +1028,203 @@
+@@ -840,26 +1059,203 @@
    return false;
  }
 
@@ -542,7 +573,7 @@ diff --git a/src/html.mjs b/src/html.mjs
  }
 
  // A CSS property-name ident AFTER escape decoding: up to two leading hyphens
-@@ -907,11 +1272,13 @@
+@@ -907,11 +1303,13 @@
   * free). Property names are escape-decoded and gated to real CSS idents;
   * anything else is dropped (fail open). Later declarations win, per the cascade.
   * @param {string} styleStr
@@ -557,7 +588,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    let ast;
    try {
      ast = csstree.parse(styleStr, {
-@@ -934,17 +1301,93 @@
+@@ -934,17 +1332,93 @@
        // token; property is escape-decoded then gated to a clean CSS ident.
        const property = csstree.ident.decode(node.property).trim().toLowerCase();
        if (!CSS_PROPERTY_IDENT_RE.test(property)) return;
@@ -652,7 +683,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    const decls = parseDeclarations(styleStr);
    if (decls.size === 0) return false;
 
-@@ -982,19 +1425,18 @@
+@@ -982,19 +1456,18 @@
    // children, so a bare `width:0`/`height:0` leaves content on screen.
    // `isOverflowHidden` below already covers the case where a zero dimension
    // DOES hide content — gated on `overflow:hidden` also being present.
@@ -679,7 +710,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (isHidingFilter(nodeOf("filter"))) return true;
 
    // Same-color text on its background (white-on-white) and fully transparent
-@@ -1094,9 +1536,10 @@
+@@ -1094,9 +1567,10 @@
   * True for an element a rendered page would not show: `hidden` attribute or a
   * hiding inline style. Works on both hast nodes and parseHtmlTag results.
   * @param {any} node
@@ -691,7 +722,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    if (node.type !== "element") return false;
    const { properties = {} } = node;
    if (properties.hidden !== undefined && properties.hidden !== null)
-@@ -1108,7 +1551,7 @@
+@@ -1108,7 +1582,7 @@
    // duplicated for screen-reader dedup). Splicing on it would delete content
    // a human plainly sees, which is real harm under the precision-over-recall
    // doctrine for this layer.
@@ -700,7 +731,7 @@ diff --git a/src/html.mjs b/src/html.mjs
    return false;
  }
 
-@@ -1135,8 +1578,208 @@
+@@ -1135,8 +1609,221 @@
    return firstElement;
  }
 
@@ -769,7 +800,10 @@ diff --git a/src/html.mjs b/src/html.mjs
 +function appliesTransform(node, declarations, parent, display) {
 +  if (node.namespace && node.namespace !== "http://www.w3.org/1999/xhtml") return true;
 +  if (display === null) return null;
-+  if (["none", "contents"].includes(display)) return false;
++  if (display === "none") return false;
++  // The HTML document element has a blockified box.
++  if (node.tagName === "html" && !parent) return true;
++  if (display === "contents") return false;
 +  const position = declText(declarations.get("position")).trim().toLowerCase();
 +  const floating = declText(declarations.get("float")).trim().toLowerCase();
 +  // Positioning, floating, and flex/grid items can turn inline boxes into blocks.
@@ -834,6 +868,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +    fontSize, display: "contents", boxDisplay: parent?.boxDisplay ?? null,
 +    preserves3d: parent?.preserves3d ?? false,
 +    matrix: parent?.matrix ?? null,
++    exactLinearMatrix: parent?.exactLinearMatrix ?? null,
 +    hiddenPlane, hasPerspective: parent?.hasPerspective ?? false,
 +    translation: parent ? parent.translation : [0, 0, 0], offscreen,
 +    hiddenReplacedContent: false,
@@ -851,7 +886,7 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const { type = "", value } = node.properties ?? {};
 +  // Missing and invalid input types use the text state.
 +  return typeof value === "string" && value.length > 0 &&
-+    !NON_TEXT_INPUT_TYPES.has(type.toLowerCase());
++    !NON_TEXT_INPUT_TYPES.has(type.replace(/[A-Z]/g, (character) => character.toLowerCase()));
 +}
 +
 +/**
@@ -869,7 +904,9 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const nativeFont = htmlElement && NATIVE_FONT_ELEMENTS.has(node.tagName) && !declarations.has("font-size");
 +  const fontSize = nativeFont ? null :
 +    resolveFontSize(declarations.get("font-size"), inherited, options.rootSize ?? null);
-+  const display = resolveDisplay(node, declarations);
++  const declaredDisplay = resolveDisplay(node, declarations);
++  const display = htmlElement && node.tagName === "html" && !parent && declaredDisplay === "contents"
++    ? "block" : declaredDisplay;
 +  if (isContentsWrapper(node, display)) return contentsVisibility(node, parent, fontSize);
 +  const transformable = appliesTransform(node, declarations, parent, display);
 +  const localTransform = declarations.get("transform");
@@ -884,18 +921,25 @@ diff --git a/src/html.mjs b/src/html.mjs
 +  const hasPerspective = Boolean(perspective && !["none", "initial", "unset"].includes(perspective));
 +  let hiddenPlane = Boolean(parent?.hiddenPlane && !in3dContext);
 +  let matrix = null;
++  let exactLinearMatrix = null;
 +  if (in3dContext || preserves3d) {
 +    let rows = localPlaneRows(transform);
-+    if (in3dContext) rows = composeMatrices([parent?.matrix ?? null, rows]);
++    let exactRows = rows ? localExactLinearRows(transform) : null;
++    if (in3dContext) {
++      rows = composeMatrices([parent?.matrix ?? null, rows]);
++      exactRows = composeExactLinearMatrices([parent?.exactLinearMatrix ?? null, exactRows]);
++    }
 +    if (parent?.hasPerspective) rows = null;
-+    if (rows && isCollapsedPlane(rows)) hiddenPlane = true;
++    if (rows && isCollapsedPlane(rows, exactRows)) hiddenPlane = true;
 +    const unknownContext = hasPerspective || (preserves3d && style !== "preserve-3d");
 +    matrix = unknownContext ? null : rows;
++    exactLinearMatrix = matrix ? exactRows : null;
 +  }
 +  const { translation, offscreen } = resolveTranslation(declarations, parent, transform);
 +  const htmlReplaced = htmlElement && REPLACED_ELEMENTS.has(node.tagName);
 +  return {
-+    fontSize, display, boxDisplay: display, preserves3d, matrix, hiddenPlane, hasPerspective, translation, offscreen,
++    fontSize, display, boxDisplay: display, preserves3d, matrix, exactLinearMatrix,
++    hiddenPlane, hasPerspective, translation, offscreen,
 +    hiddenReplacedContent: htmlReplaced && (((offscreen || hiddenPlane) && VOID_ELEMENTS.has(node.tagName)) ||
 +      hasHiddenInputValue(node, declarations, fontSize)),
 +    hiddenElement: (htmlElement && display === "contents" && CONTENTS_SUPPRESSED_ELEMENTS.has(node.tagName)) || isHiddenElement(node, {
@@ -933,7 +977,7 @@ diff --git a/types/html.d.mts b/types/html.d.mts
  /**
   * @param {string} htmlValue
   * @returns {string | null}
-@@ -115,3 +117,38 @@
+@@ -115,3 +117,40 @@
  import { SECRET_HINT_EXT } from "./gates.mjs";
  import { matchesSecretHint } from "./gates.mjs";
  export { HTML_TAG_PRESENT, MD_LINK_HINT, SECRET_HINT, SECRET_HINT_EXT, matchesSecretHint };
@@ -953,6 +997,8 @@ diff --git a/types/html.d.mts b/types/html.d.mts
 +    boxDisplay: string | null;
 +    preserves3d: boolean;
 +    matrix: number[][] | null;
++    /** Exact affine linear coefficients, up to a common scale. Null means unknown. */
++    exactLinearMatrix: bigint[][] | null;
 +    hiddenPlane: boolean;
 +    hasPerspective: boolean;
 +    /** Hidden content in a void replaced element. */

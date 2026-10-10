@@ -279,9 +279,16 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Keeps known inherited offsets and planes through unstyled elements with unknown box defaults
 [V] Keeps inherited offsets when an unknown box has an explicit none, initial, or unset transform
 [V] Removes replaced HTML images with display:contents and keeps visible images with default or unresolved display
-[V] Keeps invertible local and accumulated planar matrices, including matrix3d values and nested preserved contexts
+[V] Keeps invertible local and accumulated matrices, including Z translations, non-planar matrix3d values, and nested preserved contexts
 [V] Removes meter and progress fallback text with display:contents and respects display declaration priority
 [V] Rejects malformed deferred function headers, reserved variable names, and empty attribute namespace prefixes
 [V] Keeps valid deferred values unknown, including nested and empty fallbacks, escaped names, and typed attributes
 [V] Keeps native control text under zero-font parents unless an effective author font rule hides it
 [V] Keeps a visible table formatting copy when copies with the same parent and source have conflicting styles
+[V] Uses ASCII case matching for input types and treats a Unicode lookalike as an invalid text type
+[V] Applies a collapsed transform to the blockified HTML root and keeps its visible identity controls
+[V] Keeps a visible button label when display:contents removes its box
+[V] Flattens preserved 3D contexts for content-visibility:auto, respects class, reset, and important declarations, and keeps deferred grouping unknown
+[V] Applies deferred class font and transform replacements and class unitless font sizes in each parser mode
+[V] Applies overflow axis grouping, shorthand resets, and important declarations from class rules
+[V] Keeps finite composed transforms when binary rounding makes distinct projected columns equal
