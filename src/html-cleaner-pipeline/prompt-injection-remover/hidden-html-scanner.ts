@@ -2,7 +2,7 @@ import { resolveElementVisibility, REPORTED_TAGS, type ElementVisibility } from 
 import { html, serializeOuter } from 'parse5';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { resolveCssVisibility, type VisibilityStyle } from './css-visibility.ts';
-import { parseSourceDocument, type CssHtmlDocument } from './css-visibility-tree.ts';
+import { SourceHtmlDocument } from './css-visibility-tree.ts';
 import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 import { HiddenHtmlRemovalCounts } from './hidden-html-removal-counts.ts';
 
@@ -35,14 +35,14 @@ export class HiddenHtmlScanner {
 
   private constructor(
     private readonly styles: Map<HtmlElement, VisibilityStyle>,
-    private readonly tree: CssHtmlDocument,
+    private readonly tree: SourceHtmlDocument,
     private readonly captureText = false,
   ) {
     this.removals = new HiddenHtmlRemovalCounts(tree);
   }
 
   public static scan(text: string, provenance = new CssVisibilityProvenance(), captureText = false) {
-    const tree = parseSourceDocument(text);
+    const tree = SourceHtmlDocument.parse(text);
     const styles = resolveCssVisibility(tree);
     const contexts = provenance.apply(tree, styles);
     const scanner = new HiddenHtmlScanner(styles, tree, captureText);
@@ -97,7 +97,7 @@ export class HiddenHtmlScanner {
     this.textAvailable = this.canReadText(node, removalRoot);
     if (boundary) this.endTextRun();
     if (this.textAvailable && adapter.isTextNode(node) && !visibility?.hiddenText) {
-      this.textRun.push({ text: node.data, ranges: this.tree.textSources.get(node) });
+      this.textRun.push({ text: node.data, ranges: this.tree.textRanges(node) });
     }
     return boundary;
   }
@@ -192,21 +192,15 @@ export class HiddenHtmlScanner {
   }
 
   private recordVisibleStyles(node: HtmlElement): void {
-    const locations = [
-      adapter.getNodeSourceCodeLocation(this.tree.sourceElement(node)),
-      ...this.tree.adoptedSources.get(node) ?? [],
-    ];
-    for (const location of locations) {
-      const style = location?.attrs?.style;
-      if (!style) continue;
-      this.visibleStyles.set(style.startOffset, { start: style.startOffset, end: style.endOffset });
-      this.visibleStyleValues.push(...this.tree.decodedStyleValues.get(style.startOffset) ?? []);
+    for (const { range, decodedValues } of this.tree.styleSources(node)) {
+      this.visibleStyles.set(range.start, range);
+      this.visibleStyleValues.push(...decodedValues);
     }
   }
 
   private recordSource(node: HtmlNode): void {
     if (adapter.isTextNode(node)) {
-      for (const range of this.tree.textSources.get(node)) this.ranges.push(range);
+      for (const range of this.tree.textRanges(node)) this.ranges.push(range);
       return;
     }
     if (adapter.isElementNode(node)) {
@@ -219,15 +213,7 @@ export class HiddenHtmlScanner {
 
   private recordElementSource(node: HtmlElement): void {
     if (this.visibleSources.has(this.tree.sourceElement(node))) return;
-    for (const source of this.tree.adoptedSources.get(node) ?? []) {
-      this.ranges.push({ start: source.startOffset, end: source.endOffset });
-    }
-    const location = adapter.getNodeSourceCodeLocation(node);
-    if (location == null) return;
-    // A whole element interval can also contain visible nodes outside its parsed subtree.
-    for (const source of [location.startTag, location.endTag]) {
-      if (source) this.ranges.push({ start: source.startOffset, end: source.endOffset });
-    }
+    for (const range of this.tree.elementTagRanges(node)) this.ranges.push(range);
   }
 
   private static urlSource(node: HtmlElement): string {
