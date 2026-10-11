@@ -48,13 +48,6 @@ Run the deterministic construction regression with:
 npm run build && node --test dist/test/unit/clean-html-ads-construction.test.js
 ```
 
-The test uses 32, 128, and 512 matches on short lines and in minified source. It counts slice calls and requested UTF-16 units through the public cleaner interface, checks exact output and counts, and requires a fixed linear slice-call budget. Short-line inputs also require a fixed linear budget for requested slice units. Minified inputs report slice units without that bound, so the remaining line-scan cost is visible. This is an operation-count regression, not a timing benchmark or a measure of physical string allocation. It bounds output construction for these inputs; parsing, selector matching, range sorting, and per-match line scans have separate costs. In particular, many matches on one long line can still cause repeated line scans and whitespace slices.
+The cleaner scans the source once to record each LF line boundary and the first and last character other than a space or tab on each line. Each matched range uses binary searches in that line index to check the lone-line rule. It does not scan or slice the same long line again for each match. For n source UTF-16 units, m matched ranges, and l source lines, this check takes O(n + m log l) work and uses O(l) line records. Parsing, selector matching, and range sorting have separate costs.
 
-For 32 matches in those fixtures, the original loop and the retained-span construction request these slice sizes. The measurements include the unchanged lone-line checks.
-
-| Fixture | Source UTF-16 units | Original slice calls | New slice calls | Original requested slice units | New requested slice units |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Short lines | 2,060 | 128 | 97 | 54,464 | 2,508 |
-| Minified source | 1,163 | 128 | 97 | 60,992 | 36,843 |
-
-The comparison uses the same public `invoke` input and slice counter, with the original removal loop substituted in an isolated Node process. It changes no production API. The minified fixture is repeated `<div id="eh-id">ad</div><p>keep</p>` after the test prefix. Its requested slice units still grow with both source length and match count because of the unchanged line checks.
+The test uses 32, 128, and 512 matches on short lines, in minified source, and in minified source with long whitespace gaps and supplementary Unicode. Through the public cleaner interface, it checks exact output and counts and records source scans, slice calls, and requested UTF-16 units. Every fixture permits at most three inspected source units and two requested slice units per source UTF-16 unit, and at most three slice calls per match plus one. This is an operation-count regression, not a timing benchmark or a measure of physical string allocation. It does not bound parsing, selector matching, or range sorting.
