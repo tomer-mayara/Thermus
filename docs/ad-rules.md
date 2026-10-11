@@ -25,6 +25,8 @@ Use ABP exception rules in the supplied string when a site needs an exception. F
 
 Each cleaner builds its engine when it is constructed. That engine keeps a snapshot of the supplied rules. To use an updated list, construct a new cleaner and replace the old instance. You can reuse one cleaner in a pipeline. Each cleaner owns its engine; instances do not share engines.
 
+The cleaner owns selector selection through its private engine. Callers supply the page context and do not select cosmetic rules. Before it asks the engine for selectors, the cleaner walks the full parsed document and checks the element depth limit. This check also applies when no host rule matches or generic hiding is disabled. Selection uses the final URL, collected class and ID tokens, and rule exceptions.
+
 The application owns rule trust, persistence, versions, updates, and update failures. For example, an application can read a configured absolute path and pass its contents to the constructor:
 
 ```ts

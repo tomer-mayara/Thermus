@@ -28,11 +28,7 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
 
   public async invoke(ctx: Ctx): Promise<Ctx> {
     const document = CleanHtmlAdsAdblockRs.parseHtml(ctx.html);
-    const selected = CleanHtmlAdsAdblockRs.selectorsFor(
-      this.engine,
-      ctx.finalUrl,
-      document,
-    );
+    const selected = this.selectorsFor(ctx.finalUrl, document);
     const stripped = CleanHtmlAdsAdblockRs.stripHtml(ctx.html, document, selected.hide);
     return {
       ...ctx,
@@ -85,16 +81,15 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     return { classes, ids };
   }
 
-  private static selectorsFor(
-    adblock: AdblockEngine,
+  private selectorsFor(
     url: string,
     document: HtmlNode,
   ): { hide: string[]; skipped: number } {
     const { classes, ids } = CleanHtmlAdsAdblockRs.collectClassAndId(document);
-    const specific = adblock.urlCosmeticResources(url);
+    const specific = this.engine.urlCosmeticResources(url);
     const hide = new Set(specific.hide_selectors);
     if (!specific.generichide) {
-      for (const selector of adblock.hiddenClassIdSelectors(
+      for (const selector of this.engine.hiddenClassIdSelectors(
         [...classes],
         [...ids],
         specific.exceptions,
