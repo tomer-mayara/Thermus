@@ -1,0 +1,29 @@
+# Martin-informed review of the Metz-informed proposal
+
+This review concerns [the independent Metz proposal](metz-proposal.md), including its principles and ordered plan. It records negotiation between AI reviewers; it does not attribute this discussion to either author or adopt repository policy. Neither independent proposal has been changed.
+
+## Agreements on principles and plan
+
+The strongest shared principle is to move knowledge to its owner. The proposed `SourceHtmlDocument` addresses a concrete defect: the scanner combines adopted token locations, decoded styles, and source-element associations. Representation changes currently cross that boundary. An object can supply source answers while the scanner retains visibility and deletion decisions. This is more useful than converting every helper to a method.
+
+I agree that change cost should govern the class decision, but I would retain an explicit class preference when several operations protect domain state. Without that preference, a record and unrelated functions can gradually become an object whose invariants remain exposed. The Metz proposal already follows this preference in its source document and removal session. Useful closures and calculations remain legitimate exceptions. The existing fetch request closure and serializer closure show why syntax alone is not the measure.
+
+The ad-cleaner change is correctly small. `selectorsFor` should use its owner's engine, without a new service abstraction. The proposals also agree on the larger boundaries: one parsed source object per parse, one removal session per invocation, and one prepared extraction object per conversion. Preserve the distinction between authored source and parsed tree identity. Preserve counters, warning maxima, failure withholding, exception ordering, byte limits, and source offsets.
+
+## Objections and concessions
+
+The Metz source API calls one query `visibleStyleSources`. This embeds a scanner decision in a source role. I propose `styleSources(element)`. It returns interval and decoded-value records; it makes no visibility claim. I concede that `elementTagRanges(element)` is clearer than my proposed `elementRemovalRanges`: the source object does not decide removal. Joint source API: `sourceElement`, `textRanges`, `styleSources`, and `elementTagRanges`, with private adopted-source and decoded-style maps. The parser factory remains an implementation boundary, and collection results must not allow callers to change those maps.
+
+The extraction callback is my main objection. A callback for a hypothetical extractor would add an extension point without a current need. The prepared object already represents the Defuddle preparation contract: neutral extraction URLs, protected code whitespace, heading changes, and extraction options. It should own the concrete Defuddle call and both sanitation hooks, then return finished content and title. Its caller supplies the current `sanitizeText` collaboration; it need not supply a second function that reconstructs extraction coordination. This is a concrete boundary, not a generic strategy framework. I concede the name `PreparedHtmlDocument`, which describes its domain more clearly than my `HtmlExtractionSession`.
+
+I also concede immediate `CssVisibilityCascade` conversion. The current context record stays inside one module and feeds one private operation. It does not force external callers to coordinate state. My proposal overstates the present benefit of hiding this local record. Trigger the class when rule application gains separately invoked operations, multiple clients, or an externally coordinated lifecycle. Module growth alone is a weak trigger unless it exposes independently changing cascade responsibilities. Mathematical, declaration, and serialization helpers should still remain calculations or scoped closures.
+
+## Proposed joint decisions and verification
+
+Implement the ad method correction, source queries, invocation removal session, and prepared extraction boundary in that order. Keep CSS cascade conversion deferred and document its trigger. Keep separate parser roles, range algorithms, provenance ownership, and result records. Use characterization acceptance coverage first, then failing tests for genuinely new contracts. Verify concurrent use of one sanitizer because the new session changes that lifetime boundary.
+
+The Metz plan includes concurrent fetch isolation in its initial acceptance work. Since neither proposal changes fetching, this is a future fetcher requirement rather than mandatory new work now. Existing fetch coverage can remain in normal checks. New source and removal tests should focus on the behavior that the proposed boundaries can affect. Correct the Metz draft's claim that real pipeline stages alone make a test an integration test: AGENTS defines integration through collaboration across Delamain package boundaries. Real collaboration inside one package is permitted in unit tests. Classify by actual package boundaries and test purpose; do not relocate tests in this refactor.
+
+My independent proposal too broadly required `npm run test:interface`. That command includes live public renderer tests. Require relevant local dependency-interface suites for parser, sanitizer, and extraction contracts; do not make unrelated renderer availability a gate for source-only refactors. Keep `npm run check`, relevant acceptance tests, each changed test, and repository-required `habit-hooks` and PR gates. Resolve the absent test-gate policy at implementation handoff. No checks or implementation edits are needed to complete this review.
+
+The peer accepted direct Defuddle ownership and the `PreparedHtmlDocument` name, with `extract(sanitizeText): Promise<{ content, title }>`. Both reviewers now agree on the proposed decisions above. The manager must still review and synthesize them.
