@@ -22,7 +22,7 @@ describe('CSS visibility for duplicate document source tags', () => {
         assert.ok(!result.html.includes(threatUrl));
         assert.equal(result.markdown, '');
         assert.deepEqual([...result.found ?? []].sort(), ['exfil-urls', 'hidden-html']);
-        assert.equal(result.skipped, 2);
+        assert.equal(result.skipped, 0);
         const warnings = result.warnings?.join('\n') ?? '';
         assert.match(warnings, /link to attacker\.example: suspicious query parameter/);
         assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);

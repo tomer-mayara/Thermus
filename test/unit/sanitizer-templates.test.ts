@@ -26,7 +26,7 @@ describe('PromptInjectionRemoverSanitizer template contents', () => {
         + '<img src="data:image/png;base64,a"></template>🦊',
     );
     assert.deepEqual(result.found, ['html-comments', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
     assert.ok(result.warnings?.some((warning) => warning.includes('2 HTML comment(s)')));
     assert.ok(result.warnings?.some((warning) => warning.includes('2 hidden element(s)')));
     assert.ok(result.warnings?.some((warning) => warning.includes('script')));
@@ -40,7 +40,7 @@ describe('PromptInjectionRemoverSanitizer template contents', () => {
 
     assert.equal(result.html, '<template></template>');
     assert.deepEqual(result.found, ['html-comments', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
   });
 
   test('counts a hidden outer template once and skips its contents', async () => {
@@ -50,7 +50,7 @@ describe('PromptInjectionRemoverSanitizer template contents', () => {
 
     assert.equal(result.html, '<p>Keep</p>');
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('keeps template table and raw-text parsing in the source context', async () => {
@@ -67,7 +67,7 @@ describe('PromptInjectionRemoverSanitizer template contents', () => {
         + '<textarea><span hidden>textarea text</span></textarea></template>',
     );
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('keeps unmatched closing tags after an unclosed hidden element', async () => {
@@ -95,7 +95,7 @@ describe('PromptInjectionRemoverSanitizer template contents', () => {
         + `<a href="${visibleUrl}">Repeated visible</a></template>`,
     );
     assert.deepEqual(result.found, ['html-comments', 'hidden-html', 'exfil-urls']);
-    assert.equal(result.skipped, 3);
+    assert.equal(result.skipped, 0);
     const exfilWarning = result.warnings?.find((warning) => warning.startsWith('Exfil-shaped URLs detected:'));
     assert.ok(exfilWarning);
     for (const host of ['hidden.example', 'visible.example', 'final.example']) {

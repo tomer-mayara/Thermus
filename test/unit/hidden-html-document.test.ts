@@ -10,7 +10,7 @@ const scanFailureWarning = 'HTML scan failed; remaining HTML withheld';
 function assertHiddenDocumentRemoved(result: Ctx): void {
   assert.equal(result.html, '');
   assert.equal(result.found?.includes('hidden-html'), true);
-  assert.equal(result.skipped, 1);
+  assert.equal(result.skipped, 0);
   assert.equal(result.warnings?.includes(scanFailureWarning), false);
 }
 

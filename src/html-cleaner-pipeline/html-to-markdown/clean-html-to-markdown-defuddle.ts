@@ -9,7 +9,11 @@ import { sanitizeHtmlDocument, type SanitizeText } from './sanitize-html-documen
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
     if (/^[\t\n\f\r ]*$/.test(ctx.html)) {
-      return { ...ctx, markdown: '', title: null };
+      return {
+        ...ctx, markdown: '', title: null,
+        ...(ctx.found && { found: [...new Set(ctx.found)] }),
+        ...(ctx.warnings && { warnings: [...new Set(ctx.warnings)] }),
+      };
     }
     const reports: ReturnType<typeof sanitize>[] = [];
     const sanitizeText: SanitizeText = (text, onDelete) => {
@@ -35,18 +39,13 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
     const allReports = [...decodedReports, markdown, title];
     const detected = new Set(allReports.flatMap((report) => report.found));
     const notices = new Set(allReports.flatMap((report) => report.warnings));
-    const found = [...detected]
-      .filter((category) => !ctx.found?.includes(category));
-    const warnings = [...notices]
-      .filter((warning) => !ctx.warnings?.includes(warning));
 
     return {
       ...ctx,
       markdown: markdown.cleaned,
       title: title.cleaned,
-      skipped: ctx.skipped + found.length,
-      found: [...(ctx.found ?? []), ...found],
-      warnings: [...(ctx.warnings ?? []), ...warnings],
+      found: [...new Set([...(ctx.found ?? []), ...detected])],
+      warnings: [...new Set([...(ctx.warnings ?? []), ...notices])],
     };
   }
 

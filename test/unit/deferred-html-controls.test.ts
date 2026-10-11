@@ -6,7 +6,7 @@ import { processHtml } from '../helpers/process-html.ts';
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';
 
 function assertFormatFinding(result: Ctx): void {
-  assert.equal(result.skipped, 1);
+  assert.equal(result.skipped, 0);
   assert.deepEqual(result.found, ['cf-format']);
   assert.deepEqual(result.warnings, [formatWarning]);
 }

@@ -19,7 +19,7 @@ const result = await pipeline.process(page);
 
 The page has `requestedUrl`, `finalUrl`, and `html` fields. The cleaner uses `finalUrl` to select domain rules after redirects.
 
-The constructor throws `TypeError('Ad rules must be supplied as a string')` when the value is missing, `null`, or not a string. An empty string, a string with only blank lines, and a string with only comments make the cleaner a no-op. The native adblock-rs parser ignores lines that it cannot parse and keeps accepted rules. Those ignored lines do not increment `skipped`. Accepted selectors that the cleaner does not support and procedural actions encountered during `invoke` do increment `skipped`. A rules string with only ignored lines can make the cleaner a no-op. The cleaner does not use a fallback source or fetch rules.
+The constructor throws `TypeError('Ad rules must be supplied as a string')` when the value is missing, `null`, or not a string. An empty string, a string with only blank lines, and a string with only comments make the cleaner a no-op. The native adblock-rs parser ignores lines that it cannot parse and keeps accepted rules. Those ignored lines do not increment `skipped`. Each unsupported procedural action, selector evaluation error, and matched node attempt without a source range adds one to `skipped`. A selector with no matches adds nothing. A second invocation can attempt unsupported work again and add to `skipped` again. A rules string with only ignored lines can make the cleaner a no-op. The cleaner does not use a fallback source or fetch rules. See [pipeline metrics](pipeline-metrics.md) for the shared result contract.
 
 Use ABP exception rules in the supplied string when a site needs an exception. For example, `example.com#@#.sponsor` exempts the `.sponsor` selector on `example.com`.
 
@@ -38,7 +38,7 @@ Choose and validate that path in application configuration. If the file cannot b
 
 If you used `new CleanHtmlAdsAdblockRs()` before, pass the intended rules string instead. For a deliberate no-op, pass `''`.
 
-Matched elements use source ranges. The cleaner merges overlapping and adjacent ranges, then slices the retained spans from the original HTML in source order and joins them once. Output construction takes O(n + r) work for n source UTF-16 units and r merged ranges. It does not rebuild the remaining document for each match. Each matched DOM node still adds one to `removed`, even when its range overlaps another match. Multiple selectors for the same node count once.
+Matched elements use source ranges. The cleaner merges overlapping and adjacent ranges, then slices the retained spans from the original HTML in source order and joins them once. Output construction takes O(n + r) work for n source UTF-16 units and r merged ranges. It does not rebuild the remaining document for each match. Each matched DOM node with a source range adds one to `removed`, even when its range overlaps another match. Multiple selectors for the same node count once. A matched ancestor and matched child count separately. Unselected descendants removed with an ancestor do not add targets. Ad removal does not add detection categories to `found`. The cleaner preserves prior findings and warnings.
 
 Retained spans keep their exact source text, including supplementary Unicode and line endings. The existing lone-line rule removes spaces, tabs, and the following LF when an ad is the only content on that line. A CR before LF prevents that expansion; CRLF whitespace stays in the source after the element is removed.
 

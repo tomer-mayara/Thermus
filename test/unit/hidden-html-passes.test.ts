@@ -39,7 +39,7 @@ describe('hidden HTML removal passes', () => {
 
     assert.equal(result.html, '<p></p>');
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('keeps a threat warning for a URL formed before a later removal', async () => {
@@ -51,7 +51,7 @@ describe('hidden HTML removal passes', () => {
 
     assert.equal(result.html, '<p></p>');
     assert.deepEqual([...result.found ?? []].sort(), ['exfil-urls', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
     assert.match(result.warnings?.join('\n') ?? '', /link to attacker\.example: suspicious query parameter/);
   });
 
@@ -69,7 +69,7 @@ describe('hidden HTML removal passes', () => {
 
     assert.equal(result.html, '');
     assert.deepEqual([...result.found ?? []].sort(), ['exfil-urls', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
     assert.equal(scanCount, 2);
     const warnings = result.warnings?.join('\n') ?? '';
     assert.equal(
@@ -106,8 +106,8 @@ describe('hidden HTML removal passes', () => {
     assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(result.markdown, input.markdown);
     assert.equal(result.title, input.title);
-    assert.equal(result.removed, 2);
-    assert.equal(result.skipped, 8);
+    assert.equal(result.removed, 7);
+    assert.equal(result.skipped, 4);
     assert.equal(result.found?.[0], 'existing-finding');
     assert.deepEqual([...result.found ?? []].slice(1).sort(), [
       'cf-format', 'exfil-urls', 'hidden-html', 'html-comments',
@@ -126,7 +126,7 @@ describe('hidden HTML removal passes', () => {
     assert.equal(result.html, '<p></p>');
     assert.equal(result.warnings?.includes(scanLimitWarning), false);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('withholds HTML when the eighth scan still removes content', async () => {
@@ -137,7 +137,7 @@ describe('hidden HTML removal passes', () => {
     assert.equal(result.html, '');
     assert.equal(result.warnings?.filter((warning) => warning === scanLimitWarning).length, 1);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('withholds an unchecked remainder and keeps threat reports at the scan limit', async () => {
@@ -150,7 +150,7 @@ describe('hidden HTML removal passes', () => {
     assert.equal(result.html, '');
     assert.equal(result.warnings?.filter((warning) => warning === scanLimitWarning).length, 1);
     assert.deepEqual([...result.found ?? []].sort(), ['exfil-urls', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
     const warnings = result.warnings?.join('\n') ?? '';
     assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);
   });
@@ -181,7 +181,7 @@ describe('hidden HTML removal passes', () => {
     assert.equal(result.found?.[0], 'existing-finding');
     assert.equal(result.found?.includes('cf-format'), true);
     assert.equal(result.found?.includes('hidden-html'), false);
-    assert.equal(result.skipped, 5);
+    assert.equal(result.skipped, 4);
     assert.equal(result.warnings?.[0], 'existing warning');
     assert.equal(
       result.warnings?.filter((warning) => warning === 'HTML scan failed; remaining HTML withheld').length,

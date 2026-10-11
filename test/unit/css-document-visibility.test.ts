@@ -20,7 +20,7 @@ describe('CSS visibility on explicit document elements', () => {
         assert.doesNotMatch(result.html, /HIDDEN DIRECT TEXT|HIDDEN PAYLOAD/);
         assert.equal(result.markdown, '');
         assert.deepEqual(result.found, ['hidden-html']);
-        assert.equal(result.skipped, 1);
+        assert.equal(result.skipped, 0);
       });
     }
 
@@ -40,7 +40,7 @@ describe('CSS visibility on explicit document elements', () => {
         assert.equal(result.html.includes('Document content'), !hidden);
         assert.equal(result.markdown?.includes('Document content'), !hidden);
         assert.deepEqual(result.found, hidden ? ['hidden-html'] : []);
-        assert.equal(result.skipped, Number(hidden));
+        assert.equal(result.skipped, 0);
       });
     }
   }

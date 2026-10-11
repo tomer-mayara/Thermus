@@ -149,7 +149,7 @@ describe('supported CSS visibility rules', () => {
       assert.ok(!result.html.includes(testCase.hiddenText), testCase.hiddenText);
       assert.ok(!markdown.includes(testCase.hiddenText), testCase.hiddenText);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     });
   }
 });

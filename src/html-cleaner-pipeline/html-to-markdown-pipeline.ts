@@ -3,8 +3,11 @@ import { type WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
 export type Ctx = WebsiteFetchResult & {
   markdown?: string;
   title?: string | null;
+  // Accumulated ad targets and independent hidden HTML targets or comments removed.
   removed: number;
+  // Accumulated unsupported or unapplied ad work attempts.
   skipped: number;
+  // Detection categories in first-seen order, without duplicates. Count with Set.size.
   found?: readonly string[];
   warnings?: readonly string[];
 };

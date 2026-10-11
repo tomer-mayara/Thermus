@@ -38,7 +38,7 @@ describe('CSS selectors on the browser HTML tree', () => {
       assert.match(result.html, /Visible table control/);
       assert.match(result.markdown ?? '', /Visible table control/);
       assert.deepEqual(result.found, hidden ? ['hidden-html'] : []);
-      assert.equal(result.skipped, Number(hidden));
+      assert.equal(result.skipped, 0);
       assert.deepEqual(calls, []);
     });
   }
@@ -51,7 +51,7 @@ describe('CSS selectors on the browser HTML tree', () => {
     assert.doesNotMatch(result.html, /Hidden direct body text/);
     assert.doesNotMatch(result.markdown ?? '', /Hidden direct body text/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('removes hidden text moved out of a table', async () => {
@@ -63,7 +63,7 @@ describe('CSS selectors on the browser HTML tree', () => {
     assert.doesNotMatch(result.html, /Leading text|Moved text|Cell text/);
     assert.doesNotMatch(result.markdown ?? '', /Leading text|Moved text|Cell text/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   for (const hiddenFirst of [true, false]) {
@@ -89,7 +89,7 @@ describe('CSS selectors on the browser HTML tree', () => {
       assert.match(result.markdown ?? '', /OTHER CONTROL/);
       assert.match(result.html, /data-value="kept"/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     });
   }
 
@@ -105,7 +105,7 @@ describe('CSS selectors on the browser HTML tree', () => {
     assert.match(result.html, /VISIBLE CONTROL/);
     assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   for (const formatting of ['<b class="x">', '<b class="x"><i>']) {
@@ -120,7 +120,7 @@ describe('CSS selectors on the browser HTML tree', () => {
       assert.match(result.html, /VISIBLE CONTROL/);
       assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     });
   }
 
@@ -135,7 +135,7 @@ describe('CSS selectors on the browser HTML tree', () => {
       assert.doesNotMatch(result.html, /HIDDEN/);
       assert.equal(result.markdown, '');
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     });
   }
 });

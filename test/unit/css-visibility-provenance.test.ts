@@ -86,7 +86,7 @@ describe('CSS visibility for retained source nodes', () => {
       assert.match(result.html, /OTHER CONTROL/);
       assert.match(result.markdown ?? '', /OTHER CONTROL/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
       assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
     });
   }
@@ -111,7 +111,7 @@ describe('CSS visibility for retained source nodes', () => {
       assert.match(result.html, /OTHER CONTROL/);
       assert.match(result.markdown ?? '', /OTHER CONTROL/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     }
   });
 
@@ -127,7 +127,7 @@ describe('CSS visibility for retained source nodes', () => {
     assert.doesNotMatch(result.html, /HIDDEN CUT/);
     assert.doesNotMatch(result.markdown ?? '', /HIDDEN CUT/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('checks attributes merged into an implied body by a new start tag', async () => {
@@ -139,7 +139,7 @@ describe('CSS visibility for retained source nodes', () => {
     assert.doesNotMatch(result.html, /HIDDEN ORIGINAL|HIDDEN CUT|HIDDEN LATER/);
     assert.equal(result.markdown, '');
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
   });
 
@@ -153,7 +153,7 @@ describe('CSS visibility for retained source nodes', () => {
       assert.doesNotMatch(result.html, /HIDDEN ORIGINAL|HIDDEN CUT|HIDDEN LATER/);
       assert.equal(result.markdown, '');
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
       assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
     });
   }

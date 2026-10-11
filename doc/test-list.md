@@ -16,6 +16,7 @@
 
 [V] Removes documented ad targets, honors element-hiding exceptions, and leaves HTML unchanged when no host matches
 [V] Counts unsupported procedural actions as skipped
+[V] Counts unsupported selector and procedural work again on a repeated ad invocation
 [V] Returns an updated context, preserves metadata, adds to existing counts, and does not mutate the input
 [V] Keeps nested selector matches within the 256 element depth limit
 [V] Rejects 5,000 nested elements before it gets selectors for the page URL, for matching and non-matching hosts
@@ -46,7 +47,11 @@
 
 **Prompt Injection Remover**
 
-[V] Removes zero-width format characters and counts detections as skipped
+[V] Removes zero-width format characters and reports detection categories without changing skipped
+[V] Counts independent hidden targets and comments, excludes covered descendants, and preserves prior counts and metadata without mutating input
+[V] Counts parser copies of one authored hidden source once and does not count an empty implied hidden element
+[V] Counts hidden text nodes and replaced content independently
+[V] Keeps categories and warnings unique across fresh inputs and repeated stages
 [V] Removes hidden display-none text and HTML comments while keeping visible content
 [V] Cleans the hidden-text fixture without adding removal markers
 [V] Preserves authored removal markers in text, code, and attributes
@@ -166,7 +171,9 @@
 [V] Returns empty output for a document with an empty body and no embedded page content
 [V] Returns empty Markdown for empty, whitespace-only, and fully sanitized input with no embedded page content
 [V] Sets a null title and preserves findings when cleaning leaves empty HTML or only HTML whitespace
+[V] Removes duplicate inherited findings and warnings for empty and whitespace-only input without mutating the input
 [V] Preserves URL, HTML, and existing counts in a new context without mutating the input
+[V] Keeps prior counts and unique decoded findings on a repeated converter invocation
 [V] Extracts the title from a full document
 [V] Makes no network requests for preferred async site extractors when the document has content
 [V] Makes no network requests when the API fallback receives an empty document
@@ -278,6 +285,16 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 [V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
 
 ## Acceptance
+
+**Pipeline counters** (`test/acceptance/pipeline-counters.test.ts`)
+
+[V] Given ads, hidden siblings, a comment, encoded controls, and unsupported ad work, returns separate removal and unsupported-attempt counts with unique detection categories; repeated sanitizer and converter stages preserve the counts and input metadata
+
+Run this acceptance test separately; `npm run check` does not select the acceptance directory:
+
+```sh
+npm run build && node --test dist/test/acceptance/pipeline-counters.test.js
+```
 
 **Visibility and parsed source ranges**
 

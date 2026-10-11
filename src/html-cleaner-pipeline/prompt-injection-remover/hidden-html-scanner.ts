@@ -4,6 +4,7 @@ import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree
 import { resolveCssVisibility, type VisibilityStyle } from './css-visibility.ts';
 import { parseSourceDocument, type CssHtmlDocument } from './css-visibility-tree.ts';
 import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
+import { HiddenHtmlRemovalCounts } from './hidden-html-removal-counts.ts';
 
 type HtmlNode = Htmlparser2TreeAdapterMap['node'];
 type HtmlElement = Htmlparser2TreeAdapterMap['element'];
@@ -12,7 +13,7 @@ export class HiddenHtmlScanner {
   private static readonly exfilTagsToPreserve = new Set(['img', 'meta']);
   private rootSize: number | null = null;
   private readonly ranges: { start: number; end: number }[] = [];
-  private readonly removed = { comments: 0, hidden: 0 };
+  private readonly removals: HiddenHtmlRemovalCounts;
   private readonly warned = { tags: {} as Record<string, number>, dataSrc: 0 };
   private readonly urlSources: string[] = [];
   private readonly hiddenNodes: HtmlNode[] = [];
@@ -24,25 +25,31 @@ export class HiddenHtmlScanner {
   private constructor(
     private readonly styles: Map<HtmlElement, VisibilityStyle>,
     private readonly tree: CssHtmlDocument,
-  ) {}
+  ) {
+    this.removals = new HiddenHtmlRemovalCounts(tree);
+  }
 
   public static scan(text: string, provenance = new CssVisibilityProvenance()) {
     const tree = parseSourceDocument(text);
     const styles = resolveCssVisibility(tree);
     const contexts = provenance.apply(tree, styles);
     const scanner = new HiddenHtmlScanner(styles, tree);
-    scanner.visit(tree.document, false);
+    scanner.visit(tree.document);
     const root = tree.document.children.find(adapter.isElementNode);
     if (root && scanner.hiddenNodes.includes(root)) {
       for (const node of tree.document.children.filter(adapter.isDocumentTypeNode)) {
         scanner.hiddenNodes.push(node);
       }
     }
-    for (const node of scanner.hiddenNodes) scanner.recordSource(node);
+    for (const node of scanner.hiddenNodes) {
+      const count = scanner.ranges.length;
+      scanner.recordSource(node);
+      if (scanner.ranges.length > count) scanner.removals.recordDeletion(node);
+    }
     provenance.retain(contexts, scanner.visibleNodes, scanner.ranges);
     return {
       ranges: scanner.ranges,
-      removed: scanner.removed,
+      removed: scanner.removals.counts(),
       warned: scanner.warned,
       urlSource: scanner.urlSources.join(''),
       visibleStyles: [...scanner.visibleStyles.values()],
@@ -50,19 +57,24 @@ export class HiddenHtmlScanner {
     };
   }
 
-  private visit(node: HtmlNode, removedAncestor: boolean, parent?: ElementVisibility): void {
+  private visit(node: HtmlNode, parent?: ElementVisibility, removalRoot?: HtmlNode): void {
     if (adapter.isElementNode(node) && Object.keys(node.attribs).length > 0) {
       this.urlSources.push(HiddenHtmlScanner.urlSource(node));
     }
-    const visibility = !removedAncestor && adapter.isElementNode(node)
-      ? this.elementVisibility(node, parent) : parent;
-    const removed = removedAncestor || this.recordNode(node, visibility);
-    if (removed) this.hiddenNodes.push(node);
-    else if (adapter.isElementNode(node)) {
+    const visibility = removalRoot ? parent : this.nodeVisibility(node, parent);
+    const root = removalRoot ?? (this.recordNode(node, visibility) ? node : undefined);
+    if (root) {
+      this.hiddenNodes.push(node);
+      this.removals.cover(node, root);
+    } else if (adapter.isElementNode(node)) {
       this.visibleSources.add(this.tree.sourceElement(node));
       this.visibleNodes.add(node);
     }
-    for (const child of HiddenHtmlScanner.childNodes(node)) this.visit(child, removed, visibility);
+    for (const child of HiddenHtmlScanner.childNodes(node)) this.visit(child, visibility, root);
+  }
+
+  private nodeVisibility(node: HtmlNode, parent?: ElementVisibility): ElementVisibility | undefined {
+    return adapter.isElementNode(node) ? this.elementVisibility(node, parent) : parent;
   }
 
   private static childNodes(node: HtmlNode): HtmlNode[] {
@@ -92,12 +104,12 @@ export class HiddenHtmlScanner {
   private recordNode(node: HtmlNode, visibility?: ElementVisibility): boolean {
     if (adapter.isCommentNode(node)) {
       if (adapter.getNodeSourceCodeLocation(node) == null) throw new Error('HTML comment has no source range');
-      this.removed.comments++;
+      this.removals.add(node, 'comments');
       return true;
     }
     if (adapter.isTextNode(node) && node.data.trim() && visibility?.hiddenText) {
       if (adapter.getNodeSourceCodeLocation(node) == null) throw new Error('Hidden HTML text has no source range');
-      this.removed.hidden++;
+      this.removals.add(node, 'hidden');
       return true;
     }
     if (!adapter.isElementNode(node)) return false;
@@ -109,11 +121,11 @@ export class HiddenHtmlScanner {
       if (adapter.getNodeSourceCodeLocation(node) == null && !visibility?.hiddenElement) {
         throw new Error('Hidden HTML element has no source range');
       }
-      this.removed.hidden++;
+      this.removals.add(node, 'hidden');
       return true;
     }
     if (HiddenHtmlScanner.hasHiddenContent(node, visibility)) {
-      this.removed.hidden++;
+      this.removals.add(node, 'hidden');
       return true;
     }
     this.recordVisibleElement(node);

@@ -89,7 +89,7 @@ describe('HTML to Markdown landing regressions', () => {
     assert.ok(original.found);
     assert.ok(result.found);
     assert.ok(result.found.length > original.found.length);
-    assert.equal(result.skipped, original.skipped + result.found.length - original.found.length);
+    assert.equal(result.skipped, original.skipped);
     assert.deepEqual(result.found?.slice(0, 1), original.found);
     assert.deepEqual(result.warnings?.slice(0, 1), original.warnings);
     assert.deepEqual(input, original);

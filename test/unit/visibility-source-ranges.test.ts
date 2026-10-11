@@ -34,7 +34,7 @@ describe('visibility in parsed HTML source ranges', () => {
     assert.match(result.html, /Visible override/);
     assert.match(result.html, /src="\/visible.png"/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
   });
 
@@ -51,7 +51,7 @@ describe('visibility in parsed HTML source ranges', () => {
     assert.match(result.html, /Visible child plane/);
     assert.match(result.html, /src="\/visible.png"/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
   });
 
@@ -63,7 +63,7 @@ describe('visibility in parsed HTML source ranges', () => {
 
     assert.equal(result.html, '<p style="">Visible fostered child</p>');
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('uses the parsed parent for font inheritance around a table', async () => {
@@ -89,7 +89,7 @@ describe('visibility in parsed HTML source ranges', () => {
     assert.equal(result.html,
       '<div style=""><table><tr><td style="">Visible &amp; &#32; 😀 content</td></tr></table></div>');
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
   });
 
@@ -144,6 +144,6 @@ describe('visibility in parsed HTML source ranges', () => {
 
     assert.equal(result.html, '<p>Visible sibling</p>');
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 });

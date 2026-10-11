@@ -16,7 +16,7 @@ describe('CSS visibility across hidden HTML removal passes', () => {
       assert.match(result.html, /VISIBLE CONTROL/);
       assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
       assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
     });
   }
@@ -33,7 +33,7 @@ describe('CSS visibility across hidden HTML removal passes', () => {
     assert.match(result.html, /VISIBLE CONTROL/);
     assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   const sourceTagCases = [
@@ -62,7 +62,7 @@ describe('CSS visibility across hidden HTML removal passes', () => {
       assert.doesNotMatch(result.markdown ?? '', /SECRET|HIDDEN/);
       assert.equal(result.markdown, '');
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
       assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
     });
   }

@@ -145,7 +145,7 @@ describe('HTML to Markdown Pipeline', () => {
     assert.ok(handed.found?.includes('exfil-urls'));
     assert.ok(handed.warnings?.some((warning) => warning.startsWith('Exfil-shaped URLs detected:')));
     assert.match(handed.html, /attacker\.example/);
-    assert.ok(result.skipped > 0);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.found, handed.found);
     assert.deepEqual(result.warnings, handed.warnings);
     assert.equal(result.markdown, 'Visible link');
