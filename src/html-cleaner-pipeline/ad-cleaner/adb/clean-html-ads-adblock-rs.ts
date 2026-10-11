@@ -4,6 +4,7 @@ import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree
 import { type Ctx } from '../../html-to-markdown-pipeline.ts';
 import { type CleanHtmlAds } from '../clean-html-ads.ts';
 import { HtmlDepthLimitError, MAX_HTML_ELEMENT_DEPTH } from '../html-depth-limit-error.ts';
+import { expandLoneLineRanges, type SourceRange } from './source-line-index.ts';
 import { SourceRangeParser } from './source-range-parser.ts';
 
 type StripHtmlResult = Pick<Ctx, 'html' | 'removed' | 'skipped'>;
@@ -12,11 +13,6 @@ type AdblockEngine = InstanceType<typeof adblockRust.Engine>;
 
 type HtmlDocument = Htmlparser2TreeAdapterMap['document'];
 type HtmlNode = Htmlparser2TreeAdapterMap['node'];
-
-type SourceRange = {
-  start: number;
-  end: number;
-};
 
 export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
   private readonly engine: AdblockEngine;
@@ -109,18 +105,6 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     return { hide: [...hide], skipped: specific.procedural_actions.length };
   }
 
-  private static loneLineRange(html: string, start: number, end: number): SourceRange {
-    const lineStart = html.lastIndexOf('\n', start - 1) + 1;
-    const newlineAt = html.indexOf('\n', end);
-    const lineContentEnd = newlineAt === -1 ? html.length : newlineAt;
-    const before = html.slice(lineStart, start);
-    const after = html.slice(end, lineContentEnd);
-    if (/^[ \t]*$/.test(before) && /^[ \t]*$/.test(after)) {
-      return { start: lineStart, end: newlineAt === -1 ? html.length : newlineAt + 1 };
-    }
-    return { start, end };
-  }
-
   private static mergeRanges(ranges: SourceRange[]): SourceRange[] {
     const sorted = [...ranges].sort((left, right) => left.start - right.start || left.end - right.end);
     const merged: SourceRange[] = [];
@@ -176,14 +160,15 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
         }
         seen.add(node);
         removed += 1;
-        ranges.push(CleanHtmlAdsAdblockRs.loneLineRange(html, startOffset, endOffset));
+        ranges.push({ start: startOffset, end: endOffset });
       }
     }
 
+    const expanded = expandLoneLineRanges(html, ranges);
     return {
       html: removed === 0
         ? html
-        : CleanHtmlAdsAdblockRs.removeRanges(html, CleanHtmlAdsAdblockRs.mergeRanges(ranges)),
+        : CleanHtmlAdsAdblockRs.removeRanges(html, CleanHtmlAdsAdblockRs.mergeRanges(expanded)),
       removed,
       skipped,
     };

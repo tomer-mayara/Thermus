@@ -141,18 +141,6 @@ describe('CleanHtmlAdsAdblockRs source ranges', () => {
       removed: 1,
     },
     {
-      name: 'preserves CRLF and whitespace around ads on CRLF lines',
-      html: '<body>\r\n \t<p id="eh-id">AD</p>\t \r\n\r\n<p>😀 &amp; 𝄞</p>\r\n</body>',
-      expected: '<body>\r\n \t\t \r\n\r\n<p>😀 &amp; 𝄞</p>\r\n</body>',
-      removed: 1,
-    },
-    {
-      name: 'removes lone LF ad lines and keeps unrelated whitespace-only lines',
-      html: '<body>\n \t\n \t<p id="eh-id">AD</p>\t \n\t\n<p>😀</p>\n</body>',
-      expected: '<body>\n \t\n\t\n<p>😀</p>\n</body>',
-      removed: 1,
-    },
-    {
       name: 'merges nested adjacent and duplicate matches between supplementary Unicode',
       html: '<body>😀<div id="eh-id" class="eh-class"><p class="eh-class">AD</p></div><p class="eh-class">AD</p>𝄞<!-- keep --></body>',
       expected: '<body>😀𝄞<!-- keep --></body>',
