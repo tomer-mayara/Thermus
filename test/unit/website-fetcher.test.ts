@@ -17,6 +17,7 @@ function stubProcess(
   context: TestContext,
   result: { error?: ExecFileException; stdout?: string },
 ) {
+  context.mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
   const stub = context.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
     const callback = args.at(-1);
     assert.ok(typeof callback === 'function');
@@ -79,7 +80,7 @@ describe('WebsiteFetcherLightpanda process contract', () => {
     stubProcess(context, { error: cause });
 
     await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), {
-      name: 'Error', message: 'lightpanda is not available on PATH', cause,
+      name: 'Error', message: 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.', cause,
     });
   });
 

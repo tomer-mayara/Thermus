@@ -2,7 +2,7 @@ import { execFile, type ExecFileException } from 'node:child_process';
 import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
 import { WebsiteFetchHttpError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
-const LIGHTPANDA_BIN = 'lightpanda';
+const LIGHTPANDA_DEFAULT_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
 const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
@@ -39,10 +39,10 @@ function assertSuccessfulHttpStatus(result: Record<string, unknown>, cause: Exec
   }
 }
 
-function assertRendererExit(cause: ExecFileException | null): void {
+function assertRendererExit(cause: ExecFileException | null, executable: string): void {
   if (cause === null) return;
   if (cause.code === 'ENOENT') {
-    throw new Error('lightpanda is not available on PATH', { cause });
+    throw new Error(`Lightpanda executable "${executable}" was not found. See docs/lightpanda-runtime.md for setup.`, { cause });
   }
   if (cause.killed || cause.signal != null || typeof cause.code !== 'number') {
     throw cause;
@@ -56,13 +56,14 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       throw new Error(`Fetch URL must use http or https: ${url}`);
     }
     await assertPublicDestination(parsed);
+    const executable = process.env.LIGHTPANDA_BIN || LIGHTPANDA_DEFAULT_BIN;
 
     return new Promise((resolve, reject) => {
       let readinessTimer: ReturnType<typeof setTimeout> | undefined;
       let readinessLimitReached = false;
       let completed = false;
       const child = execFile(
-        LIGHTPANDA_BIN,
+        executable,
         [
           'fetch', '--json', '--dump', 'html', '--fail-on-http-error',
           '--wait-until', 'networkidle', '--wait-ms', String(LIGHTPANDA_TIMEOUT_MS),
@@ -85,6 +86,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
             return;
           }
           try {
+            assertRendererExit(error, executable);
             resolve(WebsiteFetcherLightpanda.parseResult(url, stdout, error));
           } catch (error) {
             reject(error);
@@ -102,7 +104,6 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   }
 
   private static parseResult(requestedUrl: string, stdout: string, cause: ExecFileException | null): WebsiteFetchResult {
-    assertRendererExit(cause);
     const result = readFetchOutput(stdout, cause);
     assertSuccessfulHttpStatus(result, cause);
     if (

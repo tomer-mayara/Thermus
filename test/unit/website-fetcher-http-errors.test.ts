@@ -13,6 +13,7 @@ function output(status: number, error: string): string {
 }
 
 function stubProcess(context: TestContext, error: ExecFileException, stdout: string): void {
+  context.mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
   context.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
     const callback = args.at(-1);
     assert.ok(typeof callback === 'function');
@@ -51,7 +52,7 @@ for (const code of ['ENOENT', 'EACCES']) {
       if (code === 'ENOENT') {
         assert.ok(error instanceof Error);
         assert.ok(!(error instanceof WebsiteFetchHttpError));
-        assert.equal(error.message, 'lightpanda is not available on PATH');
+        assert.equal(error.message, 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.');
         assert.equal(error.cause, cause);
       } else {
         assert.equal(error, cause);

@@ -28,6 +28,7 @@ describe('WebsiteFetcherLightpanda', () => {
   let signalRendererLaunch!: () => void;
 
   beforeEach(() => {
+    mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
     launchCount = 0;
     child = new ChildProcess();
     rendererLaunched = new Promise((resolve) => { signalRendererLaunch = resolve; });
@@ -91,7 +92,7 @@ describe('WebsiteFetcherLightpanda', () => {
   const processErrors: Array<[string, ExecFileException, string?]> = [
     ['rejects a readiness failure and discards partial HTML', Object.assign(new Error('wait failed'), { code: 1 })],
     ['preserves the output buffer limit error', Object.assign(new Error('stdout maxBuffer length exceeded'), { code: 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER' })],
-    ['reports an unavailable executable', Object.assign(new Error('spawn lightpanda ENOENT'), { code: 'ENOENT' }), 'lightpanda is not available on PATH'],
+    ['reports an unavailable executable', Object.assign(new Error('spawn lightpanda ENOENT'), { code: 'ENOENT' }), 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.'],
     ['preserves other launch errors', Object.assign(new Error('spawn lightpanda EACCES'), { code: 'EACCES' })],
   ];
 
