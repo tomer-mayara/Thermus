@@ -27,6 +27,8 @@ The ad cleaner removes matching elements from the HTML source. It preserves adja
 
 The ad cleaner indexes source lines once and slices retained spans once after it merges removal ranges. Repeated matches on one long line do not repeat newline or whitespace scans. Retained text keeps its exact source form.
 
+Leading text can close an implied head without a closing token. The ad cleaner preserves that text, a leading doctype, and non-breaking spaces when it removes a matching element. With no match, it preserves the original source and counts.
+
 The ad cleaner takes trusted ABP rules as a constructor string. The application owns rule loading and updates. It applies domain rules using the fetched page's `finalUrl`. See [Ad rules](docs/ad-rules.md) for examples and no-op behavior.
 
 The converter removes prohibited invisible controls from decoded text and attribute values before Defuddle converts the page. It checks logical text runs across inline elements and maps deletions back to the original text nodes. Block elements, line breaks, and images end a run. This keeps valid Persian ZWNJ and emoji ZWJ sequences when syntax highlighting splits them across spans. The converter also cleans link and image destinations before URL serialization. These checks run before Markdown escaping and code-fence selection. It checks the final Markdown and page title, then reports each finding once. The checks do not decode another layer of HTML entities. Escaped entity examples, ordinary ampersands, copyright signs, and supplementary characters stay visible.
