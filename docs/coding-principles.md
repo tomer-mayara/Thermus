@@ -1,0 +1,170 @@
+# Coding principles
+
+Use these principles to make software easier to understand, change, and verify.
+They apply to functions, objects, data, and systems that combine them. Choose
+structure from the behavior and constraints of the problem. A class count,
+function length, or design pattern does not establish good design.
+
+This guide is portable. For this repository's test definitions and work rules,
+follow [AGENTS.md](../AGENTS.md). The [OO refactoring plan](design/oo-refactoring-plan.md)
+contains project examples and proposed implementation steps. That plan is not
+evidence that the changes are complete.
+
+## Start with behavior and invariants
+
+State what a caller or user must observe before choosing a structure. Describe
+accepted inputs, outputs, failures, and important constraints. Include behavior
+under empty input, invalid input, partial failure, and repeated use when relevant.
+An invariant is a condition that must remain true, such as a balance that cannot
+be negative or a resource that has one owner.
+
+Put each invariant where all operations that can break it must pass. Avoid a
+design that depends on every caller remembering the same validation or sequence.
+Distinguish domain rules from transport formats and storage details. This helps
+the rules remain clear when an external system changes.
+
+For new user behavior, write a failing BDD acceptance specification first. Use
+Given-When-Then or an equivalent executable form through public interfaces.
+Then use TDD for the behavior and contracts that the specification needs: write
+a focused failing test, make it pass, and refactor with tests green. Continue
+until the acceptance specification passes.
+
+For a refactor that must preserve behavior, establish passing characterization
+coverage before changing structure. Record important existing outcomes, including
+failure behavior. Do not break an unchanged acceptance case to create a false red
+step. If an existing defect must change, specify that change separately. Test
+observable results and meaningful contracts; do not freeze private call sequences
+unless their order affects required behavior.
+
+## Make code explain its work
+
+Use names that describe domain meaning and effects. A reader should understand
+what an operation promises without tracing every helper. Keep functions focused
+on a clear task, and keep the steps within a function at a consistent level of
+detail. Separate a decision from its mechanics when this makes either easier to
+understand or test.
+
+Extract a helper when it gives a coherent operation a useful name or separates
+knowledge that changes for a different reason. Do not split code only to reach a
+line limit. Too many tiny helpers can hide the flow as easily as one large function.
+Keep comments for reasons, constraints, and tradeoffs that the code cannot show.
+Remove comments that repeat the code or describe behavior that no longer exists.
+
+## Give knowledge a cohesive owner
+
+Put decisions close to the facts they need. A caller should ask for a useful
+answer instead of reading several mutable structures and reconstructing the
+owner's rules. Group behavior that changes for the same reason. Separate behavior
+that has different rules, dependencies, or lifetimes.
+
+An object is useful when it owns information, enforces an invariant, coordinates
+a lifecycle, or offers a clear collaboration role. A stateless role can also be
+useful. It does not need a second implementation to justify its existence; it
+needs a clear purpose and a useful contract. Prefer messages that express work
+over accessors that expose representation for clients to manipulate.
+
+Use records for data that callers need to inspect or transfer. Use free functions
+for calculations and bounded operations that need no object identity. Use
+closures when they give state a clear local lifetime. None requires a class
+wrapper. Records can remain valid results from objects. Keep mutation authority
+clear: a read-only property does not make its nested values immutable.
+
+## Make effects and lifetimes explicit
+
+Separate calculations from external effects where this makes reasoning easier.
+Identify operations that change supplied data, write storage, use the network,
+read a clock, or collect reports. Do not call a helper pure if it has these
+effects. Make required dependencies and effects visible in its contract or name.
+
+State should live as long as the work that needs it. Keep operation state out of
+reusable services unless sharing is required. Identify who creates, uses, and
+releases each resource. Ensure cleanup on success, failure, and cancellation.
+Do not let an object become usable before its required state is valid.
+
+For concurrent work, state which values are shared and which are isolated. Define
+the consistency rule for shared updates and use the appropriate transaction,
+lock, ownership model, or immutable value. Do not assume that one process or an
+asynchronous API prevents races. Test repeated and concurrent use when isolation,
+ordering, or duplicate work affects the contract.
+
+## Design boundaries that protect callers
+
+Validate untrusted input at the boundary where it enters. State units, encoding,
+optional values, and limits in data contracts. Translate external formats into
+internal values when that keeps domain code independent of transport details.
+Return useful results without exposing mutable internal state by accident.
+
+Make failure behavior deliberate. Distinguish invalid input, expected absence,
+temporary external failure, and violated invariants when callers need different
+responses. Preserve causes and context. Avoid swallowing errors or returning a
+success-shaped partial result unless the contract permits it. Use retries only
+when failure is recoverable and repeated effects are safe or controlled.
+
+Treat authorization, sensitive data, and resource use as behavior requirements.
+Check access where the protected operation occurs. Avoid secrets in logs and
+error messages. Bound work that untrusted input can trigger. Set appropriate
+timeouts and cancellation behavior. Test these rules through the relevant public
+boundary, including failure and limit cases.
+
+## Direct dependencies deliberately
+
+A module should depend on collaborators whose responsibilities it can explain.
+Keep core rules independent of volatile infrastructure when this reduces change
+cost. At those boundaries, infrastructure depends on the contracts the core
+rules need; core rules do not name infrastructure types. Place translation and
+orchestration there so external details do not spread through the system. Add
+layers or adapters only when they serve this purpose.
+
+Use a narrow interface when clients need a role contract or when a boundary needs
+independent verification. Do not add an interface, factory, or dependency injection
+framework for every concrete type. Prefer explicit composition over hidden global
+dependencies. Use inheritance only when a subtype can honor the complete parent
+contract, including failures and invariants. Ordinary conditions can express real
+variation without a subtype hierarchy.
+
+When repeated branches select work by type, and DRY3 shows that they express the
+same role, consider a common message implemented by the variants. This can let
+clients request work without knowing which variant performs it. Check that the
+variants share a contract before replacing the branches. This sharing rule does
+not require three implementations before an object can have a useful role.
+
+## Share proven concepts and keep abstractions simple
+
+Follow DRY3: introduce shared behavior after the third copy, not before. Check
+that the copies share meaning and change for the same reason. Similar syntax
+alone does not prove a common contract. Preserve differences in ordering,
+ownership, limits, and error behavior.
+
+Prefer the smallest abstraction that serves current requirements. Avoid flags,
+hooks, and general frameworks for imagined future callers. If a shared abstraction
+accumulates exceptions or forces unrelated callers to change together, reconsider
+it. Restoring duplication can be a useful step toward finding the right boundary.
+
+## Change and verify in small steps
+
+Make one coherent change at a time. Separate structural changes from behavior
+changes when possible so failures remain easy to explain. Remove obsolete paths
+and update affected documents in the same change. Keep public compatibility
+deliberate rather than preserving accidental internal access forever.
+
+Measure performance before adding complexity. Define a relevant workload and
+budget, find the limiting work, and compare the result after the change. Preserve
+behavior while optimizing. Include memory, resource limits, and worst-case inputs
+when they matter; average speed alone can hide an unsafe cost.
+
+Run changed tests and required checks on the complete candidate. Use focused tests
+for local rules, contract tests for boundaries, and tests with real collaborators
+for behavior that doubles cannot establish. Acceptance coverage must show that
+the user requirement is met. Follow the host project's exact test definitions
+and release gates. Passing tests support a claim within their scope; they do not
+prove every property of the system.
+
+## Further reading
+
+These primary sources inform the design guidance. Their authors did not review
+or endorse this document.
+
+- Robert C. Martin, [Objects and Data Structures](https://blog.cleancoder.com/uncle-bob/2019/06/16/ObjectsAndDataStructures.html)
+  and [Functional Classes](https://blog.cleancoder.com/uncle-bob/2023/01/18/functional-classes.html).
+- Sandi Metz, [What does OO afford?](https://sandimetz.com/blog/2018/21/what-does-oo-afford)
+  and [The Wrong Abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction).

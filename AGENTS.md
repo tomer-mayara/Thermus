@@ -21,6 +21,8 @@ yourself.
 Use these principles yourself, give them to each subagent, and enforce
 them in your review.
 
+Read the [coding principles](docs/coding-principles.md) for general design guidance.
+
 - Write the BDD acceptance test first: a Given-When-Then scenario or an
   equivalent executable specification. The test fails, because the feature
   does not exist yet.

@@ -1,6 +1,6 @@
 # OO refactoring engineering plan
 
-**Status: unimplemented proposal.** This handoff uses baseline Git commit `68a8eda`, dated 2026-10-11. No production change, test execution, or passing gate is claimed. It combines the negotiated reviewer positions recorded in [discussion](review/discussion.md) and follows [OO principles](oo-principles.md). The review applies published design ideas; it does not claim author endorsement.
+**Status: unimplemented proposal.** This handoff uses baseline Git commit `68a8eda`, dated 2026-10-11. No production change, test execution, or passing gate is claimed. It follows the [coding principles](../coding-principles.md). The review applies published design ideas; it does not claim author endorsement.
 
 ## Scope and priorities
 
@@ -28,6 +28,8 @@ Use existing [counter acceptance](../../test/acceptance/pipeline-counters.test.t
 Completion: affected baseline checks pass, missing coverage is identified, and required commands are recorded. If the baseline fails, separate preexisting failures from new work before continuing. The absent `docs/implementation/test-gate-policy.md`, referenced by AGENTS.md, is an unresolved gate-documentation item. Resolve its intended commands and ownership before declaring an implementation candidate ready. Its absence does not block writing this plan.
 
 ## Slice 1: engine ownership in the ad cleaner
+
+Before starting this slice, check current `main` and [PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30), which already proposes the engine ownership change. Reuse that work where applicable to avoid a duplicate implementation. The PR was inspected on 2026-10-11 as an open draft; this note does not claim that the slice is complete.
 
 Change only [`CleanHtmlAdsAdblockRs.selectorsFor`](../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts) and its caller first. Replace the private static `(adblock, url, document)` signature with private instance `(url, document)`, using `this.engine`. Keep one engine per cleaner and constructor validation. Add no new service or interface.
 
