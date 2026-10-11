@@ -1,6 +1,6 @@
-export type Ctx = {
-  url: string;
-  html: string;
+import { type WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
+
+export type Ctx = WebsiteFetchResult & {
   markdown?: string;
   title?: string | null;
   removed: number;
@@ -16,8 +16,8 @@ export interface Step {
 export class HtmlToMarkdownPipeline {
   public constructor(private readonly steps: readonly Step[]) {}
 
-  public async process(url: string, html: string): Promise<Ctx> {
-    let ctx: Ctx = { url, html, removed: 0, skipped: 0 };
+  public async process(page: WebsiteFetchResult): Promise<Ctx> {
+    let ctx: Ctx = { ...page, removed: 0, skipped: 0 };
     for (const step of this.steps) {
       ctx = await step.invoke(ctx);
     }

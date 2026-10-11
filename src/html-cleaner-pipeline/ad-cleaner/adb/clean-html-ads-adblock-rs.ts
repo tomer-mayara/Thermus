@@ -1,22 +1,17 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import adblockRust from 'adblock-rs';
 import { selectAll } from 'css-select';
-import { ElementType, parseDocument } from 'htmlparser2';
+import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { type Ctx } from '../../html-to-markdown-pipeline.ts';
 import { type CleanHtmlAds } from '../clean-html-ads.ts';
+import { HtmlDepthLimitError, MAX_HTML_ELEMENT_DEPTH } from '../html-depth-limit-error.ts';
+import { SourceRangeParser } from './source-range-parser.ts';
 
 type StripHtmlResult = Pick<Ctx, 'html' | 'removed' | 'skipped'>;
 
 type AdblockEngine = InstanceType<typeof adblockRust.Engine>;
 
-type HtmlNode = {
-  type?: string;
-  attribs?: { class?: string; id?: string };
-  children?: HtmlNode[];
-  startIndex?: number | null;
-  endIndex?: number | null;
-};
+type HtmlDocument = Htmlparser2TreeAdapterMap['document'];
+type HtmlNode = Htmlparser2TreeAdapterMap['node'];
 
 type SourceRange = {
   start: number;
@@ -24,18 +19,22 @@ type SourceRange = {
 };
 
 export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
-  private static readonly rulesPath = join(
-    process.cwd(),
-    'test/unit/fixtures/element-hiding.filters.txt',
-  );
+  private readonly engine: AdblockEngine;
 
-  private static engine: AdblockEngine | undefined;
+  public constructor(rules: string) {
+    if (typeof rules !== 'string') {
+      throw new TypeError('Ad rules must be supplied as a string');
+    }
+    const filterSet = new adblockRust.FilterSet(false);
+    filterSet.addFilters(rules);
+    this.engine = new adblockRust.Engine(filterSet);
+  }
 
   public async invoke(ctx: Ctx): Promise<Ctx> {
     const document = CleanHtmlAdsAdblockRs.parseHtml(ctx.html);
     const selected = CleanHtmlAdsAdblockRs.selectorsFor(
-      CleanHtmlAdsAdblockRs.getEngine(),
-      ctx.url,
+      this.engine,
+      ctx.finalUrl,
       document,
     );
     const stripped = CleanHtmlAdsAdblockRs.stripHtml(ctx.html, document, selected.hide);
@@ -47,38 +46,47 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     };
   }
 
-  private static getEngine(): AdblockEngine {
-    if (CleanHtmlAdsAdblockRs.engine === undefined) {
-      const rules = readFileSync(CleanHtmlAdsAdblockRs.rulesPath, 'utf8');
-      const filterSet = new adblockRust.FilterSet(false);
-      filterSet.addFilters(rules);
-      CleanHtmlAdsAdblockRs.engine = new adblockRust.Engine(filterSet);
+  private static parseHtml(html: string): HtmlDocument {
+    return SourceRangeParser.parse(html, {
+      treeAdapter: adapter,
+      sourceCodeLocationInfo: true,
+      scriptingEnabled: false,
+    });
+  }
+
+  private static *nodesWithinDepth(document: HtmlNode): Generator<HtmlNode> {
+    const pending = [{ node: document, depth: 0 }];
+    for (let current = pending.pop(); current !== undefined; current = pending.pop()) {
+      const { node } = current;
+      const depth = current.depth + (adapter.isElementNode(node) ? 1 : 0);
+      if (depth > MAX_HTML_ELEMENT_DEPTH) {
+        throw new HtmlDepthLimitError();
+      }
+      yield node;
+      if ('children' in node) {
+        for (let index = node.children.length - 1; index >= 0; index--) {
+          pending.push({ node: node.children[index], depth });
+        }
+      }
     }
-    return CleanHtmlAdsAdblockRs.engine;
   }
 
-  private static parseHtml(html: string): HtmlNode {
-    return parseDocument(html, { withStartIndices: true, withEndIndices: true }) as HtmlNode;
-  }
-
-  private static collectClassAndId(node: HtmlNode, classes: Set<string>, ids: Set<string>): void {
-    if (node.type === ElementType.Tag && node.attribs !== undefined) {
+  private static collectClassAndId(document: HtmlNode): { classes: Set<string>; ids: Set<string> } {
+    const classes = new Set<string>();
+    const ids = new Set<string>();
+    for (const node of CleanHtmlAdsAdblockRs.nodesWithinDepth(document)) {
+      if (node.type !== 'tag') {
+        continue;
+      }
       const id = node.attribs.id;
       if (id !== undefined && id !== '') {
         ids.add(id);
       }
-      const className = node.attribs.class;
-      if (className !== undefined) {
-        for (const token of className.split(/\s+/)) {
-          if (token !== '') {
-            classes.add(token);
-          }
-        }
+      for (const token of node.attribs.class?.match(/\S+/g) ?? []) {
+        classes.add(token);
       }
     }
-    for (const child of node.children ?? []) {
-      CleanHtmlAdsAdblockRs.collectClassAndId(child, classes, ids);
-    }
+    return { classes, ids };
   }
 
   private static selectorsFor(
@@ -86,12 +94,10 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     url: string,
     document: HtmlNode,
   ): { hide: string[]; skipped: number } {
+    const { classes, ids } = CleanHtmlAdsAdblockRs.collectClassAndId(document);
     const specific = adblock.urlCosmeticResources(url);
     const hide = new Set(specific.hide_selectors);
     if (!specific.generichide) {
-      const classes = new Set<string>();
-      const ids = new Set<string>();
-      CleanHtmlAdsAdblockRs.collectClassAndId(document, classes, ids);
       for (const selector of adblock.hiddenClassIdSelectors(
         [...classes],
         [...ids],
@@ -142,7 +148,7 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     document: HtmlNode,
     selectors: string[],
   ): StripHtmlResult {
-    const seen = new Set<string>();
+    const seen = new Set<HtmlNode>();
     const ranges: SourceRange[] = [];
     let removed = 0;
     let skipped = 0;
@@ -150,23 +156,24 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     for (const selector of selectors) {
       let nodes: HtmlNode[];
       try {
-        nodes = selectAll(selector, document) as HtmlNode[];
+        nodes = selectAll<HtmlNode, HtmlNode>(selector, document);
       } catch {
         skipped += 1;
         continue;
       }
       for (const node of nodes) {
-        if (node.startIndex == null || node.endIndex == null) {
+        const location = node.sourceCodeLocation;
+        if (location == null) {
           skipped += 1;
           continue;
         }
-        const key = `${node.startIndex}:${node.endIndex}`;
-        if (seen.has(key)) {
+        const { startOffset, endOffset } = location;
+        if (seen.has(node)) {
           continue;
         }
-        seen.add(key);
+        seen.add(node);
         removed += 1;
-        ranges.push(CleanHtmlAdsAdblockRs.loneLineRange(html, node.startIndex, node.endIndex + 1));
+        ranges.push(CleanHtmlAdsAdblockRs.loneLineRange(html, startOffset, endOffset));
       }
     }
 
