@@ -136,11 +136,14 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
   }
 
   private static removeRanges(html: string, ranges: SourceRange[]): string {
-    let result = html;
-    for (const range of [...ranges].sort((left, right) => right.start - left.start)) {
-      result = result.slice(0, range.start) + result.slice(range.end);
+    const retained: string[] = [];
+    let offset = 0;
+    for (const range of ranges) {
+      retained.push(html.slice(offset, range.start));
+      offset = range.end;
     }
-    return result;
+    retained.push(html.slice(offset));
+    return retained.join('');
   }
 
   private static stripHtml(
