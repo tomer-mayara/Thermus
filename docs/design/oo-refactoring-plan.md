@@ -1,6 +1,6 @@
 # OO refactoring engineering plan
 
-**Status: slices 1, 2, and 3 merged; slice 4 implemented and manager reviewed; local checks complete; owner review pending.** This handoff uses design baseline Git commit `68a8eda`, dated 2026-10-11. It follows the [coding principles](../coding-principles.md). The review applies published design ideas; it does not claim author endorsement.
+**Status: all four implementation slices merged.** This handoff uses design baseline Git commit `68a8eda`, dated 2026-10-11. It follows the [coding principles](../coding-principles.md). The review applies published design ideas; it does not claim author endorsement.
 
 [PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30) merged at `2026-10-11T21:48:11Z`, with merge commit `f91d59b9518daebe5198fcc13e08dc5137e7517f`. Slice 1 focused tests, `npm run check`, all acceptance tests, and `habit-hooks --branch origin/main` passed before merge; the snooze file was empty.
 
