@@ -12,13 +12,14 @@
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "node scripts/build.ts",
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run test:unit",
-    "test": "tsc && node --test \"dist/test/**/*.test.js\"",
-    "test:unit": "tsc && node --test \"dist/test/unit/**/*.test.js\"",
-    "test:interface": "tsc && node --test \"dist/test/interface/**/*.test.js\""
+    "check": "npm run typecheck && npm run test:unit && npm run test:build",
+    "test": "npm run build && node --test \"dist/test/**/*.test.js\"",
+    "test:unit": "npm run build && node --test \"dist/test/unit/**/*.test.js\"",
+    "test:interface": "npm run build && node --test \"dist/test/interface/**/*.test.js\"",
+    "test:build": "node --test test/build-output.test.ts"
   },
   "devDependencies": {
     "@types/css-tree": "3.2.0",
