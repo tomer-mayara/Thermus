@@ -42,8 +42,9 @@
 [V] Preserves text and repeated body and html end tags during parser recovery
 [V] Keeps parent reads bounded for deeply nested malformed HTML at end of file
 [V] Counts each ad element once and keeps selector exceptions
-[V] Keeps retained-source slice calls within a linear budget for 32, 128, and 512 short-line and minified ad matches; bounds requested UTF-16 units on short lines and reports the remaining minified line-scan cost
+[V] Keeps source scans, requested slice units, and slice calls within fixed linear budgets for 32, 128, and 512 short-line, minified, and long-whitespace-gap ad matches; preserves exact output and counts
 [V] Preserves CRLF whitespace, unrelated whitespace-only lines, supplementary Unicode, and counts across nested, adjacent, duplicate, and source-boundary matches
+[V] Preserves lone-line behavior for multiline matches, spaces and tabs at EOF, source-start matches followed by a final LF, and non-breaking spaces
 
 **Prompt Injection Remover**
 
