@@ -140,6 +140,30 @@ describe('CleanHtmlAdsAdblockRs source ranges', () => {
       expected: '<svg><text data-value="keep">Visible text</text></svg>',
       removed: 1,
     },
+    {
+      name: 'preserves CRLF and whitespace around ads on CRLF lines',
+      html: '<body>\r\n \t<p id="eh-id">AD</p>\t \r\n\r\n<p>😀 &amp; 𝄞</p>\r\n</body>',
+      expected: '<body>\r\n \t\t \r\n\r\n<p>😀 &amp; 𝄞</p>\r\n</body>',
+      removed: 1,
+    },
+    {
+      name: 'removes lone LF ad lines and keeps unrelated whitespace-only lines',
+      html: '<body>\n \t\n \t<p id="eh-id">AD</p>\t \n\t\n<p>😀</p>\n</body>',
+      expected: '<body>\n \t\n\t\n<p>😀</p>\n</body>',
+      removed: 1,
+    },
+    {
+      name: 'merges nested adjacent and duplicate matches between supplementary Unicode',
+      html: '<body>😀<div id="eh-id" class="eh-class"><p class="eh-class">AD</p></div><p class="eh-class">AD</p>𝄞<!-- keep --></body>',
+      expected: '<body>😀𝄞<!-- keep --></body>',
+      removed: 3,
+    },
+    {
+      name: 'removes adjacent ranges at both source boundaries',
+      html: '<p id="eh-id">AD</p><p class="eh-class">AD</p>',
+      expected: '',
+      removed: 2,
+    },
   ];
 
   for (const sourceCase of sourceCases) {
@@ -154,6 +178,7 @@ describe('CleanHtmlAdsAdblockRs source ranges', () => {
 
       assert.equal(result.html, sourceCase.expected);
       assert.equal(result.removed, 3 + sourceCase.removed);
+      assert.equal(result.skipped, 6);
     });
   }
 
