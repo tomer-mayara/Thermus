@@ -12,14 +12,17 @@
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "node scripts/build.ts",
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "tsc && node --test \"dist/test/**/*.test.js\"",
-    "test:unit": "tsc && node --test \"dist/test/unit/**/*.test.js\"",
-    "test:interface": "tsc && node --test \"dist/test/interface/**/*.test.js\""
+    "check": "npm run typecheck && npm run test:unit && npm run test:build",
+    "test": "npm run build && node --test \"dist/test/**/*.test.js\"",
+    "test:unit": "npm run build && node --test \"dist/test/unit/**/*.test.js\"",
+    "test:interface": "npm run build && node --test \"dist/test/interface/**/*.test.js\"",
+    "test:build": "node --test test/build-output.test.ts"
   },
   "devDependencies": {
+    "@types/css-tree": "3.2.0",
     "@types/node": "^24.19.1",
     "eslint": "10.10.0",
     "knip": "6.34.0",
@@ -36,8 +39,11 @@
     "adblock-rs": "^0.13.3",
     "agent-input-sanitizer": "1.47.14",
     "css-select": "^7.0.0",
+    "css-tree": "3.2.1",
     "defuddle": "^0.19.4",
     "htmlparser2": "^12.0.0",
-    "linkedom": "^0.18.13"
+    "linkedom": "^0.18.13",
+    "parse5": "8.0.1",
+    "parse5-htmlparser2-tree-adapter": "8.0.1"
   }
 }
