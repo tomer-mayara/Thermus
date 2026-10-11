@@ -1,5 +1,5 @@
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
-import type { CssHtmlDocument } from './css-visibility-tree.ts';
+import type { SourceHtmlDocument } from './css-visibility-tree.ts';
 
 type HtmlNode = Htmlparser2TreeAdapterMap['node'];
 type RemovalKind = 'comments' | 'hidden';
@@ -9,7 +9,7 @@ export class HiddenHtmlRemovalCounts {
   private readonly roots = new Map<HtmlNode, HtmlNode>();
   private readonly deleted = new Set<HtmlNode>();
 
-  public constructor(private readonly tree: CssHtmlDocument) {}
+  public constructor(private readonly tree: SourceHtmlDocument) {}
 
   public add(node: HtmlNode, kind: RemovalKind): void {
     this.kinds.set(node, kind);

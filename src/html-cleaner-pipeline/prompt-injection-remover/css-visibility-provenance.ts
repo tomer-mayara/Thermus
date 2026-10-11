@@ -1,7 +1,7 @@
 import { adapter } from 'parse5-htmlparser2-tree-adapter';
 import { rangeRemapper, type Range } from './css-visibility-ranges.ts';
 import type { HtmlElement } from './css-visibility-selectors.ts';
-import type { CssHtmlDocument } from './css-visibility-tree.ts';
+import type { SourceHtmlDocument } from './css-visibility-tree.ts';
 import type { VisibilityStyle } from './css-visibility.ts';
 
 type Source = Range & { identity: number };
@@ -51,7 +51,7 @@ function childContext(
   return { node, ...source, parent, copyParent, implied: impliedContexts(node, ancestor, source) };
 }
 
-function elementContexts(tree: CssHtmlDocument, identify: (node: HtmlElement) => number): ElementContext[] {
+function elementContexts(tree: SourceHtmlDocument, identify: (node: HtmlElement) => number): ElementContext[] {
   const contexts = new Map<HtmlElement, ElementContext>();
   const identities = new Map<HtmlElement, number>();
   for (const node of tree.elements) {
@@ -90,7 +90,7 @@ export class CssVisibilityProvenance {
   private documents = new Map<number, VisibilityStyle>();
   private readonly identities = new Map<string, number>();
 
-  public apply(tree: CssHtmlDocument, styles: Map<HtmlElement, VisibilityStyle>): StyledElementContext[] {
+  public apply(tree: SourceHtmlDocument, styles: Map<HtmlElement, VisibilityStyle>): StyledElementContext[] {
     const contexts = elementContexts(tree, (node) => this.identify(node));
     for (const context of contexts) {
       const document = documentKey(context);

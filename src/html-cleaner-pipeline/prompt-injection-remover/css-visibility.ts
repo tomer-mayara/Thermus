@@ -6,13 +6,13 @@ import {
 import {
   createSelectorMatcher, documentElements, type HtmlElement,
 } from './css-visibility-selectors.ts';
-import type { CssHtmlDocument } from './css-visibility-tree.ts';
+import type { SourceHtmlDocument } from './css-visibility-tree.ts';
 
 type StyleMap = Map<HtmlElement, Declarations>;
 export type VisibilityStyle = string;
 
 type RuleContext = {
-  elements: HtmlElement[];
+  elements: readonly HtmlElement[];
   compileSelectors: ReturnType<typeof createSelectorMatcher>;
   styles: StyleMap;
   quirksMode: boolean;
@@ -69,7 +69,7 @@ function createStyleSerializer() {
   };
 }
 
-export function resolveCssVisibility({ document, elements }: CssHtmlDocument): Map<HtmlElement, VisibilityStyle> {
+export function resolveCssVisibility({ document, elements }: SourceHtmlDocument): Map<HtmlElement, VisibilityStyle> {
   const styles: StyleMap = new Map();
   const quirksMode = document['x-mode'] === 'quirks';
   const context = { elements, styles, quirksMode, compileSelectors: createSelectorMatcher(document) };
