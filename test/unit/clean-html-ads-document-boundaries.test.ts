@@ -7,6 +7,80 @@ import { createContext } from '../support/html-cleaner-context.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
 
+describe('CleanHtmlAdsAdblockRs leading text acceptance', () => {
+  for (const { name, html, expected, removed } of [
+    {
+      name: 'leading text with an implied head',
+      html: 'plain<div id="eh-id">ad</div>',
+      expected: 'plain',
+      removed: 1,
+    },
+    {
+      name: 'a doctype and leading text with an implied head',
+      html: '<!doctype html>plain<div id="eh-id">ad</div>',
+      expected: '<!doctype html>plain',
+      removed: 1,
+    },
+    {
+      name: 'leading non-breaking space with an implied head',
+      html: '\u00a0plain<div id="eh-id">ad</div>',
+      expected: '\u00a0plain',
+      removed: 1,
+    },
+    {
+      name: 'a doctype and leading non-breaking space with an implied head',
+      html: '<!doctype html>\u00a0plain<div id="eh-id">ad</div>',
+      expected: '<!doctype html>\u00a0plain',
+      removed: 1,
+    },
+    {
+      name: 'leading text with no matching element',
+      html: 'plain<div id="keep">ad</div>',
+      expected: 'plain<div id="keep">ad</div>',
+      removed: 0,
+    },
+    {
+      name: 'leading text in an explicit body',
+      html: '<body>plain<div id="eh-id">ad</div></body>',
+      expected: '<body>plain</body>',
+      removed: 1,
+    },
+  ]) {
+    test(`Given ${name}, when an ad rule runs, then it preserves the retained source`, async () => {
+      const cleaner = new CleanHtmlAdsAdblockRs('example.com###eh-id');
+      const result = await cleaner.invoke({
+        requestedUrl: 'https://example.com/',
+        finalUrl: 'https://example.com/',
+        html,
+        removed: 0,
+        skipped: 0,
+      });
+
+      assert.equal(result.html, expected);
+      assert.equal(result.removed, removed);
+      assert.equal(result.skipped, 0);
+    });
+  }
+
+  for (const prefix of ['plain', '<!doctype html>plain', '\u00a0plain', '<!doctype html>\u00a0plain']) {
+    test(`Given ${JSON.stringify(prefix)} and no ad match, when a rule runs, then source and counts stay unchanged`, async () => {
+      const cleaner = new CleanHtmlAdsAdblockRs('example.com###eh-id');
+      const input = createContext(`${prefix}<div id="keep">ad</div>`, {
+        requestedUrl: 'https://example.com/',
+        finalUrl: 'https://example.com/',
+        removed: 3,
+        skipped: 5,
+      });
+
+      const result = await cleaner.invoke(input);
+
+      assert.equal(result.html, input.html);
+      assert.equal(result.removed, 3);
+      assert.equal(result.skipped, 5);
+    });
+  }
+});
+
 describe('CleanHtmlAdsAdblockRs document boundaries', () => {
   let cleaner: CleanHtmlAds;
 

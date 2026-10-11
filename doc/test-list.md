@@ -39,6 +39,8 @@
 [V] Preserves Unicode, comments, attributes, and source formatting
 [V] Preserves nested list boundaries and parent end tags around explicit, nested, adjacent, and overlapping ad matches
 [V] Preserves text and repeated body and html end tags during parser recovery
+[V] Preserves leading text, doctypes, and non-breaking spaces when an implied head closes without a token; preserves source and counts with no match and keeps explicit-body behavior
+[V] Keeps leading text and matching element source offsets when an implied head closes without a token
 [V] Keeps parent reads bounded for deeply nested malformed HTML at end of file
 [V] Counts each ad element once and keeps selector exceptions
 [V] Keeps source scans, requested slice units, and slice calls within fixed linear budgets for 32, 128, and 512 short-line, minified, and long-whitespace-gap ad matches; preserves exact output and counts

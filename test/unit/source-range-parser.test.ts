@@ -7,6 +7,38 @@ import { SourceRangeParser } from '../../src/html-cleaner-pipeline/ad-cleaner/ad
 
 type ParentNode = Htmlparser2TreeAdapterMap['parentNode'];
 
+function expectedElement(node: Htmlparser2TreeAdapterMap['node'] | undefined): Htmlparser2TreeAdapterMap['element'] {
+  assert.ok(node !== undefined);
+  assert.ok(adapter.isElementNode(node));
+  return node;
+}
+
+test('keeps source locations when leading text closes an implied head without a token', () => {
+  const document = SourceRangeParser.parse<Htmlparser2TreeAdapterMap>('plain<div id="eh-id">ad</div>', {
+    treeAdapter: adapter,
+    sourceCodeLocationInfo: true,
+    scriptingEnabled: false,
+  });
+  const htmlElement = expectedElement(document.children[0]);
+  const head = expectedElement(htmlElement.children[0]);
+  assert.equal(head.name, 'head');
+  assert.equal(head.sourceCodeLocation, null);
+  const body = expectedElement(htmlElement.children[1]);
+  const text = body.children[0];
+  assert.ok(text !== undefined);
+  assert.ok(adapter.isTextNode(text));
+  assert.equal(text.data, 'plain');
+  assert.ok(text.sourceCodeLocation);
+  assert.equal(text.sourceCodeLocation.startOffset, 0);
+  assert.equal(text.sourceCodeLocation.endOffset, 5);
+  const ad = expectedElement(body.children[1]);
+  assert.ok(ad.sourceCodeLocation);
+  assert.equal(ad.sourceCodeLocation.startOffset, 5);
+  assert.equal(ad.sourceCodeLocation.endOffset, 29);
+  assert.ok(ad.sourceCodeLocation.endTag);
+  assert.equal(ad.sourceCodeLocation.endTag.startOffset, 23);
+});
+
 function countParentReads(html: string): number {
   let parentReads = 0;
   const countingAdapter = {

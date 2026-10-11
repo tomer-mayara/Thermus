@@ -64,7 +64,11 @@ export class SourceRangeParser extends Parser<Htmlparser2TreeAdapterMap> {
     }
   }
 
-  public override _setEndLocation(element: HtmlElement, closingToken: Token.Token): void {
+  public override _setEndLocation(element: HtmlElement, closingToken: Token.Token | null): void {
+    // parse5 can close an implied head before it sets the current token.
+    if (closingToken === null) {
+      return;
+    }
     const explicitEndTag = element.sourceCodeLocation?.endTag;
     super._setEndLocation(element, closingToken);
     if (explicitEndTag !== undefined) {
