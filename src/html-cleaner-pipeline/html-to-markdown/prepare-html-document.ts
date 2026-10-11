@@ -1,40 +1,57 @@
 import { randomUUID } from 'node:crypto';
 import { parseHTML } from 'linkedom';
+import { Defuddle } from 'defuddle/node';
+import { sanitizeHtmlDocument, type SanitizeText } from './sanitize-html-document.ts';
 
 type HtmlDocument = ReturnType<typeof parseHTML>['document'];
 const headElements = new Set(['TITLE', 'META', 'LINK', 'BASE', 'STYLE', 'SCRIPT', 'NOSCRIPT', 'TEMPLATE']);
 
-export function prepareHtmlDocument(
-  html: string, url: string, processDocument: (document: HtmlDocument) => void,
-) {
-  const { document } = parseHTML(html);
-  const isFragment = document.documentElement?.localName !== 'html' || !document.querySelector('body');
-  normalizeDocument(document);
-  processDocument(document);
-  const preserveSuppliedContent = isFragment || !hasBodyContent(document);
-  const codeStartMarker = `code-start-${randomUUID()}:\n`;
-  if (preserveSuppliedContent) {
-    preserveFragmentHeadings(document);
-    normalizeFragmentCode(document, codeStartMarker);
+export class PreparedHtmlDocument {
+  private constructor(
+    private readonly document: HtmlDocument,
+    private readonly originalUrl: string,
+    private readonly isFragment: boolean,
+  ) {}
+
+  public static fromHtml(html: string, url: string): PreparedHtmlDocument {
+    const { document } = parseHTML(html);
+    const isFragment = document.documentElement?.localName !== 'html' || !document.querySelector('body');
+    return new PreparedHtmlDocument(document, url, isFragment);
   }
-  prepareLocalExtraction(document, url);
-  const hasScriptContent = [...document.querySelectorAll('script:not([type="application/ld+json"])')]
-    .some((script) => script.textContent?.trim());
-  return {
-    document,
-    extractionUrl: isFragment || (preserveSuppliedContent && !hasScriptContent) ? 'about:blank' : url,
-    options: {
+
+  public async extract(sanitizeText: SanitizeText): Promise<{ content: string; title: string }> {
+    const document = this.document;
+    normalizeDocument(document);
+    sanitizeHtmlDocument(document, sanitizeText);
+    const preserveSuppliedContent = this.isFragment || !hasBodyContent(document);
+    const codeStartMarker = `code-start-${randomUUID()}:\n`;
+    if (preserveSuppliedContent) {
+      preserveFragmentHeadings(document);
+      normalizeFragmentCode(document, codeStartMarker);
+    }
+    prepareLocalExtraction(document, this.originalUrl);
+    const hasScriptContent = [...document.querySelectorAll('script:not([type="application/ld+json"])')]
+      .some((script) => script.textContent?.trim());
+    const extractionUrl = this.isFragment || (preserveSuppliedContent && !hasScriptContent)
+      ? 'about:blank' : this.originalUrl;
+    const result = await Defuddle(document, extractionUrl, {
+      markdown: true,
+      useAsync: false,
+      processExtractedDom: (root) => sanitizeHtmlDocument(root, sanitizeText),
       standardize: !preserveSuppliedContent,
       removeContentPatterns: !preserveSuppliedContent,
       removeExactSelectors: !preserveSuppliedContent,
       removePartialSelectors: !preserveSuppliedContent,
       removeLowScoring: !preserveSuppliedContent,
       contentSelector: preserveSuppliedContent ? 'body' : undefined,
-    },
-    finishMarkdown: (content: string): string => content
-      .replace(new RegExp(`^[\\t >]*${codeStartMarker}`, 'gm'), '')
-      .replaceAll(codeStartMarker.trimEnd(), ''),
-  };
+    });
+    return {
+      content: (result.content ?? '')
+        .replace(new RegExp(`^[\\t >]*${codeStartMarker}`, 'gm'), '')
+        .replaceAll(codeStartMarker.trimEnd(), ''),
+      title: result.title ?? '',
+    };
+  }
 }
 
 function ensureDocumentRoot(document: HtmlDocument): void {
