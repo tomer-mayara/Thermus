@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "node scripts/build.ts",
+    "build": "test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist",
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run test:unit && npm run test:build",

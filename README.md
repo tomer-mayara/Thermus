@@ -96,10 +96,11 @@ Out of scope: step-up approval, a second renderer, request-level ad blocking, an
 
 ## Requirements
 
-Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and Node runs the output in `dist/`. Build tooling and build acceptance tests run directly from TypeScript source on Node 24. `tsx` is only for local development.
+Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and Node runs the output in `dist/`. Build acceptance tests run directly from TypeScript source on Node 24. `tsx` is only for local development.
 
 - Node 24 (`nvm use` reads `.nvmrc`)
 - pnpm 12.10.1
+- A POSIX shell for build commands (macOS or Linux)
 
 ## Scripts
 
@@ -121,7 +122,6 @@ pnpm typecheck   # tsc --noEmit
 ```
 src/      TypeScript source
 test/     node:test files
-scripts/  TypeScript build tools
 dist/     tsc output (gitignored)
 ```
 
@@ -135,8 +135,8 @@ import { hello } from './hello.js';
 
 ## Build and test commands
 
-`pnpm build` runs the source TypeScript tool at `scripts/build.ts` with Node 24. The tool serves production builds and all compiled test suites. It clears the project-owned `dist` directory before it compiles current source. It rejects a symlink or regular file at that path. It resolves the project path from the build script, so the caller’s working directory does not change the cleanup target. Files outside `dist` stay in place. Do not keep user data in `dist`.
+`pnpm build` runs the cleanup and compiler commands from `package.json`. It clears the project-owned `dist` directory before it compiles current source. It rejects a symlink or regular file at that path. npm and pnpm run package scripts from the project root, so the caller’s working directory does not change the cleanup target. Files outside `dist` stay in place. Do not keep user data in `dist`.
 
 `pnpm test` builds and runs all compiled tests. `pnpm test:unit` and `pnpm test:interface` build and run only their respective suites. Each command removes output from deleted or renamed source files. Use `pnpm build` before a focused `node --test dist/...` command. `pnpm start` runs `dist/src/index.js` from the last build. `pnpm typecheck` checks source without emitting or clearing output.
 
-`pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks the build tool and these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
+`pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
