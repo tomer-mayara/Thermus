@@ -20,7 +20,8 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
   function createContext(html: string, url = 'https://example.com/'): Ctx {
     return {
-      url,
+      requestedUrl: url,
+      finalUrl: url,
       html,
       removed: 0,
       skipped: 0,
@@ -69,6 +70,25 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     assert.equal(result.markdown, '');
   });
 
+  for (const html of ['', '\t\n\f\r ']) {
+    test(`returns empty Markdown when cleaning leaves ${JSON.stringify(html)}`, async () => {
+      const input: Ctx = {
+        ...createContext(html),
+        markdown: 'Previous output',
+        title: 'Previous title',
+        found: ['hidden-html'],
+        warnings: ['HTML sanitized: hidden elements removed'],
+        skipped: 1,
+      };
+      const original = structuredClone(input);
+
+      const result = await converter.invoke(input);
+
+      assert.deepEqual(result, { ...input, markdown: '', title: null });
+      assert.deepEqual(input, original);
+    });
+  }
+
   test('uses local HTML for X posts without making network requests', async (t) => {
     const fetchCalls: string[] = [];
     t.mock.method(globalThis, 'fetch', async (input: string | URL | Request) => {
@@ -115,7 +135,8 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
   test('preserves context and converts relative links using its URL', async () => {
     const input: Ctx = {
-      url: 'https://example.com/base/',
+      requestedUrl: 'https://example.com/base/',
+      finalUrl: 'https://example.com/base/',
       html: '<html><head><title>Relative</title></head><body><main><p><a href="/docs/page">Relative link</a></p></main></body></html>',
       markdown: 'old markdown',
       title: 'Old title',
@@ -128,7 +149,8 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
     assert.deepEqual(input, original);
     assert.notEqual(result, input);
-    assert.equal(result.url, input.url);
+    assert.equal(result.requestedUrl, input.requestedUrl);
+    assert.equal(result.finalUrl, input.finalUrl);
     assert.equal(result.html, input.html);
     assert.equal(result.removed, input.removed);
     assert.equal(result.skipped, input.skipped);
