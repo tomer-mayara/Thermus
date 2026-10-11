@@ -1,5 +1,8 @@
 # OO refactoring engineering plan
 
+This archived record preserves the completed implementation plan and its
+verification evidence. It also retains deferred work for future design decisions.
+
 **Status: all four implementation slices merged.** This handoff uses design baseline Git commit `68a8eda`, dated 2026-10-11. It follows the [coding principles](../coding-principles.md). The review applies published design ideas; it does not claim author endorsement.
 
 [PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30) merged at `2026-10-11T21:48:11Z`, with merge commit `f91d59b9518daebe5198fcc13e08dc5137e7517f`. Slice 1 focused tests, `npm run check`, all acceptance tests, and `habit-hooks --branch origin/main` passed before merge; the snooze file was empty.
@@ -43,7 +46,7 @@ Deliver one ownership boundary per reviewable implementation change. Each slice 
 
 ## Slice 0: preservation specification and gate setup
 
-Read [hidden-text behavior](../hidden-text-sanitizer.md), [processing limits](../html-processing-limits.md), [metrics](../pipeline-metrics.md), and the affected tests. Record baseline results before edits. Extend acceptance coverage only where an important behavior lacks a specification. A new source query or session contract starts with a failing focused test, followed by implementation and refactoring.
+Read [hidden-text behavior](../reference/hidden-text-sanitizer.md), [processing limits](../reference/html-processing-limits.md), [metrics](../reference/pipeline-metrics.md), and the affected tests. Record baseline results before edits. Extend acceptance coverage only where an important behavior lacks a specification. A new source query or session contract starts with a failing focused test, followed by implementation and refactoring.
 
 Preserve the following acceptance criteria:
 

@@ -65,7 +65,7 @@ export LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda"
 "$LIGHTPANDA_BIN" version
 ```
 
-The command must print `1.0.0`. Keep the export in the shell that starts the application or tests. The [fetcher contract](website-fetcher.md) lists the required CLI options and process limits.
+The command must print `1.0.0`. Keep the export in the shell that starts the application or tests. The [fetcher contract](reference/website-fetcher.md) lists the required CLI options and process limits.
 
 ## Select the executable
 

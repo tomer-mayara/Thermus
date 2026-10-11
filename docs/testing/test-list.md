@@ -253,7 +253,7 @@
 
 ### Planned Cache Key Tests
 
-No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../docs/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
+No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
 
 ## Interface
 
@@ -278,7 +278,7 @@ The unit suite runs without an installed renderer or public network access:
 pnpm test:unit
 ```
 
-Use the pinned runtime for the local renderer interface tests. [Runtime setup](../docs/lightpanda-runtime.md#verify-rendering) gives the checksum recipe and separate local fixture and public-site smoke commands. The controlled local interface suite passed 27 tests with Lightpanda 1.0.0 on macOS ARM64 for this change. Other platform binaries were not exercised. The public-site smoke tests remain a separate check.
+Use the pinned runtime for the local renderer interface tests. [Runtime setup](../lightpanda-runtime.md#verify-rendering) gives the checksum recipe and separate local fixture and public-site smoke commands. The controlled local interface suite passed 27 tests with Lightpanda 1.0.0 on macOS ARM64 for this change. Other platform binaries were not exercised. The public-site smoke tests remain a separate check.
 
 **LinkeDOM Serialization**
 

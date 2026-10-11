@@ -14,7 +14,7 @@ Use the pinned Lightpanda **1.0.0** runtime. The [runtime setup guide](docs/ligh
 
 `WebsiteFetcher.fetchURL` returns `requestedUrl`, `finalUrl`, and `html`. `requestedUrl` keeps the URL as supplied. `finalUrl` is the URL of the returned page after redirects. Lightpanda still renders pages that need JavaScript.
 
-The Lightpanda fetcher returns rendered HTML for successful HTTP responses. It reports HTTP responses with status 400 or above as `WebsiteFetchHttpError`. See [the fetcher contract](docs/website-fetcher.md) for the error shape, CLI options, network policy, and local test requirements.
+The Lightpanda fetcher returns rendered HTML for successful HTTP responses. It reports HTTP responses with status 400 or above as `WebsiteFetchHttpError`. See [the fetcher contract](docs/reference/website-fetcher.md) for the error shape, CLI options, network policy, and local test requirements.
 
 HTML-to-Markdown conversion uses only the fetch result that the pipeline receives. It does not make network requests or fetch missing content. The pipeline uses `finalUrl` to resolve relative links and to apply host rules. Pass the fetch result directly to the pipeline:
 
@@ -23,7 +23,7 @@ const page = await fetcher.fetchURL(url);
 const result = await pipeline.process(page);
 ```
 
-The result uses `removed` for HTML removal targets, `skipped` for unsupported ad processing attempts, and `found` for unique detection categories. Use `new Set(result.found ?? []).size` for a detection count. See [pipeline metrics](docs/pipeline-metrics.md) for counting rules and the migration from earlier meanings.
+The result uses `removed` for HTML removal targets, `skipped` for unsupported ad processing attempts, and `found` for unique detection categories. Use `new Set(result.found ?? []).size` for a detection count. See [pipeline metrics](docs/reference/pipeline-metrics.md) for counting rules and the migration from earlier meanings.
 
 The ad cleaner removes matching elements from the HTML source. It preserves adjacent source text when a paragraph or list item omits its end tag. This applies to paragraphs inside list items and before `dialog`, `search`, `menu`, `hgroup`, and `table`. Fragments without a doctype or an explicit `html` element use the same paragraph boundaries. It preserves tables between matched formatting elements that the parser reconstructs. It removes an ad body through the end of the source if the body has no end tag. It counts each matching element once, including overlapping selector matches, and honors element-hiding exceptions.
 
@@ -31,7 +31,7 @@ The ad cleaner indexes source lines once and slices retained spans once after it
 
 Leading text can close an implied head without a closing token. The ad cleaner preserves that text, a leading doctype, and non-breaking spaces when it removes a matching element. With no match, it preserves the original source and counts.
 
-The ad cleaner takes trusted ABP rules as a constructor string. The application owns rule loading and updates. It applies domain rules using the fetched page's `finalUrl`. See [Ad rules](docs/ad-rules.md) for examples and no-op behavior.
+The ad cleaner takes trusted ABP rules as a constructor string. The application owns rule loading and updates. It applies domain rules using the fetched page's `finalUrl`. See [Ad rules](docs/reference/ad-rules.md) for examples and no-op behavior.
 
 The converter removes prohibited invisible controls from decoded text and attribute values before Defuddle converts the page. It checks logical text runs across inline elements and maps deletions back to the original text nodes. Block elements, line breaks, and images end a run. This keeps valid Persian ZWNJ and emoji ZWJ sequences when syntax highlighting splits them across spans. The converter also cleans link and image destinations before URL serialization. These checks run before Markdown escaping and code-fence selection. It checks the final Markdown and page title, then reports each finding once. The checks do not decode another layer of HTML entities. Escaped entity examples, ordinary ampersands, copyright signs, and supplementary characters stay visible.
 
@@ -51,11 +51,11 @@ Preformatted `<pre>` blocks and `<code style="white-space: pre">` keep their lin
 
 Each HTML conversion uses a `PreparedHtmlDocument`. `fromHtml(html, url)` parses the input and records its original fragment status. `extract(sanitizeText)` receives the sanitizer callback once and owns document preparation, source and extracted-content sanitation, local metadata and URL setup, concrete Defuddle extraction, and code-marker cleanup. The DOM, original URL, and fragment status stay private; extraction options and markers stay local to extraction. The converter receives finished content and title. It retains plain-text handling, final Markdown and title checks, and findings. DOM helpers remain free functions.
 
-**Planned:** the cleaned page cache will use a versioned key made from the trusted tenant ID and the exact accepted absolute HTTP(S) URL string. The key will retain the full URL spelling, including the query and fragment. The caller's reason will be metadata, not part of content identity. No cache exists yet. See the [planned cache design](docs/cache-design.md) and [pending cache key tests](doc/test-list.md#planned-cache-key-tests).
+**Planned:** the cleaned page cache will use a versioned key made from the trusted tenant ID and the exact accepted absolute HTTP(S) URL string. The key will retain the full URL spelling, including the query and fragment. The caller's reason will be metadata, not part of content identity. No cache exists yet. See the [planned cache design](docs/design/cache-design.md) and [pending cache key tests](docs/testing/test-list.md#planned-cache-key-tests).
 
 ## Hidden-text sanitizer
 
-`PromptInjectionRemoverSanitizer` is a pipeline step. It removes hidden HTML, comments, and invisible characters. It rejects HTML larger than 10 MiB in UTF-8 bytes. It adds HTML removal targets to `removed`, keeps unique findings and warnings in the context, and preserves `skipped`. It reports exfil-shaped URLs. A finding alone does not remove a visible URL. A URL in removed hidden HTML is removed with that HTML. See [the hidden-text sanitizer contract](docs/hidden-text-sanitizer.md) for scan limits and reporting behavior.
+`PromptInjectionRemoverSanitizer` is a pipeline step. It removes hidden HTML, comments, and invisible characters. It rejects HTML larger than 10 MiB in UTF-8 bytes. It adds HTML removal targets to `removed`, keeps unique findings and warnings in the context, and preserves `skipped`. It reports exfil-shaped URLs. A finding alone does not remove a visible URL. A URL in removed hidden HTML is removed with that HTML. See [the hidden-text sanitizer contract](docs/reference/hidden-text-sanitizer.md) for scan limits and reporting behavior.
 
 The HTML scanner tracks visibility through parsed elements and template content on each removal scan. For effective `font-size` and `font` declarations, it resolves absolute lengths, inherited `em` and `%` values, and root-relative `rem` values. Root-relative sizes use only the actual HTML document root. A foreign element named `html` cannot replace that root size. It uses the original parser mode for CSS. It keeps the existing table boundaries for HTML without a doctype. In full quirks mode, a nonzero unitless `font-size` is in pixels. Standards and limited-quirks modes reject a nonzero unitless `font-size`. The `font` shorthand grammar does not change. The step removes text with a resolved zero font size. It keeps descendants that set a visible font size, and it keeps visible images. A zero font size alone does not remove a whole subtree. A recognized `var()`, `env()`, or `attr()` function makes the declaration's size unknown and lets it replace an earlier declaration at the same priority. This also applies when the CSS parser keeps typed `attr()` syntax as raw text. Raw values without a recognized deferred function, and malformed deferred function signatures, do not replace an earlier size. The font-size check does not compute full browser layout or values such as `calc()`.
 
@@ -97,7 +97,7 @@ This check does not fetch linked stylesheets or `@import` rules. It skips at-rul
 
 The step does not enable the span-deleting filter, secret redaction, visible-text filtering, or homoglyph normalization. It does not fetch pages or call a model. Pipeline composition and startup warm-up are deferred to loader and acceptance tests.
 
-The ad cleaner limits parsed HTML to 256 element levels. See [HTML processing limits](docs/html-processing-limits.md) for the depth rule and error behavior.
+The ad cleaner limits parsed HTML to 256 element levels. See [HTML processing limits](docs/reference/html-processing-limits.md) for the depth rule and error behavior.
 
 **MVP.** One tool, `fetch`. Allowlist, denylist, and outbound redaction. Boilerplate and hidden-text stripping. Per-tenant content cache. Audit log. A container that runs the server and Lightpanda on localhost, and a hosted version of the same container.
 
@@ -106,7 +106,9 @@ Out of scope: step-up approval, a second renderer, request-level ad blocking, an
 
 ## Contributing and design
 
-Read the [coding principles](docs/coding-principles.md) for general design guidance and [AGENTS.md](AGENTS.md) for repository work rules. The [OO refactoring plan](docs/design/oo-refactoring-plan.md) records proposed ownership changes and their verification requirements.
+Use the [documentation index](docs/README.md) to find current reference guides, pending designs, tests, and completed plans.
+
+Read the [coding principles](docs/coding-principles.md) for general design guidance and [AGENTS.md](AGENTS.md) for repository work rules. The [completed OO refactoring record](docs/archive/oo-refactoring-plan.md) preserves the implementation scope and verification evidence.
 
 ## Requirements
 
@@ -137,6 +139,7 @@ pnpm typecheck   # tsc --noEmit
 ```
 src/      TypeScript source
 test/     node:test files
+docs/     Documentation, design plans, and archived records
 dist/     tsc output (gitignored)
 ```
 

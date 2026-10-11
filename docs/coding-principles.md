@@ -6,9 +6,9 @@ structure from the behavior and constraints of the problem. A class count,
 function length, or design pattern does not establish good design.
 
 This guide is portable. For this repository's test definitions and work rules,
-follow [AGENTS.md](../AGENTS.md). The [OO refactoring plan](design/oo-refactoring-plan.md)
-contains project examples and proposed implementation steps. That plan is not
-evidence that the changes are complete.
+follow [AGENTS.md](../AGENTS.md). The [completed OO refactoring record](archive/oo-refactoring-plan.md)
+contains project examples, implementation scope, and historical verification
+evidence for the four merged slices.
 
 ## Start with behavior and invariants
 
