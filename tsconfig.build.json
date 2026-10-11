@@ -1,7 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "exclude": [
-    "scripts",
     "test/build-output.test.ts"
   ]
 }
