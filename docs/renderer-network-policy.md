@@ -23,6 +23,6 @@ The production fetcher has no request option or constructor that allows private 
 Security probes use local fixtures. The existing public-site smoke tests remain separate. Run the focused network tests with:
 
 ```bash
-pnpm exec tsc && node --test dist/test/unit/website-fetcher-network.test.js
-pnpm exec tsc && node --test dist/test/interface/website-fetcher-network.test.js
+pnpm build && node --test dist/test/unit/website-fetcher-network.test.js
+pnpm build && node --test dist/test/interface/website-fetcher-network.test.js
 ```

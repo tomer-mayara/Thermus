@@ -340,3 +340,13 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Keeps visible text and images after local and inherited offset cancellation or overflow, including embedded CSS and contents wrappers
 [V] Requires proven zero ancestor offsets before a relative-unit fallback and retains actual offscreen and restored-child controls
 [V] Applies offset error bounds through the independent public hidden-element check
+
+**Build output** (`test/build-output.test.mjs`, `pnpm test:build`)
+
+[V] All test commands exclude output from renamed and deleted tests
+[V] Unit and interface commands keep their suite selection
+[V] Fresh and stale-output fixture tests produce the same current test names, complete emitted file set, and file bytes, including test source maps
+[V] Repeated builds remove deleted production modules and source maps
+[V] Builds preserve source and files outside the owned output when called from another directory
+[V] Builds reject symlink and regular-file output paths without deleting their data
+[V] Typecheck does not emit files or clear existing output

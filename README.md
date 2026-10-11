@@ -106,11 +106,11 @@ Node 24 ESM package. TypeScript compiles with `tsc`, and Node runs the output in
 ```bash
 pnpm install
 pnpm dev         # tsx watch src/index.ts
-pnpm build       # tsc
+pnpm build       # clean build
 pnpm start       # node dist/src/index.js
-pnpm test             # tsc, then node --test on dist/test/
-pnpm test:unit        # tsc, then node --test on dist/test/unit/
-pnpm test:interface   # tsc, then node --test on dist/test/interface/
+pnpm test             # clean build, then node --test on dist/test/
+pnpm test:unit        # clean build, then node --test on dist/test/unit/
+pnpm test:interface   # clean build, then node --test on dist/test/interface/
 pnpm typecheck   # tsc --noEmit
 ```
 
@@ -131,3 +131,11 @@ dist/    tsc output (gitignored)
 ```ts
 import { hello } from './hello.js';
 ```
+
+## Build and test commands
+
+`pnpm build` clears the project-owned `dist` directory before it compiles current source. It rejects a symlink or regular file at that path. It resolves the project path from the build script, so the caller’s working directory does not change the cleanup target. Files outside `dist` stay in place. Do not keep user data in `dist`.
+
+`pnpm test` builds and runs all compiled tests. `pnpm test:unit` and `pnpm test:interface` build and run only their respective suites. Each command removes output from deleted or renamed source files. Use `pnpm build` before a focused `node --test dist/...` command. `pnpm start` runs `dist/src/index.js` from the last build. `pnpm typecheck` checks source without emitting or clearing output.
+
+`pnpm test:build` runs the build acceptance tests with temporary projects and the real compiler. `npm run check` includes these tests after type checking and the unit suite.
