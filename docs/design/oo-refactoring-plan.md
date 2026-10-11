@@ -10,7 +10,7 @@ The manager signed off slice 2 code, tests, and eight habit retention reasons af
 
 [PR #33](https://github.com/3-headed-monkey/Magumagu/pull/33) merged at `2026-10-11T22:16:00Z`, with merge commit `05d1ef6ff841f93bf42ffa60e1571f62b31f3847`. Slice 3 was implemented on `codex/hidden-html-removal-session`. All 95 existing baseline tests passed before implementation. The new session contract tests first failed because the module was missing; after implementation, all 54 focused tests passed, including the 8 new cases. The change preserves failure behavior and range algorithms. The manager reviewed the code, tests, and documents against the coding principles and signed off the per-invocation owner, preserved behavior, local range function, and absence of extra abstractions. This record confirms the merge and local evidence; it makes no separate claim about CI results.
 
-Slice 4 is implemented on `codex/prepared-html-document`, from this merge commit, in [PR #34](https://github.com/3-headed-monkey/Magumagu/pull/34). Before source edits, the baseline build and all 194 selected tests passed: HTML-to-Markdown tests, encoded invisible controls, Markdown counters, noscript examples, redirect metadata, sanitized pipeline content, the three LinkeDOM/Defuddle interface files, and all acceptance tests. Slice 4 is implemented and manager reviewed; local checks are complete and owner review remains pending. No slice 4 merge or CI pass is claimed.
+[PR #34](https://github.com/3-headed-monkey/Magumagu/pull/34) merged at `2026-10-11T22:27:20Z`, with merge commit `a5996cc52238a033a749d01000d025d3290f1898`. Slice 4 was implemented on `codex/prepared-html-document`, from the slice 3 merge commit. Before source edits, the baseline build and all 194 selected tests passed: HTML-to-Markdown tests, encoded invisible controls, Markdown counters, noscript examples, redirect metadata, sanitized pipeline content, the three LinkeDOM/Defuddle interface files, and all acceptance tests. The manager reviewed slice 4 and its local checks are complete. This record confirms the merge and local evidence; it makes no separate claim about CI results.
 
 The slice 3 candidate passed `npm run check`: type checking, 1,249 unit tests, and 8 build tests. A separate 33-test run passed all 16 acceptance tests, 9 sanitizer deletion interface tests, and 8 new session contract tests. The new tests also appear in the unit count; the required suites contain 1,282 distinct tests. `habit-hooks --branch origin/main` exited with status 0 and reported two transferred rationale comments in `hidden-html-removal-session.ts`. The manager retained both: the last removal can form hidden markup, which explains withholding after exhaustion; rescans can see the same tags, which explains maxima instead of sums. No suppressions were added, and the snooze file remains `[]`.
 
@@ -31,7 +31,7 @@ The seven new prepared-document contract cases first failed on the missing expor
 - Line 196 explains why fragment h1 elements become h2 elements: Defuddle removes a leading h1.
 - The preparation file grew from 188 to 205 lines. Preparation and extraction form one cohesive operation with unchanged local DOM helpers. A helper-only module for a five-line threshold overrun would add a boundary without a caller benefit.
 
-The nine comments are existing rationale comments. No suppressions were added, and the snooze file remains `[]`. These are reviewed retention reasons, not a clean habit result. Owner review remains pending; no slice 4 merge or CI pass is claimed.
+The nine comments are existing rationale comments. No suppressions were added, and the snooze file remains `[]`. These are reviewed retention reasons, not a clean habit result. This record confirms the merge and local evidence; it makes no separate claim about CI results.
 
 ## Scope and priorities
 
@@ -72,6 +72,8 @@ Completion: there is no engine parameter passed back into its own owner and focu
 
 ## Slice 2: parsed source ownership
 
+This slice is complete in merged [PR #32](https://github.com/3-headed-monkey/Magumagu/pull/32). The specification below records its scope; do not repeat the implementation.
+
 `SourceHtmlDocument` is implemented in the existing [`css-visibility-tree.ts`](../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts). Keeping the implementation here avoids an extra facade module. Its factory is `SourceHtmlDocument.parse(html: string): SourceHtmlDocument`. It owns the parsed document, element list, authored parsing mode, source identities, adopted locations, decoded style values, and `HtmlTextSourceRanges` for one parse.
 
 It exposes read-only properties `document` and `elements` for parser/tree collaboration. Read-only access does not promise a deeply immutable DOM. Map mutation stays private. It provides these queries with existing node types:
@@ -97,7 +99,7 @@ Completion: no public `adoptedSources`, `decodedStyleValues`, or mutable source 
 
 ## Slice 3: hidden-removal invocation lifetime
 
-This slice is implemented in [PR #33](https://github.com/3-headed-monkey/Magumagu/pull/33). Manager review and local candidate checks are complete; owner review remains pending. The specification below records its scope.
+This slice is complete in merged [PR #33](https://github.com/3-headed-monkey/Magumagu/pull/33). The specification below records its scope; do not repeat the implementation.
 
 `hidden-html-removal-session.ts` now sits beside [`prompt-injection-remover-sanitizer.ts`](../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts). Its `HiddenHtmlRemovalSession` constructor takes cleaned HTML; `run()` returns the existing removal-result shape with an explicit type. One object owns current HTML, provenance, removal counts, warning maxima, exfiltration reasons, visible style values, and scan count. It is created once inside each `invoke`, after control sanitation, and is never stored on the reusable sanitizer.
 
@@ -113,7 +115,7 @@ Completion: scan state and provenance have one invocation owner; `invoke` only c
 
 ## Slice 4: prepared extraction ownership
 
-Implemented in [PR #34](https://github.com/3-headed-monkey/Magumagu/pull/34); manager review and local checks are complete, and owner review remains pending.
+This slice is complete in merged [PR #34](https://github.com/3-headed-monkey/Magumagu/pull/34). The specification below records its scope; do not repeat the implementation.
 
 `PreparedHtmlDocument` is defined in [`prepare-html-document.ts`](../../src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts). It uses `PreparedHtmlDocument.fromHtml(html, url)` as the factory and `extract(sanitizeText): Promise<{ content: string; title: string }>` as the message. The factory parses HTML and captures the original fragment flag only. The converter supplies its per-conversion sanitizer callback once, to `extract`. That operation owns all remaining preparation, concrete extraction, and finishing work. The object keeps the parsed DOM, original fragment flag, and original URL private for one conversion. Extraction options, extraction URL, and the unique code marker stay local inside `extract`; they need no additional fields.
 
@@ -147,4 +149,4 @@ habit-hooks --branch origin/main
 
 `npm run check` builds and runs type, unit, and build checks; it excludes acceptance and interface suites. Run sanitizer interface checks for source/removal slices and LinkeDOM/Defuddle checks for extraction. New unit files run through `check`; explicitly run their built paths during TDD and before commit. Do not require blanket `npm run test:interface` for unrelated source changes: it includes live public renderer tests. Broaden checks when affected contracts or the resolved test-gate policy require them. Confirm the installed `habit-hooks` entry point and keep its snooze file empty; explain any retained enforced smell.
 
-Update affected sanitizer, limit, metric, and design documents in the implementation PR. Open Draft first. Before Ready, type checking, tests, and build checks must pass on the complete candidate. Run `habit-hooks` on that candidate; correct each enforced finding or record the reason to retain it. Its snooze file must stay empty. After Ready, every Actions job that starts for that head must pass; pending, skipped, cancelled, or failed jobs do not qualify. Return to Draft before fixing a Ready candidate. The manager reviews delegated work and the owner reviews the PR; no agent PR reviewer is introduced. Merge one clean PR once. A PR adding a decision record remains owner-merged. The progress record above reports slices 1, 2, and 3 merged, with local test evidence and documented habit retention reasons. It makes no separate claim about CI results. Slice 4 is implemented and manager reviewed, with all required local checks complete; owner review remains pending. No slice 4 merge or CI pass is claimed.
+Update affected sanitizer, limit, metric, and design documents in the implementation PR. Open Draft first. Before Ready, type checking, tests, and build checks must pass on the complete candidate. Run `habit-hooks` on that candidate; correct each enforced finding or record the reason to retain it. Its snooze file must stay empty. After Ready, every Actions job that starts for that head must pass; pending, skipped, cancelled, or failed jobs do not qualify. Return to Draft before fixing a Ready candidate. The manager reviews delegated work and the owner reviews the PR; no agent PR reviewer is introduced. Merge one clean PR once. A PR adding a decision record remains owner-merged. The progress record above reports all four implementation slices merged, with local test evidence and documented habit retention reasons. It makes no separate claim about CI results.
