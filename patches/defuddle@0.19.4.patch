@@ -1,5 +1,5 @@
 diff --git a/dist/defuddle.js b/dist/defuddle.js
-index 5e615fba28bfc8c68a11f34a13ed29c947ee595b..16a39da253d8c40adf32fd250d718daf50279980 100644
+index 5e615fba28bfc8c68a11f34a13ed29c947ee595b..50c47e158a230b17e8adeddd93617b605302905d 100644
 --- a/dist/defuddle.js
 +++ b/dist/defuddle.js
 @@ -786,6 +786,7 @@ class Defuddle {
@@ -18,6 +18,39 @@ index 5e615fba28bfc8c68a11f34a13ed29c947ee595b..16a39da253d8c40adf32fd250d718daf
          this._stripUnsafeElements(container);
          this.resolveRelativeUrls(container);
          (0, standardize_1.standardizeExtractorOutput)(container, this.debug);
+diff --git a/dist/standardize.js b/dist/standardize.js
+index 224f5e9130c2570d404c10b192316b0b4b914bfb..7463d63eeccb3f9d62ac86ba44e3dc879ab02c3e 100644
+--- a/dist/standardize.js
++++ b/dist/standardize.js
+@@ -1071,7 +1071,7 @@ function removeEmptyLines(element, doc) {
+             const text = node.textContent || '';
+             // If it's completely empty or just zero-width/invisible characters, remove it
+             // Preserve nodes with regular spaces or &nbsp; as they may separate words
+-            if (!text || /^[\u200C\u200B\u200D\u200E\u200F\uFEFF]*$/.test(text)) {
++            if (!text || /^[\u200C\u200B\u200E\u200F\uFEFF]*$/.test(text)) {
+                 node.parentNode?.removeChild(node);
+                 removedCount++;
+             }
+@@ -1084,8 +1084,8 @@ function removeEmptyLines(element, doc) {
+                     .replace(/ {2,}/g, ' ') // 2+ spaces -> 1 space
+                     .replace(/^[ ]+$/, ' ') // Multiple spaces between elements -> single space
+                     .replace(/\s+([,.!?:;])/g, '$1') // Remove spaces before punctuation
+-                    // Clean up zero-width characters (except ZWNJ \u200C used in Farsi) and multiple non-breaking spaces
+-                    .replace(/[\u200B\u200D\u200E\u200F\uFEFF]+/g, '')
++                    // Keep ZWNJ for Farsi and ZWJ for emoji sequences.
++                    .replace(/[\u200B\u200E\u200F\uFEFF]+/g, '')
+                     .replace(/(?:\xA0){2,}/g, '\xA0'); // Multiple &nbsp; -> single &nbsp;
+                 if (newText !== text) {
+                     node.textContent = newText;
+@@ -1112,7 +1112,7 @@ function removeEmptyLines(element, doc) {
+         // Special handling for block elements
+         const isBlockElement = (0, utils_1.getComputedStyle)(node)?.display === 'block';
+         // Remove whitespace-only text nodes at start/end
+-        const whitespacePattern = isBlockElement ? /^[\n\r\t \u200C\u200B\u200D\u200E\u200F\uFEFF\xA0]*$/ : /^[\n\r\t\u200C\u200B\u200D\u200E\u200F\uFEFF]*$/;
++        const whitespacePattern = isBlockElement ? /^[\n\r\t \u200C\u200B\u200E\u200F\uFEFF\xA0]*$/ : /^[\n\r\t\u200C\u200B\u200E\u200F\uFEFF]*$/;
+         while (node.firstChild &&
+             (0, utils_1.isTextNode)(node.firstChild) &&
+             (node.firstChild.textContent || '').match(whitespacePattern)) {
 diff --git a/dist/types.d.ts b/dist/types.d.ts
 index efd595fe5b1adfdbb4aa3eae5c2bba4bda34bce5..ffdc84f3aa993c60b418c67fa5817a9024913aa5 100644
 --- a/dist/types.d.ts
