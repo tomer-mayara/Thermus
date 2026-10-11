@@ -6,6 +6,7 @@ import { HiddenHtmlScanner } from './hidden-html-scanner.ts';
 import { CssSelectorLimitError } from './css-visibility-selectors.ts';
 import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
+import { sanitizeHtmlControls } from './sanitize-html-controls.ts';
 
 type HtmlScan = ReturnType<typeof HiddenHtmlScanner.scan>;
 type HtmlRemoval = {
@@ -25,7 +26,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitize(ctx.html, { html: false });
+    const sanitized = await sanitizeHtmlControls(ctx.html);
     const result = PromptInjectionRemoverSanitizer.removeHiddenHtml(sanitized.cleaned);
     const styleReports = await Promise.all([...new Set(result.visibleStyleValues)].map((value) => sanitize(` ${value}`)));
     const found = new Set([...sanitized.found, ...styleReports.flatMap((report) => report.found)]);

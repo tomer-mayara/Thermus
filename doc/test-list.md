@@ -95,6 +95,17 @@
 [V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
 [V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
 
+**Raw inline control context** (`test/unit/raw-inline-emoji-joiners.test.ts`)
+
+[V] Preserves exact HTML source, authored entities, replacement characters, prior findings, counts, and input immutability for a permitted split joiner
+[V] Maps numeric emoji neighbors, literal CRLF, decoded CR references, ANSI deletions, and the original leading BOM
+[V] Removes and reports invalid or isolated joiners and bidi controls; does not borrow context from block, break, image, comment, hidden, script, style, or template boundaries
+[V] Checks controls in raw attributes, hidden content, and control-split tag and attribute names; checks permits again when cleanup forms hidden markup
+[V] Keeps original payload scatter evidence and shared document, proportional, floor, and cluster limits across joiners, variation selectors, tag characters, and blank fillers
+[V] Adds no document allowance for synthetic run separators and keeps supplementary control widths in source deletions
+[V] Uses raw checks for unmappable decoded source and keeps ANSI-aborted payload controls in the scatter gate
+[V] Maps 150,000 candidates in one text node within the test time limit
+
 **Supported CSS Visibility Rules**
 
 [V] Applies inline and eligible local style rules after the default sanitizer pass
@@ -294,6 +305,11 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 
 ## Acceptance
 
+**Literal inline emoji joiners** (`test/acceptance/literal-inline-emoji-joiners.test.ts`)
+
+[V] Given a woman-technologist emoji with the joiner in a separate span, a separate text node, or three spans, keeps exact final Markdown code points
+[V] Produces the same Markdown and empty findings for literal, decimal, and hexadecimal joiners
+
 **Emoji joiners** (`test/acceptance/emoji-joiners.test.ts`)
 
 [V] Given a contiguous literal, decimal, or hexadecimal woman-technologist emoji, keeps its exact code points in final pipeline Markdown
@@ -303,7 +319,7 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 Run these tests separately; `npm run check` does not select the acceptance or interface directories:
 
 ```sh
-npm run build && node --test dist/test/acceptance/emoji-joiners.test.js dist/test/interface/defuddle-emoji-joiners.test.js
+npm run build && node --test dist/test/acceptance/emoji-joiners.test.js dist/test/acceptance/literal-inline-emoji-joiners.test.js dist/test/interface/defuddle-emoji-joiners.test.js
 ```
 
 **Pipeline counters** (`test/acceptance/pipeline-counters.test.ts`)
