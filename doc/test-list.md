@@ -282,12 +282,29 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 
 [V] Passes decoded selector-based Substack and generated Discourse content to the callback before URL conversion
 
+**Defuddle Emoji Joiners** (`test/interface/defuddle-emoji-joiners.test.ts`)
+
+[V] Keeps the exact woman-technologist code points from contiguous literal, decimal, and hexadecimal input
+[V] Keeps a literal joiner in a separate span or text node, including a sequence split across three spans
+
 **Website Fetcher Readiness** (`test/interface/website-fetcher-readiness.test.ts`)
 
 [V] Returns the completed asynchronous DOM after its 500 ms request delay, before the full wait budget
 [V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
 
 ## Acceptance
+
+**Emoji joiners** (`test/acceptance/emoji-joiners.test.ts`)
+
+[V] Given a contiguous literal, decimal, or hexadecimal woman-technologist emoji, keeps its exact code points in final pipeline Markdown
+[V] Keeps encoded joiners in separate inline spans and text nodes through the pipeline
+[V] Removes and reports prohibited bidi controls and joiners in ASCII words for all three encodings
+
+Run these tests separately; `npm run check` does not select the acceptance or interface directories:
+
+```sh
+npm run build && node --test dist/test/acceptance/emoji-joiners.test.js dist/test/interface/defuddle-emoji-joiners.test.js
+```
 
 **Pipeline counters** (`test/acceptance/pipeline-counters.test.ts`)
 
