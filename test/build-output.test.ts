@@ -1,31 +1,32 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const childEnv = { ...process.env };
 delete childEnv.NODE_TEST_CONTEXT;
-function fixture(t) {
+function fixture(t: TestContext): string {
   const dir = mkdtempSync(join(tmpdir(), 'magumagu-build-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  for (const file of ['package.json', 'tsconfig.json']) cpSync(join(root, file), join(dir, file));
+  for (const file of ['package.json', 'tsconfig.json', 'tsconfig.build.json']) cpSync(join(root, file), join(dir, file));
   if (existsSync(join(root, 'scripts'))) cpSync(join(root, 'scripts'), join(dir, 'scripts'), { recursive: true });
   symlinkSync(join(root, 'node_modules'), join(dir, 'node_modules'));
   mkdirSync(join(dir, 'src'));
   mkdirSync(join(dir, 'test/unit'), { recursive: true });
   mkdirSync(join(dir, 'test/interface'), { recursive: true });
+  cpSync(join(root, 'test/build-output.test.ts'), join(dir, 'test/build-output.test.ts'));
   writeFileSync(join(dir, 'src/current.ts'), 'export const current = true;\n');
   for (const suite of ['unit', 'interface']) writeFileSync(join(dir, `test/${suite}/current.test.ts`), `import { test } from 'node:test';\ntest('${suite} current', () => {});\n`);
   return dir;
 }
-function run(dir, command) {
+function run(dir: string, command: string): SpawnSyncReturns<string> {
   return spawnSync('npm', ['--prefix', dir, 'run', command], { cwd: tmpdir(), encoding: 'utf8', env: childEnv });
 }
-function passes(result) { assert.equal(result.status, 0, result.stdout + result.stderr); }
+function passes(result: SpawnSyncReturns<string>) { assert.equal(result.status, 0, result.stdout + result.stderr); }
 
 for (const command of ['test', 'test:unit', 'test:interface']) {
   test(`Given renamed and deleted tests, ${command} executes only current source`, (t) => {
@@ -73,6 +74,8 @@ test('Given a deleted module, repeated builds remove its output and preserve out
   writeFileSync(join(dir, 'src/obsolete.ts'), 'export const obsolete = true;\n');
   passes(run(dir, 'build'));
   assert.ok(existsSync(join(dir, 'dist/src/obsolete.js')));
+  assert.equal(existsSync(join(dir, 'dist/scripts/build.js')), false);
+  assert.equal(existsSync(join(dir, 'dist/test/build-output.test.js')), false);
   rmSync(join(dir, 'src/obsolete.ts'));
   passes(run(dir, 'build'));
   assert.equal(existsSync(join(dir, 'dist/src/obsolete.js')), false);
@@ -111,7 +114,7 @@ test('Given another working directory and configured output, build uses only the
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify(config));
   mkdirSync(join(dir, 'user-output'));
   writeFileSync(join(dir, 'user-output/keep.txt'), 'user data');
-  const result = spawnSync(process.execPath, [join(dir, 'scripts/build.mjs')], { cwd: tmpdir(), encoding: 'utf8', env: childEnv });
+  const result = spawnSync(process.execPath, [join(dir, 'scripts/build.ts')], { cwd: tmpdir(), encoding: 'utf8', env: childEnv });
   passes(result);
   assert.ok(existsSync(join(dir, 'dist/src/current.js')));
   assert.equal(readFileSync(join(dir, 'user-output/keep.txt'), 'utf8'), 'user data');

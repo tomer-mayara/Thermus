@@ -341,7 +341,7 @@ pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/
 [V] Requires proven zero ancestor offsets before a relative-unit fallback and retains actual offscreen and restored-child controls
 [V] Applies offset error bounds through the independent public hidden-element check
 
-**Build output** (`test/build-output.test.mjs`, `pnpm test:build`)
+**Build output** (`test/build-output.test.ts`, `pnpm test:build`)
 
 [V] All test commands exclude output from renamed and deleted tests
 [V] Unit and interface commands keep their suite selection
