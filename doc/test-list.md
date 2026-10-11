@@ -210,6 +210,9 @@
 
 **Lightpanda Website Fetcher**
 
+[V] Uses a nonempty LIGHTPANDA_BIN value as the exact executable path, including spaces, without a shell or version subprocess
+[V] Uses lightpanda from PATH when LIGHTPANDA_BIN is empty or unset
+[V] Keeps the missing executable cause, reports the selected path and runtime setup document, and does not fall back to another executable
 [V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
 [V] Returns HTML with the requested and final URLs on immediate success
 [V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
@@ -221,6 +224,12 @@
 [V] Reports HTTP status failures with WebsiteFetchHttpError and preserves the status and process cause when available
 [V] Preserves a failed HTTP status from renderer errors with exit code 1, including bot challenges
 [V] Uses --json and --fail-on-http-error while preserving the readiness, timeout, output, and network-blocking options
+
+**Local renderer fixture launcher** (`test/unit/network-fixture.test.ts`)
+
+[V] Uses the selected executable for default, empty, and configured LIGHTPANDA_BIN values, including a path with spaces
+[V] Permits only the trusted localhost fetch scope, keeps the launch options, and disables fixture telemetry
+[V] Rejects another executable or a public-site fetch through the fixture launcher
 
 ### Planned Cache Key Tests
 
@@ -243,11 +252,13 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Returns local HTTP 200 content and successful redirects; reports local HTTP 403, 404, 429, and 500 responses as HTTP errors
 [V] Reports local 403 and 429 bot challenges as HTTP errors, both directly and after two redirects
 
-Run the focused HTTP fetcher tests with:
+The unit suite runs without an installed renderer or public network access:
 
 ```bash
-pnpm build && node --test dist/test/unit/website-fetcher.test.js dist/test/unit/website-fetcher-http-errors.test.js dist/test/interface/website-fetcher-http.test.js
+pnpm test:unit
 ```
+
+Use the pinned runtime for the local renderer interface tests. [Runtime setup](../docs/lightpanda-runtime.md#verify-rendering) gives the checksum recipe and separate local fixture and public-site smoke commands. The controlled local interface suite passed 27 tests with Lightpanda 1.0.0 on macOS ARM64 for this change. Other platform binaries were not exercised. The public-site smoke tests remain a separate check.
 
 **LinkeDOM Serialization**
 

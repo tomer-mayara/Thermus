@@ -41,8 +41,9 @@ export function resolveAsPublic(t: TestContext) {
 export function permitIPv4Fixture(t: TestContext) {
   resolveAsPublic(t);
   const execute = childProcess.execFile;
+  const executable = process.env.LIGHTPANDA_BIN || 'lightpanda';
   t.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
-    assert.equal(args[0], 'lightpanda');
+    assert.equal(args[0], executable);
     const command = [...(args[1] ?? [])];
     const url = command.pop();
     assert.ok(url && url.startsWith('http://localhost:'));

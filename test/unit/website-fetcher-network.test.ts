@@ -7,6 +7,7 @@ import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
 
 function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null) {
+  t.mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
   const calls: string[][] = [];
   const lookup = t.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
   t.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
@@ -155,5 +156,5 @@ test('fails closed when the renderer cannot apply its policy', async (t) => {
 
 test('reports a missing renderer executable', async (t) => {
   stubRenderer(t, Object.assign(new Error('missing binary'), { code: 'ENOENT' }));
-  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://1.1.1.1/'), /lightpanda is not available on PATH/);
+  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://1.1.1.1/'), /Lightpanda executable "lightpanda" was not found.*docs\/lightpanda-runtime\.md/);
 });
