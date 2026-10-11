@@ -1,6 +1,8 @@
 # OO refactoring engineering plan
 
-**Status: unimplemented proposal.** This handoff uses baseline Git commit `68a8eda`, dated 2026-10-11. No production change, test execution, or passing gate is claimed. It follows the [coding principles](../coding-principles.md). The review applies published design ideas; it does not claim author endorsement.
+**Status: slice 1 merged; slice 2 in progress.** This handoff uses design baseline Git commit `68a8eda`, dated 2026-10-11. It follows the [coding principles](../coding-principles.md). The review applies published design ideas; it does not claim author endorsement.
+
+After user approval, [PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30) merged at `2026-10-11T21:48:11Z`, with merge commit `f91d59b9518daebe5198fcc13e08dc5137e7517f`. Slice 1 focused tests, `npm run check`, all acceptance tests, and `habit-hooks --branch origin/main` passed before merge; the snooze file was empty. Slice 2 is in progress on `codex/source-html-document`. Before source edits, 122 baseline tests passed across 10 source/sanitizer unit suites, the sanitizer deletion interface suite, and all acceptance tests. These results do not claim slice 2 completion or candidate checks. Slices 3 and 4 have not started.
 
 ## Scope and priorities
 
@@ -25,11 +27,11 @@ Preserve the following acceptance criteria:
 
 Use existing [counter acceptance](../../test/acceptance/pipeline-counters.test.ts), [hidden passes](../../test/unit/hidden-html-passes.test.ts), [CSS passes](../../test/unit/css-hidden-passes.test.ts), and [ad depth](../../test/unit/clean-html-ads-depth.test.ts) as anchors. Avoid one enormous scenario that makes every regression difficult to locate.
 
-Completion: affected baseline checks pass, missing coverage is identified, and required commands are recorded. If the baseline fails, separate preexisting failures from new work before continuing. The absent `docs/implementation/test-gate-policy.md`, referenced by AGENTS.md, is an unresolved gate-documentation item. Resolve its intended commands and ownership before declaring an implementation candidate ready. Its absence does not block writing this plan.
+Completion: affected baseline checks pass, missing coverage is identified, and required commands are recorded. If the baseline fails, separate preexisting failures from new work before continuing. The referenced `docs/implementation/test-gate-policy.md` is absent. Required commands and ownership are resolved through AGENTS.md, package scripts, and installed tooling: the manager reviews delegated work, the owner reviews the PR, and the candidate follows the gates below. The source slice requires `npm run check`, all acceptance tests, the sanitizer deletion interface suite, and `habit-hooks --branch origin/main`, with an empty snooze file. Run every new or changed test before commit.
 
 ## Slice 1: engine ownership in the ad cleaner
 
-Before starting this slice, check current `main` and [PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30), which already proposes the engine ownership change. Reuse that work where applicable to avoid a duplicate implementation. The PR was inspected on 2026-10-11 as an open draft; this note does not claim that the slice is complete.
+This slice is complete in merged [PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30). The specification below records its scope; do not repeat the implementation.
 
 Change only [`CleanHtmlAdsAdblockRs.selectorsFor`](../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts) and its caller first. Replace the private static `(adblock, url, document)` signature with private instance `(url, document)`, using `this.engine`. Keep one engine per cleaner and constructor validation. Add no new service or interface.
 
@@ -107,9 +109,9 @@ npm run check
 node --test 'dist/test/acceptance/**/*.test.js'
 node --test dist/test/interface/sanitizer-deletions.test.js
 node --test dist/test/interface/linkedom-serialization.test.js dist/test/interface/defuddle-extracted-dom.test.js dist/test/interface/defuddle-emoji-joiners.test.js
-habit-hooks
+habit-hooks --branch origin/main
 ```
 
 `npm run check` builds and runs type, unit, and build checks; it excludes acceptance and interface suites. Run sanitizer interface checks for source/removal slices and LinkeDOM/Defuddle checks for extraction. New unit files run through `check`; explicitly run their built paths during TDD and before commit. Do not require blanket `npm run test:interface` for unrelated source changes: it includes live public renderer tests. Broaden checks when affected contracts or the resolved test-gate policy require them. Confirm the installed `habit-hooks` entry point and keep its snooze file empty; explain any retained enforced smell.
 
-Update affected sanitizer, limit, metric, and design documents in the implementation PR. Open Draft first. Before Ready, required checks and changed tests pass on the complete candidate. After Ready, every Actions job that starts for that head must pass; pending, skipped, cancelled, or failed jobs do not qualify. Return to Draft before fixing a Ready candidate. The manager reviews delegated work and the owner reviews the PR; no agent PR reviewer is introduced. Merge one clean PR once. A PR adding a decision record remains owner-merged. This handoff ends with a plan, not a claim that any implementation gate has passed.
+Update affected sanitizer, limit, metric, and design documents in the implementation PR. Open Draft first. Before Ready, required checks and changed tests pass on the complete candidate. After Ready, every Actions job that starts for that head must pass; pending, skipped, cancelled, or failed jobs do not qualify. Return to Draft before fixing a Ready candidate. The manager reviews delegated work and the owner reviews the PR; no agent PR reviewer is introduced. Merge one clean PR once. A PR adding a decision record remains owner-merged. The progress record above reports slice 1 completion and the slice 2 baseline. Slice 2 candidate gates remain pending; slices 3 and 4 remain proposals.
