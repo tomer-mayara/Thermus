@@ -102,6 +102,10 @@ The ad cleaner limits parsed HTML to 256 element levels. See [HTML processing li
 Out of scope: step-up approval, a second renderer, request-level ad blocking, and any connector other than the web. Done when an admin can disable native search, point an agent at DongAI, and get a cleaned page back with a log line for every fetch.
 
 
+## Contributing and design
+
+Read the [coding principles](docs/coding-principles.md) for general design guidance and [AGENTS.md](AGENTS.md) for repository work rules. The [OO refactoring plan](docs/design/oo-refactoring-plan.md) records proposed ownership changes and their verification requirements.
+
 ## Requirements
 
 Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and Node runs the output in `dist/`. Build acceptance tests run directly from TypeScript source on Node 24. `tsx` is only for local development.
