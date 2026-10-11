@@ -49,6 +49,8 @@ The converter preserves visible plain text and HTML fragments without `html` or 
 
 Preformatted `<pre>` blocks and `<code style="white-space: pre">` keep their line breaks and become fenced Markdown code. Fragment code keeps relative indentation, including common and nested indentation, tabs, and leading whitespace. Conversion does not mutate the input context.
 
+The [prepared-document ownership slice](docs/design/oo-refactoring-plan.md#slice-4-prepared-extraction-ownership) is underway. It will give each HTML conversion a `PreparedHtmlDocument`: `fromHtml(html, url)` parses the input and records its original fragment status; `extract(sanitizeText)` receives the sanitizer callback once and owns normalization, source sanitation, the preserved-content decision, fragment code preparation, local metadata and URL setup, concrete Defuddle extraction, extracted-content sanitation, and code-marker cleanup. Its state stays private. Plain-text handling, final Markdown and title checks, and findings remain converter responsibilities. DOM helpers remain free functions.
+
 **Planned:** the cleaned page cache will use a versioned key made from the trusted tenant ID and the exact accepted absolute HTTP(S) URL string. The key will retain the full URL spelling, including the query and fragment. The caller's reason will be metadata, not part of content identity. No cache exists yet. See the [planned cache design](docs/cache-design.md) and [pending cache key tests](doc/test-list.md#planned-cache-key-tests).
 
 ## Hidden-text sanitizer
