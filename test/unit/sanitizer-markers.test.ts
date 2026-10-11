@@ -71,7 +71,7 @@ describe('PromptInjectionRemoverSanitizer markers and URL reports', () => {
 
     assert.equal(result.html, `<a href="${url.replace('\u200b', '')}">Open</a>`);
     assert.deepEqual(result.found, ['cf-format', 'exfil-urls']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
     assert.equal(result.warnings?.filter((warning) => warning.startsWith('Exfil-shaped URLs detected:')).length, 1);
   });
 
@@ -82,7 +82,7 @@ describe('PromptInjectionRemoverSanitizer markers and URL reports', () => {
 
     assert.equal(result.html, '<p>😀beforeafter🦊</p>');
     assert.deepEqual(result.found, ['html-comments', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
     assert.ok(result.warnings?.some((warning) => warning.includes('2 HTML comment(s)')));
     assert.ok(result.warnings?.some((warning) => warning.includes('2 hidden element(s)')));
     assert.ok(result.warnings?.every((warning) => !warning.includes('placeholders')));
@@ -106,7 +106,7 @@ describe('PromptInjectionRemoverSanitizer markers and URL reports', () => {
 
       assert.equal(result.html, `<p><a href="${url}">Open link</a></p>`);
       assert.ok(result.found?.includes('exfil-urls'));
-      assert.equal(result.skipped, 2);
+      assert.equal(result.skipped, 0);
       assert.ok(result.warnings?.some((warning) => warning.includes('link to final.example')));
     });
   }
@@ -128,7 +128,7 @@ describe('PromptInjectionRemoverSanitizer markers and URL reports', () => {
     assert.deepEqual(input, original);
     assert.equal(result.html, `<a href="${visibleUrl}">Visible</a><p><a href="${finalUrl}">Final</a></p>`);
     assert.deepEqual(result.found, ['existing-finding', 'html-comments', 'hidden-html', 'exfil-urls']);
-    assert.equal(result.skipped, 6);
+    assert.equal(result.skipped, 3);
     assert.equal(result.warnings?.[0], 'existing warning');
     const exfilWarnings = result.warnings?.filter(
       (warning) => warning.startsWith('Exfil-shaped URLs detected:'),

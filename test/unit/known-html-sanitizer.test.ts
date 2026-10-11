@@ -33,7 +33,7 @@ describe('Known HTML sanitizer parsing', () => {
       assert.doesNotMatch(result.html, /hidden payload|left:-9999px/);
       assert.equal(result.html, html.replace(hiddenSpan, ''));
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
       assert.deepEqual(result.warnings, [
         'HTML sanitized: 1 hidden element(s) removed',
       ]);
@@ -90,7 +90,7 @@ describe('Known HTML sanitizer parsing', () => {
     assert.doesNotMatch(result.html, /hidden payload|attacker\.example/);
     assert.match(result.html, /<script>visible script text<\/script>/);
     assert.deepEqual(result.found, ['existing-finding', 'hidden-html', 'exfil-urls']);
-    assert.equal(result.skipped, 6);
+    assert.equal(result.skipped, 4);
     assert.equal(result.warnings?.[0], 'existing warning');
     assert.ok(result.warnings?.some((warning) => warning.includes('script')));
     assert.ok(result.warnings?.some((warning) => warning.startsWith('Exfil-shaped URLs detected:')));

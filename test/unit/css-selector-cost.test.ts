@@ -32,7 +32,7 @@ describe('CSS selector cost limit', () => {
           assert.match(result.html, /Visible after budget reset/);
           assert.match(result.markdown ?? '', /Visible after budget reset/);
           assert.deepEqual(result.found, ['hidden-html']);
-          assert.equal(result.skipped, 1);
+          assert.equal(result.skipped, 0);
         `,
         encoding: 'utf8',
         timeout: 3000,
@@ -80,6 +80,6 @@ describe('CSS selector cost limit', () => {
     assert.doesNotMatch(result.markdown ?? '', /Hidden (descendant|adjacent|sibling)/);
     assert.match(result.markdown ?? '', /Visible selector control/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 });

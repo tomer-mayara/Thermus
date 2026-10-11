@@ -15,7 +15,7 @@ function documentHtml(body: string): string {
 }
 
 function assertControlFinding(result: Ctx): void {
-  assert.equal(result.skipped, 1);
+  assert.equal(result.skipped, 0);
   assert.deepEqual(result.found, ['cf-format']);
   assert.deepEqual(result.warnings, [formatWarning]);
 }

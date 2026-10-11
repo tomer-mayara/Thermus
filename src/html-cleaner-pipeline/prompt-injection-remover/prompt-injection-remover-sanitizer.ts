@@ -47,9 +47,9 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     return {
       ...ctx,
       html: result.html,
-      skipped: ctx.skipped + found.size,
-      found: [...(ctx.found ?? []), ...found],
-      warnings: [...(ctx.warnings ?? []), ...warnings],
+      removed: ctx.removed + result.removed.comments + result.removed.hidden,
+      found: [...new Set([...(ctx.found ?? []), ...found])],
+      warnings: [...new Set([...(ctx.warnings ?? []), ...warnings])],
     };
   }
 

@@ -20,6 +20,6 @@ test('removes hidden content after an ad with an omitted paragraph end tag', asy
   assert.match(result.markdown ?? '', /Visible text/);
   assert.doesNotMatch(result.html, /HIDDEN_PAYLOAD/);
   assert.deepEqual(result.found, ['hidden-html']);
-  assert.equal(result.removed, 1);
-  assert.equal(result.skipped, 2);
+  assert.equal(result.removed, 2);
+  assert.equal(result.skipped, 1);
 });

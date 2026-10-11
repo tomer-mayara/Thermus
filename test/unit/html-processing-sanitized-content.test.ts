@@ -20,7 +20,7 @@ describe('HTML pipeline sanitized content', () => {
       assert.equal(result.html, '');
       assert.equal(result.markdown, '');
       assert.equal(result.title, null);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
       assert.ok(result.found?.includes(finding));
       assert.ok(result.warnings?.length);
       assert.doesNotMatch(result.markdown, /Removed|payload|HTML.*removed/);
@@ -38,7 +38,7 @@ describe('HTML pipeline sanitized content', () => {
 
     assert.match(result.markdown ?? '', /^#{1,6}\s+Visible heading$/m);
     assert.equal(result.title, 'Visible heading');
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.ok(result.found?.includes('hidden-html'));
     assert.doesNotMatch(result.html, /Removed hidden payload/);
     assert.doesNotMatch(result.markdown ?? '', /Removed hidden payload|HTML.*removed/);
@@ -59,7 +59,7 @@ describe('HTML pipeline sanitized content', () => {
     assert.equal(result.html, '');
     assert.equal(result.markdown, '');
     assert.equal(result.title, null);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.ok(result.found?.includes('hidden-html'));
     assert.ok(result.warnings?.length);
   });

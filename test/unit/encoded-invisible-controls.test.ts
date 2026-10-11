@@ -28,7 +28,7 @@ describe('Invisible controls after HTML entity decoding', () => {
         assert.equal(result.markdown, 'leftright.');
         assert.equal(result.title, 'leftright');
         assert.equal(result.removed, 0);
-        assert.equal(result.skipped, 1);
+        assert.equal(result.skipped, 0);
         assert.deepEqual(result.found, ['cf-format']);
         assert.deepEqual(result.warnings, [formatWarning]);
       });
@@ -39,7 +39,7 @@ describe('Invisible controls after HTML entity decoding', () => {
 
       assert.equal(result.markdown, 'Visible paragraph.');
       assert.equal(result.title, 'leftright');
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
       assert.deepEqual(result.found, ['cf-format']);
       assert.deepEqual(result.warnings, [formatWarning]);
     });
@@ -53,7 +53,7 @@ describe('Invisible controls after HTML entity decoding', () => {
 
     assert.equal(result.markdown, 'leftright.');
     assert.equal(result.title, 'leftright');
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.found, ['cf-format']);
     assert.deepEqual(result.warnings, [formatWarning]);
   });
@@ -66,7 +66,7 @@ describe('Invisible controls after HTML entity decoding', () => {
 
     assert.equal(result.markdown, '[leftright](https://example.com/docs "leftright")\n\n![leftright](https://example.com/image.png "leftright")');
     assert.equal(result.title, 'Safe title');
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.found, ['cf-format']);
     assert.deepEqual(result.warnings, [formatWarning]);
   });
@@ -147,7 +147,7 @@ describe('Invisible controls after HTML entity decoding', () => {
     assert.equal(result.markdown, 'leftright.');
     assert.equal(result.title, 'leftright');
     assert.equal(result.removed, 2);
-    assert.equal(result.skipped, 4);
+    assert.equal(result.skipped, 3);
     assert.deepEqual(result.found, ['existing-finding', 'cf-format']);
     assert.deepEqual(result.warnings, ['existing warning', formatWarning]);
   });

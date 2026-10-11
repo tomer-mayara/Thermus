@@ -13,7 +13,7 @@ describe('findings for cleared inline styles', () => {
 
     assert.match(result.html, /<p style="">Visible ordinary style<\/p>/);
     assert.equal(result.markdown, 'Visible ordinary style');
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.found, ['cf-format']);
     assert.deepEqual(result.warnings, [formatWarning]);
   });
@@ -27,7 +27,7 @@ describe('findings for cleared inline styles', () => {
 
     assert.doesNotMatch(result.html, /&#x200b;/);
     assert.equal(result.markdown, 'Visible duplicate body style');
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.found, ['cf-format']);
     assert.deepEqual(result.warnings, [formatWarning]);
   });
@@ -40,7 +40,7 @@ describe('findings for cleared inline styles', () => {
     );
 
     assert.equal(result.markdown, 'leftright\n\nVisible ordinary style');
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.found, ['cf-format']);
     assert.deepEqual(result.warnings, [formatWarning]);
   });

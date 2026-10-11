@@ -58,7 +58,7 @@ describe('Known HTML pipeline output', () => {
     assert.equal(result.html, '');
     assert.equal(result.markdown, '');
     assert.deepEqual(result.found, ['exfil-urls']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.warnings, [
       'Exfil-shaped URLs detected: link to attacker.example: suspicious query parameter',
       'HTML scan failed; remaining HTML withheld',
@@ -87,7 +87,7 @@ describe('Known HTML pipeline output', () => {
     assert.equal(found.includes('hidden-html'),
       result.warnings?.includes('HTML sanitized: 1 hidden element(s) removed'));
     if (result.html) assert.ok(found.includes('hidden-html'));
-    assert.equal(result.skipped, found.length);
+    assert.equal(result.skipped, 0);
   });
 
   test('the real pipeline removes fenced hidden HTML from a complete document with few tags', async () => {
@@ -124,7 +124,7 @@ describe('Known HTML pipeline output', () => {
     assert.doesNotMatch(result.markdown, /hidden payload marker|hidden HTML removed|HTML unparseable/);
     assert.doesNotMatch(result.html, /hidden payload marker|left:-9999px/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.warnings, [
       'HTML sanitized: 1 hidden element(s) removed',
     ]);

@@ -62,7 +62,7 @@ describe('CSS selector token matching', () => {
       assert.match(result.html, /VISIBLE CONTROL/);
       assert.match(result.markdown ?? '', /VISIBLE CONTROL/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     });
   }
 
@@ -80,7 +80,7 @@ describe('CSS selector token matching', () => {
       assert.match(result.html, /VISIBLE KELVIN/);
       assert.match(result.markdown ?? '', /VISIBLE KELVIN/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     });
   }
 

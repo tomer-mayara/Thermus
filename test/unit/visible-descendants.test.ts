@@ -22,7 +22,7 @@ describe('Visible descendants', () => {
       assert.match(result.html, /Visible sibling/);
       assert.match(result.html, /Visible inherited/);
       assert.deepEqual(result.found, ['hidden-html']);
-      assert.equal(result.skipped, 1);
+      assert.equal(result.skipped, 0);
     });
   }
 

@@ -129,7 +129,7 @@ describe('visible CSS controls', () => {
     assert.match(result.html, /Visible control/);
     assert.match(markdown, /Visible control/);
     assert.deepEqual(result.found, ['cf-format', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
   });
 
   test('keeps independent hiding rules when the background paint is unresolved', async () => {
@@ -152,7 +152,7 @@ describe('visible CSS controls', () => {
     assert.match(result.html, /Visible background control/);
     assert.match(markdown, /Visible background control/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('preserves attributes after a Unicode tag name in the source', async () => {

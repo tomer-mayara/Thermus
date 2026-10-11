@@ -34,7 +34,7 @@ describe('stylesheet CSS visibility rules', () => {
     assert.match(result.html, /Visible local style control/);
     assert.match(markdown, /Visible local style control/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('matches type, attribute, and combinator selectors', async () => {
@@ -58,7 +58,7 @@ describe('stylesheet CSS visibility rules', () => {
     assert.match(result.html, /Visible class selector control/);
     assert.match(markdown, /Visible class selector control/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 
   test('skips selector lists with unsupported namespaced attributes', async () => {
@@ -153,6 +153,6 @@ describe('stylesheet CSS visibility rules', () => {
     assert.match(result.html, /Visible document control/);
     assert.match(markdown, /Visible document control/);
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
   });
 });

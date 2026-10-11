@@ -15,7 +15,7 @@ describe('hidden HTML source and parsed tree handling', () => {
 
         assert.equal(result.html, '');
         assert.deepEqual(result.found, ['hidden-html']);
-        assert.equal(result.skipped, 1);
+        assert.equal(result.skipped, 0);
         assert.doesNotMatch(result.warnings?.join('\n') ?? '', /scan failed|scan limit/);
       }
     }
@@ -30,7 +30,7 @@ describe('hidden HTML source and parsed tree handling', () => {
 
         assert.equal(result.html, visible);
         assert.deepEqual(result.found, ['hidden-html']);
-        assert.equal(result.skipped, 1);
+        assert.equal(result.skipped, 0);
         assert.deepEqual(result.warnings, [
           `HTML sanitized: ${prefix ? 2 : 1} hidden element(s) removed`,
         ]);
@@ -46,7 +46,7 @@ describe('hidden HTML source and parsed tree handling', () => {
 
     assert.equal(result.html, visible);
     assert.deepEqual([...result.found ?? []].sort(), ['exfil-urls', 'hidden-html']);
-    assert.equal(result.skipped, 2);
+    assert.equal(result.skipped, 0);
     const warnings = result.warnings?.join('\n') ?? '';
     assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);
     assert.equal(new Set(result.warnings).size, result.warnings?.length);
@@ -62,7 +62,7 @@ describe('hidden HTML source and parsed tree handling', () => {
 
     assert.equal(result.html, '😀 [hidden HTML removed] 𐐀 &amp; tail');
     assert.deepEqual(result.found, ['hidden-html']);
-    assert.equal(result.skipped, 1);
+    assert.equal(result.skipped, 0);
     assert.deepEqual(result.warnings, ['HTML sanitized: 1 hidden element(s) removed']);
   });
 
@@ -76,7 +76,7 @@ describe('hidden HTML source and parsed tree handling', () => {
 
       assert.equal(result.html, '');
       assert.deepEqual([...result.found ?? []].sort(), ['exfil-urls', 'hidden-html']);
-      assert.equal(result.skipped, 2);
+      assert.equal(result.skipped, 0);
       const warnings = result.warnings?.join('\n') ?? '';
       assert.equal(warnings.match(/link to attacker\.example: suspicious query parameter/g)?.length, 1);
       assert.equal(new Set(result.warnings).size, result.warnings?.length);
