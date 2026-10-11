@@ -1,10 +1,9 @@
 import { applyLayer1, sanitize } from 'agent-input-sanitizer';
-import { Defuddle } from 'defuddle/node';
 import { type Ctx } from '../html-to-markdown-pipeline.ts';
 import { type CleanHtmlToMarkdown } from './clean-html-to-markdown.ts';
 import { plainTextMarkdown } from './plain-text-input.ts';
-import { prepareHtmlDocument } from './prepare-html-document.ts';
-import { sanitizeHtmlDocument, type SanitizeText } from './sanitize-html-document.ts';
+import { PreparedHtmlDocument } from './prepare-html-document.ts';
+import { type SanitizeText } from './sanitize-html-document.ts';
 
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   public async invoke(ctx: Ctx): Promise<Ctx> {
@@ -50,18 +49,6 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   }
 
   private async convertHtml(ctx: Ctx, sanitizeText: SanitizeText): Promise<{ content: string; title: string }> {
-    const prepared = prepareHtmlDocument(ctx.html, ctx.finalUrl, (document) => {
-      sanitizeHtmlDocument(document, sanitizeText);
-    });
-    const result = await Defuddle(prepared.document, prepared.extractionUrl, {
-      markdown: true,
-      useAsync: false,
-      processExtractedDom: (root) => sanitizeHtmlDocument(root, sanitizeText),
-      ...prepared.options,
-    });
-    return {
-      content: prepared.finishMarkdown(result.content ?? ''),
-      title: result.title ?? '',
-    };
+    return PreparedHtmlDocument.fromHtml(ctx.html, ctx.finalUrl).extract(sanitizeText);
   }
 }
