@@ -6,7 +6,7 @@ No cache exists yet. This note defines the key for a future cleaned-page cache. 
 
 The default key will represent a versioned structured tuple:
 
-1. The trusted tenant ID from the authenticated request context.
+1. The trusted tenant ID, `RequestContext.tenantId`, from the access context of the request.
 2. The exact accepted absolute HTTP(S) URL string supplied to the fetch path.
 
 Keep the URL spelling, including scheme, authority, host and port, path, raw query, and fragment. Preserve whether `?` or `#` is present, including with an empty value. Keep the accepted string for the key if the fetcher later parses the URL.
@@ -16,6 +16,14 @@ Do not normalize the URL by default. Redundant entries are acceptable. Do not pa
 Encode the tuple with a structured form that preserves field boundaries. Do not join fields with an unescaped delimiter. Include a key-format version. Any change to URL equivalence requires a new version.
 
 Tenant ID is part of content identity, so one URL in two tenants has different keys. Caller reason is logging or audit metadata; it is not content identity.
+
+## Trusted tenant boundary
+
+The tenant ID comes only from the [`RequestContext`](../../src/auth/access-context.ts) that MCPServer binds to the request. MCPServer verifies the token once, gives only the verified user to the access resolver, and binds a frozen copy of the decided context to that request. Use the context of the request that reads or writes the entry.
+
+Never take the tenant ID from request headers, tool arguments, the page URL, the OAuth client ID, the token issuer, or an earlier request. Never use a user subject or an organization ID alone as the tenant ID. A refused request, or a request without a trusted context, reads and writes no entry.
+
+A self-hosted installation has one tenant, `local:<installation-id>`, for all its users. A hosted tenant comes from the canonical provider authority and the trusted organization ID. Grants and permissions are not part of content identity. The protected operation checks its permission before it reads or writes the cache.
 
 ## Equivalence rules
 
