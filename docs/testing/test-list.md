@@ -1,5 +1,9 @@
 # Notes
 
+- Give reason and compare actual behaviour 
+- Block/step up large files (or requests)
+- Step
+- Looks into AI caching support
 
 # Tests
 
@@ -41,6 +45,11 @@ HTTP request tests use IdentityVerifierMock from `test/unit/mcp/fixtures/identit
 [] Returns a server error if token verification fails unexpectedly; performs no MCP dispatch and exposes no token or internal error details
 
 Real issuer, signature, and key rotation checks belong in authentication interface tests. Browser OAuth flows and Google or Okta compatibility need separate integration and acceptance tests. A fake verifier does not prove those behaviors.
+
+**Audit Trail**
+
+[] Support OTLP protocol
+[] Generate a user token we can use in audit trail
 
 **Console logger** (`test/unit/logging/console-logger.test.ts`)
 
