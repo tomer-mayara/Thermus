@@ -8,7 +8,7 @@ import { mcpRequest, type McpRequestOptions } from './mcp-http-request.ts';
 import { RequestContextTools } from './request-context-tools.ts';
 
 export const resourceUrl = 'https://magumagu.example/mcp';
-export const resourceMetadataUrl = 'https://magumagu.example/.well-known/oauth-protected-resource/mcp';
+const resourceMetadataUrl = 'https://magumagu.example/.well-known/oauth-protected-resource/mcp';
 export const authority = 'https://auth.magumagu.example';
 export const nowSeconds = Math.floor(Date.now() / 1_000);
 export const alice: AuthenticatedUser = { authority, subject: 'user-alice', selectedOrganizationId: 'org-a' };

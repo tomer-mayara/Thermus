@@ -146,6 +146,13 @@ credentials, callback URL, and cookie-sealing secret. Load only the selected
 provider's resources. Invalid hosted configuration cannot fall back to local or
 anonymous access.
 
+Slice 1 adds `loadDeploymentConfig(environment, transport)` and `.env.example`.
+The settings are `DEPLOYMENT`, `PUBLIC_BASE_URL`, `DATA_DIR` for the
+self-hosted edition, and `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`,
+`WORKOS_API_KEY`, `WORKOS_REDIRECT_URI`, and `WORKOS_COOKIE_PASSWORD` for the
+hosted edition. The loader keeps the issuer exactly as written for exact token
+issuer checks and requires the redirect URI to have the public origin.
+
 `createApplication()` performs the single deployment branch, constructs the
 provider, and returns a small runtime record with the HTTP handler and cleanup.
 It owns startup failure cleanup and shutdown. The HTTP module adapts Node

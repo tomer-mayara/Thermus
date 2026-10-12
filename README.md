@@ -122,6 +122,17 @@ MCPServer verifies each token once. Then it gives only the verified user to `acc
 
 The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The MCP unit tests use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts), [`AccessResolverMock`](test/unit/mcp/fixtures/access-resolver-mock.ts), and test-only factory tools with the real SDK middleware. The [integration tests](test/integration/auth/mcp-context.test.ts) add the real access contracts. The [acceptance tests](test/acceptance/auth/mcp-access.test.ts) use a real MCP client. The [test inventory](docs/testing/test-list.md) lists the cases. The metadata endpoint and the identity providers remain planned.
 
+## Deployment configuration
+
+[`loadDeploymentConfig(environment, transport)`](src/config/deployment-config.ts) checks the settings before the server listens. It reads only the record that it gets, never `process.env` directly. A missing or incorrect setting throws `DeploymentConfigError`; the message names the setting and the rule, but never its value. [`.env.example`](.env.example) documents each setting with placeholder values.
+
+- `DEPLOYMENT` alone selects the edition: `self-hosted` or `hosted`. There is no `AUTH_MODE`, no mock mode, and no setting that enables paid features locally. Invalid hosted settings never fall back to the self-hosted edition or to anonymous access.
+- `PUBLIC_BASE_URL` is the canonical public address. It gives the MCP resource URL (`<base>/mcp`) and its protected-resource metadata URL. Forwarded request headers never change it. It has no credentials, query, or fragment. The hosted edition requires `https`. The self-hosted edition requires `https`, but it can use `http` on `localhost`, `127.0.0.1`, or `[::1]` for local development.
+- The self-hosted edition reads `DATA_DIR`, an absolute path.
+- The hosted edition reads `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_REDIRECT_URI` (same origin as `PUBLIC_BASE_URL`), and `WORKOS_COOKIE_PASSWORD` (at least 32 characters). The issuer stays exactly as written, because token issuers are compared as exact strings. Hosted startup rejects stdio.
+
+Application startup does not call the loader yet; the HTTP composition adds that call.
+
 ## Contributing and design
 
 Use the [documentation index](docs/README.md) to find current reference guides, pending designs, tests, and completed plans.

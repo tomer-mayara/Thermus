@@ -64,6 +64,16 @@ Real issuer, signature, and key rotation checks belong in authentication interfa
 [V] Copies only the contract fields, freezes the context and its collections, and ignores later changes to the input records
 [V] Omits the organization for an installation user and refuses a context without a tenant ID
 
+**Deployment configuration** (`test/unit/config/deployment-config.test.ts`)
+
+[V] Returns the self-hosted and hosted records with the exact MCP resource and metadata URLs for root and sub-path base URLs
+[V] Accepts only `self-hosted` or `hosted` in `DEPLOYMENT`; no other setting selects or changes the edition, and `AUTH_MODE`, mock, and paid-feature settings have no effect
+[V] Reads only the settings of the selected edition from the supplied record and ignores `process.env`
+[V] Rejects a missing, relative, padded, non-HTTPS, credential, query, or fragment URL; allows HTTP only for a self-hosted loopback host
+[V] Rejects a missing or relative `DATA_DIR`, a missing hosted setting, a redirect URI on another origin, and a cookie password shorter than 32 characters
+[V] Rejects hosted stdio and accepts self-hosted stdio at this layer
+[V] Names the setting and the rule in each error, without a setting value; keeps the issuer exactly as written; returns frozen records
+
 **Audit Trail**
 
 [] Support OTLP protocol

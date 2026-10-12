@@ -41,10 +41,6 @@ const LOOPBACK_HOSTNAMES: ReadonlySet<string> = new Set(['localhost', '127.0.0.1
 const MIN_COOKIE_PASSWORD_LENGTH = 32;
 const SPACE_OR_CONTROL_CHARACTER = /[\s\p{Cc}]/u;
 
-/**
- * Self-hosted stdio is valid at this layer. Before a later change exposes it,
- * that change must bind stdio to the selected active local user.
- */
 export function loadDeploymentConfig(environment: Environment, transport: 'http' | 'stdio'): DeploymentConfig {
   const deployment = readDeployment(environment);
   if (deployment === 'self-hosted') return loadSelfHostedConfig(environment);
