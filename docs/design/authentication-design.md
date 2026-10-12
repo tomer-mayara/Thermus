@@ -11,7 +11,8 @@ sessions. Authentication and account administration require no outbound
 connection. The first hosted release includes customer self-service
 for organizations and memberships. Payment integration remains required work
 before the paid product is complete. HTTP is the first end-to-end delivery
-target. All implementation work in this plan is pending.
+target. All implementation work in this plan is pending. The role refinement
+below records intended rules only; it adds no implementation work now.
 
 ## Requirements and delivery scope
 
@@ -30,7 +31,8 @@ target. All implementation work in this plan is pending.
 
 An authenticated hosted user without an organization can create one or accept an
 invitation. Until membership is active, tenant operations remain unavailable.
-Onboarding never grants access by inventing a default tenant.
+Onboarding never grants access by inventing a default tenant. Organization
+creation does not automatically grant the creator the super admin role.
 
 ## Contracts and request flow
 
@@ -148,9 +150,10 @@ supports SQLite and schema generation for the selected plugins.
 [Docker volumes](https://docs.docker.com/engine/storage/volumes/)
 
 SQLite normally has no database username/password. Host and volume filesystem
-access controls determine who can administer this installation. Host/container
-access is the administration authority; no local application admin role or
-administration UI is needed. There is no application owner or last-admin rule.
+access controls determine who can operate this installation and its offline
+CLI. This operational authority does not grant an application admin role. No
+local application admin role or administration UI is needed; all enabled local
+accounts retain equal evaluation permissions.
 [SQLite serverless operation](https://www.sqlite.org/serverless.html)
 
 Local email is an account identifier. Explicitly disable email verification and
@@ -316,33 +319,41 @@ contract exposes the records and operations those use cases need.
 operations, and pagination. It does not duplicate provisioning orchestration.
 The local edition has no organization implementation or management routes.
 
-Provision the hosted environment with explicit owner/admin/member roles and
-the required permission slugs; do not assume those roles already exist. Set
-member as the default, verify each role's permissions, and assign owner only
-during organization creation.
+The intended application roles are:
 
-The first hosted release supports creating, listing, selecting, and renaming
-organizations; listing members; sending, resending, and revoking pending
-invitations; assigning admin/member roles; removing or deactivating members;
-and viewing active seats. List only the authenticated user's organizations.
-Before each mutation, load current actor and target state, verify the target
-belongs to the requested organization, and enforce the operation rule. A hidden
-button or a caller-supplied organization ID is not authorization.
+| Role | Intended authority |
+| --- | --- |
+| User | Access the portal, if one exists. Cannot provision users. |
+| Admin | Provision and revoke regular users manually or, if selected later, through Okta. |
+| Super admin | Create and revoke admins. |
+
+Better Auth and WorkOS authenticate users. Application roles determine what
+those users may do. Okta is a possible user provisioning channel; this refinement
+does not select an Okta or SCIM integration, change authentication providers, or
+add a portal or other functionality. Role names do not imply inherited powers.
+
+Before implementing affected management operations, decide role scope, initial
+super admin bootstrap and recovery, and the super admin lifecycle, including who
+can create or revoke super admins. No global or cross-organization super admin
+powers are specified. Also choose the initial access rule for organization
+creation; immutable creator metadata does not grant a role. Map the chosen rules
+to explicit user/admin/super admin roles and permission slugs in the hosted
+environment, and verify the mapping before use. Do not assume provider defaults
+satisfy application policy.
+
+The first hosted release still includes creating, listing, selecting, and
+renaming organizations; listing memberships; sending, resending, and revoking
+pending invitations; regular user provisioning and revocation; admin creation
+and revocation; and viewing active seats. Choose permissions for organization
+operations and other actions not covered by the role table before implementing
+them. List only the authenticated user's organizations. Before each mutation,
+load current actor and target state, verify the target belongs to the requested
+organization, and enforce the chosen operation rule. An admin's regular user
+management authority does not permit admin management; users cannot provision
+users. A hidden button or a caller-supplied organization ID is not authorization.
 Check access for each new operation. Work that was already authorized may
 finish after a later role or membership revocation; these separate provider
 calls do not promise distributed atomic authorization.
-
-Use one protected founding owner per organization. Store its user ID in
-application-owned WorkOS organization metadata. Customer inputs never set or
-change this field. The owner may assign admin/member roles and manage members.
-Admins may invite members and remove or deactivate any membership except the
-founding owner's. Only the founder assigns or changes admin/member roles;
-members cannot administer. No customer path may remove, deactivate, or demote
-the founding owner, and the owner role is never assignable. Protect the owner
-by immutable user ID, not a mutable target role or a last-admin count. This
-invariant remains true under concurrent customer requests. Owner transfer,
-organization deletion, and custom role authoring are explicit proposed later
-capabilities.
 
 The adapter uses WorkOS organization membership get/list/create/update and
 delete/deactivate APIs. Request the needed status filters explicitly; creation
@@ -356,31 +367,35 @@ expired outcomes accurately. Follow the configured invitation identity policy:
 WorkOS can allow another address on the same corporate domain, so do not claim
 strict address equality without enforcing it. [Invitation behavior](https://workos.com/docs/authkit/invitations)
 
-Organization creation is a recoverable two-step operation: create the
-organization, then establish its active owner membership. Use a server-minted,
-signed operation ID bound to the creator as a stable external ID. WorkOS external
-IDs are unique within an environment and can be queried. Store the creator's
-owner metadata and application-owned provisioning state `pending` at creation.
-[External IDs](https://workos.com/docs/authkit/metadata)
+Organization creation remains recoverable: create the organization, then
+satisfy the explicitly chosen initial access and bootstrap rule. Use a
+server-minted, signed operation ID bound to the creator as a stable external ID.
+WorkOS external IDs are unique within an environment and can be queried. Store
+immutable creator metadata for provenance and retry binding, and
+application-owned provisioning state `pending` at creation. Customer inputs
+never set or change the creator metadata. It confers no role or management
+permission. [External IDs](https://workos.com/docs/authkit/metadata)
 
-After an unknown outcome, retry with the same ID, verify the recorded owner,
-and resume the missing step. A pending retry may create a missing membership
-or use an existing active one, but never reactivate an inactive membership.
-Record `complete` only after the owner is active; only then report success or
-refresh the selected organization. Access resolution also requires complete
-provisioning. Missing or inconsistent owner/state metadata fails closed.
+After an unknown outcome, retry with the same ID, verify the recorded creator,
+and resume the missing step under the chosen initial access rule. A pending
+retry may create a required missing membership or use an existing active one,
+but never reactivate an inactive membership. Record `complete` only after the
+chosen initial access and bootstrap rule is satisfied; only then report success
+or refresh the selected organization. Access resolution also requires complete
+provisioning. Missing or inconsistent creator/state metadata fails closed.
 
-A replay of completed creation returns existing active access. It never
-recreates or reactivates a missing/inactive owner; that needs operator recovery.
-Never substitute a fresh operation ID or blindly delete an organization as
-rollback. Operators must stop retries before intervening in pending creation
-and then recover manually; metadata provides no atomic history across API calls.
-Test a crash after owner creation but before completion, and completed replay
+A replay of completed creation returns access only if current membership and
+permissions allow it. It never recreates or reactivates a missing/inactive
+membership; that needs operator recovery under the chosen recovery rule. Never
+substitute a fresh operation ID or blindly delete an organization as rollback.
+Operators must stop retries before intervening in pending creation and then
+recover manually; metadata provides no atomic history across API calls. Test a
+crash after the initial access step but before completion, and completed replay
 after removal. Prove the pinned API behavior; an SDK idempotency header alone
 is insufficient.
 
 The account page's seat summary counts unique active membership IDs across all
-pages, including the owner. Pending and inactive memberships do not count. A
+pages, across all roles. Pending and inactive memberships do not count. A
 failed page fails the summary rather than displaying an incomplete number.
 This is an observed live count, not a transactional billing snapshot.
 
@@ -405,7 +420,7 @@ shows a separate role, invariant, or lifecycle.
 | `migrations/auth-local/0002-installation.sql` | Singleton installation identity only; no restriction on user count. | 2 |
 | `src/auth-workos/workos-auth-provider.ts` | Add `WorkOSAuthProvider`, verification and current access resolution. | 3 |
 | `src/auth-workos/workos-browser-session.ts` | Add `WorkOSBrowserSession` and explicit cookie effects. | 3 |
-| `src/organizations/organization-administration.ts` | Add `OrganizationAdministration` and its `OrganizationDirectory` contract. | 4 |
+| `src/organizations/organization-administration.ts` | Add `OrganizationAdministration` and its `OrganizationDirectory` contract, with the chosen role and bootstrap rules. | 4 |
 | `src/auth-workos/workos-organizations.ts` | Add `WorkOSOrganizations`, membership/role/invitation mapping, metadata effects, and pagination. | 3–4 |
 | `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. | 3–4 |
 | `src/hosted-admin/account-pages.ts` | Render onboarding, selection, membership, invitation, and seat forms. | 3–4 |
@@ -440,10 +455,11 @@ contracts as types only.
    MFA. Prove that an authenticated user without an organization can reach
    onboarding while tenant requests remain denied.
 4. **Customer self-service.** Complete recoverable organization creation,
-   organization selection, member and invitation operations, owner protection,
-   and the seat summary. Prove tenant isolation and role restrictions through
-   both forms and application service calls. This slice is required for the
-   first hosted release.
+   organization selection, user/admin management and invitation operations,
+   and the seat summary. Resolve role scope, bootstrap/recovery, and super admin
+   lifecycle decisions before implementing affected operations. Prove tenant
+   isolation and role restrictions through both forms and application service
+   calls. This slice is required for the first hosted release.
 5. **Evaluation packaging.** Ship dependencies, migrations, assets, commands,
    and volume configuration. Verify a fresh container, two-user offline login
    and refresh, restart, container/image replacement, backup/restore, and
@@ -475,7 +491,7 @@ behavior.
 | `test/unit/mcp/access-resolver.test.ts` | Allowed/denied decisions, safe errors, and context binding through doubles. |
 | `test/unit/auth-better-auth/local-auth-command.test.ts` | Command validation, explicit user targets, hidden password input, safe output, and client registration dispatch with lifecycle doubles. |
 | `test/unit/auth-better-auth/local-user-administration.test.ts` | Account lifecycle and selected-user reset/disable/revocation decisions with provider doubles. |
-| `test/unit/organizations/organization-administration.test.ts` | Onboarding, actor/target checks, roles, owner immutability, and retry decisions with a directory double. |
+| `test/unit/organizations/organization-administration.test.ts` | Onboarding, actor/target checks, chosen role and bootstrap rules, creator metadata integrity, and retry decisions with a directory double. |
 | `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. |
 | `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. |
 | `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats and key rotation. |
@@ -483,7 +499,7 @@ behavior.
 | `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, and per-user session/OAuth revocation without affecting peers. |
 | `test/integration/auth/local-access.test.ts` | Two distinct user subjects in one tenant; equal evaluation permissions, separate sessions, current account-state checks, disabled login/issuance/refresh, and disabled-user denial after token verification. |
 | `test/integration/auth/local-installation.test.ts` | Application/provider startup collaboration: one persistent installation UUID; reset/disable preserve IDs; backup/restore preserve database and secrets; existing data without identity fails closed. |
-| `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, role elevation, invitations, provisioning retries, concurrent owner protection, and seat pagination/failures. |
+| `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, role elevation, invitations, provisioning retries, user/admin management restrictions, and seat pagination/failures. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/refresh in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login/issuance/refresh while peers retain access; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
 | `test/acceptance/auth/self-hosted-container.test.ts` | Offline bundled CLI with stopped-server volume access; commands reject the live lock; two-user login/refresh after restart and container/image replacement; installation/user IDs survive backup/restore. |
 | `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, invitations, member changes, seat summary, and revocation limits. |
@@ -522,6 +538,9 @@ and durable storage only after those decisions; do not prebuild an event-store
 or outbox framework. The authentication and self-service release does not claim
 to collect payments.
 
-SSO, SCIM, step-up, audit logs, owner transfer, organization deletion, and custom
-role authoring remain explicit later milestones. Extend the existing roles when
-each use case is specified, rather than adding placeholder methods now.
+SSO, SCIM (including any selected Okta provisioning integration), step-up, audit
+logs, organization deletion, and custom role authoring remain explicit later
+milestones. Role scope, initial super admin bootstrap/recovery, and super admin
+lifecycle remain unresolved before affected management can be implemented.
+Extend the existing roles when each use case is specified, rather than adding
+placeholder methods now.
