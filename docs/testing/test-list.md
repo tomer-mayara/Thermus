@@ -313,6 +313,22 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 
 ## Acceptance
 
+**Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
+
+[V] Given 11px, 12px, and 13px text, keeps only text at or above the default 12px cutoff in final Markdown and reports one removal with `hidden-html`
+[V] Uses a custom 8px cutoff; a zero cutoff keeps small visible text while existing zero-font, near-zero-font, and hidden-attribute checks remain active
+[V] Keeps larger child text and images under a small parent
+[V] Applies inherited, embedded stylesheet, `em`, `%`, `rem`, and absolute point font sizes
+[V] Keeps enlarged and reduced text at the effective 12px boundary and removes text just below it
+[V] Composes parent and child scales to keep restored child text
+[V] Removes proven tiny text and keeps unresolved fonts, font calculations, transforms, and projected planes
+
+Run these acceptance tests separately; `npm run check` does not select the acceptance directory:
+
+```sh
+npm run build && node --test dist/test/acceptance/small-text-cutoff.test.js
+```
+
 **Literal inline emoji joiners** (`test/acceptance/literal-inline-emoji-joiners.test.ts`)
 
 [V] Given a woman-technologist emoji with the joiner in a separate span, a separate text node, or three spans, keeps exact final Markdown code points

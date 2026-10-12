@@ -2,6 +2,7 @@ import { detectExfil } from 'agent-input-sanitizer/html';
 import { HiddenHtmlScanner } from './hidden-html-scanner.ts';
 import { CssSelectorLimitError } from './css-visibility-selectors.ts';
 import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
+import { SmallTextPolicy } from './small-text-policy.ts';
 
 type HtmlScan = ReturnType<typeof HiddenHtmlScanner.scan>;
 export type HiddenHtmlRemovalResult = {
@@ -22,7 +23,7 @@ export class HiddenHtmlRemovalSession {
   private visibleStyleValues: string[] = [];
   private scanCount = 0;
 
-  public constructor(private html: string) {}
+  public constructor(private html: string, private readonly smallText = new SmallTextPolicy()) {}
 
   public run(): HiddenHtmlRemovalResult {
     for (; this.scanCount < HiddenHtmlRemovalSession.maxHtmlScans; this.scanCount++) {
@@ -77,7 +78,7 @@ export class HiddenHtmlRemovalSession {
 
   private tryScanHtml(): HtmlScan | undefined {
     try {
-      return HiddenHtmlScanner.scan(this.html, this.provenance);
+      return HiddenHtmlScanner.scan(this.html, this.provenance, { smallText: this.smallText });
     } catch (error) {
       if (error instanceof CssSelectorLimitError) throw error;
       return undefined;

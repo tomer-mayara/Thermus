@@ -2,6 +2,7 @@ import { applyLayer1, CATEGORY, LONE_SURROGATE_RE, sanitize, stripAnsiFully } fr
 import { describeStripped } from 'agent-input-sanitizer/invisible';
 import { CssSelectorLimitError } from './css-visibility-selectors.ts';
 import { htmlControlDecisions, moveControlPositions, type ControlPosition } from './html-control-context.ts';
+import { SmallTextPolicy } from './small-text-policy.ts';
 
 const joiner = '\u200d';
 const replacement = '\ufffd';
@@ -36,7 +37,7 @@ function controlReport(cleaned: string, found: Set<string>, deAnsi: string) {
   return { cleaned, found: [...found], warnings };
 }
 
-async function preserveLogicalJoiners(source: string): ReturnType<typeof sanitize> {
+async function preserveLogicalJoiners(source: string, smallText: SmallTextPolicy): ReturnType<typeof sanitize> {
   const deAnsi = stripAnsiFully(source);
   // Residual introducers can change the meaning of a reordered text-context view.
   if (/[\u001b\u0080-\u009f]/.test(deAnsi)) return sanitize(source, { html: false });
@@ -46,7 +47,7 @@ async function preserveLogicalJoiners(source: string): ReturnType<typeof sanitiz
   if (deAnsi !== source) found.add(CATEGORY.ANSI);
   // Reject stale permits in batches after raw cleanup changes source or visibility.
   for (let pass = 0; pass < 8; pass++) {
-    const decisions = htmlControlDecisions(current);
+    const decisions = htmlControlDecisions(current, smallText);
     decisions.found.forEach((value) => found.add(value));
     const ranges = decisions.rejected.map(({ index, length }) => ({ start: index, end: index + length }));
     const positions = moveControlPositions(decisions.permitted, ranges);
@@ -54,16 +55,16 @@ async function preserveLogicalJoiners(source: string): ReturnType<typeof sanitiz
     const report = await cleanWithPositions(current, positions);
     report.found.forEach((value) => found.add(value));
     current = report.cleaned;
-    const remaining = htmlControlDecisions(current);
+    const remaining = htmlControlDecisions(current, smallText);
     if (remaining.rejected.length === 0) return controlReport(current, found, deAnsi);
   }
   return sanitize(source, { html: false });
 }
 
-export async function sanitizeHtmlControls(source: string): ReturnType<typeof sanitize> {
+export async function sanitizeHtmlControls(source: string, smallText = new SmallTextPolicy()): ReturnType<typeof sanitize> {
   if (!source.includes(joiner)) return sanitize(source, { html: false });
   try {
-    return await preserveLogicalJoiners(source);
+    return await preserveLogicalJoiners(source, smallText);
   } catch (error) {
     if (error instanceof CssSelectorLimitError) throw error;
     // Use the existing raw policy if a source mapping or context check fails.
