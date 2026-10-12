@@ -104,6 +104,12 @@ The ad cleaner limits parsed HTML to 256 element levels. See [HTML processing li
 Out of scope: step-up approval, a second renderer, request-level ad blocking, and any connector other than the web. Done when an admin can disable native search, point an agent at DongAI, and get a cleaned page back with a log line for every fetch.
 
 
+## MCP server component
+
+[`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `magumagu` identity with support for protocol version `2026-07-28`.
+
+The current component covers connection and discovery. Its [unit test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport.
+
 ## Contributing and design
 
 Use the [documentation index](docs/README.md) to find current reference guides, pending designs, tests, and completed plans.
