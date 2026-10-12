@@ -110,15 +110,28 @@ Out of scope: step-up approval, a second renderer, request-level ad blocking, an
 
 ## MCP server component
 
-[`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `magumagu` identity with support for protocol version `2026-07-28`.
+[`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `magumagu` identity with support for protocol version `2026-07-28`. A stdio connection has no verified user, so it registers no tools. A later local stdio entry must first bind a selected active local user.
 
-For HTTP requests, construct the server with `{ auth: { verifier, resourceMetadataUrl } }` and call `await server.fetch(request)`. The verifier implements our [`IdentityVerifier`](src/mcp/identity-verifier.ts) contract. An adapter converts its verified claims and token rejection errors to SDK types. MCPServer validates the Authorization header before the SDK verifies the token and dispatches the MCP request. Missing or malformed headers receive HTTP 401 with a Bearer challenge and the configured protected-resource metadata URL. Call `await server.close()` to release the HTTP handler and any transport connection.
+For HTTP requests, construct the server with `{ auth: { verifier, accessResolver, resourceMetadataUrl, expectedResource }, registerTools }` and call `await server.fetch(request)`. The verifier implements our [`IdentityVerifier`](src/mcp/identity-verifier.ts) contract, and the access resolver implements [`AccessResolver`](src/auth/access-context.ts). MCPServer validates the Authorization header before the SDK verifies the token. Missing or malformed headers receive HTTP 401 with a Bearer challenge and the configured protected-resource metadata URL. Call `await server.close()` to release the HTTP handler and any transport connection.
 
-`verifyAccessToken(token)` returns a client ID, scopes, an expiration timestamp in `expiresAtUnixSeconds`, and a `resource` URL from the verified token audience. Throw `InvalidAccessTokenError` to reject a token. The adapter turns that error into a generic `401 invalid_token` response through the SDK; unexpected verification errors receive a generic `500 server_error` response. The SDK also rejects expired tokens or tokens with no expiration time with `401 invalid_token`.
+`verifyAccessToken(token)` returns a `VerifiedIdentity`: the verified user (`authority`, `subject`, and an optional `selectedOrganizationId`), the token `issuer`, the OAuth `clientId`, the granted `scopes`, `issuedAtUnixSeconds`, `expiresAtUnixSeconds`, and the `resource` URL from the token audience. A provider accepts only human user tokens. The client ID identifies the client application; it is never a user or tenant ID. Throw `InvalidAccessTokenError` to reject a token. The adapter turns that error into a generic `401 invalid_token` response. It gives the same response for an identity without a user, issuer, client ID, issue time, expiration, or audience, and for an identity whose user subject is the client ID. Unexpected verification errors receive a generic `500 server_error` response. The adapter puts frozen copies of the verified claims in `AuthInfo.extra`: `user`, `issuer`, `clientId`, `scopes`, `issuedAt`, `expiresAt`, and `audience`.
 
-Set `auth.expectedResource` to a `URL` for the MCP resource to check the token audience. Set `auth.requiredScopes` to an array of scope names to require those permissions. Both settings are optional. The SDK rejects an audience mismatch with `401 invalid_token` and missing required scopes with `403 insufficient_scope`. The Bearer challenge includes the required scopes.
+`auth.expectedResource` is the MCP resource URL. The SDK rejects an expired token or a token for another audience with `401 invalid_token`. Set `auth.requiredScopes` to require OAuth scopes. The SDK rejects a token without them with `403 insufficient_scope`, and the Bearer challenge includes the required scopes. Require only scopes that the configured OAuth flow can grant.
 
-The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The [authentication tests](test/unit/mcp/auth.test.ts) use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts) with the real SDK middleware. They check missing-token responses for `server/discover`, `tools/list`, and `tools/call`, plus discovery with accepted tokens, token rejection, and unexpected verification failures. They also check that missing or malformed Authorization headers stop before verification and MCP dispatch. The [claim tests](test/unit/mcp/auth-claims.test.ts) check expiration, audience, and permission failures before MCP dispatch. The metadata endpoint and identity provider integration remain planned.
+MCPServer verifies each token once. Then it gives only the verified user to `accessResolver.resolve(user)`. Request headers, tool arguments, earlier requests, and the client ID cannot select the user, tenant, or organization. An allowed decision carries a `RequestContext` from `createRequestContext()`: the user, the trusted tenant ID, the optional organization, every current role grant, and the union of the permissions of all grants. MCPServer binds a frozen copy of that context to the request. The SDK factory gives it to `registerTools(server, context)`. Each tool calls `requirePermission(context, permission)` before its work starts. A denied decision receives `403 access_denied` without a Bearer challenge. A resolver failure, or an allowed decision without a tenant ID, receives a generic `500 server_error`. After a refusal, no factory, tool, or MCP dispatch runs. Production code registers no tools yet.
+
+The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The MCP unit tests use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts), [`AccessResolverMock`](test/unit/mcp/fixtures/access-resolver-mock.ts), and test-only factory tools with the real SDK middleware. The [integration tests](test/integration/auth/mcp-context.test.ts) add the real access contracts. The [acceptance tests](test/acceptance/auth/mcp-access.test.ts) use a real MCP client. The [test inventory](docs/testing/test-list.md) lists the cases. The metadata endpoint and the identity providers remain planned.
+
+## Deployment configuration
+
+[`loadDeploymentConfig(environment, transport)`](src/config/deployment-config.ts) checks the settings before the server listens. It reads only the record that it gets, never `process.env` directly. A missing or incorrect setting throws `DeploymentConfigError`; the message names the setting and the rule, but never its value. [`.env.example`](.env.example) documents each setting with placeholder values.
+
+- `DEPLOYMENT` alone selects the edition: `self-hosted` or `hosted`. There is no `AUTH_MODE`, no mock mode, and no setting that enables paid features locally. Invalid hosted settings never fall back to the self-hosted edition or to anonymous access.
+- `PUBLIC_BASE_URL` is the canonical public address. It gives the MCP resource URL (`<base>/mcp`) and its protected-resource metadata URL. Forwarded request headers never change it. It has no credentials, query, or fragment. The hosted edition requires `https`. The self-hosted edition requires `https`, but it can use `http` on `localhost`, `127.0.0.1`, or `[::1]` for local development.
+- The self-hosted edition reads `DATA_DIR`, an absolute path.
+- The hosted edition reads `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_REDIRECT_URI` (same origin as `PUBLIC_BASE_URL`), and `WORKOS_COOKIE_PASSWORD` (at least 32 characters). The issuer stays exactly as written, because token issuers are compared as exact strings. Hosted startup rejects stdio.
+
+Application startup does not call the loader yet; the HTTP composition adds that call.
 
 ## Contributing and design
 
@@ -144,6 +157,8 @@ pnpm build       # clean build
 pnpm start       # node dist/src/index.js
 pnpm test             # clean build, then node --test on dist/test/
 pnpm test:unit        # clean build, then node --test on dist/test/unit/
+pnpm test:integration # clean build, then node --test on dist/test/integration/
+pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
 pnpm typecheck   # tsc --noEmit
 ```
@@ -171,13 +186,15 @@ import { hello } from './hello.js';
 
 `pnpm build` runs the cleanup and compiler commands from `package.json`. It clears the project-owned `dist` directory before it compiles current source. It rejects a symlink or regular file at that path. npm and pnpm run package scripts from the project root, so the caller’s working directory does not change the cleanup target. Files outside `dist` stay in place. Do not keep user data in `dist`.
 
-`pnpm test` builds and runs all compiled tests. `pnpm test:unit` and `pnpm test:interface` build and run only their respective suites. Each command removes output from deleted or renamed source files. Use `pnpm build` before a focused `node --test dist/...` command. `pnpm start` runs `dist/src/index.js` from the last build. `pnpm typecheck` checks source without emitting or clearing output.
+`pnpm test` builds and runs all compiled tests. `pnpm test:unit`, `pnpm test:integration`, `pnpm test:acceptance`, and `pnpm test:interface` build and run only their respective suites. Each command removes output from deleted or renamed source files. Use `pnpm build` before a focused `node --test dist/...` command. `pnpm start` runs `dist/src/index.js` from the last build. `pnpm typecheck` checks source without emitting or clearing output.
 
-The unit suite is offline. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
+The unit, integration, and acceptance suites are offline. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
 
 `pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
 
-The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. Run them separately because `npm run check` does not select the acceptance directory:
+`npm run check` does not run the integration, acceptance, or interface suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+
+The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. `pnpm test:acceptance` runs them with the other acceptance tests. To run only this file:
 
 ```sh
 npm run build && node --test dist/test/acceptance/small-text-cutoff.test.js

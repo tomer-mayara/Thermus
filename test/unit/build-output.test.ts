@@ -9,17 +9,19 @@ import { test, type TestContext } from 'node:test';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const childEnv = { ...process.env };
 delete childEnv.NODE_TEST_CONTEXT;
+const suites = ['unit', 'integration', 'acceptance', 'interface'];
 function fixture(t: TestContext): string {
   const dir = mkdtempSync(join(tmpdir(), 'magumagu-build-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   for (const file of ['package.json', 'tsconfig.json', 'tsconfig.build.json']) cpSync(join(root, file), join(dir, file));
   symlinkSync(join(root, 'node_modules'), join(dir, 'node_modules'));
   mkdirSync(join(dir, 'src'));
-  mkdirSync(join(dir, 'test/unit'), { recursive: true });
-  mkdirSync(join(dir, 'test/interface'), { recursive: true });
+  for (const suite of suites) {
+    mkdirSync(join(dir, `test/${suite}`), { recursive: true });
+    writeFileSync(join(dir, `test/${suite}/current.test.ts`), `import { test } from 'node:test';\ntest('${suite} current', () => {});\n`);
+  }
   cpSync(join(root, 'test/unit/build-output.test.ts'), join(dir, 'test/unit/build-output.test.ts'));
   writeFileSync(join(dir, 'src/current.ts'), 'export const current = true;\n');
-  for (const suite of ['unit', 'interface']) writeFileSync(join(dir, `test/${suite}/current.test.ts`), `import { test } from 'node:test';\ntest('${suite} current', () => {});\n`);
   return dir;
 }
 function run(dir: string, command: string): SpawnSyncReturns<string> {
@@ -27,10 +29,14 @@ function run(dir: string, command: string): SpawnSyncReturns<string> {
 }
 function passes(result: SpawnSyncReturns<string>) { assert.equal(result.status, 0, result.stdout + result.stderr); }
 
-for (const command of ['test', 'test:unit', 'test:interface']) {
+const suiteCommands = [
+  { command: 'test', suite: 'unit', selected: suites },
+  ...suites.map((suite) => ({ command: `test:${suite}`, suite, selected: [suite] })),
+];
+
+for (const { command, suite, selected } of suiteCommands) {
   test(`Given renamed and deleted tests, ${command} executes only current source`, (t) => {
     const dir = fixture(t);
-    const suite = command === 'test:interface' ? 'interface' : 'unit';
     const old = join(dir, `test/${suite}/obsolete.test.ts`);
     writeFileSync(old, "import { test } from 'node:test';\ntest('obsolete sentinel', () => {});\n");
     passes(run(dir, 'build'));
@@ -44,13 +50,16 @@ for (const command of ['test', 'test:unit', 'test:interface']) {
     const deleted = run(dir, command);
     passes(deleted);
     assert.doesNotMatch(deleted.stdout, /obsolete sentinel|renamed sentinel/);
-    assert.match(deleted.stdout, new RegExp(`${suite} current`));
-    if (command === 'test') assert.match(deleted.stdout, /interface current/);
-    if (command !== 'test') assert.doesNotMatch(deleted.stdout, new RegExp(`${suite === 'unit' ? 'interface' : 'unit'} current`));
+    for (const other of suites) {
+      const current = new RegExp(`${other} current`);
+      if (selected.includes(other)) assert.match(deleted.stdout, current);
+      else assert.doesNotMatch(deleted.stdout, current);
+    }
     const fresh = fixture(t);
     const clean = run(fresh, command);
     passes(clean);
-    assert.deepEqual(deleted.stdout.match(/(?:unit|interface) current/g), clean.stdout.match(/(?:unit|interface) current/g));
+    const currentTests = new RegExp(`(?:${suites.join('|')}) current`, 'g');
+    assert.deepEqual(deleted.stdout.match(currentTests), clean.stdout.match(currentTests));
     const files = readdirSync(join(dir, 'dist'), { recursive: true, withFileTypes: true })
       .filter((entry) => entry.isFile())
       .map((entry) => join(entry.parentPath, entry.name).slice(join(dir, 'dist').length + 1))

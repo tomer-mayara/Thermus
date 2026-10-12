@@ -4,11 +4,13 @@ import {
   type VerifiedIdentity,
 } from '../../../../src/mcp/identity-verifier.ts';
 
+export type ConfiguredClaims = { readonly [Claim in keyof VerifiedIdentity]?: unknown };
+
 export class IdentityVerifierMock implements IdentityVerifier {
   readonly calls: string[] = [];
-  private readonly tokens: ReadonlyMap<string, VerifiedIdentity | Error>;
+  private readonly tokens: ReadonlyMap<string, ConfiguredClaims | Error>;
 
-  constructor(tokens: ReadonlyMap<string, VerifiedIdentity | Error> = new Map()) {
+  constructor(tokens: ReadonlyMap<string, ConfiguredClaims | Error> = new Map()) {
     this.tokens = tokens;
   }
 
@@ -17,6 +19,6 @@ export class IdentityVerifierMock implements IdentityVerifier {
     const result = this.tokens.get(token);
     if (result === undefined) throw new InvalidAccessTokenError('Unknown access token');
     if (result instanceof Error) throw result;
-    return result;
+    return result as VerifiedIdentity;
   }
 }

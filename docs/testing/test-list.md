@@ -25,27 +25,54 @@ Planned tool tests use test doubles at the fetcher and pipeline public interface
 
 **MCP Authentication**
 
-HTTP request tests use IdentityVerifierMock from `test/unit/mcp/fixtures/identity-verifier-mock.ts`. It implements our IdentityVerifier contract, supplies configured token claims or errors, and rejects unknown tokens. MCPServer adapts that contract to the SDK's OAuthTokenVerifier. Tests use the real SDK middleware and test doubles for downstream packages.
+HTTP request unit tests use `IdentityVerifierMock` and `AccessResolverMock` from `test/unit/mcp/fixtures/`. The verifier mock supplies configured claims or errors and rejects unknown tokens. Its claims can be incomplete, so that tests reach the boundary checks. The resolver mock gives a configured decision, failure, or delayed decision for each user subject, records its calls, and denies an unknown user. Test-only factory tools report the context that MCPServer binds to each request; production code registers no such tool. MCPServer adapts the verifier to the SDK's OAuthTokenVerifier. Unit tests use the real SDK middleware and import the access contracts as types only.
 
 [V] Maps IdentityVerifier claims to SDK auth information, supplies the original token, and keeps changes to SDK scopes separate from verifier claims (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
+[V] Puts frozen copies of the actual user, issuer, client, scope, issue time, expiration, and audience claims in `AuthInfo.extra` (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
+[V] Rejects an identity without a user, issuer, client ID, issue time, expiration, or audience, or with the client ID as the user subject, as `invalid_token` (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
+[V] Reports a provider rejection only as `invalid_token` and passes an unexpected provider failure on as a failure (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] IdentityVerifierMock rejects unknown tokens and keeps verification call records separate between instances (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Requires a Bearer token for server/discover, tools/list, and tools/call; missing tokens return HTTP 401 with a Bearer challenge and the protected-resource metadata URL (`test/unit/mcp/auth.test.ts`)
 [V] Rejects a missing Authorization header with HTTP 401 before token verification or MCP dispatch (`test/unit/mcp/auth.test.ts`)
 [V] Rejects a malformed Authorization header with HTTP 401 before token verification or MCP dispatch (`test/unit/mcp/auth.test.ts`)
-[V] Returns HTTP 401 with invalid_token when the verifier rejects a token (`test/unit/mcp/auth.test.ts`)
-[V] Returns HTTP 401 with invalid_token for an expired token or a token with no expiration time (`test/unit/mcp/auth-claims.test.ts`)
-[V] Returns HTTP 401 with invalid_token when the verified token audience does not match the MCP resource (`test/unit/mcp/auth-claims.test.ts`)
+[V] Returns HTTP 401 with invalid_token when the verifier rejects a token, including a malformed token or an untrusted issuer, before access resolution (`test/unit/mcp/auth.test.ts`, `test/unit/mcp/auth-claims.test.ts`)
+[V] Returns HTTP 401 with invalid_token for an expired token or a token with no expiration or issue time (`test/unit/mcp/auth-claims.test.ts`)
+[V] Returns HTTP 401 with invalid_token when the verified token audience is missing or does not match the MCP resource (`test/unit/mcp/auth-claims.test.ts`)
 [V] Returns HTTP 403 with insufficient_scope and the required scope in the Bearer challenge when a verified token lacks permission (`test/unit/mcp/auth-claims.test.ts`)
-[] Allows a token for the MCP resource with a future expiration and all required scopes to reach the requested MCP operation
+[V] Allows a token for the MCP resource with a future expiration and all required scopes to reach the requested MCP operation (`test/unit/mcp/auth.test.ts`, `test/unit/mcp/access-resolver.test.ts`)
 [] Serves protected-resource metadata without a token; identifies the MCP resource, trusted authorization server, and supported scopes, without allowing anonymous tool access
-[] Supplies the verified user and tenant context to the tool handler; request headers and tool arguments cannot replace that context
-[] Rejects token details that cannot establish the required user or tenant context
-[] Keeps user and tenant context separate for sequential and concurrent requests
-[] Checks every request again; a valid request does not authorize a later request with a missing or rejected token
-[] Stops before MCP dispatch, the fetcher, and the pipeline after any authentication or scope failure
-[] Returns a server error if token verification fails unexpectedly; performs no MCP dispatch and exposes no token or internal error details
+[V] Verifies each token once, gives only the verified user to the access resolver, and binds the decided context with the verified claims to the request (`test/unit/mcp/access-resolver.test.ts`)
+[V] Supplies the verified user and tenant context to the tool handler; request headers and tool arguments cannot replace that context, and the OAuth client ID is never a user or tenant (`test/unit/mcp/request-context-binding.test.ts`)
+[V] Rejects token details that cannot establish the required user or tenant context: an identity without a usable user, or an allowed decision without a tenant ID (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`, `test/unit/mcp/access-resolver.test.ts`)
+[V] Keeps user and tenant context separate for sequential and concurrent requests, including resolutions that finish in reverse order, a slow request body, and overlapping tool handlers (`test/unit/mcp/request-context-binding.test.ts`)
+[V] Binds a frozen copy of the decided context; later changes to the resolver's records cannot reach the request (`test/unit/mcp/request-context-binding.test.ts`)
+[V] Checks every request again; a valid request does not authorize a later request with a missing or rejected token (`test/unit/mcp/access-resolver.test.ts`)
+[V] Returns a safe HTTP 403 access_denied without a Bearer challenge for each denial reason and MCP method, distinct from the SDK insufficient_scope response, before the request factory or MCP dispatch (`test/unit/mcp/access-resolver.test.ts`)
+[V] Returns a generic HTTP 500 for an access resolver failure or an allowed decision without a tenant ID, with no private details, request factory, or MCP dispatch (`test/unit/mcp/access-resolver.test.ts`)
+[V] Stops before MCP dispatch, the fetcher, and the pipeline after any authentication or scope failure (`test/unit/mcp/auth.test.ts`, `test/unit/mcp/auth-claims.test.ts`, `test/integration/auth/mcp-context.test.ts`)
+[V] Returns a server error if token verification fails unexpectedly; performs no MCP dispatch or access resolution and exposes no token or internal error details (`test/unit/mcp/auth.test.ts`)
 
-Real issuer, signature, and key rotation checks belong in authentication interface tests. Browser OAuth flows and Google or Okta compatibility need separate integration and acceptance tests. A fake verifier does not prove those behaviors.
+Real issuer, signature, and key rotation checks belong in authentication interface tests. Browser OAuth flows and provider compatibility need separate integration and acceptance tests. A fake verifier does not prove those behaviors.
+
+**Access context** (`test/unit/auth/access-context.test.ts`)
+
+[V] Combines the explicit permissions of every independent grant; no highest-role check replaces the complete grant set
+[V] Gives a Super Admin grant alone no product access; no role inherits the permissions of another role
+[V] Keeps every grant and the same permission set for any grant order, and lists a shared permission once
+[V] Denies every permission check when the context has no grants
+[V] Stops work with a safe `AccessDeniedError` (`Access denied`, reason `permission-required`); repeated checks change nothing
+[V] Copies only the contract fields, freezes the context and its collections, and ignores later changes to the input records
+[V] Omits the organization for an installation user and refuses a context without a tenant ID
+
+**Deployment configuration** (`test/unit/config/deployment-config.test.ts`)
+
+[V] Returns the self-hosted and hosted records with the exact MCP resource and metadata URLs for root and sub-path base URLs
+[V] Accepts only `self-hosted` or `hosted` in `DEPLOYMENT`; no other setting selects or changes the edition, and `AUTH_MODE`, mock, and paid-feature settings have no effect
+[V] Reads only the settings of the selected edition from the supplied record and ignores `process.env`
+[V] Rejects a missing, relative, padded, non-HTTPS, credential, query, or fragment URL; allows HTTP only for a self-hosted loopback host
+[V] Rejects a missing or relative `DATA_DIR`, a missing hosted setting, a redirect URI on another origin, and a cookie password shorter than 32 characters
+[V] Rejects hosted stdio and accepts self-hosted stdio at this layer
+[V] Names the setting and the rule in each error, without a setting value; keeps the issuer exactly as written; returns frozen records
 
 **Audit Trail**
 
@@ -310,6 +337,19 @@ Real issuer, signature, and key rotation checks belong in authentication interfa
 
 No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
 
+## Integration
+
+**MCP access context** (`test/integration/auth/mcp-context.test.ts`)
+
+These tests run MCPServer with the real access contracts through a test-only protected tool. The tool checks its permission, then records fetch and clean steps in its trusted tenant. Doubles stand in for the identity verifier and the access resolver.
+
+[V] Keeps four concurrent members in two tenants in their own trusted contexts while their resolutions finish in reverse order and their protected work overlaps
+[V] Checks access again for each request: after a User grant is revoked, the next request with the same token gets no protected work
+[V] Runs no tool, fetch, or clean step after HTTP 401 for a missing or rejected token, 403 insufficient_scope, 403 access_denied, or a generic 500
+[V] Refuses protected work when the grants lack the required permission, for example Admin without User
+
+Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
+
 ## Interface
 
 **Renderer network policy**
@@ -359,6 +399,19 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 [V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
 
 ## Acceptance
+
+**MCP access context** (`test/acceptance/auth/mcp-access.test.ts`)
+
+A real MCP client calls MCPServer through its HTTP fetch interface. Doubles stand in for the identity verifier and the access resolver.
+
+[V] Given two members of different organizations, each call uses only its verified user and trusted tenant, also with forged tenant headers and arguments; AuthInfo.extra carries the actual verified claims
+[V] Given independent Super Admin and User grants, the context holds both grants and every permission that they give
+[V] Given Admin and Super Admin without User, the protected tool refuses before any fetch or clean step
+[V] Given an inactive membership, the server denies access with HTTP 403 before any request tool exists
+[V] Given no token or a rejected token, the client must authenticate; no access resolution or protected work runs
+[V] Given an access lookup outage, the client gets a generic server error and no protected work runs
+
+`npm run test:acceptance` runs every acceptance test. `npm run check` does not select the acceptance directory.
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 
@@ -479,7 +532,7 @@ npm run build && node --test dist/test/acceptance/pipeline-counters.test.js
 **Build output** (`test/unit/build-output.test.ts`, `pnpm test:build`)
 
 [V] All test commands exclude output from renamed and deleted tests
-[V] Unit and interface commands keep their suite selection
+[V] Unit, integration, acceptance, and interface commands keep their suite selection
 [V] Fresh and stale-output fixture tests produce the same current test names, complete emitted file set, and file bytes, including test source maps
 [V] Repeated builds remove deleted production modules and source maps
 [V] Builds preserve source and files outside the owned output when called from another directory

@@ -11,8 +11,9 @@ sessions. Authentication and account administration require no outbound
 connection. The first hosted release includes operator organization setup and
 customer membership administration. Payment integration remains required work
 before the paid product is complete. HTTP is the first end-to-end delivery
-target. All implementation work in this plan is pending. The role refinement
-below records intended rules only; it adds no implementation work now.
+target. Slice 1, contracts and request isolation, is implemented; all other
+implementation work in this plan is pending. The role refinement below records
+intended rules only; it adds no implementation work now.
 
 ## Requirements and delivery scope
 
@@ -106,6 +107,20 @@ denial produces a distinct `403`; provider outages produce a generic `5xx` and
 no protected work. Logs must not include passwords, raw tokens, cookies, or
 private provider errors in public responses.
 
+Slice 1 settles these details. The SDK adapter rejects an identity without a
+user, issuer, client ID, issue time, expiration, or audience, and an identity
+whose user subject is the client ID. `AuthInfo.extra` carries frozen copies of
+`user`, `issuer`, `clientId`, `scopes`, `issuedAt`, `expiresAt`, and `audience`.
+Resolvers return contexts from `createRequestContext()`, which copies only the
+contract fields and combines the permissions of every grant. MCPServer binds a
+frozen copy of the context to each request through the SDK factory and
+`registerTools(server, context)`. An expected denial returns `403` with the
+OAuth error `access_denied` and no Bearer challenge. The safe reason codes are
+`account-inactive`, `organization-required`, `membership-inactive`, and
+`permission-required`. Permissions are plain strings; slice 1 defines no
+permission names. The hosted role mapping in slice 3 names the permissions and
+adds the rule that product portal and MCP operations require User.
+
 Hosted browser authentication supplies the same user record. Identity-only
 onboarding does not require an organization and can show operator or invitation
 guidance. It cannot create an organization or resume operator setup. Tenant
@@ -130,6 +145,13 @@ configuration supplies the trusted AuthKit issuer and required WorkOS
 credentials, callback URL, and cookie-sealing secret. Load only the selected
 provider's resources. Invalid hosted configuration cannot fall back to local or
 anonymous access.
+
+Slice 1 adds `loadDeploymentConfig(environment, transport)` and `.env.example`.
+The settings are `DEPLOYMENT`, `PUBLIC_BASE_URL`, `DATA_DIR` for the
+self-hosted edition, and `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`,
+`WORKOS_API_KEY`, `WORKOS_REDIRECT_URI`, and `WORKOS_COOKIE_PASSWORD` for the
+hosted edition. The loader keeps the issuer exactly as written for exact token
+issuer checks and requires the redirect URI to have the public origin.
 
 `createApplication()` performs the single deployment branch, constructs the
 provider, and returns a small runtime record with the HTTP handler and cleanup.
@@ -573,8 +595,8 @@ For implementation PRs, open Draft first. Before Ready, run each changed test,
 candidate. Resolve enforced smells and keep the snooze file empty. After Ready,
 every started Actions job must pass; a fix returns the PR to Draft. The owner
 reviews the PR, and a PR adding a decision record requires owner merge. The
-referenced `docs/implementation/test-gate-policy.md` is absent from this checkout;
-restore or resolve that policy before using its release gates.
+[test gate policy](../implementation/test-gate-policy.md) gives the suite
+commands, the required runs, and the later container and hosted live gates.
 
 ## Paid product decisions and later capabilities
 

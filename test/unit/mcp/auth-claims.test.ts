@@ -7,7 +7,8 @@ import {
   PROTOCOL_VERSION_META_KEY,
 } from '@modelcontextprotocol/server';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
+import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
+import { AccessResolverMock } from './fixtures/access-resolver-mock.ts';
 import { IdentityVerifierMock } from './fixtures/identity-verifier-mock.ts';
 
 describe('MCPServer verified claim validation', () => {
@@ -15,12 +16,17 @@ describe('MCPServer verified claim validation', () => {
   const resourceMetadataUrl = 'https://magumagu.example/.well-known/oauth-protected-resource/mcp';
   const nowUnixSeconds = 2_000_000_000;
   const validIdentity: VerifiedIdentity = {
+    user: { authority: 'https://auth.magumagu.example', subject: 'test-user' },
+    issuer: 'https://auth.magumagu.example',
     clientId: 'test-client',
     scopes: ['mcp:read'],
+    issuedAtUnixSeconds: nowUnixSeconds - 60,
     expiresAtUnixSeconds: nowUnixSeconds + 60,
     resource: new URL(resourceUrl),
   };
   const { expiresAtUnixSeconds: _expiration, ...identityWithoutExpiration } = validIdentity;
+  const { issuedAtUnixSeconds: _issued, ...identityWithoutIssueTime } = validIdentity;
+  const { resource: _audience, ...identityWithoutAudience } = validIdentity;
 
   const scenarios = [
     {
@@ -38,9 +44,37 @@ describe('MCPServer verified claim validation', () => {
       error: 'invalid_token',
     },
     {
+      label: 'a token with no issue time',
+      token: 'no-issue-time-token',
+      identity: identityWithoutIssueTime,
+      status: 401,
+      error: 'invalid_token',
+    },
+    {
       label: 'a token issued for another audience',
       token: 'wrong-audience-token',
       identity: { ...validIdentity, resource: new URL('https://other.example/mcp') },
+      status: 401,
+      error: 'invalid_token',
+    },
+    {
+      label: 'a token with no audience',
+      token: 'no-audience-token',
+      identity: identityWithoutAudience,
+      status: 401,
+      error: 'invalid_token',
+    },
+    {
+      label: 'a token from an untrusted issuer',
+      token: 'wrong-issuer-token',
+      identity: new InvalidAccessTokenError('issuer https://evil.example is not trusted'),
+      status: 401,
+      error: 'invalid_token',
+    },
+    {
+      label: 'a malformed token',
+      token: 'malformed-token',
+      identity: new InvalidAccessTokenError('malformed JWT payload'),
       status: 401,
       error: 'invalid_token',
     },
@@ -53,13 +87,16 @@ describe('MCPServer verified claim validation', () => {
     },
   ];
   let verifier: IdentityVerifierMock;
+  let resolver: AccessResolverMock;
   let server: MCPServer;
 
   beforeEach(() => {
     verifier = new IdentityVerifierMock(new Map(scenarios.map(({ token, identity }) => [token, identity])));
+    resolver = new AccessResolverMock();
     const options = {
       auth: {
         verifier,
+        accessResolver: resolver,
         resourceMetadataUrl,
         expectedResource: new URL(resourceUrl),
         requiredScopes: ['mcp:read'],
@@ -108,11 +145,13 @@ describe('MCPServer verified claim validation', () => {
         status: response.status,
         error,
         verifierCalls: verifier.calls,
+        resolverCalls: resolver.calls,
         dispatchCalls: dispatchSpy.mock.callCount(),
       }, {
         status: scenario.status,
         error: scenario.error,
         verifierCalls: [scenario.token],
+        resolverCalls: [],
         dispatchCalls: 0,
       });
       if (scenario.error === 'insufficient_scope') {

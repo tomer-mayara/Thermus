@@ -9,26 +9,39 @@ import {
 } from '@modelcontextprotocol/server';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
+import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
+import { AccessResolverMock } from './fixtures/access-resolver-mock.ts';
 import { IdentityVerifierMock } from './fixtures/identity-verifier-mock.ts';
 
 describe('MCPServer HTTP authentication', () => {
   const resourceUrl = 'https://magumagu.example/mcp';
   const resourceMetadataUrl = 'https://magumagu.example/.well-known/oauth-protected-resource/mcp';
+  const user: AuthenticatedUser = { authority: 'https://auth.magumagu.example', subject: 'test-user' };
   let server: MCPServer;
   let verifier: IdentityVerifierMock;
+  let resolver: AccessResolverMock;
 
   beforeEach(() => {
     verifier = new IdentityVerifierMock(new Map<string, VerifiedIdentity | Error>([
       ['accepted-token', {
+        user,
+        issuer: 'https://auth.magumagu.example',
         clientId: 'test-client',
         scopes: [],
+        issuedAtUnixSeconds: 2_524_604_400,
         expiresAtUnixSeconds: 2_524_608_000,
         resource: new URL(resourceUrl),
       }],
       ['rejected-token', new InvalidAccessTokenError('private rejection for rejected-token')],
       ['error-token', new Error('private verifier failure for error-token')],
     ]));
-    server = new MCPServer({ auth: { verifier, resourceMetadataUrl } });
+    resolver = new AccessResolverMock(new Map([[user.subject, {
+      allowed: true,
+      context: { user, tenantId: 'local:test-installation', grants: [], permissions: [] },
+    }]]));
+    server = new MCPServer({
+      auth: { verifier, accessResolver: resolver, resourceMetadataUrl, expectedResource: new URL(resourceUrl) },
+    });
   });
 
   afterEach(async () => {
@@ -151,6 +164,7 @@ describe('MCPServer HTTP authentication', () => {
     assert.equal(discovery._meta[SERVER_INFO_META_KEY].name, 'magumagu');
     assert.ok(discovery.supportedVersions.includes('2026-07-28'));
     assert.deepEqual(verifier.calls, ['accepted-token']);
+    assert.deepEqual(resolver.calls, [user]);
     assert.equal(dispatchSpy.mock.callCount(), 1);
     assert.equal(dispatchSpy.mock.calls[0].arguments[0].method, 'server/discover');
   });
@@ -163,12 +177,18 @@ describe('MCPServer HTTP authentication', () => {
     assert.ok(challenge);
     assert.match(challenge, /^Bearer\s+/i);
     assert.ok(challenge.includes(`resource_metadata="${resourceMetadataUrl}"`));
+    assert.deepEqual(resolver.calls, []);
   });
 
   test('Given an unexpected verifier failure, when an HTTP client discovers the server, then it receives a generic error without private details', { timeout: 5_000 }, async (context) => {
+    const dispatchSpy = context.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
     const response = await server.fetch(discoveryRequest('error-token', context.signal));
     assert.equal(response.status, 500);
-    assert.deepEqual(await response.json(), { error: 'server_error', error_description: 'Internal Server Error' });
+    const body = await response.text();
+    assert.deepEqual(JSON.parse(body), { error: 'server_error', error_description: 'Internal Server Error' });
+    assert.doesNotMatch(body, /private|error-token/);
     assert.equal(response.headers.get('WWW-Authenticate'), null);
+    assert.deepEqual(resolver.calls, []);
+    assert.equal(dispatchSpy.mock.callCount(), 0);
   });
 });
