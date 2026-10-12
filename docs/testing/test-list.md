@@ -352,6 +352,33 @@ Run the integration suite with `npm run test:integration`. `npm run check` does 
 
 ## Interface
 
+**Better Auth local provider** (`test/interface/auth/better-auth.test.ts`)
+
+These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts.
+
+[V] Rejects public signup over HTTP and from the server API, and rejects email password reset; no account exists
+[V] Rejects a duplicate email in another letter case through the private create operation and keeps the original account
+[V] Lists each account ID, email, and disabled state without credentials
+[V] Resets one user's password and ends that user's sessions; the old password and session fail, the new password signs in the same user, and the peer session stays
+[V] Disables one user and ends that user's sessions; sign-in gives `BANNED_USER`, the user ID stays, and the peer can sign in
+[V] Issues a JWT access token bound to the MCP resource, the user, the client, and the browser session after PKCE authorization with the resource indicator
+[V] Lets the linked resource-server client introspect MCP tokens; refuses a public client and a wrong secret; reports an unknown token inactive
+[V] Reports a user's MCP access token inactive after that user's sessions end and keeps the peer's token active
+[V] Rotates the refresh token at each refresh and returns the same response for a repeat within 30 seconds
+[V] Completes discovery, authorization, code exchange, and refresh with the MCP TypeScript SDK 2.3.1 client and a pre-registered public client
+[V] Refuses dynamic registration, advertises no registration endpoint, and serves the protected-resource and authorization-server metadata
+[V] Rejects a foreign origin, a missing or `null` origin with a cookie, a cross-site sign-in navigation, and a foreign callback URL with HTTP 403
+[V] Limits sign-in to three attempts in 10 seconds for each client address with HTTP 429 and `X-Retry-After`; another address can still sign in
+[V] Refuses the private admin, client-management, and session-JWT routes over HTTP
+[] Revokes the offline refresh grant of a user whose password is reset and keeps the peer's grant (`todo`: blocked by the [open provider blockers](../design/authentication-design.md#open-provider-blockers))
+[] Rejects refresh for a disabled user (`todo`: blocked by the same decision)
+
+Run these proofs offline:
+
+```sh
+npm run build && node --test dist/test/interface/auth/better-auth.test.js
+```
+
 **Renderer network policy**
 
 [V] Blocks literal and DNS loopback targets before a connection

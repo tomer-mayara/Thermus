@@ -70,6 +70,9 @@ contains every change of the pull request.
    - `npm run test:acceptance` for a change in `test/acceptance/`.
    - The interface tests that cover a changed renderer runtime, network policy,
      or patched dependency.
+   - The Better Auth interface proofs, `test/interface/auth/better-auth.test.ts`,
+     for a change to the Better Auth packages, their settings, or the local
+     authentication flow. They run offline with a focused command.
 
 If you are not sure that a suite applies, run it.
 

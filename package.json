@@ -39,9 +39,11 @@
     }
   },
   "dependencies": {
+    "@better-auth/mcp": "1.7.7",
     "@modelcontextprotocol/server": "2.3.1",
     "adblock-rs": "^0.13.3",
     "agent-input-sanitizer": "1.47.14",
+    "better-auth": "1.7.7",
     "css-select": "^7.0.0",
     "css-tree": "3.2.1",
     "defuddle": "^0.19.4",

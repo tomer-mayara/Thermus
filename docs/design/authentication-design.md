@@ -12,8 +12,11 @@ connection. The first hosted release includes operator organization setup and
 customer membership administration. Payment integration remains required work
 before the paid product is complete. HTTP is the first end-to-end delivery
 target. Slice 1, contracts and request isolation, is implemented; all other
-implementation work in this plan is pending. The role refinement below records
-intended rules only; it adds no implementation work now.
+implementation work in this plan is pending. The pinned Better Auth packages are
+proven against the local contracts; two
+[provider blockers](#open-provider-blockers) need an owner decision before slice
+2 continues. The role refinement below records intended rules only; it adds no
+implementation work now.
 
 ## Requirements and delivery scope
 
@@ -268,6 +271,145 @@ signup rejection, resource-bound issuance, introspection, current account-state
 checks, and duplicate-email handling. Use provider origin/CSRF and rate-limit
 protections and test them through authentication routes. Resolve any unsupported
 operation before claiming the release meets the account or revocation contract.
+
+### Pinned provider proof
+
+`test/interface/auth/better-auth.test.ts` runs the pinned packages with a real
+SQLite database and proves the contracts in this section. The pinned provider
+does not support two required contracts. The
+[open provider blockers](#open-provider-blockers) record them. The complete local
+flow must not start until the owner selects their resolution.
+
+`package.json` pins `better-auth` and `@better-auth/mcp` at exactly 1.7.7.
+`pnpm-lock.yaml` also pins their `@better-auth/oauth-provider` dependency at
+1.7.7. The `mcp()` plugin is the only OAuth provider plugin; it wraps
+`oauthProvider()`. The `admin()` plugin supplies account status. The `jwt()`
+plugin signs access tokens and keeps its keys in the database, encrypted with
+the secret. The database is Node 24 `node:sqlite` (`DatabaseSync`), so no
+native SQLite package is needed.
+
+| Setting | Proven value and reason |
+| --- | --- |
+| `baseURL` | `PUBLIC_BASE_URL`. The default `basePath`, `/api/auth`, makes the issuer `<base>/api/auth`. |
+| `database` | A `node:sqlite` `DatabaseSync`. Run `getMigrations(options)` and `runMigrations()` before `betterAuth(options)`; otherwise the provider logs a false schema error. `compileMigrations()` gives the SQL to ship. |
+| `telemetry` | `{ enabled: false }`. The proofs replace `fetch` with a blocker and record no outbound request. |
+| `emailAndPassword` | `{ enabled: true, disableSignUp: true }` with no `sendResetPassword`. Signup gives `400 EMAIL_PASSWORD_SIGN_UP_DISABLED` over HTTP and from the server API. Email reset gives `400 RESET_PASSWORD_DISABLED`. |
+| `rateLimit` | `{ enabled: true }`. Without it, limits apply only when `NODE_ENV=production`. The memory store is shared by the whole process. |
+| `advanced.ipAddress.ipAddressHeaders` | One header that the HTTP bridge sets from the socket address after it removes any copy from the client. Without a client address, all clients share one bucket for each path. |
+| `disabledPaths` | The admin, client-management, and session-JWT (`/token`) routes. It refuses exact paths with `404` on HTTP only; server API calls still work. It cannot match routes with parameters, so the HTTP bridge must forward only the provider routes that the local edition uses. |
+| `plugins` | `admin()`, `jwt()`, and `mcp({ resource: <base>/mcp, loginPage, consentPage })`. Dynamic registration stays off, and no client-metadata plugin is installed. |
+
+Do not start the server with `NODE_ENV=test` or `TEST=1`. These values turn off
+the provider's origin and CSRF checks.
+
+The admin plugin's list, set-password, ban, and session endpoints need an admin
+session, which the offline CLI does not have. Its create endpoint works from the
+server without headers. The other operations use the provider's data API,
+`(await auth.$context).internalAdapter`, and its password hasher. The admin
+endpoints call the same functions. No operation uses SQL.
+
+| Operation | Provider API | Proven result |
+| --- | --- | --- |
+| Create | `auth.api.createUser({ body })` without headers | Creates an email/password account. An existing email in any letter case gives `400 USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL` and keeps the original account. |
+| List | `internalAdapter.listUsers()` | Gives each user ID, email, and `banned` state. User records hold no credentials. |
+| Reset password | `password.hash()`, `internalAdapter.updatePassword(userId, hash)`, then `internalAdapter.deleteUserSessions(userId)` | The old password gives `401 INVALID_EMAIL_OR_PASSWORD`. The new password signs in the same user ID. The user's browser sessions end; peer sessions stay. |
+| Disable | `internalAdapter.updateUser(userId, { banned: true })`, then `internalAdapter.deleteUserSessions(userId)` | Sign-in gives `403 BANNED_USER`. The user ID stays, and peers can sign in. |
+| Revoke sessions | `internalAdapter.deleteUserSessions(userId)` | Ends only that user's sessions and makes that user's session-bound access tokens inactive at introspection. |
+
+The create endpoint checks only the maximum password length, so the CLI must
+check the 8 to 128 character rule first. Two concurrent creates with one email
+give a raw SQLite uniqueness error; the exclusive data-directory lock prevents
+them.
+
+An authorization code grant with PKCE and `resource=<base>/mcp` gives a JWT
+access token with header `typ: at+jwt` and an EdDSA signature. Its claims are
+`iss` (`<base>/api/auth`), `sub` (the user ID), `aud` (the MCP resource and, when
+the client requests `openid`, `<issuer>/oauth2/userinfo`), `client_id` and `azp`
+(the client ID), `scope`, `sid` (the browser session ID), `iat`, `exp` (`iat`
+plus 3,600 seconds), and `jti`. There is no `auth_time` or `nbf` claim. A
+verifier must select the MCP resource from the `aud` array. A refresh token
+comes only with the `offline_access` scope. It is opaque and changes at each
+refresh. A repeat of a used refresh token within 30 seconds returns the same
+response. The provider code revokes that client's grants for the user when a
+used token returns later; the proofs do not cover that path.
+
+The MCP server introspects tokens at `<issuer>/oauth2/introspect` as a
+confidential client with `client_secret_basic`. `mcp()` links each registered
+client to the MCP resource, and a client linked to a token's audience may
+introspect that token. A public client gets `401 invalid_client`. An active
+result has the token claims, `active`, `client_id`, and `token_type`; any other
+result is exactly `{ "active": false }`. Introspection makes a token inactive
+when the session in its `sid` has ended. A token without `sid` gets no session
+check. Send introspection as an HTTP `Request` through `auth.handler`; the
+in-process `auth.api.oauth2Introspect` call cannot read Basic credentials. The
+confidential client must carry the `client_credentials` grant type, because the
+provider requires a grant type and has no redirect URI for it. The MCP
+verifier must reject the machine tokens of that grant.
+
+The tested offline client set is the MCP TypeScript SDK 2.3.1 client with a
+pre-registered public native client: `token_endpoint_auth_method: none`,
+`application_type: native`, an exact loopback redirect URI, PKCE S256, the
+resource indicator, and the RFC 9207 `iss` check. It completes discovery,
+authorization, code exchange, and refresh. When it requests `offline_access`,
+the SDK sends `prompt=consent`, so the consent page appears. Registration
+requests get `403 access_denied`, and the metadata has no
+`registration_endpoint`. No other MCP client is claimed.
+
+The provider serves `/.well-known/oauth-protected-resource` and
+`/.well-known/oauth-protected-resource/mcp` at the root path, and the
+authorization-server metadata at `/.well-known/oauth-authorization-server/api/auth`
+and `/api/auth/.well-known/openid-configuration`. The HTTP bridge must forward
+these root paths to `auth.handler`. The metadata does not list `none` in
+`token_endpoint_auth_methods_supported`; the tested client still works.
+
+Real authentication routes reject a foreign `Origin` or `Referer` with
+`403 INVALID_ORIGIN`, a request with a cookie and a missing or `null` origin
+with `403 MISSING_OR_NULL_ORIGIN`, a cross-site sign-in navigation with
+`403 CROSS_SITE_NAVIGATION_LOGIN_BLOCKED`, and a foreign callback URL with
+`403 INVALID_CALLBACK_URL`. More than three sign-in attempts from one client
+address in 10 seconds give `429` and `X-Retry-After`; another address can still
+sign in. Native clients must not send cookies to `/oauth2/*`; a cookie without a
+trusted origin gives `403`.
+
+These findings apply to the local runtime:
+
+- With an open `/oauth2/create-client` route, any signed-in user can register a
+  confidential client. The provider links it to the MCP resource, so it can
+  introspect other users' MCP tokens. Keep client-management routes private.
+- The `jwt()` plugin's `/token` route gives JWTs for the browser session, and
+  their verification does not check the session. Keep it private.
+- Outside an endpoint, Better Auth gives database hooks no endpoint context.
+  The provider's token clean-up hook then does nothing, so session deletion
+  through `internalAdapter` leaves token records unchanged. Introspection still
+  ends tokens that carry a `sid`.
+
+#### Open provider blockers
+
+1. **Revocation of offline grants.** The provider keeps `offline_access` refresh
+   tokens when sessions end; its documentation names this behavior. A refresh
+   checks no session, account status, or consent, and no provider API revokes
+   the grants of one user. After a password reset or disable, the old refresh
+   token still gives a new access token. That token has no `sid`, so
+   introspection reports it active. In the 30 seconds after a refresh, a repeat
+   of the used token also returns the stored response without checks. The
+   access resolver still denies protected work to a disabled user, but a user
+   whose password was reset stays enabled. The two `todo` proofs show this
+   failure. Possible resolutions:
+   - Issue no offline grants. MCP access tokens stay bound to the browser
+     session, and introspection ends them with the session. Clients authorize
+     again after expiry. Only supported provider behavior is used, but refresh
+     leaves the local release plan.
+   - Keep offline grants and revoke the selected user's access, refresh, and
+     consent records through the provider's database adapter, with opaque access
+     tokens. This changes the rule against revocation by editing tokens.
+   - Keep refresh only while the browser session lives, through the documented
+     `formatRefreshToken` option. This adds custom token wrapping code.
+   - Wait for a provider release with per-user grant revocation.
+2. **Offline client registration.** `adminCreateOAuthClient` is a server-only
+   endpoint, but it needs a signed-in session. The offline CLI has none.
+   Possible resolutions: register clients with a short session of a selected
+   enabled account, with `clientReference` to keep the installation as the
+   owner; or write client records through the provider's database adapter.
 
 ## Hosted authentication and access
 
