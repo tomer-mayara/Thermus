@@ -23,7 +23,7 @@
 
 Planned tool tests use test doubles at the fetcher and pipeline public interfaces. They do not run the renderer or the real pipeline.
 
-**Authentication**
+**MCP Authentication**
 
 HTTP request tests use IdentityVerifierMock from `test/unit/mcp/fixtures/identity-verifier-mock.ts`. It implements our IdentityVerifier contract, supplies configured token claims or errors, and rejects unknown tokens. MCPServer adapts that contract to the SDK's OAuthTokenVerifier. Tests use the real SDK middleware and test doubles for downstream packages.
 
