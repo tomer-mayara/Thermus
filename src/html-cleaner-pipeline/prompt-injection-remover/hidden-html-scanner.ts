@@ -5,10 +5,12 @@ import { resolveCssVisibility, type VisibilityStyle } from './css-visibility.ts'
 import { SourceHtmlDocument } from './css-visibility-tree.ts';
 import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 import { HiddenHtmlRemovalCounts } from './hidden-html-removal-counts.ts';
+import { SmallTextPolicy } from './small-text-policy.ts';
 
 type HtmlNode = Htmlparser2TreeAdapterMap['node'];
 type HtmlElement = Htmlparser2TreeAdapterMap['element'];
 export type VisibleTextSource = { text: string; ranges: readonly { start: number; end: number }[] };
+type ScanOptions = { captureText?: boolean; smallText?: SmallTextPolicy };
 
 export class HiddenHtmlScanner {
   private static readonly exfilTagsToPreserve = new Set(['img', 'meta']);
@@ -32,20 +34,26 @@ export class HiddenHtmlScanner {
   private readonly textRuns: VisibleTextSource[][] = [];
   private textRun: VisibleTextSource[] = [];
   private textAvailable = true;
+  private readonly captureText: boolean;
+  private readonly smallText: SmallTextPolicy;
 
   private constructor(
     private readonly styles: Map<HtmlElement, VisibilityStyle>,
     private readonly tree: SourceHtmlDocument,
-    private readonly captureText = false,
+    { captureText = false, smallText = new SmallTextPolicy() }: ScanOptions = {},
   ) {
+    this.captureText = captureText;
+    this.smallText = smallText;
     this.removals = new HiddenHtmlRemovalCounts(tree);
   }
 
-  public static scan(text: string, provenance = new CssVisibilityProvenance(), captureText = false) {
+  public static scan(
+    text: string, provenance = new CssVisibilityProvenance(), options: ScanOptions = {},
+  ) {
     const tree = SourceHtmlDocument.parse(text);
     const styles = resolveCssVisibility(tree);
     const contexts = provenance.apply(tree, styles);
-    const scanner = new HiddenHtmlScanner(styles, tree, captureText);
+    const scanner = new HiddenHtmlScanner(styles, tree, options);
     scanner.visit(tree.document);
     scanner.endTextRun();
     const root = tree.document.children.find(adapter.isElementNode);
@@ -144,7 +152,7 @@ export class HiddenHtmlScanner {
     if (!parent && node.name === 'html' && node.namespace === html.NS.HTML) {
       this.rootSize = visibility.fontSize;
     }
-    return visibility;
+    return this.smallText.apply(node, visibility);
   }
 
   private recordNode(node: HtmlNode, visibility?: ElementVisibility): boolean {

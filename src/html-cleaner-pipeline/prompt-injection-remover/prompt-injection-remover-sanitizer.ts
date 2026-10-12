@@ -4,17 +4,23 @@ import type { Ctx } from '../html-to-markdown-pipeline.ts';
 import { HiddenHtmlRemovalSession } from './hidden-html-removal-session.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 import { sanitizeHtmlControls } from './sanitize-html-controls.ts';
+import { SmallTextPolicy, type SmallTextOptions } from './small-text-policy.ts';
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   private static readonly maxHtmlBytes = 10 * 1024 * 1024;
+  private readonly smallText: SmallTextPolicy;
+
+  public constructor(options: SmallTextOptions = {}) {
+    this.smallText = new SmallTextPolicy(options);
+  }
 
   public async invoke(ctx: Ctx): Promise<Ctx> {
     if (Buffer.byteLength(ctx.html, 'utf8') > PromptInjectionRemoverSanitizer.maxHtmlBytes) {
       throw new RangeError('HTML input exceeds the 10 MiB limit');
     }
 
-    const sanitized = await sanitizeHtmlControls(ctx.html);
-    const result = new HiddenHtmlRemovalSession(sanitized.cleaned).run();
+    const sanitized = await sanitizeHtmlControls(ctx.html, this.smallText);
+    const result = new HiddenHtmlRemovalSession(sanitized.cleaned, this.smallText).run();
     const styleReports = await Promise.all([...new Set(result.visibleStyleValues)].map((value) => sanitize(` ${value}`)));
     const found = new Set([...sanitized.found, ...styleReports.flatMap((report) => report.found)]);
     const warnings = new Set([...sanitized.warnings, ...styleReports.flatMap((report) => report.warnings)]);

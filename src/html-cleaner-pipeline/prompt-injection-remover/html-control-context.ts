@@ -1,6 +1,7 @@
 import { applyLayer1, CHECKS, STRIP } from 'agent-input-sanitizer';
 import { Parser } from 'htmlparser2';
 import { HiddenHtmlScanner, type VisibleTextSource } from './hidden-html-scanner.ts';
+import { SmallTextPolicy } from './small-text-policy.ts';
 
 export type ControlPosition = { source: number; index: number; length: number };
 type Range = { start: number; end: number };
@@ -110,8 +111,8 @@ function retainedControls(view: ReturnType<typeof contextView>): Set<number> {
   return new Set(positions.map(({ source }) => source));
 }
 
-export function htmlControlDecisions(source: string) {
-  const { textRuns } = HiddenHtmlScanner.scan(source, undefined, true);
+export function htmlControlDecisions(source: string, smallText = new SmallTextPolicy()) {
+  const { textRuns } = HiddenHtmlScanner.scan(source, undefined, { captureText: true, smallText });
   const context = contextView(source, textRuns, true);
   const contextual = retainedControls(context);
   // A second aggregate view omits synthetic separators, so they add no budget.

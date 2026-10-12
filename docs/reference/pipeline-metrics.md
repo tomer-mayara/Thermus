@@ -22,6 +22,8 @@ The ad cleaner counts each distinct matched DOM node with a source range once pe
 
 The hidden-text sanitizer counts each independent hidden element, hidden text node with non-whitespace text, hidden replaced-content element, and HTML comment that it removes. A hidden ancestor is one target; descendants removed with that ancestor, including comments, add nothing. A text-only hiding rule can remove separate text nodes while it keeps their element wrappers and visible descendants. Each such text node is a target. A hidden input value or image handled as replaced content is one target. Whitespace-only text is not an independent target, but it can disappear with a hidden ancestor.
 
+The configurable small-text policy uses these same counts. A non-whitespace text node removed below the effective font-size cutoff adds one target. A removed text-entry value uses the existing replaced-content target rule. These removals report `hidden-html` and the existing HTML removal warning, even when the removed text could be visible. They do not add a new counter or category, and they do not change `skipped`.
+
 The sanitizer counts a target only when that target or a covered descendant contributes source content to remove. An implied hidden element with no such content adds nothing. Parser copies of the same authored element count as one sanitizer target. For example, `<p><b hidden>A<p>B</b>C` creates multiple parsed hidden elements from one authored `<b>` and adds one to `removed`. These sanitizer rules differ from the ad cleaner's count of distinct matched DOM nodes.
 
 Counts accumulate across removal scans. A later scan can remove a new target formed by an earlier removal. One target can need several source intervals; these intervals do not add targets. If a failed scan or the scan limit causes the sanitizer to withhold remaining HTML, withholding adds no target. The count retains only removals completed by earlier successful scans.
@@ -44,6 +46,7 @@ These examples start with zero counts and no findings. They assume that no other
 | --- | ---: | ---: | --- |
 | One matched ad ancestor and one matched child removed | 2 | 0 | None from ad removal |
 | One hidden element removed with a nested comment | 1 | 0 | Hidden HTML |
+| One 11px text node removed by the default 12px cutoff | 1 | 0 | Hidden HTML |
 | Two separate comments removed | 2 | 0 | HTML comments, once |
 | Repeated prohibited controls cleaned from visible text | 0 | 0 | Each reported control category, once |
 | One visible exfil-shaped URL reported and retained | 0 | 0 | Exfil-shaped URLs |
