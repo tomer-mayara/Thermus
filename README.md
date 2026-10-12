@@ -144,6 +144,8 @@ pnpm build       # clean build
 pnpm start       # node dist/src/index.js
 pnpm test             # clean build, then node --test on dist/test/
 pnpm test:unit        # clean build, then node --test on dist/test/unit/
+pnpm test:integration # clean build, then node --test on dist/test/integration/
+pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
 pnpm typecheck   # tsc --noEmit
 ```
@@ -171,13 +173,15 @@ import { hello } from './hello.js';
 
 `pnpm build` runs the cleanup and compiler commands from `package.json`. It clears the project-owned `dist` directory before it compiles current source. It rejects a symlink or regular file at that path. npm and pnpm run package scripts from the project root, so the caller’s working directory does not change the cleanup target. Files outside `dist` stay in place. Do not keep user data in `dist`.
 
-`pnpm test` builds and runs all compiled tests. `pnpm test:unit` and `pnpm test:interface` build and run only their respective suites. Each command removes output from deleted or renamed source files. Use `pnpm build` before a focused `node --test dist/...` command. `pnpm start` runs `dist/src/index.js` from the last build. `pnpm typecheck` checks source without emitting or clearing output.
+`pnpm test` builds and runs all compiled tests. `pnpm test:unit`, `pnpm test:integration`, `pnpm test:acceptance`, and `pnpm test:interface` build and run only their respective suites. Each command removes output from deleted or renamed source files. Use `pnpm build` before a focused `node --test dist/...` command. `pnpm start` runs `dist/src/index.js` from the last build. `pnpm typecheck` checks source without emitting or clearing output.
 
-The unit suite is offline. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
+The unit, integration, and acceptance suites are offline. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
 
 `pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
 
-The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. Run them separately because `npm run check` does not select the acceptance directory:
+`npm run check` does not run the integration, acceptance, or interface suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+
+The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. `pnpm test:acceptance` runs them with the other acceptance tests. To run only this file:
 
 ```sh
 npm run build && node --test dist/test/acceptance/small-text-cutoff.test.js

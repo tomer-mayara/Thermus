@@ -7,6 +7,7 @@ runtime guides stay current after implementation.
 
 - [Coding principles](coding-principles.md): design and verification guidance.
 - [Lightpanda runtime](lightpanda-runtime.md): runtime installation and renderer checks.
+- [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, and later release gates.
 
 ## Current reference
 
