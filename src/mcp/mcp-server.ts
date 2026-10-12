@@ -1,6 +1,9 @@
 import {
+  bearerAuthChallengeResponse,
   createMcpHandler,
   McpServer,
+  OAuthError,
+  OAuthErrorCode,
   requireBearerAuth,
   type Transport,
 } from '@modelcontextprotocol/server';
@@ -17,13 +20,31 @@ export class MCPServer {
   private readonly authenticate?: ReturnType<typeof requireBearerAuth>;
 
   constructor(options?: {
-    auth: { verifier: IdentityVerifier; resourceMetadataUrl: string };
+    auth: {
+      verifier: IdentityVerifier;
+      resourceMetadataUrl: string;
+      expectedResource?: URL;
+      requiredScopes?: readonly string[];
+    };
   }) {
     if (options !== undefined) {
-      this.authenticate = requireBearerAuth({
+      const authOptions = {
         verifier: new IdentityVerifierSdkAdapter(options.auth.verifier),
         resourceMetadataUrl: options.auth.resourceMetadataUrl,
-      });
+        expectedResource: options.auth.expectedResource,
+        requiredScopes: options.auth.requiredScopes === undefined ? undefined : [...options.auth.requiredScopes],
+      };
+      const authenticate = requireBearerAuth(authOptions);
+      this.authenticate = async (request) => {
+        const authorization = request.headers.get('Authorization');
+        if (authorization !== null && !/^Bearer [^\s,]+$/i.test(authorization)) {
+          return bearerAuthChallengeResponse(
+            new OAuthError(OAuthErrorCode.InvalidToken, "Invalid Authorization header format, expected 'Bearer TOKEN'"),
+            authOptions,
+          );
+        }
+        return authenticate(request);
+      };
     }
   }
 

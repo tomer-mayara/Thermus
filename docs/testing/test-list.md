@@ -29,12 +29,12 @@ HTTP request tests use IdentityVerifierMock from `test/unit/mcp/fixtures/identit
 [V] Maps IdentityVerifier claims to SDK auth information, supplies the original token, and keeps changes to SDK scopes separate from verifier claims (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] IdentityVerifierMock rejects unknown tokens and keeps verification call records separate between instances (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Requires a Bearer token for server/discover, tools/list, and tools/call; missing tokens return HTTP 401 with a Bearer challenge and the protected-resource metadata URL (`test/unit/mcp/auth.test.ts`)
-[] Rejects a missing Authorization header with HTTP 401 before token verification or MCP dispatch
-[] Rejects a malformed Authorization header with HTTP 401 before token verification or MCP dispatch
+[V] Rejects a missing Authorization header with HTTP 401 before token verification or MCP dispatch (`test/unit/mcp/auth.test.ts`)
+[V] Rejects a malformed Authorization header with HTTP 401 before token verification or MCP dispatch (`test/unit/mcp/auth.test.ts`)
 [V] Returns HTTP 401 with invalid_token when the verifier rejects a token (`test/unit/mcp/auth.test.ts`)
-[] Returns HTTP 401 with invalid_token for an expired token or a token with no expiration time
-[] Returns HTTP 401 with invalid_token when the verified token audience does not match the MCP resource
-[] Returns HTTP 403 with insufficient_scope and the required scope in the Bearer challenge when a verified token lacks permission
+[V] Returns HTTP 401 with invalid_token for an expired token or a token with no expiration time (`test/unit/mcp/auth-claims.test.ts`)
+[V] Returns HTTP 401 with invalid_token when the verified token audience does not match the MCP resource (`test/unit/mcp/auth-claims.test.ts`)
+[V] Returns HTTP 403 with insufficient_scope and the required scope in the Bearer challenge when a verified token lacks permission (`test/unit/mcp/auth-claims.test.ts`)
 [] Allows a token for the MCP resource with a future expiration and all required scopes to reach the requested MCP operation
 [] Serves protected-resource metadata without a token; identifies the MCP resource, trusted authorization server, and supported scopes, without allowing anonymous tool access
 [] Supplies the verified user and tenant context to the tool handler; request headers and tool arguments cannot replace that context

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, test } from 'node:test';
 import {
   CLIENT_CAPABILITIES_META_KEY,
   CLIENT_INFO_META_KEY,
+  PerRequestHTTPServerTransport,
   PROTOCOL_VERSION_META_KEY,
   SERVER_INFO_META_KEY,
 } from '@modelcontextprotocol/server';
@@ -99,7 +100,46 @@ describe('MCPServer HTTP authentication', () => {
     });
   }
 
+  test('Given no Authorization header, when an HTTP client discovers the server, then it receives 401 before verification or MCP dispatch', { timeout: 5_000 }, async (context) => {
+    const dispatchSpy = context.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
+    const request = discoveryRequest('accepted-token', context.signal);
+    request.headers.delete('Authorization');
+
+    const response = await server.fetch(request);
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(verifier.calls, []);
+    assert.equal(dispatchSpy.mock.callCount(), 0);
+  });
+
+  for (const { label, authorization } of [
+    { label: 'the wrong scheme', authorization: 'Basic accepted-token' },
+    { label: 'missing credentials', authorization: 'Bearer' },
+    { label: 'no scheme and token separator', authorization: 'Beareraccepted-token' },
+    { label: 'extra token text', authorization: 'Bearer accepted-token extra' },
+    { label: 'combined credentials', authorization: 'Bearer accepted-token, Bearer rejected-token' },
+  ]) {
+    test(`Given an Authorization header with ${label}, when an HTTP client discovers the server, then it receives 401 before verification or MCP dispatch`, { timeout: 5_000 }, async (context) => {
+      const dispatchSpy = context.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
+      const request = discoveryRequest('accepted-token', context.signal);
+      request.headers.set('Authorization', authorization);
+
+      const response = await server.fetch(request);
+
+      assert.deepEqual({
+        status: response.status,
+        verifierCalls: verifier.calls,
+        dispatchCalls: dispatchSpy.mock.callCount(),
+      }, {
+        status: 401,
+        verifierCalls: [],
+        dispatchCalls: 0,
+      });
+    });
+  }
+
   test('Given an accepted token, when an HTTP client discovers the server, then discovery succeeds and verification receives the raw token', { timeout: 5_000 }, async (context) => {
+    const dispatchSpy = context.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
     const response = await server.fetch(discoveryRequest('accepted-token', context.signal));
     assert.equal(response.status, 200);
     const body = await response.text();
@@ -111,6 +151,8 @@ describe('MCPServer HTTP authentication', () => {
     assert.equal(discovery._meta[SERVER_INFO_META_KEY].name, 'magumagu');
     assert.ok(discovery.supportedVersions.includes('2026-07-28'));
     assert.deepEqual(verifier.calls, ['accepted-token']);
+    assert.equal(dispatchSpy.mock.callCount(), 1);
+    assert.equal(dispatchSpy.mock.calls[0].arguments[0].method, 'server/discover');
   });
 
   test('Given a rejected token, when an HTTP client discovers the server, then it receives invalid_token and a metadata challenge', { timeout: 5_000 }, async (context) => {
