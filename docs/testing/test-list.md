@@ -12,6 +12,7 @@
 **MCP Server**
 
 [V] Connects to the MCP server and runs server/discover; advertises protocol 2026-07-28 and the magumagu identity (`test/unit/mcp/discovery.test.ts`)
+[] Every tool call is logged (with the user name)
 [] Lists one tool, fetchURLAsMarkdown(url), with its URL input schema
 [] Calls the fetcher with the requested URL, passes fetched HTML and the final URL to the pipeline, and returns the pipeline's Markdown
 [] Rejects an unknown tool or missing, malformed, or unsupported URL input without calling the fetcher or pipeline
