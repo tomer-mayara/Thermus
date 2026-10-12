@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "exclude": [
-    "test/build-output.test.ts"
+    "test/unit/build-output.test.ts"
   ]
 }

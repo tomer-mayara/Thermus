@@ -5,6 +5,14 @@
 
 ## Unit
 
+**Console logger** (`test/unit/logging/console-logger.test.ts`)
+
+[V] Writes one line to stderr by default or to a supplied writable stream
+[V] Includes the timestamp, level label, level color, message, and final newline
+[V] Includes the caller file and line, including filenames with parentheses and files beside the logging directory
+[V] Starts at INFO by default and applies each constructor threshold from DEBUG through NONE
+[V] Applies threshold changes, hides all levels at NONE, and resumes when the threshold is lowered
+
 **Renderer network policy**
 
 [V] Rejects blocked IPv4 and IPv6 ranges, obfuscated loopback addresses, mixed DNS answers, and failed DNS before renderer launch
@@ -405,7 +413,7 @@ npm run build && node --test dist/test/acceptance/pipeline-counters.test.js
 [V] Requires proven zero ancestor offsets before a relative-unit fallback and retains actual offscreen and restored-child controls
 [V] Applies offset error bounds through the independent public hidden-element check
 
-**Build output** (`test/build-output.test.ts`, `pnpm test:build`)
+**Build output** (`test/unit/build-output.test.ts`, `pnpm test:build`)
 
 [V] All test commands exclude output from renamed and deleted tests
 [V] Unit and interface commands keep their suite selection

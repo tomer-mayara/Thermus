@@ -19,7 +19,7 @@
     "test": "npm run build && node --test \"dist/test/**/*.test.js\"",
     "test:unit": "npm run build && node --test \"dist/test/unit/**/*.test.js\"",
     "test:interface": "npm run build && node --test \"dist/test/interface/**/*.test.js\"",
-    "test:build": "node --test test/build-output.test.ts"
+    "test:build": "node --test test/unit/build-output.test.ts"
   },
   "devDependencies": {
     "@types/css-tree": "3.2.0",

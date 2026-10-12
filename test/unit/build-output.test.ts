@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, type TestContext } from 'node:test';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+const root = fileURLToPath(new URL('../../', import.meta.url));
 const childEnv = { ...process.env };
 delete childEnv.NODE_TEST_CONTEXT;
 function fixture(t: TestContext): string {
@@ -17,7 +17,7 @@ function fixture(t: TestContext): string {
   mkdirSync(join(dir, 'src'));
   mkdirSync(join(dir, 'test/unit'), { recursive: true });
   mkdirSync(join(dir, 'test/interface'), { recursive: true });
-  cpSync(join(root, 'test/build-output.test.ts'), join(dir, 'test/build-output.test.ts'));
+  cpSync(join(root, 'test/unit/build-output.test.ts'), join(dir, 'test/unit/build-output.test.ts'));
   writeFileSync(join(dir, 'src/current.ts'), 'export const current = true;\n');
   for (const suite of ['unit', 'interface']) writeFileSync(join(dir, `test/${suite}/current.test.ts`), `import { test } from 'node:test';\ntest('${suite} current', () => {});\n`);
   return dir;
@@ -73,7 +73,7 @@ test('Given a deleted module, repeated builds remove its output and preserve out
   writeFileSync(join(dir, 'src/obsolete.ts'), 'export const obsolete = true;\n');
   passes(run(dir, 'build'));
   assert.ok(existsSync(join(dir, 'dist/src/obsolete.js')));
-  assert.equal(existsSync(join(dir, 'dist/test/build-output.test.js')), false);
+  assert.equal(existsSync(join(dir, 'dist/test/unit/build-output.test.js')), false);
   rmSync(join(dir, 'src/obsolete.ts'));
   passes(run(dir, 'build'));
   assert.equal(existsSync(join(dir, 'dist/src/obsolete.js')), false);
