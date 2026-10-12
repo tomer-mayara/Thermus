@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { type CleanHtmlAds } from '../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
-import { type Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { elementHidingRules, readAdFixture } from '../support/ad-rules.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { type CleanHtmlAds } from '../../../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
+import { type Ctx } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { elementHidingRules, readAdFixture } from '../../../support/ad-rules.ts';
 
 const elementHidingHtml = readAdFixture('element-hiding.html');
 const elementHidingCleanedHtml = readAdFixture('element-hiding.cleaned.html');

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { createContext } from '../support/html-cleaner-context.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { createContext } from '../../../support/html-cleaner-context.ts';
 
 describe('HTML to Markdown noscript fragments', () => {
   for (const html of [

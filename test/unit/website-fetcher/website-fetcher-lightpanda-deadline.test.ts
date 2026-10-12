@@ -3,8 +3,8 @@ import childProcess, { ChildProcess, type ExecFileException } from 'node:child_p
 import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { WebsiteFetchHttpError } from '../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 

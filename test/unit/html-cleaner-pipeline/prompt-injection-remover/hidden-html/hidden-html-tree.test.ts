@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { createContext } from '../support/html-cleaner-context.ts';
+import { PromptInjectionRemoverSanitizer } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { createContext } from '../../../../support/html-cleaner-context.ts';
 
 const threatUrl = `https://attacker.example/?payload=${'a'.repeat(128)}`;
 

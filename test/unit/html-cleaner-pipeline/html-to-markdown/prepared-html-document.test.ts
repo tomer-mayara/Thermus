@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { applyLayer1 } from 'agent-input-sanitizer';
-import { PreparedHtmlDocument } from '../../src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts';
-import type { SanitizeText } from '../../src/html-cleaner-pipeline/html-to-markdown/sanitize-html-document.ts';
+import { PreparedHtmlDocument } from '../../../../src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts';
+import type { SanitizeText } from '../../../../src/html-cleaner-pipeline/html-to-markdown/sanitize-html-document.ts';
 
 const keepText: SanitizeText = (text) => text;
 const url = 'https://example.com/base/article';

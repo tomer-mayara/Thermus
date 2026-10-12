@@ -95,7 +95,7 @@
 [V] Removes hidden spans from sparse HTML, including spans inside fenced-looking text
 [V] Keeps visible Markdown punctuation, text inside `pre` and `code`, and encoded tag examples
 
-**Raw inline control context** (`test/unit/raw-inline-emoji-joiners.test.ts`)
+**Raw inline control context** (`test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/raw-inline-emoji-joiners.test.ts`)
 
 [V] Preserves exact HTML source, authored entities, replacement characters, prior findings, counts, and input immutability for a permitted split joiner
 [V] Maps numeric emoji neighbors, literal CRLF, decoded CR references, ANSI deletions, and the original leading BOM
@@ -245,7 +245,7 @@
 [V] Preserves a failed HTTP status from renderer errors with exit code 1, including bot challenges
 [V] Uses --json and --fail-on-http-error while preserving the readiness, timeout, output, and network-blocking options
 
-**Local renderer fixture launcher** (`test/unit/network-fixture.test.ts`)
+**Local renderer fixture launcher** (`test/unit/website-fetcher/network-fixture.test.ts`)
 
 [V] Uses the selected executable for default, empty, and configured LIGHTPANDA_BIN values, including a path with spaces
 [V] Permits only the trusted localhost fetch scope, keeps the launch options, and disables fixture telemetry

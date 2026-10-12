@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { PromptInjectionRemoverSanitizer } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import {
   HtmlToMarkdownPipeline,
   type Ctx,
   type Step,
-} from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { elementHidingRules, readAdFixture } from '../support/ad-rules.ts';
+} from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { elementHidingRules, readAdFixture } from '../../../support/ad-rules.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
 const elementHidingHtml = readAdFixture('element-hiding.html');

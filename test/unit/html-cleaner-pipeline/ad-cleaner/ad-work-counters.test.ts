@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import adblockRust from 'adblock-rs';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { createContext } from '../support/html-cleaner-context.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { createContext } from '../../../support/html-cleaner-context.ts';
 
 test('counts unsupported selector and procedural attempts on each invocation', async (t) => {
   t.mock.method(adblockRust.Engine.prototype, 'urlCosmeticResources', () => ({

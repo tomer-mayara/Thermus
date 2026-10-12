@@ -7,7 +7,7 @@ import childProcess, {
 import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 
 describe('WebsiteFetcherLightpanda', () => {
   const htmlResult = (url: string, html: string) => JSON.stringify({ url, http_status: 200, content: html, error: null });

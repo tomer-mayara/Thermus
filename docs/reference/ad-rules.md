@@ -47,7 +47,7 @@ Retained spans keep their exact source text, including supplementary Unicode and
 Run the deterministic construction regression with:
 
 ```sh
-npm run build && node --test dist/test/unit/clean-html-ads-construction.test.js
+npm run build && node --test dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-construction.test.js
 ```
 
 The cleaner scans the source once to record each LF line boundary and the first and last character other than a space or tab on each line. Each matched range uses binary searches in that line index to check the lone-line rule. It does not scan or slice the same long line again for each match. For n source UTF-16 units, m matched ranges, and l source lines, this check takes O(n + m log l) work and uses O(l) line records. Parsing, selector matching, and range sorting have separate costs.

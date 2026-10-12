@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HiddenHtmlScanner } from '../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
-import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { HtmlToMarkdownPipeline, type Step } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { elementHidingRules } from '../support/ad-rules.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { HiddenHtmlScanner } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
+import { PromptInjectionRemoverSanitizer } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { HtmlToMarkdownPipeline, type Step } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { elementHidingRules } from '../../../support/ad-rules.ts';
 
 describe('Known HTML pipeline output', () => {
   test('withholds HTML when the scanner fails before markdown conversion', async (t) => {

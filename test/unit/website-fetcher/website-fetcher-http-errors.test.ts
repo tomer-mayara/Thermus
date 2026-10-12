@@ -3,8 +3,8 @@ import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { WebsiteFetchHttpError } from '../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
 
 const url = 'https://example.com/';
 

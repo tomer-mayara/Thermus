@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 test('a deployment without test fixtures applies supplied rules across working directories', (t) => {
   const packageRoot = new URL(
-    import.meta.url.endsWith('.ts') ? '../../' : '../../../', import.meta.url,
+    import.meta.url.endsWith('.ts') ? '../../../../' : '../../../../../', import.meta.url,
   );
   const compiledSource = new URL('dist/src/', packageRoot);
   assert.ok(existsSync(compiledSource), 'Run pnpm build before this deployment test.');

@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { extname } from 'node:path';
 import { test } from 'node:test';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
-import { SourceRangeParser } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser.ts';
+import { SourceRangeParser } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser.ts';
 
 type ParentNode = Htmlparser2TreeAdapterMap['parentNode'];
 
@@ -133,7 +133,7 @@ test('recovers nested templates with bounded EOF stack depth', () => {
 
 test('stops EOF processing when parse5 has no next pass to request', () => {
   const extension = extname(import.meta.filename);
-  const parserUrl = new URL(`../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser${extension}`, import.meta.url);
+  const parserUrl = new URL(`../../../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser${extension}`, import.meta.url);
   const childArguments = extension === '.ts' ? ['--import=tsx', '--input-type=module'] : ['--input-type=module'];
   const child = spawnSync(process.execPath, childArguments, {
     input: `

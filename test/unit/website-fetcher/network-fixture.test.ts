@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import { test } from 'node:test';
-import { permitIPv4Fixture } from '../support/network-fixture.ts';
+import { permitIPv4Fixture } from '../../support/network-fixture.ts';
 
 const fixtureUrl = 'http://localhost:8123/page';
 const fetchArgs = [
