@@ -5,6 +5,43 @@
 
 ## Unit
 
+**MCP Server**
+
+[V] Connects to the MCP server and runs server/discover; advertises protocol 2026-07-28 and the magumagu identity (`test/unit/mcp/discovery.test.ts`)
+[] Lists one tool, fetchURLAsMarkdown(url), with its URL input schema
+[] Calls the fetcher with the requested URL, passes fetched HTML and the final URL to the pipeline, and returns the pipeline's Markdown
+[] Rejects an unknown tool or missing, malformed, or unsupported URL input without calling the fetcher or pipeline
+[] Returns a tool error when the fetcher fails, skips the pipeline, and returns no partial Markdown
+[] Returns a tool error when the pipeline fails and returns no partial Markdown
+[] Closes the transport and cancels pending requests when the server closes; repeated close calls succeed
+[] Keeps request state separate between connections
+
+Planned tool tests use test doubles at the fetcher and pipeline public interfaces. They do not run the renderer or the real pipeline.
+
+**Authentication**
+
+HTTP request tests use IdentityVerifierMock from `test/unit/mcp/fixtures/identity-verifier-mock.ts`. It implements our IdentityVerifier contract, supplies configured token claims or errors, and rejects unknown tokens. MCPServer adapts that contract to the SDK's OAuthTokenVerifier. Tests use the real SDK middleware and test doubles for downstream packages.
+
+[V] Maps IdentityVerifier claims to SDK auth information, supplies the original token, and keeps changes to SDK scopes separate from verifier claims (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
+[V] IdentityVerifierMock rejects unknown tokens and keeps verification call records separate between instances (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
+[V] Requires a Bearer token for server/discover, tools/list, and tools/call; missing tokens return HTTP 401 with a Bearer challenge and the protected-resource metadata URL (`test/unit/mcp/auth.test.ts`)
+[] Rejects a missing Authorization header with HTTP 401 before token verification or MCP dispatch
+[] Rejects a malformed Authorization header with HTTP 401 before token verification or MCP dispatch
+[V] Returns HTTP 401 with invalid_token when the verifier rejects a token (`test/unit/mcp/auth.test.ts`)
+[] Returns HTTP 401 with invalid_token for an expired token or a token with no expiration time
+[] Returns HTTP 401 with invalid_token when the verified token audience does not match the MCP resource
+[] Returns HTTP 403 with insufficient_scope and the required scope in the Bearer challenge when a verified token lacks permission
+[] Allows a token for the MCP resource with a future expiration and all required scopes to reach the requested MCP operation
+[] Serves protected-resource metadata without a token; identifies the MCP resource, trusted authorization server, and supported scopes, without allowing anonymous tool access
+[] Supplies the verified user and tenant context to the tool handler; request headers and tool arguments cannot replace that context
+[] Rejects token details that cannot establish the required user or tenant context
+[] Keeps user and tenant context separate for sequential and concurrent requests
+[] Checks every request again; a valid request does not authorize a later request with a missing or rejected token
+[] Stops before MCP dispatch, the fetcher, and the pipeline after any authentication or scope failure
+[] Returns a server error if token verification fails unexpectedly; performs no MCP dispatch and exposes no token or internal error details
+
+Real issuer, signature, and key rotation checks belong in authentication interface tests. Browser OAuth flows and Google or Okta compatibility need separate integration and acceptance tests. A fake verifier does not prove those behaviors.
+
 **Console logger** (`test/unit/logging/console-logger.test.ts`)
 
 [V] Writes one line to stderr by default or to a supplied writable stream

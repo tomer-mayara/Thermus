@@ -112,7 +112,11 @@ Out of scope: step-up approval, a second renderer, request-level ad blocking, an
 
 [`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `magumagu` identity with support for protocol version `2026-07-28`.
 
-The current component covers connection and discovery. Its [unit test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport.
+For HTTP requests, construct the server with `{ auth: { verifier, resourceMetadataUrl } }` and call `await server.fetch(request)`. The verifier implements our [`IdentityVerifier`](src/mcp/identity-verifier.ts) contract. An adapter converts its verified claims and token rejection errors to SDK types. The SDK checks the Bearer token before MCP dispatch. Missing tokens receive HTTP 401 with a Bearer challenge and the configured protected-resource metadata URL. Call `await server.close()` to release the HTTP handler and any transport connection.
+
+`verifyAccessToken(token)` returns a client ID, scopes, an expiration timestamp in `expiresAtUnixSeconds`, and a `resource` URL from the verified token audience. Throw `InvalidAccessTokenError` to reject a token. The adapter turns that error into a generic `401 invalid_token` response through the SDK; unexpected verification errors receive a generic `500 server_error` response.
+
+The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The [authentication tests](test/unit/mcp/auth.test.ts) use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts) with the real SDK middleware. They check missing-token responses for `server/discover`, `tools/list`, and `tools/call`, plus discovery with accepted tokens, token rejection, and unexpected verification failures. The metadata endpoint and identity provider integration remain planned.
 
 ## Contributing and design
 
