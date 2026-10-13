@@ -10,6 +10,7 @@ import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
 import { AccessResolverMock, type ConfiguredAccess } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
+import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 import { mcpRequest, rpcResult, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
@@ -48,6 +49,7 @@ function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>,
     ['scopeless-token', identityFor(members[0] as AuthenticatedUser, [])],
   ]));
   const resolver = new AccessResolverMock(decisions);
+  const reporter = new FailureReporterMock();
   const server = new MCPServer({
     auth: {
       verifier,
@@ -57,9 +59,10 @@ function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>,
       requiredScopes: ['openid'],
     },
     registerTools: probe.register,
+    reportFailure: reporter.report,
   });
   t.after(() => server.close());
-  return { server, verifier, resolver, probe };
+  return { server, verifier, resolver, probe, reporter };
 }
 
 function callProbe(t: TestContext, token: string | undefined, url = 'https://example.com/page'): Request {

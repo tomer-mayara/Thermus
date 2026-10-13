@@ -16,6 +16,15 @@ import { IdentityVerifierSdkAdapter, verifiedUserOf } from './identity-verifier-
 
 export type RequestToolRegistration = (server: McpServer, context: RequestContext) => void;
 
+export type FailureStep = 'token-verification' | 'access-resolution';
+
+export interface FailureReport {
+  readonly step: FailureStep;
+  readonly cause: unknown;
+}
+
+export type FailureReporter = (report: FailureReport) => void;
+
 export interface McpHttpAuthOptions {
   verifier: IdentityVerifier;
   accessResolver: AccessResolver;
@@ -33,7 +42,7 @@ export class MCPServer {
   private readonly http?: { authenticate: BearerGate; accessResolver: AccessResolver };
   private readonly registerTools?: RequestToolRegistration;
 
-  constructor(options?: { auth: McpHttpAuthOptions; registerTools?: RequestToolRegistration }) {
+  constructor(options?: { auth: McpHttpAuthOptions; registerTools?: RequestToolRegistration; reportFailure: FailureReporter }) {
     if (options !== undefined) {
       this.http = { authenticate: bearerGate(options.auth), accessResolver: options.auth.accessResolver };
       this.registerTools = options.registerTools;

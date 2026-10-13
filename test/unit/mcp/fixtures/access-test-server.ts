@@ -3,6 +3,7 @@ import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../..
 import type { VerifiedIdentity } from '../../../../src/mcp/identity-verifier.ts';
 import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
 import { AccessResolverMock, type ConfiguredAccess } from './access-resolver-mock.ts';
+import { FailureReporterMock } from './failure-reporter-mock.ts';
 import { IdentityVerifierMock, type ConfiguredClaims } from './identity-verifier-mock.ts';
 import { mcpRequest, type McpRequestOptions } from './mcp-http-request.ts';
 import { RequestContextTools } from './request-context-tools.ts';
@@ -45,6 +46,7 @@ export interface AccessTestServer {
   readonly verifier: IdentityVerifierMock;
   readonly resolver: AccessResolverMock;
   readonly tools: RequestContextTools;
+  readonly reporter: FailureReporterMock;
 }
 
 export function serveAccess(
@@ -58,6 +60,7 @@ export function serveAccess(
   ]));
   const resolver = new AccessResolverMock(decisions);
   const tools = options.tools ?? new RequestContextTools();
+  const reporter = new FailureReporterMock();
   const server = new MCPServer({
     auth: {
       verifier,
@@ -67,9 +70,10 @@ export function serveAccess(
       requiredScopes: options.requiredScopes,
     },
     registerTools: tools.register,
+    reportFailure: reporter.report,
   });
   t.after(() => server.close());
-  return { server, verifier, resolver, tools };
+  return { server, verifier, resolver, tools, reporter };
 }
 
 export function callReport(t: TestContext, token: string | undefined, extra: Partial<McpRequestOptions> = {}): Request {

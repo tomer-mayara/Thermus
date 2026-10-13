@@ -11,6 +11,7 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
 import { AccessResolverMock } from './fixtures/access-resolver-mock.ts';
+import { FailureReporterMock } from './fixtures/failure-reporter-mock.ts';
 import { IdentityVerifierMock } from './fixtures/identity-verifier-mock.ts';
 
 describe('MCPServer HTTP authentication', () => {
@@ -20,6 +21,7 @@ describe('MCPServer HTTP authentication', () => {
   let server: MCPServer;
   let verifier: IdentityVerifierMock;
   let resolver: AccessResolverMock;
+  let reporter: FailureReporterMock;
 
   beforeEach(() => {
     verifier = new IdentityVerifierMock(new Map<string, VerifiedIdentity | Error>([
@@ -39,8 +41,10 @@ describe('MCPServer HTTP authentication', () => {
       allowed: true,
       context: { user, tenantId: 'local:test-installation', grants: [], permissions: [] },
     }]]));
+    reporter = new FailureReporterMock();
     server = new MCPServer({
       auth: { verifier, accessResolver: resolver, resourceMetadataUrl, expectedResource: new URL(resourceUrl) },
+      reportFailure: reporter.report,
     });
   });
 

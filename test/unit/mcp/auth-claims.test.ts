@@ -9,6 +9,7 @@ import {
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import { AccessResolverMock } from './fixtures/access-resolver-mock.ts';
+import { FailureReporterMock } from './fixtures/failure-reporter-mock.ts';
 import { IdentityVerifierMock } from './fixtures/identity-verifier-mock.ts';
 
 describe('MCPServer verified claim validation', () => {
@@ -88,11 +89,13 @@ describe('MCPServer verified claim validation', () => {
   ];
   let verifier: IdentityVerifierMock;
   let resolver: AccessResolverMock;
+  let reporter: FailureReporterMock;
   let server: MCPServer;
 
   beforeEach(() => {
     verifier = new IdentityVerifierMock(new Map(scenarios.map(({ token, identity }) => [token, identity])));
     resolver = new AccessResolverMock();
+    reporter = new FailureReporterMock();
     const options = {
       auth: {
         verifier,
@@ -101,6 +104,7 @@ describe('MCPServer verified claim validation', () => {
         expectedResource: new URL(resourceUrl),
         requiredScopes: ['mcp:read'],
       },
+      reportFailure: reporter.report,
     };
     server = new MCPServer(options);
   });
