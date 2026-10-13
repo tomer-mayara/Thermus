@@ -1,9 +1,5 @@
-// This script runs in a one-off container of the image under test. container-site.ts sends it on standard input.
-// PROBE selects the work, and the script prints its result as JSON:
-//   image                         the application files, their hashes, the packages, the user, and DATA_DIR
-//   data-files                    the names of the files in DATA_DIR
-//   installation-ids              the installation IDs in the database
-//   remove-installation-identity  deletes the installation row, as a damaged restore can
+// Runs in a one-off container of the image under test; container-gate.ts sends it on standard input.
+// PROBE names one of the probes at the end of this file, and the script prints the result as JSON.
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';

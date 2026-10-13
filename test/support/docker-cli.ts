@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import type { CommandResult } from './command-process.ts';
 
 export interface DockerResult {
   readonly code: number | null;
@@ -7,13 +8,10 @@ export interface DockerResult {
 }
 
 export interface DockerOptions {
-  // Goes to standard input, which then ends.
   readonly input?: string | Buffer;
-  // Replaces the environment of the docker command. The default is the environment of the test process.
   readonly environment?: NodeJS.ProcessEnv;
 }
 
-// Runs one docker command to its end.
 export function docker(args: readonly string[], options: DockerOptions = {}): Promise<DockerResult> {
   return new Promise((resolve, reject) => {
     const child = spawn('docker', args, { stdio: ['pipe', 'pipe', 'pipe'], env: options.environment ?? process.env });
@@ -29,9 +27,13 @@ export function docker(args: readonly string[], options: DockerOptions = {}): Pr
   });
 }
 
-// Runs one docker command that must succeed and gives its standard output without the final line break.
 export async function dockerOutput(args: readonly string[], options: DockerOptions = {}): Promise<string> {
   const result = await docker(args, options);
   if (result.code !== 0) throw new Error(`docker ${args.slice(0, 2).join(' ')} exited with ${result.code}:\n${result.stderr}`);
   return result.stdout.toString('utf8').trimEnd();
+}
+
+export async function dockerCommand(args: readonly string[], input: readonly string[] = []): Promise<CommandResult> {
+  const { code, stdout, stderr } = await docker(args, { input: input.map((line) => `${line}\n`).join('') });
+  return { code, signal: null, stdout: stdout.toString('utf8'), stderr };
 }

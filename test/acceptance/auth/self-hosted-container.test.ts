@@ -10,12 +10,12 @@ import { assertExit, assertRevealsNone, type CommandResult } from '../../support
 import {
   buildGateImages,
   containerDataDirectory,
-  ContainerSite,
   probeImage,
   removeGateResources,
   repositoryRoot,
   type GateImages,
-} from '../../support/container-site.ts';
+} from '../../support/container-gate.ts';
+import { ContainerSite } from '../../support/container-site.ts';
 import { dockerOutput } from '../../support/docker-cli.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { LocalMcpUser } from '../../support/local-mcp-user.ts';
@@ -64,7 +64,6 @@ interface Installation {
   readonly site: ContainerSite;
   readonly volume: string;
   readonly operator: Operator;
-  // The native client of each account, in the order of the accounts.
   readonly clientIds: readonly string[];
   readonly userIds: ReadonlyMap<string, string>;
   readonly commands: readonly CommandResult[];
@@ -103,7 +102,6 @@ interface ComposeConfig {
   readonly volumes: Readonly<Record<string, unknown>>;
 }
 
-// The operator adds the accounts and registers one native client for each, in one-off containers while no server runs.
 async function installation(t: TestContext, accounts: readonly AccountCredentials[] = [alice, bob]): Promise<Installation> {
   const site = await ContainerSite.open(t, images.current);
   const volume = await site.volume();
