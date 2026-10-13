@@ -16,10 +16,8 @@ import { IdentityVerifierSdkAdapter, verifiedUserOf } from './identity-verifier-
 
 export type RequestToolRegistration = (server: McpServer, context: RequestContext) => void;
 
-export type FailureStep = 'token-verification' | 'access-resolution';
-
 export interface FailureReport {
-  readonly step: FailureStep;
+  readonly step: 'token-verification' | 'access-resolution';
   readonly cause: unknown;
 }
 
@@ -33,12 +31,6 @@ export interface McpHttpAuthOptions {
   requiredScopes?: readonly string[];
 }
 
-export interface McpHttpOptions {
-  auth: McpHttpAuthOptions;
-  registerTools?: RequestToolRegistration;
-  reportFailure: FailureReporter;
-}
-
 type BearerGate = (request: Request) => Promise<AuthInfo | Response>;
 type AccessGate = (authInfo: AuthInfo) => Promise<RequestContext | Response>;
 
@@ -49,7 +41,11 @@ export class MCPServer {
   private readonly http?: { authenticate: BearerGate; resolveAccess: AccessGate };
   private readonly registerTools?: RequestToolRegistration;
 
-  constructor(options?: McpHttpOptions) {
+  constructor(options?: {
+    auth: McpHttpAuthOptions;
+    registerTools?: RequestToolRegistration;
+    reportFailure: FailureReporter;
+  }) {
     if (options !== undefined) {
       const { auth, reportFailure } = options;
       this.http = {
