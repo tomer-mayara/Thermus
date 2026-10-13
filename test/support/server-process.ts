@@ -78,6 +78,18 @@ export class ServerProcess {
     return this.exit;
   }
 
+  // The signal goes out in the data callback that brings the "Listening on" line, so no other callback runs between the two.
+  async stopWhenListening(signal: NodeJS.Signals): Promise<ServerExit> {
+    const streams = [this.child.stdout, this.child.stderr];
+    const stopIfListening = (): void => {
+      if (!listeningLine.test(this.text)) return;
+      for (const stream of streams) stream.off('data', stopIfListening);
+      this.child.kill(signal);
+    };
+    for (const stream of streams) stream.on('data', stopIfListening);
+    return this.exit;
+  }
+
   async exited(): Promise<ServerExit> {
     return this.exit;
   }

@@ -43,7 +43,8 @@ function dataFiles(directory: string): Record<string, Buffer> {
 
 async function assertStopsBeforeListening(server: ServerProcess, message: RegExp): Promise<void> {
   assert.equal(await server.listeningOrExit(), undefined, server.output);
-  assert.notEqual((await server.exited()).code, 0);
+  assert.deepEqual(await server.exited(), { code: 1, signal: null });
+  assert.match(server.output, /FATAL/);
   assert.match(server.output, message);
 }
 
@@ -63,6 +64,20 @@ describe('Self-hosted server startup with one persistent installation', () => {
     assert.deepEqual([firstExit, secondExit], [{ code: 0, signal: null }, { code: 0, signal: null }]);
     assert.deepEqual(storedInstallationIds(directory), [firstTenant.slice('local:'.length)]);
   });
+
+  for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+    test(`Given several servers that start at the same time, when each gets ${signal} in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after ${signal}" and exits with status 0, not by the signal`, { timeout: 60_000 }, async (t) => {
+      // Starts at the same time load the machine, so a gap between the line and the stop handlers is easier to hit.
+      const servers = Array.from({ length: 8 }, () => ServerProcess.launch(t, selfHostedSettings(dataDirectory(t))));
+
+      const runs = await Promise.all(servers.map(async (server) => {
+        const exit = await server.stopWhenListening(signal);
+        return { exit, stopped: server.output.includes(`Stopping after ${signal}`) };
+      }));
+
+      assert.deepEqual(runs, servers.map(() => ({ exit: { code: 0, signal: null }, stopped: true })));
+    });
+  }
 
   test('Given a fresh installation with zero accounts, when the server starts, then startup succeeds, MCP requests get a Bearer challenge, and no public route creates an account', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
