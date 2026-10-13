@@ -38,12 +38,14 @@ interface Grants {
   readonly bobPendingCode: { readonly callback: string; readonly verifier: string };
 }
 
-function operator(t: TestContext, directory: string, args: readonly string[], input: readonly string[] = []): Promise<CommandResult> {
-  return runCommand(t, selfHostedSettings(directory), args, input);
+type Operator = (args: readonly string[], input?: readonly string[]) => Promise<CommandResult>;
+
+function operatorOn(t: TestContext, directory: string): Operator {
+  return (args, input = []) => runCommand(t, selfHostedSettings(directory), { args, input });
 }
 
-function addUser(t: TestContext, directory: string, account: AccountCredentials): Promise<CommandResult> {
-  return operator(t, directory, ['users', 'add', account.email], [account.password, account.password]);
+function addUser(operator: Operator, account: AccountCredentials): Promise<CommandResult> {
+  return operator(['users', 'add', account.email], [account.password, account.password]);
 }
 
 function registerArgs(account: AccountCredentials, redirectUris: readonly string[] = [loopbackRedirectUri]): string[] {
@@ -57,8 +59,8 @@ function registeredClientId(result: CommandResult): string {
   return clientId;
 }
 
-async function listedAccounts(t: TestContext, directory: string): Promise<ListedAccount[]> {
-  const listing = await operator(t, directory, ['users', 'list']);
+async function listedAccounts(operator: Operator): Promise<ListedAccount[]> {
+  const listing = await operator(['users', 'list']);
   assertExit(listing, 0);
   if (/^No local accounts/.test(listing.stdout)) return [];
   const [header, ...rows] = listing.stdout.trimEnd().split('\n');
@@ -111,9 +113,9 @@ async function grantsThrough(auth: LocalAuth, nativeClientId: string): Promise<G
   return { resourceServer, nativeClientId, alice: aliceGrant, bob: bobGrant, bobPendingCode: { callback: callback.href, verifier: pending.verifier } };
 }
 
-async function twoUsersWithGrants(t: TestContext, directory: string): Promise<Grants> {
-  for (const account of [alice, bob]) assertExit(await addUser(t, directory, account), 0);
-  const nativeClientId = registeredClientId(await operator(t, directory, registerArgs(alice), [alice.password]));
+async function twoUsersWithGrants(operator: Operator, directory: string): Promise<Grants> {
+  for (const account of [alice, bob]) assertExit(await addUser(operator, account), 0);
+  const nativeClientId = registeredClientId(await operator(registerArgs(alice), [alice.password]));
   return withRuntime(directory, ({ auth }) => grantsThrough(auth, nativeClientId));
 }
 
@@ -128,13 +130,14 @@ function mcpPost(): RequestInit {
 describe('Offline local user and client commands', () => {
   test('Given a stopped server and its data directory, when the operator adds users with hidden passwords and lists them, then a duplicate email is refused, the list shows each enabled state without credentials, the new password signs in, and no command uses the network', { timeout: 120_000 }, async (t) => {
     const directory = dataDirectory(t);
+    const operator = operatorOn(t, directory);
     const server = await ServerProcess.start(t, selfHostedSettings(directory));
     const tenant = server.tenant();
     await server.stop();
 
-    const added = [await addUser(t, directory, alice), await addUser(t, directory, bob)];
-    const duplicate = await operator(t, directory, ['users', 'add', 'ALICE@Example.com'], ['other-password-1', 'other-password-1']);
-    const accounts = await listedAccounts(t, directory);
+    const added = [await addUser(operator, alice), await addUser(operator, bob)];
+    const duplicate = await operator(['users', 'add', 'ALICE@Example.com'], ['other-password-1', 'other-password-1']);
+    const accounts = await listedAccounts(operator);
 
     for (const result of added) assertExit(result, 0);
     assertExit(duplicate, 1);
@@ -157,14 +160,15 @@ describe('Offline local user and client commands', () => {
 
   test('Given two enabled users with browser sessions and MCP access tokens, when reset-password targets one user, then only that user\'s old password, session, and token fail; its ID and enabled state stay; its new password works; and the peer stays usable', { timeout: 120_000 }, async (t) => {
     const directory = dataDirectory(t);
-    const grants = await twoUsersWithGrants(t, directory);
-    const before = await listedAccounts(t, directory);
+    const operator = operatorOn(t, directory);
+    const grants = await twoUsersWithGrants(operator, directory);
+    const before = await listedAccounts(operator);
 
-    const reset = await operator(t, directory, ['users', 'reset-password', alice.email], ['alice-password-2', 'alice-password-2']);
+    const reset = await operator(['users', 'reset-password', alice.email], ['alice-password-2', 'alice-password-2']);
 
     assertExit(reset, 0);
     assertRevealsNone([reset], [alice.password, 'alice-password-2']);
-    assert.deepEqual(await listedAccounts(t, directory), before);
+    assert.deepEqual(await listedAccounts(operator), before);
     await withRuntime(directory, async ({ auth }) => {
       const introspection = new ResourceServerClient(auth, grants.resourceServer.clientId, grants.resourceServer.clientSecret);
       assert.equal((await signIn(auth, alice)).status, 401);
@@ -179,12 +183,13 @@ describe('Offline local user and client commands', () => {
 
   test('Given two enabled users with sessions, MCP access tokens, and a pending authorization code, when disable targets one user, then that user cannot sign in, keeps its ID, and loses its session, token, pending code, new authorization, and refresh; the list shows it disabled; the peer stays usable', { timeout: 120_000 }, async (t) => {
     const directory = dataDirectory(t);
-    const grants = await twoUsersWithGrants(t, directory);
+    const operator = operatorOn(t, directory);
+    const grants = await twoUsersWithGrants(operator, directory);
 
-    const disable = await operator(t, directory, ['users', 'disable', bob.email]);
+    const disable = await operator(['users', 'disable', bob.email]);
 
     assertExit(disable, 0);
-    assert.deepEqual(await listedAccounts(t, directory), [
+    assert.deepEqual(await listedAccounts(operator), [
       { email: alice.email, state: 'enabled', id: grants.alice.id },
       { email: bob.email, state: 'disabled', id: grants.bob.id },
     ]);
@@ -211,15 +216,16 @@ describe('Offline local user and client commands', () => {
 
   test('Given a live server, when each operator command runs in another process on its data directory, then each fails with the lock error, asks for no password, and changes nothing; after the server stops, add recovers the zero-account installation', { timeout: 120_000 }, async (t) => {
     const directory = dataDirectory(t);
+    const operator = operatorOn(t, directory);
     const server = await ServerProcess.start(t, selfHostedSettings(directory));
     const tenant = server.tenant();
 
     const refused = [
-      await operator(t, directory, ['users', 'add', alice.email], [alice.password, alice.password]),
-      await operator(t, directory, ['users', 'list']),
-      await operator(t, directory, ['users', 'reset-password', alice.email], [alice.password, alice.password]),
-      await operator(t, directory, ['users', 'disable', alice.email]),
-      await operator(t, directory, registerArgs(alice), [alice.password]),
+      await operator(['users', 'add', alice.email], [alice.password, alice.password]),
+      await operator(['users', 'list']),
+      await operator(['users', 'reset-password', alice.email], [alice.password, alice.password]),
+      await operator(['users', 'disable', alice.email]),
+      await operator(registerArgs(alice), [alice.password]),
     ];
     const serving = await server.request('/mcp', mcpPost());
     await server.stop();
@@ -231,9 +237,9 @@ describe('Offline local user and client commands', () => {
       assert.equal(result.stdout, '');
     }
     assert.equal(serving.status, 401);
-    assert.deepEqual(await listedAccounts(t, directory), []);
-    assertExit(await addUser(t, directory, alice), 0);
-    const [account] = await listedAccounts(t, directory);
+    assert.deepEqual(await listedAccounts(operator), []);
+    assertExit(await addUser(operator, alice), 0);
+    const [account] = await listedAccounts(operator);
     assert.deepEqual({ email: account?.email, state: account?.state }, { email: alice.email, state: 'enabled' });
     await withRuntime(directory, async ({ auth }) => assert.equal(await signedInUserId(auth, alice), account?.id));
     const restarted = await ServerProcess.start(t, selfHostedSettings(directory));
@@ -243,18 +249,19 @@ describe('Offline local user and client commands', () => {
 
   test('Given an enabled account and an approved native client with an exact loopback redirect URI, when registration runs, then the client persists in the data directory, no registration session stays, and a user can authorize with that redirect URI; invalid targets and redirect URIs give safe errors and register nothing', { timeout: 120_000 }, async (t) => {
     const directory = dataDirectory(t);
-    for (const account of [alice, bob]) assertExit(await addUser(t, directory, account), 0);
-    assertExit(await operator(t, directory, ['users', 'disable', bob.email]), 0);
+    const operator = operatorOn(t, directory);
+    for (const account of [alice, bob]) assertExit(await addUser(operator, account), 0);
+    assertExit(await operator(['users', 'disable', bob.email]), 0);
 
     const refused = [
-      await operator(t, directory, registerArgs({ email: 'carol@example.com', password: 'carol-password-1' }), ['carol-password-1']),
-      await operator(t, directory, registerArgs(bob), [bob.password]),
-      await operator(t, directory, registerArgs({ email: alice.email, password: 'wrong-password-1' }), ['wrong-password-1']),
-      await operator(t, directory, registerArgs(alice, ['https://client.example/callback']), [alice.password]),
-      await operator(t, directory, registerArgs(alice, [`${loopbackRedirectUri}#fragment`]), [alice.password]),
-      await operator(t, directory, registerArgs(alice, ['http://user:secret@127.0.0.1:33418/callback']), [alice.password]),
+      await operator(registerArgs({ email: 'carol@example.com', password: 'carol-password-1' }), ['carol-password-1']),
+      await operator(registerArgs(bob), [bob.password]),
+      await operator(registerArgs({ email: alice.email, password: 'wrong-password-1' }), ['wrong-password-1']),
+      await operator(registerArgs(alice, ['https://client.example/callback']), [alice.password]),
+      await operator(registerArgs(alice, [`${loopbackRedirectUri}#fragment`]), [alice.password]),
+      await operator(registerArgs(alice, ['http://user:secret@127.0.0.1:33418/callback']), [alice.password]),
     ];
-    const registration = await operator(t, directory, registerArgs(alice), [alice.password]);
+    const registration = await operator(registerArgs(alice), [alice.password]);
     const clientId = registeredClientId(registration);
     const server = await ServerProcess.start(t, selfHostedSettings(directory));
     await server.stop();

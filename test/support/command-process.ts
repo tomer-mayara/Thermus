@@ -10,8 +10,9 @@ const networkBlocker = new URL('./deny-network.js', import.meta.url).href;
 
 export type CommandSettings = Readonly<Record<string, string>>;
 
-export interface CommandOptions {
-  readonly denyNetwork?: boolean;
+export interface CommandLine {
+  readonly args: readonly string[];
+  readonly input?: readonly string[];
 }
 
 export interface CommandResult {
@@ -22,6 +23,7 @@ export interface CommandResult {
 }
 
 // The command reads passwords from standard input, so the arguments never carry them.
+// Each command runs with outbound network access refused.
 export class CommandProcess {
   private readonly child: ChildProcessByStdio<Writable, Readable, Readable>;
   private readonly exit: Promise<CommandResult>;
@@ -29,9 +31,8 @@ export class CommandProcess {
   private stderrText = '';
   private readonly stderrListeners = new Set<() => void>();
 
-  private constructor(settings: CommandSettings, args: readonly string[], options: CommandOptions) {
-    const preload = options.denyNetwork === true ? ['--import', networkBlocker] : [];
-    this.child = spawn(process.execPath, [...preload, commandEntry, ...args], { env: { ...settings }, stdio: ['pipe', 'pipe', 'pipe'] });
+  private constructor(settings: CommandSettings, args: readonly string[]) {
+    this.child = spawn(process.execPath, ['--import', networkBlocker, commandEntry, ...args], { env: { ...settings }, stdio: ['pipe', 'pipe', 'pipe'] });
     // A command that stops before it reads its input closes the pipe; that is not a test failure.
     this.child.stdin.on('error', () => undefined);
     this.child.stdout.setEncoding('utf8').on('data', (chunk: string) => { this.stdoutText += chunk; });
@@ -47,8 +48,8 @@ export class CommandProcess {
     }));
   }
 
-  static launch(t: TestContext, settings: CommandSettings, args: readonly string[], options: CommandOptions = {}): CommandProcess {
-    const command = new CommandProcess(settings, args, options);
+  static launch(t: TestContext, settings: CommandSettings, args: readonly string[]): CommandProcess {
+    const command = new CommandProcess(settings, args);
     t.after(() => command.kill());
     return command;
   }
@@ -84,14 +85,9 @@ export class CommandProcess {
   }
 }
 
-export async function runCommand(
-  t: TestContext,
-  settings: CommandSettings,
-  args: readonly string[],
-  input: readonly string[] = [],
-): Promise<CommandResult> {
-  const command = CommandProcess.launch(t, settings, args, { denyNetwork: true });
-  command.answer(input);
+export async function runCommand(t: TestContext, settings: CommandSettings, line: CommandLine): Promise<CommandResult> {
+  const command = CommandProcess.launch(t, settings, line.args);
+  command.answer(line.input ?? []);
   return command.result();
 }
 
