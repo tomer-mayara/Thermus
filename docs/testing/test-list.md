@@ -73,11 +73,12 @@ Real issuer, signature, and key rotation checks belong in authentication interfa
 
 [V] Returns the self-hosted and hosted records with the exact MCP resource and metadata URLs for root and sub-path base URLs
 [V] Accepts only `self-hosted` or `hosted` in `DEPLOYMENT`; no other setting selects or changes the edition, and `AUTH_MODE`, mock, and paid-feature settings have no effect
-[V] Reads only the settings of the selected edition from the supplied record and ignores `process.env`
-[V] Rejects a missing, relative, padded, non-HTTPS, credential, query, or fragment URL; allows HTTP only for a self-hosted loopback host
-[V] Rejects a missing or relative `DATA_DIR`, a missing hosted setting, a redirect URI on another origin, and a cookie password shorter than 32 characters
-[V] Rejects hosted stdio and accepts self-hosted stdio at this layer
-[V] Names the setting and the rule in each error, without a setting value; keeps the issuer exactly as written; returns frozen records
+[V] Reads only the settings of the selected edition from the supplied record and ignores `process.env`; the hosted edition reads only `DEPLOYMENT` and `PUBLIC_BASE_URL`, also when every `WORKOS_*` setting has a value
+[V] Gives the same hosted record without WorkOS settings and with valid, invalid, or empty `WORKOS_*` values; no WorkOS value turns on a provider or access
+[V] Rejects a missing, relative, padded, non-HTTPS, credential, query, or fragment URL; allows HTTP only for a self-hosted loopback host; WorkOS values do not change these rejections
+[V] Rejects a missing or relative `DATA_DIR`
+[V] Rejects hosted stdio, also with WorkOS settings, and accepts self-hosted stdio at this layer
+[V] Names the setting and the rule in each error, without a setting value or a WorkOS value; returns frozen records
 [V] Uses listen host `127.0.0.1` and port 8080 when `LISTEN_HOST` and `LISTEN_PORT` are missing or empty; returns a frozen address for valid hosts and ports from 0 to 65535
 [V] Rejects a `LISTEN_PORT` that is not a whole number from 0 to 65535 and a `LISTEN_HOST` with spaces or control characters, without the value in the message; reads only `LISTEN_HOST` and `LISTEN_PORT`
 
@@ -213,6 +214,27 @@ A logger double records the lines that `operatorFailureReporter()` writes.
 [V] Gives each MCPServer failure report to the operator as one error line that names the failed step and keeps the cause, also for a cause that is not an error; writes no info line
 [V] Routes the complete request to MCP, provider-owned discovery and OAuth endpoints, or bundled pages under the configured public path
 [V] Refuses private provider routes, unrelated paths, and near-matching path suffixes without calling a route owner
+[V] Hosted routing: sends the MCP resource and both protected-resource metadata paths to the MCP handler and each other path under the configured public path to the account routes, with the complete request; paths outside the public path give 404 without a handler call
+
+**Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
+
+`BrowserSessionDouble` gives a configured session state for each `Cookie` header. `AccessResolverMock` gives configured decisions, and a test-only operation double records each call. The tests import the access contracts as types only.
+
+[V] Gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
+[V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
+[V] For an unavailable session, gives the 503 authentication-unavailable notice to account, organization, and billing requests with forged cookies, bearer tokens, organization IDs, and form input, sets no cookie, reads no body, and runs no access resolution or operation
+[V] Gives 401 for a signed-out session and runs no access resolution or operation
+[V] Gives 403 without the reason for each denial reason and runs no operation
+[V] Gives 404 after allowed access when no operation exists
+[V] Refuses an allowed decision without a tenant ID before the operation
+[V] Gives a session or access lookup failure to the caller and runs no operation
+[V] Sends each notice page as fixed HTML without a form, script, or other resource, with `Cache-Control: no-store`, a Content Security Policy that allows nothing, `nosniff`, and `X-Frame-Options: DENY`
+
+**Unavailable hosted authentication** (`test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`)
+
+[V] Gives `unavailable` for each browser request, also with a forged session cookie, bearer token, organization ID, or form input, and reads no request body
+[V] Denies access with `account-inactive` for each user, also with a selected organization, and gives no context, tenant, or grant
+[V] Gives the same answers when each `WORKOS_*` variable has a value in the process environment
 
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
@@ -510,7 +532,22 @@ These tests run the real application, Better Auth runtime, MCPServer, and provid
 [V] A copy of the complete stopped data directory keeps the tenant, the user IDs, and a browser session that its secret signed
 [V] A client that an enabled account registers through the provider has the installation ID as `reference_id` and no `user_id`
 [V] Retained data without its installation identity, and retained data with a damaged provider schema, stop startup and release the data-directory lock
-[V] The hosted deployment stops with `HostedEditionUnavailableError`
+[V] The hosted deployment, also with WorkOS settings, starts the unavailable hosted shell instead of the local runtime: an account request gets the 503 notice, an MCP request with a forged token gets 503 `temporarily_unavailable`, the log says that hosted authentication is not available yet, and two close calls give one result
+
+**Hosted account routes with doubles** (`test/integration/auth/hosted-account.test.ts`)
+
+These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit identities with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context.
+
+[V] Members of two organizations and one user with a session in each organization overlap and resolve in reverse order; each operation works only in the organization of its own session, also with forged organization IDs in the query, headers, and form
+[V] Independent Super Admin, Admin, and User plus Admin grants give each context every grant and only the union of their explicit permissions; Super Admin alone gives no product access, and Admin alone gives no billing
+[V] A session without a selected organization, an inactive membership, an identity of another authority, and a missing session are refused before any operation, with no default organization, tenant, or role
+[V] The MCP resource still gives 503 `temporarily_unavailable` with the doubles, and a path outside the public path gives 404 without a session lookup
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js
+```
 
 **Local auth command** (`test/integration/auth/local-auth-command.test.ts`, `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`)
 
@@ -667,6 +704,21 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 
 `npm run test:acceptance` runs every acceptance test, except the container gate suite, which it skips. `npm run check` does not select the acceptance directory.
 
+**Hosted placeholder** (`test/acceptance/auth/hosted-placeholder.test.ts`)
+
+Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings and no WorkOS setting, unless the test adds them. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass.
+
+[V] Given hosted settings with an HTTPS public URL and no WorkOS settings, the server listens and serves the authentication-unavailable notice without a credential prompt or cookie, logs that hosted authentication is not available yet, reports no tenant, uses no network, and stops with status 0
+[V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP, account, organization, and billing operations each get the explicit 503 answer without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
+[V] Given a value for each WorkOS setting, no setting turns on a provider or access, and the output shows no setting value
+[V] Given an invalid common setting, also with every WorkOS setting, startup stops before it listens with a `FATAL` line that names the setting and the rule but not the value
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-placeholder.test.js
+```
+
 **Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)
 
 Each test starts the built server, `dist/src/index.js`, as a separate Node process on a loopback port with a temporary data directory. Account setup uses the Better Auth runtime in the test process while no server runs.
@@ -680,7 +732,7 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 [V] Given a restored copy of the complete data directory, the server starts with the same tenant; a restore without `auth.secret` stops before it listens
 [V] Given `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, or `BETTER_AUTH_TELEMETRY` with a value, startup stops before it listens with a `FATAL` line that names the variable but not its value
 [V] Given an unknown command, the process stops with status 2 before it listens, does not repeat the arguments, and creates no local data
-[V] Given the hosted edition with a `DATA_DIR` setting, startup stops with an unavailable-edition error and creates no local data
+[V] Given the hosted edition with a `DATA_DIR` setting and WorkOS settings, the server serves only the authentication-unavailable answers, reports no local tenant, stops with status 0, and creates no local data
 
 Run only these tests:
 
@@ -744,7 +796,7 @@ The suite builds the image of the current candidate two times; the second build 
 [V] Given two users with tokens, a stopped-server password reset of one user ends only its token and old password, and the user signs in again without a new consent; a later disable of the other user ends only its token and sign-in; the peer keeps working each time
 [V] Given a live server container, one-off command containers on the same volume and a command in the server container fail with the lock error, ask for no password, and change no account
 [V] Given an installation that starts with zero accounts and later has only a disabled account, a command container that adds an account while the server is stopped gives MCP access through the installation client, and the tenant stays the same
-[V] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, the MCP session lists no tools, and a container with `DEPLOYMENT=hosted` stops before it listens and writes nothing to its volume
+[V] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, and the MCP session lists no tools; a container with `DEPLOYMENT=hosted` and WorkOS settings then answers the same paths and the MCP resource, also with that session and its token, with 503 and no cookie, reports no tenant, stops with status 0, and writes nothing to its volume
 [V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, and the pinned production packages with a working native ad blocker, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting, and a `0700` data directory; the compose service mounts only that volume, starts with an init process, and publishes port 8080 on `127.0.0.1`
 
 Run the container gate. It needs Docker Engine with Buildx and Compose:
