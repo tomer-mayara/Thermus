@@ -135,6 +135,17 @@ The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client
 
 Application startup does not call the loader yet; the HTTP composition adds that call.
 
+## Billing
+
+The owner has not chosen a payment provider. Billing is a separate object: hosted code uses the [`Billing`](src/billing/billing.ts) interface, and only a `Billing` implementation calls a payment provider. [`BillingFree`](src/billing/billing-free.ts) is the only implementation. It bills no organization and collects no payment, so billing never changes access.
+
+- `stateOf(organizationId)` gives the confirmed `BillingState`: `organizationId`, `plan`, and `billedSeats`. `BillingFree` gives `plan: 'free'` and `billedSeats: 0` for each organization.
+- `updateSeats(organizationId, seatCount)` gets the complete current count of active User seats, never a change to add or subtract. The same count again has no further effect. `BillingFree` accepts each whole count from 0 to `Number.MAX_SAFE_INTEGER` and gives the same free state.
+- An empty or missing organization ID gives a `TypeError`. Any other seat count gives a `RangeError`. Each operation refuses input with a rejected promise. A rejected call confirms nothing.
+- Each state is a frozen record. `Billing` does not check roles; the caller checks Super Admin authority before a customer billing change.
+
+Only the hosted edition has billing, and no production code calls `Billing` yet. AUTH-11 adds the provider implementation after the owner's decisions. The [paid billing design](docs/design/billing-design.md) records the decision, the rules, the open paid decisions, and the AUTH-11 specification. The [unit tests](test/unit/billing/billing-free.test.ts) and the [acceptance tests](test/acceptance/billing/free-billing.test.ts) check `BillingFree`.
+
 ## Contributing and design
 
 Use the [documentation index](docs/README.md) to find current reference guides, pending designs, tests, and completed plans.

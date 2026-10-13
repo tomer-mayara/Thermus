@@ -9,8 +9,10 @@ The self-hosted edition supports several local accounts for a small evaluation
 team in one shared workspace. Each user has an email/password login and separate
 sessions. Authentication and account administration require no outbound
 connection. The first hosted release includes operator organization setup and
-customer membership administration. Payment integration remains required work
-before the paid product is complete. HTTP is the first end-to-end delivery
+customer membership administration. It collects no payments: until AUTH-11
+passes its paid gates, the hosted edition uses `BillingFree`, which bills no
+organization. Payment integration remains required work before the paid
+product is complete. HTTP is the first end-to-end delivery
 target. Slice 1, contracts and request isolation, is implemented; all other
 implementation work in this plan is pending. The pinned Better Auth packages are
 proven against the local contracts. The owner resolved the two
@@ -28,7 +30,7 @@ adds no implementation work now.
 | Selected organization, active membership, roles, and permissions | Required in the hosted foundation. |
 | Operator organization setup and customer membership administration | Required in the first hosted release, including operator recovery, onboarding, and invitations. |
 | Active User seats per organization | Required on the hosted account page; count each active membership with User once. |
-| Per-seat payment collection and subscription synchronization | Required paid-product milestone; payment provider and billing rules remain open. |
+| Per-seat payment collection and subscription synchronization | Required paid-product milestone (AUTH-11). The owner has not chosen a payment provider, and the paid billing rules remain open. Until AUTH-11 passes its paid gates, the hosted edition uses `BillingFree` through the `Billing` interface; it bills no organization and collects no payment. See the [paid billing design](billing-design.md). |
 | SSO, SCIM, step-up authentication, and full audit logs | Future hosted capabilities. Preserve provider boundaries; add their contracts when implementing them. |
 | Paid capabilities in the local edition | Disabled. No organizations, invitations, seat management, billing, or remote entitlement checks. |
 | Account or data migration between editions | Separate future work. Changing configuration does not migrate either. |
@@ -644,6 +646,9 @@ shows a separate role, invariant, or lifecycle.
 | `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. | 2–3 |
 | `src/http/server.ts` | Node HTTP bridge, routing, hosted metadata, and shutdown. | 2–3 |
 | `src/index.ts` | Replace hello-world startup; dispatch server and operator commands. | 2–4 |
+| `src/billing/billing.ts` | `Billing` interface and `BillingState`. Implemented. | 6 |
+| `src/billing/billing-free.ts` | `BillingFree`, which bills no organization, until AUTH-11 replaces it in the hosted composition. Implemented. | 6 |
+| Paid billing files | The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists them. | 6 |
 | `package.json`, `pnpm-lock.yaml`, `.env.example` | Pinned dependencies, commands, and documented settings. | 1–5 |
 | `Dockerfile`, `compose.yaml`, `.dockerignore` | Offline evaluation delivery and persistent volume. | 5 |
 
@@ -684,10 +689,13 @@ contracts as types only.
    and stopped-server CLI recovery. Keep the build's `dist/test` output for
    existing test commands; copy only `dist/src` and required runtime assets into
    the production image. No new production TypeScript configuration is required.
-6. **Paid billing.** Select the payment provider and billing rules, then add
-   Super Admin payment setup, User-seat subscription quantity updates, and
-   failure recovery. This is required paid-product work, not an optional
-   consequence of the seat summary.
+6. **Paid billing.** The `Billing` interface and `BillingFree` exist;
+   `BillingFree` bills no organization. After the owner chooses the payment
+   provider and billing rules, AUTH-11 adds the provider implementation of
+   `Billing` with Super Admin payment setup, provider-confirmed User-seat
+   quantity updates, verified events, reconciliation, and failure recovery.
+   Then it replaces `BillingFree` in the hosted composition. This is required
+   paid-product work, not an optional consequence of the seat summary.
 
 Update `README.md`, `docs/testing/test-list.md`, and
 `docs/design/cache-design.md` in the slices that establish their contracts. Add
@@ -722,6 +730,7 @@ behavior.
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
 | `test/acceptance/auth/self-hosted-container.test.ts` | Offline bundled CLI with stopped-server volume access; commands reject the live lock; two-user login and authorization after restart and container/image replacement; installation/user IDs survive backup/restore. |
 | `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. |
+| Existing `test/unit/billing/billing-free.test.ts` and `test/acceptance/billing/free-billing.test.ts` | `BillingFree` through the `Billing` interface: free plan, no billed seat, and refused input. The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists the paid billing tests. |
 
 Include these explicit acceptance specifications:
 
@@ -771,14 +780,23 @@ commands, the required runs, and the later container and hosted live gates.
 
 ## Paid product decisions and later capabilities
 
-Before implementing billing, choose the payment provider, payment timing,
-proration/cancellation rules, and behavior after payment failure. Billable seats
-are active memberships with User, counted once; Super Admin manages billing.
-Define provider-confirmed updates, verified events, duplicate handling, and
-reconciliation with authoritative memberships. Choose concrete billing files and
-durable storage only after those decisions; do not prebuild an event-store or
-outbox framework. The authentication and membership administration release does
-not claim to collect payments.
+The owner has not chosen a payment provider. Billing is a separate object:
+hosted code uses the `Billing` interface in `src/billing/billing.ts`, and only
+a `Billing` implementation calls a payment provider or reads billing storage.
+Until AUTH-11 replaces it, `BillingFree` in `src/billing/billing-free.ts` is
+the implementation. It bills no organization, and billing never changes
+access. Billable seats are active memberships with User, counted once; Super
+Admin manages billing. The payment
+timing, proration and cancellation rules, behavior after payment failure,
+recovery, and durable billing storage remain open until the provider decision.
+AUTH-11 implements provider-confirmed updates, verified events, duplicate
+handling, and reconciliation with authoritative memberships, and it selects the
+final billing files and storage after the decisions. Do not prebuild an
+event-store or outbox framework. The authentication and membership
+administration release collects no payments. The paid product still needs
+AUTH-11 until its paid gates pass. The [paid billing design](billing-design.md)
+records the owner decision, the free billing examples, the open decisions with
+a proposal for each, and the AUTH-11 specification.
 
 SSO, SCIM (including any selected Okta provisioning integration), step-up, full
 audit logs, organization deletion, and custom role authoring remain explicit
