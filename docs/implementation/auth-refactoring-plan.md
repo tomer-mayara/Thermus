@@ -1,10 +1,11 @@
 # Authentication refactoring plan
 
-Status: Slice 1 merged in pull request
-[#56](https://github.com/3-headed-monkey/Magumagu/pull/56) as `f677c5c`, after the
-owner approved the merge. Slice 2 is implemented in pull request
-[#57](https://github.com/3-headed-monkey/Magumagu/pull/57). Gate results and owner
-review status are recorded in that pull request.
+Status: Both implementation slices are complete and merged after owner review.
+Slice 1 merged in pull request
+[#56](https://github.com/3-headed-monkey/Magumagu/pull/56) as `f677c5c`.
+Slice 2 merged in pull request
+[#57](https://github.com/3-headed-monkey/Magumagu/pull/57) as `e44e296`.
+The pull requests record the gate results and reviews.
 
 Revision date: 2026-10-13. Reviewed baseline: `b73a7f821edac538afdd0498874dd7f28b3c1fc2`.
 
