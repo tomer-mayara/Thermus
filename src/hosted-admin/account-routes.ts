@@ -1,7 +1,7 @@
 import type { AccessResolver, RequestContext } from '../auth/access-context.ts';
 import type { OrganizationAdministration } from '../organizations/organization-administration.ts';
 import { readForm, ReturnDestinations, selectionIn, single } from './account-form.ts';
-import { noticePage, organizationSelectionPage } from './account-pages.ts';
+import { accessDeniedPage, noticePage, organizationSelectionPage } from './account-pages.ts';
 import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from './browser-session.ts';
 
 // The routes check the session and current access, but not the permission of an operation: each operation checks
@@ -42,39 +42,44 @@ export class HostedAccountRoutes {
     this.organizations = options.organizations;
     this.reportFailure = options.reportFailure;
     this.operation = options.operation;
-    this.publicOrigin = new URL(options.publicBaseUrl).origin;
+    const publicBaseUrl = directoryUrl(options.publicBaseUrl);
+    this.publicOrigin = new URL(publicBaseUrl).origin;
     this.paths = {
-      organizations: new URL('organizations', options.publicBaseUrl).pathname,
-      selection: new URL('organizations/select', options.publicBaseUrl).pathname,
+      organizations: new URL('organizations', publicBaseUrl).pathname,
+      selection: new URL('organizations/select', publicBaseUrl).pathname,
     };
-    this.destinations = new ReturnDestinations(options.publicBaseUrl, this.paths.organizations);
+    this.destinations = new ReturnDestinations(publicBaseUrl, this.paths.organizations);
   }
 
   async handle(request: Request): Promise<Response> {
     const session = await this.session.authenticate(request.headers.get('Cookie'));
     if (session.status === 'unavailable') return noticePage('unavailable');
     if (session.status === 'signed-out') return withCookies(noticePage('signedOut'), session.cookies);
-    return withCookies(await this.answerSignedIn(request, session), session.cookies);
+    return this.answerSignedIn(request, session);
   }
 
   // A failure after the sign-in gets a page instead of an exception, so that the cookie effects of the session still
-  // reach the browser.
+  // reach the browser. This includes an answer that cannot carry the cookies.
   private async answerSignedIn(request: Request, session: SignedInBrowserSession): Promise<Response> {
     const path = new URL(request.url).pathname;
     try {
-      if (path === this.paths.organizations) return await this.organizationPage(request, session);
-      if (path === this.paths.selection) return await this.selectOrganization(request, session);
-      return await this.tenantOperation(request, session);
+      return withCookies(await this.route(request, session, path), session.cookies);
     } catch (cause) {
       if (request.signal.aborted) throw cause;
       this.reportFailure({ path, cause });
-      return noticePage('requestFailed');
+      return withCookies(noticePage('requestFailed'), session.cookies);
     }
+  }
+
+  private route(request: Request, session: SignedInBrowserSession, path: string): Promise<Response> {
+    if (path === this.paths.organizations) return this.organizationPage(request, session);
+    if (path === this.paths.selection) return this.selectOrganization(request, session);
+    return this.tenantOperation(request, session);
   }
 
   private async tenantOperation(request: Request, session: SignedInBrowserSession): Promise<Response> {
     const decision = await this.accessResolver.resolve(session.user);
-    if (decision.allowed !== true) return noticePage('denied');
+    if (decision.allowed !== true) return accessDeniedPage(this.paths.organizations);
     const context = requireTrustedTenant(frozenCopy(decision.context));
     if (this.operation === undefined) return noticePage('notFound');
     return this.operation(request, context);
@@ -83,7 +88,7 @@ export class HostedAccountRoutes {
   // The page needs the identity only, not access to an organization, so that a user without one gets the onboarding
   // guidance.
   private async organizationPage(request: Request, session: SignedInBrowserSession): Promise<Response> {
-    if (request.method !== 'GET') return noticePage('methodNotAllowed', { Allow: 'GET' });
+    if (request.method !== 'GET' && request.method !== 'HEAD') return noticePage('methodNotAllowed', { Allow: 'GET, HEAD' });
     const destinations = new URL(request.url).searchParams.getAll('return_to');
     const returnTo = destinations.length === 0 ? this.destinations.fallback : this.destinations.check(single(destinations));
     if (returnTo === undefined) return noticePage('invalidRequest');
@@ -120,6 +125,13 @@ function withCookies(response: Response, cookies: CookieEffects): Response {
   const headers = new Headers([...response.headers].filter(([name]) => name !== 'set-cookie'));
   for (const cookie of [...cookies, ...response.headers.getSetCookie()]) headers.append('Set-Cookie', cookie);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
+// The paths of the routes are relative to the public base URL, so it must name a directory.
+function directoryUrl(publicBaseUrl: string): string {
+  const url = new URL(publicBaseUrl);
+  if (!url.pathname.endsWith('/')) url.pathname = `${url.pathname}/`;
+  return url.href;
 }
 
 function seeOther(location: string): Response {

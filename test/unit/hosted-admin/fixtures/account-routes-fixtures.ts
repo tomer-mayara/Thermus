@@ -89,7 +89,6 @@ export function formPost(path: string, cookie: string, form: string): Request {
   return postForm(path, { cookie, body: form });
 }
 
-// A same-origin form post, as a browser sends it from a page of this service.
 export function postForm(path: string, post: FormPost): Request {
   return accountRequest(path, post.cookie, {
     method: 'POST',

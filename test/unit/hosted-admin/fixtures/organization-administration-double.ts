@@ -8,8 +8,6 @@ export interface SelectionCheck {
   readonly organizationId: string;
 }
 
-// Gives the configured authorized organizations of each user subject, or fails with a configured error. A selection is
-// authorized only for a configured organization of that user.
 export class OrganizationAdministrationDouble implements Pick<OrganizationAdministration, 'listOrganizations' | 'authorizeSelection'> {
   readonly lists: AuthenticatedUser[] = [];
   readonly selections: SelectionCheck[] = [];

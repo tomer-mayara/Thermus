@@ -31,7 +31,6 @@ export interface HostedProviderParts {
   readonly mcp: Pick<MCPServer, 'fetch' | 'close'>;
 }
 
-// The application parts of the account routes. Each account operation checks its own permission before work starts.
 export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
   readonly operation?: AccountOperation;

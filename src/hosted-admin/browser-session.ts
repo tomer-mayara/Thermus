@@ -13,6 +13,7 @@ export interface SignedInBrowserSession {
   readonly status: 'signed-in';
   readonly user: AuthenticatedUser;
   // A secret of this session. Each form of the account pages sends it back, so that another site cannot post a form.
+  // It stays the same for the whole session, also after a refresh or a switch, so that a form shown before still posts.
   readonly csrfToken: string;
   readonly cookies: CookieEffects;
   // Only this call changes the organization of the session, and only for this browser. The account routes call it

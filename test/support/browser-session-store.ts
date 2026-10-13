@@ -28,12 +28,10 @@ export class BrowserSessionStore implements BrowserSession {
   private readonly sessions = new Map<string, StoredSession>();
   private outage?: Error;
 
-  // Gives the Cookie header of a new session, as after a sign-in.
   signIn(user: AuthenticatedUser): string {
     return `${COOKIE_NAME}=${this.store({ user, csrfToken: randomUUID(), refreshDue: false })}`;
   }
 
-  // The next lookup of the session refreshes it.
   expireAccessToken(cookieHeader: string | undefined): void {
     const key = keyIn(cookieHeader ?? null);
     const stored = key === undefined ? undefined : this.sessions.get(key);
@@ -41,7 +39,6 @@ export class BrowserSessionStore implements BrowserSession {
     this.sessions.set(key, { ...stored, refreshDue: true });
   }
 
-  // While an outage lasts, each lookup fails, as when the provider does not answer.
   failLookups(outage: Error | undefined): void {
     this.outage = outage;
   }

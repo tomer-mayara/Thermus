@@ -114,9 +114,12 @@ const privateRoutes = [
   '/api/auth/oauth2/token',
   '/mcp',
   '/unknown',
+  '/team/organizations',
+  '/team/organizations/select',
+  '/team/onboarding',
 ];
 
-test('Given a local installation, when private or unknown paths are requested, then each returns 404 without calling a route owner', async () => {
+test('Given a local installation, when private, hosted organization, or unknown paths are requested, then each returns 404 without calling a route owner', async () => {
   const { route, calls } = recordingRoutes();
 
   for (const path of privateRoutes) {

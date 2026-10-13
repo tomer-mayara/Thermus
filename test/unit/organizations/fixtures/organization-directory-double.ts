@@ -3,8 +3,6 @@ import type { OrganizationDirectory, OrganizationMembership } from '../../../../
 
 export type ConfiguredMemberships = readonly OrganizationMembership[] | Error;
 
-// Gives the configured memberships of each user subject, or fails with a configured error. A user without a
-// configuration has no membership. A test can change a configuration between calls, as the provider state changes.
 export class OrganizationDirectoryDouble implements OrganizationDirectory {
   readonly calls: AuthenticatedUser[] = [];
   private readonly memberships: Map<string, ConfiguredMemberships>;

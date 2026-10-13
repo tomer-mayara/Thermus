@@ -36,12 +36,10 @@ export class MembershipDirectoryDouble implements AccessResolver, OrganizationDi
     return () => resume.resolve();
   }
 
-  // The next reads see the change, as after an invitation, a grant change, or a deactivation in the provider.
   replaceMemberships(memberships: readonly MembershipRecord[]): void {
     this.memberships = memberships;
   }
 
-  // While an outage lasts, each organization read fails; access resolution still works.
   failMembershipReads(outage: Error | undefined): void {
     this.readOutage = outage;
   }

@@ -209,16 +209,17 @@ Doubles stand in for the hidden input, the runtime lifecycle, and the provider. 
 
 **Application routing and failure reports** (`test/unit/application.test.ts`)
 
-A logger double records the lines that `operatorFailureReporter()` writes.
+A logger double records the lines that `operatorFailureReporter()` and `accountFailureReporter()` write.
 
 [V] Gives each MCPServer failure report to the operator as one error line that names the failed step and keeps the cause, also for a cause that is not an error; writes no info line
+[V] Gives each account failure report to the operator as one error line with the path and the cause, also for a cause that is not an error
 [V] Routes the complete request to MCP, provider-owned discovery and OAuth endpoints, or bundled pages under the configured public path
-[V] Refuses private provider routes, unrelated paths, and near-matching path suffixes without calling a route owner
+[V] Refuses private provider routes, the hosted organization and onboarding paths, unrelated paths, and near-matching path suffixes without calling a route owner
 [V] Hosted routing: sends the MCP resource and both protected-resource metadata paths to the MCP handler and each other path under the configured public path to the account routes, with the complete request; paths outside the public path give 404 without a handler call
 
 **Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
 
-`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `AccessResolverMock` gives configured decisions, and a test-only operation double records each call. The tests import the access contracts as types only.
+`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its cookie effects, and a configured answer to an organization switch. `AccessResolverMock` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
 
 [V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
 [V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
@@ -227,14 +228,69 @@ A logger double records the lines that `operatorFailureReporter()` writes.
 [V] Gives 401 for a signed-out session and runs no access resolution or operation
 [V] Gives 403 without the reason for each denial reason and runs no operation
 [V] Gives 404 after allowed access when no operation exists
-[V] Refuses an allowed decision without a tenant ID before the operation
-[V] Gives a session or access lookup failure to the caller and runs no operation
+[V] Gives a session lookup failure to the caller and runs no access resolution, operation, or report
 [V] Sends each notice page as fixed HTML without a form, script, or other resource, with `Cache-Control: no-store`, a Content Security Policy that allows nothing, `nosniff`, and `X-Frame-Options: DENY`
+
+**Hosted account route failures and cookie effects** (`test/unit/hosted-admin/account-routes-effects.test.ts`)
+
+[V] Refuses an allowed decision without a tenant ID before the operation with the 500 failure page, and gives the operator a report with the path and the cause
+[V] For a failed access lookup or operation after a sign-in that refreshed the session, gives the 500 failure page with the refreshed session cookie, and gives the operator the path and the cause
+[V] For operation answers that cannot carry the session cookies, an error response and an answer whose body was already read, gives the 500 failure page with the session cookies, and gives the operator the cause (a `RangeError` and a `TypeError`)
+[V] For a failed operation of a request that the client aborted, gives the failure to the caller and no report to the operator
+[V] Gives the operation answer, also a redirect whose headers cannot change, with its status, headers, and body, and with the session cookies before its own cookies
+[V] Gives the session cookie effects, in their order, with the 401, 403, and 404 refusal pages
+[V] Under a public URL path, the 403 page of a denial links to the organization page under that path
+
+**Hosted organization page** (`test/unit/hosted-admin/account-routes-organization-page.test.ts`)
+
+This file and the two selection files below also use `fixtures/organization-routes-fixtures.ts`: `serveAnn()`, the session and switch cookies, the form token, and the selection post. `OrganizationAdministrationDouble` gives the configured authorized organizations of each user subject, or a configured failure, and records each list and each selection check. `SignedInSessionDouble` records each organization switch and gives a configured switch answer or failure. `formsIn()` from `test/support/hosted-browser.ts` reads the forms of a page.
+
+[V] For a GET and a HEAD request, lists each authorized organization of a signed-in user with a selection form that posts the form token of the session, the organization ID, and the return destination; marks the selected organization; sends the session cookies, `form-action 'self'`, and the other page headers, and no script, style, or other resource; runs no access resolution or operation
+[V] Shows organization names and IDs with HTML characters as text
+[V] For a public URL with and without a final slash, and without a return destination, each form posts to the selection route under the public path and returns to the organization page there
+[V] Without an authorized organization, gives the guidance to accept an invitation or to contact the operator, with the session cookies and without a form, also with forged organization values; resolves no tenant access
+[V] Under a public URL without a final slash, gives 400 with the session cookies and lists no organization for a return destination that is an absolute URL, a URL without a scheme, a path with a backslash, a relative path, a path outside the public path, or a path that only starts like it (`/teamevil/` for `/team`), or that has dot segments (also encoded), a query, a fragment, a control character, or a space; also for an empty value, a very long path, and two values
+[V] Gives 405 with `Allow: GET, HEAD` and the session cookies to POST, PUT, and DELETE requests for the organization page, and lists no organization
+[V] For a failed organization list, gives the 500 failure page with the session cookies, and gives the operator the path and the cause
+
+**Selection input checks** (`test/unit/hosted-admin/account-routes-selection-input.test.ts`)
+
+Each refusal comes before an organization check and a session switch.
+
+[V] Gives 403 with the session cookies to a post from a foreign origin, a `null` origin, another scheme, another port, or without an origin, and does not read its body
+[V] Gives 403 with the session cookies to a post without a form token, with an empty or a longer token, with the token of another session, or with two tokens; the token check comes first, so a wrong token with an unknown field also gets 403; refuses an empty token also when the form token of the session is empty
+[V] Gives 400 with the session cookies to a post with no, an empty, two, or a very long organization ID, an ID with a space or a control character, no or two return destinations, an absolute, another-host, or dot-segment destination, an organization name, or an unknown field
+[V] Gives 415 to JSON and multipart form data, and 413 to a post larger than 16 KiB, with and without a `Content-Length`
+[V] When the client disconnects while the body is read, stops the reading and cancels the body, gives the failure to the caller, and checks, switches, or reports nothing
+
+**Organization selection** (`test/unit/hosted-admin/account-routes-selection.test.ts`)
+
+[V] Switches the session to an authorized organization for a same-origin post with the form token of the session, also with a forged `X-Organization-Id` header; gives 303 to the destination with `Cache-Control: no-store`, an empty body, and the session cookies before the switch cookies; runs no access resolution
+[V] Under a public URL path, redirects to the destination under that path on the public origin
+[V] Gives 403 with the session cookies and no switch when the service refuses an organization of another user or an inactive or unknown organization, also with forged organization values in the query and headers
+[V] Gives 403 for a `refused` switch and 401 for a `signed-out` switch, with the session cookies and then the switch cookies, and no redirect
+[V] Gives the 500 failure page with the session cookies and no redirect for a failed organization check or switch, and gives the operator the path and the cause
+[V] Gives 405 with `Allow: POST` to GET and PUT requests for the selection route
+[V] For an unavailable or a signed-out session, gives 503 or 401 to the organization page and a selection post, and lists, checks, or switches no organization
+
+**Organization administration** (`test/unit/organizations/organization-administration.test.ts`)
+
+`OrganizationDirectoryDouble` gives the configured memberships of each user subject, or a configured failure, and records each read. A test can change the memberships between calls, as the provider state changes. The tests import the access contracts as types only.
+
+[V] Gives an empty list for a user without a membership, so the user gets the onboarding guidance and no default organization
+[V] Lists only active memberships whose grants give at least one application permission, in directory order; an inactive membership, a role without an application permission, and a membership without a grant are not listed
+[V] Marks only an authorized organization that the session selected; a selected inactive membership, a role without an application permission, an organization without a membership, and no selection mark nothing
+[V] Reads the current memberships for each list; an earlier list is frozen and does not change
+[V] Gives an authorized organization for selection from the current directory read of the session user
+[V] Refuses a selection of an inactive membership, a role without an application permission, a membership without a grant, an organization of another user, an unknown organization, an empty ID, or an ID in another letter case
+[V] Refuses a selection of a membership that became inactive after the list
+[V] Gives a failed directory read to the caller unchanged, for a list and for a selection check
 
 **Unavailable hosted authentication** (`test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`)
 
 [V] Gives `unavailable` for each `Cookie` header, also for none or for a forged session or organization cookie
 [V] Denies access with `account-inactive` for each user, also with a selected organization, and gives no context, tenant, or grant
+[V] Gives a frozen empty membership list for each user, also with a selected organization: no membership, organization, or grant
 [V] `UnavailableMcpEndpoint` answers each MCP and metadata request, also a GET or DELETE and one with a forged bearer token or cookie, with 503 `temporarily_unavailable`, `Cache-Control: no-store`, and no Bearer challenge or cookie, and reads no request body; it closes two times without failure
 
 **Billing** (`test/unit/billing/billing-free.test.ts`)
@@ -537,7 +593,7 @@ These tests run the real application, Better Auth runtime, MCPServer, and provid
 
 **Hosted account routes with doubles** (`test/integration/auth/hosted-account.test.ts`)
 
-These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit identities with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context. An MCP endpoint double stands in for the replaceable MCP part.
+These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit signed-in sessions, `SignedInSessionDouble`, with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context. An MCP endpoint double stands in for the replaceable MCP part.
 
 [V] Members of two organizations and one user with a session in each organization overlap and resolve in reverse order; each operation works only in the organization of its own session, also with forged organization IDs in the query, headers, and form
 [V] Independent Super Admin, Admin, and User plus Admin grants give each context every grant and only the union of their explicit permissions; Super Admin alone gives no product access, and Admin alone gives no billing; each refusal is the operation's `permission-required`
@@ -548,6 +604,24 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/integration/auth/hosted-account.test.js
+```
+
+**Hosted organization onboarding and selection with doubles** (`test/integration/auth/hosted-organizations.test.ts`)
+
+These tests open the shared site of `test/support/hosted-organization-site.ts` in one process with `openOrganizationSite()`: the real hosted composition, `composeHostedApplication()`, with the real account routes, `OrganizationAdministration`, access contracts, and MCPServer, and one set of memberships. Doubles stand only at the provider boundaries: `BrowserSessionStore` for the browser session, `MembershipDirectoryDouble` for the membership directory, and `IdentityVerifierMock` for the MCP token verifier. `HostedBrowser` keeps the cookies of each answer, as a browser does. The test-only `AccountOperationProbe` gives the destinations, which each check one permission, and a test-only MCP tool records its context. `accountFailureReporter()` writes to a recording logger. No WorkOS setting, SDK, or credential exists.
+
+[V] A session that selected an organization where its membership is inactive gets the onboarding guidance from a directory read of the session user only, also with forged organization values; each tenant page gets 403 from current access resolution, with no context, tenant, or role
+[V] Memberships change after the page was shown: the current read refuses the deactivated organization without a switch and selects the new one; the destination then works in that organization with its current permission
+[V] After a browser selects another organization, only that browser session changes: an MCP token and a second browser session of the same user keep their organization
+[V] Selections of the organization of another user, with forged organization values in the query, the headers, and a second form field, read only the memberships of the session user, get 403 or 400, and switch no session; the other user keeps its organization
+[V] Super Admin alone and User alone select the same organization, and each destination and the MCP tool check their own permission: Super Admin reaches only Admin-grant administration and billing, and User reaches only the product and the tool
+[V] During an outage of the organization reads after the provider refreshed the session, the organization page and a selection get the 500 failure page with the refreshed session cookie; the operator log gets one line with the path and the cause for each; no session switches, and the browser keeps its session
+[V] The production hosted application with the unavailable placeholder gives the 503 notice without a cookie or a form to the organization page, a selection, and a tenant page with the session cookie, form token, and organization values of the doubles; the log has only the line that hosted authentication is not available yet
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-organizations.test.js
 ```
 
 **Local auth command** (`test/integration/auth/local-auth-command.test.ts`, `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`)
@@ -712,12 +786,42 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 [V] Given hosted settings with an HTTPS public URL and no WorkOS settings, the server listens and serves the authentication-unavailable notice without a credential prompt or cookie, logs that hosted authentication is not available yet, reports no tenant, uses no network, and stops with status 0
 [V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP (POST, GET, and DELETE), account, organization, and billing operations each get the explicit 503 answer with `Cache-Control: no-store` and without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
 [V] Given a value for each WorkOS setting, no setting turns on a provider or access, and the output shows no setting value
+[V] Given test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `MAGUMAGU_DEMO`, and a test session setting), the onboarding page, the organization list, a selection, and the billing page, with the session cookie, form token, organization, and return destination that the test doubles accept, each get the unavailable notice without a cookie; the output names no organization, tenant, or user, and the server uses no network
 [V] Given an invalid common setting, also with every WorkOS setting, startup stops before it listens with a `FATAL` line that names the setting and the rule but not the value
 
 Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/hosted-placeholder.test.js
+```
+
+**Hosted organization onboarding and selection** (`test/acceptance/auth/hosted-organizations.test.ts`)
+
+Each test starts the shared site of `test/support/hosted-organization-site.ts` with `serveOrganizationSite()`: the real hosted composition behind the real HTTP server, `startHttpServer()`, on a loopback port. `HostedBrowser` sends each request with `node:http` and keeps the cookies of each answer, as a browser does. Doubles stand only at the provider boundaries. `BrowserSessionStore` is a stateful browser session whose cookie key changes at each refresh, as with rotating refresh tokens, so a browser that does not get the new cookie is signed out. `MembershipDirectoryDouble` reads one configured set of memberships for access resolution and for the organization list. A real MCPServer verifies tokens with `IdentityVerifierMock` and runs a test-only tool. `AccountOperationProbe` gives the selection destinations, which each check their own permission. No account request may fail: a failure report fails the test. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy, not WorkOS behavior, and are no hosted live gate pass.
+
+[V] Given signed-in users with no membership, an inactive membership, or only a role without an application permission, the organization page tells them to accept an invitation or to contact the operator and offers no organization; each tenant page gets 403, with no default tenant or role, and the 403 page links to the organization page
+[V] Given User access in one organization, Admin access in a second, and an inactive membership in a third, only the two active organizations are offered; the selection of the second gives 303 with a new session cookie to the User administration page, where only that organization and its own permissions apply, and the page then marks it as selected
+[V] Given forms that name an inactive membership, an organization of another user, or an unknown organization, also with forged organization values in the query and headers, each selection gets 403, and the session keeps its organization without a switch
+[V] Given only Super Admin in an organization, its selection for the billing page gives billing and Admin-grant administration there, but the product page, User administration, and the protected MCP tool stay refused; no Admin or User grant is inferred
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-organizations.test.js
+```
+
+**Hosted organization requests** (`test/acceptance/auth/hosted-organization-requests.test.ts`)
+
+These tests use the same site behind the real HTTP server on a loopback port, with the same doubles. The failure reporter records each report. These offline tests prove application policy, not WorkOS behavior, and are no hosted live gate pass.
+
+[V] Given a session that the provider refreshes at each request, selection posts from another site or without an origin, without the form token or with a wrong one, or with an invalid return destination or an extra field are refused without a switch, and the refreshed session cookie still reaches the browser; a valid post then gets the refreshed cookie and then the cookie of the switch, the browser keeps the switched session, and no failure is reported
+[V] Given an ended session, the organization page gets 401 with a cookie that clears the session; given an outage of the session lookup, the organization page and a selection get a server failure without a cookie and without a sign-in request, and the session stays; no organization is read or switched
+[V] Given a Super Admin that selected an organization, no route creates, resumes, renames, or changes the settings of an organization: a POST to the organization page gets 405 with `Allow: GET, HEAD`, a selection with an organization name, a settings value, or a resume value gets 400, `organizations/new`, `organizations/settings`, and `organizations/resume` get 404 because no such route exists, the session gets no further switch, and no failure is reported
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-organization-requests.test.js
 ```
 
 **Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)

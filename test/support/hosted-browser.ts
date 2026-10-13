@@ -6,7 +6,6 @@ export type BrowserTransport = (request: Request) => Promise<Response>;
 export interface BrowserAnswer {
   readonly status: number;
   readonly headers: Headers;
-  // The Set-Cookie values of this answer, in their order.
   readonly cookies: readonly string[];
   readonly body: string;
   readonly location?: URL;

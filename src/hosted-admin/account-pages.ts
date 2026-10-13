@@ -64,9 +64,13 @@ const FORM_HEADERS: Readonly<Record<string, string>> = {
 const ESCAPED: Readonly<Record<string, string>> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
 export function noticePage(name: NoticeName, headers: Readonly<Record<string, string>> = {}): Response {
-  const notice: Notice = NOTICES[name];
-  const page = htmlDocument(notice.title, notice.paragraphs.map((paragraph) => `<p>${paragraph}</p>`));
-  return new Response(page, { status: notice.status, headers: { ...NOTICE_HEADERS, ...headers } });
+  return noticeResponse(NOTICES[name], [], headers);
+}
+
+// A user without access to a page often has no organization yet, so the page points to the onboarding guidance.
+export function accessDeniedPage(organizationPage: string): Response {
+  const link = `<a href="${escapeHtml(organizationPage)}">organization page</a>`;
+  return noticeResponse(NOTICES.denied, [`<p>To select another organization, or to see how to get access, open the ${link}.</p>`]);
 }
 
 // The provider gives the organization names and IDs, so the page escapes them.
@@ -83,6 +87,11 @@ export function organizationSelectionPage(form: OrganizationSelectionForm): Resp
   ]);
   const page = htmlDocument('Select an organization', ['<p>Select the organization to use in this browser.</p>', '<ul>', ...items, '</ul>']);
   return new Response(page, { status: 200, headers: FORM_HEADERS });
+}
+
+function noticeResponse(notice: Notice, extraContent: readonly string[], headers: Readonly<Record<string, string>> = {}): Response {
+  const page = htmlDocument(notice.title, [...notice.paragraphs.map((paragraph) => `<p>${paragraph}</p>`), ...extraContent]);
+  return new Response(page, { status: notice.status, headers: { ...NOTICE_HEADERS, ...headers } });
 }
 
 function hiddenField(name: string, value: string): string {

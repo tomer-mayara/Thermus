@@ -35,7 +35,6 @@ export class BrowserSessionDouble implements BrowserSession {
   }
 }
 
-// A signed-in session with a configured answer to an organization switch. It records each switch that it gets.
 export class SignedInSessionDouble implements SignedInBrowserSession {
   readonly status = 'signed-in';
   readonly switches: string[] = [];
