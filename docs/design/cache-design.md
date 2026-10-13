@@ -25,6 +25,8 @@ Never take the tenant ID from request headers, tool arguments, the page URL, the
 
 A self-hosted installation has one tenant, `local:<installation-id>`, for all its users. A hosted tenant comes from the canonical provider authority and the trusted organization ID. Grants and permissions are not part of content identity. The protected operation checks its permission before it reads or writes the cache.
 
+The installation ID is in the data directory, which is the data volume of a container installation. It stays the same after a restart, a new container, a new image, and a restore of the complete data directory. Thus a key that a future cache makes before one of these events is still the key of the same tenant after it. A fresh data directory gets a new installation ID and a new tenant, so a new installation shares no key with an earlier one. Retained data without its installation identity stops startup; it never gets a new tenant. The [container gate](../implementation/test-gate-policy.md#container-gate) tests these identity rules. They do not choose cache storage or expiry.
+
 ## Equivalence rules
 
 No URL equivalence rule is enabled by this ticket. A future rule may remove or normalize URL parts only under an explicit, scoped, tested contract. The contract must state its origin, route, transform, and rule version. It must establish that equivalent inputs produce the same cached output, including links and URL-derived metadata, under the same effective fetch and clean settings. Audit records may still contain different request URLs or reasons.

@@ -17,8 +17,10 @@ target. Slice 1, contracts and request isolation, is implemented. Slice 2, the
 complete local flow, is implemented: the local runtime, its persistence, the
 installation identity, the data-directory lock, the offline user and client
 commands, the bundled sign-in and consent pages, `BetterAuthProvider`, and the
-HTTP composition of the provider routes. All later work in this plan is
-pending. The pinned Better Auth packages are proven against the local
+HTTP composition of the provider routes. Slice 5, evaluation packaging, is
+implemented: the container image, its Compose service with one data volume, and
+the container gate. The hosted slices 3 and 4 and the paid billing of slice 6
+are pending. The pinned Better Auth packages are proven against the local
 contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found. The role
 refinement below records intended rules only; it adds no implementation work
@@ -247,7 +249,18 @@ restart the server container. A command must reject a live server's lock; runnin
 it inside a live server container does not bypass the lock. The CLI needs no
 network or email service. An initialized installation can start with zero
 accounts or no enabled accounts; protected requests remain denied. The host
-administrator can use the CLI to add an account.
+administrator can use the CLI to add an account. The
+[container installation guide](../../README.md#container-installation) gives
+the exact Compose commands of this workflow and of backup and restore.
+
+The implemented image runs as the `node` user with `NODE_ENV=production`,
+`DEPLOYMENT=self-hosted`, and `DATA_DIR=/var/lib/magumagu`, which is the one
+data volume. It holds `dist/src`, the shipped migrations, and the production
+packages of the frozen lockfile, with the pnpm patches and the native adblock-rs
+module that the build compiles. The base images of the build are pinned by
+digest. The build compiles `dist/src` with the unchanged build command,
+because its context has no `test/` directory; no production TypeScript
+configuration exists. A start downloads nothing.
 
 On fresh initialization, create an installation UUID once in an app-owned SQLite
 singleton installation row. Derive the tenant as `local:<installation-id>`;
@@ -814,7 +827,7 @@ shows a separate role, invariant, or lifecycle.
 | `src/billing/billing-free.ts` | `BillingFree`, which bills no organization, until AUTH-11 replaces it in the hosted composition. Implemented. | 6 |
 | Paid billing files | The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists them. | 6 |
 | `package.json`, `pnpm-lock.yaml`, `.env.example` | Pinned dependencies, commands, and documented settings. | 1–5 |
-| `Dockerfile`, `compose.yaml`, `.dockerignore` | Offline evaluation delivery and persistent volume. | 5 |
+| `Dockerfile`, `compose.yaml`, `.dockerignore` | Implemented: the offline evaluation image, its Compose service with one persistent data volume, and the allowlist of the build context. | 5 |
 
 Keep `IdentityVerifierMock` at
 `test/unit/mcp/fixtures/identity-verifier-mock.ts`; extend its configurable claims
@@ -847,12 +860,13 @@ contracts as types only.
    removal, tenant isolation, and role restrictions through forms and service
    calls. Resolve rename/settings authority before those operations. This slice
    is required for the first hosted release.
-5. **Evaluation packaging.** Ship dependencies, migrations, assets, commands,
-   and volume configuration. Verify a fresh container, two-user offline login
-   and re-authorization, restart, container/image replacement, backup/restore,
-   and stopped-server CLI recovery. Keep the build's `dist/test` output for
-   existing test commands; copy only `dist/src` and required runtime assets into
-   the production image. No new production TypeScript configuration is required.
+5. **Evaluation packaging.** Implemented. Ship dependencies, migrations, assets,
+   commands, and volume configuration. Verify a fresh container, two-user
+   offline login and re-authorization, restart, container/image replacement,
+   backup/restore, and stopped-server CLI recovery. Keep the build's `dist/test`
+   output for existing test commands; copy only `dist/src` and required runtime
+   assets into the production image. No new production TypeScript configuration
+   is required.
 6. **Paid billing.** The `Billing` interface and `BillingFree` exist;
    `BillingFree` bills no organization. After the owner chooses the payment
    provider and billing rules, AUTH-11 adds the provider implementation of
@@ -894,7 +908,7 @@ behavior.
 | `test/integration/auth/local-installation.test.ts` | Application/provider startup collaboration: one persistent installation UUID; reset/disable preserve IDs; backup/restore preserve database and secrets; existing data without identity fails closed. |
 | `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
-| `test/acceptance/auth/self-hosted-container.test.ts` | Offline bundled CLI with stopped-server volume access; commands reject the live lock; two-user login and authorization after restart and container/image replacement; installation/user IDs survive backup/restore. |
+| `test/acceptance/auth/self-hosted-container.test.ts` | Implemented with `npm run test:container`: offline bundled CLI with stopped-server volume access; commands reject the live lock, also inside the server container; two-user login, consent, and re-authorization after restart and container/image replacement; installation/user IDs, sessions, consents, and tokens survive backup/restore; fresh and identity-less data; targeted reset/disable with peer access; zero-account recovery; refused hosted and paid paths; image contents and the Compose service. |
 | `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. |
 | Existing `test/unit/billing/billing-free.test.ts` and `test/acceptance/billing/free-billing.test.ts` | `BillingFree` through the `Billing` interface: free plan, no billed seat, and refused input. The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists the paid billing tests. |
 
@@ -935,6 +949,13 @@ match the existing `**/*.test.js` glob; give it a dedicated command. Running tha
 command without its required credentials fails with a clear setup error. A
 skipped live test is not a successful hosted gate. Automated container checks
 must run with normal production telemetry settings and outbound access denied.
+`npm run test:container` gives the containers only the image settings and
+`PUBLIC_BASE_URL`, puts them on an internal Docker network without a route out,
+and records each outbound DNS query that they send. A control lookup proves that
+the record works before each case. The
+[test gate policy](../implementation/test-gate-policy.md#container-gate) gives
+the details and the [self-hosted release](../implementation/test-gate-policy.md#self-hosted-release)
+checks.
 
 For implementation PRs, open Draft first. Before Ready, run each changed test,
 `npm run check`, `habit-hooks`, and the applicable new suites on the complete
@@ -942,7 +963,7 @@ candidate. Resolve enforced smells and keep the snooze file empty. After Ready,
 every started Actions job must pass; a fix returns the PR to Draft. The owner
 reviews the PR, and a PR adding a decision record requires owner merge. The
 [test gate policy](../implementation/test-gate-policy.md) gives the suite
-commands, the required runs, and the later container and hosted live gates.
+commands, the required runs, the container gate, and the later hosted live gate.
 
 ## Paid product decisions and later capabilities
 
