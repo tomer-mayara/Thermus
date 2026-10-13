@@ -1,0 +1,507 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { after, before, describe, test, type TestContext } from 'node:test';
+import { UnauthorizedError } from '@modelcontextprotocol/client';
+import { jwtClaims } from '../../support/better-auth-agents.ts';
+import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/better-auth-local.ts';
+import { assertExit, assertRevealsNone, type CommandResult } from '../../support/command-process.ts';
+import {
+  buildGateImages,
+  containerDataDirectory,
+  ContainerSite,
+  probeImage,
+  removeGateResources,
+  repositoryRoot,
+  type GateImages,
+} from '../../support/container-site.ts';
+import { dockerOutput } from '../../support/docker-cli.ts';
+import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
+import { LocalMcpUser } from '../../support/local-mcp-user.ts';
+
+const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
+const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
+const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const lockError = /in use by another Magumagu process/;
+// Only the dedicated command arms the gate. npm test and npm run test:acceptance report these tests as skipped.
+const gateArmed = process.env.MAGUMAGU_CONTAINER_GATE === '1';
+const hostedSettings = {
+  DEPLOYMENT: 'hosted',
+  PUBLIC_BASE_URL: 'https://magumagu.example',
+  WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
+  WORKOS_CLIENT_ID: 'client_placeholder',
+  WORKOS_API_KEY: 'workos-api-key-placeholder',
+  WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
+  WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
+};
+// The hosted and paid capabilities: WorkOS sign-in, onboarding, organizations, grants, invitations, seats, and
+// billing, with the provider routes that could add them. The self-hosted composition routes none of them.
+const hostedAndPaidPaths = [
+  ['GET', '/auth/callback?code=hosted-code&state=hosted-state'],
+  ['GET', '/auth/sign-in'],
+  ['POST', '/auth/logout'],
+  ['GET', '/onboarding'],
+  ['GET', '/organizations'],
+  ['POST', '/organizations/select'],
+  ['POST', '/organizations/grants'],
+  ['POST', '/organizations/invitations'],
+  ['GET', '/account/seats'],
+  ['POST', '/billing/seats'],
+  ['POST', '/api/auth/organization/create'],
+  ['POST', '/api/auth/organization/invite-member'],
+  ['POST', '/api/auth/organization/set-active'],
+  ['POST', '/api/auth/admin/create-user'],
+  ['POST', '/api/auth/admin/set-role'],
+  ['POST', '/api/auth/oauth2/register'],
+  ['POST', '/api/auth/sign-up/email'],
+  ['POST', '/api/auth/subscription/upgrade'],
+] as const;
+
+let images: GateImages;
+
+interface Installation {
+  readonly site: ContainerSite;
+  readonly volume: string;
+  readonly operator: Operator;
+  // The native client of each account, in the order of the accounts.
+  readonly clientIds: readonly string[];
+  readonly userIds: ReadonlyMap<string, string>;
+  readonly commands: readonly CommandResult[];
+}
+
+interface ImageFacts {
+  readonly applicationEntries: readonly string[];
+  readonly distEntries: readonly string[];
+  readonly compiledSource: Readonly<Record<string, string>>;
+  readonly migrations: Readonly<Record<string, string>>;
+  readonly developmentPackages: readonly string[];
+  readonly pinnedPackages: Readonly<Record<string, string>>;
+  readonly adBlockerSelectors: readonly string[];
+  readonly userId: number;
+  readonly dataDirectory: { readonly path: string; readonly ownerId: number; readonly mode: string; readonly entries: readonly string[] };
+}
+
+interface ImageConfig {
+  readonly User: string;
+  readonly Env: readonly string[];
+  readonly Entrypoint: readonly string[];
+  readonly Cmd: readonly string[] | null;
+  readonly ExposedPorts: Readonly<Record<string, unknown>>;
+}
+
+interface ComposeService {
+  readonly build: { readonly context: string; readonly dockerfile: string };
+  readonly init?: boolean;
+  readonly environment: Readonly<Record<string, string>>;
+  readonly ports: readonly { readonly host_ip?: string; readonly target: number; readonly published: string }[];
+  readonly volumes: readonly { readonly type: string; readonly source: string; readonly target: string }[];
+}
+
+interface ComposeConfig {
+  readonly services: Readonly<Record<string, ComposeService>>;
+  readonly volumes: Readonly<Record<string, unknown>>;
+}
+
+// The operator adds the accounts and registers one native client for each, in one-off containers while no server runs.
+async function installation(t: TestContext, accounts: readonly AccountCredentials[] = [alice, bob]): Promise<Installation> {
+  const site = await ContainerSite.open(t, images.current);
+  const volume = await site.volume();
+  const operator = site.operator(volume);
+  const commands: CommandResult[] = [];
+  for (const account of accounts) commands.push(await addUser(operator, account));
+  for (const account of accounts) commands.push(await operator(registerArgs(account), [account.password]));
+  for (const result of commands) assertExit(result, 0);
+  const clientIds = commands.slice(accounts.length).map(registeredClientId);
+  const userIds = new Map((await listedAccounts(operator)).map(({ email, id }) => [email, id] as const));
+  return { site, volume, operator, clientIds, userIds, commands };
+}
+
+function mcpUsers(setup: Installation, accounts: readonly AccountCredentials[] = [alice, bob]): LocalMcpUser[] {
+  return accounts.map((account, index) => new LocalMcpUser(setup.site.address, setup.clientIds[index] ?? '', account));
+}
+
+async function toolNames(user: LocalMcpUser, t: TestContext): Promise<string[]> {
+  const { tools } = await (await user.connectWithSavedToken(t)).listTools();
+  return tools.map(({ name }) => name);
+}
+
+// Each user works with the saved token. Then each client authorizes again; with a live browser session and a
+// stored consent, the provider gives the code at once, without the pages.
+async function returningUsers(t: TestContext, users: readonly LocalMcpUser[]): Promise<{ tools: string[][]; pages: string[][] }> {
+  const tools = [];
+  for (const user of users) tools.push(await toolNames(user, t));
+  const pages = [];
+  for (const user of users) {
+    user.oauth.expireAccessToken();
+    pages.push([...(await user.connect(t)).pages]);
+  }
+  return { tools, pages };
+}
+
+async function refreshAttempt(site: ContainerSite, clientId: string, token: string): Promise<{ status: number; error?: string }> {
+  const response = await fetch(new URL('/api/auth/oauth2/token', site.address()), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: token, client_id: clientId, resource: mcpResourceUrl }),
+  });
+  return { status: response.status, error: (await response.json() as { error?: string }).error };
+}
+
+function accountIds(accounts: readonly { email: string; id: string }[]): Map<string, string> {
+  return new Map(accounts.map(({ email, id }) => [email, id]));
+}
+
+function fileHashes(directory: string): Record<string, string> {
+  const files = readdirSync(directory, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile());
+  return Object.fromEntries(files.map((entry) => {
+    const path = join(entry.parentPath, entry.name);
+    return [relative(directory, path), createHash('sha256').update(readFileSync(path)).digest('hex')];
+  }).sort(([first = ''], [second = '']) => first.localeCompare(second)));
+}
+
+function hostPackageVersion(name: string): string {
+  return (JSON.parse(readFileSync(join(repositoryRoot, 'node_modules', name, 'package.json'), 'utf8')) as { version: string }).version;
+}
+
+// The compose file as Compose reads it, without a .env file or a PUBLIC_BASE_URL from the test environment.
+async function composeConfig(): Promise<ComposeConfig> {
+  const environment = { ...process.env };
+  delete environment.PUBLIC_BASE_URL;
+  const output = await dockerOutput(
+    ['compose', '--project-directory', repositoryRoot, '--file', join(repositoryRoot, 'compose.yaml'), '--env-file', '/dev/null', 'config', '--format', 'json'],
+    { environment },
+  );
+  return JSON.parse(output) as ComposeConfig;
+}
+
+describe('Self-hosted evaluation container without outbound access', { skip: gateArmed ? false : 'The container gate runs only with npm run test:container.' }, () => {
+  before(async () => {
+    images = await buildGateImages();
+  }, { timeout: 1_800_000 });
+
+  after(() => removeGateResources());
+
+  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t);
+    const server = await setup.site.startServer(setup.volume);
+    const users = mcpUsers(setup);
+
+    const connections = [];
+    for (const user of users) connections.push(await user.connect(t));
+    const workspaces = [];
+    for (const { client } of connections) workspaces.push((await client.listTools()).tools);
+    const [aliceUser, bobUser] = users as [LocalMcpUser, LocalMcpUser];
+    const firstAliceToken = aliceUser.accessToken;
+    aliceUser.oauth.expireAccessToken();
+    const reauthorization = await aliceUser.connect(t);
+    const refresh = await refreshAttempt(setup.site, setup.clientIds[0] ?? '', firstAliceToken);
+    const tenant = server.tenant();
+    const exit = await server.stop();
+
+    assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
+    assert.notEqual(setup.clientIds[0], setup.clientIds[1]);
+    for (const [index, user] of users.entries()) {
+      const claims = jwtClaims(user.accessToken);
+      assert.equal(claims.sub, setup.userIds.get(user.account.email));
+      assert.equal(claims.client_id, setup.clientIds[index]);
+      assert.equal(claims.iss, authIssuer);
+      assert.ok(Array.isArray(claims.aud) && claims.aud.includes(mcpResourceUrl), JSON.stringify(claims.aud));
+      assert.equal(user.oauth.savedTokens().refresh_token, undefined);
+    }
+    assert.notEqual(jwtClaims(firstAliceToken).sid, jwtClaims(bobUser.accessToken).sid);
+    assert.deepEqual(workspaces[0], workspaces[1]);
+    assert.deepEqual(reauthorization.pages, []);
+    assert.notEqual(aliceUser.accessToken, firstAliceToken);
+    assert.equal(jwtClaims(aliceUser.accessToken).sid, jwtClaims(firstAliceToken).sid);
+    assert.deepEqual(refresh, { status: 400, error: 'unsupported_grant_type' });
+    assert.match(tenant, localTenant);
+    assert.equal(server.output.match(/uses tenant local:/g)?.length, 1);
+    assert.deepEqual(exit, { code: 0, signal: null });
+    assertRevealsNone(setup.commands, [alice.password, bob.password]);
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given two users with tokens and consents, when the server container restarts, is replaced by a new container, and is replaced by a container of a rebuilt image on the same volume, then after each change the tenant, the user IDs, the native clients, the signing keys, the browser sessions, the consents, and the tokens of both users stay usable', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t);
+    let server = await setup.site.startServer(setup.volume);
+    const users = mcpUsers(setup);
+    for (const user of users) await user.connect(t);
+    const tenant = server.tenant();
+    const first = { container: await server.inspect('Id'), image: await server.inspect('Image') };
+    const changes: readonly (readonly [string, () => Promise<void>])[] = [
+      ['restart', async () => {
+        await server.stop();
+        await server.start();
+      }],
+      ['container replacement', async () => {
+        await server.stop();
+        await server.remove();
+        server = await setup.site.startServer(setup.volume);
+      }],
+      ['image replacement', async () => {
+        await server.stop();
+        await server.remove();
+        server = await setup.site.startServer(setup.volume, { image: images.rebuilt });
+      }],
+    ];
+
+    const outcomes = [];
+    for (const [change, apply] of changes) {
+      await apply();
+      const container = await server.inspect('Id');
+      const image = await server.inspect('Image');
+      outcomes.push({ change, tenant: server.tenant(), container, image, ...(await returningUsers(t, users)) });
+    }
+    await server.stop();
+    const accounts = await listedAccounts(setup.operator);
+
+    for (const { change, ...outcome } of outcomes) {
+      assert.equal(outcome.tenant, tenant, change);
+      assert.deepEqual(outcome.tools, [[], []], change);
+      assert.deepEqual(outcome.pages, [[], []], change);
+    }
+    assert.deepEqual(outcomes.map(({ container }) => container === first.container), [true, false, false]);
+    assert.deepEqual(outcomes.map(({ image }) => image === first.image), [true, true, false]);
+    for (const user of users) assert.equal(jwtClaims(user.accessToken).sub, setup.userIds.get(user.account.email));
+    assert.deepEqual(accountIds(accounts), setup.userIds);
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given two users with tokens and a stopped server, when the operator backs up the complete data volume and restores it into a new volume for a new server container, then both users keep their IDs, the tenant, their tokens, browser sessions, and consents; a fresh volume starts a new tenant, and a restored volume without its installation identity or without auth.secret stops the server before it listens, asks for a restore, and gets no new identity', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t);
+    const original = await setup.site.startServer(setup.volume);
+    const users = mcpUsers(setup);
+    for (const user of users) await user.connect(t);
+    const tenant = original.tenant();
+    await original.stop();
+
+    const archive = await setup.site.backup(setup.volume);
+    const restored = await setup.site.restore(archive);
+    const restoredServer = await setup.site.startServer(restored);
+    const returning = await returningUsers(t, users);
+    const restoredTenant = restoredServer.tenant();
+    await restoredServer.stop();
+    const restoredAccounts = await listedAccounts(setup.site.operator(restored));
+    const freshServer = await setup.site.startServer(await setup.site.volume());
+    const freshTenant = freshServer.tenant();
+    await freshServer.stop();
+    const withoutSecret = await setup.site.restore(archive, ['auth.secret']);
+    const withoutIdentity = await setup.site.restore(archive);
+    await probeImage(images.current, 'remove-installation-identity', withoutIdentity);
+    const refused = [];
+    for (const volume of [withoutSecret, withoutIdentity]) {
+      const server = await setup.site.createServer(volume);
+      server.launch();
+      refused.push({ listening: await server.listeningOrExit(), exit: await server.exited(), output: server.output });
+    }
+
+    assert.equal(restoredTenant, tenant);
+    assert.deepEqual(returning, { tools: [[], []], pages: [[], []] });
+    assert.deepEqual(accountIds(restoredAccounts), setup.userIds);
+    assert.match(freshTenant, localTenant);
+    assert.notEqual(freshTenant, tenant);
+    for (const { listening, exit, output } of refused) {
+      assert.equal(listening, false, output);
+      assert.notEqual(exit.code, 0, output);
+      assert.match(output, /FATAL/);
+      assert.match(output, /restore/i);
+    }
+    assert.match(refused[0]?.output ?? '', /auth\.secret/);
+    assert.match(refused[1]?.output ?? '', /installation identity/);
+    assert.deepEqual(await probeImage(images.current, 'installation-ids', withoutIdentity), []);
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t);
+    const server = await setup.site.startServer(setup.volume);
+    const [aliceUser, bobUser] = mcpUsers(setup) as [LocalMcpUser, LocalMcpUser];
+    for (const user of [aliceUser, bobUser]) await user.connect(t);
+    await server.stop();
+
+    const reset = await setup.operator(['users', 'reset-password', alice.email], ['alice-password-2', 'alice-password-2']);
+    await server.start();
+    await assert.rejects(aliceUser.connectWithSavedToken(t), UnauthorizedError);
+    const aliceSignIn = await aliceUser.browser.openSignIn(aliceUser.authorizationUrl());
+    const oldPassword = await aliceUser.browser.post(aliceSignIn.url, { email: alice.email, password: alice.password, oauth_query: aliceSignIn.oauthQuery });
+    const renewed = await aliceUser.connect(t, { email: alice.email, password: 'alice-password-2' });
+    const bobTools = await toolNames(bobUser, t);
+    await server.stop();
+    const disable = await setup.operator(['users', 'disable', bob.email]);
+    await server.start();
+    await assert.rejects(bobUser.connectWithSavedToken(t), UnauthorizedError);
+    const bobSignIn = await bobUser.browser.openSignIn(bobUser.authorizationUrl());
+    const disabledSignIn = await bobUser.browser.post(bobSignIn.url, { email: bob.email, password: bob.password, oauth_query: bobSignIn.oauthQuery });
+    const aliceTools = await toolNames(aliceUser, t);
+    await server.stop();
+    const accounts = await listedAccounts(setup.operator);
+
+    assertExit(reset, 0);
+    assertExit(disable, 0);
+    assert.equal(oldPassword.status, 401);
+    assert.match(oldPassword.body, /email address or password is not correct/i);
+    assert.deepEqual(renewed.pages, ['/sign-in']);
+    assert.equal(jwtClaims(aliceUser.accessToken).sub, setup.userIds.get(alice.email));
+    assert.deepEqual(bobTools, []);
+    assert.equal(disabledSignIn.status, 403);
+    assert.match(disabledSignIn.body, /account is disabled/i);
+    assert.equal(bobUser.browser.cookies.size, 0, 'the refused sign-in set no session cookie');
+    assert.deepEqual(aliceTools, []);
+    assert.deepEqual(accounts, [
+      { email: alice.email, state: 'enabled', id: setup.userIds.get(alice.email) },
+      { email: bob.email, state: 'disabled', id: setup.userIds.get(bob.email) },
+    ]);
+    assertRevealsNone([reset, disable], [alice.password, 'alice-password-2', bob.password]);
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given a live server container, when one-off command containers mount the same data volume or a command runs inside the server container, then each command fails with the lock error, asks for no password, and changes no account', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t, [alice]);
+    const server = await setup.site.startServer(setup.volume);
+    const commands = [
+      ['users', 'add', 'carol@example.com'],
+      ['users', 'list'],
+      ['users', 'reset-password', alice.email],
+      ['users', 'disable', alice.email],
+      registerArgs(alice),
+    ];
+
+    const results = [];
+    for (const args of commands) results.push(await setup.operator(args, ['carol-password-1', 'carol-password-1']));
+    const inside = await server.exec(['users', 'disable', alice.email]);
+    const stillServing = await fetch(new URL('/.well-known/oauth-protected-resource/mcp', setup.site.address()));
+    await server.stop();
+    const accounts = await listedAccounts(setup.operator);
+
+    for (const result of [...results, inside]) {
+      assertExit(result, 1);
+      assert.match(result.stderr, lockError);
+      assert.doesNotMatch(result.stderr, /password/i);
+      assert.equal(result.stdout, '');
+    }
+    assert.equal(stillServing.status, 200);
+    assert.deepEqual(accounts, [{ email: alice.email, state: 'enabled', id: setup.userIds.get(alice.email) }]);
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given an installation that starts with zero accounts and later has only a disabled account, when the server is stopped and a command container adds an account, then the new account signs in, consents, and uses MCP through the installation client, and the tenant stays the same', { timeout: 300_000 }, async (t) => {
+    const dana: AccountCredentials = { email: 'dana@example.com', password: 'dana-password-1' };
+    const erin: AccountCredentials = { email: 'erin@example.com', password: 'erin-password-1' };
+    const site = await ContainerSite.open(t, images.current);
+    const volume = await site.volume();
+    const operator = site.operator(volume);
+    const server = await site.startServer(volume);
+    const tenant = server.tenant();
+    const withoutAccounts = await fetch(new URL('/mcp', site.address()), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'server/discover', params: {} }),
+    });
+    await server.stop();
+
+    const danaCommands = [await addUser(operator, dana), await operator(registerArgs(dana), [dana.password]), await operator(['users', 'disable', dana.email])];
+    const clientId = registeredClientId(danaCommands[1] as CommandResult);
+    await server.start();
+    const danaUser = new LocalMcpUser(site.address, clientId, dana);
+    await assert.rejects(danaUser.connectWithSavedToken(t), UnauthorizedError);
+    const danaSignIn = await danaUser.browser.openSignIn(danaUser.authorizationUrl());
+    const disabledSignIn = await danaUser.browser.post(danaSignIn.url, { email: dana.email, password: dana.password, oauth_query: danaSignIn.oauthQuery });
+    await server.stop();
+    const added = await addUser(operator, erin);
+    await server.start();
+    const erinUser = new LocalMcpUser(site.address, clientId, erin);
+    const recovered = await erinUser.connect(t);
+    const tools = (await recovered.client.listTools()).tools;
+    const recoveredTenant = server.tenant();
+    await server.stop();
+    const accounts = await listedAccounts(operator);
+
+    assert.equal(withoutAccounts.status, 401);
+    for (const result of [...danaCommands, added]) assertExit(result, 0);
+    assert.equal(disabledSignIn.status, 403);
+    assert.deepEqual(recovered.pages, ['/sign-in', '/consent']);
+    assert.deepEqual(tools, []);
+    assert.equal(recoveredTenant, tenant);
+    assert.deepEqual(accounts.map(({ email, state }) => ({ email, state })), [
+      { email: dana.email, state: 'disabled' },
+      { email: erin.email, state: 'enabled' },
+    ]);
+    assert.equal(jwtClaims(erinUser.accessToken).sub, accounts[1]?.id);
+    await site.assertNoOutboundRequests();
+  });
+
+  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted stops before it listens and writes nothing to its volume', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t, [alice]);
+    const server = await setup.site.startServer(setup.volume);
+    const user = new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice);
+    const { client } = await user.connect(t);
+    const tools = (await client.listTools()).tools;
+    const cookie = [...user.browser.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+    const body = JSON.stringify({ name: 'Acme', slug: 'acme', email: 'eve@example.com', password: 'eve-password-1', role: 'admin', seats: 5 });
+
+    const statuses = [];
+    for (const [method, path] of hostedAndPaidPaths) {
+      const response = await fetch(new URL(path, setup.site.address()), {
+        method,
+        headers: { Origin: publicBaseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
+        ...(method === 'POST' ? { body } : {}),
+      });
+      statuses.push([method, path, response.status]);
+    }
+    await server.stop();
+    const accounts = await listedAccounts(setup.operator);
+    const hostedVolume = await setup.site.volume();
+    const hosted = await setup.site.createServer(hostedVolume, { environment: hostedSettings });
+    hosted.launch();
+    const hostedListening = await hosted.listeningOrExit();
+    const hostedExit = await hosted.exited();
+
+    assert.ok(cookie !== '', 'the user has a browser session');
+    assert.deepEqual(tools, []);
+    assert.deepEqual(statuses, hostedAndPaidPaths.map(([method, path]) => [method, path, 404]));
+    assert.deepEqual(accounts.map(({ email }) => email), [alice.email]);
+    assert.equal(hostedListening, false, hosted.output);
+    assert.notEqual(hostedExit.code, 0);
+    assert.match(hosted.output, /FATAL.*hosted edition is not available/i);
+    assert.deepEqual(await probeImage(images.current, 'data-files', hostedVolume), []);
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given the image and the compose file, when they are inspected, then the image holds the compiled server and commands of this build, the shipped migrations, and the pinned production packages with the native ad blocker built for its platform, but no TypeScript source, test output, or development package; it runs as a non-root user with production settings, no telemetry setting, and its data directory on the one volume; the compose service mounts only that volume, starts with an init process, and publishes its port on the loopback address', { timeout: 300_000 }, async () => {
+    const facts = await probeImage<ImageFacts>(images.current, 'image');
+    const config = JSON.parse(await dockerOutput(['image', 'inspect', '--format', '{{json .Config}}', images.current])) as ImageConfig;
+    const compose = await composeConfig();
+    const service = compose.services.magumagu;
+    const settings = Object.fromEntries(config.Env.map((setting) => setting.split(/=(.*)/s, 2)));
+
+    assert.deepEqual(facts.applicationEntries, ['dist', 'migrations', 'node_modules', 'package.json']);
+    assert.deepEqual(facts.distEntries, ['src']);
+    assert.deepEqual(facts.compiledSource, fileHashes(join(repositoryRoot, 'dist/src')));
+    assert.deepEqual(facts.migrations, fileHashes(join(repositoryRoot, 'migrations')));
+    assert.deepEqual(facts.developmentPackages, []);
+    assert.deepEqual(facts.pinnedPackages, Object.fromEntries(Object.keys(facts.pinnedPackages).map((name) => [name, hostPackageVersion(name)])));
+    assert.deepEqual(facts.adBlockerSelectors, ['.ad-banner']);
+    assert.notEqual(facts.userId, 0);
+    assert.deepEqual(facts.dataDirectory, { path: containerDataDirectory, ownerId: facts.userId, mode: '700', entries: [] });
+    assert.equal(config.User, 'node');
+    assert.deepEqual(config.Entrypoint, ['node', '/app/dist/src/index.js']);
+    assert.equal(config.Cmd, null);
+    assert.deepEqual(Object.keys(config.ExposedPorts), ['8080/tcp']);
+    assert.equal(settings.NODE_ENV, 'production');
+    assert.equal(settings.DEPLOYMENT, 'self-hosted');
+    assert.equal(settings.DATA_DIR, containerDataDirectory);
+    assert.equal(settings.LISTEN_HOST, '0.0.0.0');
+    assert.equal(settings.LISTEN_PORT, '8080');
+    assert.equal(settings.PUBLIC_BASE_URL, undefined);
+    assert.deepEqual(Object.keys(settings).filter((name) => /TELEMETRY|BETTER_AUTH|^AUTH_/.test(name)), []);
+    assert.deepEqual(Object.keys(compose.services), ['magumagu']);
+    assert.ok(service, 'the compose file has the magumagu service');
+    assert.equal(service.build.dockerfile, 'Dockerfile');
+    assert.equal(service.init, true);
+    assert.deepEqual(service.environment, { PUBLIC_BASE_URL: publicBaseUrl });
+    assert.deepEqual(service.ports.map(({ host_ip, published, target }) => ({ host_ip, published, target })), [{ host_ip: '127.0.0.1', published: '8080', target: 8080 }]);
+    assert.deepEqual(service.volumes.map(({ type, source, target }) => ({ type, source, target })), [{ type: 'volume', source: 'magumagu-data', target: containerDataDirectory }]);
+    assert.deepEqual(Object.keys(compose.volumes), ['magumagu-data']);
+  });
+});
