@@ -146,7 +146,7 @@ pnpm build
 DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magumagu-data pnpm start
 ```
 
-[`src/index.ts`](src/index.ts) starts the server when it gets no arguments. With an argument, it stops with exit status 2; the local user commands come later. The server loads the settings, calls [`createApplication(config, logger)`](src/application.ts), and serves the application through the Node HTTP bridge, [`startHttpServer()`](src/http/server.ts). It writes `Listening on <address>` to stderr. `SIGINT` or `SIGTERM` stops it: the HTTP server stops, then the application releases its resources, and the process exits with status 0. A second signal ends the process at once. A startup failure writes one `FATAL` line, which names the problem but no secret, and exits with status 1.
+[`src/index.ts`](src/index.ts) starts the server when it gets no arguments. With arguments, it runs one of the offline [local account and client commands](#local-accounts-and-clients). The server loads the settings, calls [`createApplication(config, logger)`](src/application.ts), and serves the application through the Node HTTP bridge, [`startHttpServer()`](src/http/server.ts). It writes `Listening on <address>` to stderr. `SIGINT` or `SIGTERM` stops it: the HTTP server stops, then the application releases its resources, and the process exits with status 0. A second signal ends the process at once. A startup failure writes one `FATAL` line, which names the problem but no secret, and exits with status 1.
 
 `createApplication()` makes the one edition branch. The hosted edition is not available yet: startup stops with `HostedEditionUnavailableError` and never falls back to the self-hosted edition. Only the self-hosted branch loads the Better Auth runtime.
 
@@ -160,13 +160,61 @@ The runtime reports the tenant `local:<installation-id>`, and the server logs it
 
 Retained data keeps its identity. Startup stops with `LocalInstallationError` when a database with schema objects has no valid installation identity, when `auth.secret` is missing or not valid, or when the database has another schema version. The server never creates a new identity for retained data. To recover, restore the complete data directory from a backup, or move the data away to start a new installation. Fresh data always gets a new tenant.
 
-The server starts with zero accounts or with only disabled accounts, and protected access stays denied. The MCP endpoint, `<base>/mcp`, answers each request with `401` and a Bearer challenge, because the self-hosted edition accepts no MCP access token yet. The application gives MCPServer [`operatorFailureReporter(logger)`](src/application.ts) as `reportFailure`: it writes each failure report as one `ERROR` line with the failed step and the cause. A missing or rejected token gives no report. The server forwards no Better Auth route yet, so there is no public sign-up or account-create route. Other paths give `404`.
+The server starts with zero accounts or with only disabled accounts, and protected access stays denied. To recover, stop the server and add an account with `users add`. The MCP endpoint, `<base>/mcp`, answers each request with `401` and a Bearer challenge, because the self-hosted edition accepts no MCP access token yet. The application gives MCPServer [`operatorFailureReporter(logger)`](src/application.ts) as `reportFailure`: it writes each failure report as one `ERROR` line with the failed step and the cause. A missing or rejected token gives no report. The server forwards no Better Auth route yet, so there is no public sign-up or account-create route. Other paths give `404`.
 
 The HTTP bridge builds each request URL from the origin of `PUBLIC_BASE_URL` and the request target, so the `Host` header and forwarded headers cannot change it. It refuses a target that is not in origin form (`/path?query`) with `400`, and `TRACE` with `501`. It removes every client copy of `x-magumagu-client-address` and sets that header to the socket address, for the provider's rate limits. It streams request and response bodies and keeps each `Set-Cookie` header separate. When a client disconnects, it aborts the request signal and cancels the response body. A handler failure gives a generic `500` and a log line without request data. When the server stops, the bridge refuses new connections, lets running responses finish, and ends the remaining connections after five seconds.
 
 To make a backup, stop the server and copy the complete data directory. To restore, copy all of its files together into an empty directory, and start the server with that `DATA_DIR`. The installation ID, the tenant, the user IDs, and the browser sessions stay the same. Filesystem access to the data directory is administration authority for the installation; it gives no application role.
 
 [`migrations/auth-local/`](migrations/auth-local/) holds the shipped SQL. `0001-better-auth.sql` is the output of Better Auth `compileMigrations()` for the pinned packages and the provider settings on an empty database. `0002-installation.sql` adds the singleton installation table. The server never downloads a migration tool. A unit test fails if the shipped SQL is different from the output of the pinned provider; after a change to the provider packages or settings, generate the file again.
+
+## Local accounts and clients
+
+The self-hosted edition has no public sign-up, invitation, email recovery, or administration page. The operator adds and manages local accounts, and registers MCP clients, with offline commands of the same program. A command needs no network or email service and starts no HTTP listener. All enabled accounts have the same evaluation permissions in one shared workspace.
+
+Stop the server before you run a command. Give the command the same settings as the server: `DEPLOYMENT=self-hosted`, `PUBLIC_BASE_URL`, and `DATA_DIR`. A registered client is linked to the MCP resource of `PUBLIC_BASE_URL`, so a different value gives a client that the server does not serve. Then start the server again.
+
+```sh
+export DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magumagu-data
+node dist/src/index.js users add alice@example.com
+node dist/src/index.js users list
+node dist/src/index.js users reset-password alice@example.com
+node dist/src/index.js users disable bob@example.com
+node dist/src/index.js clients register --user alice@example.com --name "Native MCP client" --redirect-uri http://127.0.0.1:33418/callback
+```
+
+| Command | Result |
+| --- | --- |
+| `users add <email>` | Adds an enabled account and prints its email and ID. An email that an account already has, in any letter case, stops the command before the password prompt; a disabled account also keeps its email. |
+| `users list` | Prints the email, the state (`enabled` or `disabled`), and the ID of each account, in email order, without credentials. With no account, it tells how to add one. |
+| `users reset-password <email>` | Sets a new password and ends all sessions of that account. The account keeps its ID and its state: the command does not enable a disabled account. |
+| `users disable <email>` | Disables the account without an expiry and ends all its sessions. The account keeps its ID and cannot sign in or get tokens. No command enables an account again. |
+| `clients register --user <email> --name <name> --redirect-uri <uri> [--redirect-uri <uri> ...]` | Registers one native MCP client for the installation and prints its client ID. |
+
+**Passwords.** A command never takes a password from its arguments or options. `users add` and `users reset-password` ask for the new password two times; the two entries must be the same. `clients register` asks one time for the password of the selected account. On a terminal, the prompt does not show the typed characters. When standard input is not a terminal, the command reads one line for each prompt, so a script can write the passwords to standard input. A password has 8 to 128 characters. Prompts and messages go to standard error, and the command result goes to standard output. No output contains a password, a password hash, or a session token.
+
+**Explicit targets.** Each user command needs exactly one email address; the letter case does not matter. There is no default account. Client registration needs exactly one `--user` and one `--name`, and at least one `--redirect-uri`. A command with a missing target, an extra argument, or an unknown option stops with exit status 2 and the usage text. That message does not repeat the arguments, because a mistyped argument can be a password. An unknown email stops the command with `No local account has this email address.` before the password prompt.
+
+**Exit status.** `0` means that the command completed. `1` means that the command failed; the message gives the reason, such as a duplicate email, an unknown or disabled account, a wrong password, a password outside the length rule, or a lock error. `2` means a usage error.
+
+**Revocation.** `users reset-password` and `users disable` delete only the sessions of the selected account. Each MCP access token carries the browser session ID in its `sid` claim, so the tokens of that account become inactive at introspection, and its pending authorization codes fail at the token endpoint. The other accounts keep their sessions and tokens. The local edition issues no refresh tokens, so no refresh grant stays. [`LocalUserAdministration`](src/auth-better-auth/local-user-administration.ts) uses only supported Better Auth operations: `createUser`, which hashes the password; the provider hash, password update, ban, user list, and session deletion of the provider data API; and `signInEmail` with `adminCreateOAuthClient` for client registration. No command edits provider tables with SQL. [`runLocalAuthCommand()`](src/auth-better-auth/local-auth-command.ts) parses the arguments with [`parseLocalAuthCommand()`](src/auth-better-auth/local-auth-command-line.ts) and holds the runtime, with its lock, for the whole command.
+
+**Client registration.** The command registers a public native client: `token_endpoint_auth_method: none`, the `authorization_code` grant only, and PKCE. Each `--redirect-uri` must be an `http` URI on `localhost`, `127.0.0.1`, or `[::1]`, without user information or a fragment. The provider then accepts only these redirect URIs; for a loopback URI it also accepts another port, as RFC 8252 requires. The command signs in the selected enabled account with its password, registers the client with that session, and then deletes that session. The other sessions of the account stay. The installation, not the account, owns the client. Give the printed client ID to the MCP client as its pre-registered client ID. The tested client is the MCP TypeScript SDK 2.3.1 client. Dynamic client registration stays off. Until the server introspects MCP access tokens, its MCP endpoint still accepts no token.
+
+**Lock errors.** The server and each command hold the same exclusive data-directory lock. A command on a data directory that another Magumagu process uses stops with exit status 1, asks for no password, and changes no data:
+
+```
+The data directory is in use by another Magumagu process. Stop that process, then try again.
+```
+
+A command that you run inside a live server container is also another process on the same files, so the lock stops it too. A command holds the lock until it ends, also while it waits for a password; a server start on the same directory then stops with the same error. For a container installation, stop the server container, run the command in a one-off container from the same image with the same volume, and start the server container again.
+
+**Recovery.**
+
+- No account, or only disabled accounts: stop the server and add an account with `users add`. The installation keeps its tenant and the IDs of the other accounts.
+- A forgotten password: stop the server and run `users reset-password` for the account.
+- A lock error: stop the process that uses the data directory, then run the command again. The operating system releases the lock when that process ends, also after a crash.
+- `LocalInstallationError`: restore the complete data directory, as the [self-hosted server](#self-hosted-server) section describes.
 
 ## Billing
 

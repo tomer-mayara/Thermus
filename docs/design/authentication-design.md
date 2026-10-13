@@ -15,8 +15,8 @@ organization. Payment integration remains required work before the paid
 product is complete. HTTP is the first end-to-end delivery
 target. Slice 1, contracts and request isolation, is implemented. In slice 2,
 the local runtime, its persistence, the installation identity, the data-directory
-lock, and the HTTP composition are implemented; the other slice 2 work and all
-later work in this plan are pending. The pinned Better Auth packages are
+lock, the HTTP composition, and the offline user and client commands are
+implemented; the other slice 2 work and all later work in this plan are pending. The pinned Better Auth packages are
 proven against the local contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found, so
 slice 2 can continue. The role refinement below records intended rules only; it
@@ -273,7 +273,10 @@ The local auth command also registers approved MCP clients and exact redirect UR
 It signs in one selected enabled account through the server API, with that
 account's password from a hidden prompt. It registers the clients with that
 session and then deletes the session. The installation, not that account, owns
-each client. Support a documented, tested client set. Disable network
+each client. Support a documented, tested client set. The implemented command
+registers one public native client for each call, with the `authorization_code`
+grant only, and accepts only `http` redirect URIs on `localhost`, `127.0.0.1`, or
+`[::1]`, without user information or a fragment. Disable network
 client-metadata discovery and dynamic registration in this edition. Do not
 claim arbitrary MCP client compatibility offline. Persist keys, sessions,
 clients, consents, and grants on the local volume. Local authentication must
@@ -369,6 +372,15 @@ The create endpoint checks only the maximum password length, so the CLI must
 check the 8 to 128 character rule first. Two concurrent creates with one email
 give a raw SQLite uniqueness error; the exclusive data-directory lock prevents
 them.
+
+The offline commands use these operations with three additions. Without a
+limit, `listUsers()` gives at most 100 users, the default `findMany` limit of the
+database adapter, so `users list` pages by email with
+`listUsers(100, offset, { field: 'email', direction: 'asc' })`. Before a reset,
+`internalAdapter.findCredentialAccount(userId)` confirms the password login,
+because `updatePassword` changes nothing for an account without one. Disable
+writes `{ banned: true, banExpires: null }`, because the provider lifts a ban at
+the next sign-in when `banExpires` is in the past.
 
 An authorization code grant with PKCE and `resource=<base>/mcp` gives a JWT
 access token with header `typ: at+jwt` and an EdDSA signature. Its claims are
@@ -691,8 +703,10 @@ shows a separate role, invariant, or lifecycle.
 | `src/auth-better-auth/better-auth-runtime.ts` | Add provider composition and database/lock cleanup functions when distinct from provider behavior. Implemented: `localProviderOptions()`, which stops startup with `ProviderEnvironmentError` for the provider variables that it refuses, and `openBetterAuthRuntime()`. | 2 |
 | `src/auth-better-auth/data-directory-lock.ts` | Implemented: `lockDataDirectory()`, the exclusive data-directory lock that the runtime and the local commands share. | 2 |
 | `src/auth-better-auth/local-installation.ts` | Implemented: `openLocalInstallation()`, which owns the database file, the secret file, the shipped migrations, and the singleton installation identity. | 2 |
-| `src/auth-better-auth/local-auth-command.ts` | Use `runLocalAuthCommand()` to parse local user commands and register approved local OAuth clients. | 2 |
-| `src/auth-better-auth/local-user-administration.ts` | Add `LocalUserAdministration` to own account lifecycle, supported provider operations, and per-user revocation; keep argument parsing in the CLI. | 2 |
+| `src/auth-better-auth/local-auth-command.ts` | Implemented: `runLocalAuthCommand()` parses the local user and client commands, reads passwords through a hidden-input contract, and holds the runtime, with its data-directory lock, for the whole command. | 2 |
+| `src/auth-better-auth/local-auth-command-line.ts` | Implemented: `parseLocalAuthCommand()` turns the arguments into one command record or a usage error that repeats no argument. | 2 |
+| `src/auth-better-auth/local-user-administration.ts` | Implemented: `LocalUserAdministration` owns the account lifecycle, approved client registration, the supported provider operations, and per-user revocation; argument parsing stays in the CLI. | 2 |
+| `src/terminal/hidden-line-input.ts` | Implemented: `HiddenLineInput`, the hidden password prompt on a terminal and line input from a pipe. | 2 |
 | `src/auth-better-auth/local-auth-pages.ts` | Bundled sign-in and consent handlers. | 2 |
 | `migrations/auth-local/0001-better-auth.sql` | Generated schema for pinned provider configuration, including the selected admin plugin/account-status storage if used. | 2 |
 | `migrations/auth-local/0002-installation.sql` | Singleton installation identity only; no restriction on user count. | 2 |
@@ -776,14 +790,16 @@ behavior.
 | Existing `test/unit/mcp/auth*.test.ts` and `identity-verifier-sdk-adapter.test.ts` | Preserve header, claim, error, and scope behavior with doubles. |
 | `test/unit/auth/access-context.test.ts` | Permission rules and valid context records without provider behavior. |
 | `test/unit/mcp/access-resolver.test.ts` | Allowed/denied decisions, safe errors, and context binding through doubles. |
-| `test/unit/auth-better-auth/local-auth-command.test.ts` | Command validation, explicit user targets, hidden password input, safe output, and client registration dispatch with lifecycle doubles. |
-| `test/unit/auth-better-auth/local-user-administration.test.ts` | Account lifecycle and selected-user reset/disable/revocation decisions with provider doubles. |
+| `test/unit/auth-better-auth/local-auth-command.test.ts` | Command validation, explicit user targets, hidden password input, safe output, and client registration dispatch with lifecycle doubles. Implemented, with `local-auth-command-users.test.ts` and `local-auth-command-clients.test.ts`. |
+| `test/unit/auth-better-auth/local-user-administration.test.ts` | Account lifecycle and selected-user reset/disable/revocation decisions with provider doubles. Implemented, with `local-user-administration-revocation.test.ts` and `local-user-administration-clients.test.ts`. |
+| `test/unit/terminal/hidden-line-input.test.ts` | Implemented: hidden terminal prompts, piped lines, ended input, Ctrl-C and Ctrl-D, input errors, and release of standard input. |
 | `test/unit/organizations/organization-administration.test.ts` | Actor/target organization checks, current/proposed grants, self-grants, selective removal, and safe retry decisions with a directory double. |
 | `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. |
 | `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. |
 | `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. |
 | `test/integration/auth/mcp-context.test.ts` | Real provider/MCP collaboration, error mapping, and sequential/concurrent isolation. |
-| `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, client registration without a remaining session, and per-user session and MCP token revocation without affecting peers. |
+| `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, client registration without a remaining session, and per-user session and MCP token revocation without affecting peers. Implemented, with `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`, and a SQL trace that shows no command SQL on provider tables. |
+| `test/acceptance/auth/local-user-commands.test.ts`, `local-client-registration.test.ts` | Implemented: offline add and list with hidden passwords and no network, targeted reset and disable with peers, the live-server lock for each command, zero-account recovery, and approved client registration. |
 | `test/integration/auth/local-access.test.ts` | Two distinct user subjects in one tenant; equal evaluation permissions, separate sessions, current account-state checks, disabled login and issuance, no refresh grant, and disabled-user denial after token verification. |
 | `test/integration/auth/local-installation.test.ts` | Application/provider startup collaboration: one persistent installation UUID; reset/disable preserve IDs; backup/restore preserve database and secrets; existing data without identity fails closed. |
 | `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. |

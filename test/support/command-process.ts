@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const commandEntry = fileURLToPath(new URL('../../src/index.js', import.meta.url));
 const networkBlocker = new URL('./deny-network.js', import.meta.url).href;
+const sqlTracer = new URL('./trace-sqlite.js', import.meta.url).href;
 
 export type CommandSettings = Readonly<Record<string, string>>;
 
@@ -22,8 +23,6 @@ export interface CommandResult {
   readonly stderr: string;
 }
 
-// The command reads passwords from standard input, so the arguments never carry them.
-// Each command runs with outbound network access refused.
 export class CommandProcess {
   private readonly child: ChildProcessByStdio<Writable, Readable, Readable>;
   private readonly exit: Promise<CommandResult>;
@@ -32,7 +31,8 @@ export class CommandProcess {
   private readonly stderrListeners = new Set<() => void>();
 
   private constructor(settings: CommandSettings, args: readonly string[]) {
-    this.child = spawn(process.execPath, ['--import', networkBlocker, commandEntry, ...args], { env: { ...settings }, stdio: ['pipe', 'pipe', 'pipe'] });
+    const preloads = ['--import', networkBlocker, '--import', sqlTracer];
+    this.child = spawn(process.execPath, [...preloads, commandEntry, ...args], { env: { ...settings }, stdio: ['pipe', 'pipe', 'pipe'] });
     // A command that stops before it reads its input closes the pipe; that is not a test failure.
     this.child.stdin.on('error', () => undefined);
     this.child.stdout.setEncoding('utf8').on('data', (chunk: string) => { this.stdoutText += chunk; });

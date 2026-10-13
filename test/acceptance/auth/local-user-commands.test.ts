@@ -1,16 +1,29 @@
 import assert from 'node:assert/strict';
-import { describe, test, type TestContext } from 'node:test';
+import { describe, test } from 'node:test';
 import {
   errorCodeOf,
   followAuthorizationWithConsent,
   HttpAgent,
-  loopbackRedirectUri,
   PreRegisteredNativeClient,
   ResourceServerClient,
 } from '../../support/better-auth-agents.ts';
-import { withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/better-auth-local.ts';
-import { assertExit, assertRevealsNone, runCommand, type CommandResult } from '../../support/command-process.ts';
+import type { AccountCredentials, LocalAuth } from '../../support/better-auth-local.ts';
+import { assertExit, assertRevealsNone } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
+import {
+  addUser,
+  listedAccounts,
+  operatorOn,
+  registerArgs,
+  registeredClientId,
+  resourceServerClient,
+  signedInUserId,
+  signIn,
+  userGrant,
+  type Operator,
+  type ResourceServerCredentials,
+  type UserGrant,
+} from '../../support/local-commands.ts';
 import { selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
@@ -18,91 +31,16 @@ const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
 const lockError = /in use by another Magumagu process/;
 
-interface ListedAccount {
-  readonly email: string;
-  readonly state: string;
-  readonly id: string;
-}
-
-interface UserGrant {
-  readonly id: string;
-  readonly browser: HttpAgent;
-  readonly accessToken: string;
-}
-
 interface Grants {
-  readonly resourceServer: { readonly clientId: string; readonly clientSecret: string };
+  readonly resourceServer: ResourceServerCredentials;
   readonly nativeClientId: string;
   readonly alice: UserGrant;
   readonly bob: UserGrant;
   readonly bobPendingCode: { readonly callback: string; readonly verifier: string };
 }
 
-type Operator = (args: readonly string[], input?: readonly string[]) => Promise<CommandResult>;
-
-function operatorOn(t: TestContext, directory: string): Operator {
-  return (args, input = []) => runCommand(t, selfHostedSettings(directory), { args, input });
-}
-
-function addUser(operator: Operator, account: AccountCredentials): Promise<CommandResult> {
-  return operator(['users', 'add', account.email], [account.password, account.password]);
-}
-
-function registerArgs(account: AccountCredentials, redirectUris: readonly string[] = [loopbackRedirectUri]): string[] {
-  return ['clients', 'register', '--user', account.email, '--name', 'Native MCP client', ...redirectUris.flatMap((uri) => ['--redirect-uri', uri])];
-}
-
-function registeredClientId(result: CommandResult): string {
-  assertExit(result, 0);
-  const clientId = /client ID (\S+)\./.exec(result.stdout)?.[1];
-  assert.ok(clientId, `the registration reported no client ID:\n${result.stdout}`);
-  return clientId;
-}
-
-async function listedAccounts(operator: Operator): Promise<ListedAccount[]> {
-  const listing = await operator(['users', 'list']);
-  assertExit(listing, 0);
-  if (/^No local accounts/.test(listing.stdout)) return [];
-  const [header, ...rows] = listing.stdout.trimEnd().split('\n');
-  assert.deepEqual(header?.trim().split(/\s+/), ['EMAIL', 'STATE', 'ID']);
-  return rows.map((row) => {
-    const [email = '', state = '', id = '', ...rest] = row.trim().split(/\s+/);
-    assert.deepEqual(rest, [], `the list shows more than email, state, and ID: ${row}`);
-    return { email, state, id };
-  });
-}
-
-async function signIn(auth: LocalAuth, account: AccountCredentials): Promise<Response> {
-  return new HttpAgent(auth).signIn(account.email, account.password);
-}
-
-async function signedInUserId(auth: LocalAuth, account: AccountCredentials): Promise<string> {
-  const response = await signIn(auth, account);
-  assert.equal(response.status, 200, await response.clone().text());
-  return (await response.json() as { user: { id: string } }).user.id;
-}
-
-// Introspection needs a confidential resource-server client. The operator command registers only
-// approved native MCP clients, so this test registers the resource server through the provider.
-async function resourceServerClient(auth: LocalAuth): Promise<Grants['resourceServer']> {
-  const client = await withRegistrationSession(auth, alice, (headers) => auth.api.adminCreateOAuthClient({
-    headers,
-    body: { client_name: 'Test resource server', token_endpoint_auth_method: 'client_secret_basic', grant_types: ['client_credentials'] },
-  }));
-  assert.ok(client.client_secret, 'a confidential client receives a secret');
-  return { clientId: client.client_id, clientSecret: client.client_secret };
-}
-
-async function userGrant(auth: LocalAuth, native: PreRegisteredNativeClient, account: AccountCredentials): Promise<UserGrant> {
-  const browser = new HttpAgent(auth);
-  const response = await browser.signIn(account.email, account.password);
-  assert.equal(response.status, 200, await response.clone().text());
-  const { user } = await response.json() as { user: { id: string } };
-  return { id: user.id, browser, accessToken: (await native.authorize(browser)).access_token };
-}
-
 async function grantsThrough(auth: LocalAuth, nativeClientId: string): Promise<Grants> {
-  const resourceServer = await resourceServerClient(auth);
+  const resourceServer = await resourceServerClient(auth, alice);
   const native = new PreRegisteredNativeClient(auth, nativeClientId);
   const aliceGrant = await userGrant(auth, native, alice);
   const bobGrant = await userGrant(auth, native, bob);
@@ -173,9 +111,9 @@ describe('Offline local user and client commands', () => {
       const introspection = new ResourceServerClient(auth, grants.resourceServer.clientId, grants.resourceServer.clientSecret);
       assert.equal((await signIn(auth, alice)).status, 401);
       assert.equal(await signedInUserId(auth, { email: alice.email, password: 'alice-password-2' }), grants.alice.id);
-      assert.equal(await grants.alice.browser.withProvider(auth).sessionId(), undefined);
+      assert.equal(await new HttpAgent(auth, grants.alice.browser.cookies).sessionId(), undefined);
       assert.deepEqual(await introspection.introspect(grants.alice.accessToken), { active: false });
-      assert.ok(await grants.bob.browser.withProvider(auth).sessionId(), 'the peer keeps its session');
+      assert.ok(await new HttpAgent(auth, grants.bob.browser.cookies).sessionId(), 'the peer keeps its session');
       assert.equal((await introspection.introspect(grants.bob.accessToken)).active, true);
       assert.equal(await signedInUserId(auth, bob), grants.bob.id);
     });
@@ -196,7 +134,7 @@ describe('Offline local user and client commands', () => {
     await withRuntime(directory, async ({ auth }) => {
       const introspection = new ResourceServerClient(auth, grants.resourceServer.clientId, grants.resourceServer.clientSecret);
       const native = new PreRegisteredNativeClient(auth, grants.nativeClientId);
-      const bobBrowser = grants.bob.browser.withProvider(auth);
+      const bobBrowser = new HttpAgent(auth, grants.bob.browser.cookies);
       const login = await signIn(auth, bob);
       assert.equal(login.status, 403);
       assert.equal(await errorCodeOf(login), 'BANNED_USER');
@@ -208,7 +146,7 @@ describe('Offline local user and client commands', () => {
       assert.match(authorization.headers.get('Location') ?? '', /^\/sign-in\?/);
       const refresh = await native.refresh(grants.bob.accessToken);
       assert.equal(await errorCodeOf(refresh), 'unsupported_grant_type');
-      assert.ok(await grants.alice.browser.withProvider(auth).sessionId(), 'the peer keeps its session');
+      assert.ok(await new HttpAgent(auth, grants.alice.browser.cookies).sessionId(), 'the peer keeps its session');
       assert.equal((await introspection.introspect(grants.alice.accessToken)).active, true);
       assert.equal(await signedInUserId(auth, alice), grants.alice.id);
     });
@@ -245,44 +183,5 @@ describe('Offline local user and client commands', () => {
     const restarted = await ServerProcess.start(t, selfHostedSettings(directory));
     assert.equal(restarted.tenant(), tenant);
     await restarted.stop();
-  });
-
-  test('Given an enabled account and an approved native client with an exact loopback redirect URI, when registration runs, then the client persists in the data directory, no registration session stays, and a user can authorize with that redirect URI; invalid targets and redirect URIs give safe errors and register nothing', { timeout: 120_000 }, async (t) => {
-    const directory = dataDirectory(t);
-    const operator = operatorOn(t, directory);
-    for (const account of [alice, bob]) assertExit(await addUser(operator, account), 0);
-    assertExit(await operator(['users', 'disable', bob.email]), 0);
-
-    const refused = [
-      await operator(registerArgs({ email: 'carol@example.com', password: 'carol-password-1' }), ['carol-password-1']),
-      await operator(registerArgs(bob), [bob.password]),
-      await operator(registerArgs({ email: alice.email, password: 'wrong-password-1' }), ['wrong-password-1']),
-      await operator(registerArgs(alice, ['https://client.example/callback']), [alice.password]),
-      await operator(registerArgs(alice, [`${loopbackRedirectUri}#fragment`]), [alice.password]),
-      await operator(registerArgs(alice, ['http://user:secret@127.0.0.1:33418/callback']), [alice.password]),
-    ];
-    const registration = await operator(registerArgs(alice), [alice.password]);
-    const clientId = registeredClientId(registration);
-    const server = await ServerProcess.start(t, selfHostedSettings(directory));
-    await server.stop();
-
-    for (const result of refused) {
-      assertExit(result, 1);
-      assert.equal(result.stdout, '');
-      assert.doesNotMatch(result.stderr, /client\.example|#fragment|user:secret/);
-    }
-    assertRevealsNone([...refused, registration], [alice.password, bob.password, 'carol-password-1', 'wrong-password-1']);
-    await withRuntime(directory, async ({ auth }) => {
-      const provider = await auth.$context;
-      const aliceId = (await provider.internalAdapter.findUserByEmail(alice.email))?.user.id;
-      assert.ok(aliceId);
-      assert.deepEqual(await provider.internalAdapter.listSessions(aliceId), [], 'no registration session stays');
-      const clients = await withRegistrationSession(auth, alice, (headers) => auth.api.getOAuthClients({ headers }));
-      assert.deepEqual(clients?.map(({ client_id, redirect_uris }) => ({ client_id, redirect_uris })), [{ client_id: clientId, redirect_uris: [loopbackRedirectUri] }]);
-      const browser = new HttpAgent(auth);
-      assert.equal((await browser.signIn(alice.email, alice.password)).status, 200);
-      const tokens = await new PreRegisteredNativeClient(auth, clientId).authorize(browser);
-      assert.equal(tokens.refresh_token, undefined);
-    });
   });
 });

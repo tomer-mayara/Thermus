@@ -33,22 +33,16 @@ function addressWithOwnRateLimitBucket(): string {
 
 export class HttpAgent {
   readonly address = addressWithOwnRateLimitBucket();
-  private readonly cookies = new Map<string, string>();
+  readonly cookies: Map<string, string>;
   private readonly auth: LocalAuth;
 
-  constructor(auth: LocalAuth) {
+  constructor(auth: LocalAuth, cookies: ReadonlyMap<string, string> = new Map()) {
     this.auth = auth;
+    this.cookies = new Map(cookies);
   }
 
   cookieHeader(): string {
     return [...this.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
-  }
-
-  // The copy keeps the browser cookies for a later provider instance on the same data.
-  withProvider(auth: LocalAuth): HttpAgent {
-    const copy = new HttpAgent(auth);
-    for (const [name, value] of this.cookies) copy.cookies.set(name, value);
-    return copy;
   }
 
   async request(method: 'GET' | 'POST', path: string, options: RequestOptions = {}): Promise<Response> {
