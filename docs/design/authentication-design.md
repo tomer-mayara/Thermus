@@ -553,8 +553,8 @@ these operations.
 | Revoke sessions | `internalAdapter.deleteUserSessions(userId)` | Ends only that user's sessions. That user's MCP access tokens become inactive at introspection, and that user's pending authorization codes fail at the token endpoint. |
 | Register clients | `auth.api.signInEmail({ body, returnHeaders: true })`, `applySetCookies()` from `better-auth/cookies` to make the session headers, `auth.api.adminCreateOAuthClient({ headers, body })` for each client, then `internalAdapter.deleteSession(token)` | Each client has the installation ID as `reference_id` and no `user_id`. No registration session stays. Another user can authorize through the native client, and the resource server can introspect. A disabled account gets `403 BANNED_USER`. |
 
-The create endpoint checks only the maximum password length, so the CLI must
-check the 8 to 128 character rule first. Two concurrent creates with one email
+The create endpoint checks only the maximum password length. The administrator
+checks the 8 to 128 character rule first. Two concurrent creates with one email
 give a raw SQLite uniqueness error; the exclusive data-directory lock prevents
 them.
 
@@ -566,6 +566,24 @@ database adapter, so `users list` pages by email with
 because `updatePassword` changes nothing for an account without one. Disable
 writes `{ banned: true, banExpires: null }`, because the provider lifts a ban at
 the next sign-in when `banExpires` is in the past.
+
+The command depends on the five-operation `LocalUserAdministration` role in
+`src/auth/local-auth/local-user-administration.ts`: add, list, reset password,
+disable, and register client. This module also owns the consumer records,
+`PasswordSource`, and the existing `LocalAuthSettings` shape: data directory,
+public base URL, and MCP resource URL. The concrete administrator remains in
+`src/auth-better-auth/local-user-administration.ts`, with its provider error
+translation and error types.
+
+`runLocalAuthCommand()` requires an `openAdministration` function that returns
+only the administration role and `close()`. `index.ts` supplies a closure that
+loads the concrete opener only after command syntax, configuration, and edition
+checks. The opener owns the runtime until it returns; the command then owns
+cleanup through its disposable stack. Each operation decides when to request
+its password. Output precedes close, and operation or output failures still
+close the resources. The
+[refactoring plan](../implementation/auth-refactoring-plan.md) records this
+slice and the separate pending file relocation.
 
 An authorization code grant with PKCE and `resource=<base>/mcp` gives a JWT
 access token with header `typ: at+jwt` and an EdDSA signature. Its claims are
@@ -1212,9 +1230,10 @@ shows a separate role, invariant, or lifecycle.
 | `src/auth-better-auth/better-auth-runtime.ts` | Add provider composition and database/lock cleanup functions when distinct from provider behavior. Implemented: `localProviderOptions()`, which stops startup with `ProviderEnvironmentError` for the provider variables that it refuses, and `openBetterAuthRuntime()`. | 2 |
 | `src/auth-better-auth/data-directory-lock.ts` | Implemented: `lockDataDirectory()`, the exclusive data-directory lock that the runtime and the local commands share. | 2 |
 | `src/auth-better-auth/local-installation.ts` | Implemented: `openLocalInstallation()`, which owns the database file, the secret file, the shipped migrations, and the singleton installation identity. | 2 |
-| `src/auth-better-auth/local-auth-command.ts` | Implemented: `runLocalAuthCommand()` parses the local user and client commands, reads passwords through a hidden-input contract, and holds the runtime, with its data-directory lock, for the whole command. | 2 |
+| `src/auth/local-auth/local-user-administration.ts` | Local command role, consumer records, lazy password source, and neutral settings. The role owns no runtime lifecycle. | Auth refactoring slice 1 |
+| `src/auth-better-auth/local-auth-command.ts` | Implemented: `runLocalAuthCommand()` parses the local user and client commands, reads passwords through a hidden-input contract, and owns cleanup of the injected administration result. The opened resources hold the data-directory lock for the whole command. | 2; auth refactoring slice 1 |
 | `src/auth-better-auth/local-auth-command-line.ts` | Implemented: `parseLocalAuthCommand()` turns the arguments into one command record or a usage error that repeats no argument. | 2 |
-| `src/auth-better-auth/local-user-administration.ts` | Implemented: `LocalUserAdministration` owns the account lifecycle, approved client registration, the supported provider operations, and per-user revocation; argument parsing stays in the CLI. | 2 |
+| `src/auth-better-auth/local-user-administration.ts` | Implemented: concrete `LocalUserAdministration` owns the account lifecycle, approved client registration, the supported provider operations, and per-user revocation. Its opener supplies the command role and runtime close; argument parsing stays in the CLI. | 2; auth refactoring slice 1 |
 | `src/terminal/hidden-line-input.ts` | Implemented: `HiddenLineInput`, the hidden password prompt on a terminal and line input from a pipe. | 2 |
 | `src/auth-better-auth/local-auth-pages.ts` | Implemented: `LocalAuthPages`, the bundled sign-in, consent, and authorization error pages, which send each form post to the provider route through the Better Auth handler and adapt the answer. | 2 |
 | `migrations/auth-local/0001-better-auth.sql` | Generated schema for pinned provider configuration, including the selected admin plugin/account-status storage if used. | 2 |
@@ -1357,7 +1376,9 @@ behavior.
 | Existing `test/unit/mcp/auth*.test.ts` and `identity-verifier-sdk-adapter.test.ts` | Preserve header, claim, error, and scope behavior with doubles. |
 | `test/unit/auth/access-context.test.ts` | Permission rules and valid context records without provider behavior. |
 | `test/unit/mcp/access-resolver.test.ts` | Allowed/denied decisions, safe errors, and context binding through doubles. |
-| `test/unit/auth-better-auth/local-auth-command.test.ts` | Command validation, explicit user targets, hidden password input, safe output, and client registration dispatch with lifecycle doubles. Implemented, with `local-auth-command-users.test.ts` and `local-auth-command-clients.test.ts`. |
+| `test/integration/auth/local-auth-command-lifecycle.test.ts` | Command validation, explicit user targets, hidden password input, safe output, and client registration dispatch with lifecycle and provider doubles. Retains the previous unit cases with `local-auth-command-users.test.ts` and `local-auth-command-clients.test.ts`; real config and administrator collaboration makes them integration coverage. |
+| `test/integration/auth/local-auth-command-boundary.test.ts` | Narrow opener settings, role dispatch, lazy password reads, output-before-close, and operation/output/cleanup failures with an administration role double and real config. |
+| `test/unit/auth-better-auth/local-administration-opener.test.ts` | Concrete opener result and resource ownership with runtime doubles. |
 | `test/unit/auth-better-auth/local-user-administration.test.ts` | Account lifecycle and selected-user reset/disable/revocation decisions with provider doubles. Implemented, with `local-user-administration-revocation.test.ts` and `local-user-administration-clients.test.ts`. |
 | `test/unit/terminal/hidden-line-input.test.ts` | Implemented: hidden terminal prompts, piped lines, ended input, Ctrl-C and Ctrl-D, input errors, and release of standard input. |
 | `test/unit/organizations/organization-administration.test.ts` | Actor/target organization checks, current/proposed grants, self-grants, selective removal, and safe retry decisions with a directory double. Implemented, with `OrganizationDirectoryDouble`. This file covers the AUTH-07 list and selection: only active memberships with an application permission are listed, the selected mark, a current read for each list and selection, exact selection checks, and read failures that reach the caller. For AUTH-08, `organization-administration-grants.test.ts` and `organization-administration-targets.test.ts` add the grant authority, self-grants, selective removal, the last grant, forged roles and actions, the actor and target organization checks, MFA, and the exact directory change and record. `organization-administration-changes.test.ts` adds revisions, concurrent changes, retries after an unknown outcome, and the results and failures of the directory. `organization-administration-members.test.ts` adds the member overview and the seat count, with paging, repeats, limits, and failures. `organization-administration-invitations.test.ts` and `organization-administration-invitation-overview.test.ts` add the invitations: one role for each invitation, duplicate sends, resends and revokes, states, the identity policy, and records. |
@@ -1368,6 +1389,7 @@ behavior.
 | `test/integration/auth/mcp-context.test.ts` | Real provider/MCP collaboration, error mapping, and sequential/concurrent isolation. |
 | `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, client registration without a remaining session, and per-user session and MCP token revocation without affecting peers. Implemented, with `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`, and a SQL trace that shows no command SQL on provider tables. |
 | `test/acceptance/auth/local-user-commands.test.ts`, `local-client-registration.test.ts` | Implemented: offline add and list with hidden passwords and no network, targeted reset and disable with peers, the live-server lock for each command, zero-account recovery, and approved client registration. |
+| `test/acceptance/auth/local-command-provider-loading.test.ts` | Built entry point rejects malformed syntax, invalid config, and hosted commands before loading a local provider module. |
 | `test/integration/auth/local-access.test.ts` | Two distinct user subjects in one tenant; equal evaluation permissions, separate sessions, current account-state checks, disabled login and issuance, no refresh grant, and disabled-user denial after token verification. |
 | `test/integration/auth/local-installation.test.ts` | Application/provider startup collaboration: one persistent installation UUID; reset/disable preserve IDs; backup/restore preserve database and secrets; existing data without identity fails closed. |
 | `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. Implemented so far: the hosted composition with session and membership-directory doubles keeps the organization context of each request and combines only the explicit permissions of independent grants. `hosted-organizations.test.ts` covers same-user browser/MCP isolation and IDOR for organization selection, and `hosted-administration.test.ts` covers forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat failures. |

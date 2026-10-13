@@ -1,21 +1,21 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
-import { assertRevealsNone, loopbackRedirectUri, run, RuntimeDouble, ScriptedInput } from './fixtures/local-auth-command-harness.ts';
+import { assertRevealsNone, loopbackRedirectUri, run, AdministrationOpenerDouble, ScriptedInput } from './fixtures/local-auth-command-harness.ts';
 
-describe('runLocalAuthCommand command line and lifecycle', () => {
+describe('runLocalAuthCommand with configuration and administration', () => {
   describe('command line', () => {
     test('Given an unknown command, when it runs, then it exits with status 2, prints the usage without the arguments, and opens no data', async () => {
       for (const args of [['users'], ['users', 'promote', 'alice@example.com'], ['clients', 'list'], ['serve', 'immediately'], ['--help']]) {
-        const runtime = new RuntimeDouble();
+        const opener = new AdministrationOpenerDouble();
 
-        const result = await run(args, { runtime });
+        const result = await run(args, { opener });
 
         assert.equal(result.code, 2, args.join(' '));
         assert.match(result.errors, /^Unknown command\./);
         assert.match(result.errors, /magumagu users add <email>/);
         assert.doesNotMatch(result.errors, /promote|alice@example\.com|immediately/);
-        assert.deepEqual([result.output, runtime.events, result.prompts], ['', [], []]);
+        assert.deepEqual([result.output, opener.events, result.prompts], ['', [], []]);
       }
     });
 
@@ -33,15 +33,15 @@ describe('runLocalAuthCommand command line and lifecycle', () => {
       ];
 
       for (const args of refused) {
-        const runtime = new RuntimeDouble();
+        const opener = new AdministrationOpenerDouble();
 
-        const result = await run(args, { runtime });
+        const result = await run(args, { opener });
 
         assert.equal(result.code, 2, args.join(' '));
         assert.match(result.errors, /Usage:/);
         assert.doesNotMatch(result.errors, /alice@example\.com|bob@example\.com/);
         assertRevealsNone(result);
-        assert.deepEqual([result.output, runtime.events, result.prompts], ['', [], []]);
+        assert.deepEqual([result.output, opener.events, result.prompts], ['', [], []]);
       }
     });
 
@@ -60,32 +60,32 @@ describe('runLocalAuthCommand command line and lifecycle', () => {
       ];
 
       for (const options of refused) {
-        const runtime = new RuntimeDouble();
+        const opener = new AdministrationOpenerDouble();
 
-        const result = await run(['clients', 'register', ...options], { runtime });
+        const result = await run(['clients', 'register', ...options], { opener });
 
         assert.equal(result.code, 2, options.join(' '));
         assert.match(result.errors, /Usage:/);
         assert.doesNotMatch(result.errors, /alice@example\.com|bob@example\.com|127\.0\.0\.1:33418/);
         assertRevealsNone(result);
-        assert.deepEqual([result.output, runtime.events], ['', []]);
+        assert.deepEqual([result.output, opener.events], ['', []]);
       }
     });
   });
 
   describe('configuration and lifecycle', () => {
-    test('Given the self-hosted settings, when a command runs, then it opens the runtime for the configured data directory and public URLs and closes it after the command', async () => {
-      const runtime = new RuntimeDouble();
+    test('Given the self-hosted settings, when a command runs, then it opens administration for the configured data directory and public URLs and closes it after the command', async () => {
+      const opener = new AdministrationOpenerDouble();
 
-      const result = await run(['users', 'list'], { runtime });
+      const result = await run(['users', 'list'], { opener });
 
       assert.equal(result.code, 0);
-      assert.deepEqual(runtime.settings.map(({ dataDirectory, publicBaseUrl, mcpResourceUrl }) => ({ dataDirectory, publicBaseUrl, mcpResourceUrl })), [{
+      assert.deepEqual(opener.settings.map(({ dataDirectory, publicBaseUrl, mcpResourceUrl }) => ({ dataDirectory, publicBaseUrl, mcpResourceUrl })), [{
         dataDirectory: '/var/lib/magumagu',
         publicBaseUrl: 'http://localhost:8080/',
         mcpResourceUrl: 'http://localhost:8080/mcp',
       }]);
-      assert.deepEqual(runtime.events, ['open', 'close']);
+      assert.deepEqual(opener.events, ['open', 'close']);
     });
 
     test('Given missing settings or the hosted deployment, when a command runs, then it exits with status 1 and a safe message and opens no data', async () => {
@@ -97,14 +97,14 @@ describe('runLocalAuthCommand command line and lifecycle', () => {
       ];
 
       for (const { settings, message } of cases) {
-        const runtime = new RuntimeDouble();
+        const opener = new AdministrationOpenerDouble();
 
-        const result = await run(['users', 'list'], { runtime, environment: settings });
+        const result = await run(['users', 'list'], { opener, environment: settings });
 
         assert.equal(result.code, 1);
         assert.match(result.errors, message);
         assert.doesNotMatch(result.errors, /workos-api-key-placeholder|cookie-password-placeholder/);
-        assert.deepEqual([result.output, runtime.events], ['', []]);
+        assert.deepEqual([result.output, opener.events], ['', []]);
       }
     });
 
@@ -118,43 +118,43 @@ describe('runLocalAuthCommand command line and lifecycle', () => {
       ];
 
       for (const args of commands) {
-        const runtime = new RuntimeDouble();
-        runtime.openFailure = Object.assign(new Error('The data directory is in use by another Magumagu process. Stop that process, then try again.'), { name: 'DataDirectoryInUseError' });
+        const opener = new AdministrationOpenerDouble();
+        opener.openFailure = Object.assign(new Error('The data directory is in use by another Magumagu process. Stop that process, then try again.'), { name: 'DataDirectoryInUseError' });
 
-        const result = await run(args, { runtime, input: new ScriptedInput('alice-password-1', 'alice-password-1') });
+        const result = await run(args, { opener, input: new ScriptedInput('alice-password-1', 'alice-password-1') });
 
         assert.equal(result.code, 1, args.join(' '));
         assert.equal(result.errors, 'The data directory is in use by another Magumagu process. Stop that process, then try again.');
-        assert.deepEqual([result.output, result.prompts, runtime.events], ['', [], ['open']]);
+        assert.deepEqual([result.output, result.prompts, opener.events], ['', [], ['open']]);
       }
     });
 
-    test('Given a command that fails, when it runs, then the runtime still closes and the command exits with status 1', async () => {
-      const runtime = new RuntimeDouble();
+    test('Given a command that fails, when it runs, then administration still closes and the command exits with status 1', async () => {
+      const opener = new AdministrationOpenerDouble();
 
-      const result = await run(['users', 'disable', 'carol@example.com'], { runtime });
+      const result = await run(['users', 'disable', 'carol@example.com'], { opener });
 
       assert.equal(result.code, 1);
-      assert.deepEqual(runtime.events, ['open', 'close']);
+      assert.deepEqual(opener.events, ['open', 'close']);
     });
 
-    test('Given a runtime that fails to close after the command, when the command runs, then the command result and the close failure are both reported and it exits with status 1', async () => {
-      const runtime = new RuntimeDouble();
-      runtime.closeFailure = new Error('The database did not close.');
-      runtime.provider.addUser('alice@example.com', 'alice-password-1');
+    test('Given administration that fails to close after the command, when the command runs, then the command result and the close failure are both reported and it exits with status 1', async () => {
+      const opener = new AdministrationOpenerDouble();
+      opener.closeFailure = new Error('The database did not close.');
+      opener.provider.addUser('alice@example.com', 'alice-password-1');
 
-      const result = await run(['users', 'disable', 'alice@example.com'], { runtime });
+      const result = await run(['users', 'disable', 'alice@example.com'], { opener });
 
       assert.equal(result.code, 1);
       assert.match(result.output, /^Disabled alice@example\.com/);
       assert.equal(result.errors, 'The database did not close.');
     });
 
-    test('Given a command failure and a runtime that fails to close, when the command runs, then the message names both failures', async () => {
-      const runtime = new RuntimeDouble();
-      runtime.closeFailure = new Error('The database did not close.');
+    test('Given a command failure and administration that fails to close, when the command runs, then the message names both failures', async () => {
+      const opener = new AdministrationOpenerDouble();
+      opener.closeFailure = new Error('The database did not close.');
 
-      const result = await run(['users', 'disable', 'carol@example.com'], { runtime });
+      const result = await run(['users', 'disable', 'carol@example.com'], { opener });
 
       assert.equal(result.code, 1);
       assert.equal(result.errors, 'No local account has this email address. The cleanup after this failure also failed: The database did not close.');

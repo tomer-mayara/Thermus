@@ -1,10 +1,14 @@
 # Authentication refactoring plan
 
-Status: planned; source implementation has not started.
+Status: Slice 1 is implemented in pull request
+[#56](https://github.com/3-headed-monkey/Magumagu/pull/56). Gate results are
+recorded in that pull request; owner review is pending. Slice 2 remains planned.
 
 Revision date: 2026-10-13. Reviewed baseline: `b73a7f821edac538afdd0498874dd7f28b3c1fc2`.
 
-This plan records no implementation or passing product test result. Follow the
+Slice 1 adds the local command role and lazy opener at the current source paths.
+It does not relocate the verifier, hosted session, provider files, MCP endpoint,
+or HTTP header. Follow the
 [coding principles](../coding-principles.md),
 [repository work rules](../../AGENTS.md), and [test gate policy](test-gate-policy.md).
 
@@ -88,40 +92,44 @@ socket-address overwrite. These endpoint and header moves need no new interfaces
 
 ## Local command role and opener
 
-The [command](../../src/auth-better-auth/local-auth-command.ts) creates the runtime
-and administrator; its fixtures depend on that runtime. This existing boundary
-justifies `LocalUserAdministration`, without an imagined second vendor.
+The [command](../../src/auth-better-auth/local-auth-command.ts) previously created
+the runtime and administrator; its fixtures depended on that runtime. Slice 1
+extracts this existing collaboration as `LocalUserAdministration`, without an
+imagined second vendor.
 
-Define `auth/local-auth/local-user-administration.ts` with `addUser`, `listUsers`,
+`auth/local-auth/local-user-administration.ts` defines `addUser`, `listUsers`,
 `resetPassword`, `disableUser`, and `registerClient`. One caller needs all five.
-Retain the small command switch.
+The small command switch remains.
 
-Move only consumer records: `LocalAccount`, `ApprovedClient`,
+The role module owns the consumer records: `LocalAccount`, `ApprovedClient`,
 `RegisteredClient` (including its `resourceServerClientRegistered` output flag),
-and `PasswordSource`. Move and reuse `LocalAuthSettings`: the
-[runtime](../../src/auth-better-auth/better-auth-runtime.ts) already uses `Pick`
-of the self-hosted config for `dataDirectory`, `publicBaseUrl`, and `mcpResourceUrl`.
-Keep that shape and name; add no duplicate settings record or conversion model.
+and `PasswordSource`. It reuses `LocalAuthSettings` with its existing
+`Pick` of the self-hosted config for `dataDirectory`, `publicBaseUrl`, and
+`mcpResourceUrl`. The [runtime](../../src/auth-better-auth/better-auth-runtime.ts)
+uses that neutral type too.
+The settings shape and name stay; no duplicate record or conversion model is added.
 
-Keep `LocalAdministrationError`, `AdministrationFailure`, private messages,
-and SDK error translation in the provider. The command uses `Error.message`
+The provider keeps `LocalAdministrationError`, `AdministrationFailure`, private
+messages, and SDK error translation. The command uses `Error.message`
 and `SuppressedError`; it needs no shared typed error protocol. The concrete
-class becomes `BetterAuthUserAdministration`.
+class becomes `BetterAuthUserAdministration` in slice 2.
 
-Require a lazy `openAdministration` in the command context. Keep its function
-and result types beside that context. It accepts the neutral settings and returns
+The command context requires a lazy `openAdministration`. Its `OpenAdministration`
+and `OpenedLocalAdministration` types stay beside that context. It accepts the
+neutral settings and returns
 only `{ administration, close(): Promise<void> }`. The role itself owns no
-open or close. The command must not receive `BetterAuthRuntime`, `LocalAuth`,
+open or close. The command receives no `BetterAuthRuntime`, `LocalAuth`,
 `$context`, SQLite, or provider/client-record secrets.
 
 `index.ts` injects an async closure that imports the concrete opener only when
-invoked, after syntax, config, and edition validation. One exported function
-beside the concrete administrator is sufficient. It owns the runtime until it
+invoked, after syntax, config, and edition validation. The exported
+`openBetterAuthAdministration` function stays beside the concrete administrator.
+It owns the runtime until it
 returns successfully and releases it on pre-return failure, preserving both
 opening and cleanup errors. Then the command owns closure through its existing
-`AsyncDisposableStack`. Reuse the runtime's idempotent close.
+`AsyncDisposableStack`. The opener reuses the runtime's idempotent close.
 
-Preserve this sequence: parse syntax → load config/check edition → open → invoke
+The sequence remains: parse syntax → load config/check edition → open → invoke
 the selected operation with a lazy password source where needed → write output
 → close. Do not add a universal target-validation or password stage.
 
@@ -140,6 +148,11 @@ passwords; it never receives long-lived provider secrets or the raw runtime.
 ## Logical packages and dependency rules
 
 Folder nesting does not merge these logical packages into one unit-test package.
+During slice 1, the local-command package contains the new role at
+`auth/local-auth/local-user-administration.ts` and the command and parser at
+their existing `auth-better-auth/` paths. The remaining `auth-better-auth/`
+files form the Better Auth implementation package. Config remains a separate
+package. The table gives the final boundaries after slice 2.
 
 | Logical package | Final source boundary |
 | --- | --- |
@@ -173,28 +186,44 @@ Record a passing characterization baseline and coverage for the invariants below
 Add passing cases where needed; do not force unchanged acceptance cases to fail.
 Use BDD/TDD red-green for new contracts and guards, per the coding principles.
 
+The slice 1 characterization baseline ran on commit `5d15746`, based on
+`385fe91`. It exited with status 0: 28 tests, 28 passed, none failed, skipped,
+or todo. It used this focused command:
+
+```sh
+npm run build && node --test dist/test/integration/auth/local-auth-command*.test.js dist/test/unit/auth-better-auth/better-auth-runtime.test.js dist/test/acceptance/auth/local-user-commands.test.js dist/test/acceptance/auth/local-client-registration.test.js
+```
+
+The new provider-loading acceptance case failed before production changes:
+malformed `users` syntax loaded a provider module and returned status 1 instead
+of usage status 2. This establishes the red step for the lazy opener. It is not
+a complete-candidate gate result.
+
 ## Implementation slices
 
 ### 1. Extract the local role and lazy opener
 
-Extract the neutral role, consumer records, and existing settings shape. The new
-role file may use its final path now; command, parser, and concrete administrator
-keep their current source paths until slice 2. The class rename can wait too.
+The neutral role, consumer records, and existing settings shape are extracted.
+The new role file uses its final path; command, parser, and concrete administrator
+keep their current source paths until slice 2. The class rename also waits for
+slice 2.
 
-Inject the required lazy opener from `index.ts`. Remove the command's concrete
-construction and vendor runtime dependency. Preserve each operation's input and
-failure timing. Verify opening failure, opening plus cleanup failure, operation
-failure, output failure, cleanup failure, and repeated close. Verify lazy password
-reads, no prompts for list/disable, and output-before-close.
+`index.ts` injects the required lazy opener. The command has no concrete
+construction or vendor runtime dependency. Each operation keeps its input and
+failure timing. Focused cases cover opening failure, opening plus cleanup failure,
+operation failure, output failure, cleanup failure, and repeated close. They also
+cover lazy password reads, no prompts for list/disable, and output-before-close.
 
-Update affected current docs and tests in this slice. Apply the relevant gates
-to this complete candidate.
+Affected docs and tests are updated in this slice. The relevant gates apply
+to its complete candidate.
 
 Exit: the command uses the five-operation role and narrow opener result; its
 observable operations, errors, password timing, output, and resource ownership
 remain covered and passing.
 
 ### 2. Relocate once and enforce direct boundaries
+
+Status: planned; not part of the slice 1 pull request.
 
 Move remaining files directly to their final paths. Rename the administrator and
 move the MCP outage endpoint and HTTP header constant. Update imports/composition
@@ -225,13 +254,17 @@ required gates and receives manager and owner review.
 ## Path and documentation audit
 
 Audit static/type/literal dynamic imports, public re-exports, fixtures, support
-files, and generated child-process module URLs. Two specific risks need checks:
+files, and generated child-process module URLs. These specific risks need checks:
 
 - The [lock test](../../test/unit/auth-better-auth/data-directory-lock.test.ts)
   builds its child-process module URL at line 16; update it after relocation.
 - The [command integration test](../../test/integration/auth/local-auth-command.test.ts)
   has a SQL trace guard at line 143. Its old `local-user-administration` pattern
   would miss the renamed concrete file. Update it without weakening the assertion.
+- The [provider-loading acceptance test](../../test/acceptance/auth/local-command-provider-loading.test.ts)
+  guards current provider paths in a subprocess import hook. Update those paths
+  during relocation and retain its accepted-command control, which proves that
+  the guard catches a provider load.
 
 Update the README, [authentication design](../design/authentication-design.md),
 [test inventory](../testing/test-list.md), and [test gate policy](test-gate-policy.md)
@@ -260,7 +293,7 @@ application policy and placeholder behavior; they do not prove WorkOS behavior.
 
 ## Completion gates
 
-These instructions apply to future implementation. Run changed tests locally
+These instructions apply to each implementation slice. Run changed tests locally
 before each commit. On each complete candidate, run `npm run check`,
 `habit-hooks` with `.habit-hooks/snooze.json` as `[]`,
 `npm run test:integration`, and `npm run test:acceptance`.
@@ -273,7 +306,8 @@ Record gate results as required by the test gate policy.
 Open a draft PR first; complete candidate gates before Ready. The manager reviews
 delegated work and the owner reviews the implementation. Every started Actions
 job must pass. Return to Draft before a fix after Ready. Follow repository merge
-rules. No product tests are run for this documentation change.
+rules. Record implementation and gate evidence in the pull request notes; do not
+treat the saved plan as evidence of a gate pass.
 
 ## Review corrections and references
 

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import type { BetterAuthRuntime, LocalAuthSettings } from '../../../../src/auth-better-auth/better-auth-runtime.ts';
-import { runLocalAuthCommand, type HiddenInput } from '../../../../src/auth-better-auth/local-auth-command.ts';
-import { LocalProviderDouble } from './local-provider-double.ts';
+import type { LocalAuthSettings } from '../../../../src/auth/local-auth/local-user-administration.ts';
+import { runLocalAuthCommand, type HiddenInput, type OpenedLocalAdministration } from '../../../../src/auth-better-auth/local-auth-command.ts';
+import { LocalUserAdministration } from '../../../../src/auth-better-auth/local-user-administration.ts';
+import { LocalProviderDouble } from '../../../unit/auth-better-auth/fixtures/local-provider-double.ts';
 
 export const environment = {
   DEPLOYMENT: 'self-hosted',
@@ -25,22 +26,19 @@ export class ScriptedInput implements HiddenInput {
   }
 }
 
-export class RuntimeDouble {
+export class AdministrationOpenerDouble {
   readonly events: string[] = [];
   readonly settings: LocalAuthSettings[] = [];
   readonly provider = new LocalProviderDouble();
   openFailure?: Error;
   closeFailure?: Error;
 
-  readonly open = async (settings: LocalAuthSettings): Promise<BetterAuthRuntime> => {
+  readonly open = async (settings: LocalAuthSettings): Promise<OpenedLocalAdministration> => {
     this.events.push('open');
     this.settings.push(settings);
     if (this.openFailure) throw this.openFailure;
     return {
-      installationId: 'installation-id',
-      tenantId: 'local:installation-id',
-      auth: this.provider.auth,
-      resourceServerClient: this.provider.resourceServerClient,
+      administration: new LocalUserAdministration(this.provider.auth, this.provider.resourceServerClient),
       close: async () => {
         this.events.push('close');
         if (this.closeFailure) throw this.closeFailure;
@@ -56,8 +54,8 @@ export interface Run {
   readonly prompts: readonly string[];
 }
 
-export async function run(args: readonly string[], options: { runtime?: RuntimeDouble; input?: ScriptedInput; environment?: Record<string, string> } = {}): Promise<Run> {
-  const runtime = options.runtime ?? new RuntimeDouble();
+export async function run(args: readonly string[], options: { opener?: AdministrationOpenerDouble; input?: ScriptedInput; environment?: Record<string, string> } = {}): Promise<Run> {
+  const opener = options.opener ?? new AdministrationOpenerDouble();
   const input = options.input ?? new ScriptedInput();
   let output = '';
   const errors: string[] = [];
@@ -66,7 +64,7 @@ export async function run(args: readonly string[], options: { runtime?: RuntimeD
     input,
     output: { write: (text) => { output += text; } },
     logger: { error: (message) => { errors.push(message); } },
-    openRuntime: runtime.open,
+    openAdministration: opener.open,
   });
   return { code, output, errors: errors.join('\n'), prompts: input.prompts };
 }

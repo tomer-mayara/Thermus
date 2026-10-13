@@ -1,7 +1,6 @@
 import { loadDeploymentConfig } from '../config/deployment-config.ts';
-import { openBetterAuthRuntime, type BetterAuthRuntime, type LocalAuthSettings } from './better-auth-runtime.ts';
+import type { LocalUserAdministration, LocalAccount, LocalAuthSettings, PasswordSource, RegisteredClient } from '../auth/local-auth/local-user-administration.ts';
 import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';
-import { LocalUserAdministration, type LocalAccount, type PasswordSource, type RegisteredClient } from './local-user-administration.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -10,12 +9,19 @@ export interface HiddenInput {
   readHiddenLine(prompt: string): Promise<string | undefined>;
 }
 
+export interface OpenedLocalAdministration {
+  readonly administration: LocalUserAdministration;
+  close(): Promise<void>;
+}
+
+type OpenAdministration = (settings: LocalAuthSettings) => Promise<OpenedLocalAdministration>;
+
 export interface LocalAuthCommandContext {
   readonly environment: Environment;
   readonly input: HiddenInput;
   readonly output: { write(text: string): void };
   readonly logger: { error(message: string): void };
-  readonly openRuntime?: (settings: LocalAuthSettings) => Promise<BetterAuthRuntime>;
+  readonly openAdministration: OpenAdministration;
 }
 
 class LocalCommandUnavailableError extends Error {
@@ -43,7 +49,7 @@ export async function runLocalAuthCommand(args: readonly string[], context: Loca
   const command = parsedCommand(args, context.logger);
   if (command === undefined) return EXIT_USAGE;
   try {
-    await runWithRuntime(command, context);
+    await runWithAdministration(command, context);
     return EXIT_SUCCESS;
   } catch (error) {
     context.logger.error(failureMessage(error));
@@ -61,14 +67,12 @@ function parsedCommand(args: readonly string[], logger: LocalAuthCommandContext[
   }
 }
 
-async function runWithRuntime(command: LocalAuthCommand, context: LocalAuthCommandContext): Promise<void> {
+async function runWithAdministration(command: LocalAuthCommand, context: LocalAuthCommandContext): Promise<void> {
   const config = loadDeploymentConfig(context.environment, 'http');
   if (config.deployment !== 'self-hosted') throw new LocalCommandUnavailableError();
-  const openRuntime = context.openRuntime ?? openBetterAuthRuntime;
   await using owned = new AsyncDisposableStack();
-  const runtime = owned.adopt(await openRuntime(config), (opened) => opened.close());
-  const administration = new LocalUserAdministration(runtime.auth, runtime.resourceServerClient);
-  context.output.write(await perform(command, administration, context.input));
+  const opened = owned.adopt(await context.openAdministration(config), (administration) => administration.close());
+  context.output.write(await perform(command, opened.administration, context.input));
 }
 
 async function perform(command: LocalAuthCommand, administration: LocalUserAdministration, input: HiddenInput): Promise<string> {

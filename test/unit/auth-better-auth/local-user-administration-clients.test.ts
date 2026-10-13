@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { LocalUserAdministration, type PasswordSource } from '../../../src/auth-better-auth/local-user-administration.ts';
+import { LocalUserAdministration } from '../../../src/auth-better-auth/local-user-administration.ts';
+import type { PasswordSource } from '../../../src/auth/local-auth/local-user-administration.ts';
 import { PasswordAnswers, rejectsWith } from './fixtures/administration-fixtures.ts';
 import { LocalProviderDouble } from './fixtures/local-provider-double.ts';
 
