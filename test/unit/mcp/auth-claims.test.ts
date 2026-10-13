@@ -9,6 +9,7 @@ import {
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import { AccessResolverMock } from './fixtures/access-resolver-mock.ts';
+import { FailureReporterMock } from './fixtures/failure-reporter-mock.ts';
 import { IdentityVerifierMock } from './fixtures/identity-verifier-mock.ts';
 
 describe('MCPServer verified claim validation', () => {
@@ -88,11 +89,13 @@ describe('MCPServer verified claim validation', () => {
   ];
   let verifier: IdentityVerifierMock;
   let resolver: AccessResolverMock;
+  let reporter: FailureReporterMock;
   let server: MCPServer;
 
   beforeEach(() => {
     verifier = new IdentityVerifierMock(new Map(scenarios.map(({ token, identity }) => [token, identity])));
     resolver = new AccessResolverMock();
+    reporter = new FailureReporterMock();
     const options = {
       auth: {
         verifier,
@@ -101,6 +104,7 @@ describe('MCPServer verified claim validation', () => {
         expectedResource: new URL(resourceUrl),
         requiredScopes: ['mcp:read'],
       },
+      reportFailure: reporter.report,
     };
     server = new MCPServer(options);
   });
@@ -110,7 +114,7 @@ describe('MCPServer verified claim validation', () => {
   });
 
   for (const scenario of scenarios) {
-    test(`Given ${scenario.label}, when an HTTP client discovers the server, then it receives ${scenario.status} ${scenario.error} without MCP dispatch`, { timeout: 5_000 }, async (context) => {
+    test(`Given ${scenario.label}, when an HTTP client discovers the server, then it receives ${scenario.status} ${scenario.error} without MCP dispatch or a failure report`, { timeout: 5_000 }, async (context) => {
       context.mock.method(Date, 'now', () => nowUnixSeconds * 1_000);
       const dispatchSpy = context.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
       const protocolVersion = '2026-07-28';
@@ -147,12 +151,14 @@ describe('MCPServer verified claim validation', () => {
         verifierCalls: verifier.calls,
         resolverCalls: resolver.calls,
         dispatchCalls: dispatchSpy.mock.callCount(),
+        reports: reporter.reports,
       }, {
         status: scenario.status,
         error: scenario.error,
         verifierCalls: [scenario.token],
         resolverCalls: [],
         dispatchCalls: 0,
+        reports: [],
       });
       if (scenario.error === 'insufficient_scope') {
         const challenge = response.headers.get('WWW-Authenticate');
