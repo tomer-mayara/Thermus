@@ -6,6 +6,13 @@ import type { BrowserSession } from './browser-session.ts';
 // its own permission before work starts.
 export type AccountOperation = (request: Request, context: RequestContext) => Promise<Response>;
 
+export interface AccountFailureReport {
+  readonly path: string;
+  readonly cause: unknown;
+}
+
+export type AccountFailureReporter = (report: AccountFailureReport) => void;
+
 export interface HostedAccountRoutesOptions {
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;

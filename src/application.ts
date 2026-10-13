@@ -1,10 +1,11 @@
 import type { LocalAuthPages } from './auth-better-auth/local-auth-pages.ts';
 import type { AccessResolver } from './auth/access-context.ts';
 import type { DeploymentConfig } from './config/deployment-config.ts';
-import { HostedAccountRoutes, type AccountOperation } from './hosted-admin/account-routes.ts';
+import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation } from './hosted-admin/account-routes.ts';
 import type { BrowserSession } from './hosted-admin/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
+import type { OrganizationDirectory } from './organizations/organization-administration.ts';
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
 type HostedConfig = Extract<DeploymentConfig, { deployment: 'hosted' }>;
@@ -26,7 +27,14 @@ export interface HostedRequestHandlers {
 export interface HostedProviderParts {
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;
+  readonly organizations: OrganizationDirectory;
   readonly mcp: Pick<MCPServer, 'fetch' | 'close'>;
+}
+
+// The application parts of the account routes. Each account operation checks its own permission before work starts.
+export interface HostedAccountParts {
+  readonly reportFailure: AccountFailureReporter;
+  readonly operation?: AccountOperation;
 }
 
 export interface Application {
@@ -101,14 +109,19 @@ async function createHostedApplication(config: HostedConfig, logger: Application
   const { UnavailableHostedAuthentication, UnavailableMcpEndpoint } = await import('./auth-unavailable/unavailable-hosted-authentication.ts');
   const authentication = new UnavailableHostedAuthentication();
   logger.info('Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.');
-  return composeHostedApplication(config, { session: authentication, accessResolver: authentication, mcp: new UnavailableMcpEndpoint() });
+  const parts = { session: authentication, accessResolver: authentication, organizations: authentication, mcp: new UnavailableMcpEndpoint() };
+  return composeHostedApplication(config, parts, { reportFailure: accountFailureReporter(logger) });
 }
 
-export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, operation?: AccountOperation): Application {
+export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {
+  return ({ path, cause }) => logger.error(`An account request failed unexpectedly for ${path}: ${String(cause)}`);
+}
+
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts): Application {
   const owned = new AsyncDisposableStack();
   owned.defer(() => parts.mcp.close());
-  const account = new HostedAccountRoutes({ session: parts.session, accessResolver: parts.accessResolver, operation });
-  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => account.handle(request) });
+  const routes = new HostedAccountRoutes({ session: parts.session, accessResolver: parts.accessResolver, operation: account.operation });
+  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request) });
   return applicationRecord(handle, owned);
 }
 

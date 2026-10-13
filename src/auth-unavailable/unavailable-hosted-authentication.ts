@@ -1,18 +1,24 @@
 import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../auth/access-context.ts';
 import type { BrowserSession, BrowserSessionState } from '../hosted-admin/browser-session.ts';
+import type { OrganizationDirectory, OrganizationMembership } from '../organizations/organization-administration.ts';
 
 const UNAVAILABLE: BrowserSessionState = Object.freeze({ status: 'unavailable' });
 const DENIED: AccessDecision = Object.freeze({ allowed: false, reason: 'account-inactive' });
+const NO_MEMBERSHIPS: readonly OrganizationMembership[] = Object.freeze([]);
 const MCP_UNAVAILABLE = Object.freeze({ error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' });
 
 // Stands in for the hosted WorkOS provider, which does not exist yet, so that the hosted edition can start without it.
-export class UnavailableHostedAuthentication implements BrowserSession, AccessResolver {
+export class UnavailableHostedAuthentication implements BrowserSession, AccessResolver, OrganizationDirectory {
   async authenticate(_cookieHeader: string | null): Promise<BrowserSessionState> {
     return UNAVAILABLE;
   }
 
   async resolve(_user: AuthenticatedUser): Promise<AccessDecision> {
     return DENIED;
+  }
+
+  async membershipsOf(_user: AuthenticatedUser): Promise<readonly OrganizationMembership[]> {
+    return NO_MEMBERSHIPS;
   }
 }
 

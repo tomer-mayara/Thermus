@@ -4,7 +4,7 @@ import { HostedAccountRoutes } from '../../../../src/hosted-admin/account-routes
 import type { BrowserSessionState } from '../../../../src/hosted-admin/browser-session.ts';
 import { AccessResolverMock, type ConfiguredAccess } from '../../mcp/fixtures/access-resolver-mock.ts';
 import { AccountOperationDouble } from './account-operation-double.ts';
-import { BrowserSessionDouble, type ConfiguredSession } from './browser-session-double.ts';
+import { BrowserSessionDouble, SignedInSessionDouble, type ConfiguredSession, type SignedInSetup } from './browser-session-double.ts';
 
 const publicBaseUrl = 'https://magumagu.example/';
 const authority = 'hosted-provider-double';
@@ -36,8 +36,8 @@ export function serve(setup: Setup) {
   return { routes, session, resolver, operations };
 }
 
-export function signedIn(user: AuthenticatedUser): BrowserSessionState {
-  return { status: 'signed-in', user };
+export function signedIn(user: AuthenticatedUser, setup: SignedInSetup = {}): SignedInSessionDouble {
+  return new SignedInSessionDouble(user, setup);
 }
 
 export function contextOf(user: AuthenticatedUser, grants: readonly RoleGrant[], permissions: readonly string[]): RequestContext {
