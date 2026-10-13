@@ -1,4 +1,4 @@
-import type { LocalAuth } from '../../../../src/auth-better-auth/better-auth-runtime.ts';
+import type { LocalAuth, ResourceServerClient, ResourceServerClientRecord } from '../../../../src/auth-better-auth/better-auth-runtime.ts';
 
 const SESSION_COOKIE = 'better-auth.session_token';
 const EMAIL = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i;
@@ -44,6 +44,25 @@ interface SortBy {
   readonly direction: 'asc' | 'desc';
 }
 
+// It holds a client at the start, so a registration creates only the native client.
+export class ResourceServerClientRecordDouble implements ResourceServerClientRecord {
+  readonly recorded: ResourceServerClient[] = [];
+  stored: ResourceServerClient | undefined = { clientId: 'stored-resource-server-client', clientSecret: 'stored-resource-server-secret' };
+  readFailure: Error | undefined;
+  recordFailure: Error | undefined;
+
+  current(): ResourceServerClient | undefined {
+    if (this.readFailure) throw this.readFailure;
+    return this.stored;
+  }
+
+  record(client: ResourceServerClient): void {
+    if (this.recordFailure) throw this.recordFailure;
+    this.recorded.push(client);
+    this.stored = client;
+  }
+}
+
 // Its hash contains the password on purpose: a test that finds no password in the output
 // also finds no hash there, and a test can see that only provider hashes reach storage.
 export class LocalProviderDouble {
@@ -54,7 +73,10 @@ export class LocalProviderDouble {
   readonly calls: string[] = [];
   readonly listPageSizes: number[] = [];
   readonly failures = new Map<ProviderOperation, Error>();
+  readonly resourceServerClient = new ResourceServerClientRecordDouble();
   readonly auth: LocalAuth;
+  // When true, a confidential client gets no secret.
+  withholdClientSecrets = false;
   private lastId = 0;
 
   constructor() {
@@ -84,6 +106,10 @@ export class LocalProviderDouble {
 
   static hashOf(password: string): string {
     return `provider-hash:${password}`;
+  }
+
+  static clientSecretOf(clientId: string): string {
+    return `client-secret:${clientId}`;
   }
 
   addUser(email: string, password: string | undefined, banned: boolean | null = null): StoredUser {
@@ -145,7 +171,8 @@ export class LocalProviderDouble {
     this.lastId += 1;
     const clientId = `client-${this.lastId}`;
     this.clients.push({ clientId, sessionUserId, metadata: structuredClone(metadata) });
-    return { ...metadata, client_id: clientId, reference_id: 'installation-id' };
+    const secret = metadata.token_endpoint_auth_method === 'none' || this.withholdClientSecrets ? {} : { client_secret: LocalProviderDouble.clientSecretOf(clientId) };
+    return { ...metadata, client_id: clientId, ...secret, reference_id: 'installation-id' };
   }
 
   private sessionTokenOf(headers: Headers): string | undefined {

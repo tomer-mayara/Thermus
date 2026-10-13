@@ -1,0 +1,1 @@
+{"version":3,"file":"failure-reporter-mock.js","sourceRoot":"","sources":["../../../../../test/unit/mcp/fixtures/failure-reporter-mock.ts"],"names":[],"mappings":"AAEA,MAAM,OAAO,mBAAmB;IACrB,OAAO,GAAoB,EAAE,CAAC;IAE9B,MAAM,GAAG,CAAC,MAAqB,EAAQ,EAAE;QAChD,IAAI,CAAC,OAAO,CAAC,IAAI,CAAC,MAAM,CAAC,CAAC;IAC5B,CAAC,CAAC;CACH"}

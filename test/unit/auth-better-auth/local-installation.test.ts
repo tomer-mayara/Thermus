@@ -15,6 +15,13 @@ const generatedSecret = /^[A-Za-z0-9_-]{43}$/;
 const missingIdentity = 'The data directory has authentication data but no valid installation identity. '
   + 'Magumagu does not create a new identity for retained data. '
   + 'Restore the complete data directory from a backup, or move the data away to start a new installation.';
+const invalidResourceServerClient = 'The resource-server-client.json file in the data directory is not valid. '
+  + 'Restore the complete data directory from a backup, or remove the file and run magumagu clients register again.';
+const resourceServerClient = {
+  clientId: 'resource-server-client-id',
+  clientSecret: 'resource-server-client-secret',
+  resource: 'http://localhost:8080/mcp',
+};
 
 function opened(t: TestContext, directory: string): LocalInstallation {
   const installation = openLocalInstallation(directory);
@@ -40,9 +47,9 @@ function databaseSnapshot(directory: string): string {
   }
 }
 
-function rejection(directory: string): string {
+function installationFailure(work: () => unknown): string {
   let message = '';
-  assert.throws(() => openLocalInstallation(directory), (error) => {
+  assert.throws(work, (error) => {
     assert.ok(error instanceof LocalInstallationError, String(error));
     message = error.message;
     return true;
@@ -50,8 +57,16 @@ function rejection(directory: string): string {
   return message;
 }
 
+function rejection(directory: string): string {
+  return installationFailure(() => openLocalInstallation(directory));
+}
+
 function fileMode(path: string): number {
   return statSync(path).mode & 0o777;
+}
+
+function clientFile(directory: string): string {
+  return join(directory, 'resource-server-client.json');
 }
 
 test('Given an empty data directory, when the installation opens, then it creates one installation identity, a generated secret, and the migrated database, with owner-only files', (t) => {
@@ -169,4 +184,88 @@ test('Given a secret file and an empty database from an interrupted first start,
 
   assert.match(installation.id, uuid);
   assert.equal(installation.secret, secret);
+});
+
+test('Given an open installation, when it writes the resource-server client, then it reads the same client back from an owner-only file that has only that client, and no temporary file stays', (t) => {
+  const directory = dataDirectory(t);
+  const installation = opened(t, directory);
+
+  installation.writeResourceServerClient(resourceServerClient);
+
+  assert.deepEqual(installation.readResourceServerClient(), resourceServerClient);
+  assert.equal(
+    readFileSync(clientFile(directory), 'utf8'),
+    '{"clientId":"resource-server-client-id","clientSecret":"resource-server-client-secret","resource":"http://localhost:8080/mcp"}\n',
+  );
+  assert.equal(fileMode(clientFile(directory)), 0o600);
+  assert.deepEqual(readdirSync(directory).sort(), ['auth.secret', 'auth.sqlite', 'resource-server-client.json']);
+});
+
+test('Given a stored resource-server client, when the installation writes another client, then the other client replaces it, also after the installation opens again', (t) => {
+  const directory = dataDirectory(t);
+  const first = openLocalInstallation(directory);
+  first.writeResourceServerClient(resourceServerClient);
+  const replacement = { clientId: 'replacement-client-id', clientSecret: 'replacement-client-secret', resource: 'http://localhost:9090/mcp' };
+
+  first.writeResourceServerClient(replacement);
+  first.close();
+
+  assert.deepEqual(opened(t, directory).readResourceServerClient(), replacement);
+});
+
+test('Given a temporary file from an interrupted write, when the installation writes the resource-server client, then the write completes and no temporary file stays', (t) => {
+  const directory = dataDirectory(t);
+  const installation = opened(t, directory);
+  writeFileSync(`${clientFile(directory)}.new`, '{"clientId":"partial');
+
+  installation.writeResourceServerClient(resourceServerClient);
+
+  assert.deepEqual(installation.readResourceServerClient(), resourceServerClient);
+  assert.deepEqual(readdirSync(directory).sort(), ['auth.secret', 'auth.sqlite', 'resource-server-client.json']);
+});
+
+test('Given a data directory without a resource-server client file, when the installation reads the client, then it gets none and writes no file', (t) => {
+  const directory = dataDirectory(t);
+  const installation = opened(t, directory);
+
+  assert.equal(installation.readResourceServerClient(), undefined);
+
+  assert.deepEqual(readdirSync(directory).sort(), ['auth.secret', 'auth.sqlite']);
+});
+
+const storedSecret = 'stored-client-secret-value';
+const invalidClientFiles: ReadonlyArray<[string, string]> = [
+  ['no content', ''],
+  ['content that is not complete JSON', `{"clientId":"resource-server-client-id","clientSecret":"${storedSecret}"`],
+  ['a JSON value that is not an object', `["resource-server-client-id","${storedSecret}"]`],
+  ['a null JSON value', 'null'],
+  ['no client ID', JSON.stringify({ clientSecret: storedSecret, resource: resourceServerClient.resource })],
+  ['an empty client ID', JSON.stringify({ ...resourceServerClient, clientId: '', clientSecret: storedSecret })],
+  ['a client secret that is not a string', JSON.stringify({ ...resourceServerClient, clientSecret: 42 })],
+  ['an empty client secret', JSON.stringify({ ...resourceServerClient, clientSecret: '' })],
+  ['no resource', JSON.stringify({ clientId: resourceServerClient.clientId, clientSecret: storedSecret })],
+  ['a resource that is not a URL', JSON.stringify({ ...resourceServerClient, clientSecret: storedSecret, resource: 'not a URL' })],
+];
+for (const [label, content] of invalidClientFiles) {
+  test(`Given a resource-server client file with ${label}, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file`, (t) => {
+    const directory = dataDirectory(t);
+    const installation = opened(t, directory);
+    writeFileSync(clientFile(directory), content, { mode: 0o600 });
+
+    const message = installationFailure(() => installation.readResourceServerClient());
+
+    assert.equal(message, invalidResourceServerClient);
+    assert.ok(!message.includes(storedSecret), 'the message has the secret');
+    assert.equal(readFileSync(clientFile(directory), 'utf8'), content);
+  });
+}
+
+test('Given initialized data with a resource-server client file that is not valid, when the installation opens, then it opens with its identity and only the read of the client fails', (t) => {
+  const { directory, installation: first } = initializedDirectory(t);
+  writeFileSync(clientFile(directory), 'not JSON');
+
+  const second = opened(t, directory);
+
+  assert.deepEqual([second.id, second.secret], [first.id, first.secret]);
+  assert.equal(installationFailure(() => second.readResourceServerClient()), invalidResourceServerClient);
 });

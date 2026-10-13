@@ -1,0 +1,166 @@
+import { html, Parser, Token } from 'parse5';
+import {} from 'parse5-htmlparser2-tree-adapter';
+export class SourceRangeParser extends Parser {
+    openingElements = new Map();
+    reconstructedElements = new WeakSet();
+    endTags = new WeakMap();
+    endTagIndexes = new WeakMap();
+    lastEndTagOffset = 0;
+    processingEof = false;
+    eofPassRequested = false;
+    _insertFakeRootElement() {
+        if (!this.document.children.some(node => this.treeAdapter.isDocumentTypeNode(node))) {
+            // An implicit root without a doctype can contain a fragment. Use normal paragraph boundaries.
+            this.treeAdapter.setDocumentMode(this.document, html.DOCUMENT_MODE.NO_QUIRKS);
+        }
+        super._insertFakeRootElement();
+    }
+    _attachElementToTree(element, location) {
+        if (location !== null) {
+            const original = this.openingElements.get(location.startOffset);
+            if (original === undefined) {
+                this.openingElements.set(location.startOffset, element);
+            }
+            else if (original !== element) {
+                this.reconstructedElements.add(element);
+            }
+        }
+        super._attachElementToTree(element, location);
+    }
+    onEof(token) {
+        if (this.processingEof) {
+            this.eofPassRequested = true;
+            return;
+        }
+        this.processingEof = true;
+        try {
+            // parse5 requests another EOF pass for each unclosed template.
+            // Run each pass after the previous pass returns to bound the call stack.
+            do {
+                this.eofPassRequested = false;
+                super.onEof(token);
+            } while (this.eofPassRequested && !this.stopped);
+        }
+        finally {
+            this.processingEof = false;
+        }
+        const body = this.openElements.tryPeekProperlyNestedBodyElement();
+        if (body !== null && body.sourceCodeLocation?.endTag === undefined) {
+            // parse5 can omit this close when the html element has no source location.
+            this._setEndLocation(body, token);
+        }
+    }
+    _setEndLocation(element, closingToken) {
+        // parse5 can close an implied head before it sets the current token.
+        if (closingToken === null) {
+            return;
+        }
+        const explicitEndTag = element.sourceCodeLocation?.endTag;
+        super._setEndLocation(element, closingToken);
+        if (explicitEndTag !== undefined) {
+            this.treeAdapter.updateNodeSourceCodeLocation(element, {
+                endTag: explicitEndTag,
+                endLine: explicitEndTag.endLine,
+                endCol: explicitEndTag.endCol,
+                endOffset: explicitEndTag.endOffset,
+            });
+        }
+        const closingLocation = closingToken.location;
+        if (closingToken.type === Token.TokenType.END_TAG
+            && closingToken.tagName === element.name && closingLocation !== null) {
+            const endTags = this.endTags.get(element) ?? [];
+            endTags.push(closingLocation);
+            this.endTags.set(element, endTags);
+            this.lastEndTagOffset = Math.max(this.lastEndTagOffset, closingLocation.startOffset);
+        }
+        this.setReconstructedStart(element, closingLocation);
+        if (closingToken.type === Token.TokenType.EOF) {
+            this.excludeAncestorEndTags(element);
+        }
+    }
+    setReconstructedStart(element, closingLocation) {
+        if (!this.reconstructedElements.has(element) || closingLocation === null) {
+            return;
+        }
+        // A reconstructed element has no opening tag at its new position.
+        const start = SourceRangeParser.firstSourceLocation(element.children) ?? closingLocation;
+        this.treeAdapter.updateNodeSourceCodeLocation(element, {
+            startLine: start.startLine,
+            startCol: start.startCol,
+            startOffset: start.startOffset,
+            startTag: undefined,
+            attrs: undefined,
+        });
+    }
+    static firstSourceLocation(nodes) {
+        const pending = [...nodes].reverse();
+        while (pending.length > 0) {
+            const node = pending.pop();
+            if (node?.sourceCodeLocation != null) {
+                return node.sourceCodeLocation;
+            }
+            if (node !== undefined && 'children' in node) {
+                for (let index = node.children.length - 1; index >= 0; index--) {
+                    pending.push(node.children[index]);
+                }
+            }
+        }
+        return undefined;
+    }
+    excludeAncestorEndTags(element) {
+        const location = element.sourceCodeLocation;
+        const parent = element.parent;
+        if (location == null || parent === null) {
+            return;
+        }
+        const index = this.getEndTagIndex(parent);
+        const boundary = SourceRangeParser.findEndTag(index, location.startOffset);
+        if (boundary !== undefined && boundary.startOffset < location.endOffset) {
+            this.treeAdapter.updateNodeSourceCodeLocation(element, {
+                endLine: boundary.startLine,
+                endCol: boundary.startCol,
+                endOffset: boundary.startOffset,
+            });
+        }
+    }
+    getEndTagIndex(element) {
+        const uncached = [];
+        let node = element;
+        // EOF has no more close events. Each ancestor can now share a fixed index.
+        while (node !== null && !this.endTagIndexes.has(node)) {
+            uncached.push(node);
+            node = node.parent;
+        }
+        let index = (node === null ? undefined : this.endTagIndexes.get(node))
+            ?? { start: 0, end: this.lastEndTagOffset };
+        for (const ancestor of uncached.reverse()) {
+            for (const endTag of this.endTags.get(ancestor) ?? []) {
+                index = SourceRangeParser.insertEndTag(index, endTag);
+            }
+            this.endTagIndexes.set(ancestor, index);
+        }
+        return index;
+    }
+    static insertEndTag(index, location) {
+        if (index.start === index.end) {
+            return { ...index, location };
+        }
+        const middle = Math.floor((index.start + index.end) / 2);
+        // A shared parent index must not receive a child's close events.
+        if (location.startOffset <= middle) {
+            const left = index.left ?? { start: index.start, end: middle };
+            return { ...index, left: SourceRangeParser.insertEndTag(left, location) };
+        }
+        const right = index.right ?? { start: middle + 1, end: index.end };
+        return { ...index, right: SourceRangeParser.insertEndTag(right, location) };
+    }
+    static findEndTag(index, startOffset) {
+        if (index === undefined || index.end < startOffset) {
+            return undefined;
+        }
+        return index.location
+            ?? SourceRangeParser.findEndTag(index.left, startOffset)
+            ?? SourceRangeParser.findEndTag(index.right, startOffset);
+    }
+}
+//# sourceMappingURL=source-range-parser.js.map

@@ -37,6 +37,14 @@ export interface ResourceServerClient {
   readonly clientSecret: string;
 }
 
+// The resource-server client of the MCP resource of this runtime, which is the MCP resource of PUBLIC_BASE_URL.
+export interface ResourceServerClientRecord {
+  // Gives undefined when no client is stored, or when the stored client is for another MCP resource.
+  current(): ResourceServerClient | undefined;
+  // Replaces a stored client. The client is durable when this returns.
+  record(client: ResourceServerClient): void;
+}
+
 export interface LocalProviderSettings {
   readonly publicBaseUrl: string;
   readonly mcpResourceUrl: string;
@@ -107,8 +115,11 @@ export interface BetterAuthRuntime {
   readonly installationId: string;
   readonly tenantId: string;
   readonly auth: LocalAuth;
+  readonly resourceServerClient: ResourceServerClientRecord;
   close(): Promise<void>;
 }
+
+type OpenedRuntime = Pick<BetterAuthRuntime, 'installationId' | 'auth' | 'resourceServerClient'>;
 
 const localAuthResources: LocalAuthResources = {
   lockDataDirectory,
@@ -130,16 +141,26 @@ export async function openBetterAuthRuntime(
     database: installation.database,
     installationId: installation.id,
   });
-  return runtimeRecord(installation.id, auth, owned.move());
+  const resourceServerClient = resourceServerClientRecord(installation, settings.mcpResourceUrl);
+  return runtimeRecord({ installationId: installation.id, auth, resourceServerClient }, owned.move());
 }
 
-function runtimeRecord(installationId: string, auth: LocalAuth, owned: AsyncDisposableStack): BetterAuthRuntime {
+function runtimeRecord(opened: OpenedRuntime, owned: AsyncDisposableStack): BetterAuthRuntime {
   let closing: Promise<void> | undefined;
   return Object.freeze({
-    installationId,
-    tenantId: `local:${installationId}`,
-    auth,
+    ...opened,
+    tenantId: `local:${opened.installationId}`,
     close: () => closing ??= owned.disposeAsync(),
+  });
+}
+
+function resourceServerClientRecord(installation: LocalInstallation, resource: string): ResourceServerClientRecord {
+  return Object.freeze({
+    current: () => {
+      const stored = installation.readResourceServerClient();
+      return stored?.resource === resource ? { clientId: stored.clientId, clientSecret: stored.clientSecret } : undefined;
+    },
+    record: ({ clientId, clientSecret }: ResourceServerClient) => installation.writeResourceServerClient({ clientId, clientSecret, resource }),
   });
 }
 

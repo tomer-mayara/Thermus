@@ -501,6 +501,26 @@ Run only these tests:
 npm run build && node --test dist/test/integration/auth/local-auth-command*.test.js
 ```
 
+**Local MCP access** (`test/integration/auth/local-access.test.ts`)
+
+These tests run `BetterAuthProvider` as the verifier and the access resolver of a real MCPServer with the real Better Auth provider and SQLite files in temporary data directories. A test-only protected tool records its trusted context and its fetch and clean steps. Sign-in, consent, and the code exchange run through the provider handler. The test process refuses outbound `fetch` calls and records each attempt.
+
+[V] Two local users each call the protected tool with their own session-bound token: each request has its own user subject in the one `local:<installation-id>` tenant with the same `user` grant and `product:access` permission, and the verified claims name the local issuer, the approved client, and the MCP resource
+[V] A user disabled while its session and token stay valid gets 403 `access_denied` after token verification, a deleted user gets 401, no tool runs for them, and the peer still works
+[V] When one user's sessions end, only that user's token gets 401 and the peer keeps working
+[V] A changed payload, a token of another installation, an ID token, an access token without the MCP resource, an expired token, and a malformed value each get 401 before any tool runs and give no operator report
+[V] With `openid` required, a token with only the `profile` scope gets the SDK's 403 `insufficient_scope` with the required scope in its challenge
+[V] Without a resource-server client, or with a wrong client secret, a valid token gets a generic 500 and one `token-verification` report without the token
+[V] After a disable, sign-in, the pending code, a refresh request, a new authorization without the sign-in page, and the old token all fail; the peer keeps working
+[V] After the runtime closes and opens again, the token is still accepted, and a new authorization needs no sign-in or consent
+[V] Only the registered redirect URI, on any loopback port, gets a code; another path, a client metadata URL as client ID, and an unknown client go to the bundled authorization error page
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/local-access.test.js
+```
+
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
 
 ## Interface
@@ -651,6 +671,23 @@ Run only the tests of the offline commands:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/local-user-commands.test.js dist/test/acceptance/auth/local-client-registration.test.js
+```
+
+**Self-hosted browser-to-MCP authorization** (`test/acceptance/auth/self-hosted.test.ts`)
+
+Each test runs the built server and the offline commands as separate processes that refuse outbound network access and report each attempt. A test-only browser sends the page requests with `node:http`, so its `Origin` and `Sec-Fetch-*` headers stay exactly as written. The MCP TypeScript SDK client uses a pre-registered native client ID. Both reach the server at its listen address and use the public URLs of `PUBLIC_BASE_URL`.
+
+[V] Given two enabled accounts and one approved native client, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user and session and without a refresh token, in the one workspace; an expired token leads to a new authorization without the pages, and no process uses the network
+[V] Given two users with tokens, a reset of one user's password while the server is stopped makes that user's old password, old token, and a refresh request fail after the restart; the new password gives a new token without a new consent, and the peer's token, session, and consent still work
+[V] Given two users with tokens, a disable of one user while the server is stopped makes that user's token fail after the restart; the sign-in page refuses the account without a session cookie, no refresh is possible, and the peer keeps working
+[V] Given a running server, both discovery documents describe only the local provider; sign-up, registration, introspection, the provider sign-in, session, admin, and client routes give 404; a client metadata URL as client ID and an unregistered redirect URI go to the bundled error page, which shows only the error code; no account or client is added, and the server fetches nothing
+[V] Given the bundled pages, a sign-in or consent post from a foreign origin, a cross-site sign-in navigation, and a consent post with the session cookie but without an origin get 403 and add no session; the user can then sign in and consent from the server origin
+[V] Given the bundled sign-in page, the fourth sign-in from one client address within ten seconds gets 429 with `Retry-After` and signs no one in, also with the correct password
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/self-hosted.test.js
 ```
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)

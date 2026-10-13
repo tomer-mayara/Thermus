@@ -1,0 +1,154 @@
+import { isAbsolute } from 'node:path';
+import { getOAuthProtectedResourceMetadataUrl } from '@modelcontextprotocol/server';
+export class DeploymentConfigError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'DeploymentConfigError';
+    }
+}
+const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]']);
+const MIN_COOKIE_PASSWORD_LENGTH = 32;
+const SPACE_OR_CONTROL_CHARACTER = /[\s\p{Cc}]/u;
+const DEFAULT_LISTEN_ADDRESS = { host: '127.0.0.1', port: 8080 };
+const MAX_PORT = 65_535;
+export function loadDeploymentConfig(environment, transport) {
+    const deployment = readDeployment(environment);
+    if (deployment === 'self-hosted')
+        return loadSelfHostedConfig(environment);
+    if (transport !== 'http') {
+        throw new DeploymentConfigError('The hosted DEPLOYMENT serves MCP only over HTTPS, not stdio.');
+    }
+    return loadHostedConfig(environment);
+}
+export function loadListenAddress(environment) {
+    const address = { host: readListenHost(environment), port: readListenPort(environment) };
+    return Object.freeze(address);
+}
+function readListenHost(environment) {
+    const host = environment.LISTEN_HOST;
+    if (host === undefined || host === '')
+        return DEFAULT_LISTEN_ADDRESS.host;
+    if (SPACE_OR_CONTROL_CHARACTER.test(host)) {
+        throw new DeploymentConfigError('LISTEN_HOST must not contain spaces or control characters.');
+    }
+    return host;
+}
+function readListenPort(environment) {
+    const port = environment.LISTEN_PORT;
+    if (port === undefined || port === '')
+        return DEFAULT_LISTEN_ADDRESS.port;
+    if (!/^\d{1,5}$/.test(port) || Number(port) > MAX_PORT) {
+        throw new DeploymentConfigError(`LISTEN_PORT must be a whole number from 0 to ${MAX_PORT}.`);
+    }
+    return Number(port);
+}
+function readDeployment(environment) {
+    const deployment = environment.DEPLOYMENT;
+    if (deployment === 'self-hosted' || deployment === 'hosted')
+        return deployment;
+    throw new DeploymentConfigError('DEPLOYMENT must be set to self-hosted or hosted.');
+}
+function loadSelfHostedConfig(environment) {
+    const config = {
+        deployment: 'self-hosted',
+        ...readPublicUrls(environment, 'self-hosted'),
+        dataDirectory: readDataDirectory(environment),
+    };
+    return Object.freeze(config);
+}
+function loadHostedConfig(environment) {
+    const urls = readPublicUrls(environment, 'hosted');
+    const workos = {
+        authkitIssuer: readAuthkitIssuer(environment),
+        clientId: readRequired(environment, 'WORKOS_CLIENT_ID'),
+        apiKey: readRequired(environment, 'WORKOS_API_KEY'),
+        redirectUri: readRedirectUri(environment, new URL(urls.publicBaseUrl).origin),
+        cookiePassword: readCookiePassword(environment),
+    };
+    const config = { deployment: 'hosted', ...urls, workos: Object.freeze(workos) };
+    return Object.freeze(config);
+}
+function readPublicUrls(environment, deployment) {
+    const base = readPublicBaseUrl(environment, deployment);
+    if (!base.pathname.endsWith('/'))
+        base.pathname = `${base.pathname}/`;
+    const mcpResource = new URL('mcp', base);
+    return {
+        publicBaseUrl: base.href,
+        mcpResourceUrl: mcpResource.href,
+        resourceMetadataUrl: getOAuthProtectedResourceMetadataUrl(mcpResource),
+    };
+}
+function readPublicBaseUrl(environment, deployment) {
+    const { text, url } = readUrl(environment, 'PUBLIC_BASE_URL');
+    if (deployment === 'hosted')
+        requireHttps(url, 'PUBLIC_BASE_URL');
+    else
+        requireHttpsOrLoopbackHttp(url, 'PUBLIC_BASE_URL');
+    rejectQuery(text, 'PUBLIC_BASE_URL');
+    return url;
+}
+function readAuthkitIssuer(environment) {
+    const { text, url } = readUrl(environment, 'WORKOS_AUTHKIT_ISSUER');
+    requireHttps(url, 'WORKOS_AUTHKIT_ISSUER');
+    rejectQuery(text, 'WORKOS_AUTHKIT_ISSUER');
+    return text;
+}
+function readRedirectUri(environment, publicOrigin) {
+    const { url } = readUrl(environment, 'WORKOS_REDIRECT_URI');
+    requireHttps(url, 'WORKOS_REDIRECT_URI');
+    if (url.origin !== publicOrigin) {
+        throw new DeploymentConfigError('WORKOS_REDIRECT_URI must have the same origin as PUBLIC_BASE_URL.');
+    }
+    return url.href;
+}
+function readDataDirectory(environment) {
+    const directory = readRequired(environment, 'DATA_DIR');
+    if (!isAbsolute(directory))
+        throw new DeploymentConfigError('DATA_DIR must be an absolute path.');
+    return directory;
+}
+function readCookiePassword(environment) {
+    const password = readRequired(environment, 'WORKOS_COOKIE_PASSWORD');
+    if (password.length < MIN_COOKIE_PASSWORD_LENGTH) {
+        throw new DeploymentConfigError(`WORKOS_COOKIE_PASSWORD must have at least ${MIN_COOKIE_PASSWORD_LENGTH} characters.`);
+    }
+    return password;
+}
+function readUrl(environment, name) {
+    const text = readRequired(environment, name);
+    if (SPACE_OR_CONTROL_CHARACTER.test(text)) {
+        throw new DeploymentConfigError(`${name} must not contain spaces or control characters.`);
+    }
+    const url = URL.parse(text);
+    if (url === null)
+        throw new DeploymentConfigError(`${name} must be an absolute URL.`);
+    if (url.username !== '' || url.password !== '') {
+        throw new DeploymentConfigError(`${name} must not contain a username or password.`);
+    }
+    if (text.includes('#'))
+        throw new DeploymentConfigError(`${name} must not contain a fragment.`);
+    return { text, url };
+}
+function readRequired(environment, name) {
+    const value = environment[name];
+    if (value === undefined || value === '')
+        throw new DeploymentConfigError(`${name} is required.`);
+    return value;
+}
+function requireHttps(url, name) {
+    if (url.protocol !== 'https:')
+        throw new DeploymentConfigError(`${name} must use https.`);
+}
+function requireHttpsOrLoopbackHttp(url, name) {
+    if (url.protocol === 'https:')
+        return;
+    if (url.protocol === 'http:' && LOOPBACK_HOSTNAMES.has(url.hostname))
+        return;
+    throw new DeploymentConfigError(`${name} must use https. It can use http only on localhost, 127.0.0.1, or [::1].`);
+}
+function rejectQuery(text, name) {
+    if (text.includes('?'))
+        throw new DeploymentConfigError(`${name} must not contain a query.`);
+}
+//# sourceMappingURL=deployment-config.js.map

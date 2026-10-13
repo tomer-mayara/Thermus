@@ -1,7 +1,7 @@
 import { loadDeploymentConfig } from '../config/deployment-config.ts';
 import { openBetterAuthRuntime, type BetterAuthRuntime, type LocalAuthSettings } from './better-auth-runtime.ts';
 import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';
-import { LocalUserAdministration, type LocalAccount, type PasswordSource } from './local-user-administration.ts';
+import { LocalUserAdministration, type LocalAccount, type PasswordSource, type RegisteredClient } from './local-user-administration.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -67,7 +67,8 @@ async function runWithRuntime(command: LocalAuthCommand, context: LocalAuthComma
   const openRuntime = context.openRuntime ?? openBetterAuthRuntime;
   await using owned = new AsyncDisposableStack();
   const runtime = owned.adopt(await openRuntime(config), (opened) => opened.close());
-  context.output.write(await perform(command, new LocalUserAdministration(runtime.auth), context.input));
+  const administration = new LocalUserAdministration(runtime.auth, runtime.resourceServerClient);
+  context.output.write(await perform(command, administration, context.input));
 }
 
 async function perform(command: LocalAuthCommand, administration: LocalUserAdministration, input: HiddenInput): Promise<string> {
@@ -80,10 +81,8 @@ async function perform(command: LocalAuthCommand, administration: LocalUserAdmin
       return resetMessage(await administration.resetPassword(command.email, newPassword(input, RESET_PROMPTS)));
     case 'users disable':
       return `Disabled ${(await administration.disableUser(command.email)).email} and ended its sessions.\n`;
-    case 'clients register': {
-      const client = await administration.registerClient(command.email, () => enteredLine(input, ACCOUNT_PASSWORD_PROMPT), command.client);
-      return `Registered the client "${client.name}" with client ID ${client.clientId}.\n`;
-    }
+    case 'clients register':
+      return registeredMessage(await administration.registerClient(command.email, () => enteredLine(input, ACCOUNT_PASSWORD_PROMPT), command.client));
   }
 }
 
@@ -103,6 +102,12 @@ async function enteredLine(input: HiddenInput, prompt: string): Promise<string> 
 
 function addedMessage(account: LocalAccount): string {
   return `Added ${account.email} with ID ${account.id}.\n`;
+}
+
+function registeredMessage(client: RegisteredClient): string {
+  const registered = `Registered the client "${client.name}" with client ID ${client.clientId}.\n`;
+  if (!client.resourceServerClientRegistered) return registered;
+  return `${registered}Registered the resource-server client that the MCP server uses to check access tokens.\n`;
 }
 
 function resetMessage(account: LocalAccount): string {

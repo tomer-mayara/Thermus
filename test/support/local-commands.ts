@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { HttpAgent, loopbackRedirectUri, type PreRegisteredNativeClient } from './better-auth-agents.ts';
 import { withRegistrationSession, type AccountCredentials, type LocalAuth } from './better-auth-local.ts';
@@ -16,6 +18,10 @@ export interface ListedAccount {
 export interface ResourceServerCredentials {
   readonly clientId: string;
   readonly clientSecret: string;
+}
+
+export interface StoredResourceServerClient extends ResourceServerCredentials {
+  readonly resource: string;
 }
 
 export interface UserGrant {
@@ -66,8 +72,17 @@ export async function signedInUserId(auth: LocalAuth, account: AccountCredential
   return (await response.json() as { user: { id: string } }).user.id;
 }
 
-// Introspection needs a confidential resource-server client. The operator command registers only
-// approved native MCP clients, so a test registers the resource server through the provider.
+// clients register keeps the resource-server client of the installation in this file, and only the owner can read it.
+export function storedResourceServerClient(directory: string): StoredResourceServerClient {
+  const file = join(directory, 'resource-server-client.json');
+  assert.equal(statSync(file).mode & 0o777, 0o600, 'the resource-server client file is owner-only');
+  const stored = JSON.parse(readFileSync(file, 'utf8')) as StoredResourceServerClient;
+  assert.deepEqual(Object.keys(stored), ['clientId', 'clientSecret', 'resource']);
+  return stored;
+}
+
+// Introspection needs a confidential resource-server client. This registers another one through the provider,
+// for a test without the client that clients register keeps in the data directory.
 export async function resourceServerClient(auth: LocalAuth, account: AccountCredentials): Promise<ResourceServerCredentials> {
   const client = await withRegistrationSession(auth, account, (headers) => auth.api.adminCreateOAuthClient({
     headers,

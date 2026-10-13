@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { assertRevealsNone, loopbackRedirectUri, passwords, run, RuntimeDouble, ScriptedInput } from './fixtures/local-auth-command-harness.ts';
+import { LocalProviderDouble } from './fixtures/local-provider-double.ts';
 
 describe('runLocalAuthCommand clients', () => {
   describe('clients', () => {
@@ -25,6 +26,27 @@ describe('runLocalAuthCommand clients', () => {
       assert.equal(client?.metadata.token_endpoint_auth_method, 'none');
       assert.deepEqual(runtime.provider.sessionsOf(alice.id), []);
       assertRevealsNone(result);
+    });
+
+    test('Given an installation without a resource-server client, when clients register runs, then it records the new resource-server client, prints the client ID line and then a line about the resource-server client, and does not print the client secret', async () => {
+      const runtime = new RuntimeDouble();
+      runtime.provider.addUser('alice@example.com', 'alice-password-1');
+      runtime.provider.resourceServerClient.stored = undefined;
+
+      const result = await run([
+        'clients', 'register', '--user', 'alice@example.com', '--name', 'Native MCP client', '--redirect-uri', loopbackRedirectUri,
+      ], { runtime, input: new ScriptedInput('alice-password-1') });
+
+      const [resourceServer, native] = runtime.provider.clients;
+      assert.ok(resourceServer && native);
+      assert.equal(result.code, 0);
+      assert.equal(result.output, [
+        `Registered the client "Native MCP client" with client ID ${native.clientId}.`,
+        'Registered the resource-server client that the MCP server uses to check access tokens.',
+        '',
+      ].join('\n'));
+      assert.deepEqual(runtime.provider.resourceServerClient.recorded.map(({ clientId }) => clientId), [resourceServer.clientId]);
+      assertRevealsNone(result, [...passwords, LocalProviderDouble.clientSecretOf(resourceServer.clientId)]);
     });
 
     test('Given a redirect URI outside the approved loopback form, when clients register runs, then it exits with status 1, asks for no password, registers nothing, and does not repeat the URI', async () => {

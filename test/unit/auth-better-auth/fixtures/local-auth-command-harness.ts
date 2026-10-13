@@ -40,6 +40,7 @@ export class RuntimeDouble {
       installationId: 'installation-id',
       tenantId: 'local:installation-id',
       auth: this.provider.auth,
+      resourceServerClient: this.provider.resourceServerClient,
       close: async () => {
         this.events.push('close');
         if (this.closeFailure) throw this.closeFailure;

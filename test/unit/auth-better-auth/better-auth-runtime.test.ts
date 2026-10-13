@@ -8,7 +8,7 @@ import {
   type LocalProviderSettings,
 } from '../../../src/auth-better-auth/better-auth-runtime.ts';
 import type { DataDirectoryLock } from '../../../src/auth-better-auth/data-directory-lock.ts';
-import type { LocalInstallation } from '../../../src/auth-better-auth/local-installation.ts';
+import type { LocalInstallation, StoredResourceServerClient } from '../../../src/auth-better-auth/local-installation.ts';
 
 const settings = {
   dataDirectory: '/var/lib/magumagu',
@@ -18,17 +18,24 @@ const settings = {
 const installationId = '0f6c1e9a-4b7d-4e2a-9c35-8d1f2a6b7e40';
 const database = { name: 'database double' } as unknown as DatabaseSync;
 const provider = { name: 'provider double' } as unknown as LocalAuth;
+const storedClient: StoredResourceServerClient = {
+  clientId: 'resource-server-client-id',
+  clientSecret: 'resource-server-client-secret',
+  resource: 'http://localhost:8080/mcp',
+};
 
 interface Failures {
   readonly lock?: Error;
   readonly installation?: Error;
   readonly provider?: Error;
   readonly installationClose?: Error;
+  readonly clientRead?: Error;
 }
 
 class ResourceDoubles implements LocalAuthResources {
   readonly events: string[] = [];
   readonly providerSettings: LocalProviderSettings[] = [];
+  storedClient: StoredResourceServerClient | undefined;
   private readonly failures: Failures;
 
   constructor(failures: Failures = {}) {
@@ -48,6 +55,13 @@ class ResourceDoubles implements LocalAuthResources {
       id: installationId,
       secret: 'installation-secret-double',
       database,
+      readResourceServerClient: () => {
+        if (this.failures.clientRead) throw this.failures.clientRead;
+        return this.storedClient;
+      },
+      writeResourceServerClient: (client) => {
+        this.storedClient = client;
+      },
       close: () => {
         this.events.push('close installation');
         if (this.failures.installationClose) throw this.failures.installationClose;
@@ -142,4 +156,44 @@ test('Given an open runtime whose installation fails to close, when it closes, t
   await assert.rejects(runtime.close(), (error) => error === closeError);
 
   assert.deepEqual(resources.events.slice(-2), ['close installation', 'release lock']);
+});
+
+test('Given a stored resource-server client for the MCP resource of the runtime, when the runtime gives its resource-server client, then it gives the client ID and secret', async () => {
+  const resources = new ResourceDoubles();
+  resources.storedClient = storedClient;
+
+  const runtime = await openBetterAuthRuntime(settings, resources);
+
+  assert.deepEqual(runtime.resourceServerClient.current(), { clientId: 'resource-server-client-id', clientSecret: 'resource-server-client-secret' });
+});
+
+test('Given no stored resource-server client, or one for another MCP resource, when the runtime gives its resource-server client, then it gives none', async () => {
+  for (const stored of [undefined, { ...storedClient, resource: 'http://localhost:9090/mcp' }]) {
+    const resources = new ResourceDoubles();
+    resources.storedClient = stored;
+
+    const runtime = await openBetterAuthRuntime(settings, resources);
+
+    assert.equal(runtime.resourceServerClient.current(), undefined, stored?.resource);
+  }
+});
+
+test('Given a resource-server client for another MCP resource, when the runtime records a client, then the installation replaces it with the client for the MCP resource of the runtime, and the runtime gives that client', async () => {
+  const resources = new ResourceDoubles();
+  resources.storedClient = { clientId: 'other-client-id', clientSecret: 'other-client-secret', resource: 'http://localhost:9090/mcp' };
+  const runtime = await openBetterAuthRuntime(settings, resources);
+
+  runtime.resourceServerClient.record({ clientId: 'resource-server-client-id', clientSecret: 'resource-server-client-secret' });
+
+  assert.deepEqual(resources.storedClient, storedClient);
+  assert.deepEqual(runtime.resourceServerClient.current(), { clientId: 'resource-server-client-id', clientSecret: 'resource-server-client-secret' });
+});
+
+test('Given a resource-server client that the installation cannot read, when the runtime opens, then it opens, and only the resource-server client gives the installation error', async () => {
+  const readError = new Error('resource-server client not valid');
+  const resources = new ResourceDoubles({ clientRead: readError });
+
+  const runtime = await openBetterAuthRuntime(settings, resources);
+
+  assert.throws(() => runtime.resourceServerClient.current(), (error) => error === readError);
 });

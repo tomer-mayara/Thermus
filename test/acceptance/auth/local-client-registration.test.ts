@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { HttpAgent, loopbackRedirectUri, PreRegisteredNativeClient } from '../../support/better-auth-agents.ts';
-import { withRegistrationSession, type AccountCredentials } from '../../support/better-auth-local.ts';
+import { HttpAgent, loopbackRedirectUri, PreRegisteredNativeClient, ResourceServerClient } from '../../support/better-auth-agents.ts';
+import { mcpResourceUrl, withRegistrationSession, type AccountCredentials } from '../../support/better-auth-local.ts';
 import { assertExit, assertRevealsNone } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
-import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/local-commands.ts';
+import { addUser, operatorOn, registerArgs, registeredClientId, storedResourceServerClient } from '../../support/local-commands.ts';
 import { selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
+const resourceServerRegistered = 'Registered the resource-server client that the MCP server uses to check access tokens.';
 
 describe('Offline approved MCP client registration', () => {
   test('Given an enabled account and an approved native client with an exact loopback redirect URI, when registration runs, then the client persists in the data directory, no registration session stays, and a user can authorize with that redirect URI; invalid targets and redirect URIs give safe errors and register nothing', { timeout: 120_000 }, async (t) => {
@@ -43,11 +44,44 @@ describe('Offline approved MCP client registration', () => {
       assert.ok(aliceId);
       assert.deepEqual(await provider.internalAdapter.listSessions(aliceId), [], 'no registration session stays');
       const clients = await withRegistrationSession(auth, alice, (headers) => auth.api.getOAuthClients({ headers }));
-      assert.deepEqual(clients?.map(({ client_id, redirect_uris }) => ({ client_id, redirect_uris })), [{ client_id: clientId, redirect_uris: [loopbackRedirectUri] }]);
+      assert.deepEqual(clients?.map(({ client_id, redirect_uris }) => ({ client_id, redirect_uris })), [
+        { client_id: storedResourceServerClient(directory).clientId, redirect_uris: [] },
+        { client_id: clientId, redirect_uris: [loopbackRedirectUri] },
+      ]);
       const browser = new HttpAgent(auth);
       assert.equal((await browser.signIn(alice.email, alice.password)).status, 200);
       const tokens = await new PreRegisteredNativeClient(auth, clientId).authorize(browser);
       assert.equal(tokens.refresh_token, undefined);
+    });
+  });
+
+  test('Given an installation without a resource-server client, when the operator registers two native clients, then only the first registration also registers the resource-server client, the data directory keeps its credentials for the MCP resource in an owner-only file, they can introspect a user token, and no output shows the client secret', { timeout: 120_000 }, async (t) => {
+    const directory = dataDirectory(t);
+    const operator = operatorOn(t, directory);
+    assertExit(await addUser(operator, alice), 0);
+
+    const first = await operator(registerArgs(alice), [alice.password]);
+    const stored = storedResourceServerClient(directory);
+    const second = await operator(registerArgs(alice, ['http://127.0.0.1:33419/callback']), [alice.password]);
+
+    const [firstClientId, secondClientId] = [registeredClientId(first), registeredClientId(second)];
+    assert.equal(first.stdout, `Registered the client "Native MCP client" with client ID ${firstClientId}.\n${resourceServerRegistered}\n`);
+    assert.equal(second.stdout, `Registered the client "Native MCP client" with client ID ${secondClientId}.\n`);
+    assert.equal(stored.resource, mcpResourceUrl);
+    assert.deepEqual(storedResourceServerClient(directory), stored);
+    assertRevealsNone([first, second], [alice.password, stored.clientSecret]);
+    await withRuntime(directory, async ({ auth }) => {
+      const clients = await withRegistrationSession(auth, alice, (headers) => auth.api.getOAuthClients({ headers }));
+      assert.deepEqual(clients?.map(({ client_id, token_endpoint_auth_method }) => ({ client_id, token_endpoint_auth_method })), [
+        { client_id: stored.clientId, token_endpoint_auth_method: 'client_secret_basic' },
+        { client_id: firstClientId, token_endpoint_auth_method: 'none' },
+        { client_id: secondClientId, token_endpoint_auth_method: 'none' },
+      ]);
+      const browser = new HttpAgent(auth);
+      assert.equal((await browser.signIn(alice.email, alice.password)).status, 200);
+      const tokens = await new PreRegisteredNativeClient(auth, firstClientId).authorize(browser);
+      const introspection = new ResourceServerClient(auth, stored.clientId, stored.clientSecret);
+      assert.equal((await introspection.introspect(tokens.access_token)).active, true);
     });
   });
 });
