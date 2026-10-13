@@ -87,6 +87,17 @@ test('Given a data directory that another process locks, when this process locks
   lockDataDirectory(directory).release();
 });
 
+test('Given a data directory that another process locks, when this process locks it, then it fails at once and does not wait for the holder', { timeout: 20_000 }, async (t) => {
+  const directory = dataDirectory(t);
+  await lockInOtherProcess(t, directory);
+  const started = performance.now();
+
+  assert.throws(() => lockDataDirectory(directory), DataDirectoryInUseError);
+  const elapsed = performance.now() - started;
+
+  assert.ok(elapsed < 1_000, `The lock failed after ${elapsed} ms`);
+});
+
 test('Given a fresh data directory in each round, when several processes lock it at the same time, then exactly one gets the lock and each other process gets DataDirectoryInUseError', { timeout: 30_000 }, async (t) => {
   const lockers = await Promise.all(Array.from({ length: concurrentLockers }, () => startLockingProcess(t)));
   const failedRounds: string[] = [];
