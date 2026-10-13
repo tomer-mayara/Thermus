@@ -1,8 +1,9 @@
 # Authentication refactoring plan
 
-Status: Slice 1 is implemented in pull request
-[#56](https://github.com/3-headed-monkey/Magumagu/pull/56). Gate results are
-recorded in that pull request; owner review is pending. Slice 2 remains planned.
+Status: Slice 1 merged in pull request
+[#56](https://github.com/3-headed-monkey/Magumagu/pull/56) as `f677c5c`, after the
+owner approved the merge. Slice 2 is in progress. Each pull request records its
+gate results and review status.
 
 Revision date: 2026-10-13. Reviewed baseline: `b73a7f821edac538afdd0498874dd7f28b3c1fc2`.
 
@@ -223,7 +224,7 @@ remain covered and passing.
 
 ### 2. Relocate once and enforce direct boundaries
 
-Status: planned; not part of the slice 1 pull request.
+Status: in progress in a separate pull request based on slice 1.
 
 Move remaining files directly to their final paths. Rename the administrator and
 move the MCP outage endpoint and HTTP header constant. Update imports/composition
