@@ -3,6 +3,7 @@ import { createApplication } from './application.ts';
 import { loadDeploymentConfig, loadListenAddress } from './config/deployment-config.ts';
 import { startHttpServer } from './http/server.ts';
 import { ConsoleLogger } from './logging/console-logger.ts';
+import { HiddenLineInput } from './terminal/hidden-line-input.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -12,16 +13,24 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 }
 
 async function run(args: readonly string[], environment: Environment, logger: ConsoleLogger): Promise<number> {
-  if (args.length > 0) {
-    logger.error('Unknown command. Run magumagu without arguments to start the server.');
-    return 2;
-  }
+  if (args.length > 0) return runOperatorCommand(args, environment, logger);
   try {
     await serve(environment, logger);
     return 0;
   } catch (error) {
     logger.fatal(failureMessage(error));
     return 1;
+  }
+}
+
+// Only an operator command loads the local commands, so the server start loads no local module before its edition branch.
+async function runOperatorCommand(args: readonly string[], environment: Environment, logger: ConsoleLogger): Promise<number> {
+  const { runLocalAuthCommand } = await import('./auth-better-auth/local-auth-command.ts');
+  const input = new HiddenLineInput(process.stdin, process.stderr);
+  try {
+    return await runLocalAuthCommand(args, { environment, input, output: process.stdout, logger });
+  } finally {
+    input.close();
   }
 }
 

@@ -33,11 +33,12 @@ function addressWithOwnRateLimitBucket(): string {
 
 export class HttpAgent {
   readonly address = addressWithOwnRateLimitBucket();
-  private readonly cookies = new Map<string, string>();
+  readonly cookies: Map<string, string>;
   private readonly auth: LocalAuth;
 
-  constructor(auth: LocalAuth) {
+  constructor(auth: LocalAuth, cookies: ReadonlyMap<string, string> = new Map()) {
     this.auth = auth;
+    this.cookies = new Map(cookies);
   }
 
   cookieHeader(): string {

@@ -22,7 +22,7 @@ export class HostedEditionUnavailableError extends Error {
   }
 }
 
-// Token introspection needs the resource-server client that the local auth command will register.
+// Token introspection needs a confidential resource-server client. The local auth command registers only native MCP clients.
 const acceptsNoAccessToken: IdentityVerifier = {
   verifyAccessToken: async () => {
     throw new InvalidAccessTokenError('The self-hosted edition accepts no MCP access token yet');

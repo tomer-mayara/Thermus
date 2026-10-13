@@ -134,6 +134,45 @@ The tests set process environment variables and restore them at the end of each 
 [V] Retained data without `auth.secret`, with an invalid secret, or with another schema version fails closed, writes no new secret, and puts no secret in the message
 [V] A secret and an empty database from an interrupted first start give a new installation identity with that secret
 
+**Local user administration** (`test/unit/auth-better-auth/local-user-administration.test.ts`, `local-user-administration-revocation.test.ts`, `local-user-administration-clients.test.ts`)
+
+A stateful double stands in for the supported Better Auth operations. Its password hash contains the password, so a test that finds no password in the output also finds no hash there.
+
+[V] Adds an enabled account with the email in lower case through the provider's create operation, which hashes the password
+[V] Refuses an email that an account already has, in any letter case, before it asks for a password
+[V] Refuses a password with fewer than 8 or more than 128 characters, with the limits in the message; accepts 8 and 128 characters
+[V] Gives an invalid-email error that does not repeat the email
+[V] Lists each account with only its ID, email, and disabled state, in email order; pages through more than one provider page of 100 rows
+[V] Resets only the password of the target with the provider hash and deletes only the sessions of the target; the ID and the state stay, also for a disabled account; the peer keeps its password and sessions
+[V] Refuses an unknown email and an account without a password login before the prompt, and a password outside the length rule after it; nothing changes
+[V] Disables only the target without a ban expiry and deletes only its sessions; a second disable ends its sessions again; an unknown email changes nothing
+[V] Registers a public native client with the approved metadata through a new session of the selected enabled account, deletes only that session, and keeps the browser session of the account
+[V] Refuses an unknown or disabled account before the prompt, a wrong password, a ban at sign-in, an empty or control-character name, and each redirect URI outside the loopback `http` form, without the URI in the message
+[V] Gives approved loopback redirect URIs to the provider exactly as written
+[V] Deletes the registration session also when the client creation fails; reports a cleanup failure, and both failures together
+
+**Local auth command** (`test/unit/auth-better-auth/local-auth-command.test.ts`, `local-auth-command-users.test.ts`, `local-auth-command-clients.test.ts`)
+
+Doubles stand in for the hidden input, the runtime lifecycle, and the provider. The real `LocalUserAdministration` runs.
+
+[V] Gives exit status 2 and the usage for an unknown command, a missing or extra target, an option, and an incomplete client registration, without the arguments in the message, without a prompt, and without opening data
+[V] Opens the runtime with the self-hosted data directory and public URLs and closes it after the command; a hosted or incomplete configuration gives status 1 without opening data
+[V] Gives status 1 and the lock message for each command when another process holds the data directory, before any prompt
+[V] Closes the runtime after a failed command; reports a close failure, and both failures together
+[V] Asks for a new password two times for add and reset-password, and one time for client registration; refuses different entries and ended input
+[V] Prints the added account, the account table or the first-account hint, the reset and disable results, and the client ID, without passwords or hashes
+[V] Keeps a disabled account disabled after a reset and says so; ends only the sessions of the target
+
+**Hidden line input** (`test/unit/terminal/hidden-line-input.test.ts`)
+
+`PassThrough` streams stand in for a pipe and for a terminal with `isTTY` and `setRawMode`.
+
+[V] Gives each piped line in order, also when two lines arrive in one chunk, without `\r\n` endings; gives a last line without a line ending; gives `undefined` after the input ends
+[V] Writes each prompt and a line break to the prompt stream, and never the line text
+[V] Reads a typed terminal line with raw mode on only during the read; no stream gets the typed text; two reads in a row work
+[V] Gives `undefined` for Ctrl-C and Ctrl-D, and for input that ended before the read; rejects with the input error of a failed pipe or terminal, with raw mode off
+[V] Adds no listener to the input before the first read; `close()` can run two times and ends the reading of a pipe that stays open
+
 **Application failure reports** (`test/unit/application.test.ts`)
 
 A logger double records the lines that `operatorFailureReporter()` writes.
@@ -438,6 +477,28 @@ These tests run the real application, Better Auth runtime, MCPServer, and provid
 [V] Retained data without its installation identity, and retained data with a damaged provider schema, stop startup and release the data-directory lock
 [V] The hosted deployment stops with `HostedEditionUnavailableError`
 
+**Local auth command** (`test/integration/auth/local-auth-command.test.ts`, `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`)
+
+These tests run the built entry point, `dist/src/index.js`, as separate processes with the real provider and SQLite files in temporary data directories. Passwords go through standard input. Each process refuses outbound network access and can record its SQL statements. Sign-in, authorization, and introspection run through the provider handler in the test process while no command or server runs.
+
+[V] Two commands that start at the same time on a fresh directory: one initializes the installation and keeps the lock while it waits for its password, and the other fails with the lock error; one installation identity and one account exist
+[V] A server start fails with the lock error while a command waits for its password; the command still completes
+[V] add refuses the email of an enabled or a disabled account in another letter case before the prompt; each account keeps its ID, state, and password
+[V] add refuses an invalid email, passwords outside the length rule, different entries, and ended input with status 1 and a safe message; no account exists
+[V] A password or an option among the arguments gives status 2 without the password in the output and creates no data
+[V] A missing target, two targets, and an unknown email give status 2 or an unknown-account error without a prompt; no account changes
+[V] With only a disabled account, add gives access to a new account; the disabled account keeps its ID and stays disabled
+[V] reset-password and a second disable keep the ID and the state of a disabled account; only its new password reaches the `BANNED_USER` check
+[V] A client registration keeps the sessions and tokens of its account; a reset then ends only the session, MCP token, and pending authorization code of the target, and the peer's pending code still gives a token
+[V] Two exact redirect URIs persist for the installation and no registration session stays; authorization accepts another loopback port and refuses another path
+[V] Each SQL statement on a provider table comes from the provider's database adapter; no statement comes from the command modules, and no SQL text contains a password
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/local-auth-command*.test.js
+```
+
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
 
 ## Interface
@@ -561,13 +622,32 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 [V] Given retained data without its installation identity, startup stops before it listens, asks for a restore, and creates no new identity
 [V] Given a restored copy of the complete data directory, the server starts with the same tenant; a restore without `auth.secret` stops before it listens
 [V] Given `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, or `BETTER_AUTH_TELEMETRY` with a value, startup stops before it listens with a `FATAL` line that names the variable but not its value
-[V] Given a command argument, the process stops with status 2 before it listens, does not repeat the arguments, and creates no local data
+[V] Given an unknown command, the process stops with status 2 before it listens, does not repeat the arguments, and creates no local data
 [V] Given the hosted edition with a `DATA_DIR` setting, startup stops with an unavailable-edition error and creates no local data
 
 Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/self-hosted-startup.test.js
+```
+
+**Offline local user and client commands** (`test/acceptance/auth/local-user-commands.test.ts`)
+
+Each test runs the built entry point as a separate process with the passwords on standard input and outbound network access refused. The server runs as its own process for the startup and lock cases. Sign-in, authorization, and introspection run through the provider handler in the test process while no server runs. A test-only resource-server client introspects the tokens.
+
+[V] Given a stopped server, add and list with hidden passwords refuse a duplicate email in another letter case and list each enabled state without credentials; each password signs in its account, no command uses the network, and the server keeps its tenant
+[V] Given two users with sessions and MCP tokens, reset-password for one ends only its old password, session, and token; its ID and enabled state stay, its new password works, and the peer stays usable
+[V] Given two users with sessions, MCP tokens, and a pending code, disable for one ends its sign-in, session, token, pending code, new authorization, and refresh; the list shows it disabled with its ID, and the peer stays usable
+[V] Given a live server, each command fails with the lock error, asks for no password, and changes nothing; after the server stops, add recovers the zero-account installation, and the server keeps its tenant
+
+**Offline approved MCP client registration** (`test/acceptance/auth/local-client-registration.test.ts`)
+
+[V] Given an enabled account, client registration with an exact loopback redirect URI persists the client in the data directory, leaves no registration session, and lets a user authorize; unknown, disabled, and wrong-password targets and non-loopback, fragment, and credential redirect URIs give safe errors and register nothing
+
+Run only the tests of the offline commands:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/local-user-commands.test.js dist/test/acceptance/auth/local-client-registration.test.js
 ```
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
