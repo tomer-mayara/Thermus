@@ -352,6 +352,35 @@ Run the integration suite with `npm run test:integration`. `npm run check` does 
 
 ## Interface
 
+**Better Auth local provider** (`test/interface/auth/better-auth.test.ts`)
+
+These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts.
+
+[V] Rejects public signup over HTTP and from the server API, and rejects email password reset; no account exists
+[V] Rejects a duplicate email in another letter case through the private create operation and keeps the original account
+[V] Lists each account ID, email, and disabled state without credentials
+[V] Resets one user's password and ends that user's sessions; the old password and session fail, the new password signs in the same user, and the peer session stays
+[V] Disables one user and ends that user's sessions; sign-in gives `BANNED_USER`, the user ID stays, and the peer can sign in
+[V] Registers the approved clients with a server sign-in of an enabled account and then deletes that session; the installation owns the clients, they serve another user, and a disabled account cannot sign in to register
+[V] Issues a JWT access token bound to the MCP resource, the user, the client, and the browser session after PKCE authorization with the resource indicator, without a refresh token
+[V] Lets the linked resource-server client introspect MCP tokens; refuses a public client and a wrong secret; reports an unknown token inactive
+[V] Reports a user's MCP access token inactive after that user's sessions end and keeps the peer's token active
+[V] Completes discovery, authorization, and code exchange with the MCP TypeScript SDK 2.3.1 client and a pre-registered public client, without a refresh token; when the token is no longer accepted, the SDK authorizes again, and the live browser session completes that without consent
+[V] Refuses dynamic registration, advertises no registration endpoint, and serves the protected-resource and authorization-server metadata
+[V] Refuses `offline_access` at authorization and in client registration, refuses the refresh grant in client registration and at the token endpoint, and lists neither in the metadata
+[V] Reports a user's MCP token inactive after that user signs out in the browser and keeps the peer's token active
+[V] Resets one user's password; that user's old password and MCP token fail, the new password gives a new active token, and the peer's token stays active
+[V] Disables one user; sign-in, the exchange of a pending authorization code, a new authorization, a refresh request, and the old MCP token fail, and the peer's token stays active
+[V] Rejects a foreign origin, a missing or `null` origin with a cookie, a cross-site sign-in navigation, and a foreign callback URL with HTTP 403
+[V] Limits sign-in to three attempts in 10 seconds for each client address with HTTP 429 and `X-Retry-After`; another address can still sign in
+[V] Refuses the private admin, client-management, client-secret rotation, and session-JWT routes over HTTP; the resource-server secret still works
+
+Run these proofs offline:
+
+```sh
+npm run build && node --test dist/test/interface/auth/better-auth.test.js
+```
+
 **Renderer network policy**
 
 [V] Blocks literal and DNS loopback targets before a connection
