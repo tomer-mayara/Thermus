@@ -10,7 +10,7 @@ import {
 import { BrowserSessionStore } from '../../support/browser-session-store.ts';
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/hosted-administration.ts';
 import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';
-import { unavailableNotice } from '../../support/hosted-placeholder.ts';
+import { hostedStartupLine, unavailableNotice } from '../../support/hosted-placeholder.ts';
 import { formFor, hostedConfig, openOrganizationSite, userOf, type OrganizationSite } from '../../support/hosted-organization-site.ts';
 
 class RecordingLogger {
@@ -180,6 +180,6 @@ describe('Hosted grant management with the real composition, routes, service, an
       assert.deepEqual(answer.cookies, []);
       assert.doesNotMatch(answer.body, /<form/);
     }
-    assert.deepEqual(logger.lines, ['INFO Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.']);
+    assert.deepEqual(logger.lines, [`INFO ${hostedStartupLine}`]);
   });
 });
