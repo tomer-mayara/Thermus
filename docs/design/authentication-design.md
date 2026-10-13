@@ -331,11 +331,13 @@ native SQLite package is needed.
 | Setting | Proven value and reason |
 | --- | --- |
 | `baseURL` | `PUBLIC_BASE_URL`. The default `basePath`, `/api/auth`, makes the issuer `<base>/api/auth`. |
+| `secret` | The generated secret from `DATA_DIR/auth.secret`. The versioned `secrets` option is not used. |
 | `database` | A `node:sqlite` `DatabaseSync`. Run `getMigrations(options)` and `runMigrations()` before `betterAuth(options)`; otherwise the provider logs a false schema error. `compileMigrations()` gives the SQL to ship. |
 | `telemetry` | `{ enabled: false }`. The proofs replace `fetch` with a blocker and record no outbound request. |
 | `emailAndPassword` | `{ enabled: true, disableSignUp: true }` with no `sendResetPassword`. Signup gives `400 EMAIL_PASSWORD_SIGN_UP_DISABLED` over HTTP and from the server API. Email reset gives `400 RESET_PASSWORD_DISABLED`. |
 | `rateLimit` | `{ enabled: true }`. Without it, limits apply only when `NODE_ENV=production`. The memory store is shared by the whole process. |
 | `advanced.ipAddress.ipAddressHeaders` | One header that the HTTP bridge sets from the socket address after it removes any copy from the client. Without a client address, all clients share one bucket for each path. |
+| `advanced.disableOriginCheck` | `false`. Without it, `NODE_ENV=test` or `TEST=1` turns off the origin and CSRF checks. |
 | `disabledPaths` | The admin, client-management, client-secret rotation, and session-JWT (`/token`) routes. It refuses exact paths with `404` on HTTP only; server API calls still work. It cannot match routes with parameters, so the HTTP bridge must forward only the provider routes that the local edition uses. |
 | `plugins` | `admin()`, `jwt()`, and `mcp()` with the options below. Dynamic registration stays off, and no client-metadata plugin is installed. |
 | `mcp()` `resource`, `loginPage`, `consentPage` | `<base>/mcp` and the bundled sign-in and consent pages. |
@@ -343,8 +345,9 @@ native SQLite package is needed.
 | `mcp()` `grantTypes` | `["authorization_code", "client_credentials"]`, without `refresh_token`. A refresh request gives `400 unsupported_grant_type`, client registration refuses the refresh grant, and the metadata does not list it. The `grant_types` of a client cannot prevent refresh tokens, because the provider lets each `authorization_code` client refresh. |
 | `mcp()` `clientReference` | A function that returns the installation ID. Each registered client gets it as `reference_id` and has no `user_id`, so the installation owns the client. |
 
-Do not start the server with `NODE_ENV=test` or `TEST=1`. These values turn off
-the provider's origin and CSRF checks.
+The provider reads some process environment variables, also when an option sets
+the related value. The [provider environment variables](#provider-environment-variables)
+tell how the local settings stay independent of them.
 
 The admin plugin's list, set-password, ban, and session endpoints need an admin
 session, which the offline CLI does not have. Its create endpoint works from the
@@ -439,6 +442,34 @@ These findings apply to the local runtime:
   The provider's token clean-up hook then does nothing, so session deletion
   through `internalAdapter` leaves token records unchanged. Introspection still
   ends tokens that carry a `sid`.
+
+#### Provider environment variables
+
+The pinned provider reads the variables below from the process environment, also
+when `localProviderOptions()` sets the related option. The local settings must
+not change with the environment. Thus `localProviderOptions()` pins a setting
+where the provider has an option for it. Where the provider has no option,
+`localProviderOptions()` throws `ProviderEnvironmentError` when the variable has
+a value. The message names the variable and its effect, but not its value. An
+empty value is the same as a missing value. The runtime builds the options when
+it starts the provider, so startup stops before the server listens. On a fresh
+data directory, the installation that the runtime made before this step stays.
+
+| Variable | Provider effect | Local setting |
+| --- | --- | --- |
+| `NODE_ENV=test` or `TEST=1` | Turns off the origin and CSRF checks when `advanced.disableOriginCheck` is not set. | `advanced.disableOriginCheck: false` keeps both checks on. |
+| `BETTER_AUTH_SECRETS` | Replaces the `secret` option. Then `auth.secret` is no longer the provider secret, and a restore of the database with its `auth.secret` does not keep sessions and keys valid. | Startup stops. The `secrets` option also stops the variable, but it changes the provider to versioned secrets and gives the keys in `auth.sqlite` another encryption format. |
+| `BETTER_AUTH_TRUSTED_ORIGINS` | Adds trusted origins to the origin and CSRF checks. The provider reads it again for each request. | Startup stops. |
+| `BETTER_AUTH_TELEMETRY` | With `BETTER_AUTH_TELEMETRY_ENDPOINT`, sends telemetry to that endpoint although `telemetry.enabled` is `false`. Either variable alone sends nothing. | Startup stops when `BETTER_AUTH_TELEMETRY` has a value, also `0`. |
+
+The proofs set each variable and block `fetch`. With `NODE_ENV=test` or
+`TEST=1`, a sign-in with valid credentials from a foreign origin gives
+`403 INVALID_ORIGIN` and adds no session. The provider reads `NODE_ENV` one time,
+when its modules load, so these two proofs run in a new Node process. The other
+variables that the provider reads do not change the local settings: the
+`secret` option has priority over `BETTER_AUTH_SECRET` and `AUTH_SECRET`, the
+`baseURL` option has priority over `BETTER_AUTH_URL`, and the `rateLimit` option
+has priority over the `NODE_ENV=production` default.
 
 #### Resolved provider blockers
 
@@ -656,7 +687,7 @@ shows a separate role, invariant, or lifecycle.
 | `src/mcp/mcp-server.ts` | Resolve access after verification and bind context to request handlers. | 1 |
 | `src/config/deployment-config.ts` | Add `DeploymentConfig` and `loadDeploymentConfig()`. | 1 |
 | `src/auth-better-auth/better-auth-provider.ts` | Add `BetterAuthProvider`, implementing both MCP roles. | 2 |
-| `src/auth-better-auth/better-auth-runtime.ts` | Add provider composition and database/lock cleanup functions when distinct from provider behavior. Implemented: `localProviderOptions()` and `openBetterAuthRuntime()`. | 2 |
+| `src/auth-better-auth/better-auth-runtime.ts` | Add provider composition and database/lock cleanup functions when distinct from provider behavior. Implemented: `localProviderOptions()`, which stops startup with `ProviderEnvironmentError` for provider variables that no option can pin, and `openBetterAuthRuntime()`. | 2 |
 | `src/auth-better-auth/data-directory-lock.ts` | Implemented: `lockDataDirectory()`, the exclusive data-directory lock that the runtime and the local commands share. | 2 |
 | `src/auth-better-auth/local-installation.ts` | Implemented: `openLocalInstallation()`, which owns the database file, the secret file, the shipped migrations, and the singleton installation identity. | 2 |
 | `src/auth-better-auth/local-auth-command.ts` | Use `runLocalAuthCommand()` to parse local user commands and register approved local OAuth clients. | 2 |

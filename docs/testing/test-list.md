@@ -112,6 +112,14 @@ Doubles stand in for the data-directory lock, the local installation, and the pr
 [V] When a cleanup step also fails, the remaining cleanup still runs and the caller gets both errors in a `SuppressedError`
 [V] `close()` closes the installation and then releases the lock one time, also for repeated and concurrent calls; a close failure still releases the lock and reaches the caller
 
+**Local provider options** (`test/unit/auth-better-auth/local-provider-options.test.ts`)
+
+The tests set process environment variables and restore them at the end of each test.
+
+[V] Use the installation secret, turn telemetry off, and set `advanced.disableOriginCheck` to `false`
+[V] Throw `ProviderEnvironmentError` when `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, or `BETTER_AUTH_TELEMETRY` has a value; the message names the variable but not its value
+[V] Build without an error for empty values of those variables, `NODE_ENV=test`, `TEST=1`, and a telemetry endpoint without `BETTER_AUTH_TELEMETRY`
+
 **Data-directory lock** (`test/unit/auth-better-auth/data-directory-lock.test.ts`)
 
 [V] A second lock from the same process or from another process fails with `DataDirectoryInUseError` until the holder releases it or ends, also after `SIGKILL`
@@ -436,7 +444,7 @@ Run the integration suite with `npm run test:integration`. `npm run check` does 
 
 **Better Auth local provider** (`test/interface/auth/better-auth.test.ts`)
 
-These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts.
+These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts. The `NODE_ENV` and `TEST` proofs run `dist/test/support/foreign-origin-probe.js` in a new Node process with only that variable, because the provider reads `NODE_ENV` when its modules load. That process also blocks `fetch` and reports its outbound requests.
 
 [V] Rejects public signup over HTTP and from the server API, and rejects email password reset; no account exists
 [V] Rejects a duplicate email in another letter case through the private create operation and keeps the original account
@@ -456,6 +464,8 @@ These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:s
 [V] Rejects a foreign origin, a missing or `null` origin with a cookie, a cross-site sign-in navigation, and a foreign callback URL with HTTP 403
 [V] Limits sign-in to three attempts in 10 seconds for each client address with HTTP 429 and `X-Retry-After`; another address can still sign in
 [V] Refuses the private admin, client-management, client-secret rotation, and session-JWT routes over HTTP; the resource-server secret still works
+[V] Stops startup with `ProviderEnvironmentError` for `BETTER_AUTH_SECRETS`, for `BETTER_AUTH_TRUSTED_ORIGINS` with a foreign origin, and for `BETTER_AUTH_TELEMETRY=1` with a telemetry endpoint; each message names the variable but not its value, and no outbound request occurs
+[V] With `NODE_ENV=test` or `TEST=1` in a new Node process, rejects a sign-in with valid credentials from a foreign origin with `403 INVALID_ORIGIN`, adds no session, and makes no outbound request
 
 Run these proofs offline:
 
@@ -550,6 +560,7 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 [V] Given two servers that start at the same time on a fresh directory, one serves, the other stops with a lock error before it listens, and one installation identity exists
 [V] Given retained data without its installation identity, startup stops before it listens, asks for a restore, and creates no new identity
 [V] Given a restored copy of the complete data directory, the server starts with the same tenant; a restore without `auth.secret` stops before it listens
+[V] Given `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, or `BETTER_AUTH_TELEMETRY` with a value, startup stops before it listens with a `FATAL` line that names the variable but not its value
 [V] Given a command argument, the process stops with status 2 before it listens, does not repeat the arguments, and creates no local data
 [V] Given the hosted edition with a `DATA_DIR` setting, startup stops with an unavailable-edition error and creates no local data
 
