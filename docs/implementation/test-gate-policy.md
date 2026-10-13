@@ -65,7 +65,7 @@ contains every change of the pull request.
 3. Run each new or changed test with a focused command.
 4. Run the applicable suites:
    - `npm run test:integration` and `npm run test:acceptance` for a change that
-     affects the MCP server, authentication, or the access context.
+     affects the MCP server, authentication, the access context, or billing.
    - `npm run test:integration` for a change in `test/integration/`.
    - `npm run test:acceptance` for a change in `test/acceptance/`.
    - The interface tests that cover a changed renderer runtime, network policy,
@@ -151,6 +151,23 @@ settings is not a container gate pass. The file name also matches the acceptance
 glob. A run of that file through `npm test` or `npm run test:acceptance` is not
 a container gate pass.
 
+### Paid billing gate (AUTH-11)
+
+AUTH-11 adds the paid billing suites after the owner chooses the payment
+provider. The [AUTH-11 specification](../design/billing-design.md#auth-11-implementation-specification)
+lists them. The provider contract file `test/interface/billing/<provider>.live.ts`
+and the live acceptance file `test/acceptance/billing/paid-billing.live.ts` run
+in the provider sandbox with a dedicated command. The `.live.ts` names do not
+match the `*.test.js` globs on purpose. If the sandbox credentials are missing,
+the command must fail with a clear setup error.
+
+The paid billing gate passes only when the dedicated command runs with the
+sandbox credentials and every live test passes. Missing credentials, a setup
+error, and skipped live tests can never count as a pass. Do not put
+credentials in the repository, in logs, or in pull request notes. The free
+billing tests are not a paid billing gate. Until this gate passes, the hosted
+edition uses `BillingFree`, and no release collects payments.
+
 ## Gate sources
 
 These files state test commands or gates. Keep them consistent with this
@@ -166,5 +183,7 @@ policy. Update them in the same pull request as a gate change.
   with focused commands.
 - [Authentication implementation plan](../design/authentication-design.md#verification-and-release-gates):
   planned authentication suites and release gates.
+- [Paid billing design](../design/billing-design.md#auth-11-implementation-specification):
+  planned paid billing suites and the paid gates.
 - [Lightpanda runtime](../lightpanda-runtime.md#verify-rendering): renderer
   setup and interface test commands.

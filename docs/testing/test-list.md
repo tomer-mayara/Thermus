@@ -79,6 +79,16 @@ Real issuer, signature, and key rotation checks belong in authentication interfa
 [V] Rejects hosted stdio and accepts self-hosted stdio at this layer
 [V] Names the setting and the rule in each error, without a setting value; keeps the issuer exactly as written; returns frozen records
 
+**Billing** (`test/unit/billing/billing-free.test.ts`)
+
+`BillingFree` is the only `Billing` implementation until the owner chooses a payment provider. No paid billing test exists yet; the [AUTH-11 specification](../design/billing-design.md#auth-11-implementation-specification) lists the planned tests.
+
+[V] Rejects an empty or missing organization ID with a `TypeError` from `stateOf` and `updateSeats`
+[V] Rejects a seat count that is negative, fractional, NaN, infinite, or above `Number.MAX_SAFE_INTEGER` with a `RangeError`
+[V] Refuses input with a rejected promise, never a synchronous throw; a refused call confirms no state
+[V] Accepts 0 seats and `Number.MAX_SAFE_INTEGER` seats and confirms the free plan with no billed seat
+[V] Gives frozen state records that keep the free state
+
 **Audit Trail**
 
 [] Support OTLP protocol
@@ -452,6 +462,15 @@ A real MCP client calls MCPServer through its HTTP fetch interface with a bearer
 
 [V] Given an identity provider outage or an access lookup outage, the client gets a generic server error, and the operator gets one report that names the failed step, keeps the cause, and holds no bearer token or session cookie
 [V] Given a rejected token, a token without the required scope, or an inactive membership, the client is refused and the operator gets no failure report
+
+**Free billing** (`test/acceptance/billing/free-billing.test.ts`)
+
+The tests use `BillingFree` through the `Billing` interface. They do not cover paid billing.
+
+[V] Given a new hosted organization, its billing is on the free plan, and no seat is billed
+[V] Given active User seats that go from 3 to 5, to 4, and to 0, each update confirms the free plan with no billed seat
+[V] Given a repeated count or an older count, the result does not change
+[V] Given two organizations, a seat change in one does not change the other
 
 `npm run test:acceptance` runs every acceptance test. `npm run check` does not select the acceptance directory.
 

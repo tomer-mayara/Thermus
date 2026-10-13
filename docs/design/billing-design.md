@@ -1,12 +1,12 @@
 # Paid billing design
 
-**Status: proposed. Waiting for owner decisions.** No payment provider is
-selected. No billing code exists. This document lists the open AUTH-10
-decisions, with options and a recommendation for each. After the owner
-decides, AUTH-10 records the approved rules and examples here, updates the
-[authentication plan](authentication-design.md), and specifies the AUTH-11
-implementation. Until AUTH-11 passes its paid gates, no release collects
-payments.
+**Status: no payment provider is selected.** On 2026-10-12, the owner deferred
+the choice of provider and the other paid billing decisions. Billing is a
+separate object behind the [`Billing` interface](#the-billing-interface).
+[`BillingFree`](#free-billing) is its only implementation. It bills no
+organization and collects no payment. The paid product still needs
+[AUTH-11](#auth-11-implementation-specification). Until AUTH-11 passes its
+paid gates, no release collects payments.
 
 ## Accepted policy
 
@@ -25,7 +25,102 @@ The decisions below do not change these rules.
 - WorkOS memberships are the authority for this count. If one membership page
   fails, the count fails. The app never uses a partial count.
 
-## Facts that affect the decisions
+## Owner decision
+
+AUTH-10 asked the owner to decide D1 to D11 below. The owner answered on
+2026-10-12:
+
+> We haven't decided on billing provider yet. Make sure Billing is a seperate
+> object (interface) and for now implement BillingFree object that basically
+> doesn't bill anyone but answers the required interface (and can be later
+> replaced easily by Stripe)
+
+These rules follow from the answer:
+
+- No payment provider is selected, and D1 stays open. The owner names Stripe
+  as a possible later replacement. This is not a provider decision.
+- D2 to D11 stay open. They apply only to paid billing, so they wait for the
+  provider decision. Their recommendations stay as proposals.
+- Billing is a separate object. Hosted code that needs billing uses the
+  `Billing` interface. Only a `Billing` implementation calls a payment provider
+  or reads billing storage.
+- `BillingFree` is the implementation until AUTH-11 replaces it. It bills no
+  organization.
+- While `BillingFree` is in use, billing never changes access. Product portal
+  and MCP access depend only on grants. D8 decides the rule for paid billing.
+
+## The Billing interface
+
+`src/billing/billing.ts` contains the contract. It has two operations. Each
+operation gives a `BillingState`.
+
+| Operation | Contract |
+| --- | --- |
+| `stateOf(organizationId)` | Gives the confirmed billing state of one organization. |
+| `updateSeats(organizationId, seatCount)` | Gets the complete current count of active User seats. The count is never a change to add or subtract, so the same count again has no further effect. Gives the confirmed state after the update. |
+
+`BillingState` has `organizationId`, `plan`, and `billedSeats`, the number of
+seats that are billed. The only plan now is `free`. AUTH-11 adds the paid
+states that the approved rules need.
+
+Each implementation obeys these rules:
+
+1. **One organization.** Each call names one organization. An empty or missing
+   organization ID gives a `TypeError`. A state belongs only to its
+   organization.
+2. **Complete count.** The seat count is a whole number from 0 to
+   `Number.MAX_SAFE_INTEGER`. Any other value gives a `RangeError`. The caller
+   gets the count from all membership pages. If one page fails, the caller
+   does not call `updateSeats`.
+3. **Confirmed results.** A resolved call gives only a confirmed state. A
+   rejected call confirms nothing, and the caller must not show the change as
+   done. An operation refuses input with a rejected promise, never with a
+   synchronous throw.
+4. **Frozen records.** Each state is a frozen record.
+5. **No role check.** `Billing` does not check roles. Before a customer billing
+   change, the application service checks Super Admin authority and completed
+   MFA, and it writes the change record. A seat update follows a membership
+   change, so it does not need Super Admin.
+6. **Hosted only.** The hosted composition creates one `Billing`. The
+   self-hosted composition creates none.
+
+No production code calls `Billing` yet, because the hosted composition, the
+membership changes, and the account pages do not exist yet. AUTH-11 connects
+each caller that does not use `Billing` at that time.
+
+## Free billing
+
+`src/billing/billing-free.ts` contains `BillingFree`. It obeys the interface
+rules and these rules:
+
+- Each organization is on the free plan, with 0 billed seats, from its
+  creation. There is no checkout, payment method, invoice, charge, credit,
+  refund, renewal, or cancellation.
+- `updateSeats` checks the count and changes nothing.
+- `BillingFree` keeps no state and makes no external call. It needs no
+  storage, settings, or provider account.
+
+In these examples, `org-a` and `org-b` are hosted organizations.
+
+| Case | Example | Result |
+| --- | --- | --- |
+| First purchase | An operator creates `org-a`. Its Super Admin grants Admin and then User to itself. The account page reads the billing state. | `stateOf("org-a")` gives `{ organizationId: "org-a", plan: "free", billedSeats: 0 }`. There is nothing to buy. MCP access depends only on the User grant. |
+| Added seat | `org-a` has 4 active Users. An Admin grants User to a fifth person, and the app gives the count 5. | `updateSeats("org-a", 5)` gives the free state with 0 billed seats. There is no charge. |
+| Removed seats | The count goes from 5 to 4, and then to 0. | Each update gives the free state. There is no credit. The last removal ends nothing. |
+| Proration and cancellation | Seats change during a month, or a Super Admin wants to stop paying. | There is nothing to prorate or cancel. |
+| Payment failure and unpaid states | A payment fails. | This cannot occur, because no payment is collected. |
+| Duplicate and older counts | The count 5 arrives two times. Then an older count, 3, arrives. | Each update gives the same free state. |
+| Other organization | `org-a` gets the count 7. At the same time, `org-b` reads its state. | `org-b` gets its own free state. |
+| Invalid input | The app gives the count -1, or an empty organization ID. | The call rejects with a `RangeError` or a `TypeError`. It confirms nothing, and the state stays free. |
+| Unknown outcome | A network or provider failure occurs. | `BillingFree` makes no external call. Only invalid input can make a call fail. |
+| Reconciliation drift | A change outside the app changes the count. | There is no billed quantity, so it cannot drift. |
+| Recovery | A call was refused. | The caller corrects its input. There is nothing else to recover. |
+
+The [acceptance tests](../../test/acceptance/billing/free-billing.test.ts) and
+the [unit tests](../../test/unit/billing/billing-free.test.ts) check these
+examples. No test covers paid billing yet.
+
+## Facts for the open paid decisions
 
 Checked on 2026-10-12. Fees are approximate; check the provider price pages.
 
@@ -79,12 +174,13 @@ Checked on 2026-10-12. Fees are approximate; check the provider price pages.
   one time and in any order.
   [Stripe webhooks](https://docs.stripe.com/webhooks)
 
-## Decisions for the owner
+## Open paid decisions
 
-Each decision has options. **Recommended** marks the proposal. The examples
-use a 30-day period and a price of 10 USD for each seat. Day 0 is the purchase
-day, and the renewal is on day 30. The real price and currency are provider
-settings, not code.
+The owner deferred these decisions on 2026-10-12. They apply only to paid
+billing, and they wait for the provider decision. Each decision has options.
+**Recommended** marks the proposal. The examples use a 30-day period and a
+price of 10 USD for each seat. Day 0 is the purchase day, and the renewal is
+on day 30. The real price and currency are provider settings, not code.
 
 ### D1. Payment provider
 
@@ -213,6 +309,9 @@ Example for (a): an operator creates an organization. Its Super Admin grants
 Admin and then User to itself. Its MCP requests get `subscription-required`
 until a Super Admin completes the first payment.
 
+While `BillingFree` is in use, billing never changes access, as in (b). The
+reason code `subscription-required` does not exist.
+
 ### D9. Recovery
 
 During the retry window, a Super Admin updates the payment method on the
@@ -232,8 +331,8 @@ below apply after the subscription ends.
 
 ### D10. Organizations from before billing
 
-The first hosted release has no payments. Its organizations have no
-subscription when billing starts.
+The first hosted release has no payments, because it uses `BillingFree`. Its
+organizations have no subscription when paid billing starts.
 
 - **(a) Announce a start date. Recommended.** From that date, D8 applies to
   each organization. For an internal or demonstration organization, the
@@ -261,26 +360,28 @@ call to each protected request; it is not proposed.
   a database service, a client package, and a test database.
 
 If AUTH-07 or AUTH-08 gives change records hosted storage first, billing uses
-the same storage.
+the same storage. `BillingFree` needs no storage.
 
-## Rules for each option
+## Rules for every paid implementation
 
-These rules follow from the accepted policy. AUTH-10 completes them after the
-decisions.
+These rules follow from the accepted policy and the
+[`Billing` interface](#the-billing-interface). They apply to each provider
+option, and AUTH-11 keeps them.
 
-1. **Provider-confirmed state.** The app shows a status or quantity only after
-   the provider confirms it in an API response or a verified event. A timeout,
-   a network error, or a provider `5xx` response is an unknown outcome, not a
-   success.
+1. **Provider-confirmed state.** `stateOf` and `updateSeats` give a status or
+   quantity only after the provider confirms it in an API response or a
+   verified event. A timeout, a network error, or a provider `5xx` response is
+   an unknown outcome, not a success: the call rejects, and the app shows no
+   change.
 2. **Unknown outcomes.** After an unknown outcome, the app reads the current
    provider state before it tries again. Where the provider supports
    idempotency keys, each retry of one change uses the same key. A retry never
    makes a second subscription or charge.
-3. **Absolute quantity.** An update sets the billed quantity from the current
-   count. It never adds or subtracts. The same update again has no further
-   effect. An update applies even when its charge fails (Stripe
-   `allow_incomplete`, Paddle `apply_change`), so reconciliation never repeats
-   a charge.
+3. **Absolute quantity.** `updateSeats` sets the billed quantity from the
+   complete current count. It never adds or subtracts. The same update again
+   has no further effect. An update applies even when its charge fails
+   (Stripe `allow_incomplete`, Paddle `apply_change`), so reconciliation never
+   repeats a charge.
 4. **One subscription for each organization.** The app does not start a
    checkout while the organization has a subscription that has not ended.
 5. **Limited hosted pages.** The provider's hosted pages let a Super Admin
@@ -293,20 +394,104 @@ decisions.
    does not trust the event order. It reads the current provider object and
    applies that state.
 8. **Reconciliation.** After each grant change in the app, and on a schedule,
-   the app compares the count with the provider quantity. When they differ,
-   the app corrects the provider. The schedule also finds changes outside the
-   app, such as accepted invitations and operator changes.
+   the app gives the complete count to `updateSeats`. When the count and the
+   provider quantity differ, the update corrects the provider. The schedule
+   also finds changes outside the app, such as accepted invitations and
+   operator changes.
 9. **No framework.** There is no event store or outbox framework.
 
-## Next steps after the decisions
+## AUTH-11 implementation specification
 
-1. Record the approved decisions here, with success, failure, and recovery
-   examples for the initial purchase, seat changes, proration, cancellation,
-   unpaid states, unknown outcomes, duplicate events, and reconciliation drift.
-2. Update the requirements, slice 6, and the paid product section of the
-   [authentication plan](authentication-design.md). State that the paid
-   product still needs AUTH-11 until its gates pass.
-3. Specify AUTH-11: a failing Given-When-Then acceptance specification first,
-   then focused TDD, with concrete files and storage, provider contract and
-   integration tests, dependencies, and the paid release gates in the
-   [test gate policy](../implementation/test-gate-policy.md).
+AUTH-11 replaces `BillingFree` in the hosted composition with a provider
+implementation of `Billing`. AUTH-11 is the only paid billing implementation
+ticket. Do not create another one.
+
+### Start conditions
+
+- The owner chooses D1 and approves D2 to D11. This document then records the
+  approved rules. It gives success, failure, and recovery examples for each
+  case of the [free billing](#free-billing) table: first purchase, added and
+  removed seats, proration, cancellation, unpaid states, unknown outcomes,
+  duplicate events, reconciliation drift, and recovery.
+- The hosted work of AUTH-06 to AUTH-08 is complete. AUTH-11 uses its hosted
+  composition, account pages, change records, and complete count of active
+  User seats.
+
+### Steps
+
+1. Write the failing acceptance specification,
+   `test/acceptance/billing/paid-billing.test.ts`. It runs offline with a
+   local double of the provider API. Its Given-When-Then scenarios cover:
+   - the first purchase through the provider's hosted checkout, with a state
+     that a verified event confirms;
+   - added and removed seats, with the quantity that the provider confirms,
+     the approved proration (D4), and the approved minimum (D5);
+   - cancellation (D6), payment failure and unpaid states (D7 and D8), and
+     recovery (D9);
+   - an unknown outcome: after a provider timeout, the app shows no change. It
+     reads the provider state before it tries again, and it makes no second
+     subscription or charge;
+   - a duplicate event, events in the wrong order, and events with a bad
+     signature or an old time;
+   - reconciliation drift: a change outside the app, such as an accepted
+     invitation, and the scheduled correction;
+   - authority: only a Super Admin with completed MFA starts or manages
+     billing, and each change writes a change record;
+   - the self-hosted edition, which has no billing routes.
+2. Use focused TDD for each part that the specification needs. Write a failing
+   unit test with doubles for the provider client, the storage, and the
+   membership count. Then make it pass.
+3. Connect each caller that does not use `Billing` yet. The membership and
+   grant changes give the complete count to `updateSeats`. The account page
+   reads `stateOf`. The hosted composition creates the provider
+   implementation. If no approved rule still uses `BillingFree` after this
+   change, remove it.
+4. Pass the [paid gates](#paid-gates).
+
+### Files and storage
+
+The approved D1 and D11 decide the final names. The names below use the
+recommended options.
+
+| File | Change |
+| --- | --- |
+| `src/billing/billing.ts` | Add the paid states and the operations that the approved rules need, for example the hosted payment pages. `BillingFree` answers each new operation while it exists. |
+| `src/billing/billing-<provider>.ts` | The provider implementation, for example `BillingStripe` in `billing-stripe.ts` for D1 (a). |
+| `src/billing/billing-events.ts` | The event route. It checks the signature and the time on the raw body, and it records the IDs of processed events. |
+| `src/billing/seat-reconciliation.ts` | Gives the complete count to `updateSeats` after each membership change and on a schedule. |
+| `src/billing/billing-store.ts`, `migrations/billing/0001-billing.sql` | For D11 (a): SQLite through `node:sqlite` on the hosted persistent volume. The store keeps the provider customer and subscription IDs, the last confirmed status, quantity, and period end of each organization, the IDs of processed events, and the billing change records. For D11 (b), a PostgreSQL store replaces these files. |
+| `src/hosted-admin/account-routes.ts`, `src/hosted-admin/account-pages.ts` | The Super Admin billing page and actions, with CSRF and origin checks. |
+| `src/application.ts` | The hosted composition creates the provider implementation instead of `BillingFree`. |
+| `src/config/deployment-config.ts`, `.env.example` | The provider settings of the hosted edition. The self-hosted edition reads none. |
+| `package.json`, `pnpm-lock.yaml` | An exact pin of the provider SDK, if AUTH-11 uses one. |
+
+### Tests
+
+| Test file | Coverage |
+| --- | --- |
+| `test/unit/billing/billing-<provider>.test.ts` | Confirmed states, absolute quantity, idempotency keys, unknown outcomes, and the D5 minimum, with a double for the provider client. |
+| `test/unit/billing/billing-events.test.ts` | Signature and time checks, duplicate event IDs, and event order. |
+| `test/unit/billing/seat-reconciliation.test.ts` | Drift correction, a failed membership page, and a failed provider update. |
+| `test/unit/billing/billing-store.test.ts` | Stored records and the IDs of processed events. |
+| `test/integration/billing/paid-billing.test.ts` | The provider implementation, the event route, the store, and reconciliation together, with a local double of the provider API. |
+| `test/acceptance/billing/paid-billing.test.ts` | The paid scenarios of step 1, offline. |
+| `test/interface/billing/<provider>.live.ts` | A few provider contract checks in the provider sandbox: quantity updates, proration settings, quantity 0, idempotency keys, the signature format, and renewals and retries without a wait, for example with Stripe test clocks. |
+| `test/acceptance/billing/paid-billing.live.ts` | The paid scenarios in the provider sandbox. |
+
+The two `.live.ts` files need sandbox credentials. A dedicated command runs
+them. Their names do not match the `*.test.js` globs, so `npm test` does not
+select them.
+
+### Paid gates
+
+The hosted edition can collect payments only after each gate passes on the
+complete candidate:
+
+- `npm run check`, habit-hooks, `npm run test:integration`, and
+  `npm run test:acceptance`;
+- the dedicated live command, with sandbox credentials, where every live test
+  passes. The [test gate policy](../implementation/test-gate-policy.md#paid-billing-gate-auth-11)
+  gives the rules for this gate.
+
+The free billing tests are not a paid gate. Until the paid gates pass, the
+hosted edition keeps `BillingFree`, and no release collects payments.
