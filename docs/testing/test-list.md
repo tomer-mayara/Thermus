@@ -665,7 +665,7 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 [V] Given a repeated count or an older count, the result does not change
 [V] Given two organizations, a seat change in one does not change the other
 
-`npm run test:acceptance` runs every acceptance test. `npm run check` does not select the acceptance directory.
+`npm run test:acceptance` runs every acceptance test, except the container gate suite, which it skips. `npm run check` does not select the acceptance directory.
 
 **Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)
 
@@ -733,6 +733,27 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted.test.js
 ```sh
 npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.js
 ```
+
+**Self-hosted evaluation container** (`test/acceptance/auth/self-hosted-container.test.ts`)
+
+The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query, and each case requires an empty record. The test-only browser and the MCP SDK client of each user reach the server through the edge.
+
+[V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
+[V] Given two users with tokens and consents, a restart, a new container, and a container of the rebuilt image on the same volume each keep the tenant, the user IDs, the clients, the signing keys, the sessions, the consents, and the tokens of both users usable
+[V] Given a tar backup of the complete stopped volume, a restore into a new volume keeps the tenant, the user IDs, the tokens, the sessions, and the consents; a fresh volume gets a new tenant; a restore without the installation identity or without `auth.secret` stops the server before it listens, asks for a restore, and gets no new identity
+[V] Given two users with tokens, a stopped-server password reset of one user ends only its token and old password, and the user signs in again without a new consent; a later disable of the other user ends only its token and sign-in; the peer keeps working each time
+[V] Given a live server container, one-off command containers on the same volume and a command in the server container fail with the lock error, ask for no password, and change no account
+[V] Given an installation that starts with zero accounts and later has only a disabled account, a command container that adds an account while the server is stopped gives MCP access through the installation client, and the tenant stays the same
+[V] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, the MCP session lists no tools, and a container with `DEPLOYMENT=hosted` stops before it listens and writes nothing to its volume
+[V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, and the pinned production packages with a working native ad blocker, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting, and a `0700` data directory; the compose service mounts only that volume, starts with an init process, and publishes port 8080 on `127.0.0.1`
+
+Run the container gate. It needs Docker Engine with Buildx and Compose:
+
+```sh
+npm run test:container
+```
+
+`npm test` and `npm run test:acceptance` select this file but skip its suite. Only `npm run test:container` is a container gate pass.
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 

@@ -17,11 +17,16 @@ package script. Each command that runs `dist/` output makes a clean build first.
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` | Offline. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0 and public network access. |
 | All | `npm test` | `dist/test/**/*.test.js`: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
+| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `MAGUMAGU_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`, and
-`npm run test:build`. It does not run the integration, acceptance, or interface
-suites. `npm test` does not run the build test, because `tsconfig.build.json`
+`npm run test:build`. It does not run the integration, acceptance, interface, or
+container suites. `npm test` does not run the build test, because `tsconfig.build.json`
 excludes it from `dist/`.
+
+`npm test` and `npm run test:acceptance` also select the container test file.
+Without `MAGUMAGU_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
+`npm run test:container` sets the setting.
 
 The interface suite needs the pinned Lightpanda executable. It also contains a
 public-site smoke test that needs public network access.
@@ -73,6 +78,13 @@ contains every change of the pull request.
    - The Better Auth interface proofs, `test/interface/auth/better-auth.test.ts`,
      for a change to the Better Auth packages, their settings, or the local
      authentication flow. They run offline with a focused command.
+   - `npm run test:container` for a change to `Dockerfile`, `.dockerignore`,
+     `compose.yaml`, the production packages (`package.json`, `pnpm-lock.yaml`,
+     `pnpm-workspace.yaml`, or `patches/`), `migrations/`, the code of the
+     self-hosted server and its commands (`src/index.ts`, `src/application.ts`,
+     `src/auth/`, `src/auth-better-auth/`, `src/config/`, `src/http/`,
+     `src/logging/`, `src/mcp/`, or `src/terminal/`), or the container tests and
+     their support files.
 
 If you are not sure that a suite applies, run it.
 
@@ -92,6 +104,52 @@ the reason. Do not record that run as a pass.
   test. Node exits with status 0 for both.
 - A name pattern that matches no test does not give evidence of a pass. Node
   then reports the file as one passing test.
+
+## Container gate
+
+AUTH-09 added the container acceptance suite
+`test/acceptance/auth/self-hosted-container.test.ts` and its own command,
+`npm run test:container`. The command makes a clean build, sets
+`MAGUMAGU_CONTAINER_GATE=1`, and runs the file. The suite:
+
+- builds the image of the current candidate from `Dockerfile` two times. The
+  second build has another revision label, so it is another image with the same
+  content, for the image replacement case;
+- runs the server and the bundled commands in containers of that image, with the
+  real provider and SQLite on Docker volumes;
+- gives the containers only the settings of the image and `PUBLIC_BASE_URL`, so
+  the normal production telemetry settings apply;
+- puts each container that runs Magumagu on an internal Docker network without a
+  route out. An edge container forwards the test connections to the server and
+  is the DNS server of the containers, so it records each outbound connection
+  that they try by name. Each case fails when the record is not empty;
+- removes its containers, networks, volumes, and images when it ends.
+
+Only a run of `npm run test:container` that exits with status 0 and shows each
+container test as passed is a container gate pass. A container run with outbound
+access allowed is not a container gate pass. A container run with changed
+telemetry settings is not a container gate pass. `npm test` and
+`npm run test:acceptance` select the file but skip its suite, so a run through
+them is never a container gate pass. Without the docker CLI, a running engine,
+Buildx, or Compose, the suite fails with a setup error.
+
+## Self-hosted release
+
+A release of the self-hosted evaluation image needs a pass of each command below
+on the release commit. Each command must exit with status 0 and show each
+required test as passed:
+
+1. `npm run check`
+2. `habit-hooks`, with each finding corrected or its reason given
+3. `npm run test:integration`
+4. `npm run test:acceptance`
+5. `npm run build && node --test dist/test/interface/auth/better-auth.test.js`
+6. `npm run test:container`
+
+If an Actions job starts for the release commit, it must pass too. Then build the
+release image with `docker compose build` or `docker build --tag magumagu:<version> .`.
+The release notes must not claim payment collection, hosted features, or
+migration between editions.
 
 ## Pull request steps
 
@@ -139,18 +197,6 @@ credentials and every live test passes. Missing hosted credentials, a setup
 error, and skipped live tests can never count as a successful hosted gate. Do
 not put credentials in the repository, in logs, or in pull request notes.
 
-### Container gate (AUTH-09)
-
-AUTH-09 adds the container acceptance suite
-`test/acceptance/auth/self-hosted-container.test.ts` and its own explicit
-command. The suite runs with a real image, normal production telemetry settings,
-and outbound access denied. Only a run of the dedicated command under these
-conditions is a container gate pass. A container run with outbound access
-allowed is not a container gate pass. A container run with changed telemetry
-settings is not a container gate pass. The file name also matches the acceptance
-glob. A run of that file through `npm test` or `npm run test:acceptance` is not
-a container gate pass.
-
 ### Paid billing gate (AUTH-11)
 
 AUTH-11 adds the paid billing suites after the owner chooses the payment
@@ -178,7 +224,7 @@ policy. Update them in the same pull request as a gate change.
 - [CLAUDE.md](../../CLAUDE.md): Claude model rules. It includes AGENTS.md.
 - [package.json](../../package.json): the exact suite commands.
 - [README.md](../../README.md#build-and-test-commands): the script list, build
-  behavior, and suite prerequisites.
+  behavior, suite prerequisites, and the release checks.
 - [Test inventory](../testing/test-list.md): executed and pending test cases,
   with focused commands.
 - [Authentication implementation plan](../design/authentication-design.md#verification-and-release-gates):

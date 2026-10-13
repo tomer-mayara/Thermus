@@ -138,7 +138,7 @@ The server calls both loaders before it opens any resource or listens.
 
 ## Self-hosted server
 
-Start the server from a build. `DATA_DIR` must be an existing directory:
+Start the server from a build, or run it in a container as [container installation](#container-installation) tells. For a build, `DATA_DIR` must be an existing directory:
 
 ```sh
 mkdir -p /tmp/magumagu-data
@@ -167,6 +167,75 @@ The HTTP bridge builds each request URL from the origin of `PUBLIC_BASE_URL` and
 To make a backup, stop the server and copy the complete data directory. To restore, copy all of its files together into an empty directory, and start the server with that `DATA_DIR`. The installation ID, the tenant, the user IDs, the browser sessions, the registered clients, the consents, the signing keys, and the resource-server client in `resource-server-client.json` stay the same. Filesystem access to the data directory is administration authority for the installation; it gives no application role.
 
 [`migrations/auth-local/`](migrations/auth-local/) holds the shipped SQL. `0001-better-auth.sql` is the output of Better Auth `compileMigrations()` for the pinned packages and the provider settings on an empty database. `0002-installation.sql` adds the singleton installation table. The server never downloads a migration tool. A unit test fails if the shipped SQL is different from the output of the pinned provider; after a change to the provider packages or settings, generate the file again.
+
+## Container installation
+
+The container image is the self-hosted evaluation edition. It holds the server and the offline commands of the same program, the shipped migrations, the bundled sign-in and consent pages, and the pinned production packages. The server and the commands need no outbound connection: a start downloads nothing, and telemetry is off. The image has no Lightpanda renderer, because no production tool fetches pages yet.
+
+You need Docker Engine with Buildx and Compose. The image build downloads the pinned base images and packages, so the build needs network access. Run the commands from the repository root:
+
+```sh
+docker compose build
+docker compose up -d
+docker compose logs magumagu
+```
+
+The log shows the tenant of the installation and `Listening on http://0.0.0.0:8080`. Connect a supported MCP client to `http://localhost:8080/mcp`; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives its settings. `docker compose stop magumagu` stops the server, and `docker compose start magumagu` starts it again.
+
+**Settings.** [`compose.yaml`](compose.yaml) has one service, `magumagu`, with an init process. The [`Dockerfile`](Dockerfile) sets `DEPLOYMENT=self-hosted`, `DATA_DIR=/var/lib/magumagu`, `LISTEN_HOST=0.0.0.0`, `LISTEN_PORT=8080`, and `NODE_ENV=production`, and the image runs as the `node` user. The service sets `PUBLIC_BASE_URL`, by default `http://localhost:8080`, and publishes port 8080 on `127.0.0.1` only. For another address, set `PUBLIC_BASE_URL` in the shell or in a `.env` file next to `compose.yaml`, and change the published port to agree with it. A registered client belongs to the MCP resource of one `PUBLIC_BASE_URL`, so after a change, register the clients again. The image sets no telemetry setting. Do not set `BETTER_AUTH_TELEMETRY` or the other [refused Better Auth variables](#self-hosted-server): startup stops.
+
+**Data volume.** The named volume `magumagu_magumagu-data` is mounted at `DATA_DIR`. It holds all data of the installation: `auth.sqlite` with the accounts, sessions, clients, consents, signing keys, and installation identity; `auth.secret`; `resource-server-client.json`; and `data-directory.lock`. The image keeps no data. Only the `node` user of the image can open the directory (mode `0700`), and the data files have mode `0600`. Access to the volume is administration authority for the installation; it gives no application role.
+
+**Accounts and clients.** The commands of [local accounts and clients](#local-accounts-and-clients) run in a one-off container of the same image with the same volume. Stop the server first, and start it again after the commands:
+
+```sh
+docker compose stop magumagu
+docker compose run --rm magumagu users add alice@example.com
+docker compose run --rm magumagu users add bob@example.com
+docker compose run --rm magumagu users list
+docker compose run --rm magumagu clients register --user alice@example.com --name "Native MCP client" --redirect-uri http://127.0.0.1:33418/callback
+docker compose start magumagu
+```
+
+In a terminal, `docker compose run` gives the command a terminal, so the password prompts do not show the typed characters. A script can add `-T` and write one line for each prompt to standard input:
+
+```sh
+printf '%s\n%s\n' "$NEW_PASSWORD" "$NEW_PASSWORD" | docker compose run --rm -T magumagu users add carol@example.com
+```
+
+While the server runs, each command stops with the lock error and changes nothing. A command in the server container, such as `docker compose exec magumagu node /app/dist/src/index.js users list`, is another process on the same volume, so the lock stops it too.
+
+**Restart and update.** A restart (`docker compose restart magumagu`), a new container (`docker compose up -d --force-recreate`), and a new image (`docker compose build`, then `docker compose up -d`) keep the volume. The installation ID, the tenant, the user IDs, the sessions, the clients, the consents, the signing keys, and the access tokens stay usable. An image with another schema version of the database stops at startup and changes no data, because this version has no data migration.
+
+**Backup and restore.** Stop the server, and copy the complete volume to a tar archive with the `tar` program of the image:
+
+```sh
+docker compose stop magumagu
+docker compose run --rm -T --entrypoint tar magumagu -cf - -C /var/lib/magumagu . > magumagu-backup.tar
+docker compose start magumagu
+```
+
+The archive holds the provider secret and the signing keys. Keep it as safe as the volume. To restore, put all files of one archive into an empty volume, and then start the server:
+
+```sh
+docker compose down
+docker volume rm magumagu_magumagu-data
+docker compose run --rm -T --entrypoint tar magumagu -xf - -C /var/lib/magumagu < magumagu-backup.tar
+docker compose up -d
+```
+
+The restored installation keeps its tenant, the user IDs, the sessions, the clients, the consents, and the signing keys. The database and `auth.secret` must come from the same archive. Retained data without its installation identity, or without `auth.secret`, stops each start with a `FATAL` line that asks for a restore. The server never makes a new identity for retained data. Docker starts the service again and again, and `docker compose logs magumagu` shows the line. Stop the service with `docker compose stop magumagu`, and restore the complete archive.
+
+**Recovery.**
+
+- No account, or only disabled accounts: stop the server, add an account with `docker compose run --rm magumagu users add <email>`, and start the server. The tenant and the other accounts stay. The installation owns each approved client, so the new account can use the registered clients.
+- A forgotten password: stop the server and run `users reset-password` in the same way.
+- A lock error: stop the server container, then run the command again.
+- A new installation: `docker compose down --volumes` deletes the volume with all accounts and data. The next start makes a new installation with a new tenant.
+
+**Edition limits.** All enabled local accounts are equal users of one shared workspace, with the same evaluation permissions. There is no local administrator role. The image has no organizations, invitations, seats, billing, payment collection, or hosted sign-in, and their paths give `404`. With `DEPLOYMENT=hosted`, the container stops at startup. A change of `DEPLOYMENT` or of another setting is a configuration change: it does not move accounts or data to the other edition. Migration between editions is separate future work.
+
+**Verification.** `npm run test:container` builds this image and runs the [container gate](docs/implementation/test-gate-policy.md#container-gate) without outbound access.
 
 ## Local accounts and clients
 
@@ -209,7 +278,7 @@ node dist/src/index.js clients register --user alice@example.com --name "Native 
 The data directory is in use by another Magumagu process. Stop that process, then try again.
 ```
 
-A command that you run inside a live server container is also another process on the same files, so the lock stops it too. A command holds the lock until it ends, also while it waits for a password; a server start on the same directory then stops with the same error. For a container installation, stop the server container, run the command in a one-off container from the same image with the same volume, and start the server container again.
+A command that you run inside a live server container is also another process on the same files, so the lock stops it too. A command holds the lock until it ends, also while it waits for a password; a server start on the same directory then stops with the same error. For a container installation, stop the server container, run the command in a one-off container from the same image with the same volume, and start the server container again. The [container installation](#container-installation) section gives the commands.
 
 **Recovery.**
 
@@ -265,6 +334,7 @@ Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and N
 - pnpm 12.10.1
 - A POSIX shell for build commands (macOS or Linux)
 - Lightpanda 1.0.0 for rendering and live renderer tests; follow [runtime setup](docs/lightpanda-runtime.md). `pnpm install` does not install it. The unit suite needs no renderer.
+- Docker Engine with Buildx and Compose for the [container installation](#container-installation) and `pnpm test:container`. No other suite needs Docker.
 
 ## Scripts
 
@@ -278,6 +348,7 @@ pnpm test:unit        # clean build, then node --test on dist/test/unit/
 pnpm test:integration # clean build, then node --test on dist/test/integration/
 pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
+pnpm test:container   # clean build, then the container gate: the image and its containers without outbound access
 pnpm typecheck   # tsc --noEmit
 ```
 
@@ -291,6 +362,8 @@ test/        node:test files
 migrations/  Shipped SQL migrations, such as auth-local/ for the self-hosted edition
 docs/        Documentation, design plans, and archived records
 dist/        tsc output (gitignored)
+Dockerfile, compose.yaml, .dockerignore
+             The self-hosted evaluation image, its Compose service, and its build context
 ```
 
 ## TypeScript
@@ -313,10 +386,27 @@ The unit, integration, and acceptance suites are offline. Live renderer tests ne
 
 `pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
 
-`npm run check` does not run the integration, acceptance, or interface suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+`npm run check` does not run the integration, acceptance, interface, or container suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+
+`pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `MAGUMAGU_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
 
 The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. `pnpm test:acceptance` runs them with the other acceptance tests. To run only this file:
 
 ```sh
 npm run build && node --test dist/test/acceptance/small-text-cutoff.test.js
 ```
+
+### Release checks
+
+A release of the self-hosted evaluation image needs these commands on the release commit. Each must exit with status 0 and show each required test as passed:
+
+```sh
+npm run check
+habit-hooks
+npm run test:integration
+npm run test:acceptance
+npm run build && node --test dist/test/interface/auth/better-auth.test.js
+npm run test:container
+```
+
+For `habit-hooks`, correct each finding or give the reason that you keep it. Then build the release image with `docker compose build`, or with `docker build --tag magumagu:<version> .`. The [test gate policy](docs/implementation/test-gate-policy.md#self-hosted-release) gives the release rules. A self-hosted release does not claim payment collection, hosted features, or migration between editions.
