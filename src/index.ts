@@ -7,7 +7,6 @@ import { HiddenLineInput } from './terminal/hidden-line-input.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-// The process, or a double in a test.
 interface ProcessSignals {
   once(signal: NodeJS.Signals, listener: NodeJS.SignalsListener): unknown;
   off(signal: NodeJS.Signals, listener: NodeJS.SignalsListener): unknown;
