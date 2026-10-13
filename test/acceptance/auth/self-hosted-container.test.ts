@@ -435,7 +435,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await site.assertNoOutboundRequests();
   });
 
-  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted stops before it listens and writes nothing to its volume', { timeout: 300_000 }, async (t) => {
+  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted and WorkOS settings serves only the authentication-unavailable answers, also for that session and its token, and writes nothing to its volume', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t, [alice]);
     const server = await setup.site.startServer(setup.volume);
     const user = new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice);
@@ -456,18 +456,36 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await server.stop();
     const accounts = await listedAccounts(setup.operator);
     const hostedVolume = await setup.site.volume();
-    const hosted = await setup.site.createServer(hostedVolume, { environment: hostedSettings });
-    hosted.launch();
-    const hostedListening = await hosted.listeningOrExit();
-    const hostedExit = await hosted.exited();
+    const hosted = await setup.site.startServer(hostedVolume, { environment: hostedSettings });
+    const hostedAnswers = [];
+    for (const [method, path] of hostedAndPaidPaths) {
+      const response = await fetch(new URL(path, setup.site.address()), {
+        method,
+        headers: { Origin: hostedSettings.PUBLIC_BASE_URL, Cookie: cookie, 'Content-Type': 'application/json' },
+        ...(method === 'POST' ? { body } : {}),
+      });
+      hostedAnswers.push([method, path, response.status, response.headers.get('Set-Cookie')]);
+    }
+    const hostedMcp = await fetch(new URL('mcp', setup.site.address()), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${user.accessToken}`, Cookie: cookie, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
+    });
+    const notice = await fetch(setup.site.address());
+    const noticeText = await notice.text();
+    const hostedExit = await hosted.stop();
 
     assert.ok(cookie !== '', 'the user has a browser session');
     assert.deepEqual(tools, []);
     assert.deepEqual(statuses, hostedAndPaidPaths.map(([method, path]) => [method, path, 404]));
     assert.deepEqual(accounts.map(({ email }) => email), [alice.email]);
-    assert.equal(hostedListening, false, hosted.output);
-    assert.notEqual(hostedExit.code, 0);
-    assert.match(hosted.output, /FATAL.*hosted edition is not available/i);
+    assert.deepEqual(hostedAnswers, hostedAndPaidPaths.map(([method, path]) => [method, path, 503, null]));
+    assert.deepEqual([hostedMcp.status, await hostedMcp.json()], [503, { error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' }]);
+    assert.deepEqual([notice.status, notice.headers.get('Set-Cookie')], [503, null]);
+    assert.match(noticeText, /Hosted authentication is not available yet\./);
+    assert.match(hosted.output, /INFO.*Hosted authentication is not available yet\./);
+    assert.doesNotMatch(hosted.output, /tenant/);
+    assert.deepEqual(hostedExit, { code: 0, signal: null });
     assert.deepEqual(await probeImage(images.current, 'data-files', hostedVolume), []);
     await setup.site.assertNoOutboundRequests();
   });
