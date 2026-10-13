@@ -251,8 +251,14 @@ preserve the complete database and secrets together. A fresh installation with
 new data starts a new tenant. No generic tenant repository is needed.
 
 The implemented runtime keeps three files in `DATA_DIR`. `data-directory.lock`
-holds the exclusive lock: an open exclusive SQLite transaction, which the
-operating system releases when the process ends. `auth.sqlite` holds the
+holds the exclusive lock: an open SQLite write transaction (`BEGIN IMMEDIATE`),
+which the operating system releases when the process ends. Only one connection
+can hold its RESERVED lock, and the lock does not wait. Thus another process
+stops at once with `DataDirectoryInUseError`, and of several processes that
+start at the same time, exactly one gets the lock. An exclusive transaction is
+not used: it must wait until the other connections release their shared locks,
+so two processes that start at the same time could each make the other fail.
+`auth.sqlite` holds the
 provider data and the singleton `magumagu_installation` row. `auth.secret` holds
 the generated provider secret. Both data files have mode `0600`. A database
 without schema objects is fresh: the runtime writes the secret first, and then
