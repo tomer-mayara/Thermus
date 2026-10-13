@@ -176,13 +176,13 @@ describe('Hosted grant management through the public routes, with session and di
     const revoked = await submitOnPage(site.browserOf(userOf('user-eve', 'org-a')), 'members', 'Revoke User from una@example.com');
     const after = { portal: (await una.open('portal')).status, tool: await toolOutcome(site, 'user-una-token'), globexTool: await toolOutcome(site, 'user-una-globex-token') };
     const organizations = formsIn((await una.open('organizations')).body);
-    const selected = await una.submit(formFor(organizations, 'Organization org-b'));
+    const selected = await una.submit(formFor(organizations, 'Globex'));
     const globexPortal = await una.open('portal');
 
     assert.deepEqual(before, { portal: 200, tool: 'done' });
     assert.equal(revoked.status, 303);
     assert.deepEqual(after, { portal: 403, tool: 'refused', globexTool: 'done' });
-    assert.deepEqual(labelsOf(organizations), ['Organization org-b']);
+    assert.deepEqual(labelsOf(organizations), ['Globex']);
     assert.deepEqual([selected.status, globexPortal.status], [303, 200]);
     assert.deepEqual(site.directory.membershipIn('user-una', 'org-a'), {
       membershipId: 'membership-user-una-org-a',
