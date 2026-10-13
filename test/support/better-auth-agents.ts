@@ -44,6 +44,13 @@ export class HttpAgent {
     return [...this.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
   }
 
+  // The copy keeps the browser cookies for a later provider instance on the same data.
+  withProvider(auth: LocalAuth): HttpAgent {
+    const copy = new HttpAgent(auth);
+    for (const [name, value] of this.cookies) copy.cookies.set(name, value);
+    return copy;
+  }
+
   async request(method: 'GET' | 'POST', path: string, options: RequestOptions = {}): Promise<Response> {
     const headers = new Headers(options.headers);
     headers.set(clientAddressHeader, this.address);
