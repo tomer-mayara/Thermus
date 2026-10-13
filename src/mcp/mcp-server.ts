@@ -44,7 +44,7 @@ export class MCPServer {
 
   constructor(options?: { auth: McpHttpAuthOptions; registerTools?: RequestToolRegistration; reportFailure: FailureReporter }) {
     if (options !== undefined) {
-      this.http = { authenticate: bearerGate(options.auth), accessResolver: options.auth.accessResolver };
+      this.http = { authenticate: bearerGate(options.auth, options.reportFailure), accessResolver: options.auth.accessResolver };
       this.registerTools = options.registerTools;
     }
   }
@@ -87,9 +87,9 @@ function serverWithoutTools(): McpServer {
   return new McpServer({ name: 'magumagu', version: '0.0.0' });
 }
 
-function bearerGate(auth: McpHttpAuthOptions): BearerGate {
+function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): BearerGate {
   const options = {
-    verifier: new IdentityVerifierSdkAdapter(auth.verifier),
+    verifier: new IdentityVerifierSdkAdapter(auth.verifier, (cause) => reportFailure({ step: 'token-verification', cause })),
     resourceMetadataUrl: auth.resourceMetadataUrl,
     expectedResource: auth.expectedResource,
     requiredScopes: auth.requiredScopes === undefined ? undefined : [...auth.requiredScopes],

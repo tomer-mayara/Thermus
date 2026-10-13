@@ -17,16 +17,16 @@ function verifiedIdentity(): VerifiedIdentity {
   };
 }
 
-async function verify(claims: ConfiguredClaims | Error, token = 'raw-token'): Promise<AuthInfo> {
+async function verify(claims: ConfiguredClaims | Error, token = 'raw-token', failures: unknown[] = []): Promise<AuthInfo> {
   const verifier = new IdentityVerifierMock(new Map([[token, claims]]));
-  return new IdentityVerifierSdkAdapter(verifier).verifyAccessToken(token);
+  return new IdentityVerifierSdkAdapter(verifier, (cause) => failures.push(cause)).verifyAccessToken(token);
 }
 
 describe('IdentityVerifierSdkAdapter', () => {
   test('Given verified claims, when the SDK adapter verifies a token, then it maps those claims and supplies the input token', async () => {
     const identity = verifiedIdentity();
     const verifier = new IdentityVerifierMock(new Map([['raw-token', identity]]));
-    const result = await new IdentityVerifierSdkAdapter(verifier).verifyAccessToken('raw-token');
+    const result = await new IdentityVerifierSdkAdapter(verifier, () => {}).verifyAccessToken('raw-token');
     assert.deepEqual({ ...result, extra: undefined }, {
       token: 'raw-token',
       clientId: 'client',
@@ -114,6 +114,26 @@ describe('IdentityVerifierSdkAdapter', () => {
     const failure = new Error('provider outage');
 
     await assert.rejects(verify(failure), (error) => error === failure);
+  });
+
+  test('Given an unexpected provider failure, when the SDK adapter verifies the token, then it gives that cause once to the failure callback', async () => {
+    const failure = new Error('provider outage');
+    const failures: unknown[] = [];
+
+    await assert.rejects(verify(failure, 'raw-token', failures), (error) => error === failure);
+
+    assert.equal(failures.length, 1);
+    assert.equal(failures[0], failure);
+  });
+
+  test('Given an accepted token, a provider rejection, or an identity without a usable user, when the SDK adapter verifies the token, then it gives no cause to the failure callback', async () => {
+    const failures: unknown[] = [];
+
+    await verify(verifiedIdentity(), 'raw-token', failures);
+    await assert.rejects(verify(new InvalidAccessTokenError('malformed JWT payload'), 'raw-token', failures), OAuthError);
+    await assert.rejects(verify({ ...verifiedIdentity(), user: undefined }, 'raw-token', failures), OAuthError);
+
+    assert.deepEqual(failures, []);
   });
 
   test('Given an unknown token, when the mock verifies it, then it rejects it and records the call', async () => {

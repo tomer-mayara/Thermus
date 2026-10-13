@@ -114,7 +114,7 @@ describe('MCPServer verified claim validation', () => {
   });
 
   for (const scenario of scenarios) {
-    test(`Given ${scenario.label}, when an HTTP client discovers the server, then it receives ${scenario.status} ${scenario.error} without MCP dispatch`, { timeout: 5_000 }, async (context) => {
+    test(`Given ${scenario.label}, when an HTTP client discovers the server, then it receives ${scenario.status} ${scenario.error} without MCP dispatch or a failure report`, { timeout: 5_000 }, async (context) => {
       context.mock.method(Date, 'now', () => nowUnixSeconds * 1_000);
       const dispatchSpy = context.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
       const protocolVersion = '2026-07-28';
@@ -151,12 +151,14 @@ describe('MCPServer verified claim validation', () => {
         verifierCalls: verifier.calls,
         resolverCalls: resolver.calls,
         dispatchCalls: dispatchSpy.mock.callCount(),
+        reports: reporter.reports,
       }, {
         status: scenario.status,
         error: scenario.error,
         verifierCalls: [scenario.token],
         resolverCalls: [],
         dispatchCalls: 0,
+        reports: [],
       });
       if (scenario.error === 'insufficient_scope') {
         const challenge = response.headers.get('WWW-Authenticate');
