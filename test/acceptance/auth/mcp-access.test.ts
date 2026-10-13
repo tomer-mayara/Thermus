@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test, type TestContext } from 'node:test';
-import { inspect } from 'node:util';
 import { Client, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
 import {
   createRequestContext,
@@ -11,7 +10,6 @@ import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
 import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 
 const resourceUrl = 'https://magumagu.example/mcp';
@@ -51,33 +49,27 @@ describe('Trusted access context for MCP HTTP requests', () => {
   const erin = member('user-erin', 'org-a');
   const owen = member('user-owen', 'org-a');
   const uma = member('user-uma', 'org-a');
-  const identityOutage = new Error('identity provider unavailable');
-  const lookupOutage = new Error('private membership lookup failure for user-uma');
   let resolver: AccessResolverMock;
   let probe: RequestContextProbe;
-  let reporter: FailureReporterMock;
   let server: MCPServer;
 
   beforeEach(() => {
-    const verifier = new IdentityVerifierMock(new Map<string, VerifiedIdentity | Error>([
-      ...[alice, bob, dana, erin, owen, uma].map((user) => [`${user.subject}-token`, identityFor(user)] as const),
-      ['secret-uma-token', identityFor(uma)],
-      ['secret-outage-token', identityOutage],
-    ]));
+    const verifier = new IdentityVerifierMock(new Map(
+      [alice, bob, dana, erin, owen, uma].map((user) => [`${user.subject}-token`, identityFor(user)]),
+    ));
     resolver = new AccessResolverMock(new Map<string, AccessDecision | Error>([
       [alice.subject, allowed(alice, 'tenant-org-a', { user: [productAccess] })],
       [bob.subject, allowed(bob, 'tenant-org-b', { user: [productAccess] })],
       [dana.subject, { allowed: false, reason: 'membership-inactive' }],
       [erin.subject, allowed(erin, 'tenant-org-a', { admin: ['user-grants:manage'], 'super-admin': ['admin-grants:manage', 'billing:manage'] })],
       [owen.subject, allowed(owen, 'tenant-org-a', { 'super-admin': ['admin-grants:manage', 'billing:manage'], user: [productAccess] })],
-      [uma.subject, lookupOutage],
+      [uma.subject, new Error('private membership lookup failure for user-uma')],
     ]));
     probe = new RequestContextProbe();
-    reporter = new FailureReporterMock();
     server = new MCPServer({
       auth: { verifier, accessResolver: resolver, resourceMetadataUrl, expectedResource: new URL(resourceUrl) },
       registerTools: probe.register,
-      reportFailure: reporter.report,
+      reportFailure: () => {},
     });
   });
 
@@ -177,7 +169,6 @@ describe('Trusted access context for MCP HTTP requests', () => {
 
     assert.deepEqual(probe.contexts, []);
     assert.deepEqual(probe.work, []);
-    assert.deepEqual(reporter.reports, []);
   });
 
   for (const { label, token } of [
@@ -190,7 +181,6 @@ describe('Trusted access context for MCP HTTP requests', () => {
       assert.deepEqual(resolver.calls, []);
       assert.deepEqual(probe.contexts, []);
       assert.deepEqual(probe.work, []);
-      assert.deepEqual(reporter.reports, []);
     });
   }
 
@@ -205,21 +195,4 @@ describe('Trusted access context for MCP HTTP requests', () => {
     assert.deepEqual(probe.contexts, []);
     assert.deepEqual(probe.work, []);
   });
-
-  for (const { label, token, step, cause } of [
-    { label: 'an identity provider outage', token: 'secret-outage-token', step: 'token-verification', cause: identityOutage },
-    { label: 'an access lookup outage', token: 'secret-uma-token', step: 'access-resolution', cause: lookupOutage },
-  ]) {
-    test(`Given ${label}, when a member connects with a bearer token and a session cookie, then the client gets a generic server error and the operator gets one ${step} report that keeps the cause and holds no credential`, { timeout: 20_000 }, async (t) => {
-      await assert.rejects(
-        connect(t, token, { Cookie: 'session=secret-session-cookie' }),
-        (error) => error instanceof SdkHttpError && error.status === 500,
-      );
-
-      assert.deepEqual(reporter.reports.map((report) => report.step), [step]);
-      assert.equal(reporter.reports[0]?.cause, cause);
-      assert.doesNotMatch(inspect(reporter.reports, { depth: Infinity }), /secret/);
-      assert.deepEqual(probe.work, []);
-    });
-  }
 });

@@ -25,12 +25,13 @@ Planned tool tests use test doubles at the fetcher and pipeline public interface
 
 **MCP Authentication**
 
-HTTP request unit tests use `IdentityVerifierMock` and `AccessResolverMock` from `test/unit/mcp/fixtures/`. The verifier mock supplies configured claims or errors and rejects unknown tokens. Its claims can be incomplete, so that tests reach the boundary checks. The resolver mock gives a configured decision, failure, or delayed decision for each user subject, records its calls, and denies an unknown user. Test-only factory tools report the context that MCPServer binds to each request; production code registers no such tool. MCPServer adapts the verifier to the SDK's OAuthTokenVerifier. Unit tests use the real SDK middleware and import the access contracts as types only.
+HTTP request unit tests use `IdentityVerifierMock` and `AccessResolverMock` from `test/unit/mcp/fixtures/`. The verifier mock supplies configured claims or errors and rejects unknown tokens. Its claims can be incomplete, so that tests reach the boundary checks. The resolver mock gives a configured decision, failure, or delayed decision for each user subject, records its calls, and denies an unknown user. `FailureReporterMock` records each failure report that MCPServer gives to the operator callback. Test-only factory tools report the context that MCPServer binds to each request; production code registers no such tool. MCPServer adapts the verifier to the SDK's OAuthTokenVerifier. Unit tests use the real SDK middleware and import the access contracts as types only.
 
 [V] Maps IdentityVerifier claims to SDK auth information, supplies the original token, and keeps changes to SDK scopes separate from verifier claims (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Puts frozen copies of the actual user, issuer, client, scope, issue time, expiration, and audience claims in `AuthInfo.extra` (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Rejects an identity without a user, issuer, client ID, issue time, expiration, or audience, or with the client ID as the user subject, as `invalid_token` (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Reports a provider rejection only as `invalid_token` and passes an unexpected provider failure on as a failure (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
+[V] Gives the cause of an unexpected provider failure one time to the adapter's failure callback; an accepted token, a provider rejection, and an identity without a usable user give nothing (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] IdentityVerifierMock rejects unknown tokens and keeps verification call records separate between instances (`test/unit/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Requires a Bearer token for server/discover, tools/list, and tools/call; missing tokens return HTTP 401 with a Bearer challenge and the protected-resource metadata URL (`test/unit/mcp/auth.test.ts`)
 [V] Rejects a missing Authorization header with HTTP 401 before token verification or MCP dispatch (`test/unit/mcp/auth.test.ts`)
@@ -51,6 +52,10 @@ HTTP request unit tests use `IdentityVerifierMock` and `AccessResolverMock` from
 [V] Returns a generic HTTP 500 for an access resolver failure or an allowed decision without a tenant ID, with no private details, request factory, or MCP dispatch (`test/unit/mcp/access-resolver.test.ts`)
 [V] Stops before MCP dispatch, the fetcher, and the pipeline after any authentication or scope failure (`test/unit/mcp/auth.test.ts`, `test/unit/mcp/auth-claims.test.ts`, `test/integration/auth/mcp-context.test.ts`)
 [V] Returns a server error if token verification fails unexpectedly; performs no MCP dispatch or access resolution and exposes no token or internal error details (`test/unit/mcp/auth.test.ts`)
+[V] Gives one `token-verification` report that keeps the cause to the operator callback when token verification fails unexpectedly; the client still gets the generic 500 (`test/unit/mcp/auth.test.ts`)
+[V] Gives one `access-resolution` report that keeps the cause to the operator callback for an access resolver failure or an allowed decision without a tenant ID; the client still gets the generic 500 (`test/unit/mcp/access-resolver.test.ts`)
+[V] Puts no bearer token, cookie, password, or proxy credential from the request in a failure report (`test/unit/mcp/auth.test.ts`, `test/unit/mcp/access-resolver.test.ts`)
+[V] Reports no failure for a missing or malformed Authorization header, a rejected token, rejected claims, a missing scope, or an access denial (`test/unit/mcp/auth.test.ts`, `test/unit/mcp/auth-claims.test.ts`, `test/unit/mcp/access-resolver.test.ts`)
 
 Real issuer, signature, and key rotation checks belong in authentication interface tests. Browser OAuth flows and provider compatibility need separate integration and acceptance tests. A fake verifier does not prove those behaviors.
 
@@ -341,11 +346,12 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 
 **MCP access context** (`test/integration/auth/mcp-context.test.ts`)
 
-These tests run MCPServer with the real access contracts through a test-only protected tool. The tool checks its permission, then records fetch and clean steps in its trusted tenant. Doubles stand in for the identity verifier and the access resolver.
+These tests run MCPServer with the real access contracts through a test-only protected tool. The tool checks its permission, then records fetch and clean steps in its trusted tenant. Doubles stand in for the identity verifier, the access resolver, and the operator failure callback.
 
 [V] Keeps four concurrent members in two tenants in their own trusted contexts while their resolutions finish in reverse order and their protected work overlaps
 [V] Checks access again for each request: after a User grant is revoked, the next request with the same token gets no protected work
 [V] Runs no tool, fetch, or clean step after HTTP 401 for a missing or rejected token, 403 insufficient_scope, 403 access_denied, or a generic 500
+[V] Gives the operator one `access-resolution` report with the cause for an access lookup outage, and no report for a missing or rejected token, a missing scope, or an access denial
 [V] Refuses protected work when the grants lack the required permission, for example Admin without User
 
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
@@ -439,6 +445,13 @@ A real MCP client calls MCPServer through its HTTP fetch interface. Doubles stan
 [V] Given an inactive membership, the server denies access with HTTP 403 before any request tool exists
 [V] Given no token or a rejected token, the client must authenticate; no access resolution or protected work runs
 [V] Given an access lookup outage, the client gets a generic server error and no protected work runs
+
+**MCP failure reports** (`test/acceptance/auth/mcp-failure-reports.test.ts`)
+
+A real MCP client calls MCPServer through its HTTP fetch interface with a bearer token and a session cookie. Doubles stand in for the identity verifier, the access resolver, and the operator failure callback.
+
+[V] Given an identity provider outage or an access lookup outage, the client gets a generic server error, and the operator gets one report that names the failed step, keeps the cause, and holds no bearer token or session cookie
+[V] Given a rejected token, a token without the required scope, or an inactive membership, the client is refused and the operator gets no failure report
 
 `npm run test:acceptance` runs every acceptance test. `npm run check` does not select the acceptance directory.
 
