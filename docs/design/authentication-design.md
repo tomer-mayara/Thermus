@@ -28,7 +28,7 @@ adds no implementation work now.
 | Selected organization, active membership, roles, and permissions | Required in the hosted foundation. |
 | Operator organization setup and customer membership administration | Required in the first hosted release, including operator recovery, onboarding, and invitations. |
 | Active User seats per organization | Required on the hosted account page; count each active membership with User once. |
-| Per-seat payment collection and subscription synchronization | Required paid-product milestone; payment provider and billing rules remain open. |
+| Per-seat payment collection and subscription synchronization | Required paid-product milestone; payment provider and billing rules remain open. The [paid billing design](billing-design.md) proposes them for owner approval. |
 | SSO, SCIM, step-up authentication, and full audit logs | Future hosted capabilities. Preserve provider boundaries; add their contracts when implementing them. |
 | Paid capabilities in the local edition | Disabled. No organizations, invitations, seat management, billing, or remote entitlement checks. |
 | Account or data migration between editions | Separate future work. Changing configuration does not migrate either. |
@@ -776,7 +776,9 @@ Define provider-confirmed updates, verified events, duplicate handling, and
 reconciliation with authoritative memberships. Choose concrete billing files and
 durable storage only after those decisions; do not prebuild an event-store or
 outbox framework. The authentication and membership administration release does
-not claim to collect payments.
+not claim to collect payments. The [paid billing design](billing-design.md)
+lists these open decisions, their options, and a proposal for each. They wait
+for owner approval.
 
 SSO, SCIM (including any selected Okta provisioning integration), step-up, full
 audit logs, organization deletion, and custom role authoring remain explicit

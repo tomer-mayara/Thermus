@@ -22,6 +22,7 @@ runtime guides stay current after implementation.
 ## Design and testing
 
 - [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, hosted scope, and implementation gates.
+- [Paid billing design](design/billing-design.md): proposed payment provider and billing rules that wait for owner approval.
 - [Planned cache key design](design/cache-design.md): pending cache requirements.
 - [Test inventory](testing/test-list.md): executed cases and pending cache tests.
 
