@@ -185,12 +185,18 @@ describe('Self-hosted server startup with one persistent installation', () => {
     assert.deepEqual(readdirSync(directory), []);
   });
 
-  test('Given the hosted edition with a data directory setting, when the server starts, then it stops with an unavailable-edition error and creates no local data', { timeout: 60_000 }, async (t) => {
+  test('Given the hosted edition with a data directory setting, when the server starts, then it serves only the authentication-unavailable notice, reports no local tenant, and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
-    const server = ServerProcess.launch(t, hostedSettings(directory));
+    const server = await ServerProcess.start(t, hostedSettings(directory));
+    const notice = await server.request('/');
+    const mcp = await server.request('/mcp', mcpPost('forged-token'));
+    const exit = await server.stop();
 
-    await assertStopsBeforeListening(server, /hosted edition/i);
+    assert.deepEqual([notice.status, mcp.status], [503, 503]);
+    assert.match(await notice.text(), /Hosted authentication is not available yet\./);
+    assert.doesNotMatch(server.output, /tenant/);
+    assert.deepEqual(exit, { code: 0, signal: null });
     assert.deepEqual(readdirSync(directory), []);
   });
 });

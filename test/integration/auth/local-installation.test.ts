@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { cpSync } from 'node:fs';
 import { describe, test, type TestContext } from 'node:test';
 import { applySetCookies } from 'better-auth/cookies';
-import { createApplication, HostedEditionUnavailableError, type Application } from '../../../src/application.ts';
+import { createApplication, type Application } from '../../../src/application.ts';
 import type { BetterAuthRuntime } from '../../../src/auth-better-auth/better-auth-runtime.ts';
 import { DataDirectoryInUseError, lockDataDirectory } from '../../../src/auth-better-auth/data-directory-lock.ts';
 import { LocalInstallationError } from '../../../src/auth-better-auth/local-installation.ts';
@@ -180,7 +180,7 @@ describe('Local installation with the real application and provider', () => {
     });
   }
 
-  test('Given the hosted deployment, when the application starts, then it fails with HostedEditionUnavailableError', async () => {
+  test('Given the hosted deployment with WorkOS settings, when the application starts and closes, then it selects the unavailable hosted shell instead of the local runtime: account and MCP requests get the authentication-unavailable answer, and repeated closes give one result', async () => {
     const config = loadDeploymentConfig({
       DEPLOYMENT: 'hosted',
       PUBLIC_BASE_URL: 'https://magumagu.example',
@@ -190,7 +190,19 @@ describe('Local installation with the real application and provider', () => {
       WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
       WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
     }, 'http');
+    const logger = new RecordingLogger();
 
-    await assert.rejects(createApplication(config, new RecordingLogger()), HostedEditionUnavailableError);
+    const application = await createApplication(config, logger);
+    const page = await application.handle(new Request('https://magumagu.example/account', { headers: { Cookie: 'wos-session=forged-session' } }));
+    const mcp = await application.handle(mcpRequest('forged-token'));
+    const closes = [application.close(), application.close()];
+
+    assert.equal(page.status, 503);
+    assert.match(await page.text(), /Hosted authentication is not available yet\./);
+    assert.equal(mcp.status, 503);
+    assert.deepEqual(await mcp.json(), { error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' });
+    assert.equal(closes[0], closes[1]);
+    await Promise.all(closes);
+    assert.deepEqual(logger.lines, ['Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.']);
   });
 });
