@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { composeHostedApplication, type Application } from '../../src/application.ts';
 import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../src/auth/access-context.ts';
+import type { Billing } from '../../src/billing/billing.ts';
+import { BillingFree } from '../../src/billing/billing-free.ts';
 import { loadDeploymentConfig } from '../../src/config/deployment-config.ts';
 import type { AccountFailureReporter } from '../../src/hosted-admin/account-routes.ts';
 import { startHttpServer } from '../../src/http/server.ts';
@@ -62,6 +64,8 @@ export interface SiteSetup {
   readonly memberships?: readonly MembershipRecord[];
   // Gets each change record too, after the site keeps it in `records`.
   readonly changeRecords?: ChangeRecorder;
+  // The billing of the hosted composition. The default is BillingFree.
+  readonly billing?: Billing;
 }
 
 export interface OrganizationSite {
@@ -129,7 +133,12 @@ function composeSite(setup: SiteSetup) {
   const application = composeHostedApplication(
     hostedConfig,
     { session: sessions, accessResolver: directory, organizations: directory, mcp },
-    { reportFailure: setup.reportFailure, changeRecords: { record: (entry) => { records.push(entry); setup.changeRecords?.record(entry); } }, operation: pages.operation },
+    {
+      reportFailure: setup.reportFailure,
+      changeRecords: { record: (entry) => { records.push(entry); setup.changeRecords?.record(entry); } },
+      billing: setup.billing ?? new BillingFree(),
+      operation: pages.operation,
+    },
   );
   return { application, sessions, directory, pages, tools, records };
 }

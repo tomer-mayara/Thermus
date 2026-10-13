@@ -1,5 +1,6 @@
 import type { LocalAuthPages } from './auth-better-auth/local-auth-pages.ts';
 import type { AccessResolver } from './auth/access-context.ts';
+import type { Billing } from './billing/billing.ts';
 import type { DeploymentConfig } from './config/deployment-config.ts';
 import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation } from './hosted-admin/account-routes.ts';
 import type { BrowserSession } from './hosted-admin/browser-session.ts';
@@ -37,6 +38,8 @@ export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
   // Keeps the basic records of the privileged account changes.
   readonly changeRecords: ChangeRecorder;
+  // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.
+  readonly billing: Billing;
   readonly operation?: AccountOperation;
 }
 
@@ -110,10 +113,11 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
 
 async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger): Promise<Application> {
   const { UnavailableHostedAuthentication, UnavailableMcpEndpoint } = await import('./auth-unavailable/unavailable-hosted-authentication.ts');
+  const { BillingFree } = await import('./billing/billing-free.ts');
   const authentication = new UnavailableHostedAuthentication();
   logger.info('Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.');
   const parts = { session: authentication, accessResolver: authentication, organizations: authentication, mcp: new UnavailableMcpEndpoint() };
-  return composeHostedApplication(config, parts, { reportFailure: accountFailureReporter(logger), changeRecords: accountChangeRecorder(logger) });
+  return composeHostedApplication(config, parts, { reportFailure: accountFailureReporter(logger), changeRecords: accountChangeRecorder(logger), billing: new BillingFree() });
 }
 
 export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {
