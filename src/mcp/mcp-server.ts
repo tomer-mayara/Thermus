@@ -33,18 +33,29 @@ export interface McpHttpAuthOptions {
   requiredScopes?: readonly string[];
 }
 
+export interface McpHttpOptions {
+  auth: McpHttpAuthOptions;
+  registerTools?: RequestToolRegistration;
+  reportFailure: FailureReporter;
+}
+
 type BearerGate = (request: Request) => Promise<AuthInfo | Response>;
+type AccessGate = (authInfo: AuthInfo) => Promise<RequestContext | Response>;
 
 export class MCPServer {
   private connection?: StdioServerHandle;
   private readonly contextsByRequestAuth = new WeakMap<AuthInfo, RequestContext>();
   private readonly httpHandler = createMcpHandler(({ authInfo }) => this.serverForRequest(authInfo));
-  private readonly http?: { authenticate: BearerGate; accessResolver: AccessResolver };
+  private readonly http?: { authenticate: BearerGate; resolveAccess: AccessGate };
   private readonly registerTools?: RequestToolRegistration;
 
-  constructor(options?: { auth: McpHttpAuthOptions; registerTools?: RequestToolRegistration; reportFailure: FailureReporter }) {
+  constructor(options?: McpHttpOptions) {
     if (options !== undefined) {
-      this.http = { authenticate: bearerGate(options.auth, options.reportFailure), accessResolver: options.auth.accessResolver };
+      const { auth, reportFailure } = options;
+      this.http = {
+        authenticate: bearerGate(auth, reportFailure),
+        resolveAccess: accessGate(auth.accessResolver, reportFailure),
+      };
       this.registerTools = options.registerTools;
     }
   }
@@ -59,7 +70,7 @@ export class MCPServer {
     }
     const authInfo = await this.http.authenticate(request);
     if (authInfo instanceof Response) return authInfo;
-    const context = await resolveRequestContext(this.http.accessResolver, authInfo);
+    const context = await this.http.resolveAccess(authInfo);
     if (context instanceof Response) return context;
     return this.httpHandler.fetch(request, { authInfo: this.newRequestAuthBoundTo(context, authInfo) });
   }
@@ -107,14 +118,17 @@ function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): B
   };
 }
 
-async function resolveRequestContext(resolver: AccessResolver, authInfo: AuthInfo): Promise<RequestContext | Response> {
-  try {
-    const decision = await resolver.resolve(verifiedUserOf(authInfo));
-    if (decision.allowed !== true) return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
-    return requireTrustedTenant(frozenCopy(decision.context));
-  } catch {
-    return errorResponse(OAuthErrorCode.ServerError, 'Internal Server Error', 500);
-  }
+function accessGate(resolver: AccessResolver, reportFailure: FailureReporter): AccessGate {
+  return async (authInfo) => {
+    try {
+      const decision = await resolver.resolve(verifiedUserOf(authInfo));
+      if (decision.allowed !== true) return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
+      return requireTrustedTenant(frozenCopy(decision.context));
+    } catch (cause) {
+      reportFailure({ step: 'access-resolution', cause });
+      return errorResponse(OAuthErrorCode.ServerError, 'Internal Server Error', 500);
+    }
+  };
 }
 
 function requireTrustedTenant(context: RequestContext): RequestContext {

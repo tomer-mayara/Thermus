@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { inspect } from 'node:util';
 import { PerRequestHTTPServerTransport } from '@modelcontextprotocol/server';
 import type { AccessDenialReason } from '../../../src/auth/access-context.ts';
 import {
@@ -55,7 +56,7 @@ describe('MCPServer access decisions', () => {
     for (const method of ['server/discover', 'tools/list', 'tools/call'] as const) {
       test(`Given a ${reason} denial, when a client sends ${method}, then it gets a safe 403 access_denied before the factory or MCP dispatch`, { timeout: 5_000 }, async (t) => {
         const dispatchSpy = t.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
-        const { server, verifier, tools } = serveAccess(t, new Map([[alice.subject, { allowed: false, reason }]]));
+        const { server, verifier, tools, reporter } = serveAccess(t, new Map([[alice.subject, { allowed: false, reason }]]));
         const params = method === 'tools/call' ? { name: RequestContextTools.reportTool, arguments: {} } : {};
 
         const response = await server.fetch(mcpRequest({ url: resourceUrl, method, token: 'alice-token', params, signal: t.signal }));
@@ -66,12 +67,13 @@ describe('MCPServer access decisions', () => {
         assert.deepEqual(verifier.calls, ['alice-token']);
         assert.deepEqual(tools.contexts, []);
         assert.equal(dispatchSpy.mock.callCount(), 0);
+        assert.deepEqual(reporter.reports, []);
       });
     }
   }
 
   test('Given a required scope, when one token lacks the scope and another is denied access, then the SDK insufficient_scope response and the access_denied response stay distinct', { timeout: 5_000 }, async (t) => {
-    const { server, resolver } = serveAccess(t, new Map([[bob.subject, { allowed: false, reason: 'membership-inactive' }]]), {
+    const { server, resolver, reporter } = serveAccess(t, new Map([[bob.subject, { allowed: false, reason: 'membership-inactive' }]]), {
       tokens: new Map([
         ['scopeless-token', { ...identityFor(alice), scopes: [] }],
         ['bob-token', identityFor(bob)],
@@ -89,6 +91,7 @@ describe('MCPServer access decisions', () => {
     assert.deepEqual(await denied.json(), { error: 'access_denied', error_description: 'Access denied' });
     assert.equal(denied.headers.get('WWW-Authenticate'), null);
     assert.deepEqual(resolver.calls, [bob]);
+    assert.deepEqual(reporter.reports, []);
   });
 
   for (const { label, access } of [
@@ -109,4 +112,41 @@ describe('MCPServer access decisions', () => {
       assert.equal(dispatchSpy.mock.callCount(), 0);
     });
   }
+
+  test('Given an access lookup failure, when a client calls a tool, then the client still gets the generic 500 and the operator gets one access-resolution report that keeps the cause', { timeout: 5_000 }, async (t) => {
+    const failure = new Error('private membership store failure for user-alice');
+    const { server, reporter } = serveAccess(t, new Map([[alice.subject, failure]]));
+
+    const response = await server.fetch(callReport(t, 'alice-token'));
+
+    assert.equal(response.status, 500);
+    assert.deepEqual(await response.json(), { error: 'server_error', error_description: 'Internal Server Error' });
+    assert.deepEqual(reporter.reports.map(({ step }) => step), ['access-resolution']);
+    assert.equal(reporter.reports[0]?.cause, failure);
+  });
+
+  test('Given an allowed decision without a trusted tenant, when a client calls a tool, then the operator gets one access-resolution report about the missing tenant', { timeout: 5_000 }, async (t) => {
+    const { server, reporter } = serveAccess(t, new Map([[alice.subject, allowed({ ...contextFor(alice, 'tenant-org-a'), tenantId: '' })]]));
+
+    const response = await server.fetch(callReport(t, 'alice-token'));
+
+    assert.equal(response.status, 500);
+    assert.deepEqual(reporter.reports.map(({ step }) => step), ['access-resolution']);
+    assert.match(String(reporter.reports[0]?.cause), /no trusted tenant/);
+  });
+
+  test('Given a bearer token, a session cookie, and passwords in the request, when access resolution fails unexpectedly, then the report holds none of these credentials', { timeout: 5_000 }, async (t) => {
+    const { server, reporter } = serveAccess(t, new Map([[alice.subject, new Error('membership store unavailable')]]), {
+      tokens: new Map([['secret-alice-token', identityFor(alice)]]),
+    });
+
+    const response = await server.fetch(callReport(t, 'secret-alice-token', {
+      params: { name: RequestContextTools.reportTool, arguments: { password: 'secret-password' } },
+      headers: { Cookie: 'session=secret-session-cookie', 'Proxy-Authorization': 'Basic secret-proxy-password' },
+    }));
+
+    assert.equal(response.status, 500);
+    assert.equal(reporter.reports.length, 1);
+    assert.doesNotMatch(inspect(reporter.reports, { depth: Infinity }), /secret/);
+  });
 });

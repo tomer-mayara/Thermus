@@ -124,22 +124,24 @@ describe('MCP access context with the real access contracts', () => {
     assert.deepEqual(probe.work.map(({ step }) => step), ['fetch', 'clean']);
   });
 
-  for (const { label, token, access, status } of [
-    { label: 'no token', token: undefined, access: undefined, status: 401 },
-    { label: 'a rejected token', token: 'forged-token', access: undefined, status: 401 },
-    { label: 'a token without the required scope', token: 'scopeless-token', access: undefined, status: 403 },
-    { label: 'an inactive membership', token: 'user-ann-token', access: { allowed: false, reason: 'membership-inactive' } as const, status: 403 },
-    { label: 'an access lookup outage', token: 'user-ann-token', access: new Error('private outage'), status: 500 },
+  const lookupOutage = new Error('private outage');
+  for (const { label, token, access, status, reports } of [
+    { label: 'no token', token: undefined, access: undefined, status: 401, reports: [] },
+    { label: 'a rejected token', token: 'forged-token', access: undefined, status: 401, reports: [] },
+    { label: 'a token without the required scope', token: 'scopeless-token', access: undefined, status: 403, reports: [] },
+    { label: 'an inactive membership', token: 'user-ann-token', access: { allowed: false, reason: 'membership-inactive' } as const, status: 403, reports: [] },
+    { label: 'an access lookup outage', token: 'user-ann-token', access: lookupOutage, status: 500, reports: [{ step: 'access-resolution', cause: lookupOutage }] },
   ]) {
-    test(`Given ${label}, when a client calls the protected tool, then the server returns ${status} and no tool, fetch, or clean step runs`, { timeout: 10_000 }, async (t) => {
+    test(`Given ${label}, when a client calls the protected tool, then the server returns ${status}, no tool, fetch, or clean step runs, and the operator gets ${reports.length === 0 ? 'no failure report' : 'one access-resolution report'}`, { timeout: 10_000 }, async (t) => {
       const decisions = new Map<string, ConfiguredAccess>(access === undefined ? [] : [['user-ann', access]]);
-      const { server, probe } = serve(t, decisions);
+      const { server, probe, reporter } = serve(t, decisions);
 
       const response = await server.fetch(callProbe(t, token));
 
       assert.equal(response.status, status);
       assert.deepEqual(probe.contexts, []);
       assert.deepEqual(probe.work, []);
+      assert.deepEqual(reporter.reports, reports);
     });
   }
 
