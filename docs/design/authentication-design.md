@@ -585,8 +585,9 @@ checks. The opener owns the runtime until it returns; the command then owns
 cleanup through its disposable stack. Each operation decides when to request
 its password. Output precedes close, and operation or output failures still
 close the resources. The
-[refactoring plan](../implementation/auth-refactoring-plan.md) records this
-slice and the separate pending file relocation.
+[completed refactoring record](../archive/auth-refactoring-plan.md) records both
+implemented and merged slices: the local role and lazy opener, then the file
+relocation and direct import checks.
 
 An authorization code grant with PKCE and `resource=<base>/mcp` gives a JWT
 access token with header `typ: at+jwt` and an EdDSA signature. Its claims are

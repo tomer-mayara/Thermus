@@ -38,7 +38,7 @@ A change that adds a prerequisite to a suite adds it to this table.
 Local-command tests that execute `loadDeploymentConfig()` belong to the
 integration suite, also when they use an administration role double. Config and
 local commands are separate logical packages. See the
-[auth refactoring package map](auth-refactoring-plan.md#logical-packages-and-dependency-rules).
+[auth refactoring package map](../archive/auth-refactoring-plan.md#logical-packages-and-dependency-rules).
 `npm run check` does not select these tests; run their focused commands and the
 integration suite as required below.
 
