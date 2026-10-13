@@ -11,7 +11,7 @@ describe('HostedAccountRoutes organization selection', () => {
     const response = await routes.handle(selection(validSelection, { 'X-Organization-Id': 'org-c' }));
 
     assert.equal(response.status, 303);
-    assert.equal(response.headers.get('Location'), 'https://magumagu.example/administration/users');
+    assert.equal(response.headers.get('Location'), 'https://thermus.example/administration/users');
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
     assert.deepEqual(response.headers.getSetCookie(), [...sessionCookies, ...switchCookies]);
     assert.equal(await response.text(), '');
@@ -21,11 +21,11 @@ describe('HostedAccountRoutes organization selection', () => {
   });
 
   test('Given a public URL under a path, when a selection names a destination under that path, then the redirect goes to that destination on the public origin', async () => {
-    const { routes } = serveAnn({}, { publicBaseUrl: 'https://magumagu.example/team/' });
+    const { routes } = serveAnn({}, { publicBaseUrl: 'https://thermus.example/team/' });
 
     const response = await routes.handle(formPost('/team/organizations/select', 'session=ann', new URLSearchParams({ ...validSelection, return_to: '/team/billing' }).toString()));
 
-    assert.equal(response.headers.get('Location'), 'https://magumagu.example/team/billing');
+    assert.equal(response.headers.get('Location'), 'https://thermus.example/team/billing');
   });
 
   for (const [label, organizationId] of [['an organization of another user', 'org-z'], ['an inactive or unknown organization', 'org-c']] as const) {

@@ -11,7 +11,7 @@ const childEnv = { ...process.env };
 delete childEnv.NODE_TEST_CONTEXT;
 const suites = ['unit', 'integration', 'acceptance', 'interface'];
 function fixture(t: TestContext): string {
-  const dir = mkdtempSync(join(tmpdir(), 'magumagu-build-'));
+  const dir = mkdtempSync(join(tmpdir(), 'thermus-build-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   for (const file of ['package.json', 'tsconfig.json', 'tsconfig.build.json']) cpSync(join(root, file), join(dir, file));
   symlinkSync(join(root, 'node_modules'), join(dir, 'node_modules'));
@@ -94,7 +94,7 @@ test('Given a deleted module, repeated builds remove its output and preserve out
 
 test('Given a symlink output directory, build rejects it and preserves its target', (t) => {
   const dir = fixture(t);
-  const target = mkdtempSync(join(tmpdir(), 'magumagu-outside-'));
+  const target = mkdtempSync(join(tmpdir(), 'thermus-outside-'));
   t.after(() => rmSync(target, { recursive: true, force: true }));
   writeFileSync(join(target, 'keep.txt'), 'user data');
   symlinkSync(target, join(dir, 'dist'));

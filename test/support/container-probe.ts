@@ -7,7 +7,7 @@ import { join, relative } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
 const APPLICATION = '/app';
-const DATA_DIR = process.env.DATA_DIR ?? '/var/lib/magumagu';
+const DATA_DIR = process.env.DATA_DIR ?? '/var/lib/thermus';
 const DEVELOPMENT_PACKAGES = [
   'typescript', 'tsx', 'esbuild', 'eslint', 'knip', 'ts-morph', '@modelcontextprotocol/client', '@types/node', '@types/css-tree',
   '@typescript-eslint/parser', '@typescript-eslint/eslint-plugin',
@@ -77,8 +77,8 @@ function withDatabase<T>(work: (database: DatabaseSync) => T): T {
 const probes: Readonly<Record<string, () => unknown>> = {
   image: imageFacts,
   'data-files': () => readdirSync(DATA_DIR).sort(),
-  'installation-ids': () => withDatabase((database) => database.prepare('SELECT "id" FROM "magumagu_installation"').all().map(({ id }) => String(id))),
-  'remove-installation-identity': () => withDatabase((database) => database.exec('DELETE FROM "magumagu_installation"')),
+  'installation-ids': () => withDatabase((database) => database.prepare('SELECT "id" FROM "thermus_installation"').all().map(({ id }) => String(id))),
+  'remove-installation-identity': () => withDatabase((database) => database.exec('DELETE FROM "thermus_installation"')),
 };
 
 const probe = probes[process.env.PROBE ?? ''];

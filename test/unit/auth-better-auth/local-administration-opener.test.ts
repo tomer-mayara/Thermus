@@ -4,7 +4,7 @@ import type { BetterAuthRuntime } from '../../../src/auth/local-auth/better-auth
 import { openBetterAuthAdministration } from '../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
 import { LocalProviderDouble } from './fixtures/local-provider-double.ts';
 
-const settings = { dataDirectory: '/var/lib/magumagu', publicBaseUrl: 'http://localhost:8080/', mcpResourceUrl: 'http://localhost:8080/mcp' };
+const settings = { dataDirectory: '/var/lib/thermus', publicBaseUrl: 'http://localhost:8080/', mcpResourceUrl: 'http://localhost:8080/mcp' };
 
 test('Given an open runtime, when administration opens and closes repeatedly, then it exposes only the role and close, and retains the runtime close promise and outcome', async () => {
   for (const closeFailure of [undefined, new Error('close failed')]) {

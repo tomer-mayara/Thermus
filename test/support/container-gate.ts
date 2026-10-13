@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
-export const containerDataDirectory = '/var/lib/magumagu';
+export const containerDataDirectory = '/var/lib/thermus';
 export const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
 export const gateRun = randomBytes(4).toString('hex');
 // Each resource of this test run has this label, so the cleanup finds it also after a failed step.
-export const gateLabel = `magumagu.container-gate=${gateRun}`;
+export const gateLabel = `thermus.container-gate=${gateRun}`;
 
 const probeScript = fileURLToPath(new URL('./container-probe.js', import.meta.url));
 const engineChecks = [['version', '--format', '{{.Server.Version}}'], ['buildx', 'version'], ['compose', 'version']];
@@ -34,7 +34,7 @@ export async function buildGateImages(): Promise<GateImages> {
 }
 
 async function buildImage(revision: string): Promise<string> {
-  const tag = `magumagu-container-gate:${gateRun}-${revision}`;
+  const tag = `thermus-container-gate:${gateRun}-${revision}`;
   const labels = ['--label', gateLabel, '--label', `org.opencontainers.image.revision=${revision}`];
   const result = await docker(['build', '--quiet', ...labels, '--tag', tag, repositoryRoot]);
   assert.equal(result.code, 0, `The image build failed:\n${result.stderr}`);

@@ -11,9 +11,9 @@ import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-
 import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
 describe('MCPServer HTTP authentication', () => {
-  const resourceUrl = 'https://magumagu.example/mcp';
-  const resourceMetadataUrl = 'https://magumagu.example/.well-known/oauth-protected-resource/mcp';
-  const user: AuthenticatedUser = { authority: 'https://auth.magumagu.example', subject: 'test-user' };
+  const resourceUrl = 'https://thermus.example/mcp';
+  const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
+  const user: AuthenticatedUser = { authority: 'https://auth.thermus.example', subject: 'test-user' };
   const identityOutage = new Error('identity provider unavailable');
   let server: MCPServer;
   let verifier: IdentityVerifierMock;
@@ -24,7 +24,7 @@ describe('MCPServer HTTP authentication', () => {
     verifier = new IdentityVerifierMock(new Map<string, VerifiedIdentity | Error>([
       ['accepted-token', {
         user,
-        issuer: 'https://auth.magumagu.example',
+        issuer: 'https://auth.thermus.example',
         clientId: 'test-client',
         scopes: [],
         issuedAtUnixSeconds: 2_524_604_400,
@@ -121,7 +121,7 @@ describe('MCPServer HTTP authentication', () => {
       : body;
     assert.ok(data);
     const discovery = JSON.parse(data).result;
-    assert.equal(discovery._meta[SERVER_INFO_META_KEY].name, 'magumagu');
+    assert.equal(discovery._meta[SERVER_INFO_META_KEY].name, 'thermus');
     assert.ok(discovery.supportedVersions.includes('2026-07-28'));
     assert.deepEqual(verifier.calls, ['accepted-token']);
     assert.deepEqual(resolver.calls, [user]);

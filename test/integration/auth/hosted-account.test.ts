@@ -9,7 +9,7 @@ import { AccountOperationProbe } from '../../support/account-operation-probe.ts'
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/membership-directory-double.ts';
 import { BrowserSessionDouble, SignedInSessionDouble } from '../../unit/hosted-admin/fixtures/browser-session-double.ts';
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example/team' }, 'http');
+const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const authority = 'hosted-provider-double';
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
 const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
@@ -80,7 +80,7 @@ function accountGet(session: string, path = 'account', headers: Readonly<Record<
 function formPost(session: string, path: string, form: Readonly<Record<string, string>>): Request {
   return new Request(new URL(path, config.publicBaseUrl), {
     method: 'POST',
-    headers: { Cookie: `session=${session}`, 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://magumagu.example', 'X-Organization-Id': 'org-b' },
+    headers: { Cookie: `session=${session}`, 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://thermus.example', 'X-Organization-Id': 'org-b' },
     body: new URLSearchParams(form).toString(),
   });
 }
@@ -173,7 +173,7 @@ describe('Hosted account routes with session and membership directory doubles an
     ];
 
     const answers = await Promise.all(requests.map(async (request) => (await application.handle(request)).text()));
-    const outside = await application.handle(new Request('https://magumagu.example/account', { headers: { Cookie: 'session=ann' } }));
+    const outside = await application.handle(new Request('https://thermus.example/account', { headers: { Cookie: 'session=ann' } }));
     await Promise.all([application.close(), application.close()]);
 
     assert.deepEqual(answers, ['MCP endpoint double', 'MCP endpoint double']);

@@ -16,11 +16,11 @@ registerHooks({ resolve(specifier, context, nextResolve) {
 const preload = `data:text/javascript,${encodeURIComponent(guard)}`;
 
 test('Given a provider import guard, when syntax, configuration, or the edition refuses a command, then no provider module loads; an accepted local command reaches the guarded opener', { timeout: 30_000 }, () => {
-  const local = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/magumagu' };
+  const local = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/thermus' };
   const cases = [
     { args: ['users'], environment: local, code: 2, message: /Unknown command/ },
     { args: ['users', 'list'], environment: { ...local, DATA_DIR: '' }, code: 1, message: /DATA_DIR is required/ },
-    { args: ['users', 'list'], environment: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example' }, code: 1, message: /only for DEPLOYMENT=self-hosted/ },
+    { args: ['users', 'list'], environment: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, code: 1, message: /only for DEPLOYMENT=self-hosted/ },
   ];
   for (const { args, environment, code, message } of cases) {
     const result = spawnSync(process.execPath, ['--import', preload, entry, ...args], { env: environment, encoding: 'utf8', timeout: 10_000 });

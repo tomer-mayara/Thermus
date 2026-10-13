@@ -8,8 +8,8 @@ import { AccountOperationDouble, type OperationAnswer } from './account-operatio
 import { BrowserSessionDouble, SignedInSessionDouble, type ConfiguredSession, type SignedInSetup } from './browser-session-double.ts';
 import { OrganizationAdministrationDouble, type AdministrationSetup, type ConfiguredOrganizations } from './organization-administration-double.ts';
 
-export const publicBaseUrl = 'https://magumagu.example/';
-export const publicOrigin = 'https://magumagu.example';
+export const publicBaseUrl = 'https://thermus.example/';
+export const publicOrigin = 'https://thermus.example';
 const authority = 'hosted-provider-double';
 export const ann: AuthenticatedUser = { authority, subject: 'user-ann', selectedOrganizationId: 'org-a' };
 export const ben: AuthenticatedUser = { authority, subject: 'user-ben', selectedOrganizationId: 'org-b' };

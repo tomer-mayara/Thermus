@@ -54,7 +54,7 @@ export interface LocalProviderSettings {
 
 export class ProviderEnvironmentError extends Error {
   constructor(variable: string, effect: string) {
-    super(`${variable} must be empty or not set. Better Auth can use it to ${effect}. Remove it from the environment of the Magumagu process.`);
+    super(`${variable} must be empty or not set. Better Auth can use it to ${effect}. Remove it from the environment of the Thermus process.`);
     this.name = 'ProviderEnvironmentError';
   }
 }

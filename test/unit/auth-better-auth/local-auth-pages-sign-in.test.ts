@@ -39,8 +39,8 @@ describe('Sign-in page', () => {
     assert.match(tagWith(html, 'input', 'name="password"'), /type="password"[^>]*autocomplete="current-password"/);
     assert.ok(html.includes(`<input type="hidden" name="oauth_query" value="${signedQuery.replaceAll('&', '&amp;')}">`), html);
     assert.equal(hiddenOauthQuery(html), signedQuery);
-    assert.match(html, /<title>[^<]*Magumagu[^<]*<\/title>/);
-    assert.match(html, /<h1>[^<]*Magumagu[^<]*<\/h1>/);
+    assert.match(html, /<title>[^<]*Thermus[^<]*<\/title>/);
+    assert.match(html, /<h1>[^<]*Thermus[^<]*<\/h1>/);
     assertPageHeaders(response, html);
     assertLoadsNothing(html);
     assert.deepEqual(provider.calls, []);
@@ -104,7 +104,7 @@ describe('Sign-in form post', () => {
     const { response, html } = await signInWith(providerRefusal(403, 'BANNED_USER'));
 
     assert.equal(response.status, 403);
-    assert.match(html, /This account is disabled\. Ask the operator of this Magumagu installation\./);
+    assert.match(html, /This account is disabled\. Ask the operator of this Thermus installation\./);
     assert.doesNotMatch(html, /<form/);
     assertNothingCopied(response, html, 'BANNED_USER');
   });

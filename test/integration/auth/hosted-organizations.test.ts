@@ -68,7 +68,7 @@ describe('Hosted organization onboarding and selection with the real routes and 
 
     assert.deepEqual(shown.map(({ label }) => label), ['Acme (selected)', 'Globex']);
     assert.equal(refused.status, 403);
-    assert.equal(selected.location?.href, 'https://magumagu.example/team/portal');
+    assert.equal(selected.location?.href, 'https://thermus.example/team/portal');
     assert.deepEqual([portal.organizationId, portal.tenantId, portal.permissions], ['org-e', 'hosted:org-e', ['product:access']]);
     assert.deepEqual(sessions.switches, [{ subject: 'user-mia', organizationId: 'org-e' }]);
     assert.deepEqual(pages.work.map(({ organizationId }) => organizationId), ['org-e']);

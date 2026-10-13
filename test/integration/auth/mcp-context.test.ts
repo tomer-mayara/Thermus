@@ -14,8 +14,8 @@ import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mo
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 import { mcpRequest, rpcResult, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
-const resourceUrl = 'https://magumagu.example/mcp';
-const authority = 'https://auth.magumagu.example';
+const resourceUrl = 'https://thermus.example/mcp';
+const authority = 'https://auth.thermus.example';
 const productAccess = RequestContextProbe.requiredPermission;
 const userGrant: RoleGrant = { role: 'user', permissions: [productAccess] };
 const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
@@ -54,7 +54,7 @@ function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>,
     auth: {
       verifier,
       accessResolver: resolver,
-      resourceMetadataUrl: 'https://magumagu.example/.well-known/oauth-protected-resource/mcp',
+      resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp',
       expectedResource: new URL(resourceUrl),
       requiredScopes: ['openid'],
     },

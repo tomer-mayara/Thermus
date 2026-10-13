@@ -50,7 +50,7 @@ for (const host of [' 127.0.0.1', '127.0.0.1 ', 'local host', 'localhost\n']) {
 test('Given a full environment, when the listen address loads, then it reads only LISTEN_HOST and LISTEN_PORT', (context) => {
   context.mock.property(process, 'env', { LISTEN_HOST: '0.0.0.0', LISTEN_PORT: '9999' });
   const read = new Set<string>();
-  const environment = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'https://magumagu.example', DATA_DIR: '/var/lib/magumagu', LISTEN_PORT: '8443' };
+  const environment = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'https://thermus.example', DATA_DIR: '/var/lib/thermus', LISTEN_PORT: '8443' };
   const settings = new Proxy(environment, {
     get: (target, name) => { read.add(String(name)); return Reflect.get(target, name); },
   });

@@ -123,7 +123,7 @@ describe('Local auth command line through the entry point with the real provider
     const directory = dataDirectory(t);
     await withRuntime(directory, async () => undefined);
     const traceFile = join(dataDirectory(t), 'sql-trace.jsonl');
-    const settings = { ...selfHostedSettings(directory), MAGUMAGU_TEST_SQL_TRACE: traceFile };
+    const settings = { ...selfHostedSettings(directory), THERMUS_TEST_SQL_TRACE: traceFile };
     const traced = (args: readonly string[], input: readonly string[] = []) => runCommand(t, settings, { args, input });
 
     const results = [

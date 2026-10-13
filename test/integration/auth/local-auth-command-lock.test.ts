@@ -9,7 +9,7 @@ import { ServerProcess } from '../../support/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
-const lockError = /in use by another Magumagu process/;
+const lockError = /in use by another Thermus process/;
 const addPrompt = /Password for the new account/;
 
 describe('Local auth command and the data-directory lock', () => {

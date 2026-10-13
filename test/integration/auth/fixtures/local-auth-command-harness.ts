@@ -7,7 +7,7 @@ import { LocalProviderDouble } from '../../../unit/auth-better-auth/fixtures/loc
 export const environment = {
   DEPLOYMENT: 'self-hosted',
   PUBLIC_BASE_URL: 'http://localhost:8080',
-  DATA_DIR: '/var/lib/magumagu',
+  DATA_DIR: '/var/lib/thermus',
 };
 export const loopbackRedirectUri = 'http://127.0.0.1:33418/callback';
 export const passwords = ['alice-password-1', 'alice-password-2', 'bob-password-1', 'dana-password-1', 'secret-value'];

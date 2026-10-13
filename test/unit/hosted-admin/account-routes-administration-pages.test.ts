@@ -162,7 +162,7 @@ describe('HostedAccountRoutes member and invitation pages', () => {
   });
 
   test('Given a public URL under a path, when the pages open, then each form posts under that path and each link points under it', async () => {
-    const { routes } = serveAdministration({ members: acmeMembers, invitations: acmeInvitations }, { routes: { publicBaseUrl: 'https://magumagu.example/team' } });
+    const { routes } = serveAdministration({ members: acmeMembers, invitations: acmeInvitations }, { routes: { publicBaseUrl: 'https://thermus.example/team' } });
 
     const members = await (await routes.handle(accountRequest('/team/members', 'session=ann'))).text();
     const invitations = await (await routes.handle(accountRequest('/team/invitations', 'session=ann'))).text();

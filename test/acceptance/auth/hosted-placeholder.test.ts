@@ -5,14 +5,14 @@ import { ServerProcess, type ServerSettings } from '../../support/server-process
 
 const hostedSettings: ServerSettings = {
   DEPLOYMENT: 'hosted',
-  PUBLIC_BASE_URL: 'https://magumagu.example',
+  PUBLIC_BASE_URL: 'https://thermus.example',
   LISTEN_HOST: '127.0.0.1',
   LISTEN_PORT: '0',
 };
 const forgedOrganization = 'org_01FORGEDORGANIZATION';
 const forgedCookie = 'wos-session=Fe26.2*forged-sealed-session; better-auth.session_token=forged-local-session';
 const forgedToken = forgedJwt({
-  iss: 'https://magumagu-test.authkit.app',
+  iss: 'https://thermus-test.authkit.app',
   sub: 'user_01FORGEDUSER',
   org_id: forgedOrganization,
   role: 'user',
@@ -160,7 +160,7 @@ describe('Hosted edition with the authentication placeholder', () => {
   });
 
   test('Given test and demonstration settings, when the onboarding page, the organization list, and a selection arrive with the session cookie, form token, organization, and return destination that the test doubles accept, then each gets the unavailable notice without a cookie, and the server reports no organization or tenant and uses no network', { timeout: 60_000 }, async (t) => {
-    const demonstrationSettings = { NODE_ENV: 'test', AUTH_MODE: 'mock', MAGUMAGU_DEMO: 'true', HOSTED_TEST_SESSION: 'session=user-ann' };
+    const demonstrationSettings = { NODE_ENV: 'test', AUTH_MODE: 'mock', THERMUS_DEMO: 'true', HOSTED_TEST_SESSION: 'session=user-ann' };
     const server = await ServerProcess.start(t, { ...hostedSettings, ...demonstrationSettings });
     const cookie = 'session=00000000-0000-4000-8000-000000000000';
     const selection = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'org-a', return_to: '/billing' };
@@ -181,8 +181,8 @@ describe('Hosted edition with the authentication placeholder', () => {
   test('Given hosted settings with an invalid common setting, also with every WorkOS setting, when the server starts, then it stops before it listens with a FATAL line that names the setting and the rule but not the value', { timeout: 60_000 }, async (t) => {
     const invalidSettings: ReadonlyArray<[ServerSettings, RegExp]> = [
       [{ PUBLIC_BASE_URL: 'http://localhost:8080' }, /FATAL.*PUBLIC_BASE_URL must use https\./],
-      [{ PUBLIC_BASE_URL: 'https://magumagu.example/?tenant=acme' }, /FATAL.*PUBLIC_BASE_URL must not contain a query\./],
-      [{ PUBLIC_BASE_URL: 'https://operator:hunter2@magumagu.example' }, /FATAL.*PUBLIC_BASE_URL must not contain a username or password\./],
+      [{ PUBLIC_BASE_URL: 'https://thermus.example/?tenant=acme' }, /FATAL.*PUBLIC_BASE_URL must not contain a query\./],
+      [{ PUBLIC_BASE_URL: 'https://operator:hunter2@thermus.example' }, /FATAL.*PUBLIC_BASE_URL must not contain a username or password\./],
       [{ PUBLIC_BASE_URL: '' }, /FATAL.*PUBLIC_BASE_URL is required\./],
       [{ LISTEN_PORT: '80.5' }, /FATAL.*LISTEN_PORT must be a whole number/],
     ];

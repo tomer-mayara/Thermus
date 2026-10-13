@@ -31,7 +31,7 @@ const NOTICES = {
     paragraphs: [
       'Your account has no active access to an organization.',
       'If an administrator of an organization invited you, accept the invitation in the email that you got. Then open this page again.',
-      'If you have no invitation, contact the operator of this Magumagu service. Only the operator can set up a new organization.',
+      'If you have no invitation, contact the operator of this Thermus service. Only the operator can set up a new organization.',
     ],
   },
   invalidRequest: { status: 400, title: 'Request not valid', paragraphs: ['The request is not valid. Open the organization page again.'] },

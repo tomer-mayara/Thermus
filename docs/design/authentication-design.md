@@ -1,6 +1,6 @@
 # Authentication implementation plan
 
-Magumagu will use Better Auth for the free, self-hosted edition and WorkOS
+Thermus will use Better Auth for the free, self-hosted edition and WorkOS
 AuthKit with Connect for the hosted edition. Both implementations will satisfy
 the same narrow MCP contracts. Unit tests will use configurable doubles under
 `test/unit/`.
@@ -205,7 +205,7 @@ failure report to the operator log as one error line with the failed step and
 the cause. Without a resource-server client for the MCP resource of
 `PUBLIC_BASE_URL`, the MCP endpoint cannot check a token: a request with a valid
 token gets a generic `500`, and its operator report tells the operator to run
-`magumagu clients register`.
+`thermus clients register`.
 
 Keep the existing low-level stdio API and its tests. Hosted application startup
 rejects stdio. If local stdio is subsequently exposed, bind it explicitly to the
@@ -318,10 +318,10 @@ path. Bundle an offline CLI that wraps supported Better Auth APIs:
 
 | Command | Behavior |
 | --- | --- |
-| `magumagu users add` | Create a local email/password account; reject a duplicate email. |
-| `magumagu users list` | List local accounts and their enabled/disabled state without credentials. |
-| `magumagu users reset-password` | Reset the selected user's password and delete that user's sessions, which ends that user's MCP access tokens. Preserve account status and IDs. |
-| `magumagu users disable` | Disable the selected user and delete that user's sessions, which ends that user's MCP access tokens. Preserve IDs. |
+| `thermus users add` | Create a local email/password account; reject a duplicate email. |
+| `thermus users list` | List local accounts and their enabled/disabled state without credentials. |
+| `thermus users reset-password` | Reset the selected user's password and delete that user's sessions, which ends that user's MCP access tokens. Preserve account status and IDs. |
+| `thermus users disable` | Disable the selected user and delete that user's sessions, which ends that user's MCP access tokens. Preserve IDs. |
 
 Add and reset-password use a hidden password prompt. Never accept passwords as
 command arguments or log them. Select the target user explicitly and report
@@ -336,7 +336,7 @@ routes. Any private setup configuration must have no HTTP listener.
 Runtime, initialization, client registration, and account administration share
 one exclusive data-directory lock. To administer a container installation, stop
 the server container, run a one-off container from the bundled image with the
-same volume mounted, and invoke the required `magumagu users` command. Then
+same volume mounted, and invoke the required `thermus users` command. Then
 restart the server container. A command must reject a live server's lock; running
 it inside a live server container does not bypass the lock. The CLI needs no
 network or email service. An initialized installation can start with zero
@@ -346,7 +346,7 @@ administrator can use the CLI to add an account. The
 the exact Compose commands of this workflow and of backup and restore.
 
 The implemented image runs as the `node` user with `NODE_ENV=production`,
-`DEPLOYMENT=self-hosted`, and `DATA_DIR=/var/lib/magumagu`, which is the one
+`DEPLOYMENT=self-hosted`, and `DATA_DIR=/var/lib/thermus`, which is the one
 data volume. It holds `dist/src`, the shipped migrations, and the production
 packages of the frozen lockfile, with the pnpm patches and the native adblock-rs
 module that the build compiles. The base images of the build are pinned by
@@ -373,7 +373,7 @@ stops at once with `DataDirectoryInUseError`, and of several processes that
 start at the same time, exactly one gets the lock. An exclusive transaction is
 not used: it must wait until the other connections release their shared locks,
 so two processes that start at the same time could each make the other fail.
-`auth.sqlite` holds the provider data and the singleton `magumagu_installation`
+`auth.sqlite` holds the provider data and the singleton `thermus_installation`
 row. `auth.secret` holds the generated provider secret. Both data files have
 mode `0600`. A database without schema objects is fresh: the runtime writes the
 secret first, and then applies `0001-better-auth.sql`, `0002-installation.sql`,
@@ -893,7 +893,7 @@ guidance:
   Without an authorized organization, the answer is the onboarding guidance
   page (`200`): the account has no active access to an organization; accept
   the invitation in the email; with no invitation, contact the operator of
-  this Magumagu service, because only the operator can set up a new
+  this Thermus service, because only the operator can set up a new
   organization. This page has no form. Other methods give `405` with
   `Allow: GET, HEAD`.
 - `POST <base>/organizations/select` checks the post in this order. The

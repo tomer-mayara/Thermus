@@ -1,5 +1,5 @@
 {
-  "name": "magumagu",
+  "name": "thermus",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -24,7 +24,7 @@
     "test:interface": "npm run build && node --test \"dist/test/interface/**/*.test.js\"",
     "test:integration": "npm run build && node --test \"dist/test/integration/**/*.test.js\"",
     "test:acceptance": "npm run build && node --test \"dist/test/acceptance/**/*.test.js\"",
-    "test:container": "npm run build && MAGUMAGU_CONTAINER_GATE=1 node --test dist/test/acceptance/auth/self-hosted-container.test.js",
+    "test:container": "npm run build && THERMUS_CONTAINER_GATE=1 node --test dist/test/acceptance/auth/self-hosted-container.test.js",
     "test:build": "node --test test/unit/build-output.test.ts"
   },
   "devDependencies": {

@@ -33,7 +33,7 @@ const PAGE_HEADERS: Readonly<Record<string, string>> = {
 };
 
 export function signInPage(status: number, form: SignInForm): Response {
-  return htmlResponse(status, htmlDocument('Sign in to Magumagu', [
+  return htmlResponse(status, htmlDocument('Sign in to Thermus', [
     form.message === undefined ? '' : `<p class="message">${escapeHtml(form.message)}</p>`,
     `<form method="post" action="${escapeHtml(form.action)}">`,
     oauthQueryField(form.oauthQuery),
@@ -47,8 +47,8 @@ export function signInPage(status: number, form: SignInForm): Response {
 }
 
 export function consentPage(action: string, oauthQuery: string, details: { readonly clientName: string; readonly email: string; readonly scopes: string }): Response {
-  return htmlResponse(200, htmlDocument('Allow Magumagu access', [
-    `<p>Allow ${escapeHtml(details.clientName)} to use this Magumagu workspace as ${escapeHtml(details.email)}?</p>`,
+  return htmlResponse(200, htmlDocument('Allow Thermus access', [
+    `<p>Allow ${escapeHtml(details.clientName)} to use this Thermus workspace as ${escapeHtml(details.email)}?</p>`,
     `<p>Requested scopes: ${escapeHtml(details.scopes)}</p>`,
     `<form method="post" action="${escapeHtml(action)}">`,
     oauthQueryField(oauthQuery),
@@ -59,7 +59,7 @@ export function consentPage(action: string, oauthQuery: string, details: { reado
 }
 
 export function messagePage(status: number, message: string, headers: Readonly<Record<string, string>> = {}): Response {
-  return htmlResponse(status, htmlDocument('Magumagu sign-in', [`<p>${escapeHtml(message)}</p>`]), headers);
+  return htmlResponse(status, htmlDocument('Thermus sign-in', [`<p>${escapeHtml(message)}</p>`]), headers);
 }
 
 // The acceptance browser and the tests read the field with this exact attribute order.

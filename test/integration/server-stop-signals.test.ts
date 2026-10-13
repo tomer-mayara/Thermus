@@ -6,7 +6,7 @@ import { serve } from '../../src/index.ts';
 import { hostedStartupLine } from '../support/hosted-placeholder.ts';
 
 const stopSignals = ['SIGINT', 'SIGTERM'] as const;
-const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
+const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
 
 interface LogLine {
   readonly message: string;

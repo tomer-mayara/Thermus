@@ -12,9 +12,9 @@ import { RequestContextProbe, type ProbeReport } from '../../support/request-con
 import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 
-const resourceUrl = 'https://magumagu.example/mcp';
-const resourceMetadataUrl = 'https://magumagu.example/.well-known/oauth-protected-resource/mcp';
-const authority = 'https://auth.magumagu.example';
+const resourceUrl = 'https://thermus.example/mcp';
+const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
+const authority = 'https://auth.thermus.example';
 const productAccess = RequestContextProbe.requiredPermission;
 const nowSeconds = Math.floor(Date.now() / 1_000);
 
@@ -79,7 +79,7 @@ describe('Trusted access context for MCP HTTP requests', () => {
 
   async function connect(t: TestContext, token: string | undefined, headers: Record<string, string> = {}): Promise<Client> {
     const client = new Client(
-      { name: 'magumagu-acceptance', version: '0.0.0' },
+      { name: 'thermus-acceptance', version: '0.0.0' },
       { versionNegotiation: { mode: { pin: '2026-07-28' }, probe: { timeoutMs: 5_000, maxRetries: 0 } } },
     );
     const transport = new StreamableHTTPClientTransport(new URL(resourceUrl), {

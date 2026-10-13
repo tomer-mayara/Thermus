@@ -4,7 +4,7 @@
 import { createSocket } from 'node:dgram';
 import { connect, createServer, type Socket } from 'node:net';
 
-const SERVER_ALIAS = 'magumagu';
+const SERVER_ALIAS = 'thermus';
 const SERVER_PORT = 8080;
 const DNS_PORT = 53;
 const HEADER_LENGTH = 12;

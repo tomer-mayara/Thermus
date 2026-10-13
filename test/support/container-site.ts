@@ -52,8 +52,8 @@ export class ContainerSite {
     const id = `${gateRun}-${sites}`;
     const labels = siteLabels(id);
     t.after(() => removeLabelled(siteLabel(id)));
-    const names = { id, network: `magumagu-gate-${id}-offline`, edge: `magumagu-gate-${id}-edge` };
-    const outside = `magumagu-gate-${id}-outside`;
+    const names = { id, network: `thermus-gate-${id}-offline`, edge: `thermus-gate-${id}-edge` };
+    const outside = `thermus-gate-${id}-outside`;
     await dockerOutput(['network', 'create', '--internal', ...labels, names.network]);
     await dockerOutput(['network', 'create', ...labels, outside]);
     const edgeCommand = ['--user', 'root', '--entrypoint', 'node', image, '/tmp/container-edge.mjs'];
@@ -72,7 +72,7 @@ export class ContainerSite {
 
   async volume(): Promise<string> {
     this.volumes += 1;
-    return dockerOutput(['volume', 'create', ...siteLabels(this.names.id), `magumagu-gate-${this.names.id}-data-${this.volumes}`]);
+    return dockerOutput(['volume', 'create', ...siteLabels(this.names.id), `thermus-gate-${this.names.id}-data-${this.volumes}`]);
   }
 
   operator(volume: string): Operator {
@@ -81,8 +81,8 @@ export class ContainerSite {
 
   async createServer(volume: string, options: ServerContainerOptions = {}): Promise<ServerContainer> {
     this.servers += 1;
-    const name = `magumagu-gate-${this.names.id}-server-${this.servers}`;
-    const server = ['container', 'create', '--init', '--name', name, '--network-alias', 'magumagu'];
+    const name = `thermus-gate-${this.names.id}-server-${this.servers}`;
+    const server = ['container', 'create', '--init', '--name', name, '--network-alias', 'thermus'];
     await dockerOutput([...server, ...this.containerSettings(volume, options.environment), options.image ?? this.image]);
     return new ServerContainer(name);
   }
@@ -134,7 +134,7 @@ export class ContainerSite {
 }
 
 function siteLabel(id: string): string {
-  return `magumagu.container-gate.site=${id}`;
+  return `thermus.container-gate.site=${id}`;
 }
 
 function siteLabels(id: string): string[] {

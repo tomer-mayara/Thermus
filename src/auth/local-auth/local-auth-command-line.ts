@@ -16,13 +16,13 @@ export class UsageError extends Error {
 
 export const USAGE = [
   'Usage:',
-  '  magumagu                                Start the server.',
-  '  magumagu users add <email>              Add an enabled account. Asks for its password two times.',
-  '  magumagu users list                     List the accounts and their state.',
-  '  magumagu users reset-password <email>   Set a new password and end the sessions of the account.',
-  '  magumagu users disable <email>          Disable the account and end its sessions.',
-  '  magumagu clients register --user <email> --name <name> --redirect-uri <uri> [--redirect-uri <uri> ...]',
-  '                                          Register a native MCP client. Asks for the password of the account.',
+  '  thermus                                Start the server.',
+  '  thermus users add <email>              Add an enabled account. Asks for its password two times.',
+  '  thermus users list                     List the accounts and their state.',
+  '  thermus users reset-password <email>   Set a new password and end the sessions of the account.',
+  '  thermus users disable <email>          Disable the account and end its sessions.',
+  '  thermus clients register --user <email> --name <name> --redirect-uri <uri> [--redirect-uri <uri> ...]',
+  '                                         Register a native MCP client. Asks for the password of the account.',
   'Stop the server before you run a command. A command reads passwords from a hidden prompt or from standard input, never from its arguments.',
 ].join('\n');
 

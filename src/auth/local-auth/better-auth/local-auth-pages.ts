@@ -26,7 +26,7 @@ export interface LocalAuthPagesSettings {
 const TEXT = {
   startFromClient: 'Start the sign-in from your MCP client.',
   wrongCredentials: 'The email address or password is not correct.',
-  accountDisabled: 'This account is disabled. Ask the operator of this Magumagu installation.',
+  accountDisabled: 'This account is disabled. Ask the operator of this Thermus installation.',
   signInRefused: 'The sign-in request was refused. Start again from your MCP client.',
   tooManySignIns: 'Too many sign-in attempts. Wait and try again.',
   signInInvalid: 'The sign-in request is not valid or has expired. Start again from your MCP client.',

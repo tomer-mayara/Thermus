@@ -167,7 +167,7 @@ describe('Local installation with the real application and provider', () => {
   });
 
   for (const { label, damage, failure } of [
-    { label: 'without its installation identity', damage: 'DELETE FROM "magumagu_installation"', failure: LocalInstallationError },
+    { label: 'without its installation identity', damage: 'DELETE FROM "thermus_installation"', failure: LocalInstallationError },
     { label: 'with a damaged provider schema', damage: 'DROP TABLE "jwks"', failure: /Database schema mismatch[\s\S]*jwks/ },
   ]) {
     test(`Given retained data ${label}, when the application starts, then startup fails closed and releases the data-directory lock`, async (t) => {
@@ -183,9 +183,9 @@ describe('Local installation with the real application and provider', () => {
 
   test('Given the hosted deployment, when the application starts and closes, then it selects the unavailable hosted shell instead of the local runtime: account and MCP requests get 503, and repeated closes give one result', async () => {
     const logger = new RecordingLogger();
-    const application = await createApplication(loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example' }, 'http'), logger);
+    const application = await createApplication(loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http'), logger);
 
-    const answers = [await application.handle(new Request('https://magumagu.example/account')), await application.handle(mcpRequest('forged-token'))];
+    const answers = [await application.handle(new Request('https://thermus.example/account')), await application.handle(mcpRequest('forged-token'))];
     const closes = [application.close(), application.close()];
 
     assert.deepEqual([answers.map(({ status }) => status), closes[0] === closes[1]], [[503, 503], true]);

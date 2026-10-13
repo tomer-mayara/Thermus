@@ -1,9 +1,9 @@
 # The self-hosted evaluation edition: one server container and one data volume.
 # README.md#container-installation gives the commands, also the stopped-server workflow for accounts and clients.
-name: magumagu
+name: thermus
 
 services:
-  magumagu:
+  thermus:
     build: .
     init: true
     restart: unless-stopped
@@ -14,8 +14,8 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
-      - magumagu-data:/var/lib/magumagu
+      - thermus-data:/var/lib/thermus
 
 volumes:
   # The database, the installation identity, the signing keys, and the secrets.
-  magumagu-data:
+  thermus-data:

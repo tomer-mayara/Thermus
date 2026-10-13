@@ -63,7 +63,7 @@ describe('BetterAuthProvider access resolution', () => {
     });
   }
 
-  for (const other of ['better-auth:another-installation', 'https://auth.magumagu.example']) {
+  for (const other of ['better-auth:another-installation', 'https://auth.thermus.example']) {
     test(`Given an identity of the authority ${other}, when its access is resolved, then it is denied as account-inactive without a user lookup`, async () => {
       const { provider, resolver } = resolverWith({ id: 'user-1', banned: null });
 

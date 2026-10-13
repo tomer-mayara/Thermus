@@ -4,7 +4,7 @@ import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shown
 import { formsIn } from '../../support/hosted-browser.ts';
 import { formFor, statusesOf, userOf } from '../../support/hosted-organization-site.ts';
 
-const membersPage = 'https://magumagu.example/team/members';
+const membersPage = 'https://thermus.example/team/members';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
 
 describe('Hosted grant management through the public routes, with session and directory doubles', () => {

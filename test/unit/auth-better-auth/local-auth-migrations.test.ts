@@ -58,7 +58,7 @@ test('Given an empty database with the shipped migrations, when Better Auth plan
 
 test('Given the shipped installation migration, when identities and accounts are added, then it keeps one installation identity and does not limit accounts', async (t) => {
   const database = migratedDatabase(t);
-  const addIdentity = database.prepare('INSERT INTO "magumagu_installation" ("singleton", "id") VALUES (?, ?)');
+  const addIdentity = database.prepare('INSERT INTO "thermus_installation" ("singleton", "id") VALUES (?, ?)');
   const auth = betterAuth(providerOptions(database));
 
   addIdentity.run(1, installationId);
@@ -68,6 +68,6 @@ test('Given the shipped installation migration, when identities and accounts are
 
   assert.throws(() => addIdentity.run(1, '4b0f2b8e-6f0d-4c1e-9f3a-2d5c7e8a9b10'), /UNIQUE constraint failed/);
   assert.throws(() => addIdentity.run(2, '4b0f2b8e-6f0d-4c1e-9f3a-2d5c7e8a9b10'), /CHECK constraint failed/);
-  assert.deepEqual(database.prepare('SELECT "id" FROM "magumagu_installation"').all().map(({ id }) => id), [installationId]);
+  assert.deepEqual(database.prepare('SELECT "id" FROM "thermus_installation"').all().map(({ id }) => id), [installationId]);
   assert.equal(await (await auth.$context).internalAdapter.countTotalUsers(), 3);
 });

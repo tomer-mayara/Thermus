@@ -130,10 +130,10 @@ Checked on 2026-10-12. Fees are approximate; check the provider price pages.
 - **WorkOS.** An organization can keep a Stripe customer ID. The WorkOS Stripe
   Seat Sync add-on counts all active members and sends that count to Stripe as
   meter events. It does not exclude Admin-only or Super-Admin-only members, so
-  it does not match the accepted count. With each provider, Magumagu must
+  it does not match the accepted count. With each provider, Thermus must
   calculate the count and send it.
   [WorkOS Stripe add-on](https://workos.com/docs/authkit/add-ons/stripe)
-- **Stripe Billing.** Magumagu is the seller. A subscription item has a seat
+- **Stripe Billing.** Thermus is the seller. A subscription item has a seat
   quantity. A quantity change can put prorations on the next invoice
   (`create_prorations`), invoice them at once (`always_invoice`), or make no
   prorations (`none`). By default, a change applies even when its payment
@@ -144,7 +144,7 @@ Checked on 2026-10-12. Fees are approximate; check the provider price pages.
   can cancel, mark unpaid, leave past due, or pause the subscription. Test
   clocks move a sandbox subscription through time, so automated tests can
   cover renewals, prorations, and retries. Stripe Tax can calculate and collect
-  tax; Magumagu registers and files. Fees: about 2.9% + 0.30 USD for each US
+  tax; Thermus registers and files. Fees: about 2.9% + 0.30 USD for each US
   card payment, 0.7% for Billing, and 0.5% for Tax. A proof must show if a
   quantity of 0 is accepted.
   [Quantities](https://docs.stripe.com/billing/subscriptions/quantities),

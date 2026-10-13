@@ -13,7 +13,7 @@ describe('runLocalAuthCommand with configuration and administration', () => {
 
         assert.equal(result.code, 2, args.join(' '));
         assert.match(result.errors, /^Unknown command\./);
-        assert.match(result.errors, /magumagu users add <email>/);
+        assert.match(result.errors, /thermus users add <email>/);
         assert.doesNotMatch(result.errors, /promote|alice@example\.com|immediately/);
         assert.deepEqual([result.output, opener.events, result.prompts], ['', [], []]);
       }
@@ -81,7 +81,7 @@ describe('runLocalAuthCommand with configuration and administration', () => {
 
       assert.equal(result.code, 0);
       assert.deepEqual(opener.settings.map(({ dataDirectory, publicBaseUrl, mcpResourceUrl }) => ({ dataDirectory, publicBaseUrl, mcpResourceUrl })), [{
-        dataDirectory: '/var/lib/magumagu',
+        dataDirectory: '/var/lib/thermus',
         publicBaseUrl: 'http://localhost:8080/',
         mcpResourceUrl: 'http://localhost:8080/mcp',
       }]);
@@ -91,9 +91,9 @@ describe('runLocalAuthCommand with configuration and administration', () => {
     test('Given missing settings or the hosted deployment, when a command runs, then it exits with status 1 and a safe message and opens no data', async () => {
       const cases: { readonly settings: Record<string, string>; readonly message: RegExp }[] = [
         { settings: { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080' }, message: /DATA_DIR is required/ },
-        { settings: { PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/magumagu' }, message: /DEPLOYMENT must be set/ },
-        { settings: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example' }, message: /only for DEPLOYMENT=self-hosted/ },
-        { settings: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', ...workOSSettings }, message: /only for DEPLOYMENT=self-hosted/ },
+        { settings: { PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/thermus' }, message: /DEPLOYMENT must be set/ },
+        { settings: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, message: /only for DEPLOYMENT=self-hosted/ },
+        { settings: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', ...workOSSettings }, message: /only for DEPLOYMENT=self-hosted/ },
       ];
 
       for (const { settings, message } of cases) {
@@ -119,12 +119,12 @@ describe('runLocalAuthCommand with configuration and administration', () => {
 
       for (const args of commands) {
         const opener = new AdministrationOpenerDouble();
-        opener.openFailure = Object.assign(new Error('The data directory is in use by another Magumagu process. Stop that process, then try again.'), { name: 'DataDirectoryInUseError' });
+        opener.openFailure = Object.assign(new Error('The data directory is in use by another Thermus process. Stop that process, then try again.'), { name: 'DataDirectoryInUseError' });
 
         const result = await run(args, { opener, input: new ScriptedInput('alice-password-1', 'alice-password-1') });
 
         assert.equal(result.code, 1, args.join(' '));
-        assert.equal(result.errors, 'The data directory is in use by another Magumagu process. Stop that process, then try again.');
+        assert.equal(result.errors, 'The data directory is in use by another Thermus process. Stop that process, then try again.');
         assert.deepEqual([result.output, result.prompts, opener.events], ['', [], ['open']]);
       }
     });

@@ -228,7 +228,7 @@ describe('BetterAuthUserAdministration client registration', () => {
       assert.deepEqual(resourceServer, {
         clientId: resourceServer.clientId,
         sessionUserId: alice.id,
-        metadata: { client_name: 'Magumagu MCP resource server', token_endpoint_auth_method: 'client_secret_basic', grant_types: ['client_credentials'] },
+        metadata: { client_name: 'Thermus MCP resource server', token_endpoint_auth_method: 'client_secret_basic', grant_types: ['client_credentials'] },
       });
       assert.deepEqual(provider.resourceServerClient.recorded, [
         { clientId: resourceServer.clientId, clientSecret: LocalProviderDouble.clientSecretOf(resourceServer.clientId) },

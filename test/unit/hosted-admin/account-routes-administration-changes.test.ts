@@ -15,7 +15,7 @@ describe('HostedAccountRoutes grant and invitation changes', () => {
         const response = await routes.handle(changePost(path, fields, { 'X-Organization-Id': 'org-b' }));
 
         assert.equal(response.status, 303);
-        assert.equal(response.headers.get('Location'), `https://magumagu.example${name === 'grant' ? '/members' : '/invitations'}`);
+        assert.equal(response.headers.get('Location'), `https://thermus.example${name === 'grant' ? '/members' : '/invitations'}`);
         assert.equal(response.headers.get('Cache-Control'), 'no-store');
         assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
         assert.equal(await response.text(), '');
