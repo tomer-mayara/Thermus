@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import {
@@ -10,15 +9,10 @@ import {
   DataDirectoryUnavailableError,
   lockDataDirectory,
 } from '../../../src/auth-better-auth/data-directory-lock.ts';
+import { dataDirectory } from '../../support/data-directory.ts';
 
 const moduleExtension = import.meta.url.endsWith('.ts') ? 'ts' : 'js';
 const lockModule = new URL(`../../../src/auth-better-auth/data-directory-lock.${moduleExtension}`, import.meta.url).href;
-
-function dataDirectory(t: TestContext): string {
-  const directory = mkdtempSync(join(tmpdir(), 'magumagu-lock-'));
-  t.after(() => rmSync(directory, { recursive: true, force: true }));
-  return directory;
-}
 
 async function lockInOtherProcess(t: TestContext, directory: string) {
   const holder = spawn(process.execPath, ['--input-type=module', '-e', `

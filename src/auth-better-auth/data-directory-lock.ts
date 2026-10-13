@@ -23,9 +23,8 @@ export class DataDirectoryUnavailableError extends Error {
   }
 }
 
-// An open exclusive SQLite transaction on the lock file is an operating
-// system file lock. It stops other processes and other connections in this
-// process, and the system releases it when this process ends.
+// An open exclusive SQLite transaction is a system file lock: it also stops other connections
+// in this process, and the system releases it when the process ends, also after a crash.
 export function lockDataDirectory(directory: string): DataDirectoryLock {
   requireDirectory(directory);
   const connection = new DatabaseSync(join(directory, LOCK_FILE));

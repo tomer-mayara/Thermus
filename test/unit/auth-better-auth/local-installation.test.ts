@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { test, type TestContext } from 'node:test';
@@ -9,18 +8,13 @@ import {
   openLocalInstallation,
   type LocalInstallation,
 } from '../../../src/auth-better-auth/local-installation.ts';
+import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const generatedSecret = /^[A-Za-z0-9_-]{43}$/;
 const missingIdentity = 'The data directory has authentication data but no valid installation identity. '
   + 'Magumagu does not create a new identity for retained data. '
   + 'Restore the complete data directory from a backup, or move the data away to start a new installation.';
-
-function dataDirectory(t: TestContext): string {
-  const directory = mkdtempSync(join(tmpdir(), 'magumagu-installation-'));
-  t.after(() => rmSync(directory, { recursive: true, force: true }));
-  return directory;
-}
 
 function opened(t: TestContext, directory: string): LocalInstallation {
   const installation = openLocalInstallation(directory);
@@ -33,15 +27,6 @@ function initializedDirectory(t: TestContext) {
   const installation = openLocalInstallation(directory);
   installation.close();
   return { directory, installation };
-}
-
-function changeDatabase(directory: string, sql: string): void {
-  const database = new DatabaseSync(join(directory, 'auth.sqlite'));
-  try {
-    database.exec(sql);
-  } finally {
-    database.close();
-  }
 }
 
 function databaseSnapshot(directory: string): string {
@@ -78,9 +63,8 @@ test('Given an empty data directory, when the installation opens, then it create
   assert.match(installation.secret, generatedSecret);
   assert.equal(readFileSync(join(directory, 'auth.secret'), 'utf8'), `${installation.secret}\n`);
   assert.deepEqual([fileMode(join(directory, 'auth.sqlite')), fileMode(join(directory, 'auth.secret'))], [0o600, 0o600]);
-  const stored = installation.database.prepare('SELECT "id" FROM "magumagu_installation"').all().map(({ id }) => id);
   const tables = installation.database.prepare(`SELECT "name" FROM sqlite_schema WHERE "type" = 'table'`).all().map(({ name }) => name);
-  assert.deepEqual(stored, [installation.id]);
+  assert.deepEqual(storedInstallationIds(directory), [installation.id]);
   assert.ok(tables.includes('user') && tables.includes('jwks') && tables.includes('oauthClient'), tables.join(', '));
   assert.equal(installation.database.prepare('PRAGMA user_version').get()?.user_version, 2);
   assert.deepEqual(readdirSync(directory).sort(), ['auth.secret', 'auth.sqlite']);

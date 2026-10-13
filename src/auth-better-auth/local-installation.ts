@@ -30,9 +30,6 @@ interface InstallationIdentity {
   readonly secret: string;
 }
 
-// A database without schema objects holds no data yet, so it starts a new
-// installation. A database with schema objects is retained data: it must keep
-// its identity and secret, or startup stops for operator recovery.
 export function openLocalInstallation(directory: string): LocalInstallation {
   const database = openOwnerOnlyDatabase(join(directory, DATABASE_FILE));
   try {
@@ -80,8 +77,7 @@ function storedInstallationId(database: DatabaseSync): string | undefined {
   return typeof id === 'string' && UUID.test(id) ? id : undefined;
 }
 
-// The secret is durable before the database commit. A first start that stops
-// between the two leaves a secret without data, and the next start uses it.
+// The secret is durable before the commit, so an interrupted first start leaves a secret that the next start uses.
 function newIdentity(database: DatabaseSync, directory: string): InstallationIdentity {
   const secret = readSecret(directory) ?? writeNewSecret(directory);
   const id = randomUUID();

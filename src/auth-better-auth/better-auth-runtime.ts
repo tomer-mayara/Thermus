@@ -9,7 +9,6 @@ import { openLocalInstallation, type LocalInstallation } from './local-installat
 
 const CLIENT_ADDRESS_HEADER = 'x-magumagu-client-address';
 
-// disabledPaths refuses these exact routes over HTTP. Server API calls still reach them.
 const PRIVATE_HTTP_PATHS = [
   '/admin/create-user',
   '/admin/list-users',
@@ -117,8 +116,7 @@ function createLocalAuth(settings: LocalProviderSettings) {
   return betterAuth(localProviderOptions(settings));
 }
 
-// The provider checks its schema in the background. Waiting for that check
-// stops startup on a schema mismatch and leaves no database work running.
+// Waiting for the background schema check stops startup on a mismatch and leaves no database work running.
 async function startLocalAuth(settings: LocalProviderSettings): Promise<LocalAuth> {
   const auth = createLocalAuth(settings);
   const context = await auth.$context;
