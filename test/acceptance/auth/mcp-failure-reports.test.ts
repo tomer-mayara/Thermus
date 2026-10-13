@@ -9,14 +9,14 @@ import {
   UnauthorizedError,
 } from '@modelcontextprotocol/client';
 import type { AccessDecision } from '../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
+import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
 import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 
-const resourceUrl = 'https://magumagu.example/mcp';
-const authority = 'https://auth.magumagu.example';
+const resourceUrl = 'https://thermus.example/mcp';
+const authority = 'https://auth.thermus.example';
 const nowSeconds = Math.floor(Date.now() / 1_000);
 const session = 'session=secret-session-cookie';
 
@@ -54,7 +54,7 @@ describe('Operator reports of unexpected MCP failures', () => {
       auth: {
         verifier,
         accessResolver: resolver,
-        resourceMetadataUrl: 'https://magumagu.example/.well-known/oauth-protected-resource/mcp',
+        resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp',
         expectedResource: new URL(resourceUrl),
         requiredScopes: ['openid'],
       },
@@ -68,7 +68,7 @@ describe('Operator reports of unexpected MCP failures', () => {
 
   async function connect(t: TestContext, token: string): Promise<Client> {
     const client = new Client(
-      { name: 'magumagu-acceptance', version: '0.0.0' },
+      { name: 'thermus-acceptance', version: '0.0.0' },
       { versionNegotiation: { mode: { pin: '2026-07-28' }, probe: { timeoutMs: 5_000, maxRetries: 0 } } },
     );
     const transport = new StreamableHTTPClientTransport(new URL(resourceUrl), {

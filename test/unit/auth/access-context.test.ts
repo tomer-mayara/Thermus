@@ -12,7 +12,7 @@ const productAccess = 'product:access';
 const userGrant: RoleGrant = { role: 'user', permissions: [productAccess] };
 const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
 const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
-const member: AuthenticatedUser = { authority: 'https://auth.magumagu.example', subject: 'user-1', selectedOrganizationId: 'org-1' };
+const member: AuthenticatedUser = { authority: 'https://auth.thermus.example', subject: 'user-1', selectedOrganizationId: 'org-1' };
 
 function memberContext(grants: readonly RoleGrant[]) {
   return createRequestContext({ user: member, tenantId: 'tenant-org-1', organizationId: 'org-1', grants });

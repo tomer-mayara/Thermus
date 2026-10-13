@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CLIENT_ADDRESS_HEADER } from '../../../src/http/server.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../src/http/client-address.ts';
 import { RawConnection, recordUrls, serve } from './fixtures/http-server-fixtures.ts';
 
 describe('HTTP server request URL', () => {
   test('Given forged Host and forwarded headers, when a request arrives, then the handler URL has the public origin and the path and query of the target', { timeout: 5_000 }, async (t) => {
     const urls: string[] = [];
-    const server = await serve(t, recordUrls(urls), { publicBaseUrl: 'https://magumagu.example/app/' });
+    const server = await serve(t, recordUrls(urls), { publicBaseUrl: 'https://thermus.example/app/' });
 
     const response = await RawConnection.open(t, server).send([
       'GET /app/mcp?session=one&next=%2Fhome HTTP/1.1',
@@ -18,7 +18,7 @@ describe('HTTP server request URL', () => {
     ]).ended;
 
     assert.match(response, /^HTTP\/1\.1 200 OK\r\n/);
-    assert.deepEqual(urls, ['https://magumagu.example/app/mcp?session=one&next=%2Fhome']);
+    assert.deepEqual(urls, ['https://thermus.example/app/mcp?session=one&next=%2Fhome']);
   });
 
   for (const target of ['http://evil.example/x', '//evil.example/x', '/\\evil.example/x', '*', '/x#evil.example']) {
@@ -59,10 +59,10 @@ describe('HTTP server request headers', () => {
     await RawConnection.open(t, server).send([
       'GET /headers HTTP/1.1',
       'Host: localhost:8080',
-      'X-Magumagu-Client-Address: 203.0.113.9',
+      'X-Thermus-Client-Address: 203.0.113.9',
       'Accept: text/plain',
       'X-Custom: one',
-      'x-MAGUMAGU-client-ADDRESS: 198.51.100.7',
+      'x-THERMUS-client-ADDRESS: 198.51.100.7',
       'x-custom: two',
       'Connection: close',
     ]).ended;

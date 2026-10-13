@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBetterAuthRuntime, type BetterAuthRuntime } from '../../src/auth-better-auth/better-auth-runtime.ts';
+import { openBetterAuthRuntime, type BetterAuthRuntime } from '../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
 import { loadDeploymentConfig } from '../../src/config/deployment-config.ts';
 import { publicBaseUrl } from './better-auth-local.ts';
 

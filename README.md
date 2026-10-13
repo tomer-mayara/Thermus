@@ -1,8 +1,8 @@
-# Magumagu
+# Thermus
 
-Magumagu is the web tool an agent is allowed to use. An admin turns off native web search, points the agent at this MCP server, and every fetch comes back as a cleaned page with a log line.
+Thermus is the web tool an agent is allowed to use. An admin turns off native web search, points the agent at this MCP server, and every fetch comes back as a cleaned page with a log line.
 
-Agents need the web, and today that means an unlogged fetch from a process that can also see company data. A page can carry hidden instructions. A query can carry an internal project name out to a search engine. The same fetch also burns tokens on ads, navigation, and pages the agent already retrieved. DongAI sits on that path. It does not sit on the network: a local harness with a shell can still go around it, and a web app only reaches it after native search is off.
+Agents need the web, and today that means an unlogged fetch from a process that can also see company data. A page can carry hidden instructions. A query can carry an internal project name out to a search engine. The same fetch also burns tokens on ads, navigation, and pages the agent already retrieved. Thermus sits on that path. It does not sit on the network: a local harness with a shell can still go around it, and a web app only reaches it after native search is off.
 
 The server does four things with each call. It checks the tenant's allowlist and denylist. It redacts a configured list of internal terms from the outbound query. It fetches the page, strips scripts, hidden text, ads, and boilerplate, and returns markdown. It writes a log of the query, the URL, and a hash of what it returned.
 
@@ -105,14 +105,14 @@ The ad cleaner limits parsed HTML to 256 element levels. See [HTML processing li
 
 **MVP.** One tool, `fetch`. Allowlist, denylist, and outbound redaction. Boilerplate and hidden-text stripping. Per-tenant content cache. Audit log. A container that runs the server and Lightpanda on localhost, and a hosted version of the same container.
 
-Out of scope: step-up approval, a second renderer, request-level ad blocking, and any connector other than the web. Done when an admin can disable native search, point an agent at DongAI, and get a cleaned page back with a log line for every fetch.
+Out of scope: step-up approval, a second renderer, request-level ad blocking, and any connector other than the web. Done when an admin can disable native search, point an agent at Thermus, and get a cleaned page back with a log line for every fetch.
 
 
 ## MCP server component
 
-[`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `magumagu` identity with support for protocol version `2026-07-28`. A stdio connection has no verified user, so it registers no tools. A later local stdio entry must first bind a selected active local user.
+[`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `thermus` identity with support for protocol version `2026-07-28`. A stdio connection has no verified user, so it registers no tools. A later local stdio entry must first bind a selected active local user.
 
-For HTTP requests, construct the server with `{ auth: { verifier, accessResolver, resourceMetadataUrl, expectedResource }, registerTools, reportFailure }` and call `await server.fetch(request)`. The verifier implements our [`IdentityVerifier`](src/mcp/identity-verifier.ts) contract, and the access resolver implements [`AccessResolver`](src/auth/access-context.ts). MCPServer validates the Authorization header before the SDK verifies the token. Missing or malformed headers receive HTTP 401 with a Bearer challenge and the configured protected-resource metadata URL. Call `await server.close()` to release the HTTP handler and any transport connection.
+For HTTP requests, construct the server with `{ auth: { verifier, accessResolver, resourceMetadataUrl, expectedResource }, registerTools, reportFailure }` and call `await server.fetch(request)`. The verifier implements our [`IdentityVerifier`](src/auth/identity-verifier.ts) contract, and the access resolver implements [`AccessResolver`](src/auth/access-context.ts). MCPServer validates the Authorization header before the SDK verifies the token. Missing or malformed headers receive HTTP 401 with a Bearer challenge and the configured protected-resource metadata URL. Call `await server.close()` to release the HTTP handler and any transport connection.
 
 `verifyAccessToken(token)` returns a `VerifiedIdentity`: the verified user (`authority`, `subject`, and an optional `selectedOrganizationId`), the token `issuer`, the OAuth `clientId`, the granted `scopes`, `issuedAtUnixSeconds`, `expiresAtUnixSeconds`, and the `resource` URL from the token audience. A provider accepts only human user tokens. The client ID identifies the client application; it is never a user or tenant ID. Throw `InvalidAccessTokenError` to reject a token. The adapter turns that error into a generic `401 invalid_token` response. It gives the same response for an identity without a user, issuer, client ID, issue time, expiration, or audience, and for an identity whose user subject is the client ID. Any other verification error is unexpected. It receives a generic `500 server_error` response, and MCPServer reports it to `reportFailure`. The adapter puts frozen copies of the verified claims in `AuthInfo.extra`: `user`, `issuer`, `clientId`, `scopes`, `issuedAt`, `expiresAt`, and `audience`.
 
@@ -122,7 +122,7 @@ MCPServer verifies each token once. Then it gives only the verified user to `acc
 
 `reportFailure(report)` lets the operator see an unexpected failure, such as a provider outage. MCPServer calls it one time for each request that fails unexpectedly, before the client gets the generic `500 server_error`. The client response does not change. The [`FailureReport`](src/mcp/mcp-server.ts) has the failed `step`, `token-verification` or `access-resolution`, and the original error as its `cause`. Expected results give no report: a missing or malformed Authorization header, a rejected token, a missing scope, and an access denial. A report contains no request data, so it holds no raw token, cookie, password, or other credential from the request. The verifier receives the raw token, so its errors must not contain the token. The callback must not throw. The composition decides where the reports go; MCPServer adds no logging framework or telemetry.
 
-The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The MCP unit tests use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts), [`AccessResolverMock`](test/unit/mcp/fixtures/access-resolver-mock.ts), [`FailureReporterMock`](test/unit/mcp/fixtures/failure-reporter-mock.ts), and test-only factory tools with the real SDK middleware. The [integration tests](test/integration/auth/mcp-context.test.ts) add the real access contracts. The [access acceptance tests](test/acceptance/auth/mcp-access.test.ts) and the [failure report acceptance tests](test/acceptance/auth/mcp-failure-reports.test.ts) use a real MCP client. The [test inventory](docs/testing/test-list.md) lists the cases. In the self-hosted edition, [`BetterAuthProvider`](src/auth-better-auth/better-auth-provider.ts) is the verifier and the access resolver, and Better Auth serves the metadata documents; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives the details. The hosted identity provider remains planned. The [WorkOS interface proofs](test/interface/auth/workos.test.ts) check the pinned WorkOS SDK offline; the [authentication plan](docs/design/authentication-design.md#pinned-workos-sdk-proof) records them and the live provider proofs that remain. The [Better Auth interface proofs](test/interface/auth/better-auth.test.ts) check the pinned local provider packages; the [authentication plan](docs/design/authentication-design.md#pinned-provider-proof) records the proven contracts and the resolved provider blockers.
+The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The MCP request tests use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts), [`AccessResolverMock`](test/unit/mcp/fixtures/access-resolver-mock.ts), [`FailureReporterMock`](test/unit/mcp/fixtures/failure-reporter-mock.ts), and test-only factory tools with the real SDK middleware. The [authentication integration tests](test/integration/mcp/auth.test.ts) execute the canonical auth rejection class. The [access-context integration tests](test/integration/auth/mcp-context.test.ts) add real context creation and permission checks. Request-context binding remains unit coverage with type-only shared records. The [access acceptance tests](test/acceptance/auth/mcp-access.test.ts) and the [failure report acceptance tests](test/acceptance/auth/mcp-failure-reports.test.ts) use a real MCP client. The [test inventory](docs/testing/test-list.md) lists the cases. In the self-hosted edition, [`BetterAuthProvider`](src/auth/local-auth/better-auth/better-auth-provider.ts) is the verifier and the access resolver, and Better Auth serves the metadata documents; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives the details. The hosted identity provider remains planned; until it exists, the [hosted edition](#hosted-edition) answers each MCP request with `503`. The [WorkOS interface proofs](test/interface/auth/workos.test.ts) check the pinned WorkOS SDK offline; the [authentication plan](docs/design/authentication-design.md#pinned-workos-sdk-proof) records them and the live provider proofs that remain. The [Better Auth interface proofs](test/interface/auth/better-auth.test.ts) check the pinned local provider packages; the [authentication plan](docs/design/authentication-design.md#pinned-provider-proof) records the proven contracts and the resolved provider blockers.
 
 ## Deployment configuration
 
@@ -131,42 +131,111 @@ The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client
 - `DEPLOYMENT` alone selects the edition: `self-hosted` or `hosted`. There is no `AUTH_MODE`, no mock mode, and no setting that enables paid features locally. Invalid hosted settings never fall back to the self-hosted edition or to anonymous access.
 - `PUBLIC_BASE_URL` is the canonical public address. It gives the MCP resource URL (`<base>/mcp`) and its protected-resource metadata URL. Forwarded request headers never change it. It has no credentials, query, or fragment. The hosted edition requires `https`. The self-hosted edition requires `https`, but it can use `http` on `localhost`, `127.0.0.1`, or `[::1]` for local development.
 - The self-hosted edition reads `DATA_DIR`, an absolute path.
-- The hosted edition reads `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_REDIRECT_URI` (same origin as `PUBLIC_BASE_URL`), and `WORKOS_COOKIE_PASSWORD` (at least 32 characters). The issuer stays exactly as written, because token issuers are compared as exact strings. Hosted startup rejects stdio.
+- The hosted edition reads no other setting. It reads no `WORKOS_*` setting, so a value of such a setting changes nothing: it turns on no provider and no access, and it appears in no error. The WorkOS provider that replaces the [hosted placeholder](#hosted-edition) will read and check its own settings. Hosted startup rejects stdio.
 - [`loadListenAddress(environment)`](src/config/deployment-config.ts) reads the optional `LISTEN_HOST` and `LISTEN_PORT` for both editions. The defaults are `127.0.0.1` and `8080`. The port is a whole number from 0 to 65535; with 0, the system selects a free port. The listen address never changes the public identity from `PUBLIC_BASE_URL`. Use `LISTEN_HOST=0.0.0.0` in a container.
 
 The server calls both loaders before it opens any resource or listens.
 
 ## Self-hosted server
 
-Start the server from a build. `DATA_DIR` must be an existing directory:
+Start the server from a build, or run it in a container as [container installation](#container-installation) tells. For a build, `DATA_DIR` must be an existing directory:
 
 ```sh
-mkdir -p /tmp/magumagu-data
+mkdir -p /tmp/thermus-data
 pnpm build
-DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magumagu-data pnpm start
+DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/thermus-data pnpm start
 ```
 
-[`src/index.ts`](src/index.ts) starts the server when it gets no arguments. With arguments, it runs one of the offline [local account and client commands](#local-accounts-and-clients). The server loads the settings, calls [`createApplication(config, logger)`](src/application.ts), and serves the application through the Node HTTP bridge, [`startHttpServer()`](src/http/server.ts). It writes `Listening on <address>` to stderr. `SIGINT` or `SIGTERM` stops it: the HTTP server stops, then the application releases its resources, and the process exits with status 0. A second signal ends the process at once. A startup failure writes one `FATAL` line, which names the problem but no secret, and exits with status 1.
+[`src/index.ts`](src/index.ts) starts the server when it gets no arguments. With arguments, it runs one of the offline [local account and client commands](#local-accounts-and-clients). The server loads the settings, calls [`createApplication(config, logger)`](src/application.ts), and serves the application through the Node HTTP bridge, [`startHttpServer()`](src/http/server.ts). It writes `Listening on <address>` to stderr. `SIGINT` or `SIGTERM` stops it: the HTTP server stops, then the application releases its resources, and the process exits with status 0. The server registers the stop handlers before it writes the `Listening on` line. Thus a script can send a signal as soon as the line appears, and the server still stops cleanly. A second signal ends the process at once. A startup failure writes one `FATAL` line, which names the problem but no secret, and exits with status 1.
 
-`createApplication()` makes the one edition branch. The hosted edition is not available yet: startup stops with `HostedEditionUnavailableError` and never falls back to the self-hosted edition. Only the self-hosted branch loads the Better Auth runtime.
+`createApplication()` makes the one edition branch. Only the self-hosted branch loads the Better Auth runtime. The hosted branch starts the [hosted edition](#hosted-edition) placeholder and never falls back to the self-hosted edition.
 
-[`openBetterAuthRuntime(settings)`](src/auth-better-auth/better-auth-runtime.ts) owns the local resources and opens them in this order:
+[`openBetterAuthRuntime(settings)`](src/auth/local-auth/better-auth/better-auth-runtime.ts) owns the local resources and opens them in this order:
 
-1. The exclusive data-directory lock, `DATA_DIR/data-directory.lock`, from [`lockDataDirectory()`](src/auth-better-auth/data-directory-lock.ts). Another server or command that uses the same directory stops with `DataDirectoryInUseError` and changes no data. The lock does not wait for its holder, so that process stops at once. When several processes start at the same time with the same directory, exactly one of them gets the lock. The operating system releases the lock when the process ends, also after a crash.
-2. The installation, from [`openLocalInstallation()`](src/auth-better-auth/local-installation.ts). For fresh data, it writes a generated secret to `auth.secret`. Then, in one transaction, it applies the shipped migrations to `auth.sqlite` and stores one installation UUID in the singleton `magumagu_installation` row. Both files have mode `0600`. The singleton holds only the installation identity; it does not limit the number of accounts.
+1. The exclusive data-directory lock, `DATA_DIR/data-directory.lock`, from [`lockDataDirectory()`](src/auth/local-auth/better-auth/data-directory-lock.ts). Another server or command that uses the same directory stops with `DataDirectoryInUseError` and changes no data. The lock does not wait for its holder, so that process stops at once. When several processes start at the same time with the same directory, exactly one of them gets the lock. The operating system releases the lock when the process ends, also after a crash.
+2. The installation, from [`openLocalInstallation()`](src/auth/local-auth/better-auth/local-installation.ts). For fresh data, it writes a generated secret to `auth.secret`. Then, in one transaction, it applies the shipped migrations to `auth.sqlite` and stores one installation UUID in the singleton `thermus_installation` row. Both files have mode `0600`. The singleton holds only the installation identity; it does not limit the number of accounts.
 3. Better Auth with the [proven provider settings](docs/design/authentication-design.md#pinned-provider-proof). `clientReference` returns the installation ID, so the installation owns each registered client. Startup waits for the provider's schema check and stops if the schema does not match. The settings keep the origin and CSRF checks on, also with `NODE_ENV=test` or with `TEST` set. Better Auth reads `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, and `BETTER_AUTH_TELEMETRY` from the process environment, also when a setting disagrees. No setting stops that without another effect: the `secrets` setting stops `BETTER_AUTH_SECRETS`, but it changes the encryption format of the stored keys. Thus, when one of these variables has a value, startup stops with `ProviderEnvironmentError`, which names the variable but not its value. The provider secret is always `auth.secret`. The [provider environment variables](docs/design/authentication-design.md#provider-environment-variables) give the reasons.
 
 The runtime reports the tenant `local:<installation-id>`, and the server logs it at startup. If a startup step fails, the runtime releases the resources that it already holds, in reverse order. `close()` closes the database and then releases the lock.
 
 Retained data keeps its identity. Startup stops with `LocalInstallationError` when a database with schema objects has no valid installation identity, when `auth.secret` is missing or not valid, or when the database has another schema version. The server never creates a new identity for retained data. To recover, restore the complete data directory from a backup, or move the data away to start a new installation. Fresh data always gets a new tenant.
 
-The server starts with zero accounts or with only disabled accounts, and protected access stays denied. To recover, stop the server and add an account with `users add`. The application routes each request by its path. The MCP endpoint, `<base>/mcp`, goes to MCPServer, which uses [`BetterAuthProvider`](src/auth-better-auth/better-auth-provider.ts) to verify each token and to check the current account. The discovery documents, `<base>/api/auth/oauth2/authorize`, and `<base>/api/auth/oauth2/token` go to Better Auth. The bundled pages, `<base>/sign-in`, `<base>/consent`, and `<base>/authorization-error`, go to [`LocalAuthPages`](src/auth-better-auth/local-auth-pages.ts). Other paths give `404`, also the provider's sign-up, sign-in, session, introspection, and client routes, so there is no public sign-up or account-create route. The application gives MCPServer [`operatorFailureReporter(logger)`](src/application.ts) as `reportFailure`: it writes each failure report as one `ERROR` line with the failed step and the cause. A missing or rejected token gives no report. Without a resource-server client for the MCP resource of `PUBLIC_BASE_URL`, the MCP endpoint cannot check a token: a request with a valid token gets a generic `500`, and its `ERROR` line tells the operator to run `clients register`. The [sign-in and MCP client guide](#sign-in-and-mcp-clients) describes the flow.
+The server starts with zero accounts or with only disabled accounts, and protected access stays denied. To recover, stop the server and add an account with `users add`. The application routes each request by its path. The MCP endpoint, `<base>/mcp`, goes to MCPServer, which uses [`BetterAuthProvider`](src/auth/local-auth/better-auth/better-auth-provider.ts) to verify each token and to check the current account. The discovery documents, `<base>/api/auth/oauth2/authorize`, and `<base>/api/auth/oauth2/token` go to Better Auth. The bundled pages, `<base>/sign-in`, `<base>/consent`, and `<base>/authorization-error`, go to [`LocalAuthPages`](src/auth/local-auth/better-auth/local-auth-pages.ts). Other paths give `404`, also the provider's sign-up, sign-in, session, introspection, and client routes, so there is no public sign-up or account-create route. The application gives MCPServer [`operatorFailureReporter(logger)`](src/application.ts) as `reportFailure`: it writes each failure report as one `ERROR` line with the failed step and the cause. A missing or rejected token gives no report. Without a resource-server client for the MCP resource of `PUBLIC_BASE_URL`, the MCP endpoint cannot check a token: a request with a valid token gets a generic `500`, and its `ERROR` line tells the operator to run `clients register`. The [sign-in and MCP client guide](#sign-in-and-mcp-clients) describes the flow.
 
-The HTTP bridge builds each request URL from the origin of `PUBLIC_BASE_URL` and the request target, so the `Host` header and forwarded headers cannot change it. It refuses a target that is not in origin form (`/path?query`) with `400`, and `TRACE` with `501`. It removes every client copy of `x-magumagu-client-address` and sets that header to the socket address, for the provider's rate limits. It streams request and response bodies and keeps each `Set-Cookie` header separate. When a client disconnects, it aborts the request signal and cancels the response body. A handler failure gives a generic `500` and a log line without request data. When the server stops, the bridge refuses new connections, lets running responses finish, and ends the remaining connections after five seconds.
+The HTTP bridge builds each request URL from the origin of `PUBLIC_BASE_URL` and the request target, so the `Host` header and forwarded headers cannot change it. It refuses a target that is not in origin form (`/path?query`) with `400`, and `TRACE` with `501`. It removes every client copy of `x-thermus-client-address` and sets that header to the socket address, for the provider's rate limits. It streams request and response bodies and keeps each `Set-Cookie` header separate. When a client disconnects, it aborts the request signal and cancels the response body. A handler failure gives a generic `500` and a log line without request data. When the server stops, the bridge refuses new connections, lets running responses finish, and ends the remaining connections after five seconds.
 
 To make a backup, stop the server and copy the complete data directory. To restore, copy all of its files together into an empty directory, and start the server with that `DATA_DIR`. The installation ID, the tenant, the user IDs, the browser sessions, the registered clients, the consents, the signing keys, and the resource-server client in `resource-server-client.json` stay the same. Filesystem access to the data directory is administration authority for the installation; it gives no application role.
 
 [`migrations/auth-local/`](migrations/auth-local/) holds the shipped SQL. `0001-better-auth.sql` is the output of Better Auth `compileMigrations()` for the pinned packages and the provider settings on an empty database. `0002-installation.sql` adds the singleton installation table. The server never downloads a migration tool. A unit test fails if the shipped SQL is different from the output of the pinned provider; after a change to the provider packages or settings, generate the file again.
+
+## Container installation
+
+The container image is the self-hosted evaluation edition. It holds the server and the offline commands of the same program, the shipped migrations, the bundled sign-in and consent pages, and the pinned production packages. The server and the commands need no outbound connection: a start downloads nothing, and telemetry is off. The image has no Lightpanda renderer, because no production tool fetches pages yet.
+
+You need Docker Engine with Buildx and Compose. The image build downloads the pinned base images and packages, so the build needs network access. Run the commands from the repository root:
+
+```sh
+docker compose build
+docker compose up -d
+docker compose logs thermus
+```
+
+The log shows the tenant of the installation and `Listening on http://0.0.0.0:8080`. A fresh installation has no account and no client. Add them as **Accounts and clients** below tells. Then a user can connect a supported MCP client to `http://localhost:8080/mcp`; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives its settings. `docker compose stop thermus` stops the server, and `docker compose start thermus` starts it again.
+
+**Settings.** [`compose.yaml`](compose.yaml) has one service, `thermus`, with an init process. The [`Dockerfile`](Dockerfile) sets `DEPLOYMENT=self-hosted`, `DATA_DIR=/var/lib/thermus`, `LISTEN_HOST=0.0.0.0`, `LISTEN_PORT=8080`, and `NODE_ENV=production`, and the image runs as the `node` user. The service sets `PUBLIC_BASE_URL`, by default `http://localhost:8080`, and publishes port 8080 on `127.0.0.1` only. With `http` on `localhost`, the port of `PUBLIC_BASE_URL` is the published port. Another address must use `https`: put a TLS reverse proxy in front of the published port, and set `PUBLIC_BASE_URL` to the address of the proxy, in the shell or in a `.env` file next to `compose.yaml`. A registered client belongs to the MCP resource of one `PUBLIC_BASE_URL`, so after a change, register the clients again. A published port and a reverse proxy give the server the same client address for all users. Thus the sign-in limit of three attempts in ten seconds for each client address applies to all users together. The image sets no telemetry setting. Do not set `BETTER_AUTH_TELEMETRY` or the other [refused Better Auth variables](#self-hosted-server): startup stops.
+
+**Data volume.** The named volume `thermus_thermus-data` is mounted at `DATA_DIR`. It holds all data of the installation: `auth.sqlite` with the accounts, sessions, clients, consents, signing keys, and installation identity; `auth.secret`; `resource-server-client.json`; and `data-directory.lock`. The image keeps no data. Only the `node` user of the image can open the directory (mode `0700`). `auth.sqlite`, `auth.secret`, and `resource-server-client.json` have mode `0600`. Access to the volume is administration authority for the installation; it gives no application role.
+
+**Accounts and clients.** The commands of [local accounts and clients](#local-accounts-and-clients) run in a one-off container of the same image with the same volume. Stop the server first, and start it again after the commands:
+
+```sh
+docker compose stop thermus
+docker compose run --rm thermus users add alice@example.com
+docker compose run --rm thermus users add bob@example.com
+docker compose run --rm thermus users list
+docker compose run --rm thermus clients register --user alice@example.com --name "Native MCP client" --redirect-uri http://127.0.0.1:33418/callback
+docker compose start thermus
+```
+
+In a terminal, `docker compose run` gives the command a terminal, so the password prompts do not show the typed characters. A script can add `-T` and write one line for each prompt to standard input:
+
+```sh
+printf '%s\n%s\n' "$NEW_PASSWORD" "$NEW_PASSWORD" | docker compose run --rm -T thermus users add carol@example.com
+```
+
+While the server runs, each command stops with the lock error and changes nothing. A command in the server container, such as `docker compose exec thermus node /app/dist/src/index.js users list`, is another process on the same volume, so the lock stops it too.
+
+**Restart and update.** A restart (`docker compose restart thermus`), a new container (`docker compose up -d --force-recreate`), and a new image (`docker compose build`, then `docker compose up -d`) keep the volume. The installation ID, the tenant, the user IDs, the sessions, the clients, the consents, the signing keys, and the access tokens stay usable. An image with another schema version of the database stops at startup and changes no data, because this version has no data migration.
+
+**Backup and restore.** Stop the server, and copy the complete volume to a tar archive with the `tar` program of the image:
+
+```sh
+docker compose stop thermus
+docker compose run --rm -T --entrypoint tar thermus -cf - -C /var/lib/thermus . > thermus-backup.tar
+docker compose start thermus
+```
+
+The archive holds the provider secret and the signing keys. Keep it as safe as the volume. To restore, put all files of one archive into an empty volume, and then start the server:
+
+```sh
+docker compose down
+docker volume rm thermus_thermus-data
+docker compose run --rm -T --entrypoint tar thermus -xf - -C /var/lib/thermus < thermus-backup.tar
+docker compose up -d
+```
+
+The restored installation keeps its tenant, the user IDs, the sessions, the clients, the consents, and the signing keys. The database and `auth.secret` must come from the same archive. Retained data without its installation identity, or without `auth.secret`, stops each start with a `FATAL` line that asks for a restore. The server never makes a new identity for retained data. Docker starts the service again and again, and `docker compose logs thermus` shows the line. Stop the service with `docker compose stop thermus`, and restore the complete archive.
+
+**Recovery.**
+
+- No account, or only disabled accounts: stop the server, add an account with `docker compose run --rm thermus users add <email>`, and start the server. The tenant and the other accounts stay. The installation owns each approved client, so the new account can use the registered clients.
+- A forgotten password: stop the server and run `users reset-password` in the same way.
+- A lock error: stop the server container, then run the command again.
+- A new installation: `docker compose down --volumes` deletes the volume with all accounts and data. The next start makes a new installation with a new tenant.
+
+**Edition limits.** All enabled local accounts are equal users of one shared workspace, with the same evaluation permissions. There is no local administrator role. The image has no organizations, invitations, seats, billing, payment collection, or hosted sign-in, and their paths give `404`. With `DEPLOYMENT=hosted`, the container starts the [hosted edition](#hosted-edition) placeholder: each request gets the authentication-unavailable answer, and the container writes nothing to the volume. A change of `DEPLOYMENT` or of another setting is a configuration change: it does not move accounts or data to the other edition. Migration between editions is separate future work.
+
+**Verification.** `npm run test:container` builds this image and runs the [container gate](docs/implementation/test-gate-policy.md#container-gate) without outbound access.
 
 ## Local accounts and clients
 
@@ -175,7 +244,7 @@ The self-hosted edition has no public sign-up, invitation, email recovery, or ad
 Stop the server before you run a command. Give the command the same settings as the server: `DEPLOYMENT=self-hosted`, `PUBLIC_BASE_URL`, and `DATA_DIR`. A registered client is linked to the MCP resource of `PUBLIC_BASE_URL`, so a different value gives a client that the server does not serve. Then start the server again.
 
 ```sh
-export DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magumagu-data
+export DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/thermus-data
 node dist/src/index.js users add alice@example.com
 node dist/src/index.js users list
 node dist/src/index.js users reset-password alice@example.com
@@ -197,19 +266,21 @@ node dist/src/index.js clients register --user alice@example.com --name "Native 
 
 **Exit status.** `0` means that the command completed. `1` means that the command failed; the message gives the reason, such as a duplicate email, an unknown or disabled account, a wrong password, a password outside the length rule, or a lock error. `2` means a usage error.
 
-**Revocation.** `users reset-password` and `users disable` delete only the sessions of the selected account. Each MCP access token carries the browser session ID in its `sid` claim, so the tokens of that account become inactive at introspection, and its pending authorization codes fail at the token endpoint. The other accounts keep their sessions and tokens. The local edition issues no refresh tokens, so no refresh grant stays. [`LocalUserAdministration`](src/auth-better-auth/local-user-administration.ts) uses only supported Better Auth operations: `createUser`, which hashes the password; the provider hash, password update, ban, user list, and session deletion of the provider data API; and `signInEmail` with `adminCreateOAuthClient` for client registration. No command edits provider tables with SQL. [`runLocalAuthCommand()`](src/auth-better-auth/local-auth-command.ts) parses the arguments with [`parseLocalAuthCommand()`](src/auth-better-auth/local-auth-command-line.ts) and holds the runtime, with its lock, for the whole command.
+**Revocation.** `users reset-password` and `users disable` delete only the sessions of the selected account. Each MCP access token carries the browser session ID in its `sid` claim, so the tokens of that account become inactive at introspection, and its pending authorization codes fail at the token endpoint. The other accounts keep their sessions and tokens. The local edition issues no refresh tokens, so no refresh grant stays. The [Better Auth administrator](src/auth/local-auth/better-auth/better-auth-user-administration.ts) uses only supported Better Auth operations: `createUser`, which hashes the password; the provider hash, password update, ban, user list, and session deletion of the provider data API; and `signInEmail` with `adminCreateOAuthClient` for client registration. No command edits provider tables with SQL.
+
+[`runLocalAuthCommand()`](src/auth/local-auth/local-auth-command.ts) parses the arguments with [`parseLocalAuthCommand()`](src/auth/local-auth/local-auth-command-line.ts) and uses the five-operation [`LocalUserAdministration` role](src/auth/local-auth/local-user-administration.ts). The entry point supplies a lazy administration opener. It loads the provider only after syntax, configuration, and edition checks. The command holds the data-directory lock through password input and output, then closes the opened resources.
 
 **Client registration.** The command registers a public native client: `token_endpoint_auth_method: none`, the `authorization_code` grant only, and PKCE. Each `--redirect-uri` must be an `http` URI on `localhost`, `127.0.0.1`, or `[::1]`, without user information or a fragment. The provider then accepts only these redirect URIs; for a loopback URI it also accepts another port, as RFC 8252 requires. The command signs in the selected enabled account with its password, registers the client with that session, and then deletes that session. The other sessions of the account stay. The installation, not the account, owns the client. Give the printed client ID to the MCP client as its pre-registered client ID. The tested client is the MCP TypeScript SDK 2.3.1 client. Dynamic client registration stays off.
 
 **Resource-server client.** The MCP server checks each access token at the provider's introspection endpoint as a confidential client. The provider registers a client only for a signed-in session, so the first `clients register` also registers this resource-server client in the same session and writes its ID and secret to `DATA_DIR/resource-server-client.json` with mode `0600`. Then the command prints one more line. A later registration uses the stored client. After a change of `PUBLIC_BASE_URL`, the stored client belongs to the old MCP resource, so the next registration registers a new one. No output contains the secret. If the file is damaged, startup and `clients register` stop with `LocalInstallationError`: restore the complete data directory, or remove the file and run `clients register` again.
 
-**Lock errors.** The server and each command hold the same exclusive data-directory lock. A command on a data directory that another Magumagu process uses stops with exit status 1, asks for no password, and changes no data:
+**Lock errors.** The server and each command hold the same exclusive data-directory lock. A command on a data directory that another Thermus process uses stops with exit status 1, asks for no password, and changes no data:
 
 ```
-The data directory is in use by another Magumagu process. Stop that process, then try again.
+The data directory is in use by another Thermus process. Stop that process, then try again.
 ```
 
-A command that you run inside a live server container is also another process on the same files, so the lock stops it too. A command holds the lock until it ends, also while it waits for a password; a server start on the same directory then stops with the same error. For a container installation, stop the server container, run the command in a one-off container from the same image with the same volume, and start the server container again.
+A command that you run inside a live server container is also another process on the same files, so the lock stops it too. A command holds the lock until it ends, also while it waits for a password; a server start on the same directory then stops with the same error. For a container installation, stop the server container, run the command in a one-off container from the same image with the same volume, and start the server container again. The [container installation](#container-installation) section gives the commands.
 
 **Recovery.**
 
@@ -240,6 +311,59 @@ The SDK reads the protected-resource and authorization-server metadata, uses PKC
 
 The consent page verifies the signed authorization query before it displays the client name and current account. Client and session lookups stay inside the server. Form bodies and authorization queries are limited to 16 KiB; ambiguous required form fields are refused. Internal token introspection has no shared request quota, so normal MCP traffic does not exhaust the sign-in rate limit or bypass revocation checks.
 
+## Hosted edition
+
+The hosted edition has no authentication provider yet: the WorkOS AuthKit and Connect integration (AUTH-06) is deferred. Until it is ready, `DEPLOYMENT=hosted` starts a small shell with a replaceable placeholder. The shell needs no WorkOS account, credential, SDK, or network access:
+
+```sh
+pnpm build
+DEPLOYMENT=hosted PUBLIC_BASE_URL=https://thermus.example pnpm start
+```
+
+- Startup checks `PUBLIC_BASE_URL`, which must be an `https` URL, and the listen settings, and it rejects stdio. It reads no `WORKOS_*` setting, opens no data directory, calls no service, and asks for no credential. The log says that hosted authentication is not available yet. `SIGINT` or `SIGTERM` stops the server with status 0.
+- Each browser path under `PUBLIC_BASE_URL` gives `503` with the authentication-unavailable notice, for example the root, account, sign-in, onboarding, organization, organization selection, member, invitation, and billing paths, also a grant or invitation change. The notice is a small HTML page with no form, script, or cookie.
+- The MCP resource, `<base>/mcp`, and its protected-resource metadata give `503` with the OAuth error `temporarily_unavailable` and no Bearer challenge, also for a request without a credential.
+- No bearer token, cookie, form token, organization ID, or form value gets an identity, a grant, a session cookie, a tenant, or protected work. No test identity, organization, grant, demonstration mode, or setting turns on access, also not `NODE_ENV=test` or `AUTH_MODE=mock`. There is no anonymous access, default tenant, local fallback, or automatic User role. Other paths give `404`.
+
+The shell is the composition that the hosted provider will replace. [`composeHostedApplication()`](src/application.ts) takes the four parts that change with the provider:
+
+- a [`BrowserSession`](src/auth/hosted-auth/browser-session.ts). It gets only the `Cookie` header of a browser request. A signed-in session gives the verified user, with the organization that its session selected, the form token of the session, its MFA evidence, its cookie effects, and `selectOrganization(organizationId)`. Thus no form field, query, or other header can choose the user or the organization. The MFA evidence, `mfaCompleted`, is true only when the provider proved that the sign-in of the session completed a multi-factor challenge; an enrollment alone is no proof. The form token is a secret of the session, and each form of the account pages sends it back. It stays the same for the whole session, also after a refresh or an organization switch, so that a form shown before still posts. The cookie effects are `Set-Cookie` values that must reach the browser with the answer, also with a redirect or an error page, so that the browser does not lose a session that the provider refreshed or ended during the request. A signed-out session also has cookie effects. Only `selectOrganization()` changes the organization of a session, and only for that browser. A failure, such as an outage, throws, so that it cannot erase a session;
+- an [`AccessResolver`](src/auth/access-context.ts);
+- an [`OrganizationDirectory`](src/organizations/organization-directory.ts). `membershipsOf(user)` reads the current memberships of that user from the provider: the organization ID and name, the active state, and every current grant. A grant holds only application permissions, so that a default role, which gives none, authorizes nothing. The other methods read the members and invitations of an organization page by page, change one grant, and send, resend, or revoke an invitation; the provider owns the acceptance of an invitation. Each page read names its statuses or states, so that no default filter of the provider decides. A failed read or change throws, so that it never looks like a missing record or a result; after a failed change, its effect is not known;
+- the MCP endpoint, which answers the MCP resource and its metadata. The application closes it.
+
+The third argument gives `reportFailure`, which gets each unexpected failure of an account request, `changeRecords`, which gets each record of a privileged change, and an optional account operation. The hosted edition gives [`accountFailureReporter(logger)`](src/application.ts), which writes one `ERROR` line with the path and the cause: `An account request failed unexpectedly for <path>: <cause>`. It also gives [`accountChangeRecorder(logger)`](src/application.ts), which writes each change record to the operator log as one `INFO` line, `Account change record: <JSON>`, until hosted storage exists.
+
+[`HostedAccountRoutes`](src/hosted-admin/account-routes.ts) checks the browser session first for each path. An unavailable session gets `503` with the notice and no cookie, and a signed-out session gets `401` with its cookie effects. For a signed-in session, the organization page and the organization selection below need only the identity. Each other path needs the current access: the routes resolve it and require a trusted tenant. Only then do they give the member and invitation paths below to the administration routes, and each other path, with a frozen copy of its trusted `RequestContext`, to an account operation. A denial gets `403`, with a link to the organization page: "To select another organization, or to see how to get access, open the organization page." A request with no route or operation gets `404`. The hosted edition gives no account operation, so the member and invitation pages and their changes are the only tenant routes now.
+
+Organization onboarding and selection (AUTH-07) use [`OrganizationAdministration`](src/organizations/organization-administration.ts). It reads the current memberships of the session user for each request and authorizes only the active memberships whose grants give at least one application permission. A default role gives none, so its organization is not listed. There is no default organization. The organization page accepts only `GET` and `HEAD`, and the selection accepts only `POST`; other methods get `405`.
+
+- `GET <base>/organizations` lists the authorized organizations. Each one has a form with a button that shows its name, with "(selected)" for the organization that the session selected. The form posts the organization ID, the form token, and the return destination. The optional `return_to` query gives the return destination, with the rules of the selection below; the default is `<base>/organizations`, and an invalid value gets `400`. Without an authorized organization, the page tells the user that the account has no active access to an organization: accept the invitation in the email, or, with no invitation, contact the operator of the service, because only the operator can set up a new organization. This page has no form.
+- `POST <base>/organizations/select` changes the organization of this browser session only. An MCP token and the other browser sessions of the user keep their organization. A post from another origin, or without an `Origin` header, gets `403` before its body is read. A content type other than `application/x-www-form-urlencoded` gets `415`, a body larger than 16 KiB gets `413`, and a missing or wrong form token gets `403`. The form must have exactly one `organization_id`, with 1 to 256 visible ASCII characters, exactly one `return_to`, and no other field. The return destination must be a path under the public path, with at most 1,024 characters and no query, fragment, backslash, space, control character, dot segment, or second slash at the start. Else the post gets `400`. Then a current read must authorize the organization for the session user, else the post gets `403` and no switch. After the switch, the browser gets `303` to the destination, where the operation checks its own permission. If the provider refuses the switch, the browser gets `403`; if the session ended, `401`.
+- Each answer after a sign-in carries the cookie effects of the session before the cookies of the answer itself. This includes an operation answer, a redirect, a refusal page, and a failure page. A failure after a sign-in, such as a provider outage or an operation answer that cannot carry the cookie effects, gives a `500` page, "The request failed. Try again later.", and one `ERROR` line in the operator log. A failed session lookup gives the generic `500` of the HTTP server without a cookie. Thus an outage never looks like a signed-out session and never ends a session.
+- No route creates, resumes, renames, or changes the settings of an organization. The operator sets up each organization outside this service. The self-hosted edition has no organization route.
+
+Grant management, invitations, and the User seat summary (AUTH-08) also use `OrganizationAdministration`. After the session check and the current access resolution, the member and invitation paths go to [`AdministrationRoutes`](src/hosted-admin/administration-routes.ts). The actor is the user of the decided context, with the MFA evidence of the session, and the organization is the organization of the decided context. No query, header, or form value can change them. Each page and each change needs a sign-in that completed MFA, else it gets `403`: "Administration needs a sign-in that completed multi-factor authentication." Then a current read of the memberships of the actor must find its active membership in that organization with the permission `user-grants:manage` (Admin), which manages User, or `admin-grants:manage` (Super Admin), which manages Admin. Else a page gets the `403` access denial, and a change gets `403`. No customer role manages Super Admin, and Admin and Super Admin give no User access. Thus a Super Admin alone can grant Admin to itself and then, with that Admin authority, User to itself, without another person. An Admin alone cannot grant Admin.
+
+- `GET <base>/members` shows "Active User seats: N" and each member with its status and roles. Each active member has a button for each change that the actor can make, for example "Grant User to <email>" or "Revoke Admin from <email>". The count includes each active membership with User one time, also with Admin or Super Admin. Members with only Admin, only Super Admin, or only the default role, pending and inactive members, and invitations do not count. The service reads each page of the provider; a failed page gives the failure page, never a partial count. The count shows the current members; it is not a bill.
+- `GET <base>/invitations` shows each invitation with its role and with its state as the provider gives it: pending, accepted, revoked, or expired. Each role that the actor manages has an invitation form ("Invite as User" or "Invite as Admin"), and each pending invitation of such a role has a resend and a revoke button. An invitation gives only the role that it names, so an Admin invitation gives no User access. The page says "Only a sign-in with the invited email address can accept the invitation." only when the provider enforces it. Else it says that the sign-in service decides and can accept another address, for example an address of the same domain.
+- `POST <base>/members/grants`, `<base>/invitations/send`, `<base>/invitations/resend`, and `<base>/invitations/revoke` have the checks of the organization selection for the origin, the content type, the size, the form token, and the fields. An email address must have at most 254 characters, one `@` between two parts that are not empty, and no space or control character, and each other value must have 1 to 256 visible ASCII characters. Else the post gets `400`. A post for another organization than the one of the session gets `409`. A grant post names the membership and the revision that the page showed. If the membership changed after that, the post gets `409`. The provider changes only the one role, and only on that revision. A change of a role that the actor does not manage, also of Super Admin, and an action other than a grant or a revoke, such as an account disable, a membership deactivation, or a credential reset, get `403`. While an invitation to the same address, in any letter case, for the same role is pending, a new invitation sends nothing. A resend or revoke of an invitation that is no longer pending gets `409`. When the provider cannot make a change safely, the post gets `503`, and nothing changes. A change that is done or not necessary gets `303` to the page.
+- The removal of the last application grant keeps the membership with the default role, which gives no permission, and keeps the identity and the other memberships. The next request in that organization is refused, and the other organizations still work.
+- Each grant change, invitation, resend, and revoke request, also a refused one, gives one change record: the time, the actor, the organization, the target, the action, the role, and the outcome. A record holds no credential. A page gives no record.
+
+The placeholder module, [`src/auth/hosted-auth/unavailable-hosted-authentication.ts`](src/auth/hosted-auth/unavailable-hosted-authentication.ts), gives the session, access, and organization parts. `UnavailableHostedAuthentication` says that each browser session is unavailable, denies each access request, and gives no membership for any user. It gives an empty page for each member and invitation read, no member or invitation for any ID, and `unsupported` for each change. Its invitation policy is `provider-rules`, so it claims no strict address match. [`UnavailableMcpEndpoint`](src/mcp/unavailable-mcp-endpoint.ts) gives the MCP answer above from its separate transport module. Thus the organization, member, and invitation routes are also unavailable in production.
+
+Deferred work:
+
+- AUTH-06 replaces the placeholder with the WorkOS provider. That provider implements `BrowserSession` and `AccessResolver`, and `IdentityVerifier` for an `MCPServer` that becomes the MCP endpoint. Its `WorkOSBrowserSession` gives the cookie effects, the form token, and the MFA evidence of the session, does `selectOrganization()` as a session refresh with the organization, and adds sign-in, callback, and logout. Its form token must stay the same for the whole session, so it cannot come from the access token or the sealed cookie value. The provider reads and checks its own settings. It must pass the [hosted live gate](docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06) before hosted access is enabled.
+- AUTH-07W, which is deferred with WorkOS, implements `WorkOSOrganizations`, the `OrganizationDirectory` reads from WorkOS, and the runbook for operator setup and recovery. It must map each provider role to application permissions; a permission that only the provider knows is not an application permission.
+- AUTH-08W, which is deferred with WorkOS, implements the member, grant, and invitation methods of `OrganizationDirectory` in `WorkOSOrganizations`, with live seat reads. It proves the safe grant and invitation effects in the provider: a change only on the revision that the page showed, retries, concurrent changes, the default role, and an acceptance that activates only the role of the invitation. It must answer `unsupported` when it cannot make a change safely.
+- Change records stay in the operator log. Hosted storage, full audit logs, step-up authentication, SSO, SCIM, Okta, and a customer lifecycle of Super Admin are later work.
+- Organization rename and other organization settings wait until the product owner decides their authority.
+- AUTH-11 adds paid billing. An account operation gets no MFA evidence yet, so a billing change operation must add it before it can require MFA.
+
+The acceptance tests of the [placeholder](test/acceptance/auth/hosted-placeholder.test.ts), of [organization onboarding and selection](test/acceptance/auth/hosted-organizations.test.ts), of the [organization requests](test/acceptance/auth/hosted-organization-requests.test.ts), of [grant management](test/acceptance/auth/hosted-grants.test.ts) and its [refusals](test/acceptance/auth/hosted-grant-refusals.test.ts), of [invitations](test/acceptance/auth/hosted-invitations.test.ts), and of the [User seat summary](test/acceptance/auth/hosted-seats.test.ts), the integration tests of the [account routes](test/integration/auth/hosted-account.test.ts), of the [organization routes](test/integration/auth/hosted-organizations.test.ts), and of [organization administration](test/integration/auth/hosted-administration.test.ts) with session and directory doubles, and the unit tests of the [account routes](test/unit/hosted-admin/account-routes.test.ts), their [failure answers and cookie effects](test/unit/hosted-admin/account-routes-effects.test.ts), the [organization page](test/unit/hosted-admin/account-routes-organization-page.test.ts), the [selection input checks](test/unit/hosted-admin/account-routes-selection-input.test.ts), the [organization selection](test/unit/hosted-admin/account-routes-selection.test.ts), the [member and invitation pages](test/unit/hosted-admin/account-routes-administration-pages.test.ts), their [changes](test/unit/hosted-admin/account-routes-administration-changes.test.ts) and [change input checks](test/unit/hosted-admin/account-routes-administration-input.test.ts), [`OrganizationAdministration`](test/unit/organizations/organization-administration.test.ts) with its [grant authority](test/unit/organizations/organization-administration-grants.test.ts), [grant targets](test/unit/organizations/organization-administration-targets.test.ts), [safe grant changes](test/unit/organizations/organization-administration-changes.test.ts), [members and seats](test/unit/organizations/organization-administration-members.test.ts), [invitation changes](test/unit/organizations/organization-administration-invitations.test.ts), and [invitation overview](test/unit/organizations/organization-administration-invitation-overview.test.ts), the [operator log lines](test/unit/application-operator-log.test.ts), the [placeholder](test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts), and its [MCP endpoint](test/unit/mcp/unavailable-mcp-endpoint.test.ts) run offline. They prove application policy with doubles only. A pass of these tests is no proof of WorkOS behavior and no hosted live gate pass.
+
 ## Billing
 
 The owner has not chosen a payment provider. Billing is a separate object: hosted code uses the [`Billing`](src/billing/billing.ts) interface, and only a `Billing` implementation calls a payment provider. [`BillingFree`](src/billing/billing-free.ts) is the only implementation. It bills no organization and collects no payment, so billing never changes access.
@@ -249,13 +373,19 @@ The owner has not chosen a payment provider. Billing is a separate object: hoste
 - An empty or missing organization ID gives a `TypeError`. Any other seat count gives a `RangeError`. Each operation refuses input with a rejected promise. A rejected call confirms nothing.
 - Each state is a frozen record. `Billing` does not check roles; the caller checks Super Admin authority before a customer billing change.
 
-Only the hosted edition has billing, and no production code calls `Billing` yet. AUTH-11 adds the provider implementation after the owner's decisions. The [paid billing design](docs/design/billing-design.md) records the decision, the rules, the open paid decisions, and the AUTH-11 specification. The [unit tests](test/unit/billing/billing-free.test.ts) and the [acceptance tests](test/acceptance/billing/free-billing.test.ts) check `BillingFree`.
+Only the hosted edition has billing, and no production code calls `Billing` yet: the [hosted placeholder](#hosted-edition) answers each billing request with the authentication-unavailable notice. AUTH-11 adds the provider implementation after the owner's decisions. The [paid billing design](docs/design/billing-design.md) records the decision, the rules, the open paid decisions, and the AUTH-11 specification. The [unit tests](test/unit/billing/billing-free.test.ts) and the [acceptance tests](test/acceptance/billing/free-billing.test.ts) check `BillingFree`.
 
 ## Contributing and design
 
 Use the [documentation index](docs/README.md) to find current reference guides, pending designs, tests, and completed plans.
 
 Read the [coding principles](docs/coding-principles.md) for general design guidance and [AGENTS.md](AGENTS.md) for repository work rules. The [completed OO refactoring record](docs/archive/oo-refactoring-plan.md) preserves the implementation scope and verification evidence.
+
+## User portal
+
+The TypeScript browser portal is in `src/user-portal/`. It uses the WorkOS
+AuthKit browser SDK and the root pnpm installation. See the [portal guide](docs/user-portal.md)
+for configuration, development, browser builds, and WorkOS verification.
 
 ## Requirements
 
@@ -265,6 +395,7 @@ Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and N
 - pnpm 12.10.1
 - A POSIX shell for build commands (macOS or Linux)
 - Lightpanda 1.0.0 for rendering and live renderer tests; follow [runtime setup](docs/lightpanda-runtime.md). `pnpm install` does not install it. The unit suite needs no renderer.
+- Docker Engine with Buildx and Compose for the [container installation](#container-installation) and `pnpm test:container`. No other suite needs Docker.
 
 ## Scripts
 
@@ -278,8 +409,13 @@ pnpm test:unit        # clean build, then node --test on dist/test/unit/
 pnpm test:integration # clean build, then node --test on dist/test/integration/
 pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
+pnpm test:container   # clean build, then the container gate: the image and its containers without outbound access
 pnpm test:hosted-live # clean build, then the hosted live gate; needs WorkOS staging settings
-pnpm typecheck   # tsc --noEmit
+pnpm typecheck   # server and portal types; no output
+pnpm dev:user-portal     # Vite at http://localhost:5173
+pnpm build:user-portal   # portal types and browser bundle
+pnpm preview:user-portal # preview the browser bundle
+pnpm test:user-portal    # offline portal unit and acceptance tests
 ```
 
 `pnpm start` runs `dist/src/index.js` because `src/` and `test/` share one compilation root. A test import such as `../../src/application.ts` still resolves after emit.
@@ -287,14 +423,22 @@ pnpm typecheck   # tsc --noEmit
 ## Layout
 
 ```
-src/         TypeScript source
+src/         Node server TypeScript source
+src/user-portal/
+             Browser TypeScript, HTML, CSS, and Vite configuration
 test/        node:test files
 migrations/  Shipped SQL migrations, such as auth-local/ for the self-hosted edition
 docs/        Documentation, design plans, and archived records
 dist/        tsc output (gitignored)
+Dockerfile, compose.yaml, .dockerignore
+             The self-hosted evaluation image, its Compose service, and its build context
 ```
 
 ## TypeScript
+
+`tsconfig.user-portal.json` checks browser source and portal tests in strict
+mode with DOM types and Bundler resolution. The server configs exclude these
+files, so browser globals do not enter the Node build.
 
 `tsconfig.json` is ESM with `module` and `moduleResolution` set to `NodeNext`, in strict mode, targeting ES2024. It adds the `ESNext.Disposable` library for `AsyncDisposableStack`, which Node 24 supplies. Relative imports use the `.ts` extension, and `rewriteRelativeImportExtensions` makes `tsc` emit `.js`:
 
@@ -313,11 +457,38 @@ import { createApplication } from './application.ts';
 The unit, integration, and acceptance suites are offline. `pnpm test:hosted-live` runs only `test/acceptance/auth/hosted.live.ts` against a WorkOS staging environment; no other command selects it. Without its settings, it fails with a setup error, which is not a pass. The [test gate policy](docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06) gives the settings. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
 
 `pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
+It also runs portal acceptance tests and builds the portal bundle. Portal tests
+run from TypeScript source on Node 24 because the Node build excludes browser source.
 
-`npm run check` does not run the integration, acceptance, or interface suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+`npm run check` does not run the full integration, acceptance, interface, or container suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+
+`pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
+
+The hosted placeholder, organization, and administration tests are offline, and the unit, integration, and acceptance suites select them. To run only the hosted integration and acceptance files:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/acceptance/auth/hosted-placeholder.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
+```
+
+A pass of these files proves application policy with doubles only. It is not a hosted live gate pass and no proof of WorkOS behavior.
 
 The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. `pnpm test:acceptance` runs them with the other acceptance tests. To run only this file:
 
 ```sh
 npm run build && node --test dist/test/acceptance/small-text-cutoff.test.js
 ```
+
+### Release checks
+
+A release of the self-hosted evaluation image needs these commands on a clean checkout of the release commit: `git status --porcelain` shows nothing, because the image build and the container gate read the working tree. Each command must exit with status 0 and show each required test as passed:
+
+```sh
+npm run check
+habit-hooks
+npm run test:integration
+npm run test:acceptance
+npm run build && node --test dist/test/interface/auth/better-auth.test.js
+npm run test:container
+```
+
+For `habit-hooks`, correct each finding or give the reason that you keep it. Then build the release image with `docker compose build`. The [test gate policy](docs/implementation/test-gate-policy.md#self-hosted-release) gives the release rules. A self-hosted release does not claim payment collection, hosted features, or migration between editions.

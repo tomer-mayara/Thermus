@@ -81,11 +81,14 @@ Each implementation obeys these rules:
    change, the application service checks Super Admin authority and completed
    MFA, and it writes the change record. A seat update follows a membership
    change, so it does not need Super Admin.
-6. **Hosted only.** The hosted composition creates one `Billing`. The
-   self-hosted composition creates none.
+6. **Hosted only.** The hosted composition creates one `Billing` when it serves
+   a billing operation. The self-hosted composition creates none.
 
-No production code calls `Billing` yet, because the hosted composition, the
-membership changes, and the account pages do not exist yet. AUTH-11 connects
+No production code calls `Billing` yet, because the membership changes and the
+account pages do not exist yet. The hosted composition exists only as the
+AUTH-12 [hosted placeholder](authentication-design.md#hosted-placeholder): it
+serves no billing operation, gives each billing request the
+authentication-unavailable answer, and creates no `Billing`. AUTH-11 connects
 each caller that does not use `Billing` at that time.
 
 ## Free billing
@@ -127,10 +130,10 @@ Checked on 2026-10-12. Fees are approximate; check the provider price pages.
 - **WorkOS.** An organization can keep a Stripe customer ID. The WorkOS Stripe
   Seat Sync add-on counts all active members and sends that count to Stripe as
   meter events. It does not exclude Admin-only or Super-Admin-only members, so
-  it does not match the accepted count. With each provider, Magumagu must
+  it does not match the accepted count. With each provider, Thermus must
   calculate the count and send it.
   [WorkOS Stripe add-on](https://workos.com/docs/authkit/add-ons/stripe)
-- **Stripe Billing.** Magumagu is the seller. A subscription item has a seat
+- **Stripe Billing.** Thermus is the seller. A subscription item has a seat
   quantity. A quantity change can put prorations on the next invoice
   (`create_prorations`), invoice them at once (`always_invoice`), or make no
   prorations (`none`). By default, a change applies even when its payment
@@ -141,7 +144,7 @@ Checked on 2026-10-12. Fees are approximate; check the provider price pages.
   can cancel, mark unpaid, leave past due, or pause the subscription. Test
   clocks move a sandbox subscription through time, so automated tests can
   cover renewals, prorations, and retries. Stripe Tax can calculate and collect
-  tax; Magumagu registers and files. Fees: about 2.9% + 0.30 USD for each US
+  tax; Thermus registers and files. Fees: about 2.9% + 0.30 USD for each US
   card payment, 0.7% for Billing, and 0.5% for Tax. A proof must show if a
   quantity of 0 is accepted.
   [Quantities](https://docs.stripe.com/billing/subscriptions/quantities),
@@ -359,8 +362,8 @@ call to each protected request; it is not proposed.
 - (b) Several hosted instances with a managed PostgreSQL database. This needs
   a database service, a client package, and a test database.
 
-If AUTH-07 or AUTH-08 gives change records hosted storage first, billing uses
-the same storage. `BillingFree` needs no storage.
+AUTH-08 keeps its change records in the operator log and adds no hosted
+storage, so AUTH-11 chooses the storage. `BillingFree` needs no storage.
 
 ## Rules for every paid implementation
 
@@ -416,6 +419,12 @@ ticket. Do not create another one.
 - The hosted work of AUTH-06 to AUTH-08 is complete. AUTH-11 uses its hosted
   composition, account pages, change records, and complete count of active
   User seats.
+- The AUTH-12 hosted placeholder does not meet the AUTH-06 condition. AUTH-06
+  must replace the placeholder with the WorkOS provider and pass the
+  [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06).
+  AUTH-07 and AUTH-08 can build their rules on the placeholder boundary with
+  test doubles, but a pass of the offline placeholder tests is not a hosted
+  gate pass.
 
 ### Steps
 

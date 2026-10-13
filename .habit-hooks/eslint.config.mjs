@@ -10,6 +10,35 @@ const sourceFiles = [
   '**/*.cjs',
 ];
 
+const providerPackages = '(?:better-auth|@better-auth/mcp)(?:/|$)';
+const providerPaths = '(?:local-auth/better-auth(?:/|$)|hosted-auth/unavailable-hosted-authentication(?:\\.[jt]s)?$)';
+const sharedImports = [
+  providerPackages,
+  `(?:\\./|(?:\\.\\./)+auth/)${providerPaths}`,
+  '(?:\\.\\./)+(?:mcp/|hosted-admin/|http/(?!client-address(?:\\.[jt]s)?$))',
+  '@modelcontextprotocol/(?:server|client)(?:/|$)',
+];
+const localImports = [
+  providerPackages,
+  `(?:\\.\\./|(?:\\.\\./)+auth/)${providerPaths}`,
+  '\\./better-auth(?:/|$)',
+];
+const consumerImports = [
+  providerPackages,
+  `(?:\\.\\./)+auth/(?:${providerPaths}|local-auth/local-auth-command(?:-line)?(?:\\.[jt]s)?$)`,
+];
+
+function directImportRules(paths, message) {
+  const regex = `^(?:${paths.join('|')})`;
+  return {
+    'no-restricted-imports': ['error', { patterns: [{ regex, message }] }],
+    'no-restricted-syntax': [
+      'error',
+      { selector: `ImportExpression[source.type="Literal"][source.value=/${regex.replaceAll('/', '\\/')}/]`, message },
+    ],
+  };
+}
+
 export default [
   {
     files: sourceFiles,
@@ -49,5 +78,21 @@ export default [
   {
     files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**'],
     rules: { 'max-lines-per-function': 'off' },
+  },
+  {
+    files: ['src/auth/access-context.ts', 'src/auth/identity-verifier.ts'],
+    rules: directImportRules(sharedImports, 'Shared auth uses contracts, not provider or transport implementations.'),
+  },
+  {
+    files: [
+      'src/auth/local-auth/local-user-administration.ts',
+      'src/auth/local-auth/local-auth-command.ts',
+      'src/auth/local-auth/local-auth-command-line.ts',
+    ],
+    rules: directImportRules(localImports, 'Neutral local auth does not import provider implementations.'),
+  },
+  {
+    files: ['src/mcp/**/*.ts', 'src/hosted-admin/**/*.ts'],
+    rules: directImportRules(consumerImports, 'Auth consumers use role contracts. Composition roots select implementations.'),
   },
 ];

@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import { cpSync } from 'node:fs';
 import { describe, test, type TestContext } from 'node:test';
 import { applySetCookies } from 'better-auth/cookies';
-import { createApplication, HostedEditionUnavailableError, type Application } from '../../../src/application.ts';
-import type { BetterAuthRuntime } from '../../../src/auth-better-auth/better-auth-runtime.ts';
-import { DataDirectoryInUseError, lockDataDirectory } from '../../../src/auth-better-auth/data-directory-lock.ts';
-import { LocalInstallationError } from '../../../src/auth-better-auth/local-installation.ts';
+import { createApplication, type Application } from '../../../src/application.ts';
+import type { BetterAuthRuntime } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
+import { DataDirectoryInUseError, lockDataDirectory } from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
+import { LocalInstallationError } from '../../../src/auth/local-auth/better-auth/local-installation.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
+import { hostedStartupLine, unavailableNotice } from '../../support/hosted-placeholder.ts';
 import { accountsOf, addAccount, passwordOf, selfHostedConfig, withRuntime } from '../../support/local-runtime.ts';
 
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;
@@ -166,7 +167,7 @@ describe('Local installation with the real application and provider', () => {
   });
 
   for (const { label, damage, failure } of [
-    { label: 'without its installation identity', damage: 'DELETE FROM "magumagu_installation"', failure: LocalInstallationError },
+    { label: 'without its installation identity', damage: 'DELETE FROM "thermus_installation"', failure: LocalInstallationError },
     { label: 'with a damaged provider schema', damage: 'DROP TABLE "jwks"', failure: /Database schema mismatch[\s\S]*jwks/ },
   ]) {
     test(`Given retained data ${label}, when the application starts, then startup fails closed and releases the data-directory lock`, async (t) => {
@@ -180,17 +181,16 @@ describe('Local installation with the real application and provider', () => {
     });
   }
 
-  test('Given the hosted deployment, when the application starts, then it fails with HostedEditionUnavailableError', async () => {
-    const config = loadDeploymentConfig({
-      DEPLOYMENT: 'hosted',
-      PUBLIC_BASE_URL: 'https://magumagu.example',
-      WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-      WORKOS_CLIENT_ID: 'client_placeholder',
-      WORKOS_API_KEY: 'workos-api-key-placeholder',
-      WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-      WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
-    }, 'http');
+  test('Given the hosted deployment, when the application starts and closes, then it selects the unavailable hosted shell instead of the local runtime: account and MCP requests get 503, and repeated closes give one result', async () => {
+    const logger = new RecordingLogger();
+    const application = await createApplication(loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http'), logger);
 
-    await assert.rejects(createApplication(config, new RecordingLogger()), HostedEditionUnavailableError);
+    const answers = [await application.handle(new Request('https://thermus.example/account')), await application.handle(mcpRequest('forged-token'))];
+    const closes = [application.close(), application.close()];
+
+    assert.deepEqual([answers.map(({ status }) => status), closes[0] === closes[1]], [[503, 503], true]);
+    assert.match(await answers[0]?.text() ?? '', unavailableNotice);
+    await Promise.all(closes);
+    assert.deepEqual(logger.lines, [hostedStartupLine]);
   });
 });

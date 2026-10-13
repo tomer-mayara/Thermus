@@ -1,6 +1,6 @@
 # Test gate policy
 
-This policy gives the test commands and gates for a Magumagu pull request.
+This policy gives the test commands and gates for a Thermus pull request.
 [AGENTS.md](../../AGENTS.md) gives the rules, and this policy gives the details.
 If the two disagree, follow AGENTS.md and correct this policy.
 
@@ -11,19 +11,25 @@ package script. Each command that runs `dist/` output makes a clean build first.
 
 | Suite | Command | Selects | Needs |
 | --- | --- | --- | --- |
-| Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` | Offline. No renderer. |
+| Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. No renderer. |
 | Build | `npm run test:build` | `test/unit/build-output.test.ts`, from source | Offline. It builds temporary projects with the real compiler. |
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
-| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` | Offline. |
+| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` and `test/acceptance/user-portal/**/*.test.ts` | Offline. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0 and public network access. |
-| All | `npm test` | `dist/test/**/*.test.js`: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
+| Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
+| All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
+| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only | A WorkOS staging environment, its settings, and public network access. The [hosted live gate](#hosted-live-gate-auth-06) gives the settings. |
 
-`npm run check` runs `npm run typecheck`, `npm run test:unit`, and
-`npm run test:build`. It does not run the integration, acceptance, or interface
-suites. `npm test` does not run the build test, because `tsconfig.build.json`
+`npm run check` runs `npm run typecheck`, `npm run test:unit`,
+`npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
+It does not run the full integration, acceptance, interface, or container suites. `npm test` does not run the build test, because `tsconfig.build.json`
 excludes it from `dist/`. No suite command except `npm run test:hosted-live`
 runs the hosted live file.
+
+`npm test` and `npm run test:acceptance` also select the container test file.
+Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
+`npm run test:container` sets the setting.
 
 The interface suite needs the pinned Lightpanda executable. It also contains a
 public-site smoke test that needs public network access.
@@ -32,12 +38,33 @@ and separate commands for the local fixture tests and the smoke test.
 
 A change that adds a prerequisite to a suite adds it to this table.
 
+Local-command tests that execute `loadDeploymentConfig()` belong to the
+integration suite, also when they use an administration role double. Config and
+local commands are separate logical packages. See the
+[auth refactoring package map](../archive/auth-refactoring-plan.md#logical-packages-and-dependency-rules).
+`npm run check` does not select these tests; run their focused commands and the
+integration suite as required below.
+
+Provider tests that execute shared context creation or the canonical auth
+rejection class run in `test/integration/auth/`. MCP rejection and access tests
+run in `test/integration/mcp/` for the same reason. The direct auth import guards
+run through the existing ESLint configuration in `habit-hooks`. Their fixture
+specification, `test/acceptance/architecture/auth-boundaries.test.ts`, also needs
+a focused run and the acceptance suite.
+
 ## Focused commands
 
 Run a new or changed test file:
 
 ```sh
 npm run build && node --test dist/test/<suite>/<path>.test.js
+```
+
+Portal tests run directly from source; the separate portal TypeScript config
+checks them. Use this focused command for each changed portal test file:
+
+```sh
+node --test test/<suite>/user-portal/<path>.test.ts
 ```
 
 Run one case in that file. The pattern is a regular expression:
@@ -67,7 +94,9 @@ contains every change of the pull request.
 3. Run each new or changed test with a focused command.
 4. Run the applicable suites:
    - `npm run test:integration` and `npm run test:acceptance` for a change that
-     affects the MCP server, authentication, the access context, or billing.
+     affects the MCP server, authentication, the access context, the hosted
+     placeholder, the hosted account routes, organization administration, or
+     billing.
    - `npm run test:integration` for a change in `test/integration/`.
    - `npm run test:acceptance` for a change in `test/acceptance/`.
    - The interface tests that cover a changed renderer runtime, network policy,
@@ -75,6 +104,18 @@ contains every change of the pull request.
    - The Better Auth interface proofs, `test/interface/auth/better-auth.test.ts`,
      for a change to the Better Auth packages, their settings, or the local
      authentication flow. They run offline with a focused command.
+   - `npm run test:container` for a change to `Dockerfile`, `.dockerignore`,
+     `compose.yaml`, a build input of the image (`package.json`,
+     `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.npmrc`,
+     `.habit-hooks/package.json`, `patches/`, `tsconfig.json`, or
+     `tsconfig.build.json`), `migrations/`, the code of the self-hosted server
+     and its commands (`src/index.ts`, `src/application.ts`, `src/auth/`,
+     `src/config/`,
+     `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
+     `src/organizations/`, or `src/terminal/`), or the container tests and
+     their support files. The image holds all of `dist/src`, so other changes
+     in `src/` change the image too; the [self-hosted release](#self-hosted-release)
+     checks run the container gate for each release.
    - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a
      change to the WorkOS SDK or jose packages or to the hosted authentication
      flow. They run offline with a focused command.
@@ -100,6 +141,124 @@ the reason. Do not record that run as a pass.
   test. Node exits with status 0 for both.
 - A name pattern that matches no test does not give evidence of a pass. Node
   then reports the file as one passing test.
+
+## Container gate
+
+AUTH-09 added the container acceptance suite
+`test/acceptance/auth/self-hosted-container.test.ts` and its own command,
+`npm run test:container`. The command makes a clean build, sets
+`THERMUS_CONTAINER_GATE=1`, and runs the file. The suite:
+
+- builds the image of the current candidate from `Dockerfile` two times. The
+  second build has another revision label, so it is another image with the same
+  content, for the image replacement case;
+- runs the server and the bundled commands in containers of that image, with the
+  real provider and SQLite on Docker volumes;
+- gives the containers only the settings of the image and `PUBLIC_BASE_URL`, so
+  the normal production telemetry settings apply;
+- puts each container that runs Thermus on an internal Docker network without a
+  route out, so each outbound connection fails. An edge container forwards the
+  test connections to the server and is the DNS server of the containers, so it
+  records each outbound connection that they try by name. A connection to an IP
+  address fails without a record. Before each case, a lookup of a control name
+  must appear in the record, so the record works on this engine. Each case
+  fails when the record has another query;
+- removes its containers, networks, volumes, and images when it ends.
+
+Only a run of `npm run test:container` that exits with status 0 and shows each
+container test as passed is a container gate pass. A container run with outbound
+access allowed is not a container gate pass. A container run with changed
+telemetry settings is not a container gate pass. `npm test` and
+`npm run test:acceptance` select the file but skip its suite, so a run through
+them is never a container gate pass. Without the docker CLI, a running engine,
+Buildx, or Compose, the suite fails with a setup error.
+
+An interrupted run can leave resources. Each one has the label
+`thermus.container-gate`, so these commands remove them:
+
+```sh
+docker container rm --force $(docker container ls --all --quiet --filter label=thermus.container-gate)
+docker network rm $(docker network ls --quiet --filter label=thermus.container-gate)
+docker volume rm $(docker volume ls --quiet --filter label=thermus.container-gate)
+docker image rm --force $(docker image ls --quiet --filter label=thermus.container-gate)
+```
+
+## Hosted placeholder checks
+
+AUTH-12 added the hosted placeholder: with `DEPLOYMENT=hosted`, the server
+answers each request with the authentication-unavailable notice. AUTH-07 added
+organization onboarding and selection behind the provider contracts, and
+AUTH-08 added User and Admin grant management, invitations, change records, and
+the User seat summary. In production, the placeholder keeps them unavailable
+too. The tests run offline and need no WorkOS account, credential, SDK, or
+network access. They use doubles at the provider contracts. They are in the
+existing suites:
+
+- unit: `test/unit/hosted-admin/account-routes.test.ts`,
+  `test/unit/hosted-admin/account-routes-effects.test.ts`,
+  `test/unit/hosted-admin/account-routes-organization-page.test.ts`,
+  `test/unit/hosted-admin/account-routes-selection-input.test.ts`,
+  `test/unit/hosted-admin/account-routes-selection.test.ts`,
+  `test/unit/hosted-admin/account-routes-administration-pages.test.ts`,
+  `test/unit/hosted-admin/account-routes-administration-changes.test.ts`,
+  `test/unit/hosted-admin/account-routes-administration-input.test.ts`,
+  `test/unit/organizations/organization-administration.test.ts`,
+  `test/unit/organizations/organization-administration-grants.test.ts`,
+  `test/unit/organizations/organization-administration-targets.test.ts`,
+  `test/unit/organizations/organization-administration-changes.test.ts`,
+  `test/unit/organizations/organization-administration-members.test.ts`,
+  `test/unit/organizations/organization-administration-invitations.test.ts`,
+  `test/unit/organizations/organization-administration-invitation-overview.test.ts`,
+  `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`,
+  `test/unit/mcp/unavailable-mcp-endpoint.test.ts`,
+  `test/unit/config/deployment-config.test.ts`,
+  `test/unit/application.test.ts`, and
+  `test/unit/application-operator-log.test.ts`, in `npm run check`;
+- integration: `test/integration/auth/hosted-account.test.ts`,
+  `test/integration/auth/hosted-organizations.test.ts`,
+  `test/integration/auth/hosted-administration.test.ts`, and
+  `test/integration/auth/local-installation.test.ts`, in
+  `npm run test:integration`;
+- acceptance: `test/acceptance/auth/hosted-placeholder.test.ts`,
+  `test/acceptance/auth/hosted-organizations.test.ts`,
+  `test/acceptance/auth/hosted-organization-requests.test.ts`,
+  `test/acceptance/auth/hosted-grants.test.ts`,
+  `test/acceptance/auth/hosted-grant-refusals.test.ts`,
+  `test/acceptance/auth/hosted-invitations.test.ts`, and
+  `test/acceptance/auth/hosted-seats.test.ts`, in
+  `npm run test:acceptance`. The container gate also starts the image with
+  `DEPLOYMENT=hosted`.
+
+This command is the offline gate of the placeholder. It runs the hosted
+integration and acceptance files:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/acceptance/auth/hosted-placeholder.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
+```
+
+A pass shows only the behavior of the placeholder and the application policy of
+the hosted routes and of `OrganizationAdministration` with doubles. It is never
+a pass of the [hosted live gate](#hosted-live-gate-auth-06) and never proof of
+WorkOS behavior, such as safe grant changes or invitation acceptance in WorkOS.
+Do not report it as either.
+
+## Self-hosted release
+
+A release of the self-hosted evaluation image needs a pass of each command below
+on a clean checkout of the release commit: `git status --porcelain` shows
+nothing, because the image build and the container gate read the working tree.
+Each command must exit with status 0 and show each required test as passed:
+
+1. `npm run check`
+2. `habit-hooks`, with each finding corrected or its reason given
+3. `npm run test:integration`
+4. `npm run test:acceptance`
+5. `npm run build && node --test dist/test/interface/auth/better-auth.test.js`
+6. `npm run test:container`
+
+If an Actions job starts for the release commit, it must pass too. Then build the
+release image with `docker compose build`. The release notes must not claim
+payment collection, hosted features, or migration between editions.
 
 ## Pull request steps
 
@@ -166,23 +325,15 @@ other live proofs and live acceptance cases that the
 [authentication plan](../design/authentication-design.md#live-provider-proofs)
 lists. Until AUTH-06 adds them, a pass of the command is not a hosted gate pass.
 
+Until AUTH-06 replaces the placeholder and this gate passes, the hosted edition
+gives no hosted access. The [hosted placeholder checks](#hosted-placeholder-checks)
+never count as this gate.
+
 ## Later gates
 
 Later tickets add these suites. They have no command yet. The ticket that adds a
 suite also adds its explicit command to `package.json` and to the suite table.
 A suite must not depend on another command that selects it silently.
-
-### Container gate (AUTH-09)
-
-AUTH-09 adds the container acceptance suite
-`test/acceptance/auth/self-hosted-container.test.ts` and its own explicit
-command. The suite runs with a real image, normal production telemetry settings,
-and outbound access denied. Only a run of the dedicated command under these
-conditions is a container gate pass. A container run with outbound access
-allowed is not a container gate pass. A container run with changed telemetry
-settings is not a container gate pass. The file name also matches the acceptance
-glob. A run of that file through `npm test` or `npm run test:acceptance` is not
-a container gate pass.
 
 ### Paid billing gate (AUTH-11)
 
@@ -211,7 +362,7 @@ policy. Update them in the same pull request as a gate change.
 - [CLAUDE.md](../../CLAUDE.md): Claude model rules. It includes AGENTS.md.
 - [package.json](../../package.json): the exact suite commands.
 - [README.md](../../README.md#build-and-test-commands): the script list, build
-  behavior, and suite prerequisites.
+  behavior, suite prerequisites, and the release checks.
 - [Test inventory](../testing/test-list.md): executed and pending test cases,
   with focused commands.
 - [Authentication implementation plan](../design/authentication-design.md#verification-and-release-gates):

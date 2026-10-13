@@ -29,7 +29,7 @@ export function mcpRequest(options: McpRequestOptions): Request {
   const params = {
     _meta: {
       [PROTOCOL_VERSION_META_KEY]: protocolVersion,
-      [CLIENT_INFO_META_KEY]: { name: 'magumagu-test', version: '0.0.0' },
+      [CLIENT_INFO_META_KEY]: { name: 'thermus-test', version: '0.0.0' },
       [CLIENT_CAPABILITIES_META_KEY]: {},
     },
     ...options.params,

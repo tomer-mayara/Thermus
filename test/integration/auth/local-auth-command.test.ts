@@ -123,7 +123,7 @@ describe('Local auth command line through the entry point with the real provider
     const directory = dataDirectory(t);
     await withRuntime(directory, async () => undefined);
     const traceFile = join(dataDirectory(t), 'sql-trace.jsonl');
-    const settings = { ...selfHostedSettings(directory), MAGUMAGU_TEST_SQL_TRACE: traceFile };
+    const settings = { ...selfHostedSettings(directory), THERMUS_TEST_SQL_TRACE: traceFile };
     const traced = (args: readonly string[], input: readonly string[] = []) => runCommand(t, settings, { args, input });
 
     const results = [
@@ -140,7 +140,7 @@ describe('Local auth command line through the entry point with the real provider
     const onProviderTables = statements.filter(({ sql }) => providerTable.test(sql));
     assert.ok(onProviderTables.length > 0, 'the trace recorded provider statements');
     for (const { sql, frame } of onProviderTables) assert.match(frame, /node_modules/, `${frame}: ${sql}`);
-    assert.deepEqual(statements.filter(({ frame }) => /local-(?:user-administration|auth-command)/.test(frame)), []);
+    assert.deepEqual(statements.filter(({ frame }) => /(?:better-auth-user-administration|local-auth-command)/.test(frame)), []);
     assert.ok(statements.every(({ sql }) => !sql.includes(alice.password) && !sql.includes('alice-password-2')), 'no password is part of SQL text');
   });
 });

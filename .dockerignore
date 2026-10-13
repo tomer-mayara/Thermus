@@ -1,0 +1,16 @@
+# The image build reads only these files. Everything else, also .env files, dist/, node_modules/, test/, and
+# the repository metadata, stays out of the build context.
+*
+!.habit-hooks/package.json
+!.npmrc
+!migrations/
+!package.json
+!patches/
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!src/
+!tsconfig.build.json
+!tsconfig.json
+
+# The browser portal has its own build and local environment.
+src/user-portal/

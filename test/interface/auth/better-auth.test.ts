@@ -4,7 +4,7 @@ import { after, before, describe, test, type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { auth as runMcpAuthorization } from '@modelcontextprotocol/client';
-import { ProviderEnvironmentError } from '../../../src/auth-better-auth/better-auth-runtime.ts';
+import { ProviderEnvironmentError } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
 import {
   errorCodeOf,
   followAuthorizationWithConsent,
@@ -76,7 +76,7 @@ async function registerClients(auth: LocalAuth, account: AccountCredentials) {
     await auth.api.adminCreateOAuthClient({
       headers,
       body: {
-        client_name: 'Magumagu MCP resource server',
+        client_name: 'Thermus MCP resource server',
         token_endpoint_auth_method: 'client_secret_basic',
         grant_types: ['client_credentials'],
       },

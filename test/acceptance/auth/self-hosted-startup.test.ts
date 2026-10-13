@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
+import { unavailableNotice, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { accountsOf, addAccount, selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
 
@@ -18,12 +19,8 @@ const refusedProviderVariables: ServerSettings = {
 function hostedSettings(directory: string): ServerSettings {
   return {
     DEPLOYMENT: 'hosted',
-    PUBLIC_BASE_URL: 'https://magumagu.example',
-    WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-    WORKOS_CLIENT_ID: 'client_placeholder',
-    WORKOS_API_KEY: 'workos-api-key-placeholder',
-    WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-    WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
+    PUBLIC_BASE_URL: 'https://thermus.example',
+    ...workOSSettings,
     DATA_DIR: directory,
     LISTEN_HOST: '127.0.0.1',
     LISTEN_PORT: '0',
@@ -46,7 +43,8 @@ function dataFiles(directory: string): Record<string, Buffer> {
 
 async function assertStopsBeforeListening(server: ServerProcess, message: RegExp): Promise<void> {
   assert.equal(await server.listeningOrExit(), undefined, server.output);
-  assert.notEqual((await server.exited()).code, 0);
+  assert.deepEqual(await server.exited(), { code: 1, signal: null }, server.output);
+  assert.match(server.output, /FATAL/);
   assert.match(server.output, message);
 }
 
@@ -66,6 +64,20 @@ describe('Self-hosted server startup with one persistent installation', () => {
     assert.deepEqual([firstExit, secondExit], [{ code: 0, signal: null }, { code: 0, signal: null }]);
     assert.deepEqual(storedInstallationIds(directory), [firstTenant.slice('local:'.length)]);
   });
+
+  for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+    test(`Given several servers that start at the same time, when each gets ${signal} in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after ${signal}" and exits with status 0, not by the signal`, { timeout: 60_000 }, async (t) => {
+      // The servers start at the same time, because the load makes a gap between the line and the stop handlers easier to hit.
+      const servers = Array.from({ length: 8 }, () => ServerProcess.launch(t, selfHostedSettings(dataDirectory(t))));
+
+      const exits = await Promise.all(servers.map((server) => server.stopWhenListening(signal)));
+
+      for (const [index, server] of servers.entries()) {
+        const run = { exit: exits[index], stopped: server.output.includes(`Stopping after ${signal}`) };
+        assert.deepEqual(run, { exit: { code: 0, signal: null }, stopped: true }, server.output);
+      }
+    });
+  }
 
   test('Given a fresh installation with zero accounts, when the server starts, then startup succeeds, MCP requests get a Bearer challenge, and no public route creates an account', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
@@ -135,7 +147,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
   test('Given retained authentication data without its installation identity, when the server starts, then it stops before it listens, asks for operator recovery, and creates no new identity', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
     await (await ServerProcess.start(t, selfHostedSettings(directory))).stop();
-    changeDatabase(directory, 'DELETE FROM "magumagu_installation"');
+    changeDatabase(directory, 'DELETE FROM "thermus_installation"');
 
     const server = ServerProcess.launch(t, selfHostedSettings(directory));
 
@@ -185,12 +197,16 @@ describe('Self-hosted server startup with one persistent installation', () => {
     assert.deepEqual(readdirSync(directory), []);
   });
 
-  test('Given the hosted edition with a data directory setting, when the server starts, then it stops with an unavailable-edition error and creates no local data', { timeout: 60_000 }, async (t) => {
+  test('Given the hosted edition with a data directory setting, when the server starts, then it serves only the authentication-unavailable notice, reports no local tenant, and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
-    const server = ServerProcess.launch(t, hostedSettings(directory));
+    const server = await ServerProcess.start(t, hostedSettings(directory));
+    const notice = await server.request('/');
+    const exit = await server.stop();
 
-    await assertStopsBeforeListening(server, /hosted edition/i);
+    assert.deepEqual([notice.status, exit], [503, { code: 0, signal: null }]);
+    assert.match(await notice.text(), unavailableNotice);
+    assert.doesNotMatch(server.output, /tenant/);
     assert.deepEqual(readdirSync(directory), []);
   });
 });

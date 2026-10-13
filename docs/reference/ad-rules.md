@@ -32,7 +32,7 @@ The application owns rule trust, persistence, versions, updates, and update fail
 ```ts
 import { readFileSync } from 'node:fs';
 
-const rules = readFileSync('/etc/magumagu/ad-rules.txt', 'utf8');
+const rules = readFileSync('/etc/thermus/ad-rules.txt', 'utf8');
 const ads = new CleanHtmlAdsAdblockRs(rules);
 ```
 

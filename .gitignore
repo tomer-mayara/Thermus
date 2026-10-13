@@ -152,3 +152,5 @@ vite.config.ts.timestamp-*
 # Reviews and per-repo config for tools/code-review-agents
 .agent/reviews/
 
+.env.local
+.env.local.bak

@@ -6,12 +6,12 @@ import {
   type LocalAuth,
   type LocalAuthResources,
   type LocalProviderSettings,
-} from '../../../src/auth-better-auth/better-auth-runtime.ts';
-import type { DataDirectoryLock } from '../../../src/auth-better-auth/data-directory-lock.ts';
-import type { LocalInstallation, StoredResourceServerClient } from '../../../src/auth-better-auth/local-installation.ts';
+} from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
+import type { DataDirectoryLock } from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
+import type { LocalInstallation, StoredResourceServerClient } from '../../../src/auth/local-auth/better-auth/local-installation.ts';
 
 const settings = {
-  dataDirectory: '/var/lib/magumagu',
+  dataDirectory: '/var/lib/thermus',
   publicBaseUrl: 'http://localhost:8080/',
   mcpResourceUrl: 'http://localhost:8080/mcp',
 };
@@ -82,7 +82,7 @@ test('Given free resources, when the runtime opens, then it locks the data direc
 
   const runtime = await openBetterAuthRuntime(settings, resources);
 
-  assert.deepEqual(resources.events, ['lock /var/lib/magumagu', 'open installation /var/lib/magumagu', 'start provider']);
+  assert.deepEqual(resources.events, ['lock /var/lib/thermus', 'open installation /var/lib/thermus', 'start provider']);
   assert.deepEqual(resources.providerSettings, [{
     publicBaseUrl: 'http://localhost:8080/',
     mcpResourceUrl: 'http://localhost:8080/mcp',
@@ -101,7 +101,7 @@ test('Given a data directory that another process uses, when the runtime opens, 
 
   await assert.rejects(openBetterAuthRuntime(settings, resources), (error) => error === lockError);
 
-  assert.deepEqual(resources.events, ['lock /var/lib/magumagu']);
+  assert.deepEqual(resources.events, ['lock /var/lib/thermus']);
 });
 
 test('Given an installation that fails closed, when the runtime opens, then it releases the lock, starts no provider, and the installation error reaches the caller', async () => {
@@ -110,7 +110,7 @@ test('Given an installation that fails closed, when the runtime opens, then it r
 
   await assert.rejects(openBetterAuthRuntime(settings, resources), (error) => error === installationError);
 
-  assert.deepEqual(resources.events, ['lock /var/lib/magumagu', 'open installation /var/lib/magumagu', 'release lock']);
+  assert.deepEqual(resources.events, ['lock /var/lib/thermus', 'open installation /var/lib/thermus', 'release lock']);
 });
 
 test('Given a provider that fails to start, when the runtime opens, then it closes the installation, then releases the lock, and the provider error reaches the caller', async () => {

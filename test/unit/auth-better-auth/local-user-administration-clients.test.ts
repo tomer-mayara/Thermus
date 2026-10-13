@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { LocalUserAdministration, type PasswordSource } from '../../../src/auth-better-auth/local-user-administration.ts';
+import { BetterAuthUserAdministration } from '../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
+import type { PasswordSource } from '../../../src/auth/local-auth/local-user-administration.ts';
 import { PasswordAnswers, rejectsWith } from './fixtures/administration-fixtures.ts';
 import { LocalProviderDouble } from './fixtures/local-provider-double.ts';
 
@@ -10,10 +11,10 @@ function aliceOnInstallationWithoutResourceServerClient() {
   const provider = new LocalProviderDouble();
   const alice = provider.addUser('alice@example.com', 'alice-password-1');
   provider.resourceServerClient.stored = undefined;
-  return { provider, alice, administration: new LocalUserAdministration(provider.auth, provider.resourceServerClient) };
+  return { provider, alice, administration: new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient) };
 }
 
-function registerForAlice(administration: LocalUserAdministration, redirectUri = loopbackRedirectUri) {
+function registerForAlice(administration: BetterAuthUserAdministration, redirectUri = loopbackRedirectUri) {
   return administration.registerClient('alice@example.com', new PasswordAnswers('alice-password-1').read, {
     name: 'Native MCP client',
     redirectUris: [redirectUri],
@@ -28,14 +29,14 @@ function operationsOf(provider: LocalProviderDouble): string[] {
   return provider.calls.map((call) => call.split(' ')[0] ?? '');
 }
 
-describe('LocalUserAdministration client registration', () => {
+describe('BetterAuthUserAdministration client registration', () => {
   describe('register client', () => {
     test('Given an enabled account with a browser session, when an approved client is registered, then the provider creates a native public client with that account\'s new session, deletes only that session, and the browser session stays', async () => {
       const provider = new LocalProviderDouble();
       const alice = provider.addUser('alice@example.com', 'alice-password-1');
       const browserSession = provider.startSession(alice.id);
 
-      const client = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
+      const client = await new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('alice-password-1').read,
         { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] },
@@ -65,7 +66,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given an unknown or a disabled account, when a client is registered for it, then it fails before it asks for a password and creates no session or client', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('dana@example.com', 'dana-password-1', true);
-      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
+      const administration = new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient);
       const answers = new PasswordAnswers('carol-password-1', 'dana-password-1');
       const client = { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] };
 
@@ -80,7 +81,7 @@ describe('LocalUserAdministration client registration', () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
 
-      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
+      await assert.rejects(new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('wrong-password-1').read,
         { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] },
@@ -92,7 +93,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given an account that the provider refuses to sign in as disabled, when a client is registered, then it fails with disabled-account', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
+      const administration = new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient);
       const banBeforeSignIn: PasswordSource = async () => {
         const alice = provider.userByEmail('alice@example.com');
         if (alice) alice.banned = true;
@@ -110,7 +111,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given redirect URIs outside the approved loopback form, when a client is registered, then each fails with invalid-redirect-uri and a message without the URI, before any provider call or password prompt', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
+      const administration = new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient);
       const answers = new PasswordAnswers();
       const refused = [
         [],
@@ -152,7 +153,7 @@ describe('LocalUserAdministration client registration', () => {
         'http://127.0.0.1:33418',
       ];
 
-      await new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
+      await new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('alice-password-1').read,
         { name: 'Native MCP client', redirectUris },
@@ -164,7 +165,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given an empty or control-character client name, when a client is registered, then it fails with invalid-client-name before any provider call', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
+      const administration = new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient);
 
       for (const name of ['', '   ', 'Native\nclient']) {
         await assert.rejects(
@@ -182,7 +183,7 @@ describe('LocalUserAdministration client registration', () => {
       const failure = new Error('client storage failed');
       provider.failures.set('adminCreateOAuthClient', failure);
 
-      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
+      await assert.rejects(new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('alice-password-1').read,
         { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] },
@@ -195,7 +196,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given a registration session that cannot be deleted, when a client is registered, then the caller gets the cleanup error; when the creation also fails, the caller gets both errors', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
+      const administration = new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient);
       const cleanupFailure = new Error('session delete failed');
       const creationFailure = new Error('client storage failed');
       const register = () => administration.registerClient(
@@ -227,7 +228,7 @@ describe('LocalUserAdministration client registration', () => {
       assert.deepEqual(resourceServer, {
         clientId: resourceServer.clientId,
         sessionUserId: alice.id,
-        metadata: { client_name: 'Magumagu MCP resource server', token_endpoint_auth_method: 'client_secret_basic', grant_types: ['client_credentials'] },
+        metadata: { client_name: 'Thermus MCP resource server', token_endpoint_auth_method: 'client_secret_basic', grant_types: ['client_credentials'] },
       });
       assert.deepEqual(provider.resourceServerClient.recorded, [
         { clientId: resourceServer.clientId, clientSecret: LocalProviderDouble.clientSecretOf(resourceServer.clientId) },

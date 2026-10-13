@@ -7,16 +7,16 @@ import {
   LocalInstallationError,
   openLocalInstallation,
   type LocalInstallation,
-} from '../../../src/auth-better-auth/local-installation.ts';
+} from '../../../src/auth/local-auth/better-auth/local-installation.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const generatedSecret = /^[A-Za-z0-9_-]{43}$/;
 const missingIdentity = 'The data directory has authentication data but no valid installation identity. '
-  + 'Magumagu does not create a new identity for retained data. '
+  + 'Thermus does not create a new identity for retained data. '
   + 'Restore the complete data directory from a backup, or move the data away to start a new installation.';
 const invalidResourceServerClient = 'The resource-server-client.json file in the data directory is not valid. '
-  + 'Restore the complete data directory from a backup, or remove the file and run magumagu clients register again.';
+  + 'Restore the complete data directory from a backup, or remove the file and run thermus clients register again.';
 const resourceServerClient = {
   clientId: 'resource-server-client-id',
   clientSecret: 'resource-server-client-secret',
@@ -111,9 +111,9 @@ test('Given an open installation, when it closes two times, then its database is
 });
 
 const lostIdentities: ReadonlyArray<[string, string]> = [
-  ['a deleted identity row', 'DELETE FROM "magumagu_installation"'],
-  ['a dropped identity table', 'DROP TABLE "magumagu_installation"'],
-  ['an identity that is not a UUID', `UPDATE "magumagu_installation" SET "id" = 'not-a-uuid'`],
+  ['a deleted identity row', 'DELETE FROM "thermus_installation"'],
+  ['a dropped identity table', 'DROP TABLE "thermus_installation"'],
+  ['an identity that is not a UUID', `UPDATE "thermus_installation" SET "id" = 'not-a-uuid'`],
 ];
 for (const [label, sql] of lostIdentities) {
   test(`Given retained data with ${label}, when the installation opens, then it fails closed, asks for a restore, and changes no data`, (t) => {
@@ -129,7 +129,7 @@ for (const [label, sql] of lostIdentities) {
   });
 }
 
-test('Given a database with provider tables but no Magumagu schema, when the installation opens, then it fails closed and adds no identity', (t) => {
+test('Given a database with provider tables but no Thermus schema, when the installation opens, then it fails closed and adds no identity', (t) => {
   const directory = dataDirectory(t);
   changeDatabase(directory, 'CREATE TABLE "user" ("id" text not null primary key)');
 
@@ -169,8 +169,8 @@ test('Given a database from another schema version, when the installation opens,
 
   assert.equal(
     rejection(directory),
-    'The authentication database has schema version 3, but this Magumagu version uses schema version 2. '
-      + 'Use the Magumagu version that created the data, or restore a backup for this version.',
+    'The authentication database has schema version 3, but this Thermus version uses schema version 2. '
+      + 'Use the Thermus version that created the data, or restore a backup for this version.',
   );
 });
 

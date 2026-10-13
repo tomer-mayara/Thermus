@@ -1,9 +1,9 @@
 import { appendFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 
-// Loaded with --import before a command. When MAGUMAGU_TEST_SQL_TRACE names a file, each SQL statement
+// Loaded with --import before a command. When THERMUS_TEST_SQL_TRACE names a file, each SQL statement
 // and the stack frame that issued it go to that file, so a test can see which code sends SQL.
-const traceFile = process.env.MAGUMAGU_TEST_SQL_TRACE;
+const traceFile = process.env.THERMUS_TEST_SQL_TRACE;
 
 type SqlMethod = (this: DatabaseSync, sql: string, ...rest: unknown[]) => unknown;
 

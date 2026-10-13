@@ -11,7 +11,7 @@ import {
 import { serveStdio, type StdioServerHandle } from '@modelcontextprotocol/server/stdio';
 
 import type { AccessResolver, RequestContext } from '../auth/access-context.ts';
-import type { IdentityVerifier } from './identity-verifier.ts';
+import type { IdentityVerifier } from '../auth/identity-verifier.ts';
 import { IdentityVerifierSdkAdapter, verifiedUserOf } from './identity-verifier-sdk-adapter.ts';
 
 export type RequestToolRegistration = (server: McpServer, context: RequestContext) => void;
@@ -91,7 +91,7 @@ export class MCPServer {
 }
 
 function serverWithoutTools(): McpServer {
-  return new McpServer({ name: 'magumagu', version: '0.0.0' });
+  return new McpServer({ name: 'thermus', version: '0.0.0' });
 }
 
 function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): BearerGate {

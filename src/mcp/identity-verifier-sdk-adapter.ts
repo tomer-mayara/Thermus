@@ -5,7 +5,7 @@ import {
   type OAuthTokenVerifier,
 } from '@modelcontextprotocol/server';
 import type { AuthenticatedUser } from '../auth/access-context.ts';
-import { InvalidAccessTokenError, type IdentityVerifier, type VerifiedIdentity } from './identity-verifier.ts';
+import { InvalidAccessTokenError, type IdentityVerifier, type VerifiedIdentity } from '../auth/identity-verifier.ts';
 
 type VerifiedClaims = {
   readonly user: AuthenticatedUser;
