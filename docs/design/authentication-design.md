@@ -19,15 +19,18 @@ installation identity, the data-directory lock, the offline user and client
 commands, the bundled sign-in and consent pages, `BetterAuthProvider`, and the
 HTTP composition of the provider routes. Slice 5, evaluation packaging, is
 implemented: the container image, its Compose service with one data volume, and
-the container gate. AUTH-07 added a part of slice 4 behind the provider
-contracts: [organization onboarding and selection](#organization-administration),
-with offline tests that use doubles. The hosted slice 3, the rest of slice 4,
-and the paid billing of slice 6 are pending. Until slice 3,
+the container gate. AUTH-07 and AUTH-08 added the application rules of slice 4
+behind the provider contracts, with offline tests that use doubles:
+[organization onboarding and selection](#organization-administration)
+(AUTH-07), and User and Admin grant management, invitations, basic change
+records, and the User seat summary (AUTH-08). The hosted slice 3, the WorkOS
+side of slice 4 (AUTH-07W and AUTH-08W) with the operator runbook, and the paid
+billing of slice 6 are pending. Until slice 3,
 the [hosted placeholder](#hosted-placeholder) holds the place of the WorkOS
 provider: `DEPLOYMENT=hosted` starts an unavailable hosted shell, so application
 work and its offline tests need no WorkOS account, credential, SDK, or network
-call. Thus onboarding and organization selection are also unavailable in
-production. The pinned Better Auth packages are proven
+call. Thus onboarding, organization selection, and organization administration
+are also unavailable in production. The pinned Better Auth packages are proven
 against the local contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found. The role
 refinement below records intended rules only; it adds no implementation work
@@ -217,21 +220,26 @@ account, credential, SDK, or network call. The placeholder reuses
 It adds only the browser-session role that the account routes need. Provider
 records stay outside these contracts. AUTH-07 added cookie effects, a CSRF
 token, and organization switching to the browser-session role, and the
-`OrganizationDirectory` contract for the organization reads.
+`OrganizationDirectory` contract for the organization reads. AUTH-08 added the
+MFA evidence of a session to the browser-session role, and the member, grant,
+and invitation methods to `OrganizationDirectory`.
 
 | File | Contract and behavior now |
 | --- | --- |
-| `src/hosted-admin/browser-session.ts` | `BrowserSession.authenticate(cookieHeader)` gives a `BrowserSessionState`: `signed-in`, `signed-out` with `cookies`, or `unavailable` without cookies. A `SignedInBrowserSession` has the `user`, an `AuthenticatedUser` that carries the organization that the session selected; the `csrfToken`, a secret of the session that each form of the account pages sends back, which stays the same for the whole session, also after a refresh or an organization switch, so that a form shown before still posts; the `cookies`; and `selectOrganization(organizationId)`. `CookieEffects` are `Set-Cookie` values that must reach the browser with the answer, also with a redirect or an error page, so that the browser does not lose a session that the provider refreshed or ended during the request. `selectOrganization()` gives an `OrganizationSwitch`: `switched`, `refused`, or `signed-out`, each with cookies. Only this call changes the organization of a session, and only for that browser. The account routes call it only after `OrganizationAdministration` found an authorized active membership. The provider gets only the `Cookie` header of the request, so no form field, query, or other header can select the user or the organization. A lookup or switch failure, such as an outage, throws. |
-| `src/hosted-admin/account-routes.ts` | `HostedAccountRoutes` gets each browser path under the public URL and checks the browser session first. The routes treat the public base URL as a directory: a URL without a final slash works the same, so `/teamevil` is never under `/team`. The deployment configuration always gives the final slash. `unavailable` gives `503` with the authentication-unavailable notice and no cookie, and `signed-out` gives `401` with the cookie effects of the session. For a signed-in session, `<base>/organizations` and `<base>/organizations/select` need the identity only: they run no access resolution (see [organization administration](#organization-administration)). For each other path, the routes call `AccessResolver.resolve(user)` and then require a trusted tenant. Only then does an `AccountOperation(request, context)` get the request, with a frozen copy of the decided context, as MCPServer does. A denial gives `403` without the reason, with a second paragraph that links to `<base>/organizations`: "To select another organization, or to see how to get access, open the organization page." A request without an operation gives `404`. No production operation exists yet. Each operation checks its own permission before work starts. Each answer after a sign-in carries the cookie effects of the session, in their order, before the cookies of the answer itself, so that a later cookie, such as the cookie of a switch, replaces an earlier one in the browser. This includes operation answers, also a redirect whose headers cannot change, the `303` of a selection, and each refusal and failure page (`400`, `401`, `403`, `404`, `405`, `413`, `415`, and `500`). The routes add the cookie effects inside the failure guard. A failure after a sign-in, in the access resolution, an organization read, the organization switch, or the account operation, an allowed decision without a tenant, or an operation answer that cannot carry the cookie effects, such as an error response (`Response.error()`) or an answer whose body was already read, gives a `500` page, "The request failed. Try again later.", with the cookie effects of the session. `reportFailure` gives its path and cause to the operator. AUTH-12 gave the caller an exception for an access lookup failure and for an allowed decision without a tenant ID; AUTH-07 changed both on purpose. A session lookup failure still reaches the caller, so the HTTP server answers a generic `500` without a cookie. This stays distinct from a missing session (`401`) and never erases the session. A request that the client aborted gets no page and no report. `account-form.ts` checks the form input. |
-| `src/hosted-admin/account-pages.ts` | The notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
-| `src/organizations/organization-administration.ts` | `OrganizationDirectory.membershipsOf(user)` gives `OrganizationMembership` records: `organizationId`, `organizationName`, `active`, and `grants`, with every current grant. A grant holds only application permissions, so that a default role, which gives none, authorizes nothing. `OrganizationAdministration` lists and authorizes the organizations of the session user. The [organization administration](#organization-administration) section gives the rules. |
-| `src/auth-unavailable/unavailable-hosted-authentication.ts` | `UnavailableHostedAuthentication` implements `BrowserSession`, `AccessResolver`, and `OrganizationDirectory`. Each session is `unavailable`, each access request is denied with `account-inactive`, and no user has a membership. `UnavailableMcpEndpoint` answers each request to the MCP resource and both protected-resource metadata paths with `503`, the OAuth error `temporarily_unavailable`, and no Bearer challenge, also without a credential. A verifier cannot give this answer: the SDK bearer middleware answers a request without a credential with `401` before a verifier runs. The placeholder reads no setting, calls no service, and never gives an identity, a grant, a membership, a cookie, or a tenant. |
-| `src/application.ts` | `createApplication()` composes the hosted edition with `composeHostedApplication(config, { session, accessResolver, organizations, mcp }, { reportFailure })` and the placeholder parts, and logs that hosted authentication is not available yet. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. The third argument, `HostedAccountParts`, gives `reportFailure` and an optional account operation. The composition gives the routes an `OrganizationAdministration` over the organization directory. `accountFailureReporter(logger)` writes each report as one error line: `An account request failed unexpectedly for <path>: <cause>`. Other paths give `404`. The shell creates no `Billing`. |
+| `src/hosted-admin/browser-session.ts` | `BrowserSession.authenticate(cookieHeader)` gives a `BrowserSessionState`: `signed-in`, `signed-out` with `cookies`, or `unavailable` without cookies. A `SignedInBrowserSession` has the `user`, an `AuthenticatedUser` that carries the organization that the session selected; the `csrfToken`, a secret of the session that each form of the account pages sends back, which stays the same for the whole session, also after a refresh or an organization switch, so that a form shown before still posts; `mfaCompleted`, which is true only when the provider proved that the sign-in of the session completed a multi-factor challenge, because an enrollment alone is no proof; the `cookies`; and `selectOrganization(organizationId)`. `CookieEffects` are `Set-Cookie` values that must reach the browser with the answer, also with a redirect or an error page, so that the browser does not lose a session that the provider refreshed or ended during the request. `selectOrganization()` gives an `OrganizationSwitch`: `switched`, `refused`, or `signed-out`, each with cookies. Only this call changes the organization of a session, and only for that browser. The account routes call it only after `OrganizationAdministration` found an authorized active membership. The provider gets only the `Cookie` header of the request, so no form field, query, or other header can select the user or the organization. A lookup or switch failure, such as an outage, throws. |
+| `src/hosted-admin/account-routes.ts` | `HostedAccountRoutes` gets each browser path under the public URL and checks the browser session first. The routes treat the public base URL as a directory: a URL without a final slash works the same, so `/teamevil` is never under `/team`. The deployment configuration always gives the final slash. `unavailable` gives `503` with the authentication-unavailable notice and no cookie, and `signed-out` gives `401` with the cookie effects of the session. For a signed-in session, `<base>/organizations` and `<base>/organizations/select` need the identity only: they run no access resolution (see [organization administration](#organization-administration)). For each other path, the routes call `AccessResolver.resolve(user)` and then require a trusted tenant. Only then do the routes give a member or invitation path to `AdministrationRoutes`, with the session and a frozen copy of the decided context, and each other path to an `AccountOperation(request, context)`, with a frozen copy of the decided context, as MCPServer does. A denial gives `403` without the reason, with a second paragraph that links to `<base>/organizations`: "To select another organization, or to see how to get access, open the organization page." A request without a route or an operation gives `404`. The hosted edition gives no account operation yet. Each operation checks its own permission before work starts. An `AccountOperation` gets no MFA evidence yet, so the billing change operation of AUTH-11 must add it before it can require MFA. Each answer after a sign-in carries the cookie effects of the session, in their order, before the cookies of the answer itself, so that a later cookie, such as the cookie of a switch, replaces an earlier one in the browser. This includes operation answers, also a redirect whose headers cannot change, the `303` of a selection or a change, and each refusal and failure page (`400`, `401`, `403`, `404`, `405`, `409`, `413`, `415`, `500`, and `503`). The routes add the cookie effects inside the failure guard. A failure after a sign-in, in the access resolution, an organization read or change, the organization switch, or the account operation, an allowed decision without a tenant, or an operation answer that cannot carry the cookie effects, such as an error response (`Response.error()`) or an answer whose body was already read, gives a `500` page, "The request failed. Try again later.", with the cookie effects of the session. `reportFailure` gives its path and cause to the operator. AUTH-12 gave the caller an exception for an access lookup failure and for an allowed decision without a tenant ID; AUTH-07 changed both on purpose. A session lookup failure still reaches the caller, so the HTTP server answers a generic `500` without a cookie. This stays distinct from a missing session (`401`) and never erases the session. A request that the client aborted gets no page and no report. `account-form.ts` checks the form input. |
+| `src/hosted-admin/administration-routes.ts` | `AdministrationRoutes` gets the member and invitation paths after the session check and the current access resolution with a trusted tenant. The actor is the user of the decided context with the MFA evidence of the session, and the organization is the organization of the decided context. A context without an organization gives the `403` access denial. The [organization administration](#organization-administration) section gives the routes and their checks. |
+| `src/hosted-admin/account-pages.ts`, `administration-pages.ts`, and `page-html.ts` | `account-pages.ts` gives the notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. AUTH-08 added the notices of the administration routes: `mfaRequired` (`403`), `changeDenied` (`403`), `changeStale` (`409`, "Page out of date"), `invitationNotPending` (`409`), and `changeUnsupported` (`503`). `administration-pages.ts` gives the members and invitations pages, with the policy of the selection page; they escape each value that the provider gives. `page-html.ts` has the shared HTML parts, the page headers, and the escaping. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
+| `src/organizations/organization-directory.ts` | `OrganizationDirectory`, the provider contract of the organization reads and changes, with its records, requests, and results. `membershipsOf(user)` gives `OrganizationMembership` records: `organizationId`, `organizationName`, `active`, and `grants`, with every current grant. A grant holds only application permissions, so that a default role, which gives none, authorizes nothing. AUTH-08 added the member, grant, and invitation methods. The [organization administration](#organization-administration) section gives the contract. |
+| `src/organizations/organization-administration.ts`, `customer-roles.ts`, `change-records.ts`, `administration-overviews.ts`, and `directory-reads.ts` | `OrganizationAdministration` lists and authorizes the organizations of the session user, and it does the administration work of AUTH-08 for an `Actor`. `customer-roles.ts` gives the customer roles that an actor manages, `change-records.ts` runs each change and keeps its record, `administration-overviews.ts` builds the member and invitation overviews, and `directory-reads.ts` reads every page of a paged directory read. The [organization administration](#organization-administration) section gives the rules. |
+| `src/auth-unavailable/unavailable-hosted-authentication.ts` | `UnavailableHostedAuthentication` implements `BrowserSession`, `AccessResolver`, and `OrganizationDirectory`. Each session is `unavailable`, each access request is denied with `account-inactive`, and no user has a membership. Each member and invitation read gives a frozen empty page, no member or invitation exists for any ID, and each change gives `unsupported`. Its invitation policy is `provider-rules`, so it claims no strict address match. `UnavailableMcpEndpoint` answers each request to the MCP resource and both protected-resource metadata paths with `503`, the OAuth error `temporarily_unavailable`, and no Bearer challenge, also without a credential. A verifier cannot give this answer: the SDK bearer middleware answers a request without a credential with `401` before a verifier runs. The placeholder reads no setting, calls no service, makes no change, and never gives an identity, a grant, a membership, a cookie, or a tenant. |
+| `src/application.ts` | `createApplication()` composes the hosted edition with `composeHostedApplication(config, { session, accessResolver, organizations, mcp }, { reportFailure, changeRecords })` and the placeholder parts, and logs that hosted authentication is not available yet. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. The third argument, `HostedAccountParts`, gives `reportFailure`, the required `changeRecords`, and an optional account operation. The composition gives the routes `OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords })`. `accountFailureReporter(logger)` writes each report as one error line: `An account request failed unexpectedly for <path>: <cause>`. `accountChangeRecorder(logger)` writes each change record as one info line, `Account change record: <JSON>`, in the operator log, until hosted storage exists. Other paths give `404`. The shell creates no `Billing`. |
 
 Thus the hosted edition starts with a valid `https` public URL and no WorkOS
-setting. Each MCP, account, onboarding, organization, selection, and billing
-request gets an explicit unavailable answer, also with a bearer token, a
-cookie, a form token, an organization ID, or form input. No request gets
+setting. Each MCP, account, onboarding, organization, selection, member,
+invitation, grant change, invitation change, and billing request gets an
+explicit unavailable answer, also with a bearer token, a cookie, a form token,
+an organization ID, or form input. No request gets
 anonymous access, a default tenant, a local fallback, or an automatic User
 role. No test identity, organization, grant, demonstration mode, or setting
 turns on access, also not `NODE_ENV=test` or `AUTH_MODE=mock`. Invalid common
@@ -250,8 +258,12 @@ These rules apply to the replacement:
   session, and `selectOrganization()` is a session refresh with the requested
   organization. The CSRF token must stay the same for the whole session, also
   after a refresh or a switch, so it cannot come from the access token or the
-  sealed cookie value. AUTH-06 also adds sign-in, callback, and logout. The
-  provider reads and checks its own settings. Hosted access starts only after the
+  sealed cookie value. AUTH-08 added `mfaCompleted` to the browser-session
+  role: `WorkOSBrowserSession` must give `true` only when the provider proved
+  that the sign-in of the session completed a multi-factor challenge; an
+  enrollment alone is no proof. AUTH-06 also adds sign-in, callback, and logout.
+  The provider reads and checks its own settings. Hosted access starts only
+  after the
   [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
   passes.
 - AUTH-07 added organization onboarding and selection on these roles, with
@@ -260,11 +272,16 @@ These rules apply to the replacement:
   the `OrganizationDirectory` reads from WorkOS, and the runbook for operator
   setup and recovery. It must map each provider role to application
   permissions; a permission that only the provider knows is not an
-  application permission. AUTH-08 adds grant management, invitations, and the
-  seat summary as account operations. Their tests use doubles of the roles, like
-  the doubles in [files and ownership](#files-and-ownership). No double, mock
-  mode, or setting becomes a production sign-in, and `DEPLOYMENT` stays the one
-  edition selector.
+  application permission. AUTH-08 added User and Admin grant management,
+  invitations, basic change records, and the User seat summary on these roles,
+  with the member, grant, and invitation methods of `OrganizationDirectory`.
+  AUTH-08W, which is deferred with WorkOS, implements these methods in
+  `WorkOSOrganizations`, with live seat reads, and proves the safe grant and
+  invitation effects in WorkOS. It must answer `unsupported` when it cannot
+  make a change safely. Their tests use doubles of the roles, like the doubles
+  in [files and ownership](#files-and-ownership). No double, mock mode, or
+  setting becomes a production sign-in, and `DEPLOYMENT` stays the one edition
+  selector.
 - A pass of the offline placeholder tests is never reported as WorkOS proof or
   as a hosted live gate pass.
 
@@ -747,7 +764,11 @@ rotate, and `selectOrganization()` must use a refresh with the requested
 organization. The CSRF token stays the same for the whole session, also after a
 refresh or a switch, so that a form shown before still posts. Thus it cannot
 come from the access token or the sealed cookie value, which change at a
-refresh. Browser `sid` identifies a session, unlike Connect `sid`.
+refresh. AUTH-08 added `mfaCompleted` to a signed-in result. It is true only
+when the provider proved that the sign-in of the session completed a
+multi-factor challenge; an enrollment alone is no proof. Each organization
+administration operation needs it, so `WorkOSBrowserSession` must read it from
+the verified sign-in. Browser `sid` identifies a session, unlike Connect `sid`.
 [WorkOS sessions](https://workos.com/docs/authkit/sessions)
 
 Use supported SDK state and PKCE handling, validated return URLs, and sealed
@@ -766,8 +787,8 @@ an existing token.
 bundled forms on the server; no React or Next.js layer is needed. Routes cover
 sign-in/callback/logout, onboarding, organization selection, and organization
 administration. AUTH-07 implemented the onboarding and organization selection
-routes. AUTH-06 adds sign-in/callback/logout, and AUTH-08 adds grant
-management, invitations, and the seat summary as account operations. Keep
+routes, and AUTH-08 the organization administration routes: the member and
+invitation pages and their changes. AUTH-06 adds sign-in/callback/logout. Keep
 browser credentials separate from MCP bearer handling.
 
 ## Organization administration
@@ -813,8 +834,9 @@ Organization listing and selection return only the user's authorized active
 memberships; each destination checks its own permission.
 
 AUTH-07 implemented the listing and selection of authorized organizations, in
-`src/organizations/organization-administration.ts`. `OrganizationDirectory` has
-one read now; later use cases extend it:
+`src/organizations/organization-administration.ts`. It added
+`OrganizationDirectory`, now in `src/organizations/organization-directory.ts`,
+with one read; AUTH-08 extended it (see below):
 
 - `OrganizationDirectory.membershipsOf(user)` gives `OrganizationMembership`
   records: `organizationId`, `organizationName`, `active`, and `grants`. An
@@ -876,11 +898,239 @@ guidance:
 A tenant page that the access resolution denies gives `403` with a link to the
 organization page, so that a user without an organization finds the guidance.
 
-Grant management, invitations, and the seat summary are still pending for
-AUTH-08. Organization rename and other organization settings stay deferred
-until the product owner decides their authority. AUTH-07W, which is deferred
-with WorkOS, implements `WorkOSOrganizations` for the directory reads and
-documents the operator setup and recovery runbook.
+AUTH-08 implemented User and Admin grant management, invitations, basic change
+records, and the User seat summary behind the provider contracts.
+`OrganizationDirectory`, in `src/organizations/organization-directory.ts`, got
+these reads and changes. Each page read names its statuses or states, so that
+no default filter of the provider decides. A failed read or change throws, so
+that a failure never looks like a missing record or a result; after a failed
+change, its effect is not known:
+
+- `memberPage({ organizationId, statuses, cursor })` gives a
+  `Page<OrganizationMember>`, `{ items, next? }`; the last page has no `next`.
+  An `OrganizationMember` has `membershipId`, `organizationId`, `email`,
+  `status` (`active`, `inactive`, or `pending`), `grants`, and `revision`. The
+  revision changes with each change of the membership. `member(membershipId)`
+  gives the membership with this ID in any organization, or `undefined`.
+- `changeGrant({ membershipId, role, action, revision })`, with the role
+  `user` or `admin` and the action `grant` or `revoke`, changes only that one
+  role, and only while the membership still has that revision. It gives
+  `{ outcome }`: `applied`, `stale`, or `unsupported`.
+- `invitationPage({ organizationId, states, cursor })` and
+  `invitation(invitationId)` give `OrganizationInvitation` records:
+  `invitationId`, `organizationId`, `email`, `role`, which is the one role that
+  the acceptance grants, and `state` (`pending`, `accepted`, `revoked`, or
+  `expired`). A record holds no token or link, because they are credentials of
+  the invited person. `invitation()` finds the invitation in any organization.
+- `sendInvitation({ organizationId, email, role })` gives `{ outcome }`:
+  `applied` or `unsupported`. `resendInvitation(invitationId)` and
+  `revokeInvitation(invitationId)` give `{ outcome }`: `applied`,
+  `not-pending`, or `unsupported`. The directory sends the email and owns the acceptance and the
+  activation of the membership. An acceptance activates only the role of the
+  accepted invitation: a membership that the acceptance makes active again,
+  from `inactive` or `pending`, keeps no other grant. Thus an invitation
+  cannot restore a grant outside the authority of its sender.
+- `invitationIdentityPolicy` is `invited-address`, when only a sign-in with
+  the invited address can accept the invitation, or `provider-rules`, when the
+  provider can also accept another identity under its own rules, for example
+  another address of the same domain.
+
+`OrganizationAdministration({ directory, records, clock? })` keeps
+`listOrganizations()` and `authorizeSelection()` and adds
+`memberOverview(actor, organizationId)`, `changeGrant(actor, request)`,
+`invitationOverview(actor, organizationId)`, `sendInvitation(actor, request)`,
+`resendInvitation(actor, request)`, and `revokeInvitation(actor, request)`. An
+`Actor` is `{ user, mfaCompleted }`. The authority rules are:
+
+- Each operation needs completed MFA first. Without it, the result is
+  `mfa-required`, before any read.
+- Then a current `membershipsOf()` read of the actor must give its active
+  membership in the organization of the request. The selected organization of
+  a session authorizes nothing. `managedRoles()`, in
+  `src/organizations/customer-roles.ts`, gives the roles that the actor
+  manages there, only from the permissions of the current grants of that
+  membership: User with the permission `user-grants:manage` (Admin), and Admin
+  with the permission `admin-grants:manage` (Super Admin). The actor can grant,
+  revoke, and invite each role that it manages. No customer role manages Super
+  Admin, and Admin and Super Admin give no User. Without one of these
+  permissions, the result is `denied`.
+- Thus a Super Admin alone can grant Admin to itself and then use that Admin
+  authority to grant User to itself, without another person. An Admin alone
+  cannot grant Admin. A member with Admin and Super Admin can grant both. After
+  a member removes its own Admin grant, its retained Super Admin grant can
+  grant Admin to itself again.
+
+`changeGrant()` checks a request in this order:
+
+1. MFA and the authority above.
+2. The requested role must be a role that the actor manages, and the action
+   must be `grant` or `revoke`; else `denied`. Thus Super Admin, an unknown
+   role, and a requested account disable, membership deactivation, or
+   credential reset are denied.
+3. A current read of the target: it must exist, belong to the organization of
+   the request, and be active; else `denied`.
+4. The revision of the request must equal the current revision; else `stale`.
+5. If the member already has the role for a grant, or lacks it for a revoke,
+   the result is `unchanged`, with no directory change.
+6. One directory change of that role on that revision. Only an explicit
+   directory result counts: `applied`, `stale`, or `unsupported`. Any other
+   answer fails and is recorded as `unknown`. The service never repeats a
+   directory change.
+
+The removal of the last application grant leaves the membership with the
+default role, which gives no permission, and leaves the identity and the other
+memberships. It denies only that organization.
+
+The invitation changes have the same authority:
+
+- `sendInvitation()` accepts only a role that the actor manages; else
+  `denied`. The invitation names exactly that role, so an Admin invitation
+  gives no User. Before it sends, the service reads every page of the pending
+  invitations of the organization, with the explicit state `pending`. While an
+  invitation to the same address, compared without letter case, for the same
+  role is pending, it sends nothing, and the result is `unchanged`. Thus a
+  repeated post or a retry after an unknown outcome sends no second
+  invitation. A send after another administrator revoked an invitation is a
+  new decision of the actor, so it sends a new invitation.
+- `resendInvitation()` and `revokeInvitation()` need an invitation that
+  exists, belongs to the organization of the request, and has a role that the
+  actor manages; else `denied`. It must be pending; else `not-pending`, with no
+  directory change. The directory can also answer `not-pending`, for example
+  when the invited person accepted at the same time.
+
+The results (`ChangeResult`, in `src/organizations/change-records.ts`) are
+`applied`, `unchanged`, `denied`, `mfa-required`, `stale`, `not-pending`, and
+`unsupported`. `ChangeRecording` runs each change in two steps: its checks with
+current reads, and then its one directory change. `ChangeRecorder.record(entry)`
+gets one frozen record for each grant change, invitation, resend, and revoke
+request, also a refused one. An overview keeps no record. A record has:
+
+- `time`: the time of the outcome from the clock, in ISO 8601 UTC;
+- `actor`: the `authority` and the `subject` of the user;
+- `organizationId`: the organization of the request;
+- `target`: `{ membershipId }`, `{ invitationId }`, or `{ email }`;
+- `action`: `invite`, `resend-invitation`, `revoke-invitation`, or the action
+  of a grant change as requested: `grant`, `revoke`, or another text, which
+  changes nothing;
+- `role`, when it is known. A resend or revoke record has the role of the
+  invitation only when the invitation belongs to the organization of the
+  request;
+- `outcome`: a result above, or `failed` when a check read failed and nothing
+  changed, or `unknown` when the directory change failed and its effect is not
+  known.
+
+A record holds no credential. The overviews, in
+`src/organizations/administration-overviews.ts`, have the same authority. Their
+paged reads, in `src/organizations/directory-reads.ts`, read every page and
+follow the cursors. A repeated cursor or more than 1,000 pages fails the read,
+and a failed page fails the overview, so that no partial result shows. Each
+record counts once by its ID, and the later record decides. A record of another
+organization is dropped.
+
+- `memberOverview()` reads the members with the explicit statuses `active`,
+  `inactive`, and `pending`. `activeUserSeats` counts the active memberships
+  with User, each one time, also with Admin or Super Admin. Admin-only,
+  Super-Admin-only, default-role, pending, and inactive memberships and
+  invitations do not count. Each member has the roles of its grants that give
+  an application permission. Each active member lists the changes that the
+  actor can make: a grant of a missing role or a revoke of a present role, for
+  each role that the actor manages. Inactive and pending members get none. The
+  overview is frozen. It is an observed live count, not a billing snapshot;
+  AUTH-11 owns billing.
+- `invitationOverview()` reads the invitations with the explicit states
+  `pending`, `accepted`, `revoked`, and `expired`. It gives each invitation
+  with the state that the directory gives, a resend and a revoke only for a
+  pending invitation of a role that the actor manages, the `invitableRoles`,
+  and the `identityPolicy` of the directory. The overview is frozen.
+
+After the session check and the current access resolution with a trusted
+tenant, as for each tenant path, the account routes give the member and
+invitation paths to `AdministrationRoutes`. The actor is the user of the
+decided context with the MFA evidence of the session. The organization is the
+organization of the decided context; query and header values do not count. A
+context without an organization gives the `403` access denial.
+
+- A `GET` or `HEAD` request for `<base>/members` or `<base>/invitations` shows
+  an overview. Other methods give `405` with `Allow: GET, HEAD`. `denied` gives
+  the `403` access denial with the link to the organization page, and
+  `mfa-required` gives `403`: "Administration needs a sign-in that completed
+  multi-factor authentication. Sign in again, complete the second step, and
+  then open this page again."
+- The members page shows "Active User seats: N", the seat rule, a help
+  paragraph about the roles, and a link to the invitations page. The help
+  paragraph says that User gives access to the product and to MCP, Admin
+  manages User, Super Admin manages Admin and billing, each role is separate,
+  and only the operator manages Super Admin. Each member shows as
+  "<email>: <status>. Roles: <roles or none>.", with one form for each change,
+  such as "Grant User to <email>" or "Revoke Admin from <email>". Each form has
+  the hidden fields `csrf_token`, `organization_id`, `membership_id`,
+  `revision`, `role`, and `action`.
+- The invitations page shows the identity policy, the one-role rule, and a
+  link to the members page. `invited-address` gives "Only a sign-in with the
+  invited email address can accept the invitation." Each other policy gives
+  "The sign-in service decides who can accept the invitation. It can accept a
+  sign-in with another address, for example an address of the same domain."
+  Each invitable role has one send form with an email field, "Invite as User"
+  or "Invite as Admin". Each invitation shows as
+  "<email>: <Role> invitation, <state>.", and a pending invitation of a role
+  that the actor manages has "Resend the invitation to <email>" and "Revoke
+  the invitation to <email>". Without an invitation, the page says "There are
+  no invitations."
+- Both pages escape the values that the provider gives and have the headers of
+  the selection page, with `form-action 'self'`.
+- The change posts are `POST <base>/members/grants` (`csrf_token`,
+  `organization_id`, `membership_id`, `revision`, `role`, `action`),
+  `POST <base>/invitations/send` (`csrf_token`, `organization_id`, `role`,
+  `email`), and `POST <base>/invitations/resend` and
+  `POST <base>/invitations/revoke` (`csrf_token`, `organization_id`,
+  `invitation_id`). Each is checked in this order: the method (else `405` with
+  `Allow: POST`); the `Origin` header, which must equal the public origin,
+  before the body is read (else `403`); the content type
+  `application/x-www-form-urlencoded` (else `415`); the body limit of 16 KiB
+  (else `413`); exactly one `csrf_token` that equals the token of the session,
+  checked first in a constant-time comparison (else `403`); exactly the named
+  fields, each one time, and no other field (else `400`); an email of at most
+  254 characters with no space or control character and one `@` between two
+  parts that are not empty, and each other value with 1 to 256 visible ASCII
+  characters (else `400`); and an `organization_id` that equals the organization of the
+  session (else `409`, "Page out of date"). `account-form.ts` has one field
+  check for the selection and for these forms.
+- Then the service gets the actor and only the fields of the change, without
+  the form token. The routes give the role and action values to the service
+  unchanged, so the service decides. `applied` and `unchanged` give `303` to
+  the members or invitations page with `Cache-Control: no-store`. `denied`
+  gives `403`, "Your account cannot make this change in the selected
+  organization. Nothing changed."; `mfa-required` gives `403`; `stale` gives
+  `409`, "The organization, the member, or the invitation changed after the
+  page was shown. Nothing changed. Open the page again and check the current
+  state."; `not-pending` gives `409`, "The invitation is no longer pending: it
+  was accepted, revoked, or expired. Nothing changed."; and `unsupported` gives
+  `503`, "The account directory cannot make this change safely now. Nothing
+  changed." A failure gives the `500` failure page and an operator report.
+- Each answer after a sign-in carries the cookie effects of the session, also a
+  redirect, a refusal, and a failure.
+
+The hosted edition gives `accountChangeRecorder(logger)`: each record becomes
+one `INFO` line in the operator log, `Account change record: <JSON>`, until
+hosted storage exists. Thus the change records stay in the operator log, and
+AUTH-08 adds no hosted storage.
+
+The WorkOS side stays deferred. AUTH-08W, which is deferred with WorkOS,
+implements these directory methods in `WorkOSOrganizations`, with live seat
+reads, and the provider proofs of safe grant and invitation effects:
+conditional changes on the revision, retries, concurrent changes, the default
+role, and an acceptance that activates only the role of the invitation, also
+for a membership that becomes active again. It must answer `unsupported` when
+it cannot make a change safely. AUTH-07W, which is deferred with WorkOS,
+implements `WorkOSOrganizations` for the reads of AUTH-07 and documents the
+operator setup and recovery runbook. Hosted storage of the change records,
+full audit logs, step-up authentication, SSO, SCIM, Okta, and a customer
+lifecycle of Super Admin stay later work. Organization rename and other
+organization settings stay deferred until the product owner decides their
+authority. The rules below stay the design of the whole slice. AUTH-08
+implements their application part and tests it with doubles. AUTH-07W and
+AUTH-08W must prove the provider parts against WorkOS, and AUTH-07W writes the
+operator runbook.
 
 Before each mutation, load current actor and target state for the requested
 organization. The actor needs authority there. Existing target memberships and
@@ -909,7 +1159,9 @@ Require completed MFA for privileged customer and operator actions. Keep basic
 change records for organization setup/recovery, role and invitation changes, and
 billing changes: actor, organization, target, changed grants or action, time,
 and outcome. Exclude credentials. Full audit-log features and step-up policy
-remain later work.
+remain later work. AUTH-08 requires MFA and keeps these records for the role
+and invitation changes. An `AccountOperation` gets no MFA evidence yet, so the
+billing change operation of AUTH-11 must add it before it can require MFA.
 
 Use WorkOS membership and role APIs with explicit status filters. Prove
 multi-role read/write behavior, effective permissions, safe grant removal, and
@@ -967,17 +1219,25 @@ shows a separate role, invariant, or lifecycle.
 | `src/auth-better-auth/local-auth-pages.ts` | Implemented: `LocalAuthPages`, the bundled sign-in, consent, and authorization error pages, which send each form post to the provider route through the Better Auth handler and adapt the answer. | 2 |
 | `migrations/auth-local/0001-better-auth.sql` | Generated schema for pinned provider configuration, including the selected admin plugin/account-status storage if used. | 2 |
 | `migrations/auth-local/0002-installation.sql` | Singleton installation identity only; no restriction on user count. | 2 |
-| `src/hosted-admin/browser-session.ts` | Implemented: `BrowserSession`, the narrow browser-session role of the account routes. AUTH-07 added the cookie effects, the CSRF token, and `selectOrganization()`. | AUTH-12, AUTH-07 |
-| `src/auth-unavailable/unavailable-hosted-authentication.ts` | Implemented: `UnavailableHostedAuthentication` and `UnavailableMcpEndpoint`, the hosted placeholder parts. AUTH-07 added the `OrganizationDirectory` that gives no membership. Slice 3 replaces them in the hosted composition. | AUTH-12, AUTH-07 |
+| `src/hosted-admin/browser-session.ts` | Implemented: `BrowserSession`, the narrow browser-session role of the account routes. AUTH-07 added the cookie effects, the CSRF token, and `selectOrganization()`. AUTH-08 added `mfaCompleted`. | AUTH-12, AUTH-07, AUTH-08 |
+| `src/auth-unavailable/unavailable-hosted-authentication.ts` | Implemented: `UnavailableHostedAuthentication` and `UnavailableMcpEndpoint`, the hosted placeholder parts. AUTH-07 added the `OrganizationDirectory` that gives no membership. AUTH-08 added empty member and invitation pages, no member or invitation for any ID, `unsupported` for each change, and the `provider-rules` policy. Slice 3 replaces them in the hosted composition. | AUTH-12, AUTH-07, AUTH-08 |
 | `src/auth-workos/workos-auth-provider.ts` | Add `WorkOSAuthProvider`, verification and current access resolution. | 3 |
-| `src/auth-workos/workos-browser-session.ts` | Add `WorkOSBrowserSession`: sign-in, callback, logout, and the `BrowserSession` role with its explicit cookie effects, a CSRF token that stays the same for the whole session, and `selectOrganization()` as a refresh with the organization. | 3 |
-| `src/organizations/organization-administration.ts` | Add `OrganizationAdministration` and its `OrganizationDirectory` contract, with explicit grant rules and current actor/target checks. Implemented in AUTH-07: `membershipsOf(user)`, `listOrganizations(user)`, and `authorizeSelection(user, organizationId)` for onboarding and organization selection. | 4 |
-| `src/auth-workos/workos-organizations.ts` | Add `WorkOSOrganizations`, multi-role membership/invitation mapping, safe grant updates, and pagination. | 3–4 |
-| `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. Implemented in AUTH-12: the session, access, and trusted-tenant checks before each account operation. Implemented in AUTH-07: the organization page and the selection, with origin and CSRF checks; the cookie effects of each answer after a sign-in; and the failure page with the operator report, also for an operation answer that cannot carry the cookie effects. | 3–4 |
-| `src/hosted-admin/account-form.ts` | Implemented in AUTH-07: the form input boundary of the account routes. It reads a form body of at most 16 KiB, and stops the reading and cancels the body when the client disconnects. It checks the CSRF token first, in a constant-time comparison, then accepts only the selection fields and checks each return destination. | AUTH-07 |
-| `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. Implemented in AUTH-12: the notice pages. Implemented in AUTH-07: the operator and invitation guidance, the authorized selection forms with escaped provider values, the refusal and failure notices, and the link from the `403` access denial page to the organization page. | 3–4 |
+| `src/auth-workos/workos-browser-session.ts` | Add `WorkOSBrowserSession`: sign-in, callback, logout, and the `BrowserSession` role with its explicit cookie effects, a CSRF token that stays the same for the whole session, `mfaCompleted` from the verified sign-in, and `selectOrganization()` as a refresh with the organization. | 3 |
+| `src/organizations/organization-directory.ts` | Implemented: the `OrganizationDirectory` contract with its records, requests, and results. AUTH-07: `membershipsOf(user)`. AUTH-08: the member, grant, and invitation methods and the invitation identity policy. | 4 |
+| `src/organizations/organization-administration.ts` | Add `OrganizationAdministration`, with explicit grant rules and current actor/target checks. Implemented in AUTH-07: `listOrganizations(user)` and `authorizeSelection(user, organizationId)` for onboarding and organization selection. Implemented in AUTH-08: `memberOverview()`, `changeGrant()`, `invitationOverview()`, `sendInvitation()`, `resendInvitation()`, and `revokeInvitation()` for an `Actor`, with the MFA check and current actor and target reads. | 4 |
+| `src/organizations/customer-roles.ts` | Implemented in AUTH-08: the customer roles that an actor manages, from the permissions of its active membership in the organization of the request (`managedRoles()`), the checks of a requested role and action (`managedChange()` and `managedRole()`), and `hasRole()`. | 4 |
+| `src/organizations/change-records.ts` | Implemented in AUTH-08: `ChangeResult`, `ChangeOutcome`, `ChangeRecord`, `ChangeRecorder`, and `ChangeRecording`, which runs each change as its checks and then one directory change, and keeps one frozen record. | 4 |
+| `src/organizations/administration-overviews.ts` | Implemented in AUTH-08: the member overview with the User seat count and the invitation overview, each with the changes that the actor can make. | 4 |
+| `src/organizations/directory-reads.ts` | Implemented in AUTH-08: the paged directory reads, with explicit statuses or states, the cursor and page limits, each record once, and no record of another organization. | 4 |
+| `src/auth-workos/workos-organizations.ts` | Add `WorkOSOrganizations`, multi-role membership/invitation mapping, safe grant updates, and pagination. AUTH-07W adds the reads of AUTH-07. AUTH-08W adds the member, grant, and invitation methods with live seat reads and answers `unsupported` when it cannot make a change safely. | 3–4 |
+| `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. Implemented in AUTH-12: the session, access, and trusted-tenant checks before each account operation. Implemented in AUTH-07: the organization page and the selection, with origin and CSRF checks; the cookie effects of each answer after a sign-in; and the failure page with the operator report, also for an operation answer that cannot carry the cookie effects. Implemented in AUTH-08: the member and invitation paths go to `AdministrationRoutes` after the access checks. | 3–4 |
+| `src/hosted-admin/administration-routes.ts` | Implemented in AUTH-08: `AdministrationRoutes`, the member and invitation pages and their changes. The actor and the organization come from the decided context and the session. Each change post gets the method, origin, form, and organization checks, and each result gets its answer. | AUTH-08 |
+| `src/hosted-admin/account-form.ts` | Implemented in AUTH-07: the form input boundary of the account routes. It reads a form body of at most 16 KiB, and stops the reading and cancels the body when the client disconnects. It checks the CSRF token first, in a constant-time comparison, then accepts only the named fields of the form, each one time, and checks each return destination. AUTH-08 added the grant change, invitation, and invitation change forms; one field check serves the selection and these forms. An email address has at most 254 characters, one `@` between two parts, and no space or control character; each other value has 1 to 256 visible ASCII characters. | AUTH-07, AUTH-08 |
+| `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. Implemented in AUTH-12: the notice pages. Implemented in AUTH-07: the operator and invitation guidance, the authorized selection forms with escaped provider values, the refusal and failure notices, and the link from the `403` access denial page to the organization page. Implemented in AUTH-08: the notices of the administration routes. | 3–4 |
+| `src/hosted-admin/administration-pages.ts` | Implemented in AUTH-08: the members page, with the User seat count and the grant forms, and the invitations page, with the identity policy and the invitation forms. | AUTH-08 |
+| `src/hosted-admin/page-html.ts` | Implemented in AUTH-08: the shared HTML parts, the page headers, and the escaping of the account pages. | AUTH-08 |
 | `docs/implementation/hosted-organization-setup.md` | Document external operator setup, Super Admin replacement/recovery, MFA, and change records. | 4 |
-| `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. Implemented for the hosted edition: the placeholder shell, `composeHostedApplication()`, `accountFailureReporter()`, and `routeHostedRequests()`. | 2–3 |
+| `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. Implemented for the hosted edition: the placeholder shell, `composeHostedApplication()`, `accountFailureReporter()`, `accountChangeRecorder()`, and `routeHostedRequests()`. | 2–3 |
 | `src/http/server.ts` | Node HTTP bridge and shutdown, implemented; hosted metadata in slice 3. | 2–3 |
 | `src/index.ts` | Replace hello-world startup; dispatch server and operator commands. | 2–4 |
 | `src/billing/billing.ts` | `Billing` interface and `BillingState`. Implemented. | 6 |
@@ -995,27 +1255,49 @@ narrow directory and session doubles under `test/unit/`, importing shared
 contracts as types only. `BrowserSessionDouble`, in
 `test/unit/hosted-admin/fixtures/browser-session-double.ts`, gives configured
 session states. `SignedInSessionDouble`, in the same file, gives a signed-in
-session with a configured switch answer and records each switch.
-`OrganizationDirectoryDouble`, in `test/unit/organizations/fixtures/`, and
-`OrganizationAdministrationDouble`, in `test/unit/hosted-admin/fixtures/`, give
-configured memberships or organizations, or a configured failure. The
-integration tests of the hosted composition add `MembershipDirectoryDouble`, an
-`AccessResolver` and `OrganizationDirectory` that reads configured memberships,
-and `AccountOperationProbe`, a test-only protected operation. The organization
-tests also use `BrowserSessionStore`, a stateful browser session whose cookie
-key changes at each refresh, as with rotating refresh tokens, and
+session with its MFA evidence and a configured switch answer, and records each
+switch. `OrganizationDirectoryDouble`, in
+`test/unit/organizations/fixtures/organization-directory-double.ts`, is a
+stateful double of the whole `OrganizationDirectory` contract: a change takes
+effect in the later reads, each grant change needs the current revision of the
+membership, and an acceptance activates only the role of the invitation. A
+test can lay out the pages of each read, make a read fail, queue a result or a
+failure before or after the effect for the next change, hold the changes to
+run them at the same time, and accept or expire an invitation. Its change
+answers and records are in `change-answers.ts` and
+`directory-double-records.ts` in the same directory.
+`OrganizationAdministrationDouble`, in `test/unit/hosted-admin/fixtures/`,
+gives configured organizations, overviews, and change results, or a
+configured failure, and records each call. The integration tests of the hosted
+composition add `MembershipDirectoryDouble`, which extends
+`OrganizationDirectoryDouble` with an `AccessResolver` that reads the same
+memberships, and `AccountOperationProbe`, a test-only protected operation. The
+organization tests also use `BrowserSessionStore`, a stateful browser session
+whose cookie key changes at each refresh, as with rotating refresh tokens, and
+which keeps the MFA evidence of each session at a refresh and a switch, and
 `HostedBrowser`, which keeps the cookies of each answer as a browser does.
-`hosted-organization-site.ts` is the shared site of the organization
-integration and acceptance tests: the real hosted composition, routes,
-`OrganizationAdministration`, access contracts, and MCPServer with
+`hosted-organization-site.ts` is the shared site of the organization and
+administration integration and acceptance tests: the real hosted composition,
+routes, `OrganizationAdministration`, access contracts, and MCPServer with
 `BrowserSessionStore`, `MembershipDirectoryDouble`, `IdentityVerifierMock`, and
 `AccountOperationProbe` destinations, in the test process
 (`openOrganizationSite()`) or behind the real HTTP server on a loopback port
-(`serveOrganizationSite()`). The site, `MembershipDirectoryDouble`,
+(`serveOrganizationSite()`). A setup can give the memberships, more MCP tokens,
+and a change recorder; the site keeps each change record, and `browserOf()`
+can sign in a session without MFA. `hosted-administration.ts` gives the
+memberships, `serveAdministrationSite()`, and the page helpers of the AUTH-08
+tests. The site,
+`hosted-administration.ts`, `MembershipDirectoryDouble`,
 `AccountOperationProbe`, `BrowserSessionStore`, and `HostedBrowser` are in
 `test/support/`. The unit tests of the organization routes share
 `serveAnn()`, the form helpers, and the session cookies of
-`test/unit/hosted-admin/fixtures/organization-routes-fixtures.ts`.
+`test/unit/hosted-admin/fixtures/organization-routes-fixtures.ts`. The unit
+tests of the administration routes share the overviews, the valid change
+posts, and `serveAdministration()` of
+`test/unit/hosted-admin/fixtures/administration-routes-fixtures.ts`. The unit
+tests of `OrganizationAdministration` share the memberships, the actors, and
+the record checks of
+`test/unit/organizations/fixtures/administration-fixtures.ts`.
 
 ## Implementation slices
 
@@ -1078,9 +1360,9 @@ behavior.
 | `test/unit/auth-better-auth/local-auth-command.test.ts` | Command validation, explicit user targets, hidden password input, safe output, and client registration dispatch with lifecycle doubles. Implemented, with `local-auth-command-users.test.ts` and `local-auth-command-clients.test.ts`. |
 | `test/unit/auth-better-auth/local-user-administration.test.ts` | Account lifecycle and selected-user reset/disable/revocation decisions with provider doubles. Implemented, with `local-user-administration-revocation.test.ts` and `local-user-administration-clients.test.ts`. |
 | `test/unit/terminal/hidden-line-input.test.ts` | Implemented: hidden terminal prompts, piped lines, ended input, Ctrl-C and Ctrl-D, input errors, and release of standard input. |
-| `test/unit/organizations/organization-administration.test.ts` | Actor/target organization checks, current/proposed grants, self-grants, selective removal, and safe retry decisions with a directory double. Implemented so far, with `OrganizationDirectoryDouble`: only active memberships with an application permission are listed, the selected mark, a current read for each list and selection, exact selection checks, and read failures that reach the caller. |
-| `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. Implemented so far: the order of the session, access, and operation steps, each refusal, and the notice pages. `account-routes-effects.test.ts` adds the failure page with the operator report, also for an operation answer that cannot carry the cookie effects, the cookie effects of each answer, and the link from the `403` page to the organization page. `account-routes-organization-page.test.ts`, `account-routes-selection-input.test.ts`, and `account-routes-selection.test.ts` add the organization page, the input checks of a selection post, and the selection decision with `OrganizationAdministrationDouble`: form validation, origin and CSRF checks, return destinations, body limits, a client that disconnects during the body, the order of the cookies, and failures. |
-| `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts` | Implemented: the placeholder gives no identity, no grant, and no membership for any cookie or user, and its MCP endpoint gives only the unavailable answer. |
+| `test/unit/organizations/organization-administration.test.ts` | Actor/target organization checks, current/proposed grants, self-grants, selective removal, and safe retry decisions with a directory double. Implemented, with `OrganizationDirectoryDouble`. This file covers the AUTH-07 list and selection: only active memberships with an application permission are listed, the selected mark, a current read for each list and selection, exact selection checks, and read failures that reach the caller. For AUTH-08, `organization-administration-grants.test.ts` and `organization-administration-targets.test.ts` add the grant authority, self-grants, selective removal, the last grant, forged roles and actions, the actor and target organization checks, MFA, and the exact directory change and record. `organization-administration-changes.test.ts` adds revisions, concurrent changes, retries after an unknown outcome, and the results and failures of the directory. `organization-administration-members.test.ts` adds the member overview and the seat count, with paging, repeats, limits, and failures. `organization-administration-invitations.test.ts` and `organization-administration-invitation-overview.test.ts` add the invitations: one role for each invitation, duplicate sends, resends and revokes, states, the identity policy, and records. |
+| `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. Implemented so far: the order of the session, access, and operation steps, each refusal, and the notice pages. `account-routes-effects.test.ts` adds the failure page with the operator report, also for an operation answer that cannot carry the cookie effects, the cookie effects of each answer, and the link from the `403` page to the organization page. `account-routes-organization-page.test.ts`, `account-routes-selection-input.test.ts`, and `account-routes-selection.test.ts` add the organization page, the input checks of a selection post, and the selection decision with `OrganizationAdministrationDouble`: form validation, origin and CSRF checks, return destinations, body limits, a client that disconnects during the body, the order of the cookies, and failures. `account-routes-administration-pages.test.ts`, `account-routes-administration-changes.test.ts`, and `account-routes-administration-input.test.ts` add the member and invitation pages, the answer for each change result, and the input checks of a change post: the actor and organization from the decided context and the session, the MFA evidence, escaped provider values, origin and CSRF checks, exact fields, address checks, the organization of the session, body limits, and failures. |
+| `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts` | Implemented: the placeholder gives no identity, no grant, no membership, no member, and no invitation for any cookie, user, or ID, answers `unsupported` to each change, and its MCP endpoint gives only the unavailable answer. |
 | `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. WorkOS values change no hosted record and appear in no error. |
 | `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. |
 | `test/integration/auth/mcp-context.test.ts` | Real provider/MCP collaboration, error mapping, and sequential/concurrent isolation. |
@@ -1088,11 +1370,16 @@ behavior.
 | `test/acceptance/auth/local-user-commands.test.ts`, `local-client-registration.test.ts` | Implemented: offline add and list with hidden passwords and no network, targeted reset and disable with peers, the live-server lock for each command, zero-account recovery, and approved client registration. |
 | `test/integration/auth/local-access.test.ts` | Two distinct user subjects in one tenant; equal evaluation permissions, separate sessions, current account-state checks, disabled login and issuance, no refresh grant, and disabled-user denial after token verification. |
 | `test/integration/auth/local-installation.test.ts` | Application/provider startup collaboration: one persistent installation UUID; reset/disable preserve IDs; backup/restore preserve database and secrets; existing data without identity fails closed. |
-| `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. Implemented so far: the hosted composition with session and membership-directory doubles keeps the organization context of each request and combines only the explicit permissions of independent grants. `hosted-organizations.test.ts` covers same-user browser/MCP isolation and IDOR for organization selection. |
+| `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. Implemented so far: the hosted composition with session and membership-directory doubles keeps the organization context of each request and combines only the explicit permissions of independent grants. `hosted-organizations.test.ts` covers same-user browser/MCP isolation and IDOR for organization selection, and `hosted-administration.test.ts` covers forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat failures. |
+| `test/integration/auth/hosted-administration.test.ts` | Implemented, in the test process through `openOrganizationSite()` with the AUTH-08 memberships: direct service calls on the directory of the site follow the rules of the forms, and the next MCP and account requests use the current grants; two changes from the same revision at the same time give one change and one out-of-date answer; a directory change that fails after its effect gives the failure page with the refreshed session cookie, an operator log line, and an `unknown` record, and its retry is out of date; `unsupported` answers change nothing; the change records reach the operator log without a credential; a member page outage gives no partial count; and the production composition gives only the unavailable notice. |
 | `test/integration/auth/hosted-organizations.test.ts` | Implemented, in the test process through `openOrganizationSite()`: the real hosted composition, account routes, `OrganizationAdministration`, access contracts, and MCPServer, with doubles only for the browser session, the membership directory, and the MCP token verifier. Onboarding guidance without an authorized membership while each tenant page stays refused; selection decided by a current read; a browser switch that changes no MCP token and no other browser session; no selection of another user's organization, also with forged values; independent permissions of each destination and the MCP tool; the failure page with the refreshed session cookie and an operator log line during an outage; and the production composition, which gives only the unavailable notice. |
-| `test/acceptance/auth/hosted-placeholder.test.ts` | Implemented: the built server with hosted settings and no WorkOS setting serves the authentication-unavailable notice; MCP, account, organization, and billing paths with forged credentials and organization values get `503` without a cookie or a Bearer challenge; WorkOS values turn on nothing; test and demonstration settings with the session cookie, form token, and organization values of the doubles still give only the notice; an invalid common setting stops startup; no process uses the network. |
+| `test/acceptance/auth/hosted-placeholder.test.ts` | Implemented: the built server with hosted settings and no WorkOS setting serves the authentication-unavailable notice; MCP, account, organization, member, invitation, and billing paths, also the grant and invitation changes, with forged credentials and organization values get `503` without a cookie or a Bearer challenge; WorkOS values turn on nothing; test and demonstration settings with the session cookie, form token, and organization values of the doubles still give only the notice; an invalid common setting stops startup; no process uses the network. |
 | `test/acceptance/auth/hosted-organizations.test.ts` | Implemented, behind the real HTTP server on a loopback port through `serveOrganizationSite()`: the real hosted composition with `BrowserSessionStore`, `MembershipDirectoryDouble`, `HostedBrowser`, `AccountOperationProbe` destinations, and a real MCPServer with `IdentityVerifierMock`. Onboarding guidance without an authorized active organization, and a `403` tenant page that links to the organization page; selection of an authorized organization with a new session cookie; refused selections without a switch; and Super Admin alone without inferred Admin or User grants. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/hosted-organization-requests.test.ts` | Implemented, with the same site behind the real HTTP server: cross-site, token, destination, and extra-field refusals that still give the refreshed session cookie; an ended session and a session lookup outage; and, after a selection, no route that creates, resumes, renames, or changes the settings of an organization. These tests prove application policy, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-grants.test.ts` | Implemented, with the same site behind the real HTTP server through `serveAdministrationSite()` and the AUTH-08 memberships: Super Admin self-grants of Admin and then User without another person; a revoked Admin grant that refuses the next Admin request of an existing session while User and MCP access stay; a revoke of the own User grant; an Admin regrant through a retained Super Admin grant; and the removal of the last application grant, which denies only that organization. These tests prove application policy, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-grant-refusals.test.ts` | Implemented, with the same site: forged grant, revoke, disable, deactivate, and reset forms of an Admin; a form that names a member of another organization; a sign-in without MFA; and origin, form token, and organization checks that still give the refreshed session cookie. These tests prove application policy, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-invitations.test.ts` | Implemented, with the same site: the invitable role of each sender, also with forged roles, and an accepted Admin invitation without User; each invitation state as the directory gives it, resends and revokes, and no invitation token on a page or in a record; the identity policy text; an acceptance that activates only the role of the invitation; a duplicate send of a pending invitation and a new send after a revoke; and a sign-in without MFA. These tests prove application policy, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-seats.test.ts` | Implemented, with the same site: the User seat count of two organizations across pages with repeated members, without Admin-only, Super-Admin-only, default-role, pending, and inactive memberships and invitations; and a failed member or invitation page without a partial count or list. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
 | `test/acceptance/auth/self-hosted-container.test.ts` | Implemented with `npm run test:container`: offline bundled CLI with stopped-server volume access; commands reject the live lock, also inside the server container; two-user login, consent, and re-authorization after restart and container/image replacement; installation/user IDs, sessions, consents, and tokens survive backup/restore; fresh and identity-less data; targeted reset/disable with peer access; zero-account recovery; refused hosted and paid paths; the hosted placeholder in the image; image contents and the Compose service. |
 | `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. |
@@ -1119,6 +1406,11 @@ Include these explicit acceptance specifications:
 - Given a current browser session or MCP token, when the last grant in its
   selected organization is removed, then the next protected request is denied
   there, with no default-role access; other authorized memberships still work.
+
+AUTH-08 implemented these specifications offline with doubles, in
+`hosted-grants.test.ts` and `hosted-grant-refusals.test.ts`, and the direct
+service calls in `hosted-administration.test.ts`. The hosted live gate must
+still prove them with WorkOS.
 
 Unit tests replace other Delamain packages at public boundaries. Real
 cross-package execution is integration coverage, including provider execution

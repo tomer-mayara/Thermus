@@ -3,31 +3,25 @@ import {
   type AccessDecision,
   type AccessResolver,
   type AuthenticatedUser,
-  type RoleGrant,
 } from '../../src/auth/access-context.ts';
-import type { OrganizationDirectory, OrganizationMembership } from '../../src/organizations/organization-administration.ts';
+import type { MemberSeed } from '../unit/organizations/fixtures/directory-double-records.ts';
+import { OrganizationDirectoryDouble } from '../unit/organizations/fixtures/organization-directory-double.ts';
 
-export interface MembershipRecord {
-  readonly subject: string;
-  readonly organizationId: string;
+export interface MembershipRecord extends MemberSeed {
   readonly organizationName: string;
   readonly active: boolean;
-  readonly grants: readonly RoleGrant[];
 }
 
-// Reads the configured memberships for access resolution and for the organization reads, as the hosted provider will
-// read the same provider state for both.
-export class MembershipDirectoryDouble implements AccessResolver, OrganizationDirectory {
+// Reads the configured memberships for access resolution and for the organization work, as the hosted provider will
+// read the same provider state for both. A grant change takes effect in the next access resolution.
+export class MembershipDirectoryDouble extends OrganizationDirectoryDouble implements AccessResolver {
   readonly calls: AuthenticatedUser[] = [];
-  readonly membershipReads: AuthenticatedUser[] = [];
-  private readonly authority: string;
-  private memberships: readonly MembershipRecord[];
   private readonly paused = new Map<string, Promise<void>>();
-  private readOutage?: Error;
 
   constructor(authority: string, memberships: readonly MembershipRecord[]) {
+    super();
     this.authority = authority;
-    this.memberships = memberships;
+    this.replaceMemberships(memberships);
   }
 
   pauseResolution(subject: string, organizationId: string): () => void {
@@ -37,11 +31,7 @@ export class MembershipDirectoryDouble implements AccessResolver, OrganizationDi
   }
 
   replaceMemberships(memberships: readonly MembershipRecord[]): void {
-    this.memberships = memberships;
-  }
-
-  failMembershipReads(outage: Error | undefined): void {
-    this.readOutage = outage;
+    this.replaceMembers(memberships.map((record) => ({ ...record, status: record.status ?? (record.active ? 'active' : 'inactive') })));
   }
 
   async resolve(user: AuthenticatedUser): Promise<AccessDecision> {
@@ -50,18 +40,9 @@ export class MembershipDirectoryDouble implements AccessResolver, OrganizationDi
     if (user.authority !== this.authority) return { allowed: false, reason: 'account-inactive' };
     if (organizationId === undefined) return { allowed: false, reason: 'organization-required' };
     await this.paused.get(`${user.subject} ${organizationId}`);
-    const membership = this.memberships.find((record) => record.subject === user.subject && record.organizationId === organizationId);
-    if (membership === undefined || !membership.active) return { allowed: false, reason: 'membership-inactive' };
+    const membership = this.membershipIn(user.subject, organizationId);
+    if (membership === undefined || membership.status !== 'active') return { allowed: false, reason: 'membership-inactive' };
     const context = createRequestContext({ user, tenantId: `hosted:${organizationId}`, organizationId, grants: membership.grants });
     return { allowed: true, context };
-  }
-
-  async membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]> {
-    this.membershipReads.push(user);
-    if (this.readOutage !== undefined) throw this.readOutage;
-    if (user.authority !== this.authority) return [];
-    return this.memberships
-      .filter((record) => record.subject === user.subject)
-      .map(({ organizationId, organizationName, active, grants }) => ({ organizationId, organizationName, active, grants }));
   }
 }

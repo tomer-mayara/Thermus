@@ -7,10 +7,11 @@ import type { AccountFailureReporter } from '../../src/hosted-admin/account-rout
 import { startHttpServer } from '../../src/http/server.ts';
 import type { VerifiedIdentity } from '../../src/mcp/identity-verifier.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
+import type { ChangeRecord, ChangeRecorder } from '../../src/organizations/change-records.ts';
 import { IdentityVerifierMock } from '../unit/mcp/fixtures/identity-verifier-mock.ts';
 import { mcpRequest, rpcResult } from '../unit/mcp/fixtures/mcp-http-request.ts';
 import { AccountOperationProbe } from './account-operation-probe.ts';
-import { BrowserSessionStore } from './browser-session-store.ts';
+import { BrowserSessionStore, type SignInOptions } from './browser-session-store.ts';
 import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from './hosted-browser.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from './membership-directory-double.ts';
 import { RequestContextProbe } from './request-context-probe.ts';
@@ -55,6 +56,12 @@ export interface SiteSetup {
   readonly reportFailure: AccountFailureReporter;
   // Each of these users has the MCP token "<subject>-token", which carries the organization that the user selected.
   readonly mcpUsers?: readonly AuthenticatedUser[];
+  // More MCP tokens, each with the user and the organization that it carries.
+  readonly mcpTokens?: ReadonlyMap<string, AuthenticatedUser>;
+  // The memberships of the directory. The default is `members`.
+  readonly memberships?: readonly MembershipRecord[];
+  // Gets each change record too, after the site keeps it in `records`.
+  readonly changeRecords?: ChangeRecorder;
 }
 
 export interface OrganizationSite {
@@ -63,8 +70,9 @@ export interface OrganizationSite {
   readonly directory: MembershipDirectoryDouble;
   readonly pages: AccountOperationProbe;
   readonly tools: RequestContextProbe;
+  readonly records: readonly ChangeRecord[];
   readonly transport: BrowserTransport;
-  browserOf(user: AuthenticatedUser): HostedBrowser;
+  browserOf(user: AuthenticatedUser, options?: SignInOptions): HostedBrowser;
   callTool(token: string): Promise<Record<string, unknown>>;
 }
 
@@ -107,10 +115,12 @@ export async function contextAt(browser: HostedBrowser, path: string): Promise<R
 
 function composeSite(setup: SiteSetup) {
   const sessions = new BrowserSessionStore();
-  const directory = new MembershipDirectoryDouble(authority, members);
+  const directory = new MembershipDirectoryDouble(authority, setup.memberships ?? members);
   const pages = new AccountOperationProbe(destinations);
   const tools = new RequestContextProbe();
-  const tokens = new Map((setup.mcpUsers ?? []).map((user) => [`${user.subject}-token`, identityOf(user)]));
+  const records: ChangeRecord[] = [];
+  const tokenUsers = [...(setup.mcpUsers ?? []).map((user): [string, AuthenticatedUser] => [`${user.subject}-token`, user]), ...(setup.mcpTokens ?? [])];
+  const tokens = new Map(tokenUsers.map(([token, user]) => [token, identityOf(user)]));
   const mcp = new MCPServer({
     auth: { verifier: new IdentityVerifierMock(tokens), accessResolver: directory, resourceMetadataUrl: hostedConfig.resourceMetadataUrl, expectedResource: new URL(hostedConfig.mcpResourceUrl) },
     registerTools: tools.register,
@@ -119,16 +129,16 @@ function composeSite(setup: SiteSetup) {
   const application = composeHostedApplication(
     hostedConfig,
     { session: sessions, accessResolver: directory, organizations: directory, mcp },
-    { reportFailure: setup.reportFailure, operation: pages.operation },
+    { reportFailure: setup.reportFailure, changeRecords: { record: (entry) => { records.push(entry); setup.changeRecords?.record(entry); } }, operation: pages.operation },
   );
-  return { application, sessions, directory, pages, tools };
+  return { application, sessions, directory, pages, tools, records };
 }
 
 function siteWith(parts: ReturnType<typeof composeSite>, transport: BrowserTransport): OrganizationSite {
   return {
     ...parts,
     transport,
-    browserOf: (user) => new HostedBrowser(transport, hostedConfig.publicBaseUrl, parts.sessions.signIn(user)),
+    browserOf: (user, options) => new HostedBrowser(transport, hostedConfig.publicBaseUrl, parts.sessions.signIn(user, options)),
     callTool: async (token) => rpcResult(await transport(mcpRequest({
       url: hostedConfig.mcpResourceUrl,
       method: 'tools/call',

@@ -6,7 +6,7 @@ import type { AuthorizedOrganization } from '../../../../src/organizations/organ
 import { AccessResolverMock, type ConfiguredAccess } from '../../mcp/fixtures/access-resolver-mock.ts';
 import { AccountOperationDouble, type OperationAnswer } from './account-operation-double.ts';
 import { BrowserSessionDouble, SignedInSessionDouble, type ConfiguredSession, type SignedInSetup } from './browser-session-double.ts';
-import { OrganizationAdministrationDouble, type ConfiguredOrganizations } from './organization-administration-double.ts';
+import { OrganizationAdministrationDouble, type AdministrationSetup, type ConfiguredOrganizations } from './organization-administration-double.ts';
 
 export const publicBaseUrl = 'https://magumagu.example/';
 export const publicOrigin = 'https://magumagu.example';
@@ -29,6 +29,7 @@ export interface Setup {
   readonly otherSession?: BrowserSessionState;
   readonly decisions?: ReadonlyMap<string, ConfiguredAccess>;
   readonly organizations?: ReadonlyMap<string, ConfiguredOrganizations>;
+  readonly administration?: AdministrationSetup;
   readonly withOperation?: boolean;
   readonly operationAnswer?: OperationAnswer;
 }
@@ -36,7 +37,7 @@ export interface Setup {
 export function serve(setup: Setup) {
   const session = new BrowserSessionDouble(setup.sessions, setup.otherSession);
   const resolver = new AccessResolverMock(setup.decisions);
-  const organizations = new OrganizationAdministrationDouble(setup.organizations);
+  const organizations = new OrganizationAdministrationDouble(setup.organizations, setup.administration);
   const operations = new AccountOperationDouble(setup.operationAnswer);
   const failures: AccountFailureReport[] = [];
   const operation = setup.withOperation === false ? undefined : operations.operation;

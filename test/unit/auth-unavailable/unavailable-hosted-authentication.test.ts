@@ -54,6 +54,38 @@ describe('UnavailableHostedAuthentication', () => {
     assert.deepEqual(memberships, anyUsers.map(() => []));
     assert.ok(memberships.every((list) => Object.isFrozen(list)));
   });
+
+  test('Given any organization, membership, or invitation ID, when the administration reads run, then no member or invitation is given, and the invitation policy claims no strict address match', async () => {
+    const authentication = new UnavailableHostedAuthentication();
+
+    const pages = [
+      await authentication.memberPage({ organizationId: 'org_01FORGED', statuses: ['active', 'inactive', 'pending'] }),
+      await authentication.memberPage({ organizationId: 'org_01FORGED', statuses: ['active'], cursor: 'forged-cursor' }),
+      await authentication.invitationPage({ organizationId: 'org_01FORGED', states: ['pending', 'accepted', 'revoked', 'expired'] }),
+    ];
+    const records = [await authentication.member('om_01FORGED'), await authentication.invitation('invitation_01FORGED')];
+
+    assert.deepEqual(pages, pages.map(() => ({ items: [] })));
+    assert.ok(pages.every((page) => Object.isFrozen(page) && Object.isFrozen(page.items)));
+    assert.deepEqual(records, [undefined, undefined]);
+    assert.equal(authentication.invitationIdentityPolicy, 'provider-rules');
+  });
+
+  test('Given any grant or invitation change, also for a forged organization, membership, or invitation, when it is requested, then the placeholder changes nothing and answers that it cannot make the change safely', async () => {
+    const authentication = new UnavailableHostedAuthentication();
+
+    const answers = [
+      await authentication.changeGrant({ membershipId: 'om_01FORGED', role: 'admin', action: 'grant', revision: 'r1' }),
+      await authentication.changeGrant({ membershipId: 'om_01FORGED', role: 'user', action: 'revoke', revision: 'r1' }),
+      await authentication.sendInvitation({ organizationId: 'org_01FORGED', email: 'eve@example.com', role: 'admin' }),
+      await authentication.resendInvitation('invitation_01FORGED'),
+      await authentication.revokeInvitation('invitation_01FORGED'),
+    ];
+
+    assert.deepEqual(answers, answers.map(() => ({ outcome: 'unsupported' })));
+    assert.ok(answers.every((answer) => Object.isFrozen(answer)));
+    assert.deepEqual(await authentication.memberPage({ organizationId: 'org_01FORGED', statuses: ['active'] }), { items: [] });
+  });
 });
 
 describe('UnavailableMcpEndpoint', () => {

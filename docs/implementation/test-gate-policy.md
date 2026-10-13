@@ -157,27 +157,44 @@ docker image rm --force $(docker image ls --quiet --filter label=magumagu.contai
 
 AUTH-12 added the hosted placeholder: with `DEPLOYMENT=hosted`, the server
 answers each request with the authentication-unavailable notice. AUTH-07 added
-organization onboarding and selection behind the provider contracts; in
-production, the placeholder keeps them unavailable too. The tests run offline
-and need no WorkOS account, credential, SDK, or network access. They use doubles
-at the provider contracts. They are in the existing suites:
+organization onboarding and selection behind the provider contracts, and
+AUTH-08 added User and Admin grant management, invitations, change records, and
+the User seat summary. In production, the placeholder keeps them unavailable
+too. The tests run offline and need no WorkOS account, credential, SDK, or
+network access. They use doubles at the provider contracts. They are in the
+existing suites:
 
 - unit: `test/unit/hosted-admin/account-routes.test.ts`,
   `test/unit/hosted-admin/account-routes-effects.test.ts`,
   `test/unit/hosted-admin/account-routes-organization-page.test.ts`,
   `test/unit/hosted-admin/account-routes-selection-input.test.ts`,
   `test/unit/hosted-admin/account-routes-selection.test.ts`,
+  `test/unit/hosted-admin/account-routes-administration-pages.test.ts`,
+  `test/unit/hosted-admin/account-routes-administration-changes.test.ts`,
+  `test/unit/hosted-admin/account-routes-administration-input.test.ts`,
   `test/unit/organizations/organization-administration.test.ts`,
+  `test/unit/organizations/organization-administration-grants.test.ts`,
+  `test/unit/organizations/organization-administration-targets.test.ts`,
+  `test/unit/organizations/organization-administration-changes.test.ts`,
+  `test/unit/organizations/organization-administration-members.test.ts`,
+  `test/unit/organizations/organization-administration-invitations.test.ts`,
+  `test/unit/organizations/organization-administration-invitation-overview.test.ts`,
   `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`,
-  `test/unit/config/deployment-config.test.ts`, and
-  `test/unit/application.test.ts`, in `npm run check`;
+  `test/unit/config/deployment-config.test.ts`,
+  `test/unit/application.test.ts`, and
+  `test/unit/application-operator-log.test.ts`, in `npm run check`;
 - integration: `test/integration/auth/hosted-account.test.ts`,
-  `test/integration/auth/hosted-organizations.test.ts`, and
+  `test/integration/auth/hosted-organizations.test.ts`,
+  `test/integration/auth/hosted-administration.test.ts`, and
   `test/integration/auth/local-installation.test.ts`, in
   `npm run test:integration`;
 - acceptance: `test/acceptance/auth/hosted-placeholder.test.ts`,
-  `test/acceptance/auth/hosted-organizations.test.ts`, and
-  `test/acceptance/auth/hosted-organization-requests.test.ts`, in
+  `test/acceptance/auth/hosted-organizations.test.ts`,
+  `test/acceptance/auth/hosted-organization-requests.test.ts`,
+  `test/acceptance/auth/hosted-grants.test.ts`,
+  `test/acceptance/auth/hosted-grant-refusals.test.ts`,
+  `test/acceptance/auth/hosted-invitations.test.ts`, and
+  `test/acceptance/auth/hosted-seats.test.ts`, in
   `npm run test:acceptance`. The container gate also starts the image with
   `DEPLOYMENT=hosted`.
 
@@ -185,13 +202,14 @@ This command is the offline gate of the placeholder. It runs the hosted
 integration and acceptance files:
 
 ```sh
-npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-placeholder.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/acceptance/auth/hosted-placeholder.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
 ```
 
 A pass shows only the behavior of the placeholder and the application policy of
-the hosted routes with doubles. It is never a pass of the
-[hosted live gate](#hosted-live-gate-auth-06) and never proof of WorkOS
-behavior. Do not report it as either.
+the hosted routes and of `OrganizationAdministration` with doubles. It is never
+a pass of the [hosted live gate](#hosted-live-gate-auth-06) and never proof of
+WorkOS behavior, such as safe grant changes or invitation acceptance in WorkOS.
+Do not report it as either.
 
 ## Self-hosted release
 

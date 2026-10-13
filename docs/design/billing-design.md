@@ -362,8 +362,8 @@ call to each protected request; it is not proposed.
 - (b) Several hosted instances with a managed PostgreSQL database. This needs
   a database service, a client package, and a test database.
 
-If AUTH-07 or AUTH-08 gives change records hosted storage first, billing uses
-the same storage. `BillingFree` needs no storage.
+AUTH-08 keeps its change records in the operator log and adds no hosted
+storage, so AUTH-11 chooses the storage. `BillingFree` needs no storage.
 
 ## Rules for every paid implementation
 

@@ -12,6 +12,7 @@ export type ConfiguredSwitch = OrganizationSwitch | Error;
 
 export interface SignedInSetup {
   readonly csrfToken?: string;
+  readonly mfaCompleted?: boolean;
   readonly cookies?: CookieEffects;
   readonly switchTo?: ConfiguredSwitch;
 }
@@ -40,12 +41,14 @@ export class SignedInSessionDouble implements SignedInBrowserSession {
   readonly switches: string[] = [];
   readonly user: AuthenticatedUser;
   readonly csrfToken: string;
+  readonly mfaCompleted: boolean;
   readonly cookies: CookieEffects;
   private readonly switchTo: ConfiguredSwitch;
 
   constructor(user: AuthenticatedUser, setup: SignedInSetup = {}) {
     this.user = user;
     this.csrfToken = setup.csrfToken ?? `csrf-token-of-${user.subject}`;
+    this.mfaCompleted = setup.mfaCompleted ?? true;
     this.cookies = setup.cookies ?? [];
     this.switchTo = setup.switchTo ?? { status: 'switched', cookies: [] };
   }

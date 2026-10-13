@@ -15,6 +15,9 @@ export interface SignedInBrowserSession {
   // A secret of this session. Each form of the account pages sends it back, so that another site cannot post a form.
   // It stays the same for the whole session, also after a refresh or a switch, so that a form shown before still posts.
   readonly csrfToken: string;
+  // True only when the provider proved that the sign-in of this session completed a multi-factor challenge. An
+  // enrollment alone is no proof. Each administration operation needs it.
+  readonly mfaCompleted: boolean;
   readonly cookies: CookieEffects;
   // Only this call changes the organization of the session, and only for this browser. The account routes call it
   // after OrganizationAdministration found an authorized active membership. A failure, such as an outage, throws.

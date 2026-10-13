@@ -67,7 +67,8 @@ function serve() {
   const directory = new MembershipDirectoryDouble(authority, memberships);
   const probe = new AccountOperationProbe(operationPermissions);
   const mcp = new McpEndpointDouble();
-  const application = composeHostedApplication(config, { session, accessResolver: directory, organizations: directory, mcp }, { reportFailure: () => {}, operation: probe.operation });
+  const account = { reportFailure: () => {}, changeRecords: { record: () => {} }, operation: probe.operation };
+  const application = composeHostedApplication(config, { session, accessResolver: directory, organizations: directory, mcp }, account);
   return { application, session, directory, probe, mcp };
 }
 

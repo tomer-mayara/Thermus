@@ -1,4 +1,9 @@
 import { timingSafeEqual } from 'node:crypto';
+import type {
+  GrantChangeRequest,
+  InvitationChangeRequest,
+  InvitationSendRequest,
+} from '../organizations/organization-administration.ts';
 import type { NoticeName } from './account-pages.ts';
 
 export type FormRefusal = Extract<NoticeName, 'formTypeRefused' | 'formTooLarge' | 'forgedRequest' | 'invalidRequest'>;
@@ -13,9 +18,12 @@ const DESTINATION_LIMIT = 1_024;
 // Path characters of RFC 3986. A query, a fragment, a backslash, a space, and a control character are not path
 // characters, and a second slash at the start would name another host.
 const DESTINATION_PATH = /^\/(?!\/)[A-Za-z0-9\-._~!$&'()*+,;=:@%/]*$/;
-// A provider ID is visible ASCII text.
-const ORGANIZATION_ID = /^[\x21-\x7E]{1,256}$/;
-const SELECTION_FIELDS: ReadonlySet<string> = new Set(['csrf_token', 'organization_id', 'return_to']);
+// A provider ID, a revision, a role, or an action is visible ASCII text. The service decides which roles and actions
+// it accepts.
+const FIELD_VALUE = /^[\x21-\x7E]{1,256}$/;
+// An address without a space or a control character, with one @ between two parts. The provider checks the rest.
+const EMAIL = /^[^\s@\x00-\x1F\x7F]+@[^\s@\x00-\x1F\x7F]+$/;
+const EMAIL_LIMIT = 254;
 
 // A return destination is a path under the public path, so that the redirect after a form goes only to a page of this
 // service.
@@ -47,15 +55,36 @@ export function single(values: readonly string[]): string | undefined {
   return values.length === 1 ? values[0] : undefined;
 }
 
-// The form token comes first, so that a forged post learns nothing about its other fields. The form has no other
-// field, so that a selection cannot also change an organization or a grant.
+// The form has no other field, so that a selection cannot also change an organization or a grant.
 export function selectionIn(form: URLSearchParams, csrfToken: string, destinations: ReturnDestinations): Selection | FormRefusal {
-  if (!isSessionToken(single(form.getAll('csrf_token')), csrfToken)) return 'forgedRequest';
-  if ([...form.keys()].some((name) => !SELECTION_FIELDS.has(name))) return 'invalidRequest';
-  const organizationId = single(form.getAll('organization_id'));
-  const returnTo = destinations.check(single(form.getAll('return_to')));
-  if (organizationId === undefined || !ORGANIZATION_ID.test(organizationId) || returnTo === undefined) return 'invalidRequest';
-  return { organizationId, returnTo };
+  const fields = formFields(form, csrfToken, ['organization_id', 'return_to']);
+  if (typeof fields === 'string') return fields;
+  const returnTo = destinations.check(fields.return_to);
+  if (!FIELD_VALUE.test(fields.organization_id) || returnTo === undefined) return 'invalidRequest';
+  return { organizationId: fields.organization_id, returnTo };
+}
+
+// The form names the membership with the revision that the page showed. The organization of the session decides, so the
+// routes compare the organization of the form with it.
+export function grantChangeIn(form: URLSearchParams, csrfToken: string): GrantChangeRequest | FormRefusal {
+  const fields = formFields(form, csrfToken, ['organization_id', 'membership_id', 'revision', 'role', 'action']);
+  if (typeof fields === 'string') return fields;
+  if (!Object.values(fields).every((value) => FIELD_VALUE.test(value))) return 'invalidRequest';
+  return { organizationId: fields.organization_id, membershipId: fields.membership_id, revision: fields.revision, role: fields.role, action: fields.action };
+}
+
+export function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal {
+  const fields = formFields(form, csrfToken, ['organization_id', 'role', 'email']);
+  if (typeof fields === 'string') return fields;
+  const valid = FIELD_VALUE.test(fields.organization_id) && FIELD_VALUE.test(fields.role) && fields.email.length <= EMAIL_LIMIT && EMAIL.test(fields.email);
+  return valid ? { organizationId: fields.organization_id, role: fields.role, email: fields.email } : 'invalidRequest';
+}
+
+export function invitationChangeIn(form: URLSearchParams, csrfToken: string): InvitationChangeRequest | FormRefusal {
+  const fields = formFields(form, csrfToken, ['organization_id', 'invitation_id']);
+  if (typeof fields === 'string') return fields;
+  if (!FIELD_VALUE.test(fields.organization_id) || !FIELD_VALUE.test(fields.invitation_id)) return 'invalidRequest';
+  return { organizationId: fields.organization_id, invitationId: fields.invitation_id };
 }
 
 // Reads an HTML form body of at most 16 KiB and stops at the limit, so that a large body causes no more work.
@@ -69,6 +98,17 @@ export async function readForm(request: Request): Promise<URLSearchParams | Form
   }
   if (request.body === null) return new URLSearchParams();
   return readBody(request.body, request.signal);
+}
+
+// The values of a form that has the form token of the session and exactly these other fields, each one time. The token
+// comes first, so that a forged post learns nothing about its other fields.
+function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal {
+  if (!isSessionToken(single(form.getAll('csrf_token')), csrfToken)) return 'forgedRequest';
+  const allowed: ReadonlySet<string> = new Set(['csrf_token', ...names]);
+  if ([...form.keys()].some((name) => !allowed.has(name))) return 'invalidRequest';
+  const values = names.map((name) => [name, single(form.getAll(name))] as const);
+  if (values.some(([, value]) => value === undefined)) return 'invalidRequest';
+  return Object.fromEntries(values) as Record<Name, string>;
 }
 
 function isSessionToken(sent: string | undefined, token: string): boolean {

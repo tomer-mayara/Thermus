@@ -1,7 +1,8 @@
 import type { AccessResolver, RequestContext } from '../auth/access-context.ts';
 import type { OrganizationAdministration } from '../organizations/organization-administration.ts';
 import { readForm, ReturnDestinations, selectionIn, single } from './account-form.ts';
-import { accessDeniedPage, noticePage, organizationSelectionPage } from './account-pages.ts';
+import { accessDeniedPage, noticePage, organizationSelectionPage, seeOther } from './account-pages.ts';
+import { AdministrationRoutes, type AdministrationService } from './administration-routes.ts';
 import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from './browser-session.ts';
 
 // The routes check the session and current access, but not the permission of an operation: each operation checks
@@ -15,13 +16,13 @@ export interface AccountFailureReport {
 
 export type AccountFailureReporter = (report: AccountFailureReport) => void;
 
-type OrganizationChoices = Pick<OrganizationAdministration, 'listOrganizations' | 'authorizeSelection'>;
+export type OrganizationService = Pick<OrganizationAdministration, 'listOrganizations' | 'authorizeSelection'> & AdministrationService;
 
 export interface HostedAccountRoutesOptions {
   readonly publicBaseUrl: string;
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;
-  readonly organizations: OrganizationChoices;
+  readonly organizations: OrganizationService;
   readonly reportFailure: AccountFailureReporter;
   readonly operation?: AccountOperation;
 }
@@ -29,12 +30,13 @@ export interface HostedAccountRoutesOptions {
 export class HostedAccountRoutes {
   private readonly session: BrowserSession;
   private readonly accessResolver: AccessResolver;
-  private readonly organizations: OrganizationChoices;
+  private readonly organizations: OrganizationService;
   private readonly reportFailure: AccountFailureReporter;
   private readonly operation?: AccountOperation;
   private readonly publicOrigin: string;
   private readonly paths: { readonly organizations: string; readonly selection: string };
   private readonly destinations: ReturnDestinations;
+  private readonly administration: AdministrationRoutes;
 
   constructor(options: HostedAccountRoutesOptions) {
     this.session = options.session;
@@ -49,6 +51,7 @@ export class HostedAccountRoutes {
       selection: new URL('organizations/select', publicBaseUrl).pathname,
     };
     this.destinations = new ReturnDestinations(publicBaseUrl, this.paths.organizations);
+    this.administration = new AdministrationRoutes({ publicBaseUrl, organizations: this.organizations, organizationsPage: this.paths.organizations });
   }
 
   async handle(request: Request): Promise<Response> {
@@ -74,13 +77,16 @@ export class HostedAccountRoutes {
   private route(request: Request, session: SignedInBrowserSession, path: string): Promise<Response> {
     if (path === this.paths.organizations) return this.organizationPage(request, session);
     if (path === this.paths.selection) return this.selectOrganization(request, session);
-    return this.tenantOperation(request, session);
+    return this.tenantOperation(request, session, path);
   }
 
-  private async tenantOperation(request: Request, session: SignedInBrowserSession): Promise<Response> {
+  // The member and invitation pages and their changes come first; another path goes to the account operation.
+  private async tenantOperation(request: Request, session: SignedInBrowserSession, path: string): Promise<Response> {
     const decision = await this.accessResolver.resolve(session.user);
     if (decision.allowed !== true) return accessDeniedPage(this.paths.organizations);
     const context = requireTrustedTenant(frozenCopy(decision.context));
+    const administration = this.administration.handlerFor(path);
+    if (administration !== undefined) return administration(request, session, context);
     if (this.operation === undefined) return noticePage('notFound');
     return this.operation(request, context);
   }
@@ -132,10 +138,6 @@ function directoryUrl(publicBaseUrl: string): string {
   const url = new URL(publicBaseUrl);
   if (!url.pathname.endsWith('/')) url.pathname = `${url.pathname}/`;
   return url.href;
-}
-
-function seeOther(location: string): Response {
-  return new Response(null, { status: 303, headers: { Location: location, 'Cache-Control': 'no-store' } });
 }
 
 function requireTrustedTenant(context: RequestContext): RequestContext {
