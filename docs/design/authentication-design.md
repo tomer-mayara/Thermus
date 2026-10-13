@@ -838,28 +838,39 @@ through `npm run test:hosted-live`. The
 gives its settings and its setup error. The first live proofs only read: the
 AuthKit authorization-server metadata and key set, the browser-session key set,
 and the acceptance of the API key. No WorkOS staging environment was available
-for AUTH-06 so far, so no live proof has run.
+for AUTH-06 so far (runs r1 and r2 on 2026-10-13), so no live proof has run.
 
-These live proofs must pass before the hosted behavior that depends on them:
+AUTH-06 owns these identity, session, and read proofs. They must pass before
+the hosted behavior that depends on them. They read only the grants that the
+staging environment already has:
 
 - Connect and browser tokens: the actual issuers, audiences, header types, and
   `sid` values; the scopes that a Connect client can get; the rejection of
-  browser and M2M tokens by the MCP verifier; the access-token lifetimes.
-- Browser sessions: refresh-token rotation and its 30-second grace period,
-  organization switching, logout, and session revocation.
+  browser and M2M tokens by the MCP verifier; the access-token lifetimes; and
+  key rotation.
+- Browser sessions: sign-in, the callback, refresh-token rotation and its
+  30-second grace period, organization switching, logout, and session
+  revocation; an outage as distinct from an expired session.
 - Revocation limits: the time that an issued access token stays valid after
   logout, session revocation, and consent revocation.
-- Memberships: status filters, reactivation through create, reactivate,
-  multi-role reads and writes, effective permissions, the default role and its
-  permissions, and the result of the removal of the final grant.
-- Grant changes: safe updates under retries and concurrent changes, and
-  recovery from an unknown outcome without the return of a grant that someone
-  revoked later.
-- Invitations: the role of an invitation, its states, and the identity policy.
-  Pagination of memberships and invitations.
-- Operator setup and recovery: organization setup, and Super Admin grant,
-  revocation, replacement, and recovery.
+- Membership reads: status filters, pagination, multi-role reads, the effective
+  permissions of independent and combined grants, and the default role and its
+  permissions.
 - Required MFA: completion in the real sign-in flow and for privileged actions.
+- Onboarding: a signed-in user without an active membership gets no tenant
+  access.
+
+AUTH-07W and AUTH-08W own the later proofs below. AUTH-06 does not mark them
+passed. The operations that depend on them stay unavailable until their own
+live cases pass:
+
+- AUTH-07W: operator organization setup, and Super Admin grant, revocation,
+  replacement, and recovery.
+- AUTH-08W: multi-role writes, reactivation through create, reactivate, and the
+  result of the removal of the final grant; safe grant updates under retries
+  and concurrent changes, and recovery from an unknown outcome without the
+  return of a grant that someone revoked later; invitations, with the role of an
+  invitation, its states, the identity policy, and their pagination.
 
 #### Hosted provider findings
 
@@ -873,13 +884,16 @@ decision before the operation that depends on it.
    with an old role set can return a grant that someone revoked later. The
    resource role assignments of the SDK (`authorization.assignRole()` and
    `removeRole()`) add or remove one role, but they need a resource, and WorkOS
-   keeps organization roles on the membership. The live proofs must show if the
-   service has a safe alternative. If it has none, the owner must select a
-   resolution before AUTH-07 implements grant changes.
+   keeps organization roles on the membership. The live proofs of AUTH-08W must
+   recheck this finding against the pinned provider and show if the service has
+   a safe alternative. Until they show a safe effect, `WorkOSOrganizations`
+   answers `unsupported` to each grant change, so customer grant changes stay
+   unavailable. If the service has no safe alternative, the owner must select a
+   resolution before AUTH-08W enables grant changes.
 2. **Create can reactivate.** The SDK documents that a create for an inactive
    membership activates it with the given roles. A retried create can thus undo
    a later deactivation. A grant operation must read the current state before
-   each retry.
+   each retry. AUTH-08W owns this proof.
 3. **One role for each invitation.** `sendInvitation()` accepts one `roleSlug`.
    This agrees with the planned invitations, which give User or Admin, but not
    both.

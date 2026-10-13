@@ -1321,7 +1321,7 @@ These read-only live proofs need a WorkOS staging environment and the [hosted li
 [ ] The browser-session key set of the client ID has signing keys with key IDs, and jose accepts the set
 [ ] WorkOS accepts the staging API key for a read of organizations
 
-The [authentication plan](../design/authentication-design.md#live-provider-proofs) lists the live proofs that AUTH-06 still adds.
+The [authentication plan](../design/authentication-design.md#live-provider-proofs) lists the identity, session, and read proofs that AUTH-06 still adds, and the later proofs of AUTH-07W and AUTH-08W.
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 

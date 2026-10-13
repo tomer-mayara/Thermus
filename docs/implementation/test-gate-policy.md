@@ -320,13 +320,22 @@ and skipped live tests can never count as a successful hosted gate. Do not put
 credentials in the repository, in logs, or in pull request notes.
 
 The first live proofs only read: the AuthKit metadata and key set, the
-browser-session key set, and the acceptance of the API key. AUTH-06 adds the
-other live proofs and live acceptance cases that the
+browser-session key set, and the acceptance of the API key. AUTH-06 adds its
+other identity, session, and read proofs and live acceptance cases, and
+AUTH-07W and AUTH-08W add theirs. The
 [authentication plan](../design/authentication-design.md#live-provider-proofs)
-lists. Until AUTH-06 adds them, a pass of the command is not a hosted gate pass.
+lists the proofs of each ticket. Until AUTH-06 adds its cases, a pass of the
+command is not a hosted gate pass.
 
-Until AUTH-06 replaces the placeholder and this gate passes, the hosted edition
-gives no hosted access. The [hosted placeholder checks](#hosted-placeholder-checks)
+Record the results of the AUTH-06 cases separately from the full hosted release
+gate. A pass of the AUTH-06 cases lets AUTH-06 complete its scope: identity
+verification, browser sessions, and read-only access resolution. It is not a
+pass of the full hosted gate. The first hosted release also needs the
+applicable AUTH-07W and AUTH-08W live cases, and the operator and customer
+changes that they prove stay unavailable until those cases pass.
+
+Until AUTH-06 replaces the placeholder and its live cases pass, the hosted
+edition gives no hosted access. The [hosted placeholder checks](#hosted-placeholder-checks)
 never count as this gate.
 
 ## Later gates
