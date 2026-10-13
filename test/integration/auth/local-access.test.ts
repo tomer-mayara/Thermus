@@ -138,7 +138,13 @@ function changedPayload(token: string, claim: string, value: unknown): string {
   return [header, Buffer.from(JSON.stringify({ ...claims, [claim]: value })).toString('base64url'), signature].join('.');
 }
 
-async function assertRefused(server: McpServerUnderTest, response: Response, status: number, label: string): Promise<void> {
+interface Refusal {
+  readonly response: Response;
+  readonly status: number;
+  readonly label: string;
+}
+
+async function assertRefused(server: McpServerUnderTest, { response, status, label }: Refusal): Promise<void> {
   assert.equal(response.status, status, `${label}: ${await response.clone().text()}`);
   assert.deepEqual(server.probe.work, [], label);
 }
@@ -228,7 +234,7 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
     const revoked = await mcp.server.fetch(callProbe(t, aliceGrant.accessToken));
     const peer = await toolJson<ProbeReport>(await mcp.server.fetch(callProbe(t, bobGrant.accessToken)));
 
-    await assertRefused(mcp, revoked, 401, 'the revoked token');
+    await assertRefused(mcp, { response: revoked, status: 401, label: 'the revoked token' });
     assert.equal(peer.context.user.subject, bobGrant.id);
     assert.deepEqual(mcp.reporter.reports, []);
   });
@@ -251,11 +257,11 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
       { label: 'no MCP resource', token: opaqueToken },
       { label: 'a malformed value', token: 'not-a-token' },
     ];
-    for (const { label, token } of refusals) await assertRefused(mcp, await mcp.server.fetch(callProbe(t, token)), 401, label);
+    for (const { label, token } of refusals) await assertRefused(mcp, { response: await mcp.server.fetch(callProbe(t, token)), status: 401, label });
     t.mock.timers.enable({ apis: ['Date'], now: (Number(jwtClaims(tokens.access_token).exp) + 60) * 1_000 });
     const expired = await mcp.server.fetch(callProbe(t, tokens.access_token));
     t.mock.timers.reset();
-    await assertRefused(mcp, expired, 401, 'an expired token');
+    await assertRefused(mcp, { response: expired, status: 401, label: 'an expired token' });
 
     assert.deepEqual(mcp.probe.contexts, []);
     assert.deepEqual(mcp.reporter.reports, []);
@@ -272,7 +278,7 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
     const response = await mcp.server.fetch(callProbe(t, profileOnly.access_token));
 
     assert.equal(profileOnly.scope, 'profile');
-    await assertRefused(mcp, response, 403, 'a token without the required scope');
+    await assertRefused(mcp, { response, status: 403, label: 'a token without the required scope' });
     const challenge = response.headers.get('WWW-Authenticate') ?? '';
     assert.match(challenge, /error="insufficient_scope"/);
     assert.match(challenge, /scope="openid"/);
@@ -287,7 +293,7 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
       const mcp = mcpServer(t, providerFor(installation.runtime, resourceServer));
       const response = await mcp.server.fetch(callProbe(t, aliceGrant.accessToken));
 
-      await assertRefused(mcp, response, 500, resourceServer === undefined ? 'no resource-server client' : 'a wrong secret');
+      await assertRefused(mcp, { response, status: 500, label: resourceServer === undefined ? 'no resource-server client' : 'a wrong secret' });
       assert.deepEqual(mcp.reporter.reports.map(({ step }) => step), ['token-verification']);
       assert.ok(!inspect(mcp.reporter.reports, { depth: Infinity }).includes(aliceGrant.accessToken), 'the report holds the token');
       assert.ok(!(await response.text()).includes('client'), 'the response names the private failure');
@@ -317,7 +323,7 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
     assert.equal(refresh.status, 400);
     assert.equal(await errorCodeOf(refresh), 'unsupported_grant_type');
     assert.match(authorization.headers.get('Location') ?? '', /^\/sign-in\?/);
-    await assertRefused(mcp, token, 401, 'the disabled user\'s token');
+    await assertRefused(mcp, { response: token, status: 401, label: 'the disabled user\'s token' });
     assert.equal(peer.context.user.subject, aliceGrant.id);
   });
 

@@ -19,6 +19,13 @@ export interface FormPost {
   readonly site?: FetchSite;
 }
 
+interface BrowserRequest {
+  readonly method: 'GET' | 'POST';
+  readonly url: URL;
+  readonly headers: Record<string, string>;
+  readonly body?: string;
+}
+
 export interface SignInPage {
   readonly url: URL;
   readonly oauthQuery: string;
@@ -44,7 +51,7 @@ export class LocalBrowser {
   }
 
   async navigate(url: string | URL, site: FetchSite = 'none'): Promise<PageResponse> {
-    return this.send('GET', publicUrl(url), { 'Sec-Fetch-Site': site, 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Dest': 'document' });
+    return this.send({ method: 'GET', url: publicUrl(url), headers: { 'Sec-Fetch-Site': site, 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Dest': 'document' } });
   }
 
   async post(url: string | URL, fields: Readonly<Record<string, string>>, options: FormPost = {}): Promise<PageResponse> {
@@ -55,7 +62,7 @@ export class LocalBrowser {
       'Sec-Fetch-Dest': 'document',
     };
     if (options.origin !== null) headers.Origin = options.origin ?? publicBaseUrl;
-    return this.send('POST', publicUrl(url), headers, new URLSearchParams(fields).toString());
+    return this.send({ method: 'POST', url: publicUrl(url), headers, body: new URLSearchParams(fields).toString() });
   }
 
   // Opens the authorization URL without a browser session and reads the sign-in page that the provider sends it to.
@@ -93,7 +100,7 @@ export class LocalBrowser {
     return this.post(url, { accept: 'yes', oauth_query: oauthQuery });
   }
 
-  private send(method: string, url: URL, headers: Record<string, string>, body?: string): Promise<PageResponse> {
+  private send({ method, url, headers, body }: BrowserRequest): Promise<PageResponse> {
     if (this.cookies.size > 0) headers.Cookie = [...this.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
     if (body !== undefined) headers['Content-Length'] = String(Buffer.byteLength(body));
     const server = this.server();
