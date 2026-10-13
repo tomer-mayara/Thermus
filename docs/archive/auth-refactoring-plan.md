@@ -1,10 +1,10 @@
-# Authentication refactoring plan
+# Completed authentication refactoring record
+
+This archived record preserves the two-slice implementation plan, its design
+decisions, historical test evidence, and deferred limits. Instructions below
+describe the completed work; they do not start another implementation slice.
 
 Status: Both implementation slices are complete and merged after owner review.
-Slice 1 merged in pull request
-[#56](https://github.com/3-headed-monkey/Magumagu/pull/56) as `f677c5c`.
-Slice 2 merged in pull request
-[#57](https://github.com/3-headed-monkey/Magumagu/pull/57) as `e44e296`.
 The pull requests record the gate results and reviews.
 
 Revision date: 2026-10-13. Reviewed baseline: `b73a7f821edac538afdd0498874dd7f28b3c1fc2`.
@@ -13,7 +13,17 @@ Slice 1 added the local command role and lazy opener. Slice 2 puts the auth file
 at the layout below and separates the MCP outage endpoint and HTTP address
 contract. Follow the
 [coding principles](../coding-principles.md),
-[repository work rules](../../AGENTS.md), and [test gate policy](test-gate-policy.md).
+[repository work rules](../../AGENTS.md), and
+[test gate policy](../implementation/test-gate-policy.md).
+
+## Merge record
+
+Both slices merged with owner approval on 2026-10-13:
+
+| Slice | Pull request | Merge time (UTC) | Merge commit |
+| --- | --- | --- | --- |
+| 1. Local role and lazy opener | [#56](https://github.com/3-headed-monkey/Magumagu/pull/56) | `2026-10-13T20:42:10Z` | `f677c5cd0556c7376efdd7529484a50042636873` |
+| 2. File relocation and direct boundaries | [#57](https://github.com/3-headed-monkey/Magumagu/pull/57) | `2026-10-13T21:00:58Z` | `e44e296fd3145ace899145d3e89d9f54540a8a18` |
 
 ## Scope
 
@@ -206,6 +216,9 @@ a complete-candidate gate result.
 
 ### 1. Extract the local role and lazy opener
 
+Status: complete and merged in [pull request #56](https://github.com/3-headed-monkey/Magumagu/pull/56)
+after owner review and approval.
+
 The neutral role, consumer records, and existing settings shape are extracted.
 The new role file used its final path. In this slice, command, parser, and concrete
 administrator kept their original paths and the concrete class kept its original
@@ -226,8 +239,8 @@ remain covered and passing.
 
 ### 2. Relocate once and enforce direct boundaries
 
-Status: implemented in pull request #57, based on merged slice 1. The pull
-request records gate results and owner review status.
+Status: complete and merged in [pull request #57](https://github.com/3-headed-monkey/Magumagu/pull/57),
+based on merged slice 1, after owner review and approval.
 
 The files use their final paths. The concrete administrator is renamed, and the
 MCP outage endpoint and HTTP header have their own transport modules. Imports
@@ -275,7 +288,8 @@ files, and generated child-process module URLs. These specific risks need checks
   the guard catches a provider load.
 
 Update the README, [authentication design](../design/authentication-design.md),
-[test inventory](../testing/test-list.md), and [test gate policy](test-gate-policy.md)
+[test inventory](../testing/test-list.md), and
+[test gate policy](../implementation/test-gate-policy.md)
 with each affected slice. The authentication design now places the verifier at
 the auth root and keeps OAuth token semantics and SDK translation separate.
 Historical archive records need not be rewritten.
