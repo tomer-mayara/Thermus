@@ -23,6 +23,7 @@ export class MembershipDirectoryDouble implements AccessResolver, OrganizationDi
   private readonly authority: string;
   private memberships: readonly MembershipRecord[];
   private readonly paused = new Map<string, Promise<void>>();
+  private readOutage?: Error;
 
   constructor(authority: string, memberships: readonly MembershipRecord[]) {
     this.authority = authority;
@@ -40,6 +41,11 @@ export class MembershipDirectoryDouble implements AccessResolver, OrganizationDi
     this.memberships = memberships;
   }
 
+  // While an outage lasts, each organization read fails; access resolution still works.
+  failMembershipReads(outage: Error | undefined): void {
+    this.readOutage = outage;
+  }
+
   async resolve(user: AuthenticatedUser): Promise<AccessDecision> {
     this.calls.push(user);
     const organizationId = user.selectedOrganizationId;
@@ -54,6 +60,7 @@ export class MembershipDirectoryDouble implements AccessResolver, OrganizationDi
 
   async membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]> {
     this.membershipReads.push(user);
+    if (this.readOutage !== undefined) throw this.readOutage;
     if (user.authority !== this.authority) return [];
     return this.memberships
       .filter((record) => record.subject === user.subject)

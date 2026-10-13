@@ -9,7 +9,7 @@ import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
 import { BrowserSessionStore, CLEARED_SESSION_COOKIE } from '../../support/browser-session-store.ts';
-import { formsIn, HostedBrowser, type BrowserAnswer, type PageForm } from '../../support/hosted-browser.ts';
+import { formsIn, HostedBrowser, listenerTransport, type BrowserAnswer, type PageForm } from '../../support/hosted-browser.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/membership-directory-double.ts';
 import { RequestContextProbe } from '../../support/request-context-probe.ts';
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
@@ -94,12 +94,13 @@ async function startFixture(t: TestContext) {
     await server.close();
     await application.close();
   });
-  const browserOf = (user: AuthenticatedUser): HostedBrowser => new HostedBrowser(server.url, config.publicBaseUrl, sessions.signIn(user));
+  const transport = listenerTransport(server.url);
+  const browserOf = (user: AuthenticatedUser): HostedBrowser => new HostedBrowser(transport, config.publicBaseUrl, sessions.signIn(user));
   const callTool = async (token: string) => {
     const request = mcpRequest({ url: new URL('team/mcp', server.url).href, method: 'tools/call', token, params: { name: RequestContextProbe.toolName, arguments: { url: 'https://example.com/' } } });
     return rpcResult(await fetch(request));
   };
-  return { sessions, directory, pages, tools, failures, server, browserOf, callTool };
+  return { sessions, directory, pages, tools, failures, transport, browserOf, callTool };
 }
 
 function selectionOf(forms: readonly PageForm[], label: string): PageForm {
@@ -116,8 +117,8 @@ async function statusesOf(browser: HostedBrowser, paths: readonly string[]): Pro
 
 function assertHtmlPage(answer: BrowserAnswer): void {
   assert.equal(answer.status, 200, answer.body);
-  assert.match(String(answer.headers['content-type']), /^text\/html/);
-  assert.equal(answer.headers['cache-control'], 'no-store');
+  assert.match(answer.headers.get('Content-Type') ?? '', /^text\/html/);
+  assert.equal(answer.headers.get('Cache-Control'), 'no-store');
 }
 
 describe('Hosted organization onboarding and selection through the public routes, with session and directory doubles', () => {
@@ -254,7 +255,7 @@ describe('Hosted organization onboarding and selection through the public routes
 
   test('Given an ended session and then an outage of the session lookup, when the organization page and a selection are requested, then the ended session gets a sign-in request that clears its cookie, the outage gets a server failure that keeps the cookie and asks for no sign-in, and no organization is read or switched', { timeout: 20_000 }, async (t) => {
     const fixture = await startFixture(t);
-    const ended = new HostedBrowser(fixture.server.url, config.publicBaseUrl, 'session=ended-session');
+    const ended = new HostedBrowser(fixture.transport, config.publicBaseUrl, 'session=ended-session');
     const browser = fixture.browserOf(mia);
     const [acme] = formsIn((await browser.open('organizations')).body);
     const readsBefore = fixture.directory.membershipReads.length;
@@ -292,7 +293,7 @@ describe('Hosted organization onboarding and selection through the public routes
     const others = await statusesOf(browser, ['organizations/new', 'organizations/settings', 'organizations/resume']);
 
     assert.equal(create.status, 405);
-    assert.equal(create.headers.allow, 'GET');
+    assert.equal(create.headers.get('Allow'), 'GET');
     assert.deepEqual(changes, [400, 400, 400]);
     assert.deepEqual(others, { 'organizations/new': 403, 'organizations/settings': 403, 'organizations/resume': 403 });
     assert.deepEqual(fixture.sessions.switches, []);

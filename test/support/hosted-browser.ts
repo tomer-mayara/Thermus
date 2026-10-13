@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
-import { request as httpRequest, type IncomingHttpHeaders } from 'node:http';
+import { request as httpRequest } from 'node:http';
+
+export type BrowserTransport = (request: Request) => Promise<Response>;
 
 export interface BrowserAnswer {
   readonly status: number;
-  readonly headers: IncomingHttpHeaders;
+  readonly headers: Headers;
   // The Set-Cookie values of this answer, in their order.
   readonly cookies: readonly string[];
   readonly body: string;
@@ -22,24 +24,18 @@ export interface PostOptions {
   readonly headers?: Readonly<Record<string, string>>;
 }
 
-interface BrowserRequest {
-  readonly method: 'GET' | 'POST';
-  readonly url: URL;
-  readonly headers: Record<string, string>;
-  readonly body?: string;
-}
-
 const HTML_ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
 
-// A browser that opens the public URLs of a hosted server that listens on a loopback address. It keeps the cookies of
-// each answer, as a browser does, and follows no redirect by itself.
+// A browser that opens the public URLs of a hosted application. It keeps the cookies of each answer, as a browser
+// does, and follows no redirect by itself. The transport sends each request to a listening server or to the
+// application in the same process.
 export class HostedBrowser {
   private readonly cookies = new Map<string, string>();
-  private readonly listenUrl: URL;
+  private readonly transport: BrowserTransport;
   private readonly publicBaseUrl: URL;
 
-  constructor(listenUrl: URL, publicBaseUrl: string, cookieHeader?: string) {
-    this.listenUrl = listenUrl;
+  constructor(transport: BrowserTransport, publicBaseUrl: string, cookieHeader?: string) {
+    this.transport = transport;
     this.publicBaseUrl = new URL(publicBaseUrl);
     for (const pair of cookieHeader?.split(';') ?? []) this.keepCookie(pair);
   }
@@ -50,7 +46,7 @@ export class HostedBrowser {
   }
 
   open(path: string, headers: Readonly<Record<string, string>> = {}): Promise<BrowserAnswer> {
-    return this.send({ method: 'GET', url: this.publicUrl(path), headers: { ...headers } });
+    return this.send(new Request(this.publicUrl(path), { headers: this.headersWith(headers) }));
   }
 
   follow(answer: BrowserAnswer): Promise<BrowserAnswer> {
@@ -64,10 +60,10 @@ export class HostedBrowser {
 
   // A string body goes unchanged, so that a test can send a duplicate field.
   post(path: string, fields: Readonly<Record<string, string>> | string, options: PostOptions = {}): Promise<BrowserAnswer> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/x-www-form-urlencoded', ...options.headers };
-    if (options.origin !== null) headers.Origin = options.origin ?? this.publicBaseUrl.origin;
+    const headers = this.headersWith({ 'Content-Type': 'application/x-www-form-urlencoded', ...options.headers });
+    if (options.origin !== null) headers.set('Origin', options.origin ?? this.publicBaseUrl.origin);
     const body = typeof fields === 'string' ? fields : new URLSearchParams(fields).toString();
-    return this.send({ method: 'POST', url: this.publicUrl(path), headers, body });
+    return this.send(new Request(this.publicUrl(path), { method: 'POST', headers, body }));
   }
 
   private publicUrl(path: string): URL {
@@ -76,35 +72,25 @@ export class HostedBrowser {
     return url;
   }
 
-  private send({ method, url, headers, body }: BrowserRequest): Promise<BrowserAnswer> {
+  private headersWith(headers: Readonly<Record<string, string>>): Headers {
+    const all = new Headers(headers);
     const cookieHeader = this.cookieHeader;
-    if (cookieHeader !== undefined) headers.Cookie = cookieHeader;
-    if (body !== undefined) headers['Content-Length'] = String(Buffer.byteLength(body));
-    return new Promise((resolve, reject) => {
-      const outgoing = httpRequest({
-        host: this.listenUrl.hostname,
-        port: this.listenUrl.port,
-        method,
-        path: `${url.pathname}${url.search}`,
-        headers: { ...headers, Host: url.host },
-      }, (incoming) => {
-        let text = '';
-        incoming.setEncoding('utf8').on('data', (chunk: string) => { text += chunk; }).on('error', reject).on('end', () => {
-          const cookies = incoming.headers['set-cookie'] ?? [];
-          for (const cookie of cookies) this.keepCookie(cookie.split(';')[0] ?? '', /max-age=0/i.test(cookie));
-          const location = incoming.headers.location;
-          resolve({
-            status: incoming.statusCode ?? 0,
-            headers: incoming.headers,
-            cookies,
-            body: text,
-            ...(location === undefined ? {} : { location: new URL(location, this.publicBaseUrl) }),
-          });
-        });
-      });
-      outgoing.on('error', reject);
-      outgoing.end(body);
-    });
+    if (cookieHeader !== undefined) all.set('Cookie', cookieHeader);
+    return all;
+  }
+
+  private async send(request: Request): Promise<BrowserAnswer> {
+    const response = await this.transport(request);
+    const cookies = response.headers.getSetCookie();
+    for (const cookie of cookies) this.keepCookie(cookie.split(';')[0] ?? '', /max-age=0/i.test(cookie));
+    const location = response.headers.get('Location');
+    return {
+      status: response.status,
+      headers: response.headers,
+      cookies,
+      body: await response.text(),
+      ...(location === null ? {} : { location: new URL(location, this.publicBaseUrl) }),
+    };
   }
 
   private keepCookie(pair: string, expired = false): void {
@@ -115,6 +101,29 @@ export class HostedBrowser {
     if (expired || value === '') this.cookies.delete(name);
     else this.cookies.set(name, value);
   }
+}
+
+// Sends each request with node:http to a server that listens on a loopback address. The Host header names the public
+// host, and node:http keeps each header as written.
+export function listenerTransport(listenUrl: URL): BrowserTransport {
+  return async (request) => {
+    const url = new URL(request.url);
+    const body = request.body === null ? undefined : Buffer.from(await request.arrayBuffer());
+    const headers: Record<string, string> = { ...Object.fromEntries(request.headers), Host: url.host };
+    if (body !== undefined) headers['Content-Length'] = String(body.byteLength);
+    return new Promise((resolve, reject) => {
+      const outgoing = httpRequest({ host: listenUrl.hostname, port: listenUrl.port, method: request.method, path: `${url.pathname}${url.search}`, headers }, (incoming) => {
+        const chunks: Buffer[] = [];
+        incoming.on('data', (chunk: Buffer) => chunks.push(chunk)).on('error', reject).on('end', () => {
+          const answerHeaders = new Headers();
+          for (let index = 0; index < incoming.rawHeaders.length; index += 2) answerHeaders.append(incoming.rawHeaders[index] ?? '', incoming.rawHeaders[index + 1] ?? '');
+          resolve(new Response(chunks.length === 0 ? null : Buffer.concat(chunks), { status: incoming.statusCode ?? 0, headers: answerHeaders }));
+        });
+      });
+      outgoing.on('error', reject);
+      outgoing.end(body);
+    });
+  };
 }
 
 // Reads each form of a page, with its hidden fields and its button text. The pages write each element on one line.
