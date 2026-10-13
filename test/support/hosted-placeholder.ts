@@ -9,3 +9,5 @@ export const workOSSettings: Readonly<Record<string, string>> = {
 export const mcpUnavailableAnswer = { error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' };
 
 export const unavailableNotice = /Hosted authentication is not available yet\./;
+
+export const hostedStartupLine = 'Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.';

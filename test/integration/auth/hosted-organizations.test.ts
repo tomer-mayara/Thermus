@@ -3,7 +3,7 @@ import { describe, test, type TestContext } from 'node:test';
 import { accountFailureReporter, createApplication } from '../../../src/application.ts';
 import { BrowserSessionStore } from '../../support/browser-session-store.ts';
 import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';
-import { unavailableNotice } from '../../support/hosted-placeholder.ts';
+import { hostedStartupLine, unavailableNotice } from '../../support/hosted-placeholder.ts';
 import {
   contextAt,
   destinationPaths,
@@ -178,6 +178,6 @@ describe('Hosted organization onboarding and selection with the real routes and 
       assert.deepEqual(answer.cookies, []);
       assert.doesNotMatch(answer.body, /<form/);
     }
-    assert.deepEqual(logger.lines, ['INFO Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.']);
+    assert.deepEqual(logger.lines, [`INFO ${hostedStartupLine}`]);
   });
 });

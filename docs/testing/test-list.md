@@ -217,13 +217,6 @@ A logger double records the lines that `operatorFailureReporter()` and `accountF
 [V] Refuses private provider routes, the hosted organization and onboarding paths, unrelated paths, and near-matching path suffixes without calling a route owner
 [V] Hosted routing: sends the MCP resource and both protected-resource metadata paths to the MCP handler and each other path under the configured public path to the account routes, with the complete request; paths outside the public path give 404 without a handler call
 
-**Server start and stop** (`test/unit/index.test.ts`)
-
-These tests run `serve()` from `src/index.ts` with hosted settings on a loopback port. An `EventEmitter` is the double for the process signal registration. A logger double records, for each line, the stop signals that have a handler.
-
-[V] Registers the `SIGINT` and `SIGTERM` handlers after the startup lines and before the `Listening on` line; after `SIGINT` or `SIGTERM`, writes `Stopping after <signal>` and removes both handlers
-[V] Given a listen port that another server uses, rejects with the listen error before the `Listening on` line, and no stop handler stays registered
-
 **Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
 
 `BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its cookie effects, and a configured answer to an organization switch. `AccessResolverMock` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
@@ -672,6 +665,19 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/integration/auth/local-access.test.js
+```
+
+**Server start and stop** (`test/integration/server-stop-signals.test.ts`)
+
+These tests run `serve()` from `src/index.ts` with the real hosted application and HTTP bridge on a loopback port. An `EventEmitter` is the double for the process signal registration. A logger double records, for each line, the stop signals that have a handler.
+
+[V] Registers the `SIGINT` and `SIGTERM` handlers after the startup lines and before the `Listening on` line; after `SIGINT` or `SIGTERM`, writes `Stopping after <signal>` and removes both handlers
+[V] Given a listen port that another server uses, rejects with the listen error before the `Listening on` line, and no stop handler stays registered
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/server-stop-signals.test.js
 ```
 
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.

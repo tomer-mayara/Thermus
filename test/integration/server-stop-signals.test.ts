@@ -3,10 +3,10 @@ import { EventEmitter, once } from 'node:events';
 import { createServer, type AddressInfo } from 'node:net';
 import { test } from 'node:test';
 import { serve } from '../../src/index.ts';
+import { hostedStartupLine } from '../support/hosted-placeholder.ts';
 
 const stopSignals = ['SIGINT', 'SIGTERM'] as const;
 const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
-const hostedNotice = 'Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.';
 
 interface LogLine {
   readonly message: string;
@@ -45,12 +45,12 @@ for (const signal of stopSignals) {
     const record = new ServeRecord();
 
     const served = serve(hostedEnvironment, record.logger, record.processSignals);
-    await record.listening.promise;
+    await Promise.race([record.listening.promise, served]);
     record.sendSignal(signal);
     await served;
 
     assert.deepEqual(record.lines.map(withoutPort), [
-      { message: hostedNotice, signalsWithHandler: [] },
+      { message: hostedStartupLine, signalsWithHandler: [] },
       { message: 'Listening on http://127.0.0.1:<port>', signalsWithHandler: ['SIGINT', 'SIGTERM'] },
       { message: `Stopping after ${signal}`, signalsWithHandler: [] },
     ]);
@@ -67,6 +67,6 @@ test('Given a listen port that another server uses, when the serve sequence star
 
   await assert.rejects(serve({ ...hostedEnvironment, LISTEN_PORT: String(port) }, record.logger, record.processSignals), { code: 'EADDRINUSE' });
 
-  assert.deepEqual(record.lines, [{ message: hostedNotice, signalsWithHandler: [] }]);
+  assert.deepEqual(record.lines, [{ message: hostedStartupLine, signalsWithHandler: [] }]);
   assert.deepEqual(record.signalsWithHandler(), []);
 });

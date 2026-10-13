@@ -43,7 +43,7 @@ function dataFiles(directory: string): Record<string, Buffer> {
 
 async function assertStopsBeforeListening(server: ServerProcess, message: RegExp): Promise<void> {
   assert.equal(await server.listeningOrExit(), undefined, server.output);
-  assert.deepEqual(await server.exited(), { code: 1, signal: null });
+  assert.deepEqual(await server.exited(), { code: 1, signal: null }, server.output);
   assert.match(server.output, /FATAL/);
   assert.match(server.output, message);
 }
@@ -67,15 +67,15 @@ describe('Self-hosted server startup with one persistent installation', () => {
 
   for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     test(`Given several servers that start at the same time, when each gets ${signal} in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after ${signal}" and exits with status 0, not by the signal`, { timeout: 60_000 }, async (t) => {
-      // Starts at the same time load the machine, so a gap between the line and the stop handlers is easier to hit.
+      // The servers start at the same time, because the load makes a gap between the line and the stop handlers easier to hit.
       const servers = Array.from({ length: 8 }, () => ServerProcess.launch(t, selfHostedSettings(dataDirectory(t))));
 
-      const runs = await Promise.all(servers.map(async (server) => {
-        const exit = await server.stopWhenListening(signal);
-        return { exit, stopped: server.output.includes(`Stopping after ${signal}`) };
-      }));
+      const exits = await Promise.all(servers.map((server) => server.stopWhenListening(signal)));
 
-      assert.deepEqual(runs, servers.map(() => ({ exit: { code: 0, signal: null }, stopped: true })));
+      for (const [index, server] of servers.entries()) {
+        const run = { exit: exits[index], stopped: server.output.includes(`Stopping after ${signal}`) };
+        assert.deepEqual(run, { exit: { code: 0, signal: null }, stopped: true }, server.output);
+      }
     });
   }
 

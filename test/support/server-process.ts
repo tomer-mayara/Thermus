@@ -87,6 +87,7 @@ export class ServerProcess {
       this.child.kill(signal);
     };
     for (const stream of streams) stream.on('data', stopIfListening);
+    stopIfListening();
     return this.exit;
   }
 

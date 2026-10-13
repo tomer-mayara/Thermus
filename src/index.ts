@@ -48,7 +48,7 @@ export async function serve(environment: Environment, logger: ApplicationLogger,
     await startHttpServer(application.handle, { listen, publicBaseUrl: config.publicBaseUrl, logger }),
     (listening) => listening.close(),
   );
-  // A caller can send a stop signal as soon as the next line appears, so register the stop handlers first.
+  // A caller can send a stop signal as soon as the "Listening on" line appears, so register the stop handlers first.
   const stopped = stopSignal(signals);
   logger.info(`Listening on ${server.url.origin}`);
   const signal = await stopped;
