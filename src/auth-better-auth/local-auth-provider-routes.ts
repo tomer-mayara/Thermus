@@ -1,3 +1,5 @@
+import { CLIENT_ADDRESS_HEADER } from '../http/server.ts';
+
 export type ProviderHandler = (request: Request) => Promise<Response>;
 
 export interface SignInCredentials {
@@ -24,13 +26,49 @@ export class ProviderRoutes {
     return this.post(browser, 'sign-in/email', credentials);
   }
 
-  private post(_browser: Request, route: string, json: object): Promise<Response> {
-    const headers = new Headers({ Accept: 'application/json', 'Content-Type': 'application/json' });
-    return this.handler(new Request(`${this.issuer}/${route}`, { method: 'POST', headers, body: JSON.stringify(json) }));
+  consent(browser: Request, oauthQuery: string, accept: boolean): Promise<Response> {
+    return this.post(browser, 'oauth2/consent', { accept, oauth_query: oauthQuery });
+  }
+
+  async consentDetails(browser: Request, oauthQuery: string): Promise<{ clientName: string; email: string } | undefined> {
+    const clientId = new URLSearchParams(oauthQuery).get('client_id');
+    const client = await this.signedPublicClient(browser, clientId, oauthQuery);
+    if (client.status !== 200) return undefined;
+    const details = await jsonOf(client);
+    const session = await this.handler(new Request(`${this.issuer}/get-session`, { headers: this.headers(browser), signal: browser.signal }));
+    if (session.status !== 200) return undefined;
+    const account = await jsonOf(session);
+    const user = isRecord(account) ? account.user : undefined;
+    return consentIdentity(details, user, clientId);
+  }
+
+  private signedPublicClient(browser: Request, clientId: string | null, oauthQuery: string): Promise<Response> {
+    const headers = this.headers(browser);
+    // This is a read of signed public metadata. A GET navigation has no Origin, and sending its cookie
+    // on an internal POST would trigger the provider's stateful CSRF refusal.
+    headers.delete('Cookie');
+    headers.set('Content-Type', 'application/json');
+    return this.handler(new Request(`${this.issuer}/oauth2/public-client-prelogin`, {
+      method: 'POST', headers, body: JSON.stringify({ client_id: clientId, oauth_query: oauthQuery }), signal: browser.signal,
+    }));
+  }
+
+  private post(browser: Request, route: string, json: object): Promise<Response> {
+    const headers = this.headers(browser);
+    headers.set('Content-Type', 'application/json');
+    return this.handler(new Request(`${this.issuer}/${route}`, { method: 'POST', headers, body: JSON.stringify(json), signal: browser.signal }));
+  }
+
+  private headers(browser: Request): Headers {
+    const headers = new Headers({ Accept: 'application/json' });
+    for (const name of ['cookie', 'origin', 'referer', 'user-agent', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest', 'sec-fetch-user', CLIENT_ADDRESS_HEADER]) {
+      const value = browser.headers.get(name);
+      if (value !== null) headers.set(name, value);
+    }
+    return headers;
   }
 }
 
-// The provider answers a completed step with JSON that gives the next URL: a page or the redirect URI of the client.
 export async function browserRedirect(response: Response): Promise<Response | undefined> {
   const body = await jsonOf(response);
   if (!isRecord(body) || body.redirect !== true || typeof body.url !== 'string') return undefined;
@@ -59,4 +97,10 @@ async function jsonOf(response: Response): Promise<unknown> {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
+}
+
+function consentIdentity(details: unknown, user: unknown, clientId: string | null): { clientName: string; email: string } | undefined {
+  if (!isRecord(details) || details.client_id !== clientId || typeof details.client_name !== 'string' || !details.client_name
+    || !isRecord(user) || typeof user.email !== 'string' || !user.email) return undefined;
+  return { clientName: details.client_name, email: user.email };
 }

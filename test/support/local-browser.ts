@@ -65,7 +65,6 @@ export class LocalBrowser {
     return this.send({ method: 'POST', url: publicUrl(url), headers, body: new URLSearchParams(fields).toString() });
   }
 
-  // Opens the authorization URL without a browser session and reads the sign-in page that the provider sends it to.
   async openSignIn(authorizationUrl: string | URL): Promise<SignInPage> {
     const redirect = await this.navigate(authorizationUrl);
     assert.equal(redirect.location?.pathname, '/sign-in', `the authorization did not ask for a sign-in: ${redirect.status} ${redirect.body}`);
@@ -74,7 +73,6 @@ export class LocalBrowser {
     return { url: redirect.location, oauthQuery: hiddenField(page.body, 'oauth_query') };
   }
 
-  // Follows the provider and the bundled pages until the provider sends the browser to the client's redirect URI.
   async authorize(authorizationUrl: string | URL, account?: AccountCredentials): Promise<BrowserAuthorization> {
     const pages: string[] = [];
     let response = await this.navigate(authorizationUrl);
@@ -147,7 +145,6 @@ export function hiddenField(html: string, name: string): string {
   return decodeHtml(field[1] ?? '');
 }
 
-// The pages escape five characters in text and attribute values; this decodes only those.
 export function decodeHtml(text: string): string {
   return text.replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }
@@ -162,11 +159,10 @@ function publicUrl(url: string | URL): URL {
 export function serverFetch(server: ServerAddress) {
   return async (url: string | URL, init?: RequestInit): Promise<Response> => {
     const target = new URL(url);
-    if (target.origin === publicBaseUrl) {
-      const address = server();
-      target.protocol = address.protocol;
-      target.host = address.host;
-    }
+    assert.equal(target.origin, publicBaseUrl, `the MCP client may contact only the local server: ${target.href}`);
+    const address = server();
+    target.protocol = address.protocol;
+    target.host = address.host;
     return fetch(target, init);
   };
 }

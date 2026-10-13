@@ -14,7 +14,6 @@ export interface ApprovedClient {
 
 export interface RegisteredClient extends ApprovedClient {
   readonly clientId: string;
-  // True when this registration also registered the resource-server client of the installation.
   readonly resourceServerClientRegistered: boolean;
 }
 

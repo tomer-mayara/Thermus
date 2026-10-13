@@ -1,1 +1,0 @@
-{"version":3,"file":"html-depth-limit-error.js","sourceRoot":"","sources":["../../../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,sBAAsB,GAAG,GAAG,CAAC;AAE1C,MAAM,OAAO,mBAAoB,SAAQ,KAAK;IAC5C;QACE,KAAK,CAAC,0BAA0B,sBAAsB,sBAAsB,CAAC,CAAC;QAC9E,IAAI,CAAC,IAAI,GAAG,qBAAqB,CAAC;IACpC,CAAC;CACF"}

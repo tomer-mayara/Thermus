@@ -30,7 +30,6 @@ interface Answer {
   readonly body: string;
 }
 
-// The provider operations that BetterAuthProvider uses: the key set, the handler for introspection, and the user lookup.
 export class TokenProviderDouble {
   keySet: unknown;
   readonly accounts = new Map<string, StoredAccount>();

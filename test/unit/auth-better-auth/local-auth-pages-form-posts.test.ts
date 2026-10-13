@@ -19,11 +19,10 @@ function signInProvider(): ProviderDouble {
   return new ProviderDouble().answer('POST /api/auth/sign-in/email', providerJson(200, { redirect: true, url: `/consent?${signedQuery}` }));
 }
 
-function rawPost(target: string, init: { readonly headers?: HeadersInit; readonly body: BodyInit }): Request {
+function rawPost(target: string, init: { readonly headers?: RequestInit['headers']; readonly body: NonNullable<RequestInit['body']> }): Request {
   return browserRequest(target, { method: 'POST', duplex: 'half', ...init } as RequestInit);
 }
 
-// A body stream that reports how many bytes the page pulled from it and whether the page cancelled it.
 function countedBody(chunkSize: number) {
   const state = { pulled: 0, cancelled: false };
   const stream = new ReadableStream<Uint8Array>({

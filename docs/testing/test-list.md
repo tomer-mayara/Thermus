@@ -111,12 +111,15 @@ Doubles stand in for the data-directory lock, the local installation, and the pr
 [V] A lock failure opens nothing; an installation failure releases the lock; a provider failure closes the installation and then releases the lock; each original error reaches the caller
 [V] When a cleanup step also fails, the remaining cleanup still runs and the caller gets both errors in a `SuppressedError`
 [V] `close()` closes the installation and then releases the lock one time, also for repeated and concurrent calls; a close failure still releases the lock and reaches the caller
+[V] Loads a resource-server client only for the configured MCP resource, keeps its secret private, and updates the stored client through the installation interface
 
 **Local provider options** (`test/unit/auth-better-auth/local-provider-options.test.ts`)
 
 The tests set process environment variables and restore them at the end of each test.
 
 [V] Use the installation secret, turn telemetry off, and set `advanced.disableOriginCheck` to `false`
+[V] Keep public authentication rate limits, exempt only private token introspection, and use the bundled authorization error page for root and prefixed public URLs
+[V] Enable the provider's signed public-client metadata lookup for the internal consent page
 [V] Throw `ProviderEnvironmentError` when `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, or `BETTER_AUTH_TELEMETRY` has a value; the message names the variable but not its value
 [V] Build without an error for empty values of those variables, `NODE_ENV=test`, `TEST=1`, and a telemetry endpoint without `BETTER_AUTH_TELEMETRY`
 
@@ -135,6 +138,33 @@ The tests set process environment variables and restore them at the end of each 
 [V] Retained data with a deleted, dropped, or invalid installation identity, or with provider tables only, fails closed with a restore message and changes no data
 [V] Retained data without `auth.secret`, with an invalid secret, or with another schema version fails closed, writes no new secret, and puts no secret in the message
 [V] A secret and an empty database from an interrupted first start give a new installation identity with that secret
+[V] Writes and reloads the resource-server client with mode `0600`; rejects malformed client files without exposing their content
+
+**Local token verification and access** (`test/unit/auth-better-auth/better-auth-provider-verification.test.ts`, `better-auth-provider-introspection.test.ts`, `better-auth-provider-access.test.ts`)
+
+Provider doubles supply keys, introspection responses, and current user records. Signed test tokens exercise the verifier's public contract.
+
+[V] Accepts only a signed local access token with the expected type, algorithm, issuer, resource, user, session, client, scope, and time claims
+[V] Refuses malformed, forged, foreign, expired, wrong-purpose, and incomplete tokens before introspection
+[V] Keeps the raw token and decoded private claims out of expected rejection errors, while preserving unexpected provider failures
+[V] Introspects each accepted token and refuses a token whose session ended; missing client credentials and provider failures remain unexpected errors
+[V] Reads current user state on every access decision; enabled users share one installation tenant, while foreign, missing, and banned users get no access
+
+**Bundled authentication pages** (`test/unit/auth-better-auth/local-auth-pages*.test.ts`)
+
+A provider-handler double records the adapted requests and supplies responses. The real-provider behavior is covered by the browser acceptance suite.
+
+[V] Serves only sign-in, consent, and authorization-error pages with escaped text, no external assets, and restrictive response headers
+[V] Reads the client name through the provider's signed-query check and the account through its session handler before displaying consent
+[V] Forwards the original browser cookie, origin, fetch metadata, trusted client address, and abort signal for authentication posts; the signed public metadata read omits the cookie
+[V] Preserves successful redirects and each session cookie; maps provider refusals and failures to safe page text without repeating passwords or provider messages
+[V] Rejects invalid methods, content types, oversized forms and queries, and ambiguous form fields; cancels an oversized or aborted body before calling the provider
+
+Run the focused provider and page tests:
+
+```sh
+npm run build && node --test dist/test/unit/auth-better-auth/better-auth-provider-*.test.js dist/test/unit/auth-better-auth/local-auth-pages*.test.js
+```
 
 **Local user administration** (`test/unit/auth-better-auth/local-user-administration.test.ts`, `local-user-administration-revocation.test.ts`, `local-user-administration-clients.test.ts`)
 
@@ -152,6 +182,7 @@ A stateful double stands in for the supported Better Auth operations. Its passwo
 [V] Refuses an unknown or disabled account before the prompt, a wrong password, a ban at sign-in, an empty or control-character name, and each redirect URI outside the loopback `http` form, without the URI in the message
 [V] Gives approved loopback redirect URIs to the provider exactly as written
 [V] Deletes the registration session also when the client creation fails; reports a cleanup failure, and both failures together
+[V] Creates the confidential introspection client during native-client registration when needed, and keeps its secret out of command output
 
 **Local auth command** (`test/unit/auth-better-auth/local-auth-command.test.ts`, `local-auth-command-users.test.ts`, `local-auth-command-clients.test.ts`)
 
@@ -175,11 +206,13 @@ Doubles stand in for the hidden input, the runtime lifecycle, and the provider. 
 [V] Gives `undefined` for Ctrl-C and Ctrl-D, and for input that ended before the read; rejects with the input error of a failed pipe or terminal, with raw mode off
 [V] Adds no listener to the input before the first read; `close()` can run two times and ends the reading of a pipe that stays open
 
-**Application failure reports** (`test/unit/application.test.ts`)
+**Application routing and failure reports** (`test/unit/application.test.ts`)
 
 A logger double records the lines that `operatorFailureReporter()` writes.
 
 [V] Gives each MCPServer failure report to the operator as one error line that names the failed step and keeps the cause, also for a cause that is not an error; writes no info line
+[V] Routes the complete request to MCP, provider-owned discovery and OAuth endpoints, or bundled pages under the configured public path
+[V] Refuses private provider routes, unrelated paths, and near-matching path suffixes without calling a route owner
 
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
@@ -508,6 +541,7 @@ These tests run `BetterAuthProvider` as the verifier and the access resolver of 
 [V] Two local users each call the protected tool with their own session-bound token: each request has its own user subject in the one `local:<installation-id>` tenant with the same `user` grant and `product:access` permission, and the verified claims name the local issuer, the approved client, and the MCP resource
 [V] A user disabled while its session and token stay valid gets 403 `access_denied` after token verification, a deleted user gets 401, no tool runs for them, and the peer still works
 [V] When one user's sessions end, only that user's token gets 401 and the peer keeps working
+[V] More than 100 protected requests remain accepted without a shared introspection quota; ending one session still rejects its next request and preserves peer access
 [V] A changed payload, a token of another installation, an ID token, an access token without the MCP resource, an expired token, and a malformed value each get 401 before any tool runs and give no operator report
 [V] With `openid` required, a token with only the `profile` scope gets the SDK's 403 `insufficient_scope` with the required scope in its challenge
 [V] Without a resource-server client, or with a wrong client secret, a valid token gets a generic 500 and one `token-verification` report without the token
@@ -677,17 +711,27 @@ npm run build && node --test dist/test/acceptance/auth/local-user-commands.test.
 
 Each test runs the built server and the offline commands as separate processes that refuse outbound network access and report each attempt. A test-only browser sends the page requests with `node:http`, so its `Origin` and `Sec-Fetch-*` headers stay exactly as written. The MCP TypeScript SDK client uses a pre-registered native client ID. Both reach the server at its listen address and use the public URLs of `PUBLIC_BASE_URL`.
 
-[V] Given two enabled accounts and one approved native client, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user and session and without a refresh token, in the one workspace; an expired token leads to a new authorization without the pages, and no process uses the network
+[V] Given two enabled accounts with separate approved native clients, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own client, user, and session and without a refresh token, in the one workspace; an expired token leads to a new authorization without the pages, and no process uses the network
 [V] Given two users with tokens, a reset of one user's password while the server is stopped makes that user's old password, old token, and a refresh request fail after the restart; the new password gives a new token without a new consent, and the peer's token, session, and consent still work
 [V] Given two users with tokens, a disable of one user while the server is stopped makes that user's token fail after the restart; the sign-in page refuses the account without a session cookie, no refresh is possible, and the peer keeps working
 [V] Given a running server, both discovery documents describe only the local provider; sign-up, registration, introspection, the provider sign-in, session, admin, and client routes give 404; a client metadata URL as client ID and an unregistered redirect URI go to the bundled error page, which shows only the error code; no account or client is added, and the server fetches nothing
 [V] Given the bundled pages, a sign-in or consent post from a foreign origin, a cross-site sign-in navigation, and a consent post with the session cookie but without an origin get 403 and add no session; the user can then sign in and consent from the server origin
+[V] A changed consent signature reveals no client or account details and authorizes no redirect; the valid signed consent still completes, and the client metadata endpoints stay private
 [V] Given the bundled sign-in page, the fourth sign-in from one client address within ten seconds gets 429 with `Retry-After` and signs no one in, also with the correct password
 
 Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/self-hosted.test.js
+```
+
+**Authentication routes under a public URL path** (`test/acceptance/auth/self-hosted-routes.test.ts`)
+
+[V] With a prefixed public URL, the real provider serves both resource metadata paths and both issuer metadata paths with the correct issuer and resource; resource metadata accepts GET and HEAD and refuses POST
+[V] An unknown client goes to the bundled error page under that prefix; unsupported page methods and old root routes remain closed, with no outbound connection
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.js
 ```
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)

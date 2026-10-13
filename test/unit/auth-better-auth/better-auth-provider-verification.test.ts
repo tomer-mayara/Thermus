@@ -85,6 +85,22 @@ describe('BetterAuthProvider token verification', () => {
     });
   }
 
+  test('Given an expired token with a private claim, when verification rejects it, then inspection of the error reveals neither the token nor the private claim', async () => {
+    const { signer, provider, verifier } = verifierWithOwnKey();
+    const privateClaim = 'private-claim-value-for-this-token';
+    const token = signer.sign(localUserClaims({ exp: nowInSeconds() - 100, privateData: privateClaim }));
+
+    await assert.rejects(verifier.verifyAccessToken(token), (error: unknown) => {
+      assert.ok(error instanceof InvalidAccessTokenError);
+      const report = inspect(error, { depth: Infinity });
+      assert.ok(!report.includes(token), 'the error holds the token');
+      assert.ok(!report.includes(privateClaim), 'the error holds the private claim');
+      return true;
+    });
+
+    assert.deepEqual(provider.requests, []);
+  });
+
   test('Given a token signed with ES256 by a key in the provider key set, when it is verified, then it is refused as an invalid token, because only EdDSA is allowed, and the provider gets no introspection request', async () => {
     const signer = new AccessTokenSigner('ec-key', 'ES256');
     const provider = new TokenProviderDouble(signer.publicKey);

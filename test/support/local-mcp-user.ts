@@ -10,7 +10,6 @@ export interface McpConnection {
   readonly pages: readonly string[];
 }
 
-// One user with a browser and the tested MCP client: the MCP TypeScript SDK client with a pre-registered native client ID.
 export class LocalMcpUser {
   readonly account: AccountCredentials;
   readonly browser: LocalBrowser;

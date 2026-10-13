@@ -31,7 +31,6 @@ const REFUSED_PROVIDER_VARIABLES: Readonly<Record<string, string>> = {
   BETTER_AUTH_TELEMETRY: 'turn on telemetry',
 };
 
-// The confidential client that the MCP server uses to introspect access tokens.
 export interface ResourceServerClient {
   readonly clientId: string;
   readonly clientSecret: string;
@@ -70,7 +69,9 @@ export function localProviderOptions(settings: LocalProviderSettings) {
     database: settings.database,
     telemetry: { enabled: false },
     emailAndPassword: { enabled: true, disableSignUp: true },
-    rateLimit: { enabled: true },
+    // Introspection is private and runs for every MCP request. A shared quota would deny valid users.
+    rateLimit: { enabled: true, customRules: { '/oauth2/introspect': false as const } },
+    onAPIError: { errorURL: new URL('authorization-error', settings.publicBaseUrl).href },
     advanced: {
       ipAddress: { ipAddressHeaders: [CLIENT_ADDRESS_HEADER] },
       // Without this setting, NODE_ENV=test, or TEST with a value other than false, turns off the origin and CSRF checks.
@@ -84,6 +85,7 @@ export function localProviderOptions(settings: LocalProviderSettings) {
         resource: settings.mcpResourceUrl,
         loginPage: new URL('sign-in', settings.publicBaseUrl).pathname,
         consentPage: new URL('consent', settings.publicBaseUrl).pathname,
+        allowPublicClientPrelogin: true,
         scopes: ['openid', 'profile', 'email'],
         grantTypes: ['authorization_code', 'client_credentials'],
         clientReference: () => settings.installationId,

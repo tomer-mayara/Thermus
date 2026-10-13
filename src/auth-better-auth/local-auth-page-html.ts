@@ -46,6 +46,18 @@ export function signInPage(status: number, form: SignInForm): Response {
   ]));
 }
 
+export function consentPage(action: string, oauthQuery: string, details: { readonly clientName: string; readonly email: string; readonly scopes: string }): Response {
+  return htmlResponse(200, htmlDocument('Allow Magumagu access', [
+    `<p>Allow ${escapeHtml(details.clientName)} to use this Magumagu workspace as ${escapeHtml(details.email)}?</p>`,
+    `<p>Requested scopes: ${escapeHtml(details.scopes)}</p>`,
+    `<form method="post" action="${escapeHtml(action)}">`,
+    oauthQueryField(oauthQuery),
+    '<button type="submit" name="accept" value="yes">Allow</button>',
+    '<button type="submit" name="accept" value="no">Deny</button>',
+    '</form>',
+  ]));
+}
+
 export function messagePage(status: number, message: string, headers: Readonly<Record<string, string>> = {}): Response {
   return htmlResponse(status, htmlDocument('Magumagu sign-in', [`<p>${escapeHtml(message)}</p>`]), headers);
 }

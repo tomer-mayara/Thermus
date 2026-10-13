@@ -20,7 +20,6 @@ export interface BetterAuthProviderSettings {
   readonly resourceServerClient: ResourceServerClient | undefined;
 }
 
-// Every enabled local account gets this one grant in the one installation workspace.
 export const LOCAL_USER_GRANT: RoleGrant = Object.freeze({ role: 'user', permissions: Object.freeze(['product:access']) });
 
 type TokenPayload = Awaited<ReturnType<typeof verifyJwsAccessToken>>;
@@ -44,7 +43,6 @@ const COMPACT_JWT = /^[\w-]+\.[\w-]+\.[\w-]+$/;
 const KEY_SET_FAILURES = new Set(['ERR_JWKS_INVALID', 'ERR_JWKS_MULTIPLE_MATCHING_KEYS', 'ERR_JWKS_TIMEOUT']);
 const MISSING_CLIENT_MESSAGE = 'No resource-server client is registered for the MCP resource of this PUBLIC_BASE_URL, '
   + 'so no access token can be checked. Run `magumagu clients register` to register it.';
-// The verifier runs in the server process. Without a client address, the provider puts it in a rate-limit bucket that all clients share.
 const SERVER_PROCESS_ADDRESS = '127.0.0.1';
 const ACCOUNT_INACTIVE: AccessDecision = Object.freeze({ allowed: false, reason: 'account-inactive' });
 
@@ -101,7 +99,7 @@ export class BetterAuthProvider implements IdentityVerifier, AccessResolver {
         verifyOptions: { issuer: this.settings.issuer, audience: this.settings.mcpResourceUrl, typ: 'at+jwt', algorithms: ['EdDSA'] },
       });
     } catch (error) {
-      if (isTokenRejection(error)) throw new InvalidAccessTokenError('The access token failed the JWT check', { cause: error });
+      if (isTokenRejection(error)) throw new InvalidAccessTokenError('The access token failed the JWT check');
       throw error;
     }
   }

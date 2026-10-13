@@ -57,3 +57,24 @@ test('Given empty values of those variables, NODE_ENV=test, TEST=1, and a teleme
 
   assert.equal(options.secret, settings.secret);
 });
+
+
+test('Given local provider settings, when options are built, then only private introspection has its shared request limit disabled', () => {
+  const options = localProviderOptions(settings);
+
+  assert.deepEqual(options.rateLimit, { enabled: true, customRules: { '/oauth2/introspect': false } });
+});
+
+test('Given a public base URL with a path, when provider options are built, then authorization errors use the bundled local page', () => {
+  const options = localProviderOptions({ ...settings, publicBaseUrl: 'https://magumagu.example/team/' });
+
+  assert.deepEqual(options.onAPIError, { errorURL: 'https://magumagu.example/team/authorization-error' });
+});
+
+test('Given local consent pages, when provider options are built, then the provider permits client metadata lookup from a signed authorization query without a browser session', () => {
+  const options = localProviderOptions(settings);
+  const provider = options.plugins.find((plugin) => plugin.id === 'oauth-provider');
+
+  assert.ok(provider);
+  assert.equal(provider.options.allowPublicClientPrelogin, true);
+});

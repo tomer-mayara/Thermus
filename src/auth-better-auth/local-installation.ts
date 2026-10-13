@@ -12,7 +12,6 @@ const OWNER_ONLY = 0o600;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const GENERATED_SECRET = /^[A-Za-z0-9_-]{43}$/;
 
-// The confidential client that the MCP server uses to introspect the access tokens of the MCP resource in `resource`.
 export interface StoredResourceServerClient {
   readonly clientId: string;
   readonly clientSecret: string;

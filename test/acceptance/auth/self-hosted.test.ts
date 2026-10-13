@@ -24,7 +24,6 @@ interface Installation {
   readonly commands: CommandResult[];
 }
 
-// The operator adds the accounts and registers one approved native client while the server is stopped.
 async function installation(t: TestContext, accounts: readonly AccountCredentials[] = [alice, bob]): Promise<Installation> {
   const directory = dataDirectory(t);
   const operator = operatorOn(t, directory);
@@ -92,11 +91,14 @@ async function toolNames(user: LocalMcpUser, t: TestContext): Promise<string[]> 
 }
 
 describe('Self-hosted browser-to-MCP authorization without outbound access', () => {
-  test('Given two enabled accounts and one approved native client, when each user\'s MCP SDK client starts the authorization and the user signs in and consents on the bundled pages, then each client works with a resource-bound token for its own user and browser session and no refresh token, in the one installation workspace; when a token is no longer accepted, the client authorizes again through the live browser session without the pages, and no process uses the network', { timeout: 120_000 }, async (t) => {
-    const { directory, clientId, userIds, commands } = await installation(t);
+  test('Given two enabled accounts and two approved native clients, when each user\'s MCP SDK client starts the authorization and the user signs in and consents on the bundled pages, then each client works with a resource-bound token for its own user and browser session and no refresh token, in the one installation workspace; when a token is no longer accepted, the client authorizes again through the live browser session without the pages, and no process uses the network', { timeout: 120_000 }, async (t) => {
+    const { directory, operator, clientId, userIds, commands } = await installation(t);
+    const secondRegistration = await operator(registerArgs(bob), [bob.password]);
+    const secondClientId = registeredClientId(secondRegistration);
+    commands.push(secondRegistration);
     const server = new RunningServer();
     const serverProcess = await server.start(t, directory);
-    const users = [new LocalMcpUser(server.address, clientId, alice), new LocalMcpUser(server.address, clientId, bob)];
+    const users = [new LocalMcpUser(server.address, clientId, alice), new LocalMcpUser(server.address, secondClientId, bob)];
 
     const connections = [];
     for (const user of users) connections.push(await user.connect(t));
@@ -108,11 +110,12 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
     const reauthorization = await aliceUser.connect(t);
 
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
-    for (const user of users) {
+    assert.notEqual(clientId, secondClientId);
+    for (const [index, user] of users.entries()) {
       const claims = jwtClaims(user.accessToken);
       assert.equal(claims.sub, userIds.get(user.account.email));
       assert.equal(claims.iss, authIssuer);
-      assert.equal(claims.client_id, clientId);
+      assert.equal(claims.client_id, [clientId, secondClientId][index]);
       assert.ok(Array.isArray(claims.aud) && claims.aud.includes(mcpResourceUrl), JSON.stringify(claims.aud));
       assert.equal(user.oauth.savedTokens().refresh_token, undefined);
     }
@@ -217,6 +220,8 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
       ['POST', '/api/auth/oauth2/introspect'],
       ['POST', '/api/auth/sign-in/email'],
       ['GET', '/api/auth/get-session'],
+      ['POST', '/api/auth/oauth2/public-client-prelogin'],
+      ['GET', '/api/auth/oauth2/public-client'],
       ['POST', '/api/auth/admin/create-user'],
       ['POST', '/api/auth/oauth2/create-client'],
       ['POST', '/api/auth/admin/oauth2/create-client'],
@@ -268,7 +273,7 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
     });
   });
 
-  test('Given the bundled pages, when a sign-in or consent post comes with a foreign origin, as a cross-site navigation, or with a session cookie but without an origin, then the page refuses it with 403 and adds no session; the user can then sign in and consent from the server origin', { timeout: 120_000 }, async (t) => {
+  test('Given the bundled pages, when a sign-in or consent request has an untrusted origin or a changed authorization signature, then the page refuses it, reveals no consent details, and creates no authorization; valid requests still work', { timeout: 120_000 }, async (t) => {
     const { directory, clientId, userIds, commands } = await installation(t, [alice]);
     const server = new RunningServer();
     await server.start(t, directory);
@@ -282,6 +287,16 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
     const cookiesAfterRefusals = user.browser.cookies.size;
     const signedIn = await user.browser.post(signIn.url, credentials);
     assert.equal(signedIn.location?.pathname, '/consent', `${signedIn.status} ${signedIn.body}`);
+    const tamperedUrl = new URL(signedIn.location);
+    tamperedUrl.searchParams.set('sig', 'forged-signature');
+    const tamperedPage = await user.browser.navigate(tamperedUrl, 'same-origin');
+    const tamperedConsent = await user.browser.post(signedIn.location, { accept: 'yes', oauth_query: tamperedUrl.search.slice(1) });
+    assert.equal(tamperedPage.status, 403, tamperedPage.body);
+    assert.equal(tamperedConsent.status, 400, tamperedConsent.body);
+    for (const refused of [tamperedPage, tamperedConsent]) {
+      assert.equal(refused.location, undefined);
+      assert.doesNotMatch(refused.body, /<form|Native MCP client|alice@example\.com/);
+    }
     const consentPage = await user.browser.navigate(signedIn.location, 'same-origin');
     const consent = { accept: 'yes', oauth_query: hiddenField(consentPage.body, 'oauth_query') };
     const foreignConsent = await user.browser.post(signedIn.location, consent, { origin: foreignOrigin });

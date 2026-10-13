@@ -11,7 +11,6 @@ export const clientId = 'native-client-1';
 export const clientRedirectUri = 'http://127.0.0.1:33418/callback';
 export const sessionCookie = 'better-auth.session_token=session-1.signature; Max-Age=604800; Path=/; HttpOnly; SameSite=Lax';
 
-// The signed query that the provider gives the browser for the sign-in and consent pages.
 export const signedQuery = new URLSearchParams([
   ['response_type', 'code'],
   ['client_id', clientId],
@@ -36,7 +35,6 @@ export interface ProviderCall {
   readonly signal: AbortSignal;
 }
 
-// Takes the place of auth.handler: it records each request and answers a route with the configured response.
 export class ProviderDouble {
   readonly calls: ProviderCall[] = [];
   private readonly answers = new Map<string, () => Response>();
@@ -63,11 +61,10 @@ export class ProviderDouble {
   }
 }
 
-export function providerJson(status: number, body: unknown, headers: HeadersInit = {}): () => Response {
+export function providerJson(status: number, body: unknown, headers: RequestInit['headers'] = {}): () => Response {
   return () => Response.json(body, { status, headers });
 }
 
-// A provider refusal with the text, code, and cookie that a page must not copy.
 export function providerRefusal(status: number, code: string, headers: Readonly<Record<string, string>> = {}): () => Response {
   return providerJson(status, { code, message: 'Provider message text' }, { ...headers, 'Set-Cookie': 'better-auth.session_token=refused; Path=/' });
 }
@@ -118,7 +115,6 @@ export function assertLoadsNothing(html: string): void {
   assert.doesNotMatch(html, /<(?:script|link|img|iframe|object|embed|base|a)\b|\b(?:src|href)=|url\(|@import|@font-face|https?:\/\//i);
 }
 
-// A refused or failed step shows only the page text: no provider text or code, no cookie, and no redirect.
 export function assertNothingCopied(response: Response, html: string, code = 'NO_CODE'): void {
   assert.equal(response.headers.get('Set-Cookie'), null);
   assert.equal(response.headers.get('Location'), null);

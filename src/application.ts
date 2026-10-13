@@ -1,9 +1,16 @@
-import type { AccessResolver } from './auth/access-context.ts';
+import type { LocalAuthPages } from './auth-better-auth/local-auth-pages.ts';
 import type { DeploymentConfig } from './config/deployment-config.ts';
-import { InvalidAccessTokenError, type IdentityVerifier } from './mcp/identity-verifier.ts';
+import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
+type LocalRouteConfig = Pick<SelfHostedConfig, 'publicBaseUrl' | 'mcpResourceUrl' | 'resourceMetadataUrl'>;
+
+export interface LocalRequestHandlers {
+  readonly mcp: FetchHandler;
+  readonly provider: FetchHandler;
+  readonly pages: Pick<LocalAuthPages, 'handles' | 'handle'>;
+}
 
 export interface Application {
   handle(request: Request): Promise<Response>;
@@ -22,17 +29,6 @@ export class HostedEditionUnavailableError extends Error {
   }
 }
 
-// Token introspection needs a confidential resource-server client. The local auth command registers only native MCP clients.
-const acceptsNoAccessToken: IdentityVerifier = {
-  verifyAccessToken: async () => {
-    throw new InvalidAccessTokenError('The self-hosted edition accepts no MCP access token yet');
-  },
-};
-
-const deniesEveryUser: AccessResolver = {
-  resolve: async () => ({ allowed: false, reason: 'account-inactive' }),
-};
-
 export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger): Promise<Application> {
   if (config.deployment === 'hosted') throw new HostedEditionUnavailableError();
   return createSelfHostedApplication(config, logger);
@@ -44,24 +40,49 @@ export function operatorFailureReporter(logger: ApplicationLogger): FailureRepor
 
 async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger): Promise<Application> {
   const { openBetterAuthRuntime } = await import('./auth-better-auth/better-auth-runtime.ts');
+  const { BetterAuthProvider } = await import('./auth-better-auth/better-auth-provider.ts');
+  const { LocalAuthPages, localPagePaths } = await import('./auth-better-auth/local-auth-pages.ts');
   await using owned = new AsyncDisposableStack();
   const runtime = owned.adopt(await openBetterAuthRuntime(config), (opened) => opened.close());
+  const issuer = new URL('api/auth', config.publicBaseUrl).href;
+  const provider = new BetterAuthProvider(runtime.auth, {
+    issuer,
+    mcpResourceUrl: config.mcpResourceUrl,
+    installationId: runtime.installationId,
+    resourceServerClient: runtime.resourceServerClient.current(),
+  });
+  const pages = new LocalAuthPages(runtime.auth.handler, { issuer, paths: localPagePaths(config.publicBaseUrl) });
   const mcp = owned.adopt(new MCPServer({
     auth: {
-      verifier: acceptsNoAccessToken,
-      accessResolver: deniesEveryUser,
+      verifier: provider,
+      accessResolver: provider,
       resourceMetadataUrl: config.resourceMetadataUrl,
       expectedResource: new URL(config.mcpResourceUrl),
     },
     reportFailure: operatorFailureReporter(logger),
   }), (server) => server.close());
   logger.info(`The self-hosted installation uses tenant ${runtime.tenantId}.`);
-  return applicationRecord(routeRequests(new URL(config.mcpResourceUrl).pathname, mcp), owned.move());
+  const handle = routeLocalRequests(config, { mcp: (request) => mcp.fetch(request), provider: runtime.auth.handler, pages });
+  return applicationRecord(handle, owned.move());
 }
 
-function routeRequests(mcpPath: string, mcp: MCPServer): Application['handle'] {
+// Only these public paths reach the provider. Its browser and administration APIs stay private.
+export function routeLocalRequests(config: LocalRouteConfig, handlers: LocalRequestHandlers): FetchHandler {
+  const mcpPath = new URL(config.mcpResourceUrl).pathname;
+  const authPath = new URL('api/auth', config.publicBaseUrl).pathname;
+  const providerPaths = new Set([
+    '/.well-known/oauth-protected-resource',
+    new URL(config.resourceMetadataUrl).pathname,
+    `/.well-known/oauth-authorization-server${authPath}`,
+    `${authPath}/.well-known/openid-configuration`,
+    `${authPath}/oauth2/authorize`,
+    `${authPath}/oauth2/token`,
+  ]);
   return async (request) => {
-    if (new URL(request.url).pathname === mcpPath) return mcp.fetch(request);
+    const pathname = new URL(request.url).pathname;
+    if (pathname === mcpPath) return handlers.mcp(request);
+    if (providerPaths.has(pathname)) return handlers.provider(request);
+    if (handlers.pages.handles(pathname)) return handlers.pages.handle(request);
     return new Response('Not Found', { status: 404 });
   };
 }

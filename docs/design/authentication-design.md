@@ -292,7 +292,16 @@ OAuth provider plugin or an independent competing metadata response.
 `mcp()` `loginPage` names, `<base>/consent`, which `consentPage` names, and
 `<base>/authorization-error`, which `onAPIError.errorURL` names. The provider
 sends a browser to the sign-in and consent pages with a signed copy of the
-authorization request. Each page keeps that copy in a hidden form field. A form
+authorization request. Before it shows consent, the page asks the provider's
+`/oauth2/public-client-prelogin` handler to verify that signed query and return
+the client name, and reads the current account through `/get-session`. Both
+routes remain private at the application router. The metadata request omits
+the session cookie: it is a public data read, and a browser GET navigation has
+no origin header for the provider's cookie-bearing POST check. Authentication
+posts retain the original browser cookie and origin. The consent page shows
+the client, the account email, and the requested scopes.
+
+Each page keeps the signed query in a hidden form field. A form
 post goes to the page, and the page sends the provider route a request of its
 own: `/sign-in/email` or `/oauth2/consent`, with the signed copy, through the
 Better Auth handler. The page copies only the cookie, origin, referer,
@@ -304,7 +313,9 @@ no script, font, image, or external link, and they send a Content Security
 Policy that allows only their one inline style. The authorization error page
 shows only an error code, for an authorization request that the provider cannot
 send back to the client, such as an unknown client ID or an unregistered
-redirect URI.
+redirect URI. Form bodies and authorization queries have a 16 KiB limit. The
+pages refuse duplicate required form fields and stop reading an oversized or
+aborted body before they call the provider.
 
 The local auth command also registers approved MCP clients and exact redirect URLs.
 It signs in one selected enabled account through the server API, with that
@@ -414,6 +425,7 @@ native SQLite package is needed.
 | `disabledPaths` | The admin, client-management, client-secret rotation, and session-JWT (`/token`) routes. It refuses exact paths with `404` on HTTP only; server API calls still work. It cannot match routes with parameters, so the HTTP bridge must forward only the provider routes that the local edition uses. |
 | `plugins` | `admin()`, `jwt()`, and `mcp()` with the options below. Dynamic registration stays off, and no client-metadata plugin is installed. |
 | `mcp()` `resource`, `loginPage`, `consentPage` | `<base>/mcp` and the bundled sign-in and consent pages, `<base>/sign-in` and `<base>/consent`. |
+| `mcp()` `allowPublicClientPrelogin` | `true`, so the bundled consent page can verify a signed authorization query before showing the client name. The application router keeps both public-client lookup routes private. |
 | `mcp()` `scopes` | `["openid", "profile", "email"]`, without `offline_access`. An authorization request with `offline_access` returns to the client with `invalid_scope`, client registration refuses that scope, and no token response has a refresh token. |
 | `mcp()` `grantTypes` | `["authorization_code", "client_credentials"]`, without `refresh_token`. A refresh request gives `400 unsupported_grant_type`, client registration refuses the refresh grant, and the metadata does not list it. The `grant_types` of a client cannot prevent refresh tokens, because the provider lets each `authorization_code` client refresh. |
 | `mcp()` `clientReference` | A function that returns the installation ID. Each registered client gets it as `reference_id` and has no `user_id`, so the installation owns the client. |

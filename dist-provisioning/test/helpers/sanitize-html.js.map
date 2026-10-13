@@ -1,1 +1,0 @@
-{"version":3,"file":"sanitize-html.js","sourceRoot":"","sources":["../../../test/helpers/sanitize-html.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,+BAA+B,EAAE,MAAM,gGAAgG,CAAC;AACjJ,OAAO,EAAE,aAAa,EAAE,MAAM,oCAAoC,CAAC;AAEnE,MAAM,CAAC,KAAK,UAAU,YAAY,CAAC,IAAY;IAC7C,OAAO,IAAI,+BAA+B,EAAE,CAAC,MAAM,CAAC,aAAa,CAAC,IAAI,CAAC,CAAC,CAAC;AAC3E,CAAC"}

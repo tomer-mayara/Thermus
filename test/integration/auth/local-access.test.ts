@@ -66,7 +66,6 @@ async function registerNativeClient(auth: LocalAuth, account: AccountCredentials
   return client.client_id;
 }
 
-// The accounts and the approved clients of one installation, made with the provider operations that the commands use.
 async function localInstallation(t: TestContext, accounts: readonly AccountCredentials[] = [alice, bob], directory = dataDirectory(t)): Promise<LocalInstallationUnderTest> {
   const runtime = await openRuntime(t, directory);
   const userIds = new Map<string, string>();
@@ -232,10 +231,31 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
 
     await (await installation.runtime.auth.$context).internalAdapter.deleteUserSessions(aliceGrant.id);
     const revoked = await mcp.server.fetch(callProbe(t, aliceGrant.accessToken));
-    const peer = await toolJson<ProbeReport>(await mcp.server.fetch(callProbe(t, bobGrant.accessToken)));
-
     await assertRefused(mcp, { response: revoked, status: 401, label: 'the revoked token' });
+
+    const peer = await toolJson<ProbeReport>(await mcp.server.fetch(callProbe(t, bobGrant.accessToken)));
     assert.equal(peer.context.user.subject, bobGrant.id);
+    assert.deepEqual(mcp.reporter.reports, []);
+  });
+
+  test('Given two users with active MCP tokens, when protected requests exceed the shared provider rate limit, then all requests keep working and the next request still checks whether its session ended', { timeout: 60_000 }, async (t) => {
+    const installation = await localInstallation(t);
+    const mcp = mcpServer(t, providerFor(installation.runtime, installation.resourceServer));
+    const grants = await grantsFor(installation, [alice, bob]) as [UserGrant, UserGrant];
+
+    for (let request = 0; request < 110; request += 1) {
+      const grant = request % 2 === 0 ? grants[0] : grants[1];
+      const response = await mcp.server.fetch(callProbe(t, grant.accessToken));
+      assert.equal(response.status, 200, `protected request ${request + 1}: ${await response.clone().text()}`);
+      assert.equal((await toolJson<ProbeReport>(response)).context.user.subject, grant.id);
+    }
+
+    const workBeforeRevocation = [...mcp.probe.work];
+    await (await installation.runtime.auth.$context).internalAdapter.deleteUserSessions(grants[0].id);
+    const revoked = await mcp.server.fetch(callProbe(t, grants[0].accessToken));
+    assert.equal(revoked.status, 401);
+    assert.deepEqual(mcp.probe.work, workBeforeRevocation);
+    assert.equal((await mcp.server.fetch(callProbe(t, grants[1].accessToken))).status, 200);
     assert.deepEqual(mcp.reporter.reports, []);
   });
 
@@ -315,7 +335,6 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
     const refresh = await installation.native.refresh(bobGrant.accessToken);
     const authorization = await bobGrant.browser.request('GET', installation.native.authorizationRequest().path, { origin: null });
     const token = await mcp.server.fetch(callProbe(t, bobGrant.accessToken));
-    const peer = await toolJson<ProbeReport>(await mcp.server.fetch(callProbe(t, aliceGrant.accessToken)));
 
     assert.equal(signIn.status, 403);
     assert.equal(await errorCodeOf(signIn), 'BANNED_USER');
@@ -324,6 +343,8 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
     assert.equal(await errorCodeOf(refresh), 'unsupported_grant_type');
     assert.match(authorization.headers.get('Location') ?? '', /^\/sign-in\?/);
     await assertRefused(mcp, { response: token, status: 401, label: 'the disabled user\'s token' });
+
+    const peer = await toolJson<ProbeReport>(await mcp.server.fetch(callProbe(t, aliceGrant.accessToken)));
     assert.equal(peer.context.user.subject, aliceGrant.id);
   });
 
