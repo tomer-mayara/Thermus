@@ -1,15 +1,32 @@
 import type { LocalAuthPages } from './auth-better-auth/local-auth-pages.ts';
+import type { AccessResolver } from './auth/access-context.ts';
 import type { DeploymentConfig } from './config/deployment-config.ts';
+import { HostedAccountRoutes, type AccountOperation } from './hosted-admin/account-routes.ts';
+import type { BrowserSession } from './hosted-admin/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
-type LocalRouteConfig = Pick<SelfHostedConfig, 'publicBaseUrl' | 'mcpResourceUrl' | 'resourceMetadataUrl'>;
+type HostedConfig = Extract<DeploymentConfig, { deployment: 'hosted' }>;
+type RouteConfig = Pick<DeploymentConfig, 'publicBaseUrl' | 'mcpResourceUrl' | 'resourceMetadataUrl'>;
 
 export interface LocalRequestHandlers {
   readonly mcp: FetchHandler;
   readonly provider: FetchHandler;
   readonly pages: Pick<LocalAuthPages, 'handles' | 'handle'>;
+}
+
+export interface HostedRequestHandlers {
+  readonly mcp: FetchHandler;
+  readonly account: FetchHandler;
+}
+
+// The parts that change when the hosted WorkOS provider replaces the unavailable placeholder. The MCP endpoint
+// answers the MCP resource and its protected-resource metadata, and the application closes it.
+export interface HostedProviderParts {
+  readonly session: BrowserSession;
+  readonly accessResolver: AccessResolver;
+  readonly mcp: Pick<MCPServer, 'fetch' | 'close'>;
 }
 
 export interface Application {
@@ -22,15 +39,8 @@ export interface ApplicationLogger {
   error(message: string): void;
 }
 
-export class HostedEditionUnavailableError extends Error {
-  constructor() {
-    super('The hosted edition is not available in this version of Magumagu.');
-    this.name = 'HostedEditionUnavailableError';
-  }
-}
-
 export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger): Promise<Application> {
-  if (config.deployment === 'hosted') throw new HostedEditionUnavailableError();
+  if (config.deployment === 'hosted') return createHostedApplication(config, logger);
   return createSelfHostedApplication(config, logger);
 }
 
@@ -67,7 +77,7 @@ async function createSelfHostedApplication(config: SelfHostedConfig, logger: App
 }
 
 // Only these public paths reach the provider. Its browser and administration APIs stay private.
-export function routeLocalRequests(config: LocalRouteConfig, handlers: LocalRequestHandlers): FetchHandler {
+export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHandlers): FetchHandler {
   const mcpPath = new URL(config.mcpResourceUrl).pathname;
   const authPath = new URL('api/auth', config.publicBaseUrl).pathname;
   const providerPaths = new Set([
@@ -83,6 +93,36 @@ export function routeLocalRequests(config: LocalRouteConfig, handlers: LocalRequ
     if (pathname === mcpPath) return handlers.mcp(request);
     if (providerPaths.has(pathname)) return handlers.provider(request);
     if (handlers.pages.handles(pathname)) return handlers.pages.handle(request);
+    return new Response('Not Found', { status: 404 });
+  };
+}
+
+async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger): Promise<Application> {
+  const { UnavailableHostedAuthentication, UnavailableMcpEndpoint } = await import('./auth-unavailable/unavailable-hosted-authentication.ts');
+  const authentication = new UnavailableHostedAuthentication();
+  logger.info('Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.');
+  return composeHostedApplication(config, { session: authentication, accessResolver: authentication, mcp: new UnavailableMcpEndpoint() });
+}
+
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, operation?: AccountOperation): Application {
+  const owned = new AsyncDisposableStack();
+  owned.defer(() => parts.mcp.close());
+  const account = new HostedAccountRoutes({ session: parts.session, accessResolver: parts.accessResolver, operation });
+  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => account.handle(request) });
+  return applicationRecord(handle, owned);
+}
+
+export function routeHostedRequests(config: RouteConfig, handlers: HostedRequestHandlers): FetchHandler {
+  const basePath = new URL(config.publicBaseUrl).pathname;
+  const mcpPaths = new Set([
+    new URL(config.mcpResourceUrl).pathname,
+    '/.well-known/oauth-protected-resource',
+    new URL(config.resourceMetadataUrl).pathname,
+  ]);
+  return async (request) => {
+    const pathname = new URL(request.url).pathname;
+    if (mcpPaths.has(pathname)) return handlers.mcp(request);
+    if (pathname.startsWith(basePath)) return handlers.account(request);
     return new Response('Not Found', { status: 404 });
   };
 }

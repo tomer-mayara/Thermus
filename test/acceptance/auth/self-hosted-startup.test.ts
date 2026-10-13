@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
+import { unavailableNotice, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { accountsOf, addAccount, selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
 
@@ -19,11 +20,7 @@ function hostedSettings(directory: string): ServerSettings {
   return {
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: 'https://magumagu.example',
-    WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-    WORKOS_CLIENT_ID: 'client_placeholder',
-    WORKOS_API_KEY: 'workos-api-key-placeholder',
-    WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-    WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
+    ...workOSSettings,
     DATA_DIR: directory,
     LISTEN_HOST: '127.0.0.1',
     LISTEN_PORT: '0',
@@ -185,12 +182,16 @@ describe('Self-hosted server startup with one persistent installation', () => {
     assert.deepEqual(readdirSync(directory), []);
   });
 
-  test('Given the hosted edition with a data directory setting, when the server starts, then it stops with an unavailable-edition error and creates no local data', { timeout: 60_000 }, async (t) => {
+  test('Given the hosted edition with a data directory setting, when the server starts, then it serves only the authentication-unavailable notice, reports no local tenant, and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
-    const server = ServerProcess.launch(t, hostedSettings(directory));
+    const server = await ServerProcess.start(t, hostedSettings(directory));
+    const notice = await server.request('/');
+    const exit = await server.stop();
 
-    await assertStopsBeforeListening(server, /hosted edition/i);
+    assert.deepEqual([notice.status, exit], [503, { code: 0, signal: null }]);
+    assert.match(await notice.text(), unavailableNotice);
+    assert.doesNotMatch(server.output, /tenant/);
     assert.deepEqual(readdirSync(directory), []);
   });
 });

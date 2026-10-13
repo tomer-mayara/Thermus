@@ -70,7 +70,8 @@ contains every change of the pull request.
 3. Run each new or changed test with a focused command.
 4. Run the applicable suites:
    - `npm run test:integration` and `npm run test:acceptance` for a change that
-     affects the MCP server, authentication, the access context, or billing.
+     affects the MCP server, authentication, the access context, the hosted
+     placeholder, or billing.
    - `npm run test:integration` for a change in `test/integration/`.
    - `npm run test:acceptance` for a change in `test/acceptance/`.
    - The interface tests that cover a changed renderer runtime, network policy,
@@ -84,8 +85,9 @@ contains every change of the pull request.
      `.habit-hooks/package.json`, `patches/`, `tsconfig.json`, or
      `tsconfig.build.json`), `migrations/`, the code of the self-hosted server
      and its commands (`src/index.ts`, `src/application.ts`, `src/auth/`,
-     `src/auth-better-auth/`, `src/config/`, `src/http/`, `src/logging/`,
-     `src/mcp/`, or `src/terminal/`), or the container tests and their support
+     `src/auth-better-auth/`, `src/auth-unavailable/`, `src/config/`,
+     `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`, or
+     `src/terminal/`), or the container tests and their support
      files. The image holds all of `dist/src`, so other changes in `src/` change
      the image too; the [self-hosted release](#self-hosted-release) checks run
      the container gate for each release.
@@ -150,6 +152,35 @@ docker volume rm $(docker volume ls --quiet --filter label=magumagu.container-ga
 docker image rm --force $(docker image ls --quiet --filter label=magumagu.container-gate)
 ```
 
+## Hosted placeholder checks
+
+AUTH-12 added the hosted placeholder: with `DEPLOYMENT=hosted`, the server
+answers each request with the authentication-unavailable notice. Its tests run
+offline and need no WorkOS account, credential, SDK, or network access. They are
+in the existing suites:
+
+- unit: `test/unit/hosted-admin/account-routes.test.ts`,
+  `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`,
+  `test/unit/config/deployment-config.test.ts`, and
+  `test/unit/application.test.ts`, in `npm run check`;
+- integration: `test/integration/auth/hosted-account.test.ts` and
+  `test/integration/auth/local-installation.test.ts`, in
+  `npm run test:integration`;
+- acceptance: `test/acceptance/auth/hosted-placeholder.test.ts`, in
+  `npm run test:acceptance`. The container gate also starts the image with
+  `DEPLOYMENT=hosted`.
+
+This command is the offline gate of the placeholder. It runs the hosted
+integration and acceptance files:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/acceptance/auth/hosted-placeholder.test.js
+```
+
+A pass shows only the behavior of the placeholder. It is never a pass of the
+[hosted live gate](#hosted-live-gate-auth-06) and never proof of WorkOS
+behavior. Do not report it as either.
+
 ## Self-hosted release
 
 A release of the self-hosted evaluation image needs a pass of each command below
@@ -213,6 +244,10 @@ The hosted gate passes only when the dedicated command runs with the required
 credentials and every live test passes. Missing hosted credentials, a setup
 error, and skipped live tests can never count as a successful hosted gate. Do
 not put credentials in the repository, in logs, or in pull request notes.
+
+Until AUTH-06 replaces the placeholder and this gate passes, the hosted edition
+gives no hosted access. The [hosted placeholder checks](#hosted-placeholder-checks)
+never count as this gate.
 
 ### Paid billing gate (AUTH-11)
 

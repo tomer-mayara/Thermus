@@ -122,7 +122,7 @@ MCPServer verifies each token once. Then it gives only the verified user to `acc
 
 `reportFailure(report)` lets the operator see an unexpected failure, such as a provider outage. MCPServer calls it one time for each request that fails unexpectedly, before the client gets the generic `500 server_error`. The client response does not change. The [`FailureReport`](src/mcp/mcp-server.ts) has the failed `step`, `token-verification` or `access-resolution`, and the original error as its `cause`. Expected results give no report: a missing or malformed Authorization header, a rejected token, a missing scope, and an access denial. A report contains no request data, so it holds no raw token, cookie, password, or other credential from the request. The verifier receives the raw token, so its errors must not contain the token. The callback must not throw. The composition decides where the reports go; MCPServer adds no logging framework or telemetry.
 
-The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The MCP unit tests use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts), [`AccessResolverMock`](test/unit/mcp/fixtures/access-resolver-mock.ts), [`FailureReporterMock`](test/unit/mcp/fixtures/failure-reporter-mock.ts), and test-only factory tools with the real SDK middleware. The [integration tests](test/integration/auth/mcp-context.test.ts) add the real access contracts. The [access acceptance tests](test/acceptance/auth/mcp-access.test.ts) and the [failure report acceptance tests](test/acceptance/auth/mcp-failure-reports.test.ts) use a real MCP client. The [test inventory](docs/testing/test-list.md) lists the cases. In the self-hosted edition, [`BetterAuthProvider`](src/auth-better-auth/better-auth-provider.ts) is the verifier and the access resolver, and Better Auth serves the metadata documents; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives the details. The hosted identity provider remains planned. The [Better Auth interface proofs](test/interface/auth/better-auth.test.ts) check the pinned local provider packages; the [authentication plan](docs/design/authentication-design.md#pinned-provider-proof) records the proven contracts and the resolved provider blockers.
+The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client through an in-memory transport. The MCP unit tests use [`IdentityVerifierMock`](test/unit/mcp/fixtures/identity-verifier-mock.ts), [`AccessResolverMock`](test/unit/mcp/fixtures/access-resolver-mock.ts), [`FailureReporterMock`](test/unit/mcp/fixtures/failure-reporter-mock.ts), and test-only factory tools with the real SDK middleware. The [integration tests](test/integration/auth/mcp-context.test.ts) add the real access contracts. The [access acceptance tests](test/acceptance/auth/mcp-access.test.ts) and the [failure report acceptance tests](test/acceptance/auth/mcp-failure-reports.test.ts) use a real MCP client. The [test inventory](docs/testing/test-list.md) lists the cases. In the self-hosted edition, [`BetterAuthProvider`](src/auth-better-auth/better-auth-provider.ts) is the verifier and the access resolver, and Better Auth serves the metadata documents; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives the details. The hosted identity provider remains planned; until it exists, the [hosted edition](#hosted-edition) answers each MCP request with `503`. The [Better Auth interface proofs](test/interface/auth/better-auth.test.ts) check the pinned local provider packages; the [authentication plan](docs/design/authentication-design.md#pinned-provider-proof) records the proven contracts and the resolved provider blockers.
 
 ## Deployment configuration
 
@@ -131,7 +131,7 @@ The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client
 - `DEPLOYMENT` alone selects the edition: `self-hosted` or `hosted`. There is no `AUTH_MODE`, no mock mode, and no setting that enables paid features locally. Invalid hosted settings never fall back to the self-hosted edition or to anonymous access.
 - `PUBLIC_BASE_URL` is the canonical public address. It gives the MCP resource URL (`<base>/mcp`) and its protected-resource metadata URL. Forwarded request headers never change it. It has no credentials, query, or fragment. The hosted edition requires `https`. The self-hosted edition requires `https`, but it can use `http` on `localhost`, `127.0.0.1`, or `[::1]` for local development.
 - The self-hosted edition reads `DATA_DIR`, an absolute path.
-- The hosted edition reads `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_REDIRECT_URI` (same origin as `PUBLIC_BASE_URL`), and `WORKOS_COOKIE_PASSWORD` (at least 32 characters). The issuer stays exactly as written, because token issuers are compared as exact strings. Hosted startup rejects stdio.
+- The hosted edition reads no other setting. It reads no `WORKOS_*` setting, so a value of such a setting changes nothing: it turns on no provider and no access, and it appears in no error. The WorkOS provider that replaces the [hosted placeholder](#hosted-edition) will read and check its own settings. Hosted startup rejects stdio.
 - [`loadListenAddress(environment)`](src/config/deployment-config.ts) reads the optional `LISTEN_HOST` and `LISTEN_PORT` for both editions. The defaults are `127.0.0.1` and `8080`. The port is a whole number from 0 to 65535; with 0, the system selects a free port. The listen address never changes the public identity from `PUBLIC_BASE_URL`. Use `LISTEN_HOST=0.0.0.0` in a container.
 
 The server calls both loaders before it opens any resource or listens.
@@ -148,7 +148,7 @@ DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magum
 
 [`src/index.ts`](src/index.ts) starts the server when it gets no arguments. With arguments, it runs one of the offline [local account and client commands](#local-accounts-and-clients). The server loads the settings, calls [`createApplication(config, logger)`](src/application.ts), and serves the application through the Node HTTP bridge, [`startHttpServer()`](src/http/server.ts). It writes `Listening on <address>` to stderr. `SIGINT` or `SIGTERM` stops it: the HTTP server stops, then the application releases its resources, and the process exits with status 0. A second signal ends the process at once. A startup failure writes one `FATAL` line, which names the problem but no secret, and exits with status 1.
 
-`createApplication()` makes the one edition branch. The hosted edition is not available yet: startup stops with `HostedEditionUnavailableError` and never falls back to the self-hosted edition. Only the self-hosted branch loads the Better Auth runtime.
+`createApplication()` makes the one edition branch. Only the self-hosted branch loads the Better Auth runtime. The hosted branch starts the [hosted edition](#hosted-edition) placeholder and never falls back to the self-hosted edition.
 
 [`openBetterAuthRuntime(settings)`](src/auth-better-auth/better-auth-runtime.ts) owns the local resources and opens them in this order:
 
@@ -233,7 +233,7 @@ The restored installation keeps its tenant, the user IDs, the sessions, the clie
 - A lock error: stop the server container, then run the command again.
 - A new installation: `docker compose down --volumes` deletes the volume with all accounts and data. The next start makes a new installation with a new tenant.
 
-**Edition limits.** All enabled local accounts are equal users of one shared workspace, with the same evaluation permissions. There is no local administrator role. The image has no organizations, invitations, seats, billing, payment collection, or hosted sign-in, and their paths give `404`. With `DEPLOYMENT=hosted`, the container stops at startup. A change of `DEPLOYMENT` or of another setting is a configuration change: it does not move accounts or data to the other edition. Migration between editions is separate future work.
+**Edition limits.** All enabled local accounts are equal users of one shared workspace, with the same evaluation permissions. There is no local administrator role. The image has no organizations, invitations, seats, billing, payment collection, or hosted sign-in, and their paths give `404`. With `DEPLOYMENT=hosted`, the container starts the [hosted edition](#hosted-edition) placeholder: each request gets the authentication-unavailable answer, and the container writes nothing to the volume. A change of `DEPLOYMENT` or of another setting is a configuration change: it does not move accounts or data to the other edition. Migration between editions is separate future work.
 
 **Verification.** `npm run test:container` builds this image and runs the [container gate](docs/implementation/test-gate-policy.md#container-gate) without outbound access.
 
@@ -309,6 +309,36 @@ The SDK reads the protected-resource and authorization-server metadata, uses PKC
 
 The consent page verifies the signed authorization query before it displays the client name and current account. Client and session lookups stay inside the server. Form bodies and authorization queries are limited to 16 KiB; ambiguous required form fields are refused. Internal token introspection has no shared request quota, so normal MCP traffic does not exhaust the sign-in rate limit or bypass revocation checks.
 
+## Hosted edition
+
+The hosted edition has no authentication provider yet: the WorkOS AuthKit and Connect integration (AUTH-06) is deferred. Until it is ready, `DEPLOYMENT=hosted` starts a small shell with a replaceable placeholder. The shell needs no WorkOS account, credential, SDK, or network access:
+
+```sh
+pnpm build
+DEPLOYMENT=hosted PUBLIC_BASE_URL=https://magumagu.example pnpm start
+```
+
+- Startup checks `PUBLIC_BASE_URL`, which must be an `https` URL, and the listen settings, and it rejects stdio. It reads no `WORKOS_*` setting, opens no data directory, calls no service, and asks for no credential. The log says that hosted authentication is not available yet. `SIGINT` or `SIGTERM` stops the server with status 0.
+- Each browser path under `PUBLIC_BASE_URL` gives `503` with the authentication-unavailable notice, for example the root, account, sign-in, onboarding, organization, and billing paths. The notice is a small HTML page with no form, script, or cookie.
+- The MCP resource, `<base>/mcp`, and its protected-resource metadata give `503` with the OAuth error `temporarily_unavailable` and no Bearer challenge, also for a request without a credential.
+- No bearer token, cookie, organization ID, or form value gets an identity, a grant, a session cookie, a tenant, or protected work. There is no anonymous access, default tenant, local fallback, or automatic User role. Other paths give `404`.
+
+The shell is the composition that the hosted provider will replace. [`composeHostedApplication()`](src/application.ts) takes the three parts that change with the provider:
+
+- a [`BrowserSession`](src/hosted-admin/browser-session.ts). It gets only the `Cookie` header of a browser request and gives the verified user, with the organization that its session selected. Thus no form field, query, or other header can choose the user or the organization;
+- an [`AccessResolver`](src/auth/access-context.ts);
+- the MCP endpoint, which answers the MCP resource and its metadata. The application closes it.
+
+[`HostedAccountRoutes`](src/hosted-admin/account-routes.ts) checks the browser session and then the current access. Only then does it give the request and a frozen copy of its trusted `RequestContext` to an account operation. A signed-out session gets `401`, a denial gets `403`, and a request with no operation gets `404`. No production account operation exists yet. The placeholder module, [`src/auth-unavailable/unavailable-hosted-authentication.ts`](src/auth-unavailable/unavailable-hosted-authentication.ts), gives all three parts. `UnavailableHostedAuthentication` says that each browser session is unavailable and denies each access request. `UnavailableMcpEndpoint` gives the MCP answer above.
+
+Deferred work:
+
+- AUTH-06 replaces the placeholder with the WorkOS provider. That provider implements `BrowserSession` and `AccessResolver`, and `IdentityVerifier` for an `MCPServer` that becomes the MCP endpoint. It reads and checks its own settings. It must pass the [hosted live gate](docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06) before hosted access is enabled.
+- AUTH-07 and AUTH-08 add organization administration, invitations, and the seat summary as account operations. AUTH-07 adds the `OrganizationDirectory` contract. Their tests use doubles of these roles. A double never becomes a production sign-in.
+- AUTH-11 adds paid billing.
+
+The [acceptance tests](test/acceptance/auth/hosted-placeholder.test.ts), the [integration tests with session and membership doubles](test/integration/auth/hosted-account.test.ts), and the unit tests of the [account routes](test/unit/hosted-admin/account-routes.test.ts) and the [placeholder](test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts) run offline. A pass of these tests is no proof of WorkOS behavior.
+
 ## Billing
 
 The owner has not chosen a payment provider. Billing is a separate object: hosted code uses the [`Billing`](src/billing/billing.ts) interface, and only a `Billing` implementation calls a payment provider. [`BillingFree`](src/billing/billing-free.ts) is the only implementation. It bills no organization and collects no payment, so billing never changes access.
@@ -318,7 +348,7 @@ The owner has not chosen a payment provider. Billing is a separate object: hoste
 - An empty or missing organization ID gives a `TypeError`. Any other seat count gives a `RangeError`. Each operation refuses input with a rejected promise. A rejected call confirms nothing.
 - Each state is a frozen record. `Billing` does not check roles; the caller checks Super Admin authority before a customer billing change.
 
-Only the hosted edition has billing, and no production code calls `Billing` yet. AUTH-11 adds the provider implementation after the owner's decisions. The [paid billing design](docs/design/billing-design.md) records the decision, the rules, the open paid decisions, and the AUTH-11 specification. The [unit tests](test/unit/billing/billing-free.test.ts) and the [acceptance tests](test/acceptance/billing/free-billing.test.ts) check `BillingFree`.
+Only the hosted edition has billing, and no production code calls `Billing` yet: the [hosted placeholder](#hosted-edition) answers each billing request with the authentication-unavailable notice. AUTH-11 adds the provider implementation after the owner's decisions. The [paid billing design](docs/design/billing-design.md) records the decision, the rules, the open paid decisions, and the AUTH-11 specification. The [unit tests](test/unit/billing/billing-free.test.ts) and the [acceptance tests](test/acceptance/billing/free-billing.test.ts) check `BillingFree`.
 
 ## Contributing and design
 
@@ -389,6 +419,14 @@ The unit, integration, and acceptance suites are offline. Live renderer tests ne
 `npm run check` does not run the integration, acceptance, interface, or container suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
 
 `pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `MAGUMAGU_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
+
+The hosted placeholder tests are offline, and the unit, integration, and acceptance suites select them. To run only the hosted integration and acceptance files:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/acceptance/auth/hosted-placeholder.test.js
+```
+
+A pass of these files is not a hosted live gate pass.
 
 The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. `pnpm test:acceptance` runs them with the other acceptance tests. To run only this file:
 

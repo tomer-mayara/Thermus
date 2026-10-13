@@ -15,17 +15,9 @@ interface SelfHostedConfig extends PublicUrls {
   readonly dataDirectory: string;
 }
 
-interface WorkOSSettings {
-  readonly authkitIssuer: string;
-  readonly clientId: string;
-  readonly apiKey: string;
-  readonly redirectUri: string;
-  readonly cookiePassword: string;
-}
-
+// The hosted provider will read and check its own settings, so no WORKOS_* value can change this record.
 interface HostedConfig extends PublicUrls {
   readonly deployment: 'hosted';
-  readonly workos: WorkOSSettings;
 }
 
 export type DeploymentConfig = SelfHostedConfig | HostedConfig;
@@ -43,7 +35,6 @@ export class DeploymentConfigError extends Error {
 }
 
 const LOOPBACK_HOSTNAMES: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]']);
-const MIN_COOKIE_PASSWORD_LENGTH = 32;
 const SPACE_OR_CONTROL_CHARACTER = /[\s\p{Cc}]/u;
 const DEFAULT_LISTEN_ADDRESS: ListenAddress = { host: '127.0.0.1', port: 8080 };
 const MAX_PORT = 65_535;
@@ -96,15 +87,7 @@ function loadSelfHostedConfig(environment: Environment): SelfHostedConfig {
 }
 
 function loadHostedConfig(environment: Environment): HostedConfig {
-  const urls = readPublicUrls(environment, 'hosted');
-  const workos: WorkOSSettings = {
-    authkitIssuer: readAuthkitIssuer(environment),
-    clientId: readRequired(environment, 'WORKOS_CLIENT_ID'),
-    apiKey: readRequired(environment, 'WORKOS_API_KEY'),
-    redirectUri: readRedirectUri(environment, new URL(urls.publicBaseUrl).origin),
-    cookiePassword: readCookiePassword(environment),
-  };
-  const config: HostedConfig = { deployment: 'hosted', ...urls, workos: Object.freeze(workos) };
+  const config: HostedConfig = { deployment: 'hosted', ...readPublicUrls(environment, 'hosted') };
   return Object.freeze(config);
 }
 
@@ -127,34 +110,10 @@ function readPublicBaseUrl(environment: Environment, deployment: Deployment): UR
   return url;
 }
 
-function readAuthkitIssuer(environment: Environment): string {
-  const { text, url } = readUrl(environment, 'WORKOS_AUTHKIT_ISSUER');
-  requireHttps(url, 'WORKOS_AUTHKIT_ISSUER');
-  rejectQuery(text, 'WORKOS_AUTHKIT_ISSUER');
-  return text;
-}
-
-function readRedirectUri(environment: Environment, publicOrigin: string): string {
-  const { url } = readUrl(environment, 'WORKOS_REDIRECT_URI');
-  requireHttps(url, 'WORKOS_REDIRECT_URI');
-  if (url.origin !== publicOrigin) {
-    throw new DeploymentConfigError('WORKOS_REDIRECT_URI must have the same origin as PUBLIC_BASE_URL.');
-  }
-  return url.href;
-}
-
 function readDataDirectory(environment: Environment): string {
   const directory = readRequired(environment, 'DATA_DIR');
   if (!isAbsolute(directory)) throw new DeploymentConfigError('DATA_DIR must be an absolute path.');
   return directory;
-}
-
-function readCookiePassword(environment: Environment): string {
-  const password = readRequired(environment, 'WORKOS_COOKIE_PASSWORD');
-  if (password.length < MIN_COOKIE_PASSWORD_LENGTH) {
-    throw new DeploymentConfigError(`WORKOS_COOKIE_PASSWORD must have at least ${MIN_COOKIE_PASSWORD_LENGTH} characters.`);
-  }
-  return password;
 }
 
 function readUrl(environment: Environment, name: string): { text: string; url: URL } {

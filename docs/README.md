@@ -7,7 +7,7 @@ runtime guides stay current after implementation.
 
 - [Coding principles](coding-principles.md): design and verification guidance.
 - [Lightpanda runtime](lightpanda-runtime.md): runtime installation and renderer checks.
-- [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the self-hosted release checks, and later release gates.
+- [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the hosted placeholder checks, the self-hosted release checks, and later release gates.
 - [Container installation](../README.md#container-installation): the self-hosted evaluation image, its data volume, the stopped-server commands, backup and restore, and recovery.
 
 ## Current reference
@@ -22,7 +22,7 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
-- [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, hosted scope, and implementation gates.
+- [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, the hosted placeholder, hosted scope, and implementation gates.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.
 - [Planned cache key design](design/cache-design.md): pending cache requirements.
 - [Test inventory](testing/test-list.md): executed cases and pending cache tests.

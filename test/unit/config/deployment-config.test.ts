@@ -1,21 +1,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DeploymentConfigError, loadDeploymentConfig, type DeploymentConfig } from '../../../src/config/deployment-config.ts';
+import { workOSSettings } from '../../support/hosted-placeholder.ts';
 
 type Environment = Record<string, string | undefined>;
 type Edition = DeploymentConfig['deployment'];
 
-const apiKey = 'workos-api-key-placeholder';
-const cookiePassword = 'cookie-password-placeholder-0032';
 const valid: Readonly<Record<Edition, Environment>> = {
   'self-hosted': { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'https://magumagu.example', DATA_DIR: '/var/lib/magumagu' },
-  hosted: {
-    DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-    WORKOS_CLIENT_ID: 'client_placeholder', WORKOS_API_KEY: apiKey, WORKOS_COOKIE_PASSWORD: cookiePassword,
-    WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-  },
+  hosted: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example' },
 };
-const valueSettings = Object.keys({ ...valid['self-hosted'], ...valid.hosted }).filter((name) => name !== 'DEPLOYMENT');
+const valueSettings = Object.keys({ ...valid['self-hosted'], ...valid.hosted, ...workOSSettings }).filter((name) => name !== 'DEPLOYMENT');
 const rootUrls = { publicBaseUrl: 'https://magumagu.example/', mcpResourceUrl: 'https://magumagu.example/mcp',
   resourceMetadataUrl: 'https://magumagu.example/.well-known/oauth-protected-resource/mcp' };
 
@@ -47,9 +42,8 @@ test('Given a valid self-hosted environment, when it loads for HTTP, then it ret
   assert.deepEqual(load('self-hosted'), { deployment: 'self-hosted', ...rootUrls, dataDirectory: '/var/lib/magumagu' } satisfies DeploymentConfig);
 });
 
-test('Given a valid hosted environment, when it loads for HTTP, then it returns the derived URLs and the WorkOS settings', () => {
-  const workos = { authkitIssuer: 'https://magumagu-test.authkit.app', clientId: 'client_placeholder', apiKey, redirectUri: 'https://magumagu.example/auth/callback', cookiePassword };
-  assert.deepEqual(load('hosted'), { deployment: 'hosted', ...rootUrls, workos } satisfies DeploymentConfig);
+test('Given a valid hosted environment without WorkOS settings, when it loads for HTTP, then it selects the hosted edition with only the derived URLs', () => {
+  assert.deepEqual(load('hosted'), { deployment: 'hosted', ...rootUrls } satisfies DeploymentConfig);
 });
 
 const derivedUrls: ReadonlyArray<[Edition, string, string, string, string]> = [
@@ -62,7 +56,7 @@ const derivedUrls: ReadonlyArray<[Edition, string, string, string, string]> = [
 ];
 for (const [edition, base, publicBaseUrl, mcpResourceUrl, resourceMetadataUrl] of derivedUrls) {
   test(`Given a ${edition} PUBLIC_BASE_URL of ${base}, when it loads, then it derives the exact MCP resource and metadata URLs`, () => {
-    const config = load(edition, { PUBLIC_BASE_URL: base, WORKOS_REDIRECT_URI: 'https://example.com/app/callback' });
+    const config = load(edition, { PUBLIC_BASE_URL: base });
     assert.deepEqual([config.publicBaseUrl, config.mcpResourceUrl, config.resourceMetadataUrl], [publicBaseUrl, mcpResourceUrl, resourceMetadataUrl]);
   });
 }
@@ -80,6 +74,8 @@ const ignoredSettings: ReadonlyArray<[Edition, Environment]> = [
   ['hosted', { DATA_DIR: '/var/lib/magumagu' }], ['hosted', { AUTH_MODE: 'mock' }], ['self-hosted', { AUTH_MODE: 'hosted' }],
   ['self-hosted', { AUTH_MODE: 'mock', ENABLE_PAID_FEATURES: 'true' }],
   ['self-hosted', { WORKOS_AUTHKIT_ISSUER: 'not-a-url', WORKOS_COOKIE_PASSWORD: 'short' }],
+  ['hosted', workOSSettings], ['hosted', { WORKOS_AUTHKIT_ISSUER: 'not-a-url', WORKOS_COOKIE_PASSWORD: 'short', WORKOS_API_KEY: '' }],
+  ['hosted', { ...workOSSettings, AUTH_MODE: 'workos', ENABLE_PAID_FEATURES: 'true' }],
 ];
 for (const [edition, extra] of ignoredSettings) {
   test(`Given a valid ${edition} environment with ${assignments(extra)}, when it loads, then those settings change nothing`, () => {
@@ -89,12 +85,12 @@ for (const [edition, extra] of ignoredSettings) {
 
 const settingsRead: ReadonlyArray<[Edition, string]> = [
   ['self-hosted', 'DATA_DIR DEPLOYMENT PUBLIC_BASE_URL'],
-  ['hosted', 'DEPLOYMENT PUBLIC_BASE_URL WORKOS_API_KEY WORKOS_AUTHKIT_ISSUER WORKOS_CLIENT_ID WORKOS_COOKIE_PASSWORD WORKOS_REDIRECT_URI'],
+  ['hosted', 'DEPLOYMENT PUBLIC_BASE_URL'],
 ];
 for (const [edition, expected] of settingsRead) {
-  test(`Given a valid ${edition} environment, when it loads, then it reads only the ${edition} settings`, () => {
+  test(`Given a valid ${edition} environment with WorkOS settings, when it loads, then it reads only the ${edition} settings`, () => {
     const read = new Set<string>();
-    const settings = new Proxy(environment(edition), {
+    const settings = new Proxy(environment(edition, workOSSettings), {
       get: (target, name) => { read.add(String(name)); return Reflect.get(target, name); },
     });
     loadDeploymentConfig(settings, 'http');
@@ -107,9 +103,7 @@ test('Given valid hosted settings only in process.env, when it loads an empty en
   assert.match(rejectionMessage({}), /^DEPLOYMENT must be set/);
 });
 
-const urlSettings: ReadonlyArray<[Edition, string]> = [
-  ['self-hosted', 'PUBLIC_BASE_URL'], ['hosted', 'PUBLIC_BASE_URL'], ['hosted', 'WORKOS_AUTHKIT_ISSUER'], ['hosted', 'WORKOS_REDIRECT_URI'],
-];
+const urlSettings: ReadonlyArray<[Edition, string]> = [['self-hosted', 'PUBLIC_BASE_URL'], ['hosted', 'PUBLIC_BASE_URL']];
 const brokenUrls: ReadonlyArray<[string, (url: string) => string]> = [
   ['must not contain spaces or control characters', (url) => `${url} `],
   ['must be an absolute URL', (url) => url.replace('https://', '')],
@@ -121,17 +115,15 @@ const brokenUrls: ReadonlyArray<[string, (url: string) => string]> = [
   ['must not contain a query', (url) => `${url}?`],
 ];
 for (const [edition, setting] of urlSettings) {
-  for (const [rule, breakUrl] of brokenUrls.filter(([rule]) => setting !== 'WORKOS_REDIRECT_URI' || !rule.endsWith('query'))) {
+  for (const [rule, breakUrl] of brokenUrls) {
     const value = breakUrl(String(valid[edition][setting]));
     test(`Given a ${edition} ${setting} of ${JSON.stringify(value)}, when it loads, then it rejects the URL because it ${rule}`, () => {
-      assert.match(rejectionMessage(environment(edition, { [setting]: value })), new RegExp(`^${setting} ${rule}\\.`));
+      assert.match(rejectionMessage(environment(edition, { ...workOSSettings, [setting]: value })), new RegExp(`^${setting} ${rule}\\.`));
     });
   }
 }
 
-const requiredSettings: ReadonlyArray<[Edition, string]> = [
-  ...urlSettings, ['self-hosted', 'DATA_DIR'], ['hosted', 'WORKOS_CLIENT_ID'], ['hosted', 'WORKOS_API_KEY'], ['hosted', 'WORKOS_COOKIE_PASSWORD'],
-];
+const requiredSettings: ReadonlyArray<[Edition, string]> = [...urlSettings, ['self-hosted', 'DATA_DIR']];
 for (const [edition, setting] of requiredSettings) {
   for (const value of [undefined, '']) {
     test(`Given a ${edition} environment with ${value === undefined ? 'no' : 'an empty'} ${setting}, when it loads, then it rejects the missing setting`, () => {
@@ -140,24 +132,22 @@ for (const [edition, setting] of requiredSettings) {
   }
 }
 
-const sameOrigin = /^WORKOS_REDIRECT_URI must have the same origin as PUBLIC_BASE_URL\./;
 const settingRules: ReadonlyArray<[Edition, Environment, RegExp]> = [
-  ['hosted', { PUBLIC_BASE_URL: 'http://localhost:8080', WORKOS_REDIRECT_URI: 'http://localhost:8080/callback' }, /^PUBLIC_BASE_URL must use https\.$/],
-  ['hosted', { PUBLIC_BASE_URL: 'http://127.0.0.1:8080', WORKOS_REDIRECT_URI: 'http://127.0.0.1:8080/callback' }, /^PUBLIC_BASE_URL must use https\.$/],
-  ['hosted', { PUBLIC_BASE_URL: 'http://[::1]:8080', WORKOS_REDIRECT_URI: 'http://[::1]:8080/callback' }, /^PUBLIC_BASE_URL must use https\.$/],
+  ['hosted', { PUBLIC_BASE_URL: 'http://localhost:8080' }, /^PUBLIC_BASE_URL must use https\.$/],
+  ['hosted', { PUBLIC_BASE_URL: 'http://127.0.0.1:8080' }, /^PUBLIC_BASE_URL must use https\.$/],
+  ['hosted', { PUBLIC_BASE_URL: 'http://[::1]:8080' }, /^PUBLIC_BASE_URL must use https\.$/],
+  ['hosted', { ...workOSSettings, PUBLIC_BASE_URL: 'http://localhost:8080', WORKOS_REDIRECT_URI: 'http://localhost:8080/callback' }, /^PUBLIC_BASE_URL must use https\.$/],
   ['self-hosted', { PUBLIC_BASE_URL: 'http://magumagu.example' }, /^PUBLIC_BASE_URL must use https\. It can use http only on localhost, 127\.0\.0\.1, or \[::1\]\.$/],
   ['self-hosted', { PUBLIC_BASE_URL: 'http://localhost.magumagu.example' }, /^PUBLIC_BASE_URL must use https\./],
   ['self-hosted', { PUBLIC_BASE_URL: 'http://192.168.1.20:8080' }, /^PUBLIC_BASE_URL must use https\./],
   ['self-hosted', { DATA_DIR: 'relative/magumagu-data' }, /^DATA_DIR must be an absolute path\./],
   ['self-hosted', { DATA_DIR: './magumagu-data' }, /^DATA_DIR must be an absolute path\./],
-  ['hosted', { WORKOS_REDIRECT_URI: 'https://other.example/auth/callback' }, sameOrigin],
-  ['hosted', { WORKOS_REDIRECT_URI: 'https://magumagu.example:8443/auth/callback' }, sameOrigin],
-  ['hosted', { WORKOS_REDIRECT_URI: 'https://auth.magumagu.example/callback' }, sameOrigin],
   ['hosted', { DEPLOYMENT: undefined, AUTH_MODE: 'hosted' }, /^DEPLOYMENT must be set to self-hosted or hosted\./],
-  ['hosted', { AUTH_MODE: 'mock', WORKOS_API_KEY: undefined }, /^WORKOS_API_KEY is required\./],
+  ['hosted', { DEPLOYMENT: undefined, ...workOSSettings }, /^DEPLOYMENT must be set to self-hosted or hosted\./],
+  ['hosted', { AUTH_MODE: 'mock', PUBLIC_BASE_URL: undefined }, /^PUBLIC_BASE_URL is required\./],
   ['hosted', { AUTH_MODE: 'hosted', PUBLIC_BASE_URL: 'http://localhost:8080' }, /^PUBLIC_BASE_URL must use https\./],
-  ['hosted', { ENABLE_PAID_FEATURES: 'true', WORKOS_COOKIE_PASSWORD: 'short' }, /^WORKOS_COOKIE_PASSWORD must have at least 32 characters\./],
-  ['hosted', { DATA_DIR: '/var/lib/magumagu', WORKOS_AUTHKIT_ISSUER: undefined }, /^WORKOS_AUTHKIT_ISSUER is required\./],
+  ['hosted', { ...workOSSettings, ENABLE_PAID_FEATURES: 'true', PUBLIC_BASE_URL: 'https://magumagu.example?plan=paid' }, /^PUBLIC_BASE_URL must not contain a query\./],
+  ['hosted', { ...workOSSettings, DATA_DIR: '/var/lib/magumagu', PUBLIC_BASE_URL: undefined }, /^PUBLIC_BASE_URL is required\./],
 ];
 for (const [edition, overrides, rule] of settingRules) {
   test(`Given a ${edition} environment with ${assignments(overrides)}, when it loads, then it rejects the invalid setting by name and rule`, () => {
@@ -165,35 +155,23 @@ for (const [edition, overrides, rule] of settingRules) {
   });
 }
 
-test('Given a 31-character cookie password or a base URL with a password, when it loads, then the message names the rule but no secret or URL', () => {
-  const password = cookiePassword.slice(1);
+test('Given a hosted base URL with a password and values for each WorkOS setting, when it loads, then the message names the rule but no secret, URL, or WorkOS value', () => {
   const url = 'https://operator:hunter2@magumagu.example';
-  const passwordMessage = rejectionMessage(environment('hosted', { WORKOS_COOKIE_PASSWORD: password }));
-  const urlMessage = rejectionMessage(environment('hosted', { PUBLIC_BASE_URL: url }));
-  assert.equal(password.length, 31);
-  assert.match(passwordMessage, /^WORKOS_COOKIE_PASSWORD must have at least 32 characters\./);
-  assert.match(urlMessage, /^PUBLIC_BASE_URL must not contain a username or password\./);
-  for (const secret of [password, apiKey, url, 'hunter2']) assert.ok(!passwordMessage.includes(secret) && !urlMessage.includes(secret));
+  const message = rejectionMessage(environment('hosted', { ...workOSSettings, PUBLIC_BASE_URL: url }));
+  assert.match(message, /^PUBLIC_BASE_URL must not contain a username or password\./);
+  for (const secret of [url, 'hunter2', ...Object.values(workOSSettings)]) assert.ok(!message.includes(String(secret)));
 });
 
-test('Given a 32-character cookie password, an issuer without a trailing slash, and a redirect query, when hosted settings load, then they stay exact', () => {
-  const config = load('hosted', { WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback?flow=mcp' });
-  assert.ok(config.deployment === 'hosted');
-  assert.equal(cookiePassword.length, 32);
-  const { authkitIssuer, redirectUri } = config.workos;
-  assert.deepEqual([config.workos.cookiePassword, authkitIssuer, redirectUri], [cookiePassword, 'https://magumagu-test.authkit.app', 'https://magumagu.example/auth/callback?flow=mcp']);
-});
-
-test('Given a valid hosted environment, when it loads for stdio, then it rejects stdio because hosted MCP uses HTTPS only', () => {
-  assert.match(rejectionMessage(environment('hosted'), 'stdio'), /^The hosted DEPLOYMENT serves MCP only over HTTPS, not stdio\./);
-});
+for (const settings of [{}, workOSSettings]) {
+  test(`Given a valid hosted environment${settings === workOSSettings ? ' with WorkOS settings' : ''}, when it loads for stdio, then it rejects stdio because hosted MCP uses HTTPS only`, () => {
+    assert.match(rejectionMessage(environment('hosted', settings), 'stdio'), /^The hosted DEPLOYMENT serves MCP only over HTTPS, not stdio\./);
+  });
+}
 
 test('Given a valid self-hosted environment, when it loads for stdio, then it returns the same record as for HTTP', () => {
   assert.deepEqual(loadDeploymentConfig(environment('self-hosted'), 'stdio'), load('self-hosted'));
 });
 
-test('Given valid environments, when they load, then each record and its WorkOS settings are frozen', () => {
-  const [selfHosted, hosted] = [load('self-hosted'), load('hosted')];
-  assert.ok(hosted.deployment === 'hosted');
-  assert.deepEqual([Object.isFrozen(selfHosted), Object.isFrozen(hosted), Object.isFrozen(hosted.workos)], [true, true, true]);
+test('Given valid environments, when they load, then each record is frozen', () => {
+  assert.deepEqual([Object.isFrozen(load('self-hosted')), Object.isFrozen(load('hosted'))], [true, true]);
 });

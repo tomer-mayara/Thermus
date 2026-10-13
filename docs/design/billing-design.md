@@ -81,11 +81,14 @@ Each implementation obeys these rules:
    change, the application service checks Super Admin authority and completed
    MFA, and it writes the change record. A seat update follows a membership
    change, so it does not need Super Admin.
-6. **Hosted only.** The hosted composition creates one `Billing`. The
-   self-hosted composition creates none.
+6. **Hosted only.** The hosted composition creates one `Billing` when it serves
+   a billing operation. The self-hosted composition creates none.
 
-No production code calls `Billing` yet, because the hosted composition, the
-membership changes, and the account pages do not exist yet. AUTH-11 connects
+No production code calls `Billing` yet, because the membership changes and the
+account pages do not exist yet. The hosted composition exists only as the
+AUTH-12 [hosted placeholder](authentication-design.md#hosted-placeholder): it
+serves no billing operation, gives each billing request the
+authentication-unavailable answer, and creates no `Billing`. AUTH-11 connects
 each caller that does not use `Billing` at that time.
 
 ## Free billing
@@ -416,6 +419,12 @@ ticket. Do not create another one.
 - The hosted work of AUTH-06 to AUTH-08 is complete. AUTH-11 uses its hosted
   composition, account pages, change records, and complete count of active
   User seats.
+- The AUTH-12 hosted placeholder does not meet the AUTH-06 condition. AUTH-06
+  must replace the placeholder with the WorkOS provider and pass the
+  [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06).
+  AUTH-07 and AUTH-08 can build their rules on the placeholder boundary with
+  test doubles, but a pass of the offline placeholder tests is not a hosted
+  gate pass.
 
 ### Steps
 

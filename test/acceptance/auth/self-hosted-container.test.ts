@@ -17,6 +17,7 @@ import {
 } from '../../support/container-gate.ts';
 import { ContainerSite } from '../../support/container-site.ts';
 import { dockerOutput } from '../../support/docker-cli.ts';
+import { mcpUnavailableAnswer, unavailableNotice, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { LocalMcpUser } from '../../support/local-mcp-user.ts';
 
@@ -26,15 +27,7 @@ const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{
 const lockError = /in use by another Magumagu process/;
 // Only the dedicated command arms the gate. npm test and npm run test:acceptance report these tests as skipped.
 const gateArmed = process.env.MAGUMAGU_CONTAINER_GATE === '1';
-const hostedSettings = {
-  DEPLOYMENT: 'hosted',
-  PUBLIC_BASE_URL: 'https://magumagu.example',
-  WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-  WORKOS_CLIENT_ID: 'client_placeholder',
-  WORKOS_API_KEY: 'workos-api-key-placeholder',
-  WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-  WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
-};
+const hostedSettings = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', ...workOSSettings };
 // The hosted and paid capabilities: WorkOS sign-in, onboarding, organizations, grants, invitations, seats, and
 // billing, with the provider routes that could add them. The self-hosted composition routes none of them.
 const hostedAndPaidPaths = [
@@ -435,7 +428,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await site.assertNoOutboundRequests();
   });
 
-  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted stops before it listens and writes nothing to its volume', { timeout: 300_000 }, async (t) => {
+  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted and WorkOS settings serves only the authentication-unavailable answers, also for that session and its token, and writes nothing to its volume', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t, [alice]);
     const server = await setup.site.startServer(setup.volume);
     const user = new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice);
@@ -456,18 +449,36 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await server.stop();
     const accounts = await listedAccounts(setup.operator);
     const hostedVolume = await setup.site.volume();
-    const hosted = await setup.site.createServer(hostedVolume, { environment: hostedSettings });
-    hosted.launch();
-    const hostedListening = await hosted.listeningOrExit();
-    const hostedExit = await hosted.exited();
+    const hosted = await setup.site.startServer(hostedVolume, { environment: hostedSettings });
+    const hostedAnswers = [];
+    for (const [method, path] of hostedAndPaidPaths) {
+      const response = await fetch(new URL(path, setup.site.address()), {
+        method,
+        headers: { Origin: hostedSettings.PUBLIC_BASE_URL, Cookie: cookie, 'Content-Type': 'application/json' },
+        ...(method === 'POST' ? { body } : {}),
+      });
+      hostedAnswers.push([method, path, response.status, response.headers.get('Set-Cookie')]);
+    }
+    const hostedMcp = await fetch(new URL('mcp', setup.site.address()), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${user.accessToken}`, Cookie: cookie, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
+    });
+    const notice = await fetch(setup.site.address());
+    const noticeText = await notice.text();
+    const hostedExit = await hosted.stop();
 
     assert.ok(cookie !== '', 'the user has a browser session');
     assert.deepEqual(tools, []);
     assert.deepEqual(statuses, hostedAndPaidPaths.map(([method, path]) => [method, path, 404]));
     assert.deepEqual(accounts.map(({ email }) => email), [alice.email]);
-    assert.equal(hostedListening, false, hosted.output);
-    assert.notEqual(hostedExit.code, 0);
-    assert.match(hosted.output, /FATAL.*hosted edition is not available/i);
+    assert.deepEqual(hostedAnswers, hostedAndPaidPaths.map(([method, path]) => [method, path, 503, null]));
+    assert.deepEqual([hostedMcp.status, await hostedMcp.json()], [503, mcpUnavailableAnswer]);
+    assert.deepEqual([notice.status, notice.headers.get('Set-Cookie')], [503, null]);
+    assert.match(noticeText, unavailableNotice);
+    assert.match(hosted.output, /INFO.*Hosted authentication is not available yet\./);
+    assert.doesNotMatch(hosted.output, /tenant/);
+    assert.deepEqual(hostedExit, { code: 0, signal: null });
     assert.deepEqual(await probeImage(images.current, 'data-files', hostedVolume), []);
     await setup.site.assertNoOutboundRequests();
   });

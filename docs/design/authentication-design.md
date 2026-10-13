@@ -20,8 +20,11 @@ commands, the bundled sign-in and consent pages, `BetterAuthProvider`, and the
 HTTP composition of the provider routes. Slice 5, evaluation packaging, is
 implemented: the container image, its Compose service with one data volume, and
 the container gate. The hosted slices 3 and 4 and the paid billing of slice 6
-are pending. The pinned Better Auth packages are proven against the local
-contracts. The owner resolved the two
+are pending. Until slice 3, the [hosted placeholder](#hosted-placeholder) holds
+the place of the WorkOS provider: `DEPLOYMENT=hosted` starts an unavailable
+hosted shell, so application work and its offline tests need no WorkOS account,
+credential, SDK, or network call. The pinned Better Auth packages are proven
+against the local contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found. The role
 refinement below records intended rules only; it adds no implementation work
 now.
@@ -153,18 +156,23 @@ Use HTTPS for hosted deployments; permit local HTTP only where the supported
 OAuth profile allows loopback development. Do not infer public identity from
 untrusted forwarded headers.
 
-Local configuration supplies the data directory and persistent secret. Hosted
-configuration supplies the trusted AuthKit issuer and required WorkOS
-credentials, callback URL, and cookie-sealing secret. Load only the selected
-provider's resources. Invalid hosted configuration cannot fall back to local or
-anonymous access.
+Local configuration supplies the data directory and persistent secret. The
+hosted provider reads and checks its own settings: the trusted AuthKit issuer,
+the required WorkOS credentials, the callback URL, and the cookie-sealing
+secret. Load only the selected provider's resources. Invalid hosted
+configuration cannot fall back to local or anonymous access.
 
 Slice 1 adds `loadDeploymentConfig(environment, transport)` and `.env.example`.
-The settings are `DEPLOYMENT`, `PUBLIC_BASE_URL`, `DATA_DIR` for the
-self-hosted edition, and `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`,
-`WORKOS_API_KEY`, `WORKOS_REDIRECT_URI`, and `WORKOS_COOKIE_PASSWORD` for the
-hosted edition. The loader keeps the issuer exactly as written for exact token
-issuer checks and requires the redirect URI to have the public origin.
+The settings are `DEPLOYMENT`, `PUBLIC_BASE_URL`, and `DATA_DIR` for the
+self-hosted edition. The hosted edition reads only `DEPLOYMENT` and
+`PUBLIC_BASE_URL` now. AUTH-12 removed the WorkOS settings from the common
+loader, so a `WORKOS_*` value changes no record, turns on no provider or access,
+and appears in no error. The WorkOS provider of slice 3 reads
+`WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`,
+`WORKOS_REDIRECT_URI`, and `WORKOS_COOKIE_PASSWORD` itself and checks them
+before hosted access starts. It keeps the issuer exactly as written for exact
+token issuer checks, requires the redirect URI to use https and to have the
+public origin, and requires a cookie password of at least 32 characters.
 
 `createApplication()` performs the single deployment branch, constructs the
 provider, and returns a small runtime record with the HTTP handler and cleanup.
@@ -174,8 +182,9 @@ requests and routes them; it does not know membership policy.
 The server reads its listen address from `LISTEN_HOST` (default `127.0.0.1`)
 and `LISTEN_PORT` (default `8080`) through `loadListenAddress(environment)`.
 The listen address does not change the public identity from `PUBLIC_BASE_URL`.
-Until slice 3, `createApplication()` stops the hosted edition with
-`HostedEditionUnavailableError` and loads no local module. The self-hosted
+Until slice 3, `createApplication()` starts the
+[hosted placeholder](#hosted-placeholder) for the hosted edition and loads no
+local module. The self-hosted
 application routes each request by its path. The MCP resource path goes to
 `MCPServer`, which uses `BetterAuthProvider` as its verifier and its access
 resolver. Six public provider routes go to the Better Auth handler: both
@@ -194,6 +203,51 @@ Keep the existing low-level stdio API and its tests. Hosted application startup
 rejects stdio. If local stdio is subsequently exposed, bind it explicitly to the
 selected local user in the same installation and check current account status.
 It is not an anonymous alternative to HTTP.
+
+### Hosted placeholder
+
+On 2026-10-13, the owner deferred WorkOS. AUTH-12 added a replaceable
+placeholder, so that application work and its offline tests need no WorkOS
+account, credential, SDK, or network call. The placeholder reuses
+`AuthenticatedUser`, `AccessResolver`, `AccessDecision`, and `RequestContext`.
+It adds only the browser-session role that the account routes need. Provider
+records stay outside these contracts. The `OrganizationDirectory` contract
+belongs to AUTH-07.
+
+| File | Contract and behavior now |
+| --- | --- |
+| `src/hosted-admin/browser-session.ts` | `BrowserSession.authenticate(cookieHeader)` gives `signed-in` with an `AuthenticatedUser`, which carries the organization that the session selected, or `signed-out`, or `unavailable`. The provider gets only the `Cookie` header of the request, so no form field, query, or other header can select the user or the organization. A lookup failure, such as an outage, throws. |
+| `src/hosted-admin/account-routes.ts` | `HostedAccountRoutes` gets each browser path under the public URL. For each request, it checks the browser session, then `AccessResolver.resolve(user)`, and then requires a trusted tenant. Only then does an `AccountOperation(request, context)` get the request, with a frozen copy of the decided context, as MCPServer does. `unavailable` gives `503` with the authentication-unavailable notice, `signed-out` gives `401`, a denial gives `403` without the reason, and a request without an operation gives `404`. No production operation exists yet. Each operation checks its own permission before work starts. |
+| `src/hosted-admin/account-pages.ts` | The notice pages: fixed HTML text without a form, script, or cookie, with `Cache-Control: no-store` and a Content Security Policy that allows nothing. |
+| `src/auth-unavailable/unavailable-hosted-authentication.ts` | `UnavailableHostedAuthentication` implements `BrowserSession` and `AccessResolver`. Each session is `unavailable`, and each access request is denied with `account-inactive`. `UnavailableMcpEndpoint` answers each request to the MCP resource and both protected-resource metadata paths with `503`, the OAuth error `temporarily_unavailable`, and no Bearer challenge, also without a credential. A verifier cannot give this answer: the SDK bearer middleware answers a request without a credential with `401` before a verifier runs. The placeholder reads no setting, calls no service, and never gives an identity, a grant, a cookie, or a tenant. |
+| `src/application.ts` | `createApplication()` composes the hosted edition with `composeHostedApplication(config, { session, accessResolver, mcp })` and the placeholder parts, and logs that hosted authentication is not available yet. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. Other paths give `404`. The shell creates no `Billing`. |
+
+Thus the hosted edition starts with a valid `https` public URL and no WorkOS
+setting. Each MCP, account, organization, and billing request gets an explicit
+unavailable answer, also with a bearer token, a cookie, an organization ID, or
+form input. No request gets anonymous access, a default tenant, a local
+fallback, or an automatic User role. Invalid common settings and hosted stdio
+still stop startup before the server listens.
+
+These rules apply to the replacement:
+
+- Slice 3 (AUTH-06) replaces the placeholder parts in `createApplication()`.
+  `WorkOSBrowserSession` implements `BrowserSession`, and `WorkOSAuthProvider`
+  implements `AccessResolver` and `IdentityVerifier`. An `MCPServer` with that
+  verifier and resolver, together with the hosted protected-resource metadata,
+  becomes the MCP endpoint. AUTH-06 extends the browser-session role with
+  sign-in, callback, logout, organization switching, and explicit cookie
+  effects. The provider reads and checks its own settings. Hosted access
+  starts only after the
+  [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+  passes.
+- AUTH-07 and AUTH-08 add their application rules as account operations on
+  these roles. Their tests use doubles of the roles, like the doubles in
+  [files and ownership](#files-and-ownership). No double, mock mode, or setting
+  becomes a production sign-in, and `DEPLOYMENT` stays the one edition
+  selector.
+- A pass of the offline placeholder tests is never reported as WorkOS proof or
+  as a hosted live gate pass.
 
 ## Self-hosted authentication
 
@@ -662,7 +716,9 @@ Do not use Connect `sid` to query an unrelated browser session.
 ## Hosted browser sessions
 
 `WorkOSBrowserSession` owns sign-in redirects, callback verification, session
-loading, refresh, organization switching, and logout. Its result includes
+loading, refresh, organization switching, and logout. Its session loading
+implements the `BrowserSession` role of the
+[hosted placeholder](#hosted-placeholder), which exists now. Its result includes
 explicit cookie updates as well as the authenticated user. Apply refreshed
 `Set-Cookie` values to redirects and error responses too. WorkOS refresh tokens
 can rotate, and switching organizations uses a refresh with the requested
@@ -813,14 +869,16 @@ shows a separate role, invariant, or lifecycle.
 | `src/auth-better-auth/local-auth-pages.ts` | Implemented: `LocalAuthPages`, the bundled sign-in, consent, and authorization error pages, which send each form post to the provider route through the Better Auth handler and adapt the answer. | 2 |
 | `migrations/auth-local/0001-better-auth.sql` | Generated schema for pinned provider configuration, including the selected admin plugin/account-status storage if used. | 2 |
 | `migrations/auth-local/0002-installation.sql` | Singleton installation identity only; no restriction on user count. | 2 |
+| `src/hosted-admin/browser-session.ts` | Implemented: `BrowserSession`, the narrow browser-session role of the account routes. | AUTH-12 |
+| `src/auth-unavailable/unavailable-hosted-authentication.ts` | Implemented: `UnavailableHostedAuthentication` and `UnavailableMcpEndpoint`, the hosted placeholder parts. Slice 3 replaces them in the hosted composition. | AUTH-12 |
 | `src/auth-workos/workos-auth-provider.ts` | Add `WorkOSAuthProvider`, verification and current access resolution. | 3 |
 | `src/auth-workos/workos-browser-session.ts` | Add `WorkOSBrowserSession` and explicit cookie effects. | 3 |
 | `src/organizations/organization-administration.ts` | Add `OrganizationAdministration` and its `OrganizationDirectory` contract, with explicit grant rules and current actor/target checks. | 4 |
 | `src/auth-workos/workos-organizations.ts` | Add `WorkOSOrganizations`, multi-role membership/invitation mapping, safe grant updates, and pagination. | 3–4 |
-| `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. | 3–4 |
-| `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. | 3–4 |
+| `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. Implemented in AUTH-12: the session, access, and trusted-tenant checks before each account operation. | 3–4 |
+| `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. Implemented in AUTH-12: the notice pages. | 3–4 |
 | `docs/implementation/hosted-organization-setup.md` | Document external operator setup, Super Admin replacement/recovery, MFA, and change records. | 4 |
-| `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. | 2–3 |
+| `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. Implemented for the hosted edition: the placeholder shell, `composeHostedApplication()`, and `routeHostedRequests()`. | 2–3 |
 | `src/http/server.ts` | Node HTTP bridge and shutdown, implemented; hosted metadata in slice 3. | 2–3 |
 | `src/index.ts` | Replace hello-world startup; dispatch server and operator commands. | 2–4 |
 | `src/billing/billing.ts` | `Billing` interface and `BillingState`. Implemented. | 6 |
@@ -835,7 +893,12 @@ and failures. Add `access-resolver-mock.ts` beside it with configured decisions,
 errors, and call records. Each test creates fresh instances. No production
 module imports either mock. Organization and browser unit tests add their own
 narrow directory and session doubles under `test/unit/`, importing shared
-contracts as types only.
+contracts as types only. `BrowserSessionDouble`, in
+`test/unit/hosted-admin/fixtures/browser-session-double.ts`, gives configured
+session states. The integration test of the hosted composition adds
+`MembershipDirectoryDouble`, an `AccessResolver` that reads configured
+memberships, and `AccountOperationProbe`, a test-only protected operation. Both
+are in `test/support/`.
 
 ## Implementation slices
 
@@ -849,7 +912,8 @@ contracts as types only.
    account-state checks, per-user revocation, persistence, HTTP composition, and
    cleanup. Complete the offline acceptance flow before starting hosted
    variation.
-3. **Hosted identity and browser sessions.** Add Connect verification, shared
+3. **Hosted identity and browser sessions.** Replace the
+   [hosted placeholder](#hosted-placeholder). Add Connect verification, shared
    identity mapping, current access resolution, browser session lifecycle, and
    MFA. Prove that an authenticated user without an organization can reach
    onboarding while tenant requests remain denied.
@@ -898,17 +962,19 @@ behavior.
 | `test/unit/auth-better-auth/local-user-administration.test.ts` | Account lifecycle and selected-user reset/disable/revocation decisions with provider doubles. Implemented, with `local-user-administration-revocation.test.ts` and `local-user-administration-clients.test.ts`. |
 | `test/unit/terminal/hidden-line-input.test.ts` | Implemented: hidden terminal prompts, piped lines, ended input, Ctrl-C and Ctrl-D, input errors, and release of standard input. |
 | `test/unit/organizations/organization-administration.test.ts` | Actor/target organization checks, current/proposed grants, self-grants, selective removal, and safe retry decisions with a directory double. |
-| `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. |
-| `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. |
+| `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. Implemented so far: the order of the session, access, and operation steps, each refusal, and the notice pages. |
+| `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts` | Implemented: the placeholder gives no identity and no grant for any cookie or user, and its MCP endpoint gives only the unavailable answer. |
+| `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. WorkOS values change no hosted record and appear in no error. |
 | `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. |
 | `test/integration/auth/mcp-context.test.ts` | Real provider/MCP collaboration, error mapping, and sequential/concurrent isolation. |
 | `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, client registration without a remaining session, and per-user session and MCP token revocation without affecting peers. Implemented, with `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`, and a SQL trace that shows no command SQL on provider tables. |
 | `test/acceptance/auth/local-user-commands.test.ts`, `local-client-registration.test.ts` | Implemented: offline add and list with hidden passwords and no network, targeted reset and disable with peers, the live-server lock for each command, zero-account recovery, and approved client registration. |
 | `test/integration/auth/local-access.test.ts` | Two distinct user subjects in one tenant; equal evaluation permissions, separate sessions, current account-state checks, disabled login and issuance, no refresh grant, and disabled-user denial after token verification. |
 | `test/integration/auth/local-installation.test.ts` | Application/provider startup collaboration: one persistent installation UUID; reset/disable preserve IDs; backup/restore preserve database and secrets; existing data without identity fails closed. |
-| `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. |
+| `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. Implemented so far: the hosted composition with session and membership-directory doubles keeps the organization context of each request and combines only the explicit permissions of independent grants. |
+| `test/acceptance/auth/hosted-placeholder.test.ts` | Implemented: the built server with hosted settings and no WorkOS setting serves the authentication-unavailable notice; MCP, account, organization, and billing paths with forged credentials and organization values get `503` without a cookie or a Bearer challenge; WorkOS values turn on nothing; an invalid common setting stops startup; no process uses the network. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
-| `test/acceptance/auth/self-hosted-container.test.ts` | Implemented with `npm run test:container`: offline bundled CLI with stopped-server volume access; commands reject the live lock, also inside the server container; two-user login, consent, and re-authorization after restart and container/image replacement; installation/user IDs, sessions, consents, and tokens survive backup/restore; fresh and identity-less data; targeted reset/disable with peer access; zero-account recovery; refused hosted and paid paths; image contents and the Compose service. |
+| `test/acceptance/auth/self-hosted-container.test.ts` | Implemented with `npm run test:container`: offline bundled CLI with stopped-server volume access; commands reject the live lock, also inside the server container; two-user login, consent, and re-authorization after restart and container/image replacement; installation/user IDs, sessions, consents, and tokens survive backup/restore; fresh and identity-less data; targeted reset/disable with peer access; zero-account recovery; refused hosted and paid paths; the hosted placeholder in the image; image contents and the Compose service. |
 | `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. |
 | Existing `test/unit/billing/billing-free.test.ts` and `test/acceptance/billing/free-billing.test.ts` | `BillingFree` through the `Billing` interface: free plan, no billed seat, and refused input. The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists the paid billing tests. |
 
