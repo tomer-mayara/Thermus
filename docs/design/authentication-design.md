@@ -258,15 +258,14 @@ stops at once with `DataDirectoryInUseError`, and of several processes that
 start at the same time, exactly one gets the lock. An exclusive transaction is
 not used: it must wait until the other connections release their shared locks,
 so two processes that start at the same time could each make the other fail.
-`auth.sqlite` holds the
-provider data and the singleton `magumagu_installation` row. `auth.secret` holds
-the generated provider secret. Both data files have mode `0600`. A database
-without schema objects is fresh: the runtime writes the secret first, and then
-applies `0001-better-auth.sql`, `0002-installation.sql`, the installation row, and
-`user_version` 2 in one transaction. A database with schema objects must have a
-valid installation identity, schema version 2, and a valid `auth.secret`;
-otherwise startup stops with `LocalInstallationError`. The runtime gives
-`clientReference` the installation ID and reports the tenant
+`auth.sqlite` holds the provider data and the singleton `magumagu_installation`
+row. `auth.secret` holds the generated provider secret. Both data files have
+mode `0600`. A database without schema objects is fresh: the runtime writes the
+secret first, and then applies `0001-better-auth.sql`, `0002-installation.sql`,
+the installation row, and `user_version` 2 in one transaction. A database with
+schema objects must have a valid installation identity, schema version 2, and a
+valid `auth.secret`; otherwise startup stops with `LocalInstallationError`. The
+runtime gives `clientReference` the installation ID and reports the tenant
 `local:<installation-id>`.
 
 Use Better Auth's MCP/OAuth handler for local authorization and both discovery
