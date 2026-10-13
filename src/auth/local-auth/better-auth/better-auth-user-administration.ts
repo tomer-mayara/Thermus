@@ -1,6 +1,6 @@
 import { applySetCookies } from 'better-auth/cookies';
-import type { LocalAccount, ApprovedClient, RegisteredClient, PasswordSource, LocalAuthSettings, LocalUserAdministration as AdministrationRole } from '../auth/local-auth/local-user-administration.ts';
-import type { OpenedLocalAdministration } from './local-auth-command.ts';
+import type { LocalAccount, ApprovedClient, RegisteredClient, PasswordSource, LocalAuthSettings, LocalUserAdministration as AdministrationRole } from '../local-user-administration.ts';
+import type { OpenedLocalAdministration } from '../local-auth-command.ts';
 import { openBetterAuthRuntime, type BetterAuthRuntime, type LocalAuth, type ResourceServerClientRecord } from './better-auth-runtime.ts';
 
 export async function openBetterAuthAdministration(
@@ -9,7 +9,7 @@ export async function openBetterAuthAdministration(
 ): Promise<OpenedLocalAdministration> {
   await using owned = new AsyncDisposableStack();
   const runtime = owned.adopt(await openRuntime(settings), (opened) => opened.close());
-  const administration = new LocalUserAdministration(runtime.auth, runtime.resourceServerClient);
+  const administration = new BetterAuthUserAdministration(runtime.auth, runtime.resourceServerClient);
   const opened = { administration, close: () => runtime.close() };
   // The returned close owns the runtime, so the opener no longer rolls it back.
   owned.move();
@@ -67,7 +67,7 @@ const CONTROL_CHARACTER = /\p{Cc}/u;
 const LOOPBACK_REDIRECT_URI = /^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d{1,5})?(?:[/?][^#\s\p{Cc}]*)?$/iu;
 
 // Only supported Better Auth operations: the provider hashes each password and owns its tables.
-export class LocalUserAdministration implements AdministrationRole {
+export class BetterAuthUserAdministration implements AdministrationRole {
   private readonly auth: LocalAuth;
   private readonly resourceServerClient: ResourceServerClientRecord;
 

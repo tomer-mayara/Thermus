@@ -1,14 +1,16 @@
 # Authentication refactoring plan
 
-Status: Slice 1 is implemented in pull request
-[#56](https://github.com/3-headed-monkey/Magumagu/pull/56). Gate results are
-recorded in that pull request; owner review is pending. Slice 2 remains planned.
+Status: Slice 1 merged in pull request
+[#56](https://github.com/3-headed-monkey/Magumagu/pull/56) as `f677c5c`, after the
+owner approved the merge. Slice 2 is implemented in pull request
+[#57](https://github.com/3-headed-monkey/Magumagu/pull/57). Gate results and owner
+review status are recorded in that pull request.
 
 Revision date: 2026-10-13. Reviewed baseline: `b73a7f821edac538afdd0498874dd7f28b3c1fc2`.
 
-Slice 1 adds the local command role and lazy opener at the current source paths.
-It does not relocate the verifier, hosted session, provider files, MCP endpoint,
-or HTTP header. Follow the
+Slice 1 added the local command role and lazy opener. Slice 2 puts the auth files
+at the layout below and separates the MCP outage endpoint and HTTP address
+contract. Follow the
 [coding principles](../coding-principles.md),
 [repository work rules](../../AGENTS.md), and [test gate policy](test-gate-policy.md).
 
@@ -67,32 +69,34 @@ src/
 Keep [access-context.ts](../../src/auth/access-context.ts) compact: identities,
 grants, access decisions, `AccessResolver`, context creation, and permission checks.
 
-Move [identity-verifier.ts](../../src/mcp/identity-verifier.ts) unchanged to the
-auth root. `IdentityVerifier` verifies OAuth access tokens; it is not a generic
+The [identity-verifier.ts](../../src/auth/identity-verifier.ts) contract now lives
+at the auth root. `IdentityVerifier` verifies OAuth access tokens; it is not a generic
 login role. Preserve its token semantics and one canonical
 `InvalidAccessTokenError` class. The SDK adapter uses `instanceof` against it;
 a duplicate rejection class would change behavior. SDK translation stays in MCP.
 
-Move [BrowserSession](../../src/hosted-admin/browser-session.ts) to hosted auth.
+The [BrowserSession](../../src/auth/hosted-auth/browser-session.ts) contract lives in hosted auth.
 Its organization switching, MFA evidence, CSRF state, and cookie effects are
-hosted concerns. Local auth need not implement it. Move the
-[hosted placeholder](../../src/auth-unavailable/unavailable-hosted-authentication.ts)
-to the flat hosted directory. Move its `UnavailableMcpEndpoint` to MCP: this
+hosted concerns. Local auth need not implement it. The
+[hosted placeholder](../../src/auth/hosted-auth/unavailable-hosted-authentication.ts)
+uses the flat hosted directory. Its separate
+[UnavailableMcpEndpoint](../../src/mcp/unavailable-mcp-endpoint.ts) belongs to MCP: this
 HTTP/OAuth response returns 503 even without credentials, with no Bearer challenge.
 
 Keep Better Auth pages, routes, forms, and HTML together. They depend on signed
 `oauth_query`, provider endpoints, and error codes
-([pages](../../src/auth-better-auth/local-auth-pages.ts),
-[routes](../../src/auth-better-auth/local-auth-provider-routes.ts)).
+([pages](../../src/auth/local-auth/better-auth/local-auth-pages.ts),
+[routes](../../src/auth/local-auth/better-auth/local-auth-provider-routes.ts)).
 Keep `LocalInstallation` and `data-directory-lock.ts` concrete: they own the
 provider schema and SQLite storage
-([installation](../../src/auth-better-auth/local-installation.ts)).
-Move `CLIENT_ADDRESS_HEADER` to `http/client-address.ts`; retain the server's
-socket-address overwrite. These endpoint and header moves need no new interfaces.
+([installation](../../src/auth/local-auth/better-auth/local-installation.ts)).
+`CLIENT_ADDRESS_HEADER` lives in [http/client-address.ts](../../src/http/client-address.ts).
+The server still overwrites client copies with the socket address. These endpoint
+and header moves add no interfaces.
 
 ## Local command role and opener
 
-The [command](../../src/auth-better-auth/local-auth-command.ts) previously created
+The [command](../../src/auth/local-auth/local-auth-command.ts) previously created
 the runtime and administrator; its fixtures depended on that runtime. Slice 1
 extracts this existing collaboration as `LocalUserAdministration`, without an
 imagined second vendor.
@@ -105,14 +109,14 @@ The role module owns the consumer records: `LocalAccount`, `ApprovedClient`,
 `RegisteredClient` (including its `resourceServerClientRegistered` output flag),
 and `PasswordSource`. It reuses `LocalAuthSettings` with its existing
 `Pick` of the self-hosted config for `dataDirectory`, `publicBaseUrl`, and
-`mcpResourceUrl`. The [runtime](../../src/auth-better-auth/better-auth-runtime.ts)
+`mcpResourceUrl`. The [runtime](../../src/auth/local-auth/better-auth/better-auth-runtime.ts)
 uses that neutral type too.
 The settings shape and name stay; no duplicate record or conversion model is added.
 
 The provider keeps `LocalAdministrationError`, `AdministrationFailure`, private
 messages, and SDK error translation. The command uses `Error.message`
 and `SuppressedError`; it needs no shared typed error protocol. The concrete
-class becomes `BetterAuthUserAdministration` in slice 2.
+class is `BetterAuthUserAdministration`.
 
 The command context requires a lazy `openAdministration`. Its `OpenAdministration`
 and `OpenedLocalAdministration` types stay beside that context. It accepts the
@@ -148,11 +152,9 @@ passwords; it never receives long-lived provider secrets or the raw runtime.
 ## Logical packages and dependency rules
 
 Folder nesting does not merge these logical packages into one unit-test package.
-During slice 1, the local-command package contains the new role at
-`auth/local-auth/local-user-administration.ts` and the command and parser at
-their existing `auth-better-auth/` paths. The remaining `auth-better-auth/`
-files form the Better Auth implementation package. Config remains a separate
-package. The table gives the final boundaries after slice 2.
+The local-command package contains the three files directly in
+`auth/local-auth/`; its `better-auth/` subtree is a separate implementation
+package. Config remains a separate package. The table gives the final boundaries.
 
 | Logical package | Final source boundary |
 | --- | --- |
@@ -204,9 +206,9 @@ a complete-candidate gate result.
 ### 1. Extract the local role and lazy opener
 
 The neutral role, consumer records, and existing settings shape are extracted.
-The new role file uses its final path; command, parser, and concrete administrator
-keep their current source paths until slice 2. The class rename also waits for
-slice 2.
+The new role file used its final path. In this slice, command, parser, and concrete
+administrator kept their original paths and the concrete class kept its original
+name. Slice 2 relocates and renames them.
 
 `index.ts` injects the required lazy opener. The command has no concrete
 construction or vendor runtime dependency. Each operation keeps its input and
@@ -223,27 +225,32 @@ remain covered and passing.
 
 ### 2. Relocate once and enforce direct boundaries
 
-Status: planned; not part of the slice 1 pull request.
+Status: implemented in pull request #57, based on merged slice 1. The pull
+request records gate results and owner review status.
 
-Move remaining files directly to their final paths. Rename the administrator and
-move the MCP outage endpoint and HTTP header constant. Update imports/composition
-and keep provider pages/storage together. Remove old paths only when replaced;
-do not move command files twice.
+The files use their final paths. The concrete administrator is renamed, and the
+MCP outage endpoint and HTTP header have their own transport modules. Imports
+and composition follow the new paths; provider pages and storage stay together.
+The old source paths are removed. Command files moved once.
 
-Add narrow direct import guards in the existing
-[ESLint configuration](../../.habit-hooks/eslint.config.mjs). It currently has
-no import restrictions. Use existing ESLint AST rules, with no custom plugin,
-graph tool, or general word ban. Define exact shared-auth and three neutral-local
-file scopes, excluding the provider subtree. Forbid provider paths and provider
-re-exports there; allow the config public contract in neutral local files. Guard
-external MCP and hosted-account consumers while allowing composition roots, provider-internal imports,
-and the HTTP header contract.
+The existing [ESLint configuration](../../.habit-hooks/eslint.config.mjs) checks
+exact shared-auth and three neutral-local file scopes, plus `src/mcp/**/*.ts`
+and `src/hosted-admin/**/*.ts`. The provider subtree is outside the neutral
+scope. These files cannot import the Better Auth subtree, the hosted placeholder
+implementation, or installed Better Auth packages and subpaths. Shared auth also
+cannot import MCP, hosted-account, or HTTP implementations, except the
+client-address contract, or the installed MCP server/client SDKs. External
+consumers cannot import the command or parser. Public contracts, neutral config,
+organization use cases, provider-internal browser adapters, the HTTP header,
+and the `application.ts` and `index.ts` composition roots remain allowed.
 
-Cover static and type imports and import/export re-exports. Add a separate AST
-rule for literal dynamic `ImportExpression`: `no-restricted-imports` alone
-does not cover it. Verify allowed composition and provider-internal fixtures
-pass; forbidden static, type, re-export, and literal dynamic examples fail.
-These are direct checks, not a claim of transitive dependency resolution.
+`no-restricted-imports` checks static and type imports and named, type, star, and
+namespace re-exports. A separate `no-restricted-syntax` selector checks literal
+dynamic `ImportExpression`. The
+[boundary specification](../../test/acceptance/architecture/auth-boundaries.test.ts)
+checks forbidden forms and allowed collaborators at these paths. These are
+direct source checks; computed imports and transitive dependencies are outside
+their scope. No custom plugin or dependency graph tool is added.
 
 Complete the path and documentation audit below and run the applicable gates.
 
@@ -257,19 +264,19 @@ Audit static/type/literal dynamic imports, public re-exports, fixtures, support
 files, and generated child-process module URLs. These specific risks need checks:
 
 - The [lock test](../../test/unit/auth-better-auth/data-directory-lock.test.ts)
-  builds its child-process module URL at line 16; update it after relocation.
+  builds a child-process module URL; check that it targets the relocated module.
 - The [command integration test](../../test/integration/auth/local-auth-command.test.ts)
-  has a SQL trace guard at line 143. Its old `local-user-administration` pattern
-  would miss the renamed concrete file. Update it without weakening the assertion.
+  has a SQL trace guard. It must match `better-auth-user-administration` without
+  weakening the assertion that no command SQL edits provider tables.
 - The [provider-loading acceptance test](../../test/acceptance/auth/local-command-provider-loading.test.ts)
-  guards current provider paths in a subprocess import hook. Update those paths
-  during relocation and retain its accepted-command control, which proves that
+  guards provider paths in a subprocess import hook. Check the relocated paths
+  and retain its accepted-command control, which proves that
   the guard catches a provider load.
 
 Update the README, [authentication design](../design/authentication-design.md),
 [test inventory](../testing/test-list.md), and [test gate policy](test-gate-policy.md)
-with each affected slice. The authentication design's explicit verifier placement
-rule near line 62 must change during implementation, not just its links.
+with each affected slice. The authentication design now places the verifier at
+the auth root and keeps OAuth token semantics and SDK translation separate.
 Historical archive records need not be rewritten.
 
 Use clean builds to remove stale `dist/` paths. Source nesting needs no compiler

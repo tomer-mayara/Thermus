@@ -5,9 +5,9 @@ import {
   type AccessResolver,
   type AuthenticatedUser,
   type RoleGrant,
-} from '../auth/access-context.ts';
-import { CLIENT_ADDRESS_HEADER } from '../http/server.ts';
-import { InvalidAccessTokenError, type IdentityVerifier, type VerifiedIdentity } from '../mcp/identity-verifier.ts';
+} from '../../access-context.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../http/client-address.ts';
+import { InvalidAccessTokenError, type IdentityVerifier, type VerifiedIdentity } from '../../identity-verifier.ts';
 import type { LocalAuth, ResourceServerClient } from './better-auth-runtime.ts';
 
 export interface BetterAuthProviderSettings {

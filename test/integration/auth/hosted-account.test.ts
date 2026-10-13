@@ -4,7 +4,7 @@ import { composeHostedApplication } from '../../../src/application.ts';
 import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import type { BrowserSessionState } from '../../../src/hosted-admin/browser-session.ts';
+import type { BrowserSessionState } from '../../../src/auth/hosted-auth/browser-session.ts';
 import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/membership-directory-double.ts';
 import { BrowserSessionDouble, SignedInSessionDouble } from '../../unit/hosted-admin/fixtures/browser-session-double.ts';

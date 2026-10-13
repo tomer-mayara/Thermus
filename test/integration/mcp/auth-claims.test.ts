@@ -7,10 +7,10 @@ import {
   PROTOCOL_VERSION_META_KEY,
 } from '@modelcontextprotocol/server';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
-import { AccessResolverMock } from './fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from './fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from './fixtures/identity-verifier-mock.ts';
+import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
+import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
+import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
+import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 
 describe('MCPServer verified claim validation', () => {
   const resourceUrl = 'https://magumagu.example/mcp';

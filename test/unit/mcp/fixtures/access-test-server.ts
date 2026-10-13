@@ -1,6 +1,6 @@
 import type { TestContext } from 'node:test';
 import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../../src/mcp/identity-verifier.ts';
+import type { VerifiedIdentity } from '../../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
 import { AccessResolverMock, type ConfiguredAccess } from './access-resolver-mock.ts';
 import { FailureReporterMock } from './failure-reporter-mock.ts';

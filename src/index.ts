@@ -30,13 +30,13 @@ async function run(args: readonly string[], environment: Environment, logger: Co
 
 // Only an operator command loads the local commands, so the server start loads no local module before its edition branch.
 async function runOperatorCommand(args: readonly string[], environment: Environment, logger: ConsoleLogger): Promise<number> {
-  const { runLocalAuthCommand } = await import('./auth-better-auth/local-auth-command.ts');
+  const { runLocalAuthCommand } = await import('./auth/local-auth/local-auth-command.ts');
   const input = new HiddenLineInput(process.stdin, process.stderr);
   try {
     return await runLocalAuthCommand(args, {
       environment, input, output: process.stdout, logger,
       openAdministration: async (settings) => {
-        const { openBetterAuthAdministration } = await import('./auth-better-auth/local-user-administration.ts');
+        const { openBetterAuthAdministration } = await import('./auth/local-auth/better-auth/better-auth-user-administration.ts');
         return openBetterAuthAdministration(settings);
       },
     });

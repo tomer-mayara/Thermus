@@ -42,6 +42,13 @@ local commands are separate logical packages. See the
 `npm run check` does not select these tests; run their focused commands and the
 integration suite as required below.
 
+Provider tests that execute shared context creation or the canonical auth
+rejection class run in `test/integration/auth/`. MCP rejection and access tests
+run in `test/integration/mcp/` for the same reason. The direct auth import guards
+run through the existing ESLint configuration in `habit-hooks`. Their fixture
+specification, `test/acceptance/architecture/auth-boundaries.test.ts`, also needs
+a focused run and the acceptance suite.
+
 ## Focused commands
 
 Run a new or changed test file:
@@ -93,7 +100,7 @@ contains every change of the pull request.
      `.habit-hooks/package.json`, `patches/`, `tsconfig.json`, or
      `tsconfig.build.json`), `migrations/`, the code of the self-hosted server
      and its commands (`src/index.ts`, `src/application.ts`, `src/auth/`,
-     `src/auth-better-auth/`, `src/auth-unavailable/`, `src/config/`,
+     `src/config/`,
      `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
      `src/organizations/`, or `src/terminal/`), or the container tests and
      their support files. The image holds all of `dist/src`, so other changes
@@ -187,6 +194,7 @@ existing suites:
   `test/unit/organizations/organization-administration-invitations.test.ts`,
   `test/unit/organizations/organization-administration-invitation-overview.test.ts`,
   `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`,
+  `test/unit/mcp/unavailable-mcp-endpoint.test.ts`,
   `test/unit/config/deployment-config.test.ts`,
   `test/unit/application.test.ts`, and
   `test/unit/application-operator-log.test.ts`, in `npm run check`;

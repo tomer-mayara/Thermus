@@ -3,12 +3,12 @@ import { afterEach, beforeEach, describe, test } from 'node:test';
 import { inspect } from 'node:util';
 import { PerRequestHTTPServerTransport, SERVER_INFO_META_KEY } from '@modelcontextprotocol/server';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
+import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
-import { AccessResolverMock } from './fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from './fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from './fixtures/identity-verifier-mock.ts';
-import { mcpRequest } from './fixtures/mcp-http-request.ts';
+import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
+import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
+import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
+import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
 describe('MCPServer HTTP authentication', () => {
   const resourceUrl = 'https://magumagu.example/mcp';

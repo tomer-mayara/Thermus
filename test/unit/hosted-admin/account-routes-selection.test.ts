@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { OrganizationSwitch } from '../../../src/hosted-admin/browser-session.ts';
+import type { OrganizationSwitch } from '../../../src/auth/hosted-auth/browser-session.ts';
 import { accountRequest, ann, assertPage, formPost, postForm, publicOrigin, serve } from './fixtures/account-routes-fixtures.ts';
 import { annOrganizations, selection, serveAnn, sessionCookies, switchCookies, validSelection } from './fixtures/organization-routes-fixtures.ts';
 

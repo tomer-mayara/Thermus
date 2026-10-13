@@ -3,7 +3,7 @@ import type { OrganizationAdministration } from '../organizations/organization-a
 import { readForm, ReturnDestinations, selectionIn, single } from './account-form.ts';
 import { accessDeniedPage, noticePage, organizationSelectionPage, seeOther } from './account-pages.ts';
 import { AdministrationRoutes, type AdministrationService } from './administration-routes.ts';
-import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from './browser-session.ts';
+import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from '../auth/hosted-auth/browser-session.ts';
 
 // The routes check the session and current access, but not the permission of an operation: each operation checks
 // its own permission before work starts.

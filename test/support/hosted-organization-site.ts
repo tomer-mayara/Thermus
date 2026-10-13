@@ -7,7 +7,7 @@ import { BillingFree } from '../../src/billing/billing-free.ts';
 import { loadDeploymentConfig } from '../../src/config/deployment-config.ts';
 import type { AccountFailureReporter } from '../../src/hosted-admin/account-routes.ts';
 import { startHttpServer } from '../../src/http/server.ts';
-import type { VerifiedIdentity } from '../../src/mcp/identity-verifier.ts';
+import type { VerifiedIdentity } from '../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
 import type { ChangeRecord, ChangeRecorder } from '../../src/organizations/change-records.ts';
 import { IdentityVerifierMock } from '../unit/mcp/fixtures/identity-verifier-mock.ts';

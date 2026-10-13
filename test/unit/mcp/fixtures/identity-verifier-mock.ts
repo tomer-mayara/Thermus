@@ -2,7 +2,7 @@ import {
   InvalidAccessTokenError,
   type IdentityVerifier,
   type VerifiedIdentity,
-} from '../../../../src/mcp/identity-verifier.ts';
+} from '../../../../src/auth/identity-verifier.ts';
 
 export type ConfiguredClaims = { readonly [Claim in keyof VerifiedIdentity]?: unknown };
 
