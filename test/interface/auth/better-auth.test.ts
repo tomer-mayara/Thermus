@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { after, before, describe, test, type TestContext } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import { auth as runMcpAuthorization } from '@modelcontextprotocol/client';
+import { ProviderEnvironmentError } from '../../../src/auth-better-auth/better-auth-runtime.ts';
 import {
   errorCodeOf,
   followAuthorizationWithConsent,
@@ -20,10 +24,13 @@ import {
   type LocalAuth,
 } from '../../support/better-auth-local.ts';
 import { PreRegisteredSdkClient, sdkFetch } from '../../support/mcp-sdk-oauth-client.ts';
+import { setProcessEnvironment } from '../../support/process-environment.ts';
 
 type UserWithAccountStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };
 
 const alicesAccount: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
+const execFileAsync = promisify(execFile);
+const foreignOriginProbe = fileURLToPath(new URL('../../support/foreign-origin-probe.js', import.meta.url));
 
 function nativeClientMetadata() {
   return {
@@ -99,6 +106,20 @@ async function twoUsersWithGrants(t: TestContext) {
 function assertMcpAudience(token: string): void {
   const audience = jwtClaims(token).aud;
   assert.ok(Array.isArray(audience) && audience.includes(mcpResourceUrl), JSON.stringify(audience));
+}
+
+async function assertStartupStops(start: Promise<unknown>, variable: string, hiddenValue: string): Promise<void> {
+  await assert.rejects(start, (error: unknown) => {
+    assert.ok(error instanceof ProviderEnvironmentError, String(error));
+    assert.match(error.message, new RegExp(`\\b${variable}\\b`));
+    assert.ok(!error.message.includes(hiddenValue), error.message);
+    return true;
+  });
+}
+
+async function foreignOriginSignInInNewProcess(environment: Readonly<Record<string, string>>): Promise<unknown> {
+  const { stdout } = await execFileAsync(process.execPath, [foreignOriginProbe], { env: { ...environment } });
+  return JSON.parse(stdout);
 }
 
 describe('Pinned Better Auth local provider contracts', () => {
@@ -505,5 +526,36 @@ describe('Pinned Better Auth local provider contracts', () => {
       assert.equal(await (await auth.$context).internalAdapter.countTotalUsers(), 1);
       assert.deepEqual(await resourceServer.introspect('unknown-token'), { active: false });
     });
+  });
+
+  describe('Provider settings that the process environment cannot change', () => {
+    test('Given BETTER_AUTH_SECRETS in the process environment, when the local provider starts, then startup stops with an error that names the variable but not its value, so no other secret replaces the installation secret', async (t) => {
+      const secrets = '1:environment-secret-0123456789abcdef0123456789';
+      setProcessEnvironment(t, { BETTER_AUTH_SECRETS: secrets });
+
+      await assertStartupStops(startLocalProvider(), 'BETTER_AUTH_SECRETS', secrets);
+    });
+
+    test('Given BETTER_AUTH_TRUSTED_ORIGINS with a foreign origin in the process environment, when the local provider starts, then startup stops with an error that names the variable but not its value, so no route trusts that origin', async (t) => {
+      setProcessEnvironment(t, { BETTER_AUTH_TRUSTED_ORIGINS: 'https://evil.example' });
+
+      await assertStartupStops(startLocalProvider(), 'BETTER_AUTH_TRUSTED_ORIGINS', 'https://evil.example');
+    });
+
+    test('Given BETTER_AUTH_TELEMETRY=1 and a telemetry endpoint in the process environment, when the local provider starts, then startup stops with an error that names BETTER_AUTH_TELEMETRY, and the provider makes no outbound request', async (t) => {
+      const endpoint = 'https://telemetry.example/v1/track';
+      setProcessEnvironment(t, { BETTER_AUTH_TELEMETRY: '1', BETTER_AUTH_TELEMETRY_ENDPOINT: endpoint });
+
+      await assertStartupStops(startLocalProvider(), 'BETTER_AUTH_TELEMETRY', endpoint);
+      assert.deepEqual(outboundRequests, []);
+    });
+
+    for (const [variable, value] of [['NODE_ENV', 'test'], ['TEST', '1']] as const) {
+      test(`Given ${variable}=${value} in the environment of a new process, when a request with a foreign origin posts the sign-in route with valid credentials, then the provider rejects it with 403, adds no session, and makes no outbound request`, async () => {
+        const result = await foreignOriginSignInInNewProcess({ [variable]: value });
+
+        assert.deepEqual(result, { status: 403, code: 'INVALID_ORIGIN', sessions: 0, outboundRequests: [] });
+      });
+    }
   });
 });

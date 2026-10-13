@@ -23,6 +23,13 @@ const PRIVATE_HTTP_PATHS = [
   '/token',
 ];
 
+// The pinned Better Auth reads these variables also when an option sets the related value, and no option stops that.
+const UNPINNABLE_PROVIDER_VARIABLES: Readonly<Record<string, string>> = {
+  BETTER_AUTH_SECRETS: 'replace the secret in DATA_DIR/auth.secret',
+  BETTER_AUTH_TRUSTED_ORIGINS: 'trust more origins in the origin and CSRF checks',
+  BETTER_AUTH_TELEMETRY: 'turn on telemetry',
+};
+
 export interface LocalProviderSettings {
   readonly publicBaseUrl: string;
   readonly mcpResourceUrl: string;
@@ -31,7 +38,15 @@ export interface LocalProviderSettings {
   readonly installationId: string;
 }
 
+export class ProviderEnvironmentError extends Error {
+  constructor(variable: string, effect: string) {
+    super(`${variable} must not be set. Better Auth can use it to ${effect}. Remove it from the environment of the Magumagu process.`);
+    this.name = 'ProviderEnvironmentError';
+  }
+}
+
 export function localProviderOptions(settings: LocalProviderSettings) {
+  refuseUnpinnableProviderVariables();
   const authBase = new URL('api/auth', settings.publicBaseUrl);
   return {
     baseURL: authBase.origin,
@@ -41,7 +56,11 @@ export function localProviderOptions(settings: LocalProviderSettings) {
     telemetry: { enabled: false },
     emailAndPassword: { enabled: true, disableSignUp: true },
     rateLimit: { enabled: true },
-    advanced: { ipAddress: { ipAddressHeaders: [CLIENT_ADDRESS_HEADER] } },
+    advanced: {
+      ipAddress: { ipAddressHeaders: [CLIENT_ADDRESS_HEADER] },
+      // Without this setting, NODE_ENV=test or TEST=1 turns off the origin and CSRF checks.
+      disableOriginCheck: false,
+    },
     disabledPaths: PRIVATE_HTTP_PATHS,
     plugins: [
       admin(),
@@ -56,6 +75,12 @@ export function localProviderOptions(settings: LocalProviderSettings) {
       }),
     ],
   };
+}
+
+function refuseUnpinnableProviderVariables(): void {
+  for (const [variable, effect] of Object.entries(UNPINNABLE_PROVIDER_VARIABLES)) {
+    if (process.env[variable]) throw new ProviderEnvironmentError(variable, effect);
+  }
 }
 
 export type LocalAuth = ReturnType<typeof createLocalAuth>;
