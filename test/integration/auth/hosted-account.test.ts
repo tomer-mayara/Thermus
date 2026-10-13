@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { composeHostedApplication } from '../../../src/application.ts';
 import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
+import { BillingFree } from '../../../src/billing/billing-free.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import type { BrowserSessionState } from '../../../src/hosted-admin/browser-session.ts';
 import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
@@ -67,7 +68,7 @@ function serve() {
   const directory = new MembershipDirectoryDouble(authority, memberships);
   const probe = new AccountOperationProbe(operationPermissions);
   const mcp = new McpEndpointDouble();
-  const account = { reportFailure: () => {}, changeRecords: { record: () => {} }, operation: probe.operation };
+  const account = { reportFailure: () => {}, changeRecords: { record: () => {} }, billing: new BillingFree(), operation: probe.operation };
   const application = composeHostedApplication(config, { session, accessResolver: directory, organizations: directory, mcp }, account);
   return { application, session, directory, probe, mcp };
 }

@@ -80,7 +80,8 @@ export class HostedAccountRoutes {
     return this.tenantOperation(request, session, path);
   }
 
-  // The member and invitation pages and their changes come first; another path goes to the account operation.
+  // The member, invitation, and billing pages and the member and invitation changes come first; another path goes to
+  // the account operation.
   private async tenantOperation(request: Request, session: SignedInBrowserSession, path: string): Promise<Response> {
     const decision = await this.accessResolver.resolve(session.user);
     if (decision.allowed !== true) return accessDeniedPage(this.paths.organizations);

@@ -1,7 +1,8 @@
 import type { AuthenticatedUser } from '../auth/access-context.ts';
-import { readInvitationOverview, readMemberOverview, type InvitationChange, type InvitationOverview, type MemberOverview } from './administration-overviews.ts';
+import type { Billing, BillingState } from '../billing/billing.ts';
+import { activeUserSeatCount, readInvitationOverview, readMemberOverview, type InvitationChange, type InvitationOverview, type MemberOverview } from './administration-overviews.ts';
 import { ChangeRecording, type ChangeEntry, type ChangeRecorder, type ChangeResult, type DirectoryChange } from './change-records.ts';
-import { hasRole, managedChange, managedRole, managedRoles } from './customer-roles.ts';
+import { hasRole, managedChange, managedRole, managedRoles, managesBilling } from './customer-roles.ts';
 import { invitationsOf } from './directory-reads.ts';
 import type { AssignableRole, InvitationRequest, OrganizationDirectory, OrganizationMembership } from './organization-directory.ts';
 
@@ -46,6 +47,7 @@ export interface AuthorizedOrganization {
 export interface OrganizationAdministrationOptions {
   readonly directory: OrganizationDirectory;
   readonly records: ChangeRecorder;
+  readonly billing: Billing;
   readonly clock?: () => Date;
 }
 
@@ -55,15 +57,18 @@ const UPDATE_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'not-pendi
 
 // Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user, and
 // the User and Admin grants, the invitations, and the User seats of an organization. Each operation reads the current
-// actor and target state for the organization of the request, and each change keeps a record. The external operator
-// sets up organizations and their Super Admins outside this service, so it has no method for them.
+// actor and target state for the organization of the request, and each change keeps a record. Billing gets the User
+// seat count after each applied User grant change, and a member with the billing permission reads its state. The
+// external operator sets up organizations and their Super Admins outside this service, so it has no method for them.
 export class OrganizationAdministration {
   private readonly directory: OrganizationDirectory;
   private readonly changes: ChangeRecording;
+  private readonly billing: Billing;
 
   constructor(options: OrganizationAdministrationOptions) {
     this.directory = options.directory;
     this.changes = new ChangeRecording(options.records, options.clock ?? (() => new Date()));
+    this.billing = options.billing;
   }
 
   // Only active memberships whose grants give at least one application permission, because a default role gives none.
@@ -93,13 +98,21 @@ export class OrganizationAdministration {
     return typeof managed === 'string' ? managed : readInvitationOverview(this.directory, organizationId, managed);
   }
 
+  async billingState(actor: Actor, organizationId: string): Promise<BillingState | AdministrationRefusal> {
+    if (actor.mfaCompleted !== true) return 'mfa-required';
+    const memberships = await this.directory.membershipsOf(actor.user);
+    return managesBilling(memberships, organizationId) ? this.billing.stateOf(organizationId) : 'denied';
+  }
+
   // A grant or a revoke of one customer role of one active membership of the organization. The actor needs the
   // authority for that role there now, and the membership must still have the revision that the actor saw. The
   // directory changes only that role, so that each grant outside the authority of the actor stays.
   async changeGrant(actor: Actor, request: GrantChangeRequest): Promise<ChangeResult> {
     const target = { membershipId: request.membershipId };
     const entry: ChangeEntry = { actor: actor.user, organizationId: request.organizationId, target, action: request.action, role: request.role };
-    return this.changes.run(entry, () => this.checkedGrantChange(actor, request));
+    const result = await this.changes.run(entry, () => this.checkedGrantChange(actor, request));
+    if (result === 'applied' && request.role === 'user') await this.updateBillingSeats(request.organizationId);
+    return result;
   }
 
   // An invitation of the organization gives only the role that it names, so that an Admin invitation gives no User
@@ -136,6 +149,12 @@ export class OrganizationAdministration {
     if (hasRole(target.grants, change.role) === (change.action === 'grant')) return 'unchanged';
     const directoryChange = { membershipId: target.membershipId, ...change, revision: target.revision };
     return async () => explicitResult(await this.directory.changeGrant(directoryChange), GRANT_RESULTS);
+  }
+
+  // Billing gets the complete count, not a difference, so that a later update corrects a failed one. A failed count or
+  // update reaches the caller, and the applied change keeps its record.
+  private async updateBillingSeats(organizationId: string): Promise<void> {
+    await this.billing.updateSeats(organizationId, await activeUserSeatCount(this.directory, organizationId));
   }
 
   // A resend or a revoke of a pending invitation of the organization, for a role that the actor manages.

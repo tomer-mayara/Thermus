@@ -4,7 +4,7 @@ import type { AccountFailureReport } from '../../src/hosted-admin/account-routes
 import type { ChangeRecord } from '../../src/organizations/change-records.ts';
 import { memberRole } from '../unit/organizations/fixtures/directory-double-records.ts';
 import { formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from './hosted-browser.ts';
-import { adminGrant, formFor, member, serveOrganizationSite, superAdminGrant, userGrant, userOf, type OrganizationSite } from './hosted-organization-site.ts';
+import { adminGrant, formFor, member, serveOrganizationSite, superAdminGrant, userGrant, userOf, type OrganizationSite, type SiteSetup } from './hosted-organization-site.ts';
 import type { MembershipRecord } from './membership-directory-double.ts';
 
 const isoTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
@@ -29,9 +29,10 @@ export const administrationMembers: readonly MembershipRecord[] = [
 
 // The shared site behind the real HTTP server, with these memberships and a failure reporter that records each report.
 // Each Acme member below has the MCP token "<subject>-token" for Acme, and cy and una also "<subject>-globex-token".
-export async function serveAdministrationSite(t: TestContext) {
+export async function serveAdministrationSite(t: TestContext, setup: Pick<SiteSetup, 'billing'> = {}) {
   const failures: AccountFailureReport[] = [];
   const site = await serveOrganizationSite(t, {
+    ...setup,
     reportFailure: (report) => failures.push(report),
     memberships: administrationMembers,
     mcpUsers: ['user-sam', 'user-otto', 'user-cy', 'user-fay', 'user-una'].map((subject) => userOf(subject, 'org-a')),

@@ -6,6 +6,7 @@ import {
   type Actor,
   type GrantChangeRequest,
 } from '../../../../src/organizations/organization-administration.ts';
+import { BillingDouble } from './billing-double.ts';
 import { memberRole, membershipIdOf, type MemberSeed } from './directory-double-records.ts';
 import { OrganizationDirectoryDouble } from './organization-directory-double.ts';
 
@@ -34,8 +35,9 @@ export function administrationWith(seeds: readonly MemberSeed[] = members) {
   const directory = new OrganizationDirectoryDouble();
   directory.addMembers(...seeds);
   const records: ChangeRecord[] = [];
-  const administration = new OrganizationAdministration({ directory, records: { record: (entry) => records.push(entry) }, clock: () => new Date(recordTime) });
-  return { directory, records, administration };
+  const billing = new BillingDouble();
+  const administration = new OrganizationAdministration({ directory, records: { record: (entry) => records.push(entry) }, billing, clock: () => new Date(recordTime) });
+  return { directory, records, billing, administration };
 }
 
 // Acme has a pending, an accepted, a revoked, and an expired User invitation (invitation-1 to -4) and a pending

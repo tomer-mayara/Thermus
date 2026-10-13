@@ -1,7 +1,8 @@
+import type { BillingState } from '../billing/billing.ts';
 import type { InvitationEntry, InvitationOverview, MemberEntry, MemberOverview } from '../organizations/administration-overviews.ts';
 import type { RoleChange } from '../organizations/customer-roles.ts';
 import type { InvitationIdentityPolicy } from '../organizations/organization-directory.ts';
-import { escapeHtml, FORM_HEADERS, hiddenField, htmlDocument, postForm } from './page-html.ts';
+import { escapeHtml, FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
 
 export interface MembersPageForm {
   readonly overview: MemberOverview;
@@ -24,6 +25,7 @@ export interface InvitationsPageForm {
 }
 
 const ROLE_LABELS: ReadonlyMap<string, string> = new Map([['user', 'User'], ['admin', 'Admin'], ['super-admin', 'Super Admin']]);
+const PLAN_LABELS: Readonly<Record<BillingState['plan'], string>> = { free: 'Free' };
 
 // The page claims a strict address match only when the directory enforces it; any other policy gets the second text.
 const STRICT_ADDRESS_TEXT = 'Only a sign-in with the invited email address can accept the invitation.';
@@ -78,6 +80,17 @@ export function invitationsPage(form: InvitationsPageForm): Response {
     ...(overview.invitations.length === 0 ? [] : ['</ul>']),
   ]);
   return new Response(page, { status: 200, headers: FORM_HEADERS });
+}
+
+// The free plan has no billing change, so the page has no form. It shows only a fixed label and a number, so it needs
+// no escaping.
+export function billingPage(state: BillingState): Response {
+  const page = htmlDocument('Billing', [
+    `<p>Plan: ${PLAN_LABELS[state.plan]}</p>`,
+    `<p>Billed seats: ${state.billedSeats}</p>`,
+    '<p>This service collects no payment. The organization is on the free plan, and no seat is billed. Access depends only on the grants of each member.</p>',
+  ]);
+  return new Response(page, { status: 200, headers: NOTICE_HEADERS });
 }
 
 function grantForm(form: MembersPageForm, member: MemberEntry, change: RoleChange): string[] {

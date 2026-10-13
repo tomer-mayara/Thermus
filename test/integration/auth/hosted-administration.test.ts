@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { accountChangeRecorder, accountFailureReporter, createApplication } from '../../../src/application.ts';
+import { BillingFree } from '../../../src/billing/billing-free.ts';
 import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
 import {
   OrganizationAdministration,
@@ -43,7 +44,7 @@ describe('Hosted grant management with the real composition, routes, service, an
   test('Given direct calls of the service on the directory of the site, when a Super Admin grants Admin and then User to itself, an Admin asks to grant Admin, and an Admin revokes the User grant of a User plus Admin member, then the calls follow the rules of the forms, and the next MCP and account requests use the current grants', async (t) => {
     const site = open(t);
     const records: ChangeRecord[] = [];
-    const administration = new OrganizationAdministration({ directory: site.directory, records: { record: (entry) => records.push(entry) } });
+    const administration = new OrganizationAdministration({ directory: site.directory, records: { record: (entry) => records.push(entry) }, billing: new BillingFree() });
     const before = { sam: await toolOutcome(site, 'user-sam-token'), cy: await toolOutcome(site, 'user-cy-token') };
 
     const outcomes = [];
