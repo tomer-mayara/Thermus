@@ -63,10 +63,10 @@ function mcpCall(token?: string): RequestInit {
   return { method: 'POST', headers, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: call }) };
 }
 
-function formPost(fields: Readonly<Record<string, string>>): RequestInit {
+function formPost(fields: Readonly<Record<string, string>>, cookie = forgedCookie): RequestInit {
   return {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: hostedSettings.PUBLIC_BASE_URL ?? '', Cookie: forgedCookie },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: hostedSettings.PUBLIC_BASE_URL ?? '', Cookie: cookie },
     body: new URLSearchParams(fields).toString(),
   };
 }
@@ -150,6 +150,25 @@ describe('Hosted edition with the authentication placeholder', () => {
     assertUnavailable(mcp, { area: 'MCP', path: '/mcp' });
     assertUnavailable(account, { area: 'account', path: '/account' });
     for (const value of Object.values(workOSSettings)) assert.ok(!server.output.includes(value), `The output shows ${value}`);
+    assert.equal(server.attemptedOutboundAccess, false, server.output);
+  });
+
+  test('Given test and demonstration settings, when the onboarding page, the organization list, and a selection arrive with the session cookie, form token, organization, and return destination that the test doubles accept, then each gets the unavailable notice without a cookie, and the server reports no organization or tenant and uses no network', { timeout: 60_000 }, async (t) => {
+    const demonstrationSettings = { NODE_ENV: 'test', AUTH_MODE: 'mock', MAGUMAGU_DEMO: 'true', HOSTED_TEST_SESSION: 'session=user-ann' };
+    const server = await ServerProcess.start(t, { ...hostedSettings, ...demonstrationSettings });
+    const cookie = 'session=00000000-0000-4000-8000-000000000000';
+    const selection = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'org-a', return_to: '/billing' };
+
+    const answers = [
+      await answerOf(server, '/organizations', { headers: { Cookie: cookie } }),
+      await answerOf(server, '/organizations?return_to=/billing', { headers: { Cookie: cookie, 'X-Organization-Id': 'org-a' } }),
+      await answerOf(server, '/organizations/select', formPost(selection, cookie)),
+      await answerOf(server, '/billing', { headers: { Cookie: cookie } }),
+    ];
+    await server.stop();
+
+    for (const answer of answers) assertUnavailable(answer, { area: 'organization', path: '/organizations' });
+    assert.doesNotMatch(server.output, /org-a|tenant|user-ann/);
     assert.equal(server.attemptedOutboundAccess, false, server.output);
   });
 

@@ -5,19 +5,25 @@ import {
   type AuthenticatedUser,
   type RoleGrant,
 } from '../../src/auth/access-context.ts';
+import type { OrganizationDirectory, OrganizationMembership } from '../../src/organizations/organization-administration.ts';
 
 export interface MembershipRecord {
   readonly subject: string;
   readonly organizationId: string;
+  readonly organizationName: string;
   readonly active: boolean;
   readonly grants: readonly RoleGrant[];
 }
 
-export class MembershipDirectoryDouble implements AccessResolver {
+// Reads the configured memberships for access resolution and for the organization reads, as the hosted provider will
+// read the same provider state for both.
+export class MembershipDirectoryDouble implements AccessResolver, OrganizationDirectory {
   readonly calls: AuthenticatedUser[] = [];
+  readonly membershipReads: AuthenticatedUser[] = [];
   private readonly authority: string;
-  private readonly memberships: readonly MembershipRecord[];
+  private memberships: readonly MembershipRecord[];
   private readonly paused = new Map<string, Promise<void>>();
+  private readOutage?: Error;
 
   constructor(authority: string, memberships: readonly MembershipRecord[]) {
     this.authority = authority;
@@ -30,6 +36,14 @@ export class MembershipDirectoryDouble implements AccessResolver {
     return () => resume.resolve();
   }
 
+  replaceMemberships(memberships: readonly MembershipRecord[]): void {
+    this.memberships = memberships;
+  }
+
+  failMembershipReads(outage: Error | undefined): void {
+    this.readOutage = outage;
+  }
+
   async resolve(user: AuthenticatedUser): Promise<AccessDecision> {
     this.calls.push(user);
     const organizationId = user.selectedOrganizationId;
@@ -40,5 +54,14 @@ export class MembershipDirectoryDouble implements AccessResolver {
     if (membership === undefined || !membership.active) return { allowed: false, reason: 'membership-inactive' };
     const context = createRequestContext({ user, tenantId: `hosted:${organizationId}`, organizationId, grants: membership.grants });
     return { allowed: true, context };
+  }
+
+  async membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]> {
+    this.membershipReads.push(user);
+    if (this.readOutage !== undefined) throw this.readOutage;
+    if (user.authority !== this.authority) return [];
+    return this.memberships
+      .filter((record) => record.subject === user.subject)
+      .map(({ organizationId, organizationName, active, grants }) => ({ organizationId, organizationName, active, grants }));
   }
 }

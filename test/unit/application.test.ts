@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { operatorFailureReporter, routeHostedRequests, routeLocalRequests } from '../../src/application.ts';
+import { accountFailureReporter, operatorFailureReporter, routeHostedRequests, routeLocalRequests } from '../../src/application.ts';
 import type { FailureReport } from '../../src/mcp/mcp-server.ts';
 
 class RecordingLogger {
@@ -36,6 +36,18 @@ for (const { label, report, line } of reports) {
     assert.deepEqual(logger.lines, [`ERROR ${line}`]);
   });
 }
+
+test('Given an account failure report, when the application gives it to the operator, then the log gets one error line with the path and the cause, also for a cause that is not an error', () => {
+  const logger = new RecordingLogger();
+
+  accountFailureReporter(logger)({ path: '/team/organizations', cause: new Error('organization directory timed out') });
+  accountFailureReporter(logger)({ path: '/team/organizations/select', cause: 'session provider closed' });
+
+  assert.deepEqual(logger.lines, [
+    'ERROR An account request failed unexpectedly for /team/organizations: Error: organization directory timed out',
+    'ERROR An account request failed unexpectedly for /team/organizations/select: session provider closed',
+  ]);
+});
 
 const routeConfig = {
   publicBaseUrl: 'https://magumagu.example/team/',
@@ -102,9 +114,12 @@ const privateRoutes = [
   '/api/auth/oauth2/token',
   '/mcp',
   '/unknown',
+  '/team/organizations',
+  '/team/organizations/select',
+  '/team/onboarding',
 ];
 
-test('Given a local installation, when private or unknown paths are requested, then each returns 404 without calling a route owner', async () => {
+test('Given a local installation, when private, hosted organization, or unknown paths are requested, then each returns 404 without calling a route owner', async () => {
   const { route, calls } = recordingRoutes();
 
   for (const path of privateRoutes) {

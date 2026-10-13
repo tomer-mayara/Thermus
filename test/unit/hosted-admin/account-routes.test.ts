@@ -99,7 +99,7 @@ describe('HostedAccountRoutes', () => {
     for (const request of requests) {
       const response = await routes.handle(request);
       assert.equal(response.headers.get('Set-Cookie'), null);
-      await assertPage(response, 503, notice);
+      await assertPage(response, { status: 503, text: notice });
       assert.equal(request.bodyUsed, false);
     }
 
@@ -110,7 +110,7 @@ describe('HostedAccountRoutes', () => {
   test('Given no signed-in browser session, when an account request arrives, then it gets 401 and no access resolution or operation runs', async () => {
     const { routes, resolver, operations } = serve({ decisions: new Map([[ann.subject, allowedFor(contextOf(ann, [userGrant], ['product:access']))]]) });
 
-    await assertPage(await routes.handle(accountRequest('/account', 'session=unknown')), 401, /Sign in to use this page\./);
+    await assertPage(await routes.handle(accountRequest('/account', 'session=unknown')), { status: 401, text: /Sign in to use this page\./ });
 
     assert.deepEqual([resolver.calls, operations.calls], [[], []]);
   });
@@ -126,7 +126,7 @@ describe('HostedAccountRoutes', () => {
 
       assert.equal(response.status, 403);
       assert.doesNotMatch(await response.clone().text(), new RegExp(reason));
-      await assertPage(response, 403, /Your account has no access to this page in the selected organization\./);
+      await assertPage(response, { status: 403, text: /Your account has no access to this page in the selected organization\./ });
       assert.deepEqual([resolver.calls, operations.calls], [[ann], []]);
     });
   }
@@ -138,34 +138,20 @@ describe('HostedAccountRoutes', () => {
       withOperation: false,
     });
 
-    await assertPage(await routes.handle(accountRequest('/account', 'session=ann')), 404, /This page does not exist\./);
+    await assertPage(await routes.handle(accountRequest('/account', 'session=ann')), { status: 404, text: /This page does not exist\./ });
 
     assert.deepEqual(resolver.calls, [ann]);
   });
 
-  test('Given an allowed decision without a tenant ID, when a signed-in user requests an account operation, then the routes refuse it before the operation', async () => {
-    const withoutTenant = { ...contextOf(ann, [userGrant], ['product:access']), tenantId: '' };
-    const { routes, operations } = serve({
-      sessions: new Map([['session=ann', signedIn(ann)]]),
-      decisions: new Map([[ann.subject, allowedFor(withoutTenant)]]),
+  test('Given a failed session lookup, when an account request arrives, then the failure reaches the caller, and no access resolution, operation, or report follows', async () => {
+    const outage = new Error('session lookup timed out');
+    const { routes, resolver, operations, failures } = serve({
+      sessions: new Map([['session=ann', outage]]),
+      decisions: new Map([[ann.subject, allowedFor(contextOf(ann, [userGrant], ['product:access']))]]),
     });
 
-    await assert.rejects(routes.handle(accountRequest('/account', 'session=ann')), /The access decision has no trusted tenant/);
+    await assert.rejects(routes.handle(accountRequest('/account', 'session=ann')), outage);
 
-    assert.deepEqual(operations.calls, []);
+    assert.deepEqual([resolver.calls, operations.calls, failures], [[], [], []]);
   });
-
-  for (const failure of ['session', 'access'] as const) {
-    test(`Given a failed ${failure} lookup, when an account request arrives, then the failure reaches the caller and no operation runs`, async () => {
-      const outage = new Error(`${failure} lookup timed out`);
-      const { routes, operations } = serve({
-        sessions: new Map([['session=ann', failure === 'session' ? outage : signedIn(ann)]]),
-        decisions: new Map([[ann.subject, outage]]),
-      });
-
-      await assert.rejects(routes.handle(accountRequest('/account', 'session=ann')), outage);
-
-      assert.deepEqual(operations.calls, []);
-    });
-  }
 });

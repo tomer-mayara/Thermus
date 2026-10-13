@@ -45,6 +45,15 @@ describe('UnavailableHostedAuthentication', () => {
 
     assert.deepEqual(decisions, anyUsers.map(() => ({ allowed: false, reason: 'account-inactive' })));
   });
+
+  test('Given any user, also one with a selected organization, when its organization memberships are read, then no membership, organization, or grant is given', async () => {
+    const authentication = new UnavailableHostedAuthentication();
+
+    const memberships = await Promise.all(anyUsers.map((user) => authentication.membershipsOf(user)));
+
+    assert.deepEqual(memberships, anyUsers.map(() => []));
+    assert.ok(memberships.every((list) => Object.isFrozen(list)));
+  });
 });
 
 describe('UnavailableMcpEndpoint', () => {

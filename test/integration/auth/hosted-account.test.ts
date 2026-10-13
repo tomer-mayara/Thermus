@@ -6,7 +6,7 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import type { BrowserSessionState } from '../../../src/hosted-admin/browser-session.ts';
 import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/membership-directory-double.ts';
-import { BrowserSessionDouble } from '../../unit/hosted-admin/fixtures/browser-session-double.ts';
+import { BrowserSessionDouble, SignedInSessionDouble } from '../../unit/hosted-admin/fixtures/browser-session-double.ts';
 
 const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example/team' }, 'http');
 const authority = 'hosted-provider-double';
@@ -37,7 +37,7 @@ const memberships: readonly MembershipRecord[] = [
 ];
 
 function member(subject: string, organizationId: string, grants: readonly RoleGrant[]): MembershipRecord {
-  return { subject, organizationId, active: true, grants };
+  return { subject, organizationId, organizationName: `Organization ${organizationId}`, active: true, grants };
 }
 
 function userOf(subject: string, selectedOrganizationId?: string): AuthenticatedUser {
@@ -61,13 +61,13 @@ class McpEndpointDouble {
 function serve() {
   const sessionStates = new Map(sessions.map(([name, subject, organizationId]): [string, BrowserSessionState] => [
     `session=${name}`,
-    { status: 'signed-in', user: name === 'mallory' ? { ...userOf(subject, organizationId), authority: 'forged-authority' } : userOf(subject, organizationId) },
+    new SignedInSessionDouble(name === 'mallory' ? { ...userOf(subject, organizationId), authority: 'forged-authority' } : userOf(subject, organizationId)),
   ]));
   const session = new BrowserSessionDouble(sessionStates);
   const directory = new MembershipDirectoryDouble(authority, memberships);
   const probe = new AccountOperationProbe(operationPermissions);
   const mcp = new McpEndpointDouble();
-  const application = composeHostedApplication(config, { session, accessResolver: directory, mcp }, probe.operation);
+  const application = composeHostedApplication(config, { session, accessResolver: directory, organizations: directory, mcp }, { reportFailure: () => {}, operation: probe.operation });
   return { application, session, directory, probe, mcp };
 }
 
