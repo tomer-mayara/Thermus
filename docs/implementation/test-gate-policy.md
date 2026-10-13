@@ -16,6 +16,7 @@ package script. Each command that runs `dist/` output makes a clean build first.
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` and `test/acceptance/user-portal/**/*.test.ts` | Offline. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0 and public network access. |
+| Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
@@ -33,6 +34,13 @@ The interface suite needs the pinned Lightpanda executable. It also contains a
 public-site smoke test that needs public network access.
 [Lightpanda runtime](../lightpanda-runtime.md#verify-rendering) gives the setup
 and separate commands for the local fixture tests and the smoke test.
+
+The focused OTel interface tests use a loopback receiver and need no renderer or
+Axiom credentials. The separate Axiom interface file uses `.live.ts`, so the
+normal test globs do not select it. Its command needs `AXIOM_API_KEY`,
+`AXOIM_ENDPOINT_URL`, and `AXIOM_SYSTEM_LOG_DATA_SET`. Missing settings are a
+setup failure. See [OTel logger tests](../testing/otel-logger.md) for the contract
+and the commands, including how to load `.env.local` for a live run.
 
 A change that adds a prerequisite to a suite adds it to this table.
 

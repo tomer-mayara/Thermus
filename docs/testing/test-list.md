@@ -455,6 +455,13 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] Starts at INFO by default and applies each constructor threshold from DEBUG through NONE
 [V] Applies threshold changes, hides all levels at NONE, and resumes when the threshold is lowered
 
+**OTel logger** ([test contract and commands](otel-logger.md))
+
+[V] Preserves the log methods, default INFO level, thresholds, and caller location of `BaseLogger`
+[V] Maps each accepted level to an OpenTelemetry severity and preserves the message body
+[V] Exports OTLP log records through the SDK to a loopback receiver with the Axiom headers
+[V] Sends one test log to Axiom through the separate live interface command and checks the exporter result
+
 **Renderer network policy**
 
 [V] Rejects blocked IPv4 and IPv6 ranges, obfuscated loopback addresses, mixed DNS answers, and failed DNS before renderer launch

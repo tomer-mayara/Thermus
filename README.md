@@ -455,6 +455,11 @@ import { createApplication } from './application.ts';
 
 The unit, integration, and acceptance suites are offline. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
 
+`pnpm test:interface:axiom` runs the separate OTel interface test against Axiom and
+sends one test log. It needs Axiom ingest settings and public network access.
+Normal suite commands do not select it. The [OTel logger test guide](docs/testing/otel-logger.md)
+gives the settings and a command that loads them from `.env.local`.
+
 `pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
 It also runs portal acceptance tests and builds the portal bundle. Portal tests
 run from TypeScript source on Node 24 because the Node build excludes browser source.
