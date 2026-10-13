@@ -13,10 +13,10 @@ customer membership administration. Payment integration remains required work
 before the paid product is complete. HTTP is the first end-to-end delivery
 target. Slice 1, contracts and request isolation, is implemented; all other
 implementation work in this plan is pending. The pinned Better Auth packages are
-proven against the local contracts; two
-[provider blockers](#open-provider-blockers) need an owner decision before slice
-2 continues. The role refinement below records intended rules only; it adds no
-implementation work now.
+proven against the local contracts. The owner resolved the two
+[provider blockers](#resolved-provider-blockers) that the proofs found, so
+slice 2 can continue. The role refinement below records intended rules only; it
+adds no implementation work now.
 
 ## Requirements and delivery scope
 
@@ -199,8 +199,8 @@ path. Bundle an offline CLI that wraps supported Better Auth APIs:
 | --- | --- |
 | `magumagu users add` | Create a local email/password account; reject a duplicate email. |
 | `magumagu users list` | List local accounts and their enabled/disabled state without credentials. |
-| `magumagu users reset-password` | Reset the selected user's password and revoke that user's sessions and OAuth grants. Preserve account status and IDs. |
-| `magumagu users disable` | Disable the selected user and revoke that user's sessions and OAuth grants. Preserve IDs. |
+| `magumagu users reset-password` | Reset the selected user's password and delete that user's sessions, which ends that user's MCP access tokens. Preserve account status and IDs. |
+| `magumagu users disable` | Disable the selected user and delete that user's sessions, which ends that user's MCP access tokens. Preserve IDs. |
 
 Add and reset-password use a hidden password prompt. Never accept passwords as
 command arguments or log them. Select the target user explicitly and report
@@ -240,45 +240,55 @@ OAuth provider plugin or an independent competing metadata response.
 [Better Auth MCP](https://better-auth.com/docs/plugins/mcp)
 
 The local auth command also registers approved MCP clients and exact redirect URLs.
-Support a documented, tested client set. Disable network client-metadata
-discovery and dynamic registration in this edition. Do not claim arbitrary MCP
-client compatibility offline. Persist keys, sessions, clients, consents, and
-grants on the local volume. Local authentication must not fetch remote JWKS,
-email, fonts, scripts, or other assets. Explicitly disable runtime and CLI
-telemetry. [Telemetry controls](https://better-auth.com/docs/reference/telemetry)
+It signs in one selected enabled account through the server API, with that
+account's password from a hidden prompt. It registers the clients with that
+session and then deletes the session. The installation, not that account, owns
+each client. Support a documented, tested client set. Disable network
+client-metadata discovery and dynamic registration in this edition. Do not
+claim arbitrary MCP client compatibility offline. Persist keys, sessions,
+clients, consents, and grants on the local volume. Local authentication must
+not fetch remote JWKS, email, fonts, scripts, or other assets. Explicitly
+disable runtime and CLI telemetry.
+[Telemetry controls](https://better-auth.com/docs/reference/telemetry)
 
-Prefer supported local introspection so token acceptance also checks current
-session activity. Better Auth documents that introspection checks a bound
-session; JWT signature validity alone does not provide that check. Confirm how
-the resource server is authorized to introspect its clients' tokens. After token
-verification, `AccessResolver` checks the current local user state for every
-protected request. Disabled or missing users have no workspace access.
-Supported provider operations and user-state checks must also prevent disabled
-users from logging in or receiving or refreshing tokens. A still-valid signature
-must not let a disabled user perform protected work.
+The local MCP verifier must introspect each token, so token acceptance also
+checks current session activity. Better Auth documents that introspection checks
+a bound session; JWT signature validity alone does not provide that check. The
+[pinned provider proof](#pinned-provider-proof) shows how the resource server is
+authorized to introspect its clients' tokens. After token verification,
+`AccessResolver` checks the current local user state for every protected request.
+Disabled or missing users have no workspace access. Supported provider
+operations and user-state checks must also prevent disabled users from logging
+in or receiving tokens. A still-valid signature must not let a disabled user
+perform protected work.
 
-Disable and password reset revoke only the selected user's sessions and
-applicable OAuth grants, including refresh grants that can survive browser
-logout. Existing access and refresh credentials for that user must fail; peers'
-credentials and access remain usable. Do not implement hashing or revocation by
-guessing provider tables, editing tokens, or storing raw passwords.
+The local edition issues no offline grants and no refresh tokens. Each MCP
+access token carries the `sid` of the browser session that authorized it, and
+introspection reports the token inactive when that session ends. Sign-out,
+disable, and password reset end the session. Disable and password reset delete
+only the selected user's sessions. That user's access tokens and pending
+authorization codes then fail; peers' sessions, tokens, and access remain usable.
+Clients authorize again when an access token expires. Do not implement hashing
+or revocation by guessing provider tables, editing tokens, or storing raw
+passwords.
 [OAuth token validation and revocation](https://better-auth.com/docs/plugins/oauth-provider)
 
 Before building the complete local flow, prove supported private account
-creation, listing, password reset, disabling, session revocation, and OAuth grant
-revocation against the pinned versions and selected plugins. Also prove public
-signup rejection, resource-bound issuance, introspection, current account-state
-checks, and duplicate-email handling. Use provider origin/CSRF and rate-limit
-protections and test them through authentication routes. Resolve any unsupported
-operation before claiming the release meets the account or revocation contract.
+creation, listing, password reset, disabling, session revocation, and the end of
+the user's OAuth grants against the pinned versions and selected plugins. Also
+prove public signup rejection, resource-bound issuance, introspection, current
+account-state checks, and duplicate-email handling. Use provider origin/CSRF and
+rate-limit protections and test them through authentication routes. Resolve any
+unsupported operation before claiming the release meets the account or
+revocation contract.
 
 ### Pinned provider proof
 
 `test/interface/auth/better-auth.test.ts` runs the pinned packages with a real
-SQLite database and proves the contracts in this section. The pinned provider
-does not support two required contracts. The
-[open provider blockers](#open-provider-blockers) record them. The complete local
-flow must not start until the owner selects their resolution.
+SQLite database and proves the contracts in this section. The proofs found two
+required contracts that the pinned provider does not support as first planned.
+The [resolved provider blockers](#resolved-provider-blockers) record the owner's
+decisions; the settings and contracts below apply them.
 
 `package.json` pins `better-auth` and `@better-auth/mcp` at exactly 1.7.7.
 `pnpm-lock.yaml` also pins their `@better-auth/oauth-provider` dependency at
@@ -296,8 +306,12 @@ native SQLite package is needed.
 | `emailAndPassword` | `{ enabled: true, disableSignUp: true }` with no `sendResetPassword`. Signup gives `400 EMAIL_PASSWORD_SIGN_UP_DISABLED` over HTTP and from the server API. Email reset gives `400 RESET_PASSWORD_DISABLED`. |
 | `rateLimit` | `{ enabled: true }`. Without it, limits apply only when `NODE_ENV=production`. The memory store is shared by the whole process. |
 | `advanced.ipAddress.ipAddressHeaders` | One header that the HTTP bridge sets from the socket address after it removes any copy from the client. Without a client address, all clients share one bucket for each path. |
-| `disabledPaths` | The admin, client-management, and session-JWT (`/token`) routes. It refuses exact paths with `404` on HTTP only; server API calls still work. It cannot match routes with parameters, so the HTTP bridge must forward only the provider routes that the local edition uses. |
-| `plugins` | `admin()`, `jwt()`, and `mcp({ resource: <base>/mcp, loginPage, consentPage })`. Dynamic registration stays off, and no client-metadata plugin is installed. |
+| `disabledPaths` | The admin, client-management, client-secret rotation, and session-JWT (`/token`) routes. It refuses exact paths with `404` on HTTP only; server API calls still work. It cannot match routes with parameters, so the HTTP bridge must forward only the provider routes that the local edition uses. |
+| `plugins` | `admin()`, `jwt()`, and `mcp()` with the options below. Dynamic registration stays off, and no client-metadata plugin is installed. |
+| `mcp()` `resource`, `loginPage`, `consentPage` | `<base>/mcp` and the bundled sign-in and consent pages. |
+| `mcp()` `scopes` | `["openid", "profile", "email"]`, without `offline_access`. An authorization request with `offline_access` returns to the client with `invalid_scope`, client registration refuses that scope, and no token response has a refresh token. |
+| `mcp()` `grantTypes` | `["authorization_code", "client_credentials"]`, without `refresh_token`. A refresh request gives `400 unsupported_grant_type`, client registration refuses the refresh grant, and the metadata does not list it. The `grant_types` of a client cannot prevent refresh tokens, because the provider lets each `authorization_code` client refresh. |
+| `mcp()` `clientReference` | A function that returns the installation ID. Each registered client gets it as `reference_id` and has no `user_id`, so the installation owns the client. |
 
 Do not start the server with `NODE_ENV=test` or `TEST=1`. These values turn off
 the provider's origin and CSRF checks.
@@ -306,7 +320,8 @@ The admin plugin's list, set-password, ban, and session endpoints need an admin
 session, which the offline CLI does not have. Its create endpoint works from the
 server without headers. The other operations use the provider's data API,
 `(await auth.$context).internalAdapter`, and its password hasher. The admin
-endpoints call the same functions. No operation uses SQL.
+endpoints call the same functions. No operation uses SQL. The owner accepted
+these operations.
 
 | Operation | Provider API | Proven result |
 | --- | --- | --- |
@@ -314,7 +329,8 @@ endpoints call the same functions. No operation uses SQL.
 | List | `internalAdapter.listUsers()` | Gives each user ID, email, and `banned` state. User records hold no credentials. |
 | Reset password | `password.hash()`, `internalAdapter.updatePassword(userId, hash)`, then `internalAdapter.deleteUserSessions(userId)` | The old password gives `401 INVALID_EMAIL_OR_PASSWORD`. The new password signs in the same user ID. The user's browser sessions end; peer sessions stay. |
 | Disable | `internalAdapter.updateUser(userId, { banned: true })`, then `internalAdapter.deleteUserSessions(userId)` | Sign-in gives `403 BANNED_USER`. The user ID stays, and peers can sign in. |
-| Revoke sessions | `internalAdapter.deleteUserSessions(userId)` | Ends only that user's sessions and makes that user's session-bound access tokens inactive at introspection. |
+| Revoke sessions | `internalAdapter.deleteUserSessions(userId)` | Ends only that user's sessions. That user's MCP access tokens become inactive at introspection, and that user's pending authorization codes fail at the token endpoint. |
+| Register clients | `auth.api.signInEmail({ body, returnHeaders: true })`, `applySetCookies()` from `better-auth/cookies` to make the session headers, `auth.api.adminCreateOAuthClient({ headers, body })` for each client, then `internalAdapter.deleteSession(token)` | Each client has the installation ID as `reference_id` and no `user_id`. No registration session stays. Another user can authorize through the native client, and the resource server can introspect. A disabled account gets `403 BANNED_USER`. |
 
 The create endpoint checks only the maximum password length, so the CLI must
 check the 8 to 128 character rule first. Two concurrent creates with one email
@@ -327,11 +343,11 @@ access token with header `typ: at+jwt` and an EdDSA signature. Its claims are
 the client requests `openid`, `<issuer>/oauth2/userinfo`), `client_id` and `azp`
 (the client ID), `scope`, `sid` (the browser session ID), `iat`, `exp` (`iat`
 plus 3,600 seconds), and `jti`. There is no `auth_time` or `nbf` claim. A
-verifier must select the MCP resource from the `aud` array. A refresh token
-comes only with the `offline_access` scope. It is opaque and changes at each
-refresh. A repeat of a used refresh token within 30 seconds returns the same
-response. The provider code revokes that client's grants for the user when a
-used token returns later; the proofs do not cover that path.
+verifier must select the MCP resource from the `aud` array. An authorization
+request without `scope` gets `openid profile email`. The token response has no
+refresh token. The code exchange checks that the browser session of the code
+still exists. After that session ends, the exchange gives `400 invalid_request`
+with `session no longer exists`.
 
 The MCP server introspects tokens at `<issuer>/oauth2/introspect` as a
 confidential client with `client_secret_basic`. `mcp()` links each registered
@@ -348,12 +364,17 @@ verifier must reject the machine tokens of that grant.
 
 The tested offline client set is the MCP TypeScript SDK 2.3.1 client with a
 pre-registered public native client: `token_endpoint_auth_method: none`,
-`application_type: native`, an exact loopback redirect URI, PKCE S256, the
-resource indicator, and the RFC 9207 `iss` check. It completes discovery,
-authorization, code exchange, and refresh. When it requests `offline_access`,
-the SDK sends `prompt=consent`, so the consent page appears. Registration
-requests get `403 access_denied`, and the metadata has no
-`registration_endpoint`. No other MCP client is claimed.
+`application_type: native`, `grant_types: ["authorization_code"]`, an exact
+loopback redirect URI, PKCE S256, the resource indicator, and the RFC 9207 `iss`
+check. It completes discovery, authorization, and code exchange, and it receives
+no refresh token. The SDK adds `offline_access` only when the server metadata
+lists it, so it asks for no offline grant here. The consent page appears at the
+first authorization. When the access token is no longer accepted, the SDK has no
+refresh token, so it starts a new authorization. While the browser session
+lives, the provider finds the stored consent and returns a new code to the
+client at once, without the sign-in or consent page. Registration requests get
+`403 access_denied`, and the metadata has no `registration_endpoint`. No other
+MCP client is claimed.
 
 The provider serves `/.well-known/oauth-protected-resource` and
 `/.well-known/oauth-protected-resource/mcp` at the root path, and the
@@ -376,6 +397,12 @@ These findings apply to the local runtime:
 - With an open `/oauth2/create-client` route, any signed-in user can register a
   confidential client. The provider links it to the MCP resource, so it can
   introspect other users' MCP tokens. Keep client-management routes private.
+- With `clientReference`, each signed-in session passes the provider's owner
+  check for installation clients. Over HTTP, `/oauth2/client/rotate-secret`
+  then gives any signed-in user a new secret for the resource-server client.
+  That user can then introspect every MCP token, and the secret of the MCP
+  server stops working. `/oauth2/get-client` shows the settings of any client.
+  Keep both routes private.
 - The `jwt()` plugin's `/token` route gives JWTs for the browser session, and
   their verification does not check the session. Keep it private.
 - Outside an endpoint, Better Auth gives database hooks no endpoint context.
@@ -383,33 +410,33 @@ These findings apply to the local runtime:
   through `internalAdapter` leaves token records unchanged. Introspection still
   ends tokens that carry a `sid`.
 
-#### Open provider blockers
+#### Resolved provider blockers
+
+The proofs found two required contracts that the pinned provider does not
+support as first planned. The owner selected the resolutions below. The owner
+also accepted the data-API operations above for list, reset, disable, and
+session revocation.
 
 1. **Revocation of offline grants.** The provider keeps `offline_access` refresh
    tokens when sessions end; its documentation names this behavior. A refresh
    checks no session, account status, or consent, and no provider API revokes
-   the grants of one user. After a password reset or disable, the old refresh
-   token still gives a new access token. That token has no `sid`, so
-   introspection reports it active. In the 30 seconds after a refresh, a repeat
-   of the used token also returns the stored response without checks. The
-   access resolver still denies protected work to a disabled user, but a user
-   whose password was reset stays enabled. The two `todo` proofs show this
-   failure. Possible resolutions:
-   - Issue no offline grants. MCP access tokens stay bound to the browser
-     session, and introspection ends them with the session. Clients authorize
-     again after expiry. Only supported provider behavior is used, but refresh
-     leaves the local release plan.
-   - Keep offline grants and revoke the selected user's access, refresh, and
-     consent records through the provider's database adapter, with opaque access
-     tokens. This changes the rule against revocation by editing tokens.
-   - Keep refresh only while the browser session lives, through the documented
-     `formatRefreshToken` option. This adds custom token wrapping code.
-   - Wait for a provider release with per-user grant revocation.
+   the grants of one user. Thus an old refresh token still gave new access
+   tokens after a password reset or disable, and those tokens had no `sid`.
+   **Resolution:** issue no offline grants. MCP access tokens stay bound to the
+   browser session through `sid`, and the MCP verifier introspects each token.
+   The `scopes` and `grantTypes` settings enforce this for every client. The
+   cost is that there is no refresh: a client authorizes again when its access
+   token expires, at the latest 3,600 seconds after issue. The owner did not
+   select revocation of token records through the provider's database adapter,
+   refresh only while the browser session lives through `formatRefreshToken`,
+   or a wait for a provider release with per-user grant revocation.
 2. **Offline client registration.** `adminCreateOAuthClient` is a server-only
-   endpoint, but it needs a signed-in session. The offline CLI has none.
-   Possible resolutions: register clients with a short session of a selected
-   enabled account, with `clientReference` to keep the installation as the
-   owner; or write client records through the provider's database adapter.
+   endpoint, but it needs a signed-in session, and the offline CLI has none.
+   **Resolution:** the CLI signs in one selected enabled account through
+   `auth.api.signInEmail`, registers the clients with that session, and then
+   deletes the session. `clientReference` returns the installation ID, so the
+   installation owns each client. The owner did not select client records
+   written through the provider's database adapter.
 
 ## Hosted authentication and access
 
@@ -651,10 +678,10 @@ contracts as types only.
    is required for the first hosted release.
 5. **Evaluation packaging.** Ship dependencies, migrations, assets, commands,
    and volume configuration. Verify a fresh container, two-user offline login
-   and refresh, restart, container/image replacement, backup/restore, and
-   stopped-server CLI recovery. Keep the build's `dist/test` output for existing
-   test commands; copy only `dist/src` and required runtime assets into the
-   production image. No new production TypeScript configuration is required.
+   and re-authorization, restart, container/image replacement, backup/restore,
+   and stopped-server CLI recovery. Keep the build's `dist/test` output for
+   existing test commands; copy only `dist/src` and required runtime assets into
+   the production image. No new production TypeScript configuration is required.
 6. **Paid billing.** Select the payment provider and billing rules, then add
    Super Admin payment setup, User-seat subscription quantity updates, and
    failure recovery. This is required paid-product work, not an optional
@@ -686,12 +713,12 @@ behavior.
 | `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. |
 | `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. |
 | `test/integration/auth/mcp-context.test.ts` | Real provider/MCP collaboration, error mapping, and sequential/concurrent isolation. |
-| `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, and per-user session/OAuth revocation without affecting peers. |
-| `test/integration/auth/local-access.test.ts` | Two distinct user subjects in one tenant; equal evaluation permissions, separate sessions, current account-state checks, disabled login/issuance/refresh, and disabled-user denial after token verification. |
+| `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, client registration without a remaining session, and per-user session and MCP token revocation without affecting peers. |
+| `test/integration/auth/local-access.test.ts` | Two distinct user subjects in one tenant; equal evaluation permissions, separate sessions, current account-state checks, disabled login and issuance, no refresh grant, and disabled-user denial after token verification. |
 | `test/integration/auth/local-installation.test.ts` | Application/provider startup collaboration: one persistent installation UUID; reset/disable preserve IDs; backup/restore preserve database and secrets; existing data without identity fails closed. |
 | `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. |
-| `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/refresh in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login/issuance/refresh while peers retain access; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
-| `test/acceptance/auth/self-hosted-container.test.ts` | Offline bundled CLI with stopped-server volume access; commands reject the live lock; two-user login/refresh after restart and container/image replacement; installation/user IDs survive backup/restore. |
+| `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
+| `test/acceptance/auth/self-hosted-container.test.ts` | Offline bundled CLI with stopped-server volume access; commands reject the live lock; two-user login and authorization after restart and container/image replacement; installation/user IDs survive backup/restore. |
 | `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. |
 
 Include these explicit acceptance specifications:

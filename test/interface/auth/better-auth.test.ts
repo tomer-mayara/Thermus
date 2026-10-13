@@ -9,15 +9,32 @@ import {
   loopbackRedirectUri,
   PreRegisteredNativeClient,
   ResourceServerClient,
-  type TokenResponse,
 } from '../../support/better-auth-agents.ts';
-import { authIssuer, mcpResourceUrl, startLocalProvider, type LocalAuth } from '../../support/better-auth-local.ts';
+import {
+  authIssuer,
+  localInstallationId,
+  mcpResourceUrl,
+  startLocalProvider,
+  withRegistrationSession,
+  type AccountCredentials,
+  type LocalAuth,
+} from '../../support/better-auth-local.ts';
 import { PreRegisteredSdkClient, sdkFetch } from '../../support/mcp-sdk-oauth-client.ts';
 
-const unsupportedRefreshRevocation = 'Blocked: the pinned provider keeps offline refresh grants after session deletion, '
-  + 'password reset, and disable; docs/design/authentication-design.md records the open decision.';
-
 type UserWithAccountStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };
+
+const alicesAccount: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
+
+function nativeClientMetadata() {
+  return {
+    client_name: 'Native MCP client',
+    redirect_uris: [loopbackRedirectUri],
+    token_endpoint_auth_method: 'none',
+    grant_types: ['authorization_code'],
+    response_types: ['code' as const],
+    application_type: 'native' as const,
+  };
+}
 
 async function localProvider(t: TestContext): Promise<LocalAuth> {
   const { auth, database } = await startLocalProvider();
@@ -39,37 +56,29 @@ async function signedIn(auth: LocalAuth, email: string, password: string): Promi
 
 async function assertProviderError(call: Promise<unknown>, statusCode: number, code: string): Promise<void> {
   await assert.rejects(call, (error: unknown) => {
-    const { statusCode: actualStatus, body } = error as { statusCode?: number; body?: { code?: string } };
+    const { statusCode: actualStatus, body } = error as { statusCode?: number; body?: { code?: string; error?: string } };
     assert.equal(actualStatus, statusCode);
-    assert.equal(body?.code, code);
+    assert.equal(body?.code ?? body?.error, code);
     return true;
   });
 }
 
-async function registerClients(auth: LocalAuth, signedInOperator: HttpAgent) {
-  const headers = new Headers({ Cookie: signedInOperator.cookieHeader() });
-  const native = await auth.api.adminCreateOAuthClient({
-    headers,
-    body: {
-      client_name: 'Native MCP client',
-      redirect_uris: [loopbackRedirectUri],
-      token_endpoint_auth_method: 'none',
-      grant_types: ['authorization_code', 'refresh_token'],
-      response_types: ['code'],
-      application_type: 'native',
-      skip_consent: true,
-    },
-  });
-  const resourceServer = await auth.api.adminCreateOAuthClient({
-    headers,
-    body: {
-      client_name: 'Magumagu MCP resource server',
-      token_endpoint_auth_method: 'client_secret_basic',
-      grant_types: ['client_credentials'],
-    },
-  });
+async function registerClients(auth: LocalAuth, account: AccountCredentials) {
+  const registrations = await withRegistrationSession(auth, account, async (headers) => [
+    await auth.api.adminCreateOAuthClient({ headers, body: nativeClientMetadata() }),
+    await auth.api.adminCreateOAuthClient({
+      headers,
+      body: {
+        client_name: 'Magumagu MCP resource server',
+        token_endpoint_auth_method: 'client_secret_basic',
+        grant_types: ['client_credentials'],
+      },
+    }),
+  ] as const);
+  const [native, resourceServer] = registrations;
   assert.ok(resourceServer.client_secret, 'a confidential client receives a secret');
   return {
+    registrations,
     native: new PreRegisteredNativeClient(auth, native.client_id),
     resourceServer: new ResourceServerClient(auth, resourceServer.client_id, resourceServer.client_secret),
   };
@@ -81,15 +90,10 @@ async function twoUsersWithGrants(t: TestContext) {
   const bob = await createAccount(auth, 'bob@example.com', 'bob-password-1');
   const aliceBrowser = await signedIn(auth, 'alice@example.com', 'alice-password-1');
   const bobBrowser = await signedIn(auth, 'bob@example.com', 'bob-password-1');
-  const { native, resourceServer } = await registerClients(auth, aliceBrowser);
+  const { native, resourceServer } = await registerClients(auth, alicesAccount);
   const aliceTokens = await native.authorize(aliceBrowser);
   const bobTokens = await native.authorize(bobBrowser);
-  return { auth, alice, bob, aliceBrowser, native, resourceServer, aliceTokens, bobTokens };
-}
-
-function refreshTokenOf(tokens: TokenResponse): string {
-  assert.ok(tokens.refresh_token, 'an offline grant includes a refresh token');
-  return tokens.refresh_token;
+  return { auth, alice, bob, aliceBrowser, bobBrowser, native, resourceServer, aliceTokens, bobTokens };
 }
 
 function assertMcpAudience(token: string): void {
@@ -203,8 +207,31 @@ describe('Pinned Better Auth local provider contracts', () => {
     });
   });
 
+  describe('Headless client registration', () => {
+    test('Given an enabled account, when the server signs it in without HTTP, registers the approved clients with that session, and deletes the session, then the installation owns the clients, no session stays, and the clients serve another user; a disabled account cannot sign in to register', async (t) => {
+      const auth = await localProvider(t);
+      const alice = await createAccount(auth, 'alice@example.com', 'alice-password-1');
+      await createAccount(auth, 'bob@example.com', 'bob-password-1');
+      const carol = await createAccount(auth, 'carol@example.com', 'carol-password-1');
+      const provider = await auth.$context;
+      await provider.internalAdapter.updateUser(carol.id, { banned: true });
+
+      const { registrations, native, resourceServer } = await registerClients(auth, alicesAccount);
+      const disabledRegistration = registerClients(auth, { email: 'carol@example.com', password: 'carol-password-1' });
+
+      await assertProviderError(disabledRegistration, 403, 'BANNED_USER');
+      assert.deepEqual(
+        registrations.map(({ reference_id, user_id }) => ({ reference_id, user_id })),
+        [{ reference_id: localInstallationId, user_id: undefined }, { reference_id: localInstallationId, user_id: undefined }],
+      );
+      assert.deepEqual(await provider.internalAdapter.listSessions(alice.id), []);
+      const bobTokens = await native.authorize(await signedIn(auth, 'bob@example.com', 'bob-password-1'));
+      assert.equal((await resourceServer.introspect(bobTokens.access_token)).active, true);
+    });
+  });
+
   describe('MCP authorization and introspection', () => {
-    test('Given a pre-registered native client, when a signed-in user authorizes with PKCE and the MCP resource, then the token is a JWT bound to the MCP resource, the user, the client, and the browser session', async (t) => {
+    test('Given a pre-registered native client, when a signed-in user authorizes with PKCE and the MCP resource, then the token is a JWT bound to the MCP resource, the user, the client, and the browser session, and no refresh token comes with it', async (t) => {
       const { alice, aliceBrowser, native, aliceTokens } = await twoUsersWithGrants(t);
 
       const [header = ''] = aliceTokens.access_token.split('.');
@@ -216,11 +243,11 @@ describe('Pinned Better Auth local provider contracts', () => {
       assertMcpAudience(aliceTokens.access_token);
       assert.equal(claims.client_id, native.clientId);
       assert.equal(claims.azp, native.clientId);
-      assert.equal(claims.scope, 'openid offline_access');
+      assert.equal(claims.scope, 'openid');
       assert.equal(claims.sid, await aliceBrowser.sessionId());
       assert.equal(Number(claims.exp) - Number(claims.iat), 3_600);
       assert.equal(aliceTokens.token_type, 'Bearer');
-      assert.equal(typeof refreshTokenOf(aliceTokens), 'string');
+      assert.equal(aliceTokens.refresh_token, undefined);
     });
 
     test('Given an MCP access token, when the linked resource-server client introspects it, then it is active with its claims; a public client, a wrong secret, and an unknown token get no claims', async (t) => {
@@ -258,36 +285,15 @@ describe('Pinned Better Auth local provider contracts', () => {
       assert.equal((await resourceServer.introspect(bobTokens.access_token)).active, true);
     });
 
-    test('Given an offline grant, when the client refreshes, then it gets a new resource-bound access token and refresh token, and a repeat of the used refresh token within 30 seconds returns the same response', async (t) => {
-      const { alice, native, resourceServer, aliceTokens } = await twoUsersWithGrants(t);
-
-      const first = await native.refresh(refreshTokenOf(aliceTokens));
-      const firstTokens = await first.json() as TokenResponse;
-      const repeat = await native.refresh(refreshTokenOf(aliceTokens));
-      const repeatTokens = await repeat.json() as TokenResponse;
-
-      assert.equal(first.status, 200);
-      assert.notEqual(refreshTokenOf(firstTokens), refreshTokenOf(aliceTokens));
-      assert.notEqual(firstTokens.access_token, aliceTokens.access_token);
-      assert.equal(jwtClaims(firstTokens.access_token).sub, alice.id);
-      assertMcpAudience(firstTokens.access_token);
-      assert.equal((await resourceServer.introspect(firstTokens.access_token)).active, true);
-      assert.equal(repeat.status, 200);
-      assert.deepEqual(
-        { access: repeatTokens.access_token, refresh: repeatTokens.refresh_token },
-        { access: firstTokens.access_token, refresh: firstTokens.refresh_token },
-      );
-    });
-
-    test('Given the MCP TypeScript SDK client with a pre-registered client ID, when it discovers, authorizes, exchanges the code, and refreshes, then it receives tokens bound to the MCP resource', async (t) => {
+    test('Given the MCP TypeScript SDK client with a pre-registered client ID, when it discovers, authorizes, and exchanges the code, then it gets a session-bound MCP token without a refresh token; when that token expires, it authorizes again, and the live browser session completes that without consent', async (t) => {
       const auth = await localProvider(t);
       const alice = await createAccount(auth, 'alice@example.com', 'alice-password-1');
       const browser = await signedIn(auth, 'alice@example.com', 'alice-password-1');
-      const { native } = await registerClients(auth, browser);
+      const { native } = await registerClients(auth, alicesAccount);
       const client = new PreRegisteredSdkClient(native.clientId);
       const fetchFn = sdkFetch(auth);
 
-      const start = await runMcpAuthorization(client, { serverUrl: mcpResourceUrl, fetchFn, scope: 'openid offline_access' });
+      const start = await runMcpAuthorization(client, { serverUrl: mcpResourceUrl, fetchFn });
       const callback = await followAuthorizationWithConsent(browser, client.authorizationPath());
       const exchange = await runMcpAuthorization(client, {
         serverUrl: mcpResourceUrl,
@@ -297,12 +303,23 @@ describe('Pinned Better Auth local provider contracts', () => {
       });
       const first = client.savedTokens();
       client.expireAccessToken();
-      const refresh = await runMcpAuthorization(client, { serverUrl: mcpResourceUrl, fetchFn });
+      const restart = await runMcpAuthorization(client, { serverUrl: mcpResourceUrl, fetchFn });
+      const silentAuthorization = await browser.request('GET', client.authorizationPath(), { origin: null });
+      const silentCallback = new URL(silentAuthorization.headers.get('Location') ?? '', authIssuer);
+      const second = await runMcpAuthorization(client, {
+        serverUrl: mcpResourceUrl,
+        fetchFn,
+        authorizationCode: silentCallback.searchParams.get('code') ?? '',
+        iss: silentCallback.searchParams.get('iss') ?? undefined,
+      });
 
-      assert.deepEqual([start, exchange, refresh], ['REDIRECT', 'AUTHORIZED', 'AUTHORIZED']);
+      assert.deepEqual([start, exchange, restart, second], ['REDIRECT', 'AUTHORIZED', 'REDIRECT', 'AUTHORIZED']);
       assert.equal(jwtClaims(first.access_token).sub, alice.id);
-      assert.notEqual(client.savedTokens().access_token, first.access_token);
+      assert.equal(jwtClaims(first.access_token).sid, await browser.sessionId());
+      assert.equal(first.refresh_token, undefined);
       assertMcpAudience(first.access_token);
+      assert.equal(`${silentCallback.origin}${silentCallback.pathname}`, loopbackRedirectUri);
+      assert.notEqual(client.savedTokens().access_token, first.access_token);
       assertMcpAudience(client.savedTokens().access_token);
     });
 
@@ -340,6 +357,84 @@ describe('Pinned Better Auth local provider contracts', () => {
         assert.equal(metadata.introspection_endpoint, `${authIssuer}/oauth2/introspect`);
         assert.deepEqual(metadata.code_challenge_methods_supported, ['S256']);
       }
+    });
+  });
+
+  describe('Session-bound MCP grants', () => {
+    test('Given the local provider issues no offline grants, when a client asks for offline_access, an approved client is registered with the refresh grant or offline_access, or a client posts a refresh grant, then the provider refuses each, and its metadata offers neither', async (t) => {
+      const { auth, aliceBrowser, native, aliceTokens } = await twoUsersWithGrants(t);
+
+      const offlineAuthorization = await aliceBrowser.request('GET', native.authorizationRequest('openid offline_access').path, { origin: null });
+      await withRegistrationSession(auth, alicesAccount, async (headers) => {
+        const refreshClient = auth.api.adminCreateOAuthClient({ headers, body: { ...nativeClientMetadata(), grant_types: ['authorization_code', 'refresh_token'] } });
+        await assertProviderError(refreshClient, 400, 'invalid_client_metadata');
+        const offlineClient = auth.api.adminCreateOAuthClient({ headers, body: { ...nativeClientMetadata(), scope: 'openid offline_access' } });
+        await assertProviderError(offlineClient, 400, 'invalid_scope');
+      });
+      const refresh = await native.refresh(aliceTokens.access_token);
+      const metadata = await (await aliceBrowser.request('GET', '/.well-known/oauth-authorization-server/api/auth', { origin: null })).json() as {
+        scopes_supported: string[];
+        grant_types_supported: string[];
+      };
+
+      const refusal = new URL(offlineAuthorization.headers.get('Location') ?? '', authIssuer);
+      assert.equal(`${refusal.origin}${refusal.pathname}`, loopbackRedirectUri);
+      assert.equal(refusal.searchParams.get('error'), 'invalid_scope');
+      assert.equal(refusal.searchParams.get('code'), null);
+      assert.equal(refresh.status, 400);
+      assert.equal(await errorCodeOf(refresh), 'unsupported_grant_type');
+      assert.deepEqual(metadata.scopes_supported, ['openid', 'profile', 'email']);
+      assert.deepEqual(metadata.grant_types_supported, ['authorization_code', 'client_credentials']);
+    });
+
+    test('Given two users with session-bound MCP tokens, when one user signs out in the browser, then introspection reports only that user\'s token inactive', async (t) => {
+      const { aliceBrowser, resourceServer, aliceTokens, bobTokens } = await twoUsersWithGrants(t);
+
+      const signOut = await aliceBrowser.request('POST', '/api/auth/sign-out', { json: {} });
+
+      assert.equal(signOut.status, 200);
+      assert.deepEqual(await resourceServer.introspect(aliceTokens.access_token), { active: false });
+      assert.equal((await resourceServer.introspect(bobTokens.access_token)).active, true);
+    });
+
+    test('Given two users with session-bound MCP tokens, when one user\'s password is reset through the private operations, then that user\'s old password and token fail, the new password gives that user a new active token, and the peer\'s token stays active', async (t) => {
+      const { auth, alice, native, resourceServer, aliceTokens, bobTokens } = await twoUsersWithGrants(t);
+      const provider = await auth.$context;
+
+      await provider.internalAdapter.updatePassword(alice.id, await provider.password.hash('alice-password-2'));
+      await provider.internalAdapter.deleteUserSessions(alice.id);
+
+      assert.equal((await new HttpAgent(auth).signIn('alice@example.com', 'alice-password-1')).status, 401);
+      assert.deepEqual(await resourceServer.introspect(aliceTokens.access_token), { active: false });
+      const newTokens = await native.authorize(await signedIn(auth, 'alice@example.com', 'alice-password-2'));
+      const renewed = await resourceServer.introspect(newTokens.access_token);
+      assert.deepEqual({ active: renewed.active, sub: renewed.sub }, { active: true, sub: alice.id });
+      assert.equal((await resourceServer.introspect(bobTokens.access_token)).active, true);
+    });
+
+    test('Given two users with session-bound MCP tokens and a pending authorization code for one, when that user is disabled through the private operations, then sign-in, the code exchange, a new authorization, a refresh request, and the old token fail, and the peer\'s token stays active', async (t) => {
+      const { auth, bob, bobBrowser, native, resourceServer, aliceTokens, bobTokens } = await twoUsersWithGrants(t);
+      const pending = native.authorizationRequest();
+      const pendingCallback = await followAuthorizationWithConsent(bobBrowser, pending.path);
+      const provider = await auth.$context;
+
+      await provider.internalAdapter.updateUser(bob.id, { banned: true });
+      await provider.internalAdapter.deleteUserSessions(bob.id);
+
+      const login = await new HttpAgent(auth).signIn('bob@example.com', 'bob-password-1');
+      const exchange = await native.exchange(pendingCallback, pending.verifier);
+      const authorization = await bobBrowser.request('GET', native.authorizationRequest().path, { origin: null });
+      const refresh = await native.refresh(bobTokens.access_token);
+
+      assert.equal(login.status, 403);
+      assert.equal(await errorCodeOf(login), 'BANNED_USER');
+      assert.equal(exchange.status, 400);
+      assert.deepEqual(await exchange.json(), { error: 'invalid_request', error_description: 'session no longer exists' });
+      assert.match(authorization.headers.get('Location') ?? '', /^\/sign-in\?/);
+      assert.equal(refresh.status, 400);
+      assert.equal(await errorCodeOf(refresh), 'unsupported_grant_type');
+      assert.deepEqual(await resourceServer.introspect(bobTokens.access_token), { active: false });
+      assert.equal((await resourceServer.introspect(aliceTokens.access_token)).active, true);
     });
   });
 
@@ -390,9 +485,10 @@ describe('Pinned Better Auth local provider contracts', () => {
       assert.equal((await new HttpAgent(auth).signIn('alice@example.com', 'alice-password-1')).status, 200);
     });
 
-    test('Given private provider routes, when a signed-in user calls the admin, client-management, or session-JWT route over HTTP, then the router refuses them', async (t) => {
+    test('Given private provider routes and installation clients, when a signed-in user calls the admin, client-management, client-secret, or session-JWT route over HTTP, then the router refuses each and the resource-server secret still works', async (t) => {
       const auth = await localProvider(t);
       await createAccount(auth, 'alice@example.com', 'alice-password-1');
+      const { registrations: [, { client_id: resourceServerId }], resourceServer } = await registerClients(auth, alicesAccount);
       const browser = await signedIn(auth, 'alice@example.com', 'alice-password-1');
 
       const responses = [
@@ -400,34 +496,14 @@ describe('Pinned Better Auth local provider contracts', () => {
         await browser.request('POST', '/api/auth/oauth2/create-client', {
           json: { redirect_uris: [loopbackRedirectUri], token_endpoint_auth_method: 'none', application_type: 'native' },
         }),
+        await browser.request('GET', `/api/auth/oauth2/get-client?client_id=${resourceServerId}`, { origin: null }),
+        await browser.request('POST', '/api/auth/oauth2/client/rotate-secret', { json: { client_id: resourceServerId } }),
         await browser.request('GET', '/api/auth/token', { origin: null }),
       ];
 
-      assert.deepEqual(responses.map(({ status }) => status), [404, 404, 404]);
+      assert.deepEqual(responses.map(({ status }) => status), [404, 404, 404, 404, 404]);
       assert.equal(await (await auth.$context).internalAdapter.countTotalUsers(), 1);
-    });
-  });
-
-  describe('Revocation of offline grants', () => {
-    test('Given two users with offline grants, when one user\'s password is reset through the private operations, then that user\'s old refresh token fails and the peer\'s refresh token still works', { todo: unsupportedRefreshRevocation }, async (t) => {
-      const { auth, alice, native, aliceTokens, bobTokens } = await twoUsersWithGrants(t);
-      const provider = await auth.$context;
-
-      await provider.internalAdapter.updatePassword(alice.id, await provider.password.hash('alice-password-2'));
-      await provider.internalAdapter.deleteUserSessions(alice.id);
-
-      assert.equal((await native.refresh(refreshTokenOf(aliceTokens))).status, 400);
-      assert.equal((await native.refresh(refreshTokenOf(bobTokens))).status, 200);
-    });
-
-    test('Given a disabled user with an offline grant, when the user\'s refresh token is used, then refresh fails', { todo: unsupportedRefreshRevocation }, async (t) => {
-      const { auth, bob, native, bobTokens } = await twoUsersWithGrants(t);
-      const provider = await auth.$context;
-
-      await provider.internalAdapter.updateUser(bob.id, { banned: true });
-      await provider.internalAdapter.deleteUserSessions(bob.id);
-
-      assert.equal((await native.refresh(refreshTokenOf(bobTokens))).status, 400);
+      assert.deepEqual(await resourceServer.introspect('unknown-token'), { active: false });
     });
   });
 });

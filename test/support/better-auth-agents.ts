@@ -121,6 +121,11 @@ export async function followAuthorizationWithConsent(browser: HttpAgent, authori
   return new URL(url);
 }
 
+export interface AuthorizationRequest {
+  readonly path: string;
+  readonly verifier: string;
+}
+
 export class PreRegisteredNativeClient {
   readonly clientId: string;
   private readonly agent: HttpAgent;
@@ -130,7 +135,7 @@ export class PreRegisteredNativeClient {
     this.agent = new HttpAgent(auth);
   }
 
-  async authorize(browser: HttpAgent, scope = 'openid offline_access'): Promise<TokenResponse> {
+  authorizationRequest(scope = 'openid'): AuthorizationRequest {
     const { verifier, challenge } = pkcePair();
     const query = new URLSearchParams({
       response_type: 'code',
@@ -142,17 +147,21 @@ export class PreRegisteredNativeClient {
       code_challenge_method: 'S256',
       resource: mcpResourceUrl,
     });
-    const callback = await followAuthorizationWithConsent(browser, `/api/auth/oauth2/authorize?${query}`);
-    const code = callback.searchParams.get('code');
-    assert.ok(code, `authorization returned no code: ${callback.href}`);
-    const response = await this.token({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: loopbackRedirectUri,
-      code_verifier: verifier,
-    });
+    return { path: `/api/auth/oauth2/authorize?${query}`, verifier };
+  }
+
+  async authorize(browser: HttpAgent, scope = 'openid'): Promise<TokenResponse> {
+    const request = this.authorizationRequest(scope);
+    const callback = await followAuthorizationWithConsent(browser, request.path);
+    const response = await this.exchange(callback, request.verifier);
     assert.equal(response.status, 200, await response.clone().text());
     return await response.json() as TokenResponse;
+  }
+
+  async exchange(callback: URL, verifier: string): Promise<Response> {
+    const code = callback.searchParams.get('code');
+    assert.ok(code, `authorization returned no code: ${callback.href}`);
+    return this.token({ grant_type: 'authorization_code', code, redirect_uri: loopbackRedirectUri, code_verifier: verifier });
   }
 
   async refresh(refreshToken: string): Promise<Response> {
