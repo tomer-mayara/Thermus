@@ -35,8 +35,15 @@ export async function shownPage(browser: HostedBrowser, path: string): Promise<S
   return { answer, forms: formsIn(answer.body) };
 }
 
-// Opens the page, as a person does, and submits the form with this button, with the visible fields filled in.
-export async function submitOnPage(browser: HostedBrowser, path: string, label: string, filled: Readonly<Record<string, string>> = {}): Promise<BrowserAnswer> {
+// The button of a form and the values of its visible fields.
+export interface FilledForm {
+  readonly label: string;
+  readonly filled: Readonly<Record<string, string>>;
+}
+
+// Opens the page, as a person does, and submits the form with this button, with its visible fields filled in.
+export async function submitOnPage(browser: HostedBrowser, path: string, choice: string | FilledForm): Promise<BrowserAnswer> {
+  const { label, filled } = typeof choice === 'string' ? { label: choice, filled: {} } : choice;
   const { answer, forms } = await shownPage(browser, path);
   assert.equal(answer.status, 200, answer.body);
   const form = formFor(forms, label);

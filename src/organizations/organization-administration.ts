@@ -225,13 +225,43 @@ export interface OrganizationAdministrationOptions {
   readonly clock?: () => Date;
 }
 
-// Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user. The
-// external operator sets up organizations and their Super Admins outside this service, so it has no method for them.
+const ASSIGNABLE_ROLES: readonly AssignableRole[] = Object.freeze(['user', 'admin']);
+// The permission that an actor needs in the organization to grant, revoke, or invite each customer role. No customer
+// permission manages Super Admin.
+const MANAGING_PERMISSION: Readonly<Record<AssignableRole, string>> = Object.freeze({ user: 'user-grants:manage', admin: 'admin-grants:manage' });
+const GRANT_ACTIONS: readonly GrantAction[] = Object.freeze(['grant', 'revoke']);
+const MEMBER_STATUSES: readonly MembershipStatus[] = Object.freeze(['active', 'inactive', 'pending']);
+const INVITATION_STATES: readonly InvitationState[] = Object.freeze(['pending', 'accepted', 'revoked', 'expired']);
+const GRANT_RESULTS: ReadonlyMap<string, ChangeResult> = new Map([['applied', 'applied'], ['stale', 'stale'], ['unsupported', 'unsupported']]);
+const SEND_RESULTS: ReadonlyMap<string, ChangeResult> = new Map([['sent', 'applied'], ['unsupported', 'unsupported']]);
+const UPDATE_RESULTS: ReadonlyMap<string, ChangeResult> = new Map([['applied', 'applied'], ['not-pending', 'not-pending'], ['unsupported', 'unsupported']]);
+const PAGE_LIMIT = 1_000;
+
+// The rest of a change after its checks: its one directory change, which gives the result.
+type DirectoryChange = () => Promise<ChangeResult>;
+
+// The record of a change in progress. The role of an invitation change is known after the invitation is read.
+interface ChangeEntry {
+  readonly actor: Actor;
+  readonly organizationId: string;
+  readonly target: ChangeTarget;
+  readonly action: string;
+  role?: string;
+}
+
+// Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user, and
+// the User and Admin grants, the invitations, and the User seats of an organization. Each operation reads the current
+// actor and target state for the organization of the request, and each change keeps a record. The external operator
+// sets up organizations and their Super Admins outside this service, so it has no method for them.
 export class OrganizationAdministration {
   private readonly directory: OrganizationDirectory;
+  private readonly records: ChangeRecorder;
+  private readonly clock: () => Date;
 
   constructor(options: OrganizationAdministrationOptions) {
     this.directory = options.directory;
+    this.records = options.records;
+    this.clock = options.clock ?? (() => new Date());
   }
 
   // Only active memberships whose grants give at least one application permission, because a default role gives none.
@@ -250,8 +280,203 @@ export class OrganizationAdministration {
     const organizations = await this.listOrganizations(user);
     return organizations.find((organization) => organization.organizationId === organizationId);
   }
+
+  // The members of the organization, each with the changes that the actor can make, and the active User seats. A
+  // failed page fails the overview, so that no partial count is shown.
+  async memberOverview(actor: Actor, organizationId: string): Promise<MemberOverview | AdministrationRefusal> {
+    const authority = await this.authorityOf(actor, organizationId);
+    if (typeof authority === 'string') return authority;
+    const pages = await everyPage((cursor) => this.directory.memberPage({ organizationId, statuses: MEMBER_STATUSES, cursor }));
+    const members = latestOfEach(pages, ({ membershipId }) => membershipId).filter((member) => member.organizationId === organizationId);
+    return deepFreeze({
+      organizationId,
+      members: members.map((member) => memberEntry(member, authority)),
+      activeUserSeats: members.filter(holdsUserSeat).length,
+    });
+  }
+
+  // A grant or a revoke of one customer role of one active membership of the organization. The actor needs the
+  // authority for that role there now, and the membership must still have the revision that the actor saw. The
+  // directory changes only that role, so that each grant outside the authority of the actor stays.
+  async changeGrant(actor: Actor, request: GrantChangeRequest): Promise<ChangeResult> {
+    const target = { membershipId: request.membershipId };
+    const entry: ChangeEntry = { actor, organizationId: request.organizationId, target, action: request.action, role: request.role };
+    return this.recordedChange(entry, () => this.checkedGrantChange(actor, request));
+  }
+
+  async invitationOverview(actor: Actor, organizationId: string): Promise<InvitationOverview | AdministrationRefusal> {
+    const authority = await this.authorityOf(actor, organizationId);
+    if (typeof authority === 'string') return authority;
+    const pages = await everyPage((cursor) => this.directory.invitationPage({ organizationId, states: INVITATION_STATES, cursor }));
+    const invitations = latestOfEach(pages, ({ invitationId }) => invitationId).filter((invitation) => invitation.organizationId === organizationId);
+    return deepFreeze({
+      organizationId,
+      invitations: invitations.map((invitation) => invitationEntry(invitation, authority)),
+      invitableRoles: [...authority],
+      identityPolicy: this.directory.invitationIdentityPolicy,
+    });
+  }
+
+  // An invitation of the organization gives only the role that it names, so that an Admin invitation gives no User
+  // access. The directory owns the acceptance.
+  async sendInvitation(actor: Actor, request: InvitationSendRequest): Promise<ChangeResult> {
+    const entry: ChangeEntry = { actor, organizationId: request.organizationId, target: { email: request.email }, action: 'invite', role: request.role };
+    return this.recordedChange(entry, async () => {
+      const authority = await this.authorityOf(actor, request.organizationId);
+      if (typeof authority === 'string') return authority;
+      const role = authority.find((candidate) => candidate === request.role);
+      if (role === undefined) return 'denied';
+      const invitation = { organizationId: request.organizationId, email: request.email, role };
+      return async () => explicitResult(await this.directory.sendInvitation(invitation), SEND_RESULTS);
+    });
+  }
+
+  async resendInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult> {
+    return this.changeInvitation(actor, request, 'resend');
+  }
+
+  async revokeInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult> {
+    return this.changeInvitation(actor, request, 'revoke');
+  }
+
+  private async checkedGrantChange(actor: Actor, request: GrantChangeRequest): Promise<ChangeResult | DirectoryChange> {
+    const authority = await this.authorityOf(actor, request.organizationId);
+    if (typeof authority === 'string') return authority;
+    const role = authority.find((candidate) => candidate === request.role);
+    const action = GRANT_ACTIONS.find((candidate) => candidate === request.action);
+    if (role === undefined || action === undefined) return 'denied';
+    const target = await this.directory.member(request.membershipId);
+    if (target?.organizationId !== request.organizationId || target.status !== 'active') return 'denied';
+    if (target.revision !== request.revision) return 'stale';
+    if (hasRole(target, role) === (action === 'grant')) return 'unchanged';
+    const change = { membershipId: target.membershipId, role, action, revision: target.revision };
+    return async () => explicitResult(await this.directory.changeGrant(change), GRANT_RESULTS);
+  }
+
+  // A resend or a revoke of a pending invitation of the organization, for a role of the authority of the actor.
+  private async changeInvitation(actor: Actor, request: InvitationChangeRequest, change: InvitationChange): Promise<ChangeResult> {
+    const entry: ChangeEntry = { actor, organizationId: request.organizationId, target: { invitationId: request.invitationId }, action: `${change}-invitation` };
+    return this.recordedChange(entry, async () => {
+      const authority = await this.authorityOf(actor, request.organizationId);
+      if (typeof authority === 'string') return authority;
+      const invitation = await this.directory.invitation(request.invitationId);
+      entry.role = invitation?.role;
+      if (invitation?.organizationId !== request.organizationId || !authority.some((role) => role === invitation.role)) return 'denied';
+      if (invitation.state !== 'pending') return 'not-pending';
+      const { invitationId } = invitation;
+      return async () => explicitResult(await (change === 'resend' ? this.directory.resendInvitation(invitationId) : this.directory.revokeInvitation(invitationId)), UPDATE_RESULTS);
+    });
+  }
+
+  // The customer roles that the actor can change in the organization now, from a current read of its own active
+  // membership there. The organization comes from the request; a selected organization of a session authorizes
+  // nothing. Each administration operation needs completed MFA.
+  private async authorityOf(actor: Actor, organizationId: string): Promise<readonly AssignableRole[] | AdministrationRefusal> {
+    if (actor.mfaCompleted !== true) return 'mfa-required';
+    const memberships = await this.directory.membershipsOf(actor.user);
+    const membership = memberships.find((candidate) => candidate.organizationId === organizationId && candidate.active);
+    const permissions = new Set(membership?.grants.flatMap((grant) => grant.permissions));
+    const roles = ASSIGNABLE_ROLES.filter((role) => permissions.has(MANAGING_PERMISSION[role]));
+    return roles.length === 0 ? 'denied' : roles;
+  }
+
+  // Runs the checks of a change with current reads, then its one directory change, and keeps a record of the outcome.
+  // A failure in the checks changed nothing ('failed'); a failure in the directory change leaves its effect unknown
+  // ('unknown'). The service never repeats a directory change by itself.
+  private async recordedChange(entry: ChangeEntry, check: () => Promise<ChangeResult | DirectoryChange>): Promise<ChangeResult> {
+    const checked = await this.recordingFailure(entry, 'failed', check);
+    const outcome = typeof checked === 'string' ? checked : await this.recordingFailure(entry, 'unknown', checked);
+    this.keepRecord(entry, outcome);
+    return outcome;
+  }
+
+  private async recordingFailure<T>(entry: ChangeEntry, outcome: 'failed' | 'unknown', work: () => Promise<T>): Promise<T> {
+    try {
+      return await work();
+    } catch (cause) {
+      this.keepRecord(entry, outcome);
+      throw cause;
+    }
+  }
+
+  // The record holds only these fields, so that no credential of the session or of an invitation reaches it.
+  private keepRecord(entry: ChangeEntry, outcome: ChangeOutcome): void {
+    const { actor, organizationId, target, action, role } = entry;
+    this.records.record(deepFreeze({
+      time: this.clock().toISOString(),
+      actor: { authority: actor.user.authority, subject: actor.user.subject },
+      organizationId,
+      target: { ...target },
+      action,
+      ...(role === undefined ? {} : { role }),
+      outcome,
+    }));
+  }
 }
 
 function isAuthorized(membership: OrganizationMembership): boolean {
   return membership.active && membership.grants.some((grant) => grant.permissions.length > 0);
+}
+
+function hasRole(member: OrganizationMember, role: string): boolean {
+  return member.grants.some((grant) => grant.role === role);
+}
+
+// A seat is an active membership with User. Each membership counts once, also with Admin or Super Admin.
+function holdsUserSeat(member: OrganizationMember): boolean {
+  return member.status === 'active' && hasRole(member, 'user');
+}
+
+// Only an active membership can change, and only in the roles of the authority of the actor.
+function memberEntry(member: OrganizationMember, authority: readonly AssignableRole[]): MemberEntry {
+  const { membershipId, email, status, revision } = member;
+  const roles = [...new Set(member.grants.filter((grant) => grant.permissions.length > 0).map((grant) => grant.role))];
+  const changes = status === 'active' ? authority.map((role): MemberChange => ({ role, action: hasRole(member, role) ? 'revoke' : 'grant' })) : [];
+  return { membershipId, email, status, roles, revision, changes };
+}
+
+// The entry copies only the fields of the contract, so that an invitation token of the provider stays out.
+function invitationEntry(invitation: OrganizationInvitation, authority: readonly AssignableRole[]): InvitationEntry {
+  const { invitationId, email, role, state } = invitation;
+  const changeable = state === 'pending' && authority.some((manageable) => manageable === role);
+  return { invitationId, email, role, state, changes: changeable ? ['resend', 'revoke'] : [] };
+}
+
+// Only an explicit result of the directory counts. Another answer leaves the effect unknown, so the change fails.
+function explicitResult(result: unknown, results: ReadonlyMap<string, ChangeResult>): ChangeResult {
+  const outcome = typeof result === 'object' && result !== null && 'outcome' in result ? results.get(String(result.outcome)) : undefined;
+  if (outcome === undefined) throw new Error('The directory gave no explicit result for the change');
+  return outcome;
+}
+
+// Reads each page of a paged read in order. A read that does not end fails, with a repeated cursor or after
+// PAGE_LIMIT pages, so that no partial result looks complete.
+async function everyPage<T>(read: (cursor: string | undefined) => Promise<Page<T>>): Promise<readonly T[]> {
+  const records: T[] = [];
+  const cursors = new Set<string>();
+  let cursor: string | undefined;
+  for (let pages = 0; pages < PAGE_LIMIT; pages += 1) {
+    const page = await read(cursor);
+    records.push(...page.items);
+    if (page.next === undefined) return records;
+    if (cursors.has(page.next)) throw new Error('The directory repeated a page cursor');
+    cursors.add(page.next);
+    cursor = page.next;
+  }
+  throw new Error(`The directory gave more than ${PAGE_LIMIT} pages`);
+}
+
+// Each record once, by its ID. When pages repeat a record, the later page decides, because its read is more recent.
+function latestOfEach<T>(records: readonly T[], idOf: (record: T) => string): T[] {
+  const latest = new Map<string, T>();
+  for (const record of records) latest.set(idOf(record), record);
+  return [...latest.values()];
+}
+
+function deepFreeze<T>(value: T): T {
+  if (typeof value === 'object' && value !== null) {
+    for (const nested of Object.values(value)) deepFreeze(nested);
+    Object.freeze(value);
+  }
+  return value;
 }

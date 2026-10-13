@@ -27,8 +27,8 @@ describe('Hosted invitations and the User seat summary through the public routes
     const evePage = await shownPage(eve, 'invitations');
     const samPage = await shownPage(sam, 'invitations');
 
-    const userInvitation = await submitOnPage(eve, 'invitations', 'Invite as User', { email: 'new.user@example.com' });
-    const adminInvitation = await submitOnPage(sam, 'invitations', 'Invite as Admin', { email: 'new.admin@example.com' });
+    const userInvitation = await submitOnPage(eve, 'invitations', { label: 'Invite as User', filled: { email: 'new.user@example.com' } });
+    const adminInvitation = await submitOnPage(sam, 'invitations', { label: 'Invite as Admin', filled: { email: 'new.admin@example.com' } });
     const inviteUser = formFor(evePage.forms, 'Invite as User');
     const inviteAdmin = formFor(samPage.forms, 'Invite as Admin');
     const forged = [
