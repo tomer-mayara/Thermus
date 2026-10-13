@@ -7,7 +7,7 @@ import type { AccountFailureReporter } from '../../src/hosted-admin/account-rout
 import { startHttpServer } from '../../src/http/server.ts';
 import type { VerifiedIdentity } from '../../src/mcp/identity-verifier.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
-import type { ChangeRecord } from '../../src/organizations/organization-administration.ts';
+import type { ChangeRecord, ChangeRecorder } from '../../src/organizations/organization-administration.ts';
 import { IdentityVerifierMock } from '../unit/mcp/fixtures/identity-verifier-mock.ts';
 import { mcpRequest, rpcResult } from '../unit/mcp/fixtures/mcp-http-request.ts';
 import { AccountOperationProbe } from './account-operation-probe.ts';
@@ -60,6 +60,8 @@ export interface SiteSetup {
   readonly mcpTokens?: ReadonlyMap<string, AuthenticatedUser>;
   // The memberships of the directory. The default is `members`.
   readonly memberships?: readonly MembershipRecord[];
+  // Gets each change record too, after the site keeps it in `records`.
+  readonly changeRecords?: ChangeRecorder;
 }
 
 export interface OrganizationSite {
@@ -127,7 +129,7 @@ function composeSite(setup: SiteSetup) {
   const application = composeHostedApplication(
     hostedConfig,
     { session: sessions, accessResolver: directory, organizations: directory, mcp },
-    { reportFailure: setup.reportFailure, changeRecords: { record: (entry) => records.push(entry) }, operation: pages.operation },
+    { reportFailure: setup.reportFailure, changeRecords: { record: (entry) => { records.push(entry); setup.changeRecords?.record(entry); } }, operation: pages.operation },
   );
   return { application, sessions, directory, pages, tools, records };
 }

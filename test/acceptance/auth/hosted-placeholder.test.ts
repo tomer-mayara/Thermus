@@ -42,6 +42,12 @@ const protectedOperations: readonly ProtectedOperation[] = [
   { area: 'organization', path: '/organizations/select', init: formPost({ organizationId: forgedOrganization }) },
   { area: 'organization', path: '/organizations/grants', init: formPost({ organizationId: forgedOrganization, userId: 'user_01FORGEDUSER', role: 'admin' }) },
   { area: 'organization', path: '/organizations/invitations', init: formPost({ organizationId: forgedOrganization, email: 'eve@example.com', role: 'user' }) },
+  { area: 'organization', path: `/members?organizationId=${forgedOrganization}`, init: { headers: { Cookie: forgedCookie, 'X-Organization-Id': forgedOrganization } } },
+  { area: 'organization', path: '/members/grants', init: formPost({ csrf_token: 'forged-token', organization_id: forgedOrganization, membership_id: 'om_01FORGED', revision: 'r1', role: 'super-admin', action: 'grant' }) },
+  { area: 'organization', path: '/invitations', init: { headers: { Cookie: forgedCookie } } },
+  { area: 'organization', path: '/invitations/send', init: formPost({ csrf_token: 'forged-token', organization_id: forgedOrganization, role: 'admin', email: 'eve@example.com' }) },
+  { area: 'organization', path: '/invitations/resend', init: formPost({ csrf_token: 'forged-token', organization_id: forgedOrganization, invitation_id: 'invitation_01FORGED' }) },
+  { area: 'organization', path: '/invitations/revoke', init: formPost({ csrf_token: 'forged-token', organization_id: forgedOrganization, invitation_id: 'invitation_01FORGED' }) },
   { area: 'billing', path: `/billing?organizationId=${forgedOrganization}`, init: { headers: { Cookie: forgedCookie } } },
   { area: 'billing', path: '/billing/seats', init: formPost({ organizationId: forgedOrganization, seatCount: '5' }) },
 ];
