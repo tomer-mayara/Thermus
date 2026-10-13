@@ -123,6 +123,8 @@ The tests set process environment variables and restore them at the end of each 
 **Data-directory lock** (`test/unit/auth-better-auth/data-directory-lock.test.ts`)
 
 [V] A second lock from the same process or from another process fails with `DataDirectoryInUseError` until the holder releases it or ends, also after `SIGKILL`
+[V] A lock that another process holds fails at once, in less than one second; the lock does not wait for its holder
+[V] Three processes that lock one fresh directory at the same time: exactly one gets the lock, and each other process gets `DataDirectoryInUseError`, in each of 50 rounds
 [V] A second release does nothing; the lock leaves only `data-directory.lock` in the directory
 [V] A missing directory or a regular file in its place fails with `DataDirectoryUnavailableError` and creates nothing
 
@@ -619,6 +621,7 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 [V] Given zero accounts, startup succeeds, MCP requests get a Bearer challenge, and no public route creates an account
 [V] Given only a disabled account, startup succeeds, MCP requests stay denied, and the account keeps its ID
 [V] Given two servers that start at the same time on a fresh directory, one serves, the other stops with a lock error before it listens, and one installation identity exists
+[V] Given a running server, a second server with the same data directory stops with a lock error before it listens, less than five seconds after its launch; each data file keeps its content, and the running server still serves
 [V] Given retained data without its installation identity, startup stops before it listens, asks for a restore, and creates no new identity
 [V] Given a restored copy of the complete data directory, the server starts with the same tenant; a restore without `auth.secret` stops before it listens
 [V] Given `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, or `BETTER_AUTH_TELEMETRY` with a value, startup stops before it listens with a `FATAL` line that names the variable but not its value

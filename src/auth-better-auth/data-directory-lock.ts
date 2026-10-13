@@ -23,15 +23,16 @@ export class DataDirectoryUnavailableError extends Error {
   }
 }
 
-// An open exclusive SQLite transaction is a system file lock: it also stops other connections
+// An open SQLite write transaction is a system file lock: it also stops other connections
 // in this process, and the system releases it when the process ends, also after a crash.
+// BEGIN IMMEDIATE takes the RESERVED lock, which has one holder and does not wait for readers.
+// BEGIN EXCLUSIVE must wait for readers, and two processes that start together can each make the other fail.
 export function lockDataDirectory(directory: string): DataDirectoryLock {
   requireDirectory(directory);
   const connection = new DatabaseSync(join(directory, LOCK_FILE));
   try {
     connection.exec('PRAGMA journal_mode = MEMORY');
-    connection.exec('PRAGMA locking_mode = EXCLUSIVE');
-    connection.exec('BEGIN EXCLUSIVE');
+    connection.exec('BEGIN IMMEDIATE');
   } catch (error) {
     connection.close();
     if (isBusy(error)) throw new DataDirectoryInUseError();

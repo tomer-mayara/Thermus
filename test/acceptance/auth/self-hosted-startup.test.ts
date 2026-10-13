@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cpSync, readdirSync, rmSync } from 'node:fs';
+import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
@@ -38,6 +38,10 @@ function mcpPost(token?: string): RequestInit {
 
 function jsonPost(body: unknown): RequestInit {
   return { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: publicBaseUrl }, body: JSON.stringify(body) };
+}
+
+function dataFiles(directory: string): Record<string, Buffer> {
+  return Object.fromEntries(readdirSync(directory).map((name) => [name, readFileSync(join(directory, name))]));
 }
 
 async function assertStopsBeforeListening(server: ServerProcess, message: RegExp): Promise<void> {
@@ -111,6 +115,21 @@ describe('Self-hosted server startup with one persistent installation', () => {
     const tenant = server.tenant();
     await server.stop();
     assert.deepEqual(storedInstallationIds(directory), [tenant.slice('local:'.length)]);
+  });
+
+  test('Given a running server, when another server starts with the same data directory, then it stops with a lock error before it listens, within five seconds, and changes no data', { timeout: 60_000 }, async (t) => {
+    const directory = dataDirectory(t);
+    const server = await ServerProcess.start(t, selfHostedSettings(directory));
+    const before = dataFiles(directory);
+    const launched = performance.now();
+
+    await assertStopsBeforeListening(ServerProcess.launch(t, selfHostedSettings(directory)), /in use by another/i);
+    const refusedAfter = performance.now() - launched;
+
+    assert.ok(refusedAfter < 5_000, `The second server stopped after ${refusedAfter} ms`);
+    assert.deepEqual(dataFiles(directory), before);
+    assert.equal((await server.request('/mcp', mcpPost())).status, 401);
+    await server.stop();
   });
 
   test('Given retained authentication data without its installation identity, when the server starts, then it stops before it listens, asks for operator recovery, and creates no new identity', { timeout: 60_000 }, async (t) => {
