@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { accountFailureReporter, operatorFailureReporter, routeHostedRequests, routeLocalRequests } from '../../src/application.ts';
+import { accountChangeRecorder, accountFailureReporter, operatorFailureReporter, routeHostedRequests, routeLocalRequests } from '../../src/application.ts';
 import type { FailureReport } from '../../src/mcp/mcp-server.ts';
+import type { ChangeRecord } from '../../src/organizations/organization-administration.ts';
 
 class RecordingLogger {
   readonly lines: string[] = [];
@@ -47,6 +48,35 @@ test('Given an account failure report, when the application gives it to the oper
     'ERROR An account request failed unexpectedly for /team/organizations: Error: organization directory timed out',
     'ERROR An account request failed unexpectedly for /team/organizations/select: session provider closed',
   ]);
+});
+
+test('Given privileged change records, when the hosted application keeps them, then the operator log gets one info line for each with the record as JSON, also for a value with a line break', () => {
+  const logger = new RecordingLogger();
+  const records: readonly ChangeRecord[] = [
+    {
+      time: '2026-10-13T12:00:00.000Z',
+      actor: { authority: 'hosted-provider-double', subject: 'user-sam' },
+      organizationId: 'org-a',
+      target: { membershipId: 'membership-user-sam-org-a' },
+      action: 'grant',
+      role: 'admin',
+      outcome: 'applied',
+    },
+    {
+      time: '2026-10-13T12:01:00.000Z',
+      actor: { authority: 'hosted-provider-double', subject: 'user-eve' },
+      organizationId: 'org-a',
+      target: { email: 'new@example.com\nERROR forged line' },
+      action: 'invite',
+      role: 'admin',
+      outcome: 'denied',
+    },
+  ];
+
+  for (const record of records) accountChangeRecorder(logger).record(record);
+
+  assert.deepEqual(logger.lines, records.map((record) => `Account change record: ${JSON.stringify(record)}`));
+  assert.ok(logger.lines.every((line) => !line.includes('\n')));
 });
 
 const routeConfig = {

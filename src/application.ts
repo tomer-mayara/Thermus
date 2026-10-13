@@ -5,7 +5,7 @@ import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation
 import type { BrowserSession } from './hosted-admin/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
-import { OrganizationAdministration, type OrganizationDirectory } from './organizations/organization-administration.ts';
+import { OrganizationAdministration, type ChangeRecorder, type OrganizationDirectory } from './organizations/organization-administration.ts';
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
 type HostedConfig = Extract<DeploymentConfig, { deployment: 'hosted' }>;
@@ -33,6 +33,8 @@ export interface HostedProviderParts {
 
 export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
+  // Keeps the basic records of the privileged account changes.
+  readonly changeRecords: ChangeRecorder;
   readonly operation?: AccountOperation;
 }
 
@@ -109,11 +111,16 @@ async function createHostedApplication(config: HostedConfig, logger: Application
   const authentication = new UnavailableHostedAuthentication();
   logger.info('Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.');
   const parts = { session: authentication, accessResolver: authentication, organizations: authentication, mcp: new UnavailableMcpEndpoint() };
-  return composeHostedApplication(config, parts, { reportFailure: accountFailureReporter(logger) });
+  return composeHostedApplication(config, parts, { reportFailure: accountFailureReporter(logger), changeRecords: accountChangeRecorder(logger) });
 }
 
 export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {
   return ({ path, cause }) => logger.error(`An account request failed unexpectedly for ${path}: ${String(cause)}`);
+}
+
+// The operator log keeps the change records until hosted storage exists. JSON keeps each record on one line.
+export function accountChangeRecorder(logger: ApplicationLogger): ChangeRecorder {
+  return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 
 export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts): Application {
@@ -123,7 +130,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     publicBaseUrl: config.publicBaseUrl,
     session: parts.session,
     accessResolver: parts.accessResolver,
-    organizations: new OrganizationAdministration(parts.organizations),
+    organizations: new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords }),
     reportFailure: account.reportFailure,
     operation: account.operation,
   });

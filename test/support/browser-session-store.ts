@@ -10,7 +10,13 @@ export const CLEARED_SESSION_COOKIE = `${COOKIE_NAME}=; Max-Age=0; ${COOKIE_ATTR
 interface StoredSession {
   readonly user: AuthenticatedUser;
   readonly csrfToken: string;
+  readonly mfaCompleted: boolean;
   readonly refreshDue: boolean;
+}
+
+export interface SignInOptions {
+  // Whether the sign-in completed a multi-factor challenge. The default is true.
+  readonly mfaCompleted?: boolean;
 }
 
 export interface SessionSwitch {
@@ -28,8 +34,8 @@ export class BrowserSessionStore implements BrowserSession {
   private readonly sessions = new Map<string, StoredSession>();
   private outage?: Error;
 
-  signIn(user: AuthenticatedUser): string {
-    return `${COOKIE_NAME}=${this.store({ user, csrfToken: randomUUID(), refreshDue: false })}`;
+  signIn(user: AuthenticatedUser, options: SignInOptions = {}): string {
+    return `${COOKIE_NAME}=${this.store({ user, csrfToken: randomUUID(), mfaCompleted: options.mfaCompleted ?? true, refreshDue: false })}`;
   }
 
   expireAccessToken(cookieHeader: string | undefined): void {
@@ -56,8 +62,8 @@ export class BrowserSessionStore implements BrowserSession {
   }
 
   private signedIn(key: string, cookies: CookieEffects): BrowserSessionState {
-    const { user, csrfToken } = this.sessions.get(key) as StoredSession;
-    return { status: 'signed-in', user, csrfToken, cookies, selectOrganization: (organizationId) => this.switchOrganization(key, organizationId) };
+    const { user, csrfToken, mfaCompleted } = this.sessions.get(key) as StoredSession;
+    return { status: 'signed-in', user, csrfToken, mfaCompleted, cookies, selectOrganization: (organizationId) => this.switchOrganization(key, organizationId) };
   }
 
   private async switchOrganization(key: string, organizationId: string): Promise<OrganizationSwitch> {
@@ -69,9 +75,9 @@ export class BrowserSessionStore implements BrowserSession {
   }
 
   private refresh(key: string, user: AuthenticatedUser): string {
-    const { csrfToken } = this.sessions.get(key) as StoredSession;
+    const { csrfToken, mfaCompleted } = this.sessions.get(key) as StoredSession;
     this.sessions.delete(key);
-    return this.store({ user, csrfToken, refreshDue: false });
+    return this.store({ user, csrfToken, mfaCompleted, refreshDue: false });
   }
 
   private store(session: StoredSession): string {

@@ -29,7 +29,7 @@ const miaMemberships: readonly OrganizationMembership[] = [
 
 function administrationWith(memberships: ReadonlyMap<string, readonly OrganizationMembership[] | Error>) {
   const directory = new OrganizationDirectoryDouble(memberships);
-  return { directory, administration: new OrganizationAdministration(directory) };
+  return { directory, administration: new OrganizationAdministration({ directory, records: { record: () => assert.fail('a read keeps no change record') } }) };
 }
 
 describe('OrganizationAdministration', () => {
@@ -40,7 +40,7 @@ describe('OrganizationAdministration', () => {
     const organizations = await administration.listOrganizations(nora);
 
     assert.deepEqual(organizations, []);
-    assert.deepEqual(directory.calls, [nora]);
+    assert.deepEqual(directory.membershipReads, [nora]);
   });
 
   test('Given active memberships with application permissions, an inactive membership, and active memberships whose roles grant no application permission, when the organizations are listed, then only the active memberships with a permission are listed, in directory order', async () => {
@@ -83,7 +83,7 @@ describe('OrganizationAdministration', () => {
     assert.deepEqual(first.map(({ organizationId }) => organizationId), ['org-a', 'org-b', 'org-f']);
     assert.deepEqual(second, [{ organizationId: 'org-c', organizationName: 'Organization C', selected: false }]);
     assert.deepEqual([Object.isFrozen(first), Object.isFrozen(first[0])], [true, true]);
-    assert.equal(directory.calls.length, 2);
+    assert.equal(directory.membershipReads.length, 2);
   });
 
   test('Given an authorized active membership, when its organization is requested for selection, then the organization from the current directory read is given', async () => {
@@ -93,7 +93,7 @@ describe('OrganizationAdministration', () => {
     const organization = await administration.authorizeSelection(mia, 'org-b');
 
     assert.deepEqual(organization, { organizationId: 'org-b', organizationName: 'Organization B', selected: false });
-    assert.deepEqual(directory.calls, [mia]);
+    assert.deepEqual(directory.membershipReads, [mia]);
   });
 
   for (const { label, organizationId } of [
@@ -115,7 +115,7 @@ describe('OrganizationAdministration', () => {
       const organization = await administration.authorizeSelection(mia, organizationId);
 
       assert.equal(organization, undefined);
-      assert.deepEqual(directory.calls, [mia]);
+      assert.deepEqual(directory.membershipReads, [mia]);
     });
   }
 
