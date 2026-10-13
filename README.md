@@ -1,8 +1,8 @@
-# Magumagu
+# Thermus
 
-Magumagu is the web tool an agent is allowed to use. An admin turns off native web search, points the agent at this MCP server, and every fetch comes back as a cleaned page with a log line.
+Thermus is the web tool an agent is allowed to use. An admin turns off native web search, points the agent at this MCP server, and every fetch comes back as a cleaned page with a log line.
 
-Agents need the web, and today that means an unlogged fetch from a process that can also see company data. A page can carry hidden instructions. A query can carry an internal project name out to a search engine. The same fetch also burns tokens on ads, navigation, and pages the agent already retrieved. DongAI sits on that path. It does not sit on the network: a local harness with a shell can still go around it, and a web app only reaches it after native search is off.
+Agents need the web, and today that means an unlogged fetch from a process that can also see company data. A page can carry hidden instructions. A query can carry an internal project name out to a search engine. The same fetch also burns tokens on ads, navigation, and pages the agent already retrieved. Thermus sits on that path. It does not sit on the network: a local harness with a shell can still go around it, and a web app only reaches it after native search is off.
 
 The server does four things with each call. It checks the tenant's allowlist and denylist. It redacts a configured list of internal terms from the outbound query. It fetches the page, strips scripts, hidden text, ads, and boilerplate, and returns markdown. It writes a log of the query, the URL, and a hash of what it returned.
 
@@ -105,12 +105,12 @@ The ad cleaner limits parsed HTML to 256 element levels. See [HTML processing li
 
 **MVP.** One tool, `fetch`. Allowlist, denylist, and outbound redaction. Boilerplate and hidden-text stripping. Per-tenant content cache. Audit log. A container that runs the server and Lightpanda on localhost, and a hosted version of the same container.
 
-Out of scope: step-up approval, a second renderer, request-level ad blocking, and any connector other than the web. Done when an admin can disable native search, point an agent at DongAI, and get a cleaned page back with a log line for every fetch.
+Out of scope: step-up approval, a second renderer, request-level ad blocking, and any connector other than the web. Done when an admin can disable native search, point an agent at Thermus, and get a cleaned page back with a log line for every fetch.
 
 
 ## MCP server component
 
-[`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `magumagu` identity with support for protocol version `2026-07-28`. A stdio connection has no verified user, so it registers no tools. A later local stdio entry must first bind a selected active local user.
+[`MCPServer`](src/mcp/mcp-server.ts) wraps the official TypeScript SDK v2. Pass an SDK transport to `server.connect(transport)` and call `await server.close()` to release the connection. The SDK handles `server/discover` and advertises the `thermus` identity with support for protocol version `2026-07-28`. A stdio connection has no verified user, so it registers no tools. A later local stdio entry must first bind a selected active local user.
 
 For HTTP requests, construct the server with `{ auth: { verifier, accessResolver, resourceMetadataUrl, expectedResource }, registerTools, reportFailure }` and call `await server.fetch(request)`. The verifier implements our [`IdentityVerifier`](src/auth/identity-verifier.ts) contract, and the access resolver implements [`AccessResolver`](src/auth/access-context.ts). MCPServer validates the Authorization header before the SDK verifies the token. Missing or malformed headers receive HTTP 401 with a Bearer challenge and the configured protected-resource metadata URL. Call `await server.close()` to release the HTTP handler and any transport connection.
 
@@ -141,9 +141,9 @@ The server calls both loaders before it opens any resource or listens.
 Start the server from a build, or run it in a container as [container installation](#container-installation) tells. For a build, `DATA_DIR` must be an existing directory:
 
 ```sh
-mkdir -p /tmp/magumagu-data
+mkdir -p /tmp/thermus-data
 pnpm build
-DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magumagu-data pnpm start
+DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/thermus-data pnpm start
 ```
 
 [`src/index.ts`](src/index.ts) starts the server when it gets no arguments. With arguments, it runs one of the offline [local account and client commands](#local-accounts-and-clients). The server loads the settings, calls [`createApplication(config, logger)`](src/application.ts), and serves the application through the Node HTTP bridge, [`startHttpServer()`](src/http/server.ts). It writes `Listening on <address>` to stderr. `SIGINT` or `SIGTERM` stops it: the HTTP server stops, then the application releases its resources, and the process exits with status 0. The server registers the stop handlers before it writes the `Listening on` line. Thus a script can send a signal as soon as the line appears, and the server still stops cleanly. A second signal ends the process at once. A startup failure writes one `FATAL` line, which names the problem but no secret, and exits with status 1.
@@ -153,7 +153,7 @@ DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magum
 [`openBetterAuthRuntime(settings)`](src/auth/local-auth/better-auth/better-auth-runtime.ts) owns the local resources and opens them in this order:
 
 1. The exclusive data-directory lock, `DATA_DIR/data-directory.lock`, from [`lockDataDirectory()`](src/auth/local-auth/better-auth/data-directory-lock.ts). Another server or command that uses the same directory stops with `DataDirectoryInUseError` and changes no data. The lock does not wait for its holder, so that process stops at once. When several processes start at the same time with the same directory, exactly one of them gets the lock. The operating system releases the lock when the process ends, also after a crash.
-2. The installation, from [`openLocalInstallation()`](src/auth/local-auth/better-auth/local-installation.ts). For fresh data, it writes a generated secret to `auth.secret`. Then, in one transaction, it applies the shipped migrations to `auth.sqlite` and stores one installation UUID in the singleton `magumagu_installation` row. Both files have mode `0600`. The singleton holds only the installation identity; it does not limit the number of accounts.
+2. The installation, from [`openLocalInstallation()`](src/auth/local-auth/better-auth/local-installation.ts). For fresh data, it writes a generated secret to `auth.secret`. Then, in one transaction, it applies the shipped migrations to `auth.sqlite` and stores one installation UUID in the singleton `thermus_installation` row. Both files have mode `0600`. The singleton holds only the installation identity; it does not limit the number of accounts.
 3. Better Auth with the [proven provider settings](docs/design/authentication-design.md#pinned-provider-proof). `clientReference` returns the installation ID, so the installation owns each registered client. Startup waits for the provider's schema check and stops if the schema does not match. The settings keep the origin and CSRF checks on, also with `NODE_ENV=test` or with `TEST` set. Better Auth reads `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, and `BETTER_AUTH_TELEMETRY` from the process environment, also when a setting disagrees. No setting stops that without another effect: the `secrets` setting stops `BETTER_AUTH_SECRETS`, but it changes the encryption format of the stored keys. Thus, when one of these variables has a value, startup stops with `ProviderEnvironmentError`, which names the variable but not its value. The provider secret is always `auth.secret`. The [provider environment variables](docs/design/authentication-design.md#provider-environment-variables) give the reasons.
 
 The runtime reports the tenant `local:<installation-id>`, and the server logs it at startup. If a startup step fails, the runtime releases the resources that it already holds, in reverse order. `close()` closes the database and then releases the lock.
@@ -162,7 +162,7 @@ Retained data keeps its identity. Startup stops with `LocalInstallationError` wh
 
 The server starts with zero accounts or with only disabled accounts, and protected access stays denied. To recover, stop the server and add an account with `users add`. The application routes each request by its path. The MCP endpoint, `<base>/mcp`, goes to MCPServer, which uses [`BetterAuthProvider`](src/auth/local-auth/better-auth/better-auth-provider.ts) to verify each token and to check the current account. The discovery documents, `<base>/api/auth/oauth2/authorize`, and `<base>/api/auth/oauth2/token` go to Better Auth. The bundled pages, `<base>/sign-in`, `<base>/consent`, and `<base>/authorization-error`, go to [`LocalAuthPages`](src/auth/local-auth/better-auth/local-auth-pages.ts). Other paths give `404`, also the provider's sign-up, sign-in, session, introspection, and client routes, so there is no public sign-up or account-create route. The application gives MCPServer [`operatorFailureReporter(logger)`](src/application.ts) as `reportFailure`: it writes each failure report as one `ERROR` line with the failed step and the cause. A missing or rejected token gives no report. Without a resource-server client for the MCP resource of `PUBLIC_BASE_URL`, the MCP endpoint cannot check a token: a request with a valid token gets a generic `500`, and its `ERROR` line tells the operator to run `clients register`. The [sign-in and MCP client guide](#sign-in-and-mcp-clients) describes the flow.
 
-The HTTP bridge builds each request URL from the origin of `PUBLIC_BASE_URL` and the request target, so the `Host` header and forwarded headers cannot change it. It refuses a target that is not in origin form (`/path?query`) with `400`, and `TRACE` with `501`. It removes every client copy of `x-magumagu-client-address` and sets that header to the socket address, for the provider's rate limits. It streams request and response bodies and keeps each `Set-Cookie` header separate. When a client disconnects, it aborts the request signal and cancels the response body. A handler failure gives a generic `500` and a log line without request data. When the server stops, the bridge refuses new connections, lets running responses finish, and ends the remaining connections after five seconds.
+The HTTP bridge builds each request URL from the origin of `PUBLIC_BASE_URL` and the request target, so the `Host` header and forwarded headers cannot change it. It refuses a target that is not in origin form (`/path?query`) with `400`, and `TRACE` with `501`. It removes every client copy of `x-thermus-client-address` and sets that header to the socket address, for the provider's rate limits. It streams request and response bodies and keeps each `Set-Cookie` header separate. When a client disconnects, it aborts the request signal and cancels the response body. A handler failure gives a generic `500` and a log line without request data. When the server stops, the bridge refuses new connections, lets running responses finish, and ends the remaining connections after five seconds.
 
 To make a backup, stop the server and copy the complete data directory. To restore, copy all of its files together into an empty directory, and start the server with that `DATA_DIR`. The installation ID, the tenant, the user IDs, the browser sessions, the registered clients, the consents, the signing keys, and the resource-server client in `resource-server-client.json` stay the same. Filesystem access to the data directory is administration authority for the installation; it gives no application role.
 
@@ -177,58 +177,58 @@ You need Docker Engine with Buildx and Compose. The image build downloads the pi
 ```sh
 docker compose build
 docker compose up -d
-docker compose logs magumagu
+docker compose logs thermus
 ```
 
-The log shows the tenant of the installation and `Listening on http://0.0.0.0:8080`. A fresh installation has no account and no client. Add them as **Accounts and clients** below tells. Then a user can connect a supported MCP client to `http://localhost:8080/mcp`; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives its settings. `docker compose stop magumagu` stops the server, and `docker compose start magumagu` starts it again.
+The log shows the tenant of the installation and `Listening on http://0.0.0.0:8080`. A fresh installation has no account and no client. Add them as **Accounts and clients** below tells. Then a user can connect a supported MCP client to `http://localhost:8080/mcp`; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives its settings. `docker compose stop thermus` stops the server, and `docker compose start thermus` starts it again.
 
-**Settings.** [`compose.yaml`](compose.yaml) has one service, `magumagu`, with an init process. The [`Dockerfile`](Dockerfile) sets `DEPLOYMENT=self-hosted`, `DATA_DIR=/var/lib/magumagu`, `LISTEN_HOST=0.0.0.0`, `LISTEN_PORT=8080`, and `NODE_ENV=production`, and the image runs as the `node` user. The service sets `PUBLIC_BASE_URL`, by default `http://localhost:8080`, and publishes port 8080 on `127.0.0.1` only. With `http` on `localhost`, the port of `PUBLIC_BASE_URL` is the published port. Another address must use `https`: put a TLS reverse proxy in front of the published port, and set `PUBLIC_BASE_URL` to the address of the proxy, in the shell or in a `.env` file next to `compose.yaml`. A registered client belongs to the MCP resource of one `PUBLIC_BASE_URL`, so after a change, register the clients again. A published port and a reverse proxy give the server the same client address for all users. Thus the sign-in limit of three attempts in ten seconds for each client address applies to all users together. The image sets no telemetry setting. Do not set `BETTER_AUTH_TELEMETRY` or the other [refused Better Auth variables](#self-hosted-server): startup stops.
+**Settings.** [`compose.yaml`](compose.yaml) has one service, `thermus`, with an init process. The [`Dockerfile`](Dockerfile) sets `DEPLOYMENT=self-hosted`, `DATA_DIR=/var/lib/thermus`, `LISTEN_HOST=0.0.0.0`, `LISTEN_PORT=8080`, and `NODE_ENV=production`, and the image runs as the `node` user. The service sets `PUBLIC_BASE_URL`, by default `http://localhost:8080`, and publishes port 8080 on `127.0.0.1` only. With `http` on `localhost`, the port of `PUBLIC_BASE_URL` is the published port. Another address must use `https`: put a TLS reverse proxy in front of the published port, and set `PUBLIC_BASE_URL` to the address of the proxy, in the shell or in a `.env` file next to `compose.yaml`. A registered client belongs to the MCP resource of one `PUBLIC_BASE_URL`, so after a change, register the clients again. A published port and a reverse proxy give the server the same client address for all users. Thus the sign-in limit of three attempts in ten seconds for each client address applies to all users together. The image sets no telemetry setting. Do not set `BETTER_AUTH_TELEMETRY` or the other [refused Better Auth variables](#self-hosted-server): startup stops.
 
-**Data volume.** The named volume `magumagu_magumagu-data` is mounted at `DATA_DIR`. It holds all data of the installation: `auth.sqlite` with the accounts, sessions, clients, consents, signing keys, and installation identity; `auth.secret`; `resource-server-client.json`; and `data-directory.lock`. The image keeps no data. Only the `node` user of the image can open the directory (mode `0700`). `auth.sqlite`, `auth.secret`, and `resource-server-client.json` have mode `0600`. Access to the volume is administration authority for the installation; it gives no application role.
+**Data volume.** The named volume `thermus_thermus-data` is mounted at `DATA_DIR`. It holds all data of the installation: `auth.sqlite` with the accounts, sessions, clients, consents, signing keys, and installation identity; `auth.secret`; `resource-server-client.json`; and `data-directory.lock`. The image keeps no data. Only the `node` user of the image can open the directory (mode `0700`). `auth.sqlite`, `auth.secret`, and `resource-server-client.json` have mode `0600`. Access to the volume is administration authority for the installation; it gives no application role.
 
 **Accounts and clients.** The commands of [local accounts and clients](#local-accounts-and-clients) run in a one-off container of the same image with the same volume. Stop the server first, and start it again after the commands:
 
 ```sh
-docker compose stop magumagu
-docker compose run --rm magumagu users add alice@example.com
-docker compose run --rm magumagu users add bob@example.com
-docker compose run --rm magumagu users list
-docker compose run --rm magumagu clients register --user alice@example.com --name "Native MCP client" --redirect-uri http://127.0.0.1:33418/callback
-docker compose start magumagu
+docker compose stop thermus
+docker compose run --rm thermus users add alice@example.com
+docker compose run --rm thermus users add bob@example.com
+docker compose run --rm thermus users list
+docker compose run --rm thermus clients register --user alice@example.com --name "Native MCP client" --redirect-uri http://127.0.0.1:33418/callback
+docker compose start thermus
 ```
 
 In a terminal, `docker compose run` gives the command a terminal, so the password prompts do not show the typed characters. A script can add `-T` and write one line for each prompt to standard input:
 
 ```sh
-printf '%s\n%s\n' "$NEW_PASSWORD" "$NEW_PASSWORD" | docker compose run --rm -T magumagu users add carol@example.com
+printf '%s\n%s\n' "$NEW_PASSWORD" "$NEW_PASSWORD" | docker compose run --rm -T thermus users add carol@example.com
 ```
 
-While the server runs, each command stops with the lock error and changes nothing. A command in the server container, such as `docker compose exec magumagu node /app/dist/src/index.js users list`, is another process on the same volume, so the lock stops it too.
+While the server runs, each command stops with the lock error and changes nothing. A command in the server container, such as `docker compose exec thermus node /app/dist/src/index.js users list`, is another process on the same volume, so the lock stops it too.
 
-**Restart and update.** A restart (`docker compose restart magumagu`), a new container (`docker compose up -d --force-recreate`), and a new image (`docker compose build`, then `docker compose up -d`) keep the volume. The installation ID, the tenant, the user IDs, the sessions, the clients, the consents, the signing keys, and the access tokens stay usable. An image with another schema version of the database stops at startup and changes no data, because this version has no data migration.
+**Restart and update.** A restart (`docker compose restart thermus`), a new container (`docker compose up -d --force-recreate`), and a new image (`docker compose build`, then `docker compose up -d`) keep the volume. The installation ID, the tenant, the user IDs, the sessions, the clients, the consents, the signing keys, and the access tokens stay usable. An image with another schema version of the database stops at startup and changes no data, because this version has no data migration.
 
 **Backup and restore.** Stop the server, and copy the complete volume to a tar archive with the `tar` program of the image:
 
 ```sh
-docker compose stop magumagu
-docker compose run --rm -T --entrypoint tar magumagu -cf - -C /var/lib/magumagu . > magumagu-backup.tar
-docker compose start magumagu
+docker compose stop thermus
+docker compose run --rm -T --entrypoint tar thermus -cf - -C /var/lib/thermus . > thermus-backup.tar
+docker compose start thermus
 ```
 
 The archive holds the provider secret and the signing keys. Keep it as safe as the volume. To restore, put all files of one archive into an empty volume, and then start the server:
 
 ```sh
 docker compose down
-docker volume rm magumagu_magumagu-data
-docker compose run --rm -T --entrypoint tar magumagu -xf - -C /var/lib/magumagu < magumagu-backup.tar
+docker volume rm thermus_thermus-data
+docker compose run --rm -T --entrypoint tar thermus -xf - -C /var/lib/thermus < thermus-backup.tar
 docker compose up -d
 ```
 
-The restored installation keeps its tenant, the user IDs, the sessions, the clients, the consents, and the signing keys. The database and `auth.secret` must come from the same archive. Retained data without its installation identity, or without `auth.secret`, stops each start with a `FATAL` line that asks for a restore. The server never makes a new identity for retained data. Docker starts the service again and again, and `docker compose logs magumagu` shows the line. Stop the service with `docker compose stop magumagu`, and restore the complete archive.
+The restored installation keeps its tenant, the user IDs, the sessions, the clients, the consents, and the signing keys. The database and `auth.secret` must come from the same archive. Retained data without its installation identity, or without `auth.secret`, stops each start with a `FATAL` line that asks for a restore. The server never makes a new identity for retained data. Docker starts the service again and again, and `docker compose logs thermus` shows the line. Stop the service with `docker compose stop thermus`, and restore the complete archive.
 
 **Recovery.**
 
-- No account, or only disabled accounts: stop the server, add an account with `docker compose run --rm magumagu users add <email>`, and start the server. The tenant and the other accounts stay. The installation owns each approved client, so the new account can use the registered clients.
+- No account, or only disabled accounts: stop the server, add an account with `docker compose run --rm thermus users add <email>`, and start the server. The tenant and the other accounts stay. The installation owns each approved client, so the new account can use the registered clients.
 - A forgotten password: stop the server and run `users reset-password` in the same way.
 - A lock error: stop the server container, then run the command again.
 - A new installation: `docker compose down --volumes` deletes the volume with all accounts and data. The next start makes a new installation with a new tenant.
@@ -244,7 +244,7 @@ The self-hosted edition has no public sign-up, invitation, email recovery, or ad
 Stop the server before you run a command. Give the command the same settings as the server: `DEPLOYMENT=self-hosted`, `PUBLIC_BASE_URL`, and `DATA_DIR`. A registered client is linked to the MCP resource of `PUBLIC_BASE_URL`, so a different value gives a client that the server does not serve. Then start the server again.
 
 ```sh
-export DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magumagu-data
+export DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/thermus-data
 node dist/src/index.js users add alice@example.com
 node dist/src/index.js users list
 node dist/src/index.js users reset-password alice@example.com
@@ -274,10 +274,10 @@ node dist/src/index.js clients register --user alice@example.com --name "Native 
 
 **Resource-server client.** The MCP server checks each access token at the provider's introspection endpoint as a confidential client. The provider registers a client only for a signed-in session, so the first `clients register` also registers this resource-server client in the same session and writes its ID and secret to `DATA_DIR/resource-server-client.json` with mode `0600`. Then the command prints one more line. A later registration uses the stored client. After a change of `PUBLIC_BASE_URL`, the stored client belongs to the old MCP resource, so the next registration registers a new one. No output contains the secret. If the file is damaged, startup and `clients register` stop with `LocalInstallationError`: restore the complete data directory, or remove the file and run `clients register` again.
 
-**Lock errors.** The server and each command hold the same exclusive data-directory lock. A command on a data directory that another Magumagu process uses stops with exit status 1, asks for no password, and changes no data:
+**Lock errors.** The server and each command hold the same exclusive data-directory lock. A command on a data directory that another Thermus process uses stops with exit status 1, asks for no password, and changes no data:
 
 ```
-The data directory is in use by another Magumagu process. Stop that process, then try again.
+The data directory is in use by another Thermus process. Stop that process, then try again.
 ```
 
 A command that you run inside a live server container is also another process on the same files, so the lock stops it too. A command holds the lock until it ends, also while it waits for a password; a server start on the same directory then stops with the same error. For a container installation, stop the server container, run the command in a one-off container from the same image with the same volume, and start the server container again. The [container installation](#container-installation) section gives the commands.
@@ -317,7 +317,7 @@ The hosted edition has no authentication provider yet: the WorkOS AuthKit and Co
 
 ```sh
 pnpm build
-DEPLOYMENT=hosted PUBLIC_BASE_URL=https://magumagu.example pnpm start
+DEPLOYMENT=hosted PUBLIC_BASE_URL=https://thermus.example pnpm start
 ```
 
 - Startup checks `PUBLIC_BASE_URL`, which must be an `https` URL, and the listen settings, and it rejects stdio. It reads no `WORKOS_*` setting, opens no data directory, calls no service, and asks for no credential. The log says that hosted authentication is not available yet. `SIGINT` or `SIGTERM` stops the server with status 0.
@@ -443,7 +443,7 @@ The unit, integration, and acceptance suites are offline. Live renderer tests ne
 
 `npm run check` does not run the integration, acceptance, interface, or container suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
 
-`pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `MAGUMAGU_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
+`pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
 
 The hosted placeholder, organization, and administration tests are offline, and the unit, integration, and acceptance suites select them. To run only the hosted integration and acceptance files:
 
