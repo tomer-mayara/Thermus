@@ -9,7 +9,7 @@ import { LocalInstallationError } from '../../../src/auth-better-auth/local-inst
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
-import { unavailableNotice } from '../../support/hosted-placeholder.ts';
+import { hostedStartupLine, unavailableNotice } from '../../support/hosted-placeholder.ts';
 import { accountsOf, addAccount, passwordOf, selfHostedConfig, withRuntime } from '../../support/local-runtime.ts';
 
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;
@@ -191,6 +191,6 @@ describe('Local installation with the real application and provider', () => {
     assert.deepEqual([answers.map(({ status }) => status), closes[0] === closes[1]], [[503, 503], true]);
     assert.match(await answers[0]?.text() ?? '', unavailableNotice);
     await Promise.all(closes);
-    assert.deepEqual(logger.lines, ['Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.']);
+    assert.deepEqual(logger.lines, [hostedStartupLine]);
   });
 });

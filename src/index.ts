@@ -1,11 +1,16 @@
 import { pathToFileURL } from 'node:url';
-import { createApplication } from './application.ts';
+import { createApplication, type ApplicationLogger } from './application.ts';
 import { loadDeploymentConfig, loadListenAddress } from './config/deployment-config.ts';
 import { startHttpServer } from './http/server.ts';
 import { ConsoleLogger } from './logging/console-logger.ts';
 import { HiddenLineInput } from './terminal/hidden-line-input.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
+
+interface ProcessSignals {
+  once(signal: NodeJS.Signals, listener: NodeJS.SignalsListener): unknown;
+  off(signal: NodeJS.Signals, listener: NodeJS.SignalsListener): unknown;
+}
 
 const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
@@ -15,7 +20,7 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 async function run(args: readonly string[], environment: Environment, logger: ConsoleLogger): Promise<number> {
   if (args.length > 0) return runOperatorCommand(args, environment, logger);
   try {
-    await serve(environment, logger);
+    await serve(environment, logger, process);
     return 0;
   } catch (error) {
     logger.fatal(failureMessage(error));
@@ -34,7 +39,7 @@ async function runOperatorCommand(args: readonly string[], environment: Environm
   }
 }
 
-async function serve(environment: Environment, logger: ConsoleLogger): Promise<void> {
+export async function serve(environment: Environment, logger: ApplicationLogger, signals: ProcessSignals): Promise<void> {
   const config = loadDeploymentConfig(environment, 'http');
   const listen = loadListenAddress(environment);
   await using owned = new AsyncDisposableStack();
@@ -43,20 +48,22 @@ async function serve(environment: Environment, logger: ConsoleLogger): Promise<v
     await startHttpServer(application.handle, { listen, publicBaseUrl: config.publicBaseUrl, logger }),
     (listening) => listening.close(),
   );
+  // A caller can send a stop signal as soon as the "Listening on" line appears, so register the stop handlers first.
+  const stopped = stopSignal(signals);
   logger.info(`Listening on ${server.url.origin}`);
-  const signal = await stopSignal();
+  const signal = await stopped;
   logger.info(`Stopping after ${signal}`);
 }
 
-function stopSignal(): Promise<NodeJS.Signals> {
+function stopSignal(signals: ProcessSignals): Promise<NodeJS.Signals> {
   return new Promise((resolve) => {
     const stop = (signal: NodeJS.Signals): void => {
-      process.off('SIGINT', stop);
-      process.off('SIGTERM', stop);
+      signals.off('SIGINT', stop);
+      signals.off('SIGTERM', stop);
       resolve(signal);
     };
-    process.once('SIGINT', stop);
-    process.once('SIGTERM', stop);
+    signals.once('SIGINT', stop);
+    signals.once('SIGTERM', stop);
   });
 }
 
