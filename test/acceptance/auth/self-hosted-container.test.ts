@@ -86,7 +86,7 @@ interface ImageConfig {
   readonly User: string;
   readonly Env: readonly string[];
   readonly Entrypoint: readonly string[];
-  readonly Cmd: readonly string[] | null;
+  readonly Cmd?: readonly string[] | null;
   readonly ExposedPorts: Readonly<Record<string, unknown>>;
 }
 
@@ -486,7 +486,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(facts.dataDirectory, { path: containerDataDirectory, ownerId: facts.userId, mode: '700', entries: [] });
     assert.equal(config.User, 'node');
     assert.deepEqual(config.Entrypoint, ['node', '/app/dist/src/index.js']);
-    assert.equal(config.Cmd, null);
+    assert.deepEqual(config.Cmd ?? [], []);
     assert.deepEqual(Object.keys(config.ExposedPorts), ['8080/tcp']);
     assert.equal(settings.NODE_ENV, 'production');
     assert.equal(settings.DEPLOYMENT, 'self-hosted');

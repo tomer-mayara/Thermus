@@ -1,0 +1,20 @@
+# The self-hosted evaluation edition: one server container and one data volume.
+# README.md#container-installation gives the commands, also the stopped-server workflow for accounts and clients.
+name: magumagu
+
+services:
+  magumagu:
+    build: .
+    init: true
+    restart: unless-stopped
+    environment:
+      # The public address of the server. Its port must be the published port below.
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - magumagu-data:/var/lib/magumagu
+
+volumes:
+  # The database, the installation identity, the signing keys, and the secrets.
+  magumagu-data:
