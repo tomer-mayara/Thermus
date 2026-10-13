@@ -1,50 +1,41 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
-import { UnavailableHostedAuthentication } from '../../../src/auth-unavailable/unavailable-hosted-authentication.ts';
-import { setProcessEnvironment } from '../../support/process-environment.ts';
+import { UnavailableHostedAuthentication, UnavailableMcpEndpoint } from '../../../src/auth-unavailable/unavailable-hosted-authentication.ts';
+import { mcpUnavailableAnswer } from '../../support/hosted-placeholder.ts';
 
-const publicBaseUrl = 'https://magumagu.example/';
-const forgedSession = 'wos-session=Fe26.2*forged-sealed-session; better-auth.session_token=forged-local-session';
-
-function forgedRequests(): Request[] {
-  const form = { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://magumagu.example', Cookie: forgedSession };
-  return [
-    new Request(publicBaseUrl),
-    new Request(new URL('account', publicBaseUrl), { headers: { Cookie: forgedSession } }),
-    new Request(new URL('account', publicBaseUrl), { headers: { Authorization: 'Bearer forged-connect-token' } }),
-    new Request(new URL('organizations?organizationId=org_01FORGED', publicBaseUrl), { headers: { Cookie: forgedSession, 'X-Organization-Id': 'org_01FORGED' } }),
-    new Request(new URL('organizations/select', publicBaseUrl), { method: 'POST', headers: form, body: 'organizationId=org_01FORGED' }),
-    new Request(new URL('billing/seats', publicBaseUrl), { method: 'POST', headers: form, body: 'organizationId=org_01FORGED&seatCount=5' }),
-    new Request(new URL('auth/callback?code=forged-code&state=forged-state', publicBaseUrl), { headers: { Cookie: forgedSession } }),
-  ];
-}
-
+const resourceUrl = 'https://magumagu.example/mcp';
+const forgedCookies = [
+  null,
+  '',
+  'wos-session=Fe26.2*forged-sealed-session',
+  'better-auth.session_token=forged-local-session; organizationId=org_01FORGED',
+];
 const anyUsers: readonly AuthenticatedUser[] = [
   { authority: 'workos:client_placeholder', subject: 'user_01FORGED', selectedOrganizationId: 'org_01FORGED' },
   { authority: 'workos:client_placeholder', subject: 'user_01FORGED' },
   { authority: 'better-auth:local-installation', subject: 'local-user' },
 ];
 
-async function assertNothingIssued(authentication: UnavailableHostedAuthentication): Promise<void> {
-  for (const request of forgedRequests()) {
-    assert.deepEqual(await authentication.authenticate(request), { status: 'unavailable' });
-    assert.equal(request.bodyUsed, false);
-  }
-  for (const user of anyUsers) {
-    assert.deepEqual(await authentication.resolve(user), { allowed: false, reason: 'account-inactive' });
-  }
+function mcpRequests(): Request[] {
+  const call = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'fetch', arguments: { organizationId: 'org_01FORGED' } } });
+  const json = { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' };
+  return [
+    new Request(resourceUrl, { method: 'POST', headers: { ...json, Authorization: 'Bearer forged-connect-token' }, body: call }),
+    new Request(resourceUrl, { method: 'POST', headers: { ...json, Cookie: 'wos-session=forged-sealed-session' }, body: call }),
+    new Request(resourceUrl, { headers: { Accept: 'text/event-stream', Authorization: 'Bearer forged-connect-token' } }),
+    new Request(resourceUrl, { method: 'DELETE', headers: { 'Mcp-Session-Id': 'forged-session-id' } }),
+    new Request('https://magumagu.example/.well-known/oauth-protected-resource/mcp'),
+  ];
 }
 
 describe('UnavailableHostedAuthentication', () => {
-  test('Given any browser request, also with a forged session cookie, bearer token, organization ID, or form input, when its session is authenticated, then hosted authentication is unavailable, no user is given, and the request body stays unread', async () => {
+  test('Given any Cookie header, also a forged session or organization cookie, when the browser session is authenticated, then hosted authentication is unavailable and no user is given', async () => {
     const authentication = new UnavailableHostedAuthentication();
-    const requests = forgedRequests();
 
-    const states = await Promise.all(requests.map((request) => authentication.authenticate(request)));
+    const states = await Promise.all(forgedCookies.map((cookie) => authentication.authenticate(cookie)));
 
-    assert.deepEqual(states, requests.map(() => ({ status: 'unavailable' })));
-    assert.deepEqual(requests.map(({ bodyUsed }) => bodyUsed), requests.map(() => false));
+    assert.deepEqual(states, forgedCookies.map(() => ({ status: 'unavailable' })));
   });
 
   test('Given any user, also one with a selected organization, when access is resolved, then access is denied and no context, tenant, or grant is given', async () => {
@@ -54,16 +45,28 @@ describe('UnavailableHostedAuthentication', () => {
 
     assert.deepEqual(decisions, anyUsers.map(() => ({ allowed: false, reason: 'account-inactive' })));
   });
+});
 
-  test('Given a value for each WorkOS setting in the process environment, when the placeholder authenticates and resolves, then it still issues no identity and no grant', async (t) => {
-    setProcessEnvironment(t, {
-      WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-      WORKOS_CLIENT_ID: 'client_placeholder',
-      WORKOS_API_KEY: 'workos-api-key-placeholder',
-      WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-      WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
-    });
+describe('UnavailableMcpEndpoint', () => {
+  test('Given any MCP or metadata request, also with a forged bearer token, cookie, or organization value, when it arrives, then it gets 503 temporarily_unavailable that no one may store, with no Bearer challenge and no cookie, and its body stays unread', async () => {
+    const endpoint = new UnavailableMcpEndpoint();
+    const requests = mcpRequests();
 
-    await assertNothingIssued(new UnavailableHostedAuthentication());
+    for (const request of requests) {
+      const response = await endpoint.fetch(request);
+      assert.equal(response.status, 503);
+      assert.deepEqual([response.headers.get('Cache-Control'), response.headers.get('WWW-Authenticate'), response.headers.get('Set-Cookie')], ['no-store', null, null]);
+      assert.match(response.headers.get('Content-Type') ?? '', /^application\/json/);
+      assert.deepEqual(await response.json(), mcpUnavailableAnswer);
+    }
+
+    assert.deepEqual(requests.map(({ bodyUsed }) => bodyUsed), requests.map(() => false));
+  });
+
+  test('Given the endpoint, when it closes two times, then each close succeeds', async () => {
+    const endpoint = new UnavailableMcpEndpoint();
+
+    await endpoint.close();
+    await endpoint.close();
   });
 });

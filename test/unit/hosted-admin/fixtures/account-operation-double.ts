@@ -6,7 +6,6 @@ export interface OperationCall {
   readonly context: RequestContext;
 }
 
-// Test only: a protected account operation that records each call and answers with the context that it got.
 export class AccountOperationDouble {
   readonly calls: OperationCall[] = [];
 

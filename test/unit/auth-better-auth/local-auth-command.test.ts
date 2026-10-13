@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { workOSSettings } from '../../support/hosted-placeholder.ts';
 import { assertRevealsNone, loopbackRedirectUri, run, RuntimeDouble, ScriptedInput } from './fixtures/local-auth-command-harness.ts';
 
 describe('runLocalAuthCommand command line and lifecycle', () => {
@@ -91,18 +92,8 @@ describe('runLocalAuthCommand command line and lifecycle', () => {
       const cases: { readonly settings: Record<string, string>; readonly message: RegExp }[] = [
         { settings: { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080' }, message: /DATA_DIR is required/ },
         { settings: { PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/magumagu' }, message: /DEPLOYMENT must be set/ },
-        {
-          settings: {
-            DEPLOYMENT: 'hosted',
-            PUBLIC_BASE_URL: 'https://magumagu.example',
-            WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-            WORKOS_CLIENT_ID: 'client_placeholder',
-            WORKOS_API_KEY: 'workos-api-key-placeholder',
-            WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-            WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
-          },
-          message: /only for DEPLOYMENT=self-hosted/,
-        },
+        { settings: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example' }, message: /only for DEPLOYMENT=self-hosted/ },
+        { settings: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', ...workOSSettings }, message: /only for DEPLOYMENT=self-hosted/ },
       ];
 
       for (const { settings, message } of cases) {

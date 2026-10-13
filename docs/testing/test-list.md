@@ -190,7 +190,7 @@ A stateful double stands in for the supported Better Auth operations. Its passwo
 Doubles stand in for the hidden input, the runtime lifecycle, and the provider. The real `LocalUserAdministration` runs.
 
 [V] Gives exit status 2 and the usage for an unknown command, a missing or extra target, an option, and an incomplete client registration, without the arguments in the message, without a prompt, and without opening data
-[V] Opens the runtime with the self-hosted data directory and public URLs and closes it after the command; a hosted or incomplete configuration gives status 1 without opening data
+[V] Opens the runtime with the self-hosted data directory and public URLs and closes it after the command; a hosted configuration, with or without WorkOS settings, or an incomplete configuration gives status 1 without opening data
 [V] Gives status 1 and the lock message for each command when another process holds the data directory, before any prompt
 [V] Closes the runtime after a failed command; reports a close failure, and both failures together
 [V] Asks for a new password two times for add and reset-password, and one time for client registration; refuses different entries and ended input
@@ -218,10 +218,11 @@ A logger double records the lines that `operatorFailureReporter()` writes.
 
 **Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
 
-`BrowserSessionDouble` gives a configured session state for each `Cookie` header. `AccessResolverMock` gives configured decisions, and a test-only operation double records each call. The tests import the access contracts as types only.
+`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `AccessResolverMock` gives configured decisions, and a test-only operation double records each call. The tests import the access contracts as types only.
 
-[V] Gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
+[V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
 [V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
+[V] Gives the operation a frozen copy of the decided context; later changes to the resolver's records, such as another organization or added grants, cannot reach it
 [V] For an unavailable session, gives the 503 authentication-unavailable notice to account, organization, and billing requests with forged cookies, bearer tokens, organization IDs, and form input, sets no cookie, reads no body, and runs no access resolution or operation
 [V] Gives 401 for a signed-out session and runs no access resolution or operation
 [V] Gives 403 without the reason for each denial reason and runs no operation
@@ -232,9 +233,9 @@ A logger double records the lines that `operatorFailureReporter()` writes.
 
 **Unavailable hosted authentication** (`test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`)
 
-[V] Gives `unavailable` for each browser request, also with a forged session cookie, bearer token, organization ID, or form input, and reads no request body
+[V] Gives `unavailable` for each `Cookie` header, also for none or for a forged session or organization cookie
 [V] Denies access with `account-inactive` for each user, also with a selected organization, and gives no context, tenant, or grant
-[V] Gives the same answers when each `WORKOS_*` variable has a value in the process environment
+[V] `UnavailableMcpEndpoint` answers each MCP and metadata request, also a GET or DELETE and one with a forged bearer token or cookie, with 503 `temporarily_unavailable`, `Cache-Control: no-store`, and no Bearer challenge or cookie, and reads no request body; it closes two times without failure
 
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
@@ -536,12 +537,12 @@ These tests run the real application, Better Auth runtime, MCPServer, and provid
 
 **Hosted account routes with doubles** (`test/integration/auth/hosted-account.test.ts`)
 
-These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit identities with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context.
+These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit identities with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context. An MCP endpoint double stands in for the replaceable MCP part.
 
 [V] Members of two organizations and one user with a session in each organization overlap and resolve in reverse order; each operation works only in the organization of its own session, also with forged organization IDs in the query, headers, and form
-[V] Independent Super Admin, Admin, and User plus Admin grants give each context every grant and only the union of their explicit permissions; Super Admin alone gives no product access, and Admin alone gives no billing
-[V] A session without a selected organization, an inactive membership, an identity of another authority, and a missing session are refused before any operation, with no default organization, tenant, or role
-[V] The MCP resource still gives 503 `temporarily_unavailable` with the doubles, and a path outside the public path gives 404 without a session lookup
+[V] Independent Super Admin, Admin, and User plus Admin grants give each context every grant and only the union of their explicit permissions; Super Admin alone gives no product access, and Admin alone gives no billing; each refusal is the operation's `permission-required`
+[V] A session without a selected organization, an inactive membership, an identity of another authority, and a missing session get the 403 or 401 page before any operation, with no default organization, tenant, or role
+[V] MCP and metadata requests go to the MCP endpoint without a browser session lookup, a path outside the public path gives 404, and two closes of the application close the MCP endpoint one time
 
 Run only these tests:
 
@@ -709,7 +710,7 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings and no WorkOS setting, unless the test adds them. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass.
 
 [V] Given hosted settings with an HTTPS public URL and no WorkOS settings, the server listens and serves the authentication-unavailable notice without a credential prompt or cookie, logs that hosted authentication is not available yet, reports no tenant, uses no network, and stops with status 0
-[V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP, account, organization, and billing operations each get the explicit 503 answer without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
+[V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP (POST, GET, and DELETE), account, organization, and billing operations each get the explicit 503 answer with `Cache-Control: no-store` and without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
 [V] Given a value for each WorkOS setting, no setting turns on a provider or access, and the output shows no setting value
 [V] Given an invalid common setting, also with every WorkOS setting, startup stops before it listens with a `FATAL` line that names the setting and the rule but not the value
 

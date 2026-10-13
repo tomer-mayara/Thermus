@@ -15,8 +15,7 @@ interface SelfHostedConfig extends PublicUrls {
   readonly dataDirectory: string;
 }
 
-// The hosted edition reads no provider setting yet. The hosted provider that replaces the placeholder reads and
-// checks its own settings.
+// The hosted provider will read and check its own settings, so no WORKOS_* value can change this record.
 interface HostedConfig extends PublicUrls {
   readonly deployment: 'hosted';
 }

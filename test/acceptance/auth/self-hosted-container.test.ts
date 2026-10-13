@@ -17,6 +17,7 @@ import {
 } from '../../support/container-gate.ts';
 import { ContainerSite } from '../../support/container-site.ts';
 import { dockerOutput } from '../../support/docker-cli.ts';
+import { mcpUnavailableAnswer, unavailableNotice, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { LocalMcpUser } from '../../support/local-mcp-user.ts';
 
@@ -26,15 +27,7 @@ const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{
 const lockError = /in use by another Magumagu process/;
 // Only the dedicated command arms the gate. npm test and npm run test:acceptance report these tests as skipped.
 const gateArmed = process.env.MAGUMAGU_CONTAINER_GATE === '1';
-const hostedSettings = {
-  DEPLOYMENT: 'hosted',
-  PUBLIC_BASE_URL: 'https://magumagu.example',
-  WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-  WORKOS_CLIENT_ID: 'client_placeholder',
-  WORKOS_API_KEY: 'workos-api-key-placeholder',
-  WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-  WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
-};
+const hostedSettings = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', ...workOSSettings };
 // The hosted and paid capabilities: WorkOS sign-in, onboarding, organizations, grants, invitations, seats, and
 // billing, with the provider routes that could add them. The self-hosted composition routes none of them.
 const hostedAndPaidPaths = [
@@ -480,9 +473,9 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(statuses, hostedAndPaidPaths.map(([method, path]) => [method, path, 404]));
     assert.deepEqual(accounts.map(({ email }) => email), [alice.email]);
     assert.deepEqual(hostedAnswers, hostedAndPaidPaths.map(([method, path]) => [method, path, 503, null]));
-    assert.deepEqual([hostedMcp.status, await hostedMcp.json()], [503, { error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' }]);
+    assert.deepEqual([hostedMcp.status, await hostedMcp.json()], [503, mcpUnavailableAnswer]);
     assert.deepEqual([notice.status, notice.headers.get('Set-Cookie')], [503, null]);
-    assert.match(noticeText, /Hosted authentication is not available yet\./);
+    assert.match(noticeText, unavailableNotice);
     assert.match(hosted.output, /INFO.*Hosted authentication is not available yet\./);
     assert.doesNotMatch(hosted.output, /tenant/);
     assert.deepEqual(hostedExit, { code: 0, signal: null });

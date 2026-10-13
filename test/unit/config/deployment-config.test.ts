@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DeploymentConfigError, loadDeploymentConfig, type DeploymentConfig } from '../../../src/config/deployment-config.ts';
+import { workOSSettings } from '../../support/hosted-placeholder.ts';
 
 type Environment = Record<string, string | undefined>;
 type Edition = DeploymentConfig['deployment'];
@@ -8,12 +9,6 @@ type Edition = DeploymentConfig['deployment'];
 const valid: Readonly<Record<Edition, Environment>> = {
   'self-hosted': { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'https://magumagu.example', DATA_DIR: '/var/lib/magumagu' },
   hosted: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example' },
-};
-// The hosted placeholder reads no WorkOS setting. These values must change no record and appear in no error.
-const workOSSettings: Environment = {
-  WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app', WORKOS_CLIENT_ID: 'client_placeholder',
-  WORKOS_API_KEY: 'workos-api-key-placeholder', WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
-  WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
 };
 const valueSettings = Object.keys({ ...valid['self-hosted'], ...valid.hosted, ...workOSSettings }).filter((name) => name !== 'DEPLOYMENT');
 const rootUrls = { publicBaseUrl: 'https://magumagu.example/', mcpResourceUrl: 'https://magumagu.example/mcp',

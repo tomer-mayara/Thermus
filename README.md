@@ -323,11 +323,17 @@ DEPLOYMENT=hosted PUBLIC_BASE_URL=https://magumagu.example pnpm start
 - The MCP resource, `<base>/mcp`, and its protected-resource metadata give `503` with the OAuth error `temporarily_unavailable` and no Bearer challenge, also for a request without a credential.
 - No bearer token, cookie, organization ID, or form value gets an identity, a grant, a session cookie, a tenant, or protected work. There is no anonymous access, default tenant, local fallback, or automatic User role. Other paths give `404`.
 
-The shell is the composition that the hosted provider will replace. [`composeHostedApplication()`](src/application.ts) takes two provider roles: a [`BrowserSession`](src/hosted-admin/browser-session.ts), which gives the verified user of a browser request with the organization that its session selected, and an [`AccessResolver`](src/auth/access-context.ts). [`HostedAccountRoutes`](src/hosted-admin/account-routes.ts) checks the browser session and then the current access. Only then does it give the request and its trusted `RequestContext` to an account operation. A signed-out session gets `401`, a denial gets `403`, and a request with no operation gets `404`. No production account operation exists yet. [`UnavailableHostedAuthentication`](src/auth-unavailable/unavailable-hosted-authentication.ts) implements both roles: each browser session is unavailable, and each access request is denied.
+The shell is the composition that the hosted provider will replace. [`composeHostedApplication()`](src/application.ts) takes the three parts that change with the provider:
+
+- a [`BrowserSession`](src/hosted-admin/browser-session.ts). It gets only the `Cookie` header of a browser request and gives the verified user, with the organization that its session selected. Thus no form field, query, or other header can choose the user or the organization;
+- an [`AccessResolver`](src/auth/access-context.ts);
+- the MCP endpoint, which answers the MCP resource and its metadata. The application closes it.
+
+[`HostedAccountRoutes`](src/hosted-admin/account-routes.ts) checks the browser session and then the current access. Only then does it give the request and a frozen copy of its trusted `RequestContext` to an account operation. A signed-out session gets `401`, a denial gets `403`, and a request with no operation gets `404`. No production account operation exists yet. The placeholder module, [`src/auth-unavailable/unavailable-hosted-authentication.ts`](src/auth-unavailable/unavailable-hosted-authentication.ts), gives all three parts. `UnavailableHostedAuthentication` says that each browser session is unavailable and denies each access request. `UnavailableMcpEndpoint` gives the MCP answer above.
 
 Deferred work:
 
-- AUTH-06 replaces the placeholder with the WorkOS provider. That provider implements the same roles, and `IdentityVerifier` for the MCP resource. It reads and checks its own settings. It must pass the [hosted live gate](docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06) before hosted access is enabled.
+- AUTH-06 replaces the placeholder with the WorkOS provider. That provider implements `BrowserSession` and `AccessResolver`, and `IdentityVerifier` for an `MCPServer` that becomes the MCP endpoint. It reads and checks its own settings. It must pass the [hosted live gate](docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06) before hosted access is enabled.
 - AUTH-07 and AUTH-08 add organization administration, invitations, and the seat summary as account operations. AUTH-07 adds the `OrganizationDirectory` contract. Their tests use doubles of these roles. A double never becomes a production sign-in.
 - AUTH-11 adds paid billing.
 

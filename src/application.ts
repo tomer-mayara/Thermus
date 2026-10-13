@@ -21,11 +21,12 @@ export interface HostedRequestHandlers {
   readonly account: FetchHandler;
 }
 
-// The provider roles that the hosted composition uses. The unavailable placeholder implements them now. The hosted
-// WorkOS provider implements the same roles when it replaces the placeholder.
-export interface HostedAuthentication {
+// The parts that change when the hosted WorkOS provider replaces the unavailable placeholder. The MCP endpoint
+// answers the MCP resource and its protected-resource metadata, and the application closes it.
+export interface HostedProviderParts {
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;
+  readonly mcp: Pick<MCPServer, 'fetch' | 'close'>;
 }
 
 export interface Application {
@@ -97,21 +98,20 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
 }
 
 async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger): Promise<Application> {
-  const { UnavailableHostedAuthentication } = await import('./auth-unavailable/unavailable-hosted-authentication.ts');
+  const { UnavailableHostedAuthentication, UnavailableMcpEndpoint } = await import('./auth-unavailable/unavailable-hosted-authentication.ts');
   const authentication = new UnavailableHostedAuthentication();
   logger.info('Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.');
-  return composeHostedApplication(config, { session: authentication, accessResolver: authentication });
+  return composeHostedApplication(config, { session: authentication, accessResolver: authentication, mcp: new UnavailableMcpEndpoint() });
 }
 
-// The hosted composition owns no resource yet. The MCP resource has no hosted verifier yet, so each MCP request,
-// also one without a credential, gets the unavailable answer and no Bearer challenge.
-export function composeHostedApplication(config: RouteConfig, authentication: HostedAuthentication, operation?: AccountOperation): Application {
-  const account = new HostedAccountRoutes({ ...authentication, operation });
-  const handle = routeHostedRequests(config, { mcp: async () => mcpAuthenticationUnavailable(), account: (request) => account.handle(request) });
-  return applicationRecord(handle, new AsyncDisposableStack());
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, operation?: AccountOperation): Application {
+  const owned = new AsyncDisposableStack();
+  owned.defer(() => parts.mcp.close());
+  const account = new HostedAccountRoutes({ session: parts.session, accessResolver: parts.accessResolver, operation });
+  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => account.handle(request) });
+  return applicationRecord(handle, owned);
 }
 
-// The MCP resource and its metadata go to the MCP handler. Each other path under the public URL is a browser path.
 export function routeHostedRequests(config: RouteConfig, handlers: HostedRequestHandlers): FetchHandler {
   const basePath = new URL(config.publicBaseUrl).pathname;
   const mcpPaths = new Set([
@@ -125,11 +125,6 @@ export function routeHostedRequests(config: RouteConfig, handlers: HostedRequest
     if (pathname.startsWith(basePath)) return handlers.account(request);
     return new Response('Not Found', { status: 404 });
   };
-}
-
-function mcpAuthenticationUnavailable(): Response {
-  const body = { error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' };
-  return Response.json(body, { status: 503, headers: { 'Cache-Control': 'no-store' } });
 }
 
 function applicationRecord(handle: Application['handle'], owned: AsyncDisposableStack): Application {

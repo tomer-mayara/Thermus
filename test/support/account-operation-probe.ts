@@ -8,8 +8,6 @@ export interface AccountWork {
   readonly organizationId?: string;
 }
 
-// Test only: protected account, organization, and billing operations. Each checks its permission in the trusted
-// context, records its work there, and answers with that context. Production registers no such operation.
 export class AccountOperationProbe {
   readonly work: AccountWork[] = [];
   private readonly permissions: ReadonlyMap<string, string>;

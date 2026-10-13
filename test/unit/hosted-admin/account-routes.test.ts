@@ -1,82 +1,21 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type {
-  AccessDecision,
-  AccessDenialReason,
-  AuthenticatedUser,
-  RequestContext,
-  RoleGrant,
-} from '../../../src/auth/access-context.ts';
-import { HostedAccountRoutes } from '../../../src/hosted-admin/account-routes.ts';
-import type { BrowserSessionState } from '../../../src/hosted-admin/browser-session.ts';
-import { AccessResolverMock, type ConfiguredAccess } from '../mcp/fixtures/access-resolver-mock.ts';
-import { AccountOperationDouble } from './fixtures/account-operation-double.ts';
-import { BrowserSessionDouble, type ConfiguredSession } from './fixtures/browser-session-double.ts';
-
-const publicBaseUrl = 'https://magumagu.example/';
-const authority = 'hosted-provider-double';
-const ann: AuthenticatedUser = { authority, subject: 'user-ann', selectedOrganizationId: 'org-a' };
-const ben: AuthenticatedUser = { authority, subject: 'user-ben', selectedOrganizationId: 'org-b' };
-const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
-const notice = /Hosted authentication is not available yet\./;
-const pageHeaders = {
-  'content-type': 'text/html; charset=utf-8',
-  'cache-control': 'no-store',
-  'content-security-policy': "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
-  'x-content-type-options': 'nosniff',
-  'x-frame-options': 'DENY',
-};
-
-interface Setup {
-  readonly sessions?: ReadonlyMap<string, ConfiguredSession>;
-  readonly otherSession?: BrowserSessionState;
-  readonly decisions?: ReadonlyMap<string, ConfiguredAccess>;
-  readonly withOperation?: boolean;
-}
-
-function serve(setup: Setup) {
-  const session = new BrowserSessionDouble(setup.sessions, setup.otherSession);
-  const resolver = new AccessResolverMock(setup.decisions);
-  const operations = new AccountOperationDouble();
-  const operation = setup.withOperation === false ? undefined : operations.operation;
-  const routes = new HostedAccountRoutes({ session, accessResolver: resolver, operation });
-  return { routes, session, resolver, operations };
-}
-
-function signedIn(user: AuthenticatedUser): BrowserSessionState {
-  return { status: 'signed-in', user };
-}
-
-function contextOf(user: AuthenticatedUser, grants: readonly RoleGrant[], permissions: readonly string[]): RequestContext {
-  return { user, tenantId: `tenant-${user.selectedOrganizationId}`, organizationId: user.selectedOrganizationId, grants, permissions };
-}
-
-function allowedFor(context: RequestContext): AccessDecision {
-  return { allowed: true, context };
-}
-
-function accountRequest(path: string, cookie?: string, init: RequestInit = {}): Request {
-  const headers = new Headers(init.headers);
-  if (cookie !== undefined) headers.set('Cookie', cookie);
-  return new Request(new URL(path, publicBaseUrl), { ...init, headers });
-}
-
-function formPost(path: string, cookie: string, form: string): Request {
-  return accountRequest(path, cookie, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://magumagu.example' },
-    body: form,
-  });
-}
-
-async function assertPage(response: Response, status: number, text: RegExp): Promise<void> {
-  assert.equal(response.status, status);
-  assert.deepEqual(Object.fromEntries(response.headers), pageHeaders);
-  const body = await response.text();
-  assert.match(body, text);
-  assert.doesNotMatch(body, /<form|<input|<script|<link|<img/i);
-}
+import type { AccessDenialReason } from '../../../src/auth/access-context.ts';
+import { unavailableNotice as notice } from '../../support/hosted-placeholder.ts';
+import type { ConfiguredAccess } from '../mcp/fixtures/access-resolver-mock.ts';
+import {
+  accountRequest,
+  adminGrant,
+  allowedFor,
+  ann,
+  assertPage,
+  ben,
+  contextOf,
+  formPost,
+  serve,
+  signedIn,
+  userGrant,
+} from './fixtures/account-routes-fixtures.ts';
 
 describe('HostedAccountRoutes', () => {
   test('Given a signed-in browser session with allowed access, when an account request arrives, then the operation gets that request and the decided context, and the client gets the operation answer', async () => {
@@ -94,7 +33,7 @@ describe('HostedAccountRoutes', () => {
     assert.equal(operations.calls.length, 1);
     assert.equal(operations.calls[0]?.request, request);
     assert.deepEqual(operations.calls[0]?.context, annContext);
-    assert.deepEqual([session.calls, resolver.calls], [[request], [ann]]);
+    assert.deepEqual([session.calls, resolver.calls], [['session=ann'], [ann]]);
     assert.equal(await request.text(), 'role=user', 'the routes leave the form body to the operation');
   });
 
@@ -122,6 +61,26 @@ describe('HostedAccountRoutes', () => {
     assert.deepEqual(operations.calls.map(({ context }) => context.organizationId), ['org-b', 'org-a']);
   });
 
+  test('Given a resolver that changes its records after its decision, when the operation runs, then it gets a frozen copy of the decided context that later changes cannot reach', async () => {
+    const decided = contextOf(ann, [userGrant], ['product:access']);
+    const records = { ...decided, user: { ...ann }, grants: [{ ...userGrant, permissions: [...userGrant.permissions] }], permissions: [...decided.permissions] };
+    const { routes, operations } = serve({
+      sessions: new Map([['session=ann', signedIn(ann)]]),
+      decisions: new Map([[ann.subject, allowedFor(records)]]),
+    });
+
+    await routes.handle(accountRequest('/account', 'session=ann'));
+    records.grants.push({ ...adminGrant, permissions: [...adminGrant.permissions] });
+    records.grants[0]?.permissions.push('billing:manage');
+    records.permissions.push('user-grants:manage', 'billing:manage');
+    Object.assign(records, { tenantId: 'tenant-org-b', organizationId: 'org-b' });
+    Object.assign(records.user, { subject: 'user-ben', selectedOrganizationId: 'org-b' });
+
+    const context = operations.calls[0]?.context;
+    assert.deepEqual(context, decided);
+    assert.deepEqual([context, context?.user, context?.grants, context?.grants[0], context?.grants[0]?.permissions, context?.permissions].map(Object.isFrozen), [true, true, true, true, true, true]);
+  });
+
   test('Given hosted authentication that is unavailable, when account, organization, and billing requests arrive with forged cookies, bearer tokens, organization IDs, and form input, then each gets the 503 notice without a cookie, and no access resolution or operation runs', async () => {
     const { routes, session, resolver, operations } = serve({
       sessions: new Map([['session=ann', signedIn(ann)]]),
@@ -144,7 +103,7 @@ describe('HostedAccountRoutes', () => {
       assert.equal(request.bodyUsed, false);
     }
 
-    assert.equal(session.calls.length, requests.length);
+    assert.deepEqual(session.calls, ['wos-session=forged-session', null, ...Array(4).fill('wos-session=forged-session')]);
     assert.deepEqual([resolver.calls, operations.calls], [[], []]);
   });
 

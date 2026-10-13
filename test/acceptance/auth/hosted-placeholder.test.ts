@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { mcpUnavailableAnswer, unavailableNotice as notice, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
 
 const hostedSettings: ServerSettings = {
@@ -8,15 +9,6 @@ const hostedSettings: ServerSettings = {
   LISTEN_HOST: '127.0.0.1',
   LISTEN_PORT: '0',
 };
-// Values for each WorkOS setting. The placeholder reads none of them, so none can turn on a provider or access.
-const workOSSettings: ServerSettings = {
-  WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
-  WORKOS_CLIENT_ID: 'client_placeholder',
-  WORKOS_API_KEY: 'workos-api-key-placeholder',
-  WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
-  WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
-};
-const notice = /Hosted authentication is not available yet\./;
 const forgedOrganization = 'org_01FORGEDORGANIZATION';
 const forgedCookie = 'wos-session=Fe26.2*forged-sealed-session; better-auth.session_token=forged-local-session';
 const forgedToken = forgedJwt({
@@ -34,10 +26,11 @@ interface ProtectedOperation {
   readonly init: RequestInit;
 }
 
-// The paths of the hosted capabilities, each with the forged values that a client can send.
 const protectedOperations: readonly ProtectedOperation[] = [
   { area: 'MCP', path: '/mcp', init: mcpCall(forgedToken) },
   { area: 'MCP', path: '/mcp', init: mcpCall() },
+  { area: 'MCP', path: '/mcp', init: { headers: { Accept: 'text/event-stream', Authorization: `Bearer ${forgedToken}`, 'Mcp-Session-Id': 'forged-session-id' } } },
+  { area: 'MCP', path: '/mcp', init: { method: 'DELETE', headers: { Authorization: `Bearer ${forgedToken}`, 'Mcp-Session-Id': 'forged-session-id' } } },
   { area: 'MCP', path: '/.well-known/oauth-protected-resource/mcp', init: { headers: { Cookie: forgedCookie } } },
   { area: 'MCP', path: '/.well-known/oauth-protected-resource', init: {} },
   { area: 'account', path: '/', init: { headers: { Cookie: forgedCookie } } },
@@ -81,6 +74,7 @@ function formPost(fields: Readonly<Record<string, string>>): RequestInit {
 interface Answer {
   readonly status: number;
   readonly type: string | null;
+  readonly caching: string | null;
   readonly cookie: string | null;
   readonly challenge: string | null;
   readonly body: string;
@@ -89,7 +83,14 @@ interface Answer {
 async function answerOf(server: ServerProcess, path: string, init: RequestInit = {}): Promise<Answer> {
   const response = await server.request(path, init);
   const { headers } = response;
-  return { status: response.status, type: headers.get('Content-Type'), cookie: headers.get('Set-Cookie'), challenge: headers.get('WWW-Authenticate'), body: await response.text() };
+  return {
+    status: response.status,
+    type: headers.get('Content-Type'),
+    caching: headers.get('Cache-Control'),
+    cookie: headers.get('Set-Cookie'),
+    challenge: headers.get('WWW-Authenticate'),
+    body: await response.text(),
+  };
 }
 
 function assertUnavailable(answer: Answer, operation: Pick<ProtectedOperation, 'area' | 'path'>): void {
@@ -97,9 +98,10 @@ function assertUnavailable(answer: Answer, operation: Pick<ProtectedOperation, '
   assert.equal(answer.status, 503, label);
   assert.equal(answer.cookie, null, `${label} sets a cookie`);
   assert.equal(answer.challenge, null, `${label} sends a Bearer challenge`);
+  assert.equal(answer.caching, 'no-store', label);
   if (operation.area === 'MCP') {
     assert.match(answer.type ?? '', /^application\/json/, label);
-    assert.deepEqual(JSON.parse(answer.body), { error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' }, label);
+    assert.deepEqual(JSON.parse(answer.body), mcpUnavailableAnswer, label);
   } else {
     assert.match(answer.type ?? '', /^text\/html/, label);
     assert.match(answer.body, notice, label);
