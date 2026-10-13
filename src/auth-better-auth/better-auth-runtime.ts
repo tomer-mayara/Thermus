@@ -31,6 +31,12 @@ const REFUSED_PROVIDER_VARIABLES: Readonly<Record<string, string>> = {
   BETTER_AUTH_TELEMETRY: 'turn on telemetry',
 };
 
+// The confidential client that the MCP server uses to introspect access tokens.
+export interface ResourceServerClient {
+  readonly clientId: string;
+  readonly clientSecret: string;
+}
+
 export interface LocalProviderSettings {
   readonly publicBaseUrl: string;
   readonly mcpResourceUrl: string;
