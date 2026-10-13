@@ -9,7 +9,7 @@ import {
   UnauthorizedError,
 } from '@modelcontextprotocol/client';
 import type { AccessDecision } from '../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
+import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
 import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';

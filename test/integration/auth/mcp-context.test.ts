@@ -6,7 +6,7 @@ import {
   type AuthenticatedUser,
   type RoleGrant,
 } from '../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
+import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
 import { AccessResolverMock, type ConfiguredAccess } from '../../unit/mcp/fixtures/access-resolver-mock.ts';

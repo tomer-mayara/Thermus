@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { AccessDecision, AuthenticatedUser, RequestContext, RoleGrant } from '../../../../src/auth/access-context.ts';
 import { HostedAccountRoutes, type AccountFailureReport } from '../../../../src/hosted-admin/account-routes.ts';
-import type { BrowserSessionState } from '../../../../src/hosted-admin/browser-session.ts';
+import type { BrowserSessionState } from '../../../../src/auth/hosted-auth/browser-session.ts';
 import type { AuthorizedOrganization } from '../../../../src/organizations/organization-administration.ts';
 import { AccessResolverMock, type ConfiguredAccess } from '../../mcp/fixtures/access-resolver-mock.ts';
 import { AccountOperationDouble, type OperationAnswer } from './account-operation-double.ts';

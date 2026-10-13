@@ -5,7 +5,7 @@ import type {
   CookieEffects,
   OrganizationSwitch,
   SignedInBrowserSession,
-} from '../../../../src/hosted-admin/browser-session.ts';
+} from '../../../../src/auth/hosted-auth/browser-session.ts';
 
 export type ConfiguredSession = BrowserSessionState | Error | (() => Promise<BrowserSessionState>);
 export type ConfiguredSwitch = OrganizationSwitch | Error;

@@ -1,4 +1,4 @@
-import type { AuthenticatedUser } from '../auth/access-context.ts';
+import type { AuthenticatedUser } from '../access-context.ts';
 
 // Set-Cookie values that the browser must get with the answer to its request, also with a redirect or an error page.
 // Otherwise a browser could lose a session that the provider refreshed or ended during the request.

@@ -14,9 +14,9 @@ import {
   nowSeconds,
   resourceUrl,
   serveAccess,
-} from './fixtures/access-test-server.ts';
-import { mcpRequest, toolJson } from './fixtures/mcp-http-request.ts';
-import { RequestContextTools, type ContextReport } from './fixtures/request-context-tools.ts';
+} from '../../unit/mcp/fixtures/access-test-server.ts';
+import { mcpRequest, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+import { RequestContextTools, type ContextReport } from '../../unit/mcp/fixtures/request-context-tools.ts';
 
 describe('MCPServer access decisions', () => {
   test('Given an allowed decision, when a client calls a tool, then the request factory binds that context once and the tool receives it with the verified claims', { timeout: 5_000 }, async (t) => {

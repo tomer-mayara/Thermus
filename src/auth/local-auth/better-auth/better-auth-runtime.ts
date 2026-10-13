@@ -3,8 +3,8 @@ import { mcp } from '@better-auth/mcp';
 import { betterAuth } from 'better-auth';
 import { admin } from 'better-auth/plugins/admin';
 import { jwt } from 'better-auth/plugins/jwt';
-import type { LocalAuthSettings } from '../auth/local-auth/local-user-administration.ts';
-import { CLIENT_ADDRESS_HEADER } from '../http/server.ts';
+import type { LocalAuthSettings } from '../local-user-administration.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../http/client-address.ts';
 import { lockDataDirectory, type DataDirectoryLock } from './data-directory-lock.ts';
 import { openLocalInstallation, type LocalInstallation } from './local-installation.ts';
 

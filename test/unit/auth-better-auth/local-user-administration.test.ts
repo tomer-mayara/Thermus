@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { LocalUserAdministration } from '../../../src/auth-better-auth/local-user-administration.ts';
+import { BetterAuthUserAdministration } from '../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
 import { PasswordAnswers, rejectsWith } from './fixtures/administration-fixtures.ts';
 import { LocalProviderDouble } from './fixtures/local-provider-double.ts';
 
-describe('LocalUserAdministration accounts', () => {
+describe('BetterAuthUserAdministration accounts', () => {
   describe('add', () => {
     test('Given no account with the email, when an account is added, then the provider creates it enabled, with the email in lower case and the provider hash of the hidden password', async () => {
       const provider = new LocalProviderDouble();
       const answers = new PasswordAnswers('alice-password-1');
 
-      const account = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).addUser('Alice@Example.com', answers.read);
+      const account = await new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).addUser('Alice@Example.com', answers.read);
 
       const stored = provider.userByEmail('alice@example.com');
       assert.ok(stored);
@@ -24,7 +24,7 @@ describe('LocalUserAdministration accounts', () => {
       provider.addUser('alice@example.com', 'alice-password-1');
       const answers = new PasswordAnswers('other-password-1');
 
-      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).addUser('ALICE@example.com', answers.read), rejectsWith('duplicate-email'));
+      await assert.rejects(new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).addUser('ALICE@example.com', answers.read), rejectsWith('duplicate-email'));
 
       assert.equal(answers.asked, 0);
       assert.equal(provider.users.size, 1);
@@ -33,7 +33,7 @@ describe('LocalUserAdministration accounts', () => {
 
     test('Given passwords outside 8 to 128 characters, when an account is added, then it fails with invalid-password and a message with the limits, and creates nothing; 8 and 128 characters are accepted', async () => {
       const provider = new LocalProviderDouble();
-      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
+      const administration = new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient);
 
       for (const password of ['seven-7', 'x'.repeat(129), '']) {
         await assert.rejects(administration.addUser('alice@example.com', new PasswordAnswers(password).read), (error) => {
@@ -52,7 +52,7 @@ describe('LocalUserAdministration accounts', () => {
       const provider = new LocalProviderDouble();
       const answers = new PasswordAnswers('valid-password-1');
 
-      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).addUser('not-an-email', answers.read), (error) => {
+      await assert.rejects(new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).addUser('not-an-email', answers.read), (error) => {
         assert.ok(rejectsWith('invalid-email')(error));
         assert.doesNotMatch((error as Error).message, /not-an-email/);
         return true;
@@ -70,7 +70,7 @@ describe('LocalUserAdministration accounts', () => {
       const alice = provider.addUser('alice@example.com', 'alice-password-1');
       const bob = provider.addUser('bob@example.com', 'bob-password-1', true);
 
-      const accounts = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).listUsers();
+      const accounts = await new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).listUsers();
 
       assert.deepEqual(accounts, [
         { id: alice.id, email: 'alice@example.com', disabled: false },
@@ -84,7 +84,7 @@ describe('LocalUserAdministration accounts', () => {
       const emails = Array.from({ length: 205 }, (_, index) => `user-${String(index).padStart(3, '0')}@example.com`);
       for (const email of [...emails].reverse()) provider.addUser(email, 'user-password-1');
 
-      const accounts = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).listUsers();
+      const accounts = await new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).listUsers();
 
       assert.deepEqual(accounts.map(({ email }) => email), emails);
       assert.deepEqual(provider.listPageSizes, [100, 100, 100]);
@@ -93,7 +93,7 @@ describe('LocalUserAdministration accounts', () => {
     test('Given no account, when the accounts are listed, then the list is empty', async () => {
       const provider = new LocalProviderDouble();
 
-      assert.deepEqual(await new LocalUserAdministration(provider.auth, provider.resourceServerClient).listUsers(), []);
+      assert.deepEqual(await new BetterAuthUserAdministration(provider.auth, provider.resourceServerClient).listUsers(), []);
     });
   });
 });

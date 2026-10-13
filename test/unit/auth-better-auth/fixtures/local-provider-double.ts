@@ -1,4 +1,4 @@
-import type { LocalAuth, ResourceServerClient, ResourceServerClientRecord } from '../../../../src/auth-better-auth/better-auth-runtime.ts';
+import type { LocalAuth, ResourceServerClient, ResourceServerClientRecord } from '../../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
 
 const SESSION_COOKIE = 'better-auth.session_token';
 const EMAIL = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i;

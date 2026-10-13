@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { inspect } from 'node:util';
 import { describe, test } from 'node:test';
-import { BetterAuthProvider } from '../../../src/auth-better-auth/better-auth-provider.ts';
-import { InvalidAccessTokenError } from '../../../src/mcp/identity-verifier.ts';
+import { BetterAuthProvider } from '../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
+import { InvalidAccessTokenError } from '../../../src/auth/identity-verifier.ts';
 import {
   AccessTokenSigner,
   localIssuer,
@@ -10,8 +10,8 @@ import {
   mcpResourceUrl,
   withChangedClaims,
   type TokenFields,
-} from './fixtures/local-access-tokens.ts';
-import { installationId, localSettings, TokenProviderDouble } from './fixtures/token-provider-double.ts';
+} from '../../unit/auth-better-auth/fixtures/local-access-tokens.ts';
+import { installationId, localSettings, TokenProviderDouble } from '../../unit/auth-better-auth/fixtures/token-provider-double.ts';
 
 function verifierWithOwnKey() {
   const signer = new AccessTokenSigner('local-key-1');

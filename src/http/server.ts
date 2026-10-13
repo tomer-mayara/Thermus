@@ -3,8 +3,7 @@ import { createServer, STATUS_CODES, type IncomingMessage, type Server, type Ser
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 import type { ListenAddress } from '../config/deployment-config.ts';
-
-export const CLIENT_ADDRESS_HEADER = 'x-magumagu-client-address';
+import { CLIENT_ADDRESS_HEADER } from './client-address.ts';
 
 export type FetchHandler = (request: Request) => Promise<Response>;
 

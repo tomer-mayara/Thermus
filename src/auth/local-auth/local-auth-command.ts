@@ -1,5 +1,5 @@
-import { loadDeploymentConfig } from '../config/deployment-config.ts';
-import type { LocalUserAdministration, LocalAccount, LocalAuthSettings, PasswordSource, RegisteredClient } from '../auth/local-auth/local-user-administration.ts';
+import { loadDeploymentConfig } from '../../config/deployment-config.ts';
+import type { LocalUserAdministration, LocalAccount, LocalAuthSettings, PasswordSource, RegisteredClient } from './local-user-administration.ts';
 import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;

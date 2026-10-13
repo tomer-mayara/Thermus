@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CLIENT_ADDRESS_HEADER } from '../../../src/http/server.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../src/http/client-address.ts';
 import {
   assertPageHeaders,
   browserRequest,

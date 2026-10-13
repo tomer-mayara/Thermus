@@ -1,4 +1,4 @@
-import type { AuthenticatedUser } from '../auth/access-context.ts';
+import type { AuthenticatedUser } from './access-context.ts';
 
 export interface VerifiedIdentity {
   readonly user: AuthenticatedUser;

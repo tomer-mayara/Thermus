@@ -1,9 +1,9 @@
-import type { LocalAuthPages } from './auth-better-auth/local-auth-pages.ts';
+import type { LocalAuthPages } from './auth/local-auth/better-auth/local-auth-pages.ts';
 import type { AccessResolver } from './auth/access-context.ts';
 import type { Billing } from './billing/billing.ts';
 import type { DeploymentConfig } from './config/deployment-config.ts';
 import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation } from './hosted-admin/account-routes.ts';
-import type { BrowserSession } from './hosted-admin/browser-session.ts';
+import type { BrowserSession } from './auth/hosted-auth/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
 import type { ChangeRecorder } from './organizations/change-records.ts';
@@ -63,9 +63,9 @@ export function operatorFailureReporter(logger: ApplicationLogger): FailureRepor
 }
 
 async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger): Promise<Application> {
-  const { openBetterAuthRuntime } = await import('./auth-better-auth/better-auth-runtime.ts');
-  const { BetterAuthProvider } = await import('./auth-better-auth/better-auth-provider.ts');
-  const { LocalAuthPages, localPagePaths } = await import('./auth-better-auth/local-auth-pages.ts');
+  const { openBetterAuthRuntime } = await import('./auth/local-auth/better-auth/better-auth-runtime.ts');
+  const { BetterAuthProvider } = await import('./auth/local-auth/better-auth/better-auth-provider.ts');
+  const { LocalAuthPages, localPagePaths } = await import('./auth/local-auth/better-auth/local-auth-pages.ts');
   await using owned = new AsyncDisposableStack();
   const runtime = owned.adopt(await openBetterAuthRuntime(config), (opened) => opened.close());
   const issuer = new URL('api/auth', config.publicBaseUrl).href;
@@ -112,8 +112,9 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
 }
 
 async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger): Promise<Application> {
-  const { UnavailableHostedAuthentication, UnavailableMcpEndpoint } = await import('./auth-unavailable/unavailable-hosted-authentication.ts');
+  const { UnavailableHostedAuthentication } = await import('./auth/hosted-auth/unavailable-hosted-authentication.ts');
   const { BillingFree } = await import('./billing/billing-free.ts');
+  const { UnavailableMcpEndpoint } = await import('./mcp/unavailable-mcp-endpoint.ts');
   const authentication = new UnavailableHostedAuthentication();
   logger.info('Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.');
   const parts = { session: authentication, accessResolver: authentication, organizations: authentication, mcp: new UnavailableMcpEndpoint() };

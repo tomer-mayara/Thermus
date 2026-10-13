@@ -1,4 +1,4 @@
-import { CLIENT_ADDRESS_HEADER } from '../http/server.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../http/client-address.ts';
 
 export type ProviderHandler = (request: Request) => Promise<Response>;
 

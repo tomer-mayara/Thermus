@@ -1,5 +1,5 @@
-import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../auth/access-context.ts';
-import type { BrowserSession, BrowserSessionState } from '../hosted-admin/browser-session.ts';
+import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../access-context.ts';
+import type { BrowserSession, BrowserSessionState } from './browser-session.ts';
 import type {
   DirectoryChangeResult,
   DirectoryGrantChange,
@@ -13,14 +13,13 @@ import type {
   OrganizationMember,
   OrganizationMembership,
   Page,
-} from '../organizations/organization-directory.ts';
+} from '../../organizations/organization-directory.ts';
 
 const UNAVAILABLE: BrowserSessionState = Object.freeze({ status: 'unavailable' });
 const DENIED: AccessDecision = Object.freeze({ allowed: false, reason: 'account-inactive' });
 const NO_MEMBERSHIPS: readonly OrganizationMembership[] = Object.freeze([]);
 const NO_RECORDS: Page<never> = Object.freeze({ items: Object.freeze([]) });
 const NO_CHANGE = Object.freeze({ outcome: 'unsupported' });
-const MCP_UNAVAILABLE = Object.freeze({ error: 'temporarily_unavailable', error_description: 'Hosted authentication is not available yet.' });
 
 // Stands in for the hosted WorkOS provider, which does not exist yet, so that the hosted edition can start without it.
 // It knows no member or invitation and makes no change.
@@ -71,14 +70,4 @@ export class UnavailableHostedAuthentication implements BrowserSession, AccessRe
   async revokeInvitation(_invitationId: string): Promise<InvitationUpdateResult> {
     return NO_CHANGE;
   }
-}
-
-// A Bearer challenge would send MCP clients to an authorization server that does not exist, so each MCP request,
-// also one without a credential, gets this answer.
-export class UnavailableMcpEndpoint {
-  async fetch(_request: Request): Promise<Response> {
-    return Response.json(MCP_UNAVAILABLE, { status: 503, headers: { 'Cache-Control': 'no-store' } });
-  }
-
-  async close(): Promise<void> {}
 }

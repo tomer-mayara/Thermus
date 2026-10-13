@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { LocalAuthPages, localPagePaths, type ProviderHandler } from '../../../../src/auth-better-auth/local-auth-pages.ts';
-import { CLIENT_ADDRESS_HEADER } from '../../../../src/http/server.ts';
+import { LocalAuthPages, localPagePaths, type ProviderHandler } from '../../../../src/auth/local-auth/better-auth/local-auth-pages.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../../src/http/client-address.ts';
 
 export const publicBaseUrl = 'http://localhost:8080/';
 export const publicOrigin = 'http://localhost:8080';

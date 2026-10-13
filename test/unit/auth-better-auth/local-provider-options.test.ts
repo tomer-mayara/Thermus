@@ -5,7 +5,7 @@ import {
   localProviderOptions,
   ProviderEnvironmentError,
   type LocalProviderSettings,
-} from '../../../src/auth-better-auth/better-auth-runtime.ts';
+} from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
 import { setProcessEnvironment } from '../../support/process-environment.ts';
 
 const settings: LocalProviderSettings = {

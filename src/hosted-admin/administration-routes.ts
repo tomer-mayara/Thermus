@@ -8,7 +8,7 @@ import type {
 import { grantChangeIn, invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
 import { accessDeniedPage, noticePage, seeOther, type NoticeName } from './account-pages.ts';
 import { billingPage, invitationsPage, membersPage } from './administration-pages.ts';
-import type { SignedInBrowserSession } from './browser-session.ts';
+import type { SignedInBrowserSession } from '../auth/hosted-auth/browser-session.ts';
 
 export type AdministrationService = Pick<
   OrganizationAdministration,

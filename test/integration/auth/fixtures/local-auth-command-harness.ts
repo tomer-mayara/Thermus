@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { LocalAuthSettings } from '../../../../src/auth/local-auth/local-user-administration.ts';
-import { runLocalAuthCommand, type HiddenInput, type OpenedLocalAdministration } from '../../../../src/auth-better-auth/local-auth-command.ts';
-import { LocalUserAdministration } from '../../../../src/auth-better-auth/local-user-administration.ts';
+import { runLocalAuthCommand, type HiddenInput, type OpenedLocalAdministration } from '../../../../src/auth/local-auth/local-auth-command.ts';
+import { BetterAuthUserAdministration } from '../../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
 import { LocalProviderDouble } from '../../../unit/auth-better-auth/fixtures/local-provider-double.ts';
 
 export const environment = {
@@ -38,7 +38,7 @@ export class AdministrationOpenerDouble {
     this.settings.push(settings);
     if (this.openFailure) throw this.openFailure;
     return {
-      administration: new LocalUserAdministration(this.provider.auth, this.provider.resourceServerClient),
+      administration: new BetterAuthUserAdministration(this.provider.auth, this.provider.resourceServerClient),
       close: async () => {
         this.events.push('close');
         if (this.closeFailure) throw this.closeFailure;
