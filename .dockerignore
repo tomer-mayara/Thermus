@@ -11,3 +11,6 @@
 !src/
 !tsconfig.build.json
 !tsconfig.json
+
+# The browser portal has its own build and local environment.
+src/user-portal/

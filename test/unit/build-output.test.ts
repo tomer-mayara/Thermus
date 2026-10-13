@@ -13,15 +13,21 @@ const suites = ['unit', 'integration', 'acceptance', 'interface'];
 function fixture(t: TestContext): string {
   const dir = mkdtempSync(join(tmpdir(), 'thermus-build-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  for (const file of ['package.json', 'tsconfig.json', 'tsconfig.build.json']) cpSync(join(root, file), join(dir, file));
+  for (const file of ['package.json', 'tsconfig.json', 'tsconfig.build.json', 'tsconfig.user-portal.json']) cpSync(join(root, file), join(dir, file));
   symlinkSync(join(root, 'node_modules'), join(dir, 'node_modules'));
   mkdirSync(join(dir, 'src'));
   for (const suite of suites) {
     mkdirSync(join(dir, `test/${suite}`), { recursive: true });
     writeFileSync(join(dir, `test/${suite}/current.test.ts`), `import { test } from 'node:test';\ntest('${suite} current', () => {});\n`);
   }
+  for (const suite of ['unit', 'acceptance']) {
+    mkdirSync(join(dir, `test/${suite}/user-portal`));
+    writeFileSync(join(dir, `test/${suite}/user-portal/current.test.ts`), `import { test } from 'node:test';\ntest('portal ${suite} current', () => {});\n`);
+  }
   cpSync(join(root, 'test/unit/build-output.test.ts'), join(dir, 'test/unit/build-output.test.ts'));
   writeFileSync(join(dir, 'src/current.ts'), 'export const current = true;\n');
+  mkdirSync(join(dir, 'src/user-portal'));
+  writeFileSync(join(dir, 'src/user-portal/current.ts'), 'export const portal = true;\n');
   return dir;
 }
 function run(dir: string, command: string): SpawnSyncReturns<string> {
@@ -83,6 +89,8 @@ test('Given a deleted module, repeated builds remove its output and preserve out
   passes(run(dir, 'build'));
   assert.ok(existsSync(join(dir, 'dist/src/obsolete.js')));
   assert.equal(existsSync(join(dir, 'dist/test/unit/build-output.test.js')), false);
+  assert.equal(existsSync(join(dir, 'dist/src/user-portal')), false);
+  assert.equal(existsSync(join(dir, 'dist/test/unit/user-portal')), false);
   rmSync(join(dir, 'src/obsolete.ts'));
   passes(run(dir, 'build'));
   assert.equal(existsSync(join(dir, 'dist/src/obsolete.js')), false);
