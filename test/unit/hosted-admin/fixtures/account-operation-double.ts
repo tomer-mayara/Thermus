@@ -6,11 +6,22 @@ export interface OperationCall {
   readonly context: RequestContext;
 }
 
+export type OperationAnswer = (request: Request, context: RequestContext) => Promise<Response>;
+
+async function contextAnswer(request: Request, context: RequestContext): Promise<Response> {
+  return Response.json({ path: new URL(request.url).pathname, context }, { headers: { 'X-Operation': 'account-operation-double' } });
+}
+
 export class AccountOperationDouble {
   readonly calls: OperationCall[] = [];
+  private readonly answer: OperationAnswer;
+
+  constructor(answer: OperationAnswer = contextAnswer) {
+    this.answer = answer;
+  }
 
   readonly operation: AccountOperation = async (request, context) => {
     this.calls.push({ request, context });
-    return Response.json({ path: new URL(request.url).pathname, context }, { headers: { 'X-Operation': 'account-operation-double' } });
+    return this.answer(request, context);
   };
 }

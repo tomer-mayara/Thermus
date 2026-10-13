@@ -5,7 +5,7 @@ import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation
 import type { BrowserSession } from './hosted-admin/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
-import type { OrganizationDirectory } from './organizations/organization-administration.ts';
+import { OrganizationAdministration, type OrganizationDirectory } from './organizations/organization-administration.ts';
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
 type HostedConfig = Extract<DeploymentConfig, { deployment: 'hosted' }>;
@@ -120,7 +120,14 @@ export function accountFailureReporter(logger: ApplicationLogger): AccountFailur
 export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts): Application {
   const owned = new AsyncDisposableStack();
   owned.defer(() => parts.mcp.close());
-  const routes = new HostedAccountRoutes({ session: parts.session, accessResolver: parts.accessResolver, operation: account.operation });
+  const routes = new HostedAccountRoutes({
+    publicBaseUrl: config.publicBaseUrl,
+    session: parts.session,
+    accessResolver: parts.accessResolver,
+    organizations: new OrganizationAdministration(parts.organizations),
+    reportFailure: account.reportFailure,
+    operation: account.operation,
+  });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request) });
   return applicationRecord(handle, owned);
 }
