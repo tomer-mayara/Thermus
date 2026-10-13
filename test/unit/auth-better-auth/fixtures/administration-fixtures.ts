@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { LocalAdministrationError, type AdministrationFailure, type PasswordSource } from '../../../../src/auth-better-auth/local-user-administration.ts';
+import { LocalAdministrationError, type AdministrationFailure } from '../../../../src/auth-better-auth/local-user-administration.ts';
+import type { PasswordSource } from '../../../../src/auth/local-auth/local-user-administration.ts';
 import type { LocalProviderDouble } from './local-provider-double.ts';
 
 export class PasswordAnswers {

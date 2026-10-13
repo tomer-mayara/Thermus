@@ -50,14 +50,16 @@ describe('LocalUserAdministration accounts', () => {
 
     test('Given an email that the provider refuses, when an account is added, then it fails with invalid-email and a message without the email', async () => {
       const provider = new LocalProviderDouble();
+      const answers = new PasswordAnswers('valid-password-1');
 
-      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).addUser('not-an-email', new PasswordAnswers('valid-password-1').read), (error) => {
+      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).addUser('not-an-email', answers.read), (error) => {
         assert.ok(rejectsWith('invalid-email')(error));
         assert.doesNotMatch((error as Error).message, /not-an-email/);
         return true;
       });
 
       assert.equal(provider.users.size, 0);
+      assert.equal(answers.asked, 1);
     });
   });
 

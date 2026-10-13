@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import type { ApprovedClient } from './local-user-administration.ts';
+import type { ApprovedClient } from '../auth/local-auth/local-user-administration.ts';
 
 export type LocalAuthCommand =
   | { readonly action: 'users add' | 'users reset-password' | 'users disable'; readonly email: string }

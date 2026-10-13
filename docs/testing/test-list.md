@@ -185,17 +185,21 @@ A stateful double stands in for the supported Better Auth operations. Its passwo
 [V] Deletes the registration session also when the client creation fails; reports a cleanup failure, and both failures together
 [V] Creates the confidential introspection client during native-client registration when needed, and keeps its secret out of command output
 
-**Local auth command** (`test/unit/auth-better-auth/local-auth-command.test.ts`, `local-auth-command-users.test.ts`, `local-auth-command-clients.test.ts`)
+**Local administration opener** (`test/unit/auth-better-auth/local-administration-opener.test.ts`)
 
-Doubles stand in for the hidden input, the runtime lifecycle, and the provider. The real `LocalUserAdministration` runs.
+The runtime opener double supplies provider operations and records cleanup. The
+concrete administration opener exposes only the command role and close function.
 
-[V] Gives exit status 2 and the usage for an unknown command, a missing or extra target, an option, and an incomplete client registration, without the arguments in the message, without a prompt, and without opening data
-[V] Opens the runtime with the self-hosted data directory and public URLs and closes it after the command; a hosted configuration, with or without WorkOS settings, or an incomplete configuration gives status 1 without opening data
-[V] Gives status 1 and the lock message for each command when another process holds the data directory, before any prompt
-[V] Closes the runtime after a failed command; reports a close failure, and both failures together
-[V] Asks for a new password two times for add and reset-password, and one time for client registration; refuses different entries and ended input
-[V] Prints the added account, the account table or the first-account hint, the reset and disable results, and the client ID, without passwords or hashes
-[V] Keeps a disabled account disabled after a reset and says so; ends only the sessions of the target
+[V] Returns the five-operation administration role and transfers cleanup to the caller
+[V] Reuses the runtime close promise and outcome on repeated close calls
+[V] Closes opened resources if construction fails before ownership transfers, and preserves the primary and cleanup errors
+[V] Passes through an opening failure that already contains a cleanup failure
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/auth-better-auth/local-administration-opener.test.js
+```
 
 **Hidden line input** (`test/unit/terminal/hidden-line-input.test.ts`)
 
@@ -810,7 +814,33 @@ Run only these tests:
 npm run build && node --test dist/test/integration/auth/hosted-administration.test.js
 ```
 
-**Local auth command** (`test/integration/auth/local-auth-command.test.ts`, `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`)
+**Local command dispatch and lifecycle** (`test/integration/auth/local-auth-command-lifecycle.test.ts`, `local-auth-command-users.test.ts`, `local-auth-command-clients.test.ts`)
+
+Doubles stand in for hidden input, opening and closing resources, and the
+provider. The real command, configuration loader, and concrete
+`LocalUserAdministration` run. The command, config, and Better Auth implementation
+are separate logical packages. These tests retain the previous command unit
+cases as integration coverage; moving their files does not change their scope.
+
+[V] Gives exit status 2 and the usage for an unknown command, a missing or extra target, an option, and an incomplete client registration, without the arguments in the message, without a prompt, and without opening data
+[V] Opens administration with the self-hosted data directory and public URLs and closes it after the command; a hosted configuration, with or without WorkOS settings, or an incomplete configuration gives status 1 without opening data
+[V] Gives status 1 and the lock message for each command when another process holds the data directory, before any prompt
+[V] Closes the opened resources after a failed command; reports a close failure, and both failures together
+[V] Asks for a new password two times for add and reset-password, and one time for client registration; refuses different entries and ended input
+[V] Prints the added account, the account table or the first-account hint, the reset and disable results, and the client ID, without passwords or hashes
+[V] Keeps a disabled account disabled after a reset and says so; ends only the sessions of the target
+
+**Local command role boundary** (`test/integration/auth/local-auth-command-boundary.test.ts`)
+
+An administration role double stands in for the provider implementation. The
+real configuration loader still runs, so these are integration tests.
+
+[V] Supplies neutral settings to the opener and dispatches through the five-operation role
+[V] Keeps password reads lazy, writes output before close, and closes after operation or output failure
+[V] Preserves operation and cleanup errors together
+[V] Reports opening and cleanup errors without invoking the role or claiming ownership of close
+
+**Local auth command processes** (`test/integration/auth/local-auth-command.test.ts`, `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`)
 
 These tests run the built entry point, `dist/src/index.js`, as separate processes with the real provider and SQLite files in temporary data directories. Passwords go through standard input. Each process refuses outbound network access and can record its SQL statements. Sign-in, authorization, and introspection run through the provider handler in the test process while no command or server runs.
 
@@ -1101,6 +1131,20 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/self-hosted-startup.test.js
+```
+
+**Lazy local command provider loading** (`test/acceptance/auth/local-command-provider-loading.test.ts`)
+
+The built entry point runs in a separate process with an import hook that fails
+if a rejected command loads a provider module.
+
+[V] Given malformed syntax, invalid configuration, or a hosted edition, the command reports the applicable error without loading the local provider
+[V] Given an accepted local command, the provider import guard blocks the load, so the test proves that the guard is active
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/local-command-provider-loading.test.js
 ```
 
 **Offline local user and client commands** (`test/acceptance/auth/local-user-commands.test.ts`)

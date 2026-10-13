@@ -3,7 +3,7 @@ import { mcp } from '@better-auth/mcp';
 import { betterAuth } from 'better-auth';
 import { admin } from 'better-auth/plugins/admin';
 import { jwt } from 'better-auth/plugins/jwt';
-import type { DeploymentConfig } from '../config/deployment-config.ts';
+import type { LocalAuthSettings } from '../auth/local-auth/local-user-administration.ts';
 import { CLIENT_ADDRESS_HEADER } from '../http/server.ts';
 import { lockDataDirectory, type DataDirectoryLock } from './data-directory-lock.ts';
 import { openLocalInstallation, type LocalInstallation } from './local-installation.ts';
@@ -101,11 +101,6 @@ function refuseProviderVariables(): void {
 }
 
 export type LocalAuth = ReturnType<typeof createLocalAuth>;
-
-export type LocalAuthSettings = Pick<
-  Extract<DeploymentConfig, { deployment: 'self-hosted' }>,
-  'dataDirectory' | 'publicBaseUrl' | 'mcpResourceUrl'
->;
 
 export interface LocalAuthResources {
   lockDataDirectory(directory: string): DataDirectoryLock;

@@ -33,7 +33,13 @@ async function runOperatorCommand(args: readonly string[], environment: Environm
   const { runLocalAuthCommand } = await import('./auth-better-auth/local-auth-command.ts');
   const input = new HiddenLineInput(process.stdin, process.stderr);
   try {
-    return await runLocalAuthCommand(args, { environment, input, output: process.stdout, logger });
+    return await runLocalAuthCommand(args, {
+      environment, input, output: process.stdout, logger,
+      openAdministration: async (settings) => {
+        const { openBetterAuthAdministration } = await import('./auth-better-auth/local-user-administration.ts');
+        return openBetterAuthAdministration(settings);
+      },
+    });
   } finally {
     input.close();
   }

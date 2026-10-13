@@ -101,16 +101,20 @@ describe('Hosted organization onboarding and selection through the public routes
     const forms = formsIn((await browser.open('organizations?return_to=/team/billing')).body);
     const selected = await browser.submit(formFor(forms, 'Acme'));
     const billing = await browser.follow(selected);
-    const statuses = await statusesOf(browser, ['administration/admins', 'portal', 'administration/users']);
+    const administration = await browser.open('administration/admins');
+    const statuses = await statusesOf(browser, ['portal', 'administration/users']);
     const tool = await site.callTool('user-sam-token');
 
     assert.deepEqual(forms.map(({ label }) => label), ['Acme']);
     assert.equal(selected.location?.href, 'https://magumagu.example/team/billing');
-    assert.equal(billing.status, 200);
-    const { context } = JSON.parse(billing.body) as { context: { grants: unknown; permissions: unknown } };
+    assertHtmlPage(billing);
+    assert.match(billing.body, /Plan: Free/);
+    assert.deepEqual(formsIn(billing.body), []);
+    assert.equal(administration.status, 200, administration.body);
+    const { context } = JSON.parse(administration.body) as { context: { grants: unknown; permissions: unknown } };
     assert.deepEqual(context.grants, [superAdminGrant]);
     assert.deepEqual(context.permissions, ['admin-grants:manage', 'billing:manage']);
-    assert.deepEqual(statuses, { 'administration/admins': 200, portal: 403, 'administration/users': 403 });
+    assert.deepEqual(statuses, { portal: 403, 'administration/users': 403 });
     assert.equal(tool.isError, true);
     assert.deepEqual(tool.content, [{ type: 'text', text: 'Access denied' }]);
     assert.deepEqual(site.tools.work, []);

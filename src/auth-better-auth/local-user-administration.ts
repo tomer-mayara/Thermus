@@ -1,24 +1,20 @@
 import { applySetCookies } from 'better-auth/cookies';
-import type { LocalAuth, ResourceServerClientRecord } from './better-auth-runtime.ts';
+import type { LocalAccount, ApprovedClient, RegisteredClient, PasswordSource, LocalAuthSettings, LocalUserAdministration as AdministrationRole } from '../auth/local-auth/local-user-administration.ts';
+import type { OpenedLocalAdministration } from './local-auth-command.ts';
+import { openBetterAuthRuntime, type BetterAuthRuntime, type LocalAuth, type ResourceServerClientRecord } from './better-auth-runtime.ts';
 
-export interface LocalAccount {
-  readonly id: string;
-  readonly email: string;
-  readonly disabled: boolean;
+export async function openBetterAuthAdministration(
+  settings: LocalAuthSettings,
+  openRuntime: (settings: LocalAuthSettings) => Promise<BetterAuthRuntime> = openBetterAuthRuntime,
+): Promise<OpenedLocalAdministration> {
+  await using owned = new AsyncDisposableStack();
+  const runtime = owned.adopt(await openRuntime(settings), (opened) => opened.close());
+  const administration = new LocalUserAdministration(runtime.auth, runtime.resourceServerClient);
+  const opened = { administration, close: () => runtime.close() };
+  // The returned close owns the runtime, so the opener no longer rolls it back.
+  owned.move();
+  return opened;
 }
-
-export interface ApprovedClient {
-  readonly name: string;
-  readonly redirectUris: readonly string[];
-}
-
-export interface RegisteredClient extends ApprovedClient {
-  readonly clientId: string;
-  readonly resourceServerClientRegistered: boolean;
-}
-
-// The administration asks for a password only after it has checked the target.
-export type PasswordSource = () => Promise<string>;
 
 const FAILURE_MESSAGES = {
   'duplicate-email': 'An account with this email address already exists.',
@@ -71,7 +67,7 @@ const CONTROL_CHARACTER = /\p{Cc}/u;
 const LOOPBACK_REDIRECT_URI = /^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d{1,5})?(?:[/?][^#\s\p{Cc}]*)?$/iu;
 
 // Only supported Better Auth operations: the provider hashes each password and owns its tables.
-export class LocalUserAdministration {
+export class LocalUserAdministration implements AdministrationRole {
   private readonly auth: LocalAuth;
   private readonly resourceServerClient: ResourceServerClientRecord;
 

@@ -23,6 +23,7 @@ runtime guides stay current after implementation.
 ## Design and testing
 
 - [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, the hosted placeholder, hosted scope, and implementation gates.
+- [Authentication refactoring plan](implementation/auth-refactoring-plan.md): local command role and lazy opener, pending auth relocation, boundary checks, and preserved behavior.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.
 - [Planned cache key design](design/cache-design.md): pending cache requirements.
 - [Test inventory](testing/test-list.md): executed cases and pending cache tests.
