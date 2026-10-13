@@ -69,8 +69,7 @@ const SIGN_IN_FAILURES = new Map<unknown, StaticFailure>([
 const CONTROL_CHARACTER = /\p{Cc}/u;
 const LOOPBACK_REDIRECT_URI = /^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d{1,5})?(?:[/?][^#\s\p{Cc}]*)?$/iu;
 
-// Uses only supported Better Auth operations: the provider hashes passwords and owns credential,
-// session, and client storage. The offline commands hold the data-directory lock around each call.
+// Only supported Better Auth operations: the provider hashes each password and owns its tables.
 export class LocalUserAdministration {
   private readonly auth: LocalAuth;
 
@@ -99,11 +98,10 @@ export class LocalUserAdministration {
     }
   }
 
-  // A reset changes only the password and the sessions; a disabled account stays disabled.
   async resetPassword(email: string, password: PasswordSource): Promise<LocalAccount> {
     const account = await this.requireAccount(email);
     const provider = await this.auth.$context;
-    if (await provider.internalAdapter.findCredentialAccount(account.id) === null) throw failure('no-password-login');
+    if (!await provider.internalAdapter.findCredentialAccount(account.id)) throw failure('no-password-login');
     const hash = await provider.password.hash(await this.acceptedPassword(password));
     await provider.internalAdapter.updatePassword(account.id, hash);
     await provider.internalAdapter.deleteUserSessions(account.id);
@@ -119,8 +117,7 @@ export class LocalUserAdministration {
     return { ...account, disabled: true };
   }
 
-  // The provider needs a signed-in session to register a client. The installation owns the client,
-  // so the command deletes that session again and keeps the other sessions of the account.
+  // The provider registers a client only for a signed-in session. The installation owns the client, so that session ends here.
   async registerClient(email: string, password: PasswordSource, client: ApprovedClient): Promise<RegisteredClient> {
     requireApprovedClient(client);
     const account = await this.requireAccount(email);

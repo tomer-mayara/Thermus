@@ -1,17 +1,12 @@
-import { parseArgs } from 'node:util';
 import { loadDeploymentConfig } from '../config/deployment-config.ts';
 import { openBetterAuthRuntime, type BetterAuthRuntime, type LocalAuthSettings } from './better-auth-runtime.ts';
-import {
-  LocalUserAdministration,
-  type ApprovedClient,
-  type LocalAccount,
-  type PasswordSource,
-} from './local-user-administration.ts';
+import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';
+import { LocalUserAdministration, type LocalAccount, type PasswordSource } from './local-user-administration.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
 export interface HiddenInput {
-  // Writes the prompt and reads one line without echo. Gives undefined when the input ends before a line.
+  // Gives undefined when the input ends before a complete line.
   readHiddenLine(prompt: string): Promise<string | undefined>;
 }
 
@@ -23,23 +18,10 @@ export interface LocalAuthCommandContext {
   readonly openRuntime?: (settings: LocalAuthSettings) => Promise<BetterAuthRuntime>;
 }
 
-type LocalAuthCommand =
-  | { readonly action: 'users add' | 'users reset-password' | 'users disable'; readonly email: string }
-  | { readonly action: 'users list' }
-  | { readonly action: 'clients register'; readonly email: string; readonly client: ApprovedClient };
-
-export class LocalCommandUnavailableError extends Error {
+class LocalCommandUnavailableError extends Error {
   constructor() {
     super('The user and client commands are only for DEPLOYMENT=self-hosted.');
     this.name = 'LocalCommandUnavailableError';
-  }
-}
-
-// A usage message never repeats the arguments, because an argument can be a mistyped password.
-class UsageError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'UsageError';
   }
 }
 
@@ -50,93 +32,32 @@ class PasswordEntryError extends Error {
   }
 }
 
-const USAGE = [
-  'Usage:',
-  '  magumagu                                Start the server.',
-  '  magumagu users add <email>              Add an enabled account. Asks for its password two times.',
-  '  magumagu users list                     List the accounts and their state.',
-  '  magumagu users reset-password <email>   Set a new password and end the sessions of the account.',
-  '  magumagu users disable <email>          Disable the account and end its sessions.',
-  '  magumagu clients register --user <email> --name <name> --redirect-uri <uri> [--redirect-uri <uri> ...]',
-  '                                          Register a native MCP client. Asks for the password of the account.',
-  'Stop the server before you run a command. A command reads passwords from a hidden prompt or from standard input, never from its arguments.',
-].join('\n');
-
-const REGISTRATION_OPTIONS = {
-  user: { type: 'string', multiple: true },
-  name: { type: 'string', multiple: true },
-  'redirect-uri': { type: 'string', multiple: true },
-} as const;
-
+const EXIT_SUCCESS = 0;
+const EXIT_FAILURE = 1;
+const EXIT_USAGE = 2;
 const ADD_PROMPTS = ['Password for the new account: ', 'Repeat the password: '] as const;
 const RESET_PROMPTS = ['New password: ', 'Repeat the new password: '] as const;
 const ACCOUNT_PASSWORD_PROMPT = 'Password of the account: ';
 
-// Exit status 2 is a usage error, 1 is a failed command, and 0 is success.
 export async function runLocalAuthCommand(args: readonly string[], context: LocalAuthCommandContext): Promise<number> {
   const command = parsedCommand(args, context.logger);
-  if (command === undefined) return 2;
+  if (command === undefined) return EXIT_USAGE;
   try {
     await runWithRuntime(command, context);
-    return 0;
+    return EXIT_SUCCESS;
   } catch (error) {
     context.logger.error(failureMessage(error));
-    return 1;
+    return EXIT_FAILURE;
   }
 }
 
 function parsedCommand(args: readonly string[], logger: LocalAuthCommandContext['logger']): LocalAuthCommand | undefined {
   try {
-    return parseCommand(args);
+    return parseLocalAuthCommand(args);
   } catch (error) {
     if (!(error instanceof UsageError)) throw error;
     logger.error(`${error.message}\n${USAGE}`);
     return undefined;
-  }
-}
-
-function parseCommand(args: readonly string[]): LocalAuthCommand {
-  const [group, verb, ...rest] = args;
-  const action = `${group} ${verb}`;
-  switch (action) {
-    case 'users add':
-    case 'users reset-password':
-    case 'users disable':
-      return { action, email: onlyEmailTarget(action, rest) };
-    case 'users list':
-      if (rest.length > 0) throw new UsageError('users list takes no arguments.');
-      return { action };
-    case 'clients register':
-      return { action, ...registration(rest) };
-    default:
-      throw new UsageError('Unknown command.');
-  }
-}
-
-function onlyEmailTarget(action: string, rest: readonly string[]): string {
-  const [email, ...others] = rest;
-  if (email === undefined || email.startsWith('-') || others.length > 0) {
-    throw new UsageError(`${action} needs one email address and no other argument.`);
-  }
-  return email;
-}
-
-function registration(rest: readonly string[]): { email: string; client: ApprovedClient } {
-  const { user = [], name = [], 'redirect-uri': redirectUris = [] } = registrationOptions(rest);
-  const [email] = user;
-  const [clientName] = name;
-  if (email === undefined || clientName === undefined || user.length > 1 || name.length > 1 || redirectUris.length === 0) {
-    throw new UsageError('clients register needs one --user, one --name, and at least one --redirect-uri.');
-  }
-  return { email, client: { name: clientName, redirectUris } };
-}
-
-function registrationOptions(rest: readonly string[]) {
-  try {
-    return parseArgs({ args: [...rest], options: REGISTRATION_OPTIONS, strict: true, allowPositionals: false }).values;
-  } catch (error) {
-    if (!String((error as { code?: unknown }).code).startsWith('ERR_PARSE_ARGS')) throw error;
-    throw new UsageError('clients register takes only --user, --name, and --redirect-uri, each with a value.');
   }
 }
 

@@ -44,7 +44,6 @@ interface SortBy {
   readonly direction: 'asc' | 'desc';
 }
 
-// An in-memory stand-in for the supported Better Auth operations of the offline commands.
 // Its hash contains the password on purpose: a test that finds no password in the output
 // also finds no hash there, and a test can see that only provider hashes reach storage.
 export class LocalProviderDouble {
