@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { connect } from 'node:net';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
@@ -25,13 +26,16 @@ interface SiteNames {
 }
 
 // The offline place of one test. The server and command containers use an internal network without a route
-// out. The edge container connects the test to the server, and it is their DNS server, so it logs each
-// outbound connection that they try by name. The site also makes the data volumes of the test.
+// out, so each outbound connection fails. The edge container connects the test to the server, and it is their
+// DNS server, so it logs each outbound connection that they try by name. A lookup of the control name shows
+// that the log of this site works. All requests reach the server from the edge address, so one server run
+// allows only three sign-ins in ten seconds. The site also makes the data volumes of the test.
 export class ContainerSite {
   readonly image: string;
   readonly address: ServerAddress;
   private readonly names: SiteNames;
   private readonly dns: string;
+  private readonly controlName: string;
   private volumes = 0;
   private servers = 0;
 
@@ -40,6 +44,7 @@ export class ContainerSite {
     this.names = names;
     this.address = () => edge.url;
     this.dns = edge.dns;
+    this.controlName = `outbound-control-${names.id}.example`;
   }
 
   static async open(t: TestContext, image: string): Promise<ContainerSite> {
@@ -59,7 +64,10 @@ export class ContainerSite {
     await waitForLog(names.edge, /Edge ready/);
     const [published = ''] = (await dockerOutput(['container', 'port', names.edge, '8080/tcp'])).split('\n');
     const dns = await dockerOutput(['container', 'inspect', '--format', `{{(index .NetworkSettings.Networks "${names.network}").IPAddress}}`, names.edge]);
-    return new ContainerSite(image, names, { url: new URL(`http://${published}/`), dns });
+    const site = new ContainerSite(image, names, { url: new URL(`http://${published}/`), dns });
+    await waitForConnection(site.address());
+    await site.lookUpControlName();
+    return site;
   }
 
   async volume(): Promise<string> {
@@ -103,11 +111,19 @@ export class ContainerSite {
 
   async outboundQueries(): Promise<string[]> {
     const logs = await docker(['container', 'logs', this.names.edge]);
-    return logs.stdout.toString('utf8').match(outboundQuery) ?? [];
+    return (logs.stdout.toString('utf8').match(outboundQuery) ?? []).filter((line) => !line.includes(this.controlName));
   }
 
   async assertNoOutboundRequests(): Promise<void> {
     assert.deepEqual(await this.outboundQueries(), [], 'A container tried to connect to a host outside the offline network');
+  }
+
+  private async lookUpControlName(): Promise<void> {
+    const lookup = `require('node:dns').lookup(${JSON.stringify(this.controlName)}, () => undefined)`;
+    const network = ['--network', this.names.network, '--dns', this.dns];
+    const result = await dockerCommand(['container', 'run', '--rm', ...siteLabels(this.names.id), ...network, '--entrypoint', 'node', this.image, '--eval', lookup]);
+    assert.equal(result.code, 0, result.stderr);
+    await waitForLog(this.names.edge, new RegExp(`Outbound DNS query for ${this.controlName.replaceAll('.', '\\.')}`));
   }
 
   // The image supplies the other settings. Only PUBLIC_BASE_URL has no image default.
@@ -123,6 +139,25 @@ function siteLabel(id: string): string {
 
 function siteLabels(id: string): string[] {
   return ['--label', gateLabel, '--label', siteLabel(id)];
+}
+
+async function waitForConnection(address: URL): Promise<void> {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    if (await accepts(address)) return;
+    await delay(100);
+  }
+  assert.fail(`The published address ${address.host} accepted no connection`);
+}
+
+function accepts(address: URL): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect(Number(address.port), address.hostname);
+    socket.once('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.once('error', () => resolve(false));
+  });
 }
 
 async function waitForLog(container: string, pattern: RegExp): Promise<void> {

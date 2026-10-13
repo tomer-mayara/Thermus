@@ -8,7 +8,8 @@ services:
     init: true
     restart: unless-stopped
     environment:
-      # The public address of the server. Its port must be the published port below.
+      # The public address of the server. With http on localhost, its port is the published port below.
+      # Another address must use https, through a TLS reverse proxy in front of the published port.
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
     ports:
       - "127.0.0.1:8080:8080"

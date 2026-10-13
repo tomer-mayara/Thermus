@@ -951,7 +951,8 @@ skipped live test is not a successful hosted gate. Automated container checks
 must run with normal production telemetry settings and outbound access denied.
 `npm run test:container` gives the containers only the image settings and
 `PUBLIC_BASE_URL`, puts them on an internal Docker network without a route out,
-and records each outbound DNS query that they send. The
+and records each outbound DNS query that they send. A control lookup proves that
+the record works before each case. The
 [test gate policy](../implementation/test-gate-policy.md#container-gate) gives
 the details and the [self-hosted release](../implementation/test-gate-policy.md#self-hosted-release)
 checks.
@@ -962,7 +963,7 @@ candidate. Resolve enforced smells and keep the snooze file empty. After Ready,
 every started Actions job must pass; a fix returns the PR to Draft. The owner
 reviews the PR, and a PR adding a decision record requires owner merge. The
 [test gate policy](../implementation/test-gate-policy.md) gives the suite
-commands, the required runs, and the later container and hosted live gates.
+commands, the required runs, the container gate, and the later hosted live gate.
 
 ## Paid product decisions and later capabilities
 

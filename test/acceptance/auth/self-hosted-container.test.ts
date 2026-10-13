@@ -124,17 +124,31 @@ async function toolNames(user: LocalMcpUser, t: TestContext): Promise<string[]> 
   return tools.map(({ name }) => name);
 }
 
-// Each user works with the saved token. Then each client authorizes again; with a live browser session and a
-// stored consent, the provider gives the code at once, without the pages.
-async function returningUsers(t: TestContext, users: readonly LocalMcpUser[]): Promise<{ tools: string[][]; pages: string[][] }> {
-  const tools = [];
-  for (const user of users) tools.push(await toolNames(user, t));
+// With a live browser session and a stored consent, the provider gives the code at once, without the pages.
+async function reauthorize(t: TestContext, users: readonly LocalMcpUser[]): Promise<string[][]> {
   const pages = [];
   for (const user of users) {
     user.oauth.expireAccessToken();
     pages.push([...(await user.connect(t)).pages]);
   }
-  return { tools, pages };
+  return pages;
+}
+
+async function returningUsers(t: TestContext, users: readonly LocalMcpUser[]): Promise<{ tools: string[][]; pages: string[][] }> {
+  const tools = [];
+  for (const user of users) tools.push(await toolNames(user, t));
+  return { tools, pages: await reauthorize(t, users) };
+}
+
+function assertRenewedToken(user: LocalMcpUser, owner: { readonly userId?: string; readonly clientId?: string }, firstToken: string): void {
+  const claims = jwtClaims(user.accessToken);
+  assert.equal(claims.sub, owner.userId);
+  assert.equal(claims.client_id, owner.clientId);
+  assert.equal(claims.iss, authIssuer);
+  assert.ok(Array.isArray(claims.aud) && claims.aud.includes(mcpResourceUrl), JSON.stringify(claims.aud));
+  assert.equal(user.oauth.savedTokens().refresh_token, undefined);
+  assert.notEqual(user.accessToken, firstToken);
+  assert.equal(claims.sid, jwtClaims(firstToken).sid);
 }
 
 async function refreshAttempt(site: ContainerSite, clientId: string, token: string): Promise<{ status: number; error?: string }> {
@@ -187,32 +201,21 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
     const connections = [];
     for (const user of users) connections.push(await user.connect(t));
-    const workspaces = [];
-    for (const { client } of connections) workspaces.push((await client.listTools()).tools);
-    const [aliceUser, bobUser] = users as [LocalMcpUser, LocalMcpUser];
-    const firstAliceToken = aliceUser.accessToken;
-    aliceUser.oauth.expireAccessToken();
-    const reauthorization = await aliceUser.connect(t);
-    const refresh = await refreshAttempt(setup.site, setup.clientIds[0] ?? '', firstAliceToken);
+    const firstTokens = users.map((user) => user.accessToken);
+    const reauthorizations = await reauthorize(t, users);
+    const refreshes = [];
+    for (const [index, token] of firstTokens.entries()) refreshes.push(await refreshAttempt(setup.site, setup.clientIds[index] ?? '', token));
     const tenant = server.tenant();
     const exit = await server.stop();
 
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);
+    assert.notEqual(jwtClaims(firstTokens[0] ?? '').sid, jwtClaims(firstTokens[1] ?? '').sid);
+    assert.deepEqual(reauthorizations, [[], []]);
     for (const [index, user] of users.entries()) {
-      const claims = jwtClaims(user.accessToken);
-      assert.equal(claims.sub, setup.userIds.get(user.account.email));
-      assert.equal(claims.client_id, setup.clientIds[index]);
-      assert.equal(claims.iss, authIssuer);
-      assert.ok(Array.isArray(claims.aud) && claims.aud.includes(mcpResourceUrl), JSON.stringify(claims.aud));
-      assert.equal(user.oauth.savedTokens().refresh_token, undefined);
+      assertRenewedToken(user, { userId: setup.userIds.get(user.account.email), clientId: setup.clientIds[index] }, firstTokens[index] ?? '');
     }
-    assert.notEqual(jwtClaims(firstAliceToken).sid, jwtClaims(bobUser.accessToken).sid);
-    assert.deepEqual(workspaces[0], workspaces[1]);
-    assert.deepEqual(reauthorization.pages, []);
-    assert.notEqual(aliceUser.accessToken, firstAliceToken);
-    assert.equal(jwtClaims(aliceUser.accessToken).sid, jwtClaims(firstAliceToken).sid);
-    assert.deepEqual(refresh, { status: 400, error: 'unsupported_grant_type' });
+    assert.deepEqual(refreshes, [{ status: 400, error: 'unsupported_grant_type' }, { status: 400, error: 'unsupported_grant_type' }]);
     assert.match(tenant, localTenant);
     assert.equal(server.output.match(/uses tenant local:/g)?.length, 1);
     assert.deepEqual(exit, { code: 0, signal: null });
@@ -307,6 +310,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     }
     assert.match(refused[0]?.output ?? '', /auth\.secret/);
     assert.match(refused[1]?.output ?? '', /installation identity/);
+    assert.deepEqual(await probeImage(images.current, 'data-files', withoutSecret), ['auth.sqlite', 'data-directory.lock', 'resource-server-client.json']);
     assert.deepEqual(await probeImage(images.current, 'installation-ids', withoutIdentity), []);
     await setup.site.assertNoOutboundRequests();
   });
@@ -397,6 +401,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'server/discover', params: {} }),
     });
     await server.stop();
+    const zeroAccounts = await listedAccounts(operator);
 
     const danaCommands = [await addUser(operator, dana), await operator(registerArgs(dana), [dana.password]), await operator(['users', 'disable', dana.email])];
     const clientId = registeredClientId(danaCommands[1] as CommandResult);
@@ -415,6 +420,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await server.stop();
     const accounts = await listedAccounts(operator);
 
+    assert.deepEqual(zeroAccounts, []);
     assert.equal(withoutAccounts.status, 401);
     for (const result of [...danaCommands, added]) assertExit(result, 0);
     assert.equal(disabledSignIn.status, 403);

@@ -79,12 +79,16 @@ contains every change of the pull request.
      for a change to the Better Auth packages, their settings, or the local
      authentication flow. They run offline with a focused command.
    - `npm run test:container` for a change to `Dockerfile`, `.dockerignore`,
-     `compose.yaml`, the production packages (`package.json`, `pnpm-lock.yaml`,
-     `pnpm-workspace.yaml`, or `patches/`), `migrations/`, the code of the
-     self-hosted server and its commands (`src/index.ts`, `src/application.ts`,
-     `src/auth/`, `src/auth-better-auth/`, `src/config/`, `src/http/`,
-     `src/logging/`, `src/mcp/`, or `src/terminal/`), or the container tests and
-     their support files.
+     `compose.yaml`, a build input of the image (`package.json`,
+     `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.npmrc`,
+     `.habit-hooks/package.json`, `patches/`, `tsconfig.json`, or
+     `tsconfig.build.json`), `migrations/`, the code of the self-hosted server
+     and its commands (`src/index.ts`, `src/application.ts`, `src/auth/`,
+     `src/auth-better-auth/`, `src/config/`, `src/http/`, `src/logging/`,
+     `src/mcp/`, or `src/terminal/`), or the container tests and their support
+     files. The image holds all of `dist/src`, so other changes in `src/` change
+     the image too; the [self-hosted release](#self-hosted-release) checks run
+     the container gate for each release.
 
 If you are not sure that a suite applies, run it.
 
@@ -120,9 +124,12 @@ AUTH-09 added the container acceptance suite
 - gives the containers only the settings of the image and `PUBLIC_BASE_URL`, so
   the normal production telemetry settings apply;
 - puts each container that runs Magumagu on an internal Docker network without a
-  route out. An edge container forwards the test connections to the server and
-  is the DNS server of the containers, so it records each outbound connection
-  that they try by name. Each case fails when the record is not empty;
+  route out, so each outbound connection fails. An edge container forwards the
+  test connections to the server and is the DNS server of the containers, so it
+  records each outbound connection that they try by name. A connection to an IP
+  address fails without a record. Before each case, a lookup of a control name
+  must appear in the record, so the record works on this engine. Each case
+  fails when the record has another query;
 - removes its containers, networks, volumes, and images when it ends.
 
 Only a run of `npm run test:container` that exits with status 0 and shows each
@@ -133,11 +140,22 @@ telemetry settings is not a container gate pass. `npm test` and
 them is never a container gate pass. Without the docker CLI, a running engine,
 Buildx, or Compose, the suite fails with a setup error.
 
+An interrupted run can leave resources. Each one has the label
+`magumagu.container-gate`, so these commands remove them:
+
+```sh
+docker container rm --force $(docker container ls --all --quiet --filter label=magumagu.container-gate)
+docker network rm $(docker network ls --quiet --filter label=magumagu.container-gate)
+docker volume rm $(docker volume ls --quiet --filter label=magumagu.container-gate)
+docker image rm --force $(docker image ls --quiet --filter label=magumagu.container-gate)
+```
+
 ## Self-hosted release
 
 A release of the self-hosted evaluation image needs a pass of each command below
-on the release commit. Each command must exit with status 0 and show each
-required test as passed:
+on a clean checkout of the release commit: `git status --porcelain` shows
+nothing, because the image build and the container gate read the working tree.
+Each command must exit with status 0 and show each required test as passed:
 
 1. `npm run check`
 2. `habit-hooks`, with each finding corrected or its reason given
@@ -147,9 +165,8 @@ required test as passed:
 6. `npm run test:container`
 
 If an Actions job starts for the release commit, it must pass too. Then build the
-release image with `docker compose build` or `docker build --tag magumagu:<version> .`.
-The release notes must not claim payment collection, hosted features, or
-migration between editions.
+release image with `docker compose build`. The release notes must not claim
+payment collection, hosted features, or migration between editions.
 
 ## Pull request steps
 

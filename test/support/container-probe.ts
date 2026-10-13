@@ -8,7 +8,10 @@ import { DatabaseSync } from 'node:sqlite';
 
 const APPLICATION = '/app';
 const DATA_DIR = process.env.DATA_DIR ?? '/var/lib/magumagu';
-const DEVELOPMENT_PACKAGES = ['typescript', 'tsx', 'eslint', 'knip', 'ts-morph', '@modelcontextprotocol/client', '@types/node', '@types/css-tree'];
+const DEVELOPMENT_PACKAGES = [
+  'typescript', 'tsx', 'esbuild', 'eslint', 'knip', 'ts-morph', '@modelcontextprotocol/client', '@types/node', '@types/css-tree',
+  '@typescript-eslint/parser', '@typescript-eslint/eslint-plugin',
+];
 const PINNED_PACKAGES = ['better-auth', '@better-auth/mcp', '@modelcontextprotocol/server', 'adblock-rs'];
 
 function fileHashes(directory: string): Record<string, string> {
@@ -17,6 +20,17 @@ function fileHashes(directory: string): Record<string, string> {
     const path = join(entry.parentPath, entry.name);
     return [relative(directory, path), createHash('sha256').update(readFileSync(path)).digest('hex')];
   }).sort(([first = ''], [second = '']) => first.localeCompare(second)));
+}
+
+// The pnpm virtual store names a package directory like "@scope+name@1.0.0_peer@2.0.0".
+function storedPackageName(entry: string): string {
+  return (/^(@[^@]+|[^@]+)@/.exec(entry)?.[1] ?? entry).replace('+', '/');
+}
+
+function developmentPackages(): string[] {
+  const linked = DEVELOPMENT_PACKAGES.filter((name) => existsSync(join(APPLICATION, 'node_modules', name)));
+  const stored = readdirSync(join(APPLICATION, 'node_modules/.pnpm')).map(storedPackageName).filter((name) => DEVELOPMENT_PACKAGES.includes(name));
+  return [...new Set([...linked, ...stored])].sort();
 }
 
 function packageVersion(name: string): string {
@@ -43,7 +57,7 @@ function imageFacts(): unknown {
     distEntries: readdirSync(join(APPLICATION, 'dist')).sort(),
     compiledSource: fileHashes(join(APPLICATION, 'dist/src')),
     migrations: fileHashes(join(APPLICATION, 'migrations')),
-    developmentPackages: DEVELOPMENT_PACKAGES.filter((name) => existsSync(join(APPLICATION, 'node_modules', name))),
+    developmentPackages: developmentPackages(),
     pinnedPackages: Object.fromEntries(PINNED_PACKAGES.map((name) => [name, packageVersion(name)])),
     adBlockerSelectors: adBlockerSelectors(),
     userId: process.getuid?.(),

@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # The self-hosted evaluation image of Magumagu. It holds the server and the offline commands of the same program.
 # All data is on the volume at DATA_DIR. README.md#container-installation gives the commands.
 
@@ -14,14 +13,16 @@ COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
 RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
  && npm install --global pnpm@12.10.1
-# The adblock-rs toolchain file names the 1.97 channel. This keeps the 1.97 toolchain of the Rust image, so rustup downloads nothing.
+# The Rust image sets RUST_VERSION. The adblock-rs toolchain file names the 1.97 channel, and this setting keeps the
+# 1.97 toolchain of the Rust image, so rustup downloads nothing. The install stops if the value is empty.
 ENV RUSTUP_TOOLCHAIN=${RUST_VERSION}
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY .habit-hooks/package.json .habit-hooks/
 COPY patches patches
 # The Cargo build output is not necessary after the module is compiled.
-RUN pnpm install --frozen-lockfile --prod \
+RUN test -n "$RUSTUP_TOOLCHAIN" \
+ && pnpm install --frozen-lockfile --prod \
  && rm -rf node_modules/.pnpm/adblock-rs@*/node_modules/adblock-rs/target
 
 # The build context has no test/ directory, so the unchanged build command compiles dist/src only.

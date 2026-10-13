@@ -180,11 +180,11 @@ docker compose up -d
 docker compose logs magumagu
 ```
 
-The log shows the tenant of the installation and `Listening on http://0.0.0.0:8080`. Connect a supported MCP client to `http://localhost:8080/mcp`; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives its settings. `docker compose stop magumagu` stops the server, and `docker compose start magumagu` starts it again.
+The log shows the tenant of the installation and `Listening on http://0.0.0.0:8080`. A fresh installation has no account and no client. Add them as **Accounts and clients** below tells. Then a user can connect a supported MCP client to `http://localhost:8080/mcp`; the [sign-in and MCP client guide](#sign-in-and-mcp-clients) gives its settings. `docker compose stop magumagu` stops the server, and `docker compose start magumagu` starts it again.
 
-**Settings.** [`compose.yaml`](compose.yaml) has one service, `magumagu`, with an init process. The [`Dockerfile`](Dockerfile) sets `DEPLOYMENT=self-hosted`, `DATA_DIR=/var/lib/magumagu`, `LISTEN_HOST=0.0.0.0`, `LISTEN_PORT=8080`, and `NODE_ENV=production`, and the image runs as the `node` user. The service sets `PUBLIC_BASE_URL`, by default `http://localhost:8080`, and publishes port 8080 on `127.0.0.1` only. For another address, set `PUBLIC_BASE_URL` in the shell or in a `.env` file next to `compose.yaml`, and change the published port to agree with it. A registered client belongs to the MCP resource of one `PUBLIC_BASE_URL`, so after a change, register the clients again. The image sets no telemetry setting. Do not set `BETTER_AUTH_TELEMETRY` or the other [refused Better Auth variables](#self-hosted-server): startup stops.
+**Settings.** [`compose.yaml`](compose.yaml) has one service, `magumagu`, with an init process. The [`Dockerfile`](Dockerfile) sets `DEPLOYMENT=self-hosted`, `DATA_DIR=/var/lib/magumagu`, `LISTEN_HOST=0.0.0.0`, `LISTEN_PORT=8080`, and `NODE_ENV=production`, and the image runs as the `node` user. The service sets `PUBLIC_BASE_URL`, by default `http://localhost:8080`, and publishes port 8080 on `127.0.0.1` only. With `http` on `localhost`, the port of `PUBLIC_BASE_URL` is the published port. Another address must use `https`: put a TLS reverse proxy in front of the published port, and set `PUBLIC_BASE_URL` to the address of the proxy, in the shell or in a `.env` file next to `compose.yaml`. A registered client belongs to the MCP resource of one `PUBLIC_BASE_URL`, so after a change, register the clients again. A published port and a reverse proxy give the server the same client address for all users. Thus the sign-in limit of three attempts in ten seconds for each client address applies to all users together. The image sets no telemetry setting. Do not set `BETTER_AUTH_TELEMETRY` or the other [refused Better Auth variables](#self-hosted-server): startup stops.
 
-**Data volume.** The named volume `magumagu_magumagu-data` is mounted at `DATA_DIR`. It holds all data of the installation: `auth.sqlite` with the accounts, sessions, clients, consents, signing keys, and installation identity; `auth.secret`; `resource-server-client.json`; and `data-directory.lock`. The image keeps no data. Only the `node` user of the image can open the directory (mode `0700`), and the data files have mode `0600`. Access to the volume is administration authority for the installation; it gives no application role.
+**Data volume.** The named volume `magumagu_magumagu-data` is mounted at `DATA_DIR`. It holds all data of the installation: `auth.sqlite` with the accounts, sessions, clients, consents, signing keys, and installation identity; `auth.secret`; `resource-server-client.json`; and `data-directory.lock`. The image keeps no data. Only the `node` user of the image can open the directory (mode `0700`). `auth.sqlite`, `auth.secret`, and `resource-server-client.json` have mode `0600`. Access to the volume is administration authority for the installation; it gives no application role.
 
 **Accounts and clients.** The commands of [local accounts and clients](#local-accounts-and-clients) run in a one-off container of the same image with the same volume. Stop the server first, and start it again after the commands:
 
@@ -398,7 +398,7 @@ npm run build && node --test dist/test/acceptance/small-text-cutoff.test.js
 
 ### Release checks
 
-A release of the self-hosted evaluation image needs these commands on the release commit. Each must exit with status 0 and show each required test as passed:
+A release of the self-hosted evaluation image needs these commands on a clean checkout of the release commit: `git status --porcelain` shows nothing, because the image build and the container gate read the working tree. Each command must exit with status 0 and show each required test as passed:
 
 ```sh
 npm run check
@@ -409,4 +409,4 @@ npm run build && node --test dist/test/interface/auth/better-auth.test.js
 npm run test:container
 ```
 
-For `habit-hooks`, correct each finding or give the reason that you keep it. Then build the release image with `docker compose build`, or with `docker build --tag magumagu:<version> .`. The [test gate policy](docs/implementation/test-gate-policy.md#self-hosted-release) gives the release rules. A self-hosted release does not claim payment collection, hosted features, or migration between editions.
+For `habit-hooks`, correct each finding or give the reason that you keep it. Then build the release image with `docker compose build`. The [test gate policy](docs/implementation/test-gate-policy.md#self-hosted-release) gives the release rules. A self-hosted release does not claim payment collection, hosted features, or migration between editions.
