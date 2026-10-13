@@ -1,13 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { inspect } from 'node:util';
-import {
-  CLIENT_CAPABILITIES_META_KEY,
-  CLIENT_INFO_META_KEY,
-  PerRequestHTTPServerTransport,
-  PROTOCOL_VERSION_META_KEY,
-  SERVER_INFO_META_KEY,
-} from '@modelcontextprotocol/server';
+import { PerRequestHTTPServerTransport, SERVER_INFO_META_KEY } from '@modelcontextprotocol/server';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
@@ -56,35 +50,11 @@ describe('MCPServer HTTP authentication', () => {
     await server.close();
   });
 
-  for (const method of ['server/discover', 'tools/list', 'tools/call']) {
+  for (const method of ['server/discover', 'tools/list', 'tools/call'] as const) {
     test(`Given no Bearer token, when an HTTP client requests ${method}, then the server returns 401 with a Bearer challenge and its protected-resource metadata URL`, { timeout: 5_000 }, async (context) => {
-      const protocolVersion = '2026-07-28';
-      const toolName = 'fetchURLAsMarkdown';
-      const headers = new Headers({
-        'Content-Type': 'application/json',
-        Accept: 'application/json, text/event-stream',
-        'MCP-Protocol-Version': protocolVersion,
-        'Mcp-Method': method,
-      });
-      const params = {
-        _meta: {
-          [PROTOCOL_VERSION_META_KEY]: protocolVersion,
-          [CLIENT_INFO_META_KEY]: { name: 'magumagu-test', version: '0.0.0' },
-          [CLIENT_CAPABILITIES_META_KEY]: {},
-        },
-        ...(method === 'tools/call' ? {
-          name: toolName,
-          arguments: { url: 'https://example.com/' },
-        } : {}),
-      };
-      if (method === 'tools/call') headers.set('Mcp-Name', toolName);
+      const params = method === 'tools/call' ? { name: 'fetchURLAsMarkdown', arguments: { url: 'https://example.com/' } } : {};
 
-      const response = await server.fetch(new Request(resourceUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-        signal: context.signal,
-      }));
+      const response = await server.fetch(mcpRequest({ url: resourceUrl, method, params, signal: context.signal }));
 
       assert.equal(response.status, 401);
       const challenge = response.headers.get('WWW-Authenticate');
@@ -97,28 +67,7 @@ describe('MCPServer HTTP authentication', () => {
   }
 
   function discoveryRequest(token: string, signal: AbortSignal): Request {
-    const protocolVersion = '2026-07-28';
-    return new Request(resourceUrl, {
-      method: 'POST',
-      signal,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json, text/event-stream',
-        'MCP-Protocol-Version': protocolVersion,
-        'Mcp-Method': 'server/discover',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0', id: 1, method: 'server/discover',
-        params: {
-          _meta: {
-            [PROTOCOL_VERSION_META_KEY]: protocolVersion,
-            [CLIENT_INFO_META_KEY]: { name: 'magumagu-test', version: '0.0.0' },
-            [CLIENT_CAPABILITIES_META_KEY]: {},
-          },
-        },
-      }),
-    });
+    return mcpRequest({ url: resourceUrl, method: 'server/discover', token, signal });
   }
 
   test('Given no Authorization header, when an HTTP client discovers the server, then it receives 401 before verification or MCP dispatch', { timeout: 5_000 }, async (context) => {
