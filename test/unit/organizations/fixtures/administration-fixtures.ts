@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import type { RoleGrant } from '../../../../src/auth/access-context.ts';
+import type { ChangeRecord } from '../../../../src/organizations/change-records.ts';
 import {
   OrganizationAdministration,
   type Actor,
-  type ChangeRecord,
   type GrantChangeRequest,
 } from '../../../../src/organizations/organization-administration.ts';
-import { memberRole, membershipIdOf, OrganizationDirectoryDouble, type MemberSeed } from './organization-directory-double.ts';
+import { memberRole, membershipIdOf, type MemberSeed } from './directory-double-records.ts';
+import { OrganizationDirectoryDouble } from './organization-directory-double.ts';
 
 export const authority = 'hosted-provider-double';
 export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
@@ -35,6 +36,21 @@ export function administrationWith(seeds: readonly MemberSeed[] = members) {
   const records: ChangeRecord[] = [];
   const administration = new OrganizationAdministration({ directory, records: { record: (entry) => records.push(entry) }, clock: () => new Date(recordTime) });
   return { directory, records, administration };
+}
+
+// Acme has a pending, an accepted, a revoked, and an expired User invitation (invitation-1 to -4) and a pending
+// Admin invitation (invitation-5); Globex has a pending User invitation (invitation-6).
+export function invitationsWith() {
+  const served = administrationWith();
+  served.directory.addInvitations(
+    { organizationId: 'org-a', email: 'pending.user@example.com', role: 'user' },
+    { organizationId: 'org-a', email: 'accepted.user@example.com', role: 'user', state: 'accepted' },
+    { organizationId: 'org-a', email: 'revoked.user@example.com', role: 'user', state: 'revoked' },
+    { organizationId: 'org-a', email: 'expired.user@example.com', role: 'user', state: 'expired' },
+    { organizationId: 'org-a', email: 'pending.admin@example.com', role: 'admin' },
+    { organizationId: 'org-b', email: 'globex.user@example.com', role: 'user' },
+  );
+  return served;
 }
 
 // The selected organization of the session is Globex, so that a test shows that the service uses only the organization

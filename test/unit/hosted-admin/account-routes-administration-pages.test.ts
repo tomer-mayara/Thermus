@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { InvitationOverview, MemberOverview } from '../../../src/organizations/organization-administration.ts';
+import type { InvitationOverview, MemberOverview } from '../../../src/organizations/administration-overviews.ts';
 import { formsIn } from '../../support/hosted-browser.ts';
 import { accountRequest, ann, assertPage, publicOrigin } from './fixtures/account-routes-fixtures.ts';
 import { acmeInvitations, acmeMembers, annToken, formPageHeaders, serveAdministration, sessionCookies } from './fixtures/administration-routes-fixtures.ts';

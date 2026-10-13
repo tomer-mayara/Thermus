@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { accountChangeRecorder, accountFailureReporter, createApplication } from '../../../src/application.ts';
-import { OrganizationAdministration, type Actor, type ChangeRecord, type GrantChangeRequest } from '../../../src/organizations/organization-administration.ts';
+import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
+import {
+  OrganizationAdministration,
+  type Actor,
+  type GrantChangeRequest,
+} from '../../../src/organizations/organization-administration.ts';
 import { BrowserSessionStore } from '../../support/browser-session-store.ts';
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/hosted-administration.ts';
 import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';

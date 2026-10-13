@@ -1,15 +1,14 @@
 import type { AuthenticatedUser } from '../../../../src/auth/access-context.ts';
 import type { OrganizationService } from '../../../../src/hosted-admin/account-routes.ts';
+import type { InvitationOverview, MemberOverview } from '../../../../src/organizations/administration-overviews.ts';
+import type { ChangeResult } from '../../../../src/organizations/change-records.ts';
 import type {
   Actor,
   AdministrationRefusal,
   AuthorizedOrganization,
-  ChangeResult,
   GrantChangeRequest,
   InvitationChangeRequest,
-  InvitationOverview,
   InvitationSendRequest,
-  MemberOverview,
 } from '../../../../src/organizations/organization-administration.ts';
 
 export type ConfiguredOrganizations = readonly AuthorizedOrganization[] | Error;

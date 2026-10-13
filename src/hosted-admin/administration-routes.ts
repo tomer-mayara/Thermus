@@ -1,12 +1,13 @@
 import type { RequestContext } from '../auth/access-context.ts';
+import type { ChangeResult } from '../organizations/change-records.ts';
 import type {
   Actor,
   AdministrationRefusal,
-  ChangeResult,
   OrganizationAdministration,
 } from '../organizations/organization-administration.ts';
 import { grantChangeIn, invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
-import { accessDeniedPage, invitationsPage, membersPage, noticePage, seeOther, type NoticeName } from './account-pages.ts';
+import { accessDeniedPage, noticePage, seeOther, type NoticeName } from './account-pages.ts';
+import { invitationsPage, membersPage } from './administration-pages.ts';
 import type { SignedInBrowserSession } from './browser-session.ts';
 
 export type AdministrationService = Pick<
@@ -135,17 +136,16 @@ export class AdministrationRoutes {
     return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields), page: this.paths.invitations });
   }
 
-  private async page<Overview>(request: Request, read: () => Promise<Overview | AdministrationRefusal>, render: (overview: Overview) => Response): Promise<Response> {
+  private async page<Overview extends object>(request: Request, read: () => Promise<Overview | AdministrationRefusal>, render: (overview: Overview) => Response): Promise<Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD') return noticePage('methodNotAllowed', { Allow: 'GET, HEAD' });
     const overview = await read();
-    if (overview === 'denied') return accessDeniedPage(this.organizationsPage);
-    if (overview === 'mfa-required') return noticePage('mfaRequired');
-    return render(overview as Overview);
+    if (typeof overview !== 'string') return render(overview);
+    return overview === 'denied' ? accessDeniedPage(this.organizationsPage) : noticePage('mfaRequired');
   }
 
-  // The origin check comes before the body is read, so that a post from another site causes no work. A form for
-  // another organization than the one of the session is out of date: the session switched after the page was shown.
-  // The service gets only the fields of the change, without the form token.
+  // The origin check comes before the body is read, so that the service reads no form and gets no change from another
+  // site. A form for another organization than the one of the session is out of date: the session switched after the
+  // page was shown. The service gets only the fields of the change, without the form token.
   private async changeOnPost<Fields extends { readonly organizationId: string }>(request: Request, scope: AdministrationScope, route: ChangeRoute<Fields>): Promise<Response> {
     if (request.method !== 'POST') return noticePage('methodNotAllowed', { Allow: 'POST' });
     if (request.headers.get('Origin') !== this.publicOrigin) return noticePage('forgedRequest');

@@ -13,7 +13,7 @@ import type {
   OrganizationMember,
   OrganizationMembership,
   Page,
-} from '../organizations/organization-administration.ts';
+} from '../organizations/organization-directory.ts';
 
 const UNAVAILABLE: BrowserSessionState = Object.freeze({ status: 'unavailable' });
 const DENIED: AccessDecision = Object.freeze({ allowed: false, reason: 'account-inactive' });

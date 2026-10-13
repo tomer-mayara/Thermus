@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { DirectoryChangeResult } from '../../../src/organizations/organization-administration.ts';
+import type { DirectoryChangeResult } from '../../../src/organizations/organization-directory.ts';
 import { actorOf, administrationWith, changeOf, recordLines, rolesIn } from './fixtures/administration-fixtures.ts';
 
 describe('OrganizationAdministration safe grant changes', () => {

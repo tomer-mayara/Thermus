@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-context.ts';
-import { OrganizationAdministration, type OrganizationMembership } from '../../../src/organizations/organization-administration.ts';
+import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
+import type { OrganizationMembership } from '../../../src/organizations/organization-directory.ts';
 import { OrganizationDirectoryDouble } from './fixtures/organization-directory-double.ts';
 
 const authority = 'hosted-provider-double';

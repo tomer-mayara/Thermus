@@ -5,7 +5,9 @@ import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation
 import type { BrowserSession } from './hosted-admin/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
-import { OrganizationAdministration, type ChangeRecorder, type OrganizationDirectory } from './organizations/organization-administration.ts';
+import type { ChangeRecorder } from './organizations/change-records.ts';
+import { OrganizationAdministration } from './organizations/organization-administration.ts';
+import type { OrganizationDirectory } from './organizations/organization-directory.ts';
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
 type HostedConfig = Extract<DeploymentConfig, { deployment: 'hosted' }>;

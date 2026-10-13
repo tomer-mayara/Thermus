@@ -1,5 +1,9 @@
 import { timingSafeEqual } from 'node:crypto';
-import type { GrantChangeRequest, InvitationChangeRequest, InvitationSendRequest } from '../organizations/organization-administration.ts';
+import type {
+  GrantChangeRequest,
+  InvitationChangeRequest,
+  InvitationSendRequest,
+} from '../organizations/organization-administration.ts';
 import type { NoticeName } from './account-pages.ts';
 
 export type FormRefusal = Extract<NoticeName, 'formTypeRefused' | 'formTooLarge' | 'forgedRequest' | 'invalidRequest'>;

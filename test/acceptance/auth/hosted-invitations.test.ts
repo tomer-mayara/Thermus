@@ -1,25 +1,17 @@
 import assert from 'node:assert/strict';
-import { describe, test, type TestContext } from 'node:test';
-import type { AccountFailureReport } from '../../../src/hosted-admin/account-routes.ts';
-import { administrationMembers, labelsOf, recordLines, rolesOf, seatsIn, shownPage, submitOnPage } from '../../support/hosted-administration.ts';
+import { describe, test } from 'node:test';
+import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage } from '../../support/hosted-administration.ts';
 import { formsIn } from '../../support/hosted-browser.ts';
-import { formFor, serveOrganizationSite, statusesOf, userOf } from '../../support/hosted-organization-site.ts';
+import { adminGrant, formFor, statusesOf, userGrant, userOf } from '../../support/hosted-organization-site.ts';
 
 const invitationsPage = 'https://magumagu.example/team/invitations';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
-const failurePage = /The request failed\. Try again later\./;
-
-async function serve(t: TestContext) {
-  const failures: AccountFailureReport[] = [];
-  const site = await serveOrganizationSite(t, { reportFailure: (report) => failures.push(report), memberships: administrationMembers });
-  return { ...site, failures };
-}
 
 function invitationLines(body: string): readonly string[] {
   return [...body.matchAll(/<p>([^<]* invitation, (?:pending|accepted|revoked|expired)\.)<\/p>/g)].map(([, line = '']) => line);
 }
 
-describe('Hosted invitations and the User seat summary through the public routes, with session and directory doubles', () => {
+describe('Hosted invitations through the public routes, with session and directory doubles', () => {
   test('Given an Admin and a Super Admin, when each sends an invitation from the invitations page, then the Admin can invite only User and the Super Admin only Admin, a forged role is refused, and an accepted Admin invitation gives Admin without User', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
@@ -103,7 +95,7 @@ describe('Hosted invitations and the User seat summary through the public routes
       'user-eve in org-a: revoke-invitation user for invitation-1: applied',
       'user-eve in org-a: resend-invitation user for invitation-1: not-pending',
       'user-eve in org-a: revoke-invitation admin for invitation-5: denied',
-      'user-eve in org-a: revoke-invitation user for invitation-6: denied',
+      'user-eve in org-a: revoke-invitation - for invitation-6: denied',
       'user-eve in org-a: revoke-invitation user for invitation-2: not-pending',
     ]);
   });
@@ -121,44 +113,39 @@ describe('Hosted invitations and the User seat summary through the public routes
     assert.doesNotMatch(providerRules, /Only a sign-in with the invited email address/);
   });
 
-  test('Given members on several pages, with members repeated at the page boundaries, when an Admin and a Super Admin open the members page, then the seat summary counts each active membership with User once, and Admin-only, Super-Admin-only, default-role, pending, and inactive memberships and pending invitations do not count', { timeout: 20_000 }, async (t) => {
+  test('Given an inactive membership with User and Admin and a pending membership with User, when an Admin invites the first address as User, a Super Admin invites the second as Admin, and each person accepts, then each membership becomes active with only the role of its invitation, so that no invitation restores a grant outside the authority of its sender', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
-    site.directory.addInvitations({ organizationId: 'org-a', email: 'pending.user@example.com', role: 'user' });
-    site.directory.memberPageLayout = (members) => [members.slice(0, 3), members.slice(2, 6), members.slice(5)];
+    site.directory.addMembers({ subject: 'user-ida', organizationId: 'org-a', grants: [userGrant, adminGrant], status: 'inactive' });
 
-    const acme = { admin: (await site.browserOf(userOf('user-eve', 'org-a')).open('members')).body, superAdmin: (await site.browserOf(userOf('user-sam', 'org-a')).open('members')).body };
-    const globex = (await site.browserOf(userOf('user-ben', 'org-b')).open('members')).body;
-    const userOnly = await site.browserOf(userOf('user-una', 'org-a')).open('members');
-
-    assert.deepEqual([seatsIn(acme.admin), seatsIn(acme.superAdmin), seatsIn(globex)], [4, 4, 3]);
-    assert.equal(userOnly.status, 403);
-    assert.equal(seatsIn(userOnly.body), undefined);
-    assert.deepEqual([...new Set(site.directory.memberPageReads.map(({ statuses }) => statuses.join()))], ['active,inactive,pending']);
-    assert.ok(site.directory.memberPageReads.some(({ cursor }) => cursor !== undefined), 'the page reads followed the cursors');
-    assert.deepEqual(site.failures, []);
-  });
-
-  test('Given a member page or an invitation page that fails to load, when the members page or the invitations page opens, then each gives the failure page without a partial number or list, and the operator gets the path and the cause', { timeout: 20_000 }, async (t) => {
-    const site = await serve(t);
-    site.directory.memberPageLayout = (members) => [members.slice(0, 2), new Error('member page 2 timed out'), members.slice(4)];
-    site.directory.invitationPageLayout = () => [new Error('invitation page 1 timed out')];
-    const otto = site.browserOf(userOf('user-otto', 'org-a'));
-
-    const members = await otto.open('members');
-    const invitations = await otto.open('invitations');
-
-    for (const answer of [members, invitations]) {
-      assert.equal(answer.status, 500);
-      assert.match(answer.body, failurePage);
-      assert.deepEqual(formsIn(answer.body), []);
+    await submitOnPage(site.browserOf(userOf('user-eve', 'org-a')), 'invitations', { label: 'Invite as User', filled: { email: 'ida@example.com' } });
+    await submitOnPage(site.browserOf(userOf('user-sam', 'org-a')), 'invitations', { label: 'Invite as Admin', filled: { email: 'pia@example.com' } });
+    for (const [email, subject] of [['ida@example.com', 'user-ida'], ['pia@example.com', 'user-pia']] as const) {
+      site.directory.acceptInvitation(site.directory.invitationTo(email)?.invitationId ?? '', subject);
     }
-    assert.equal(seatsIn(members.body), undefined);
-    assert.deepEqual(site.failures.map(({ path, cause }) => `${path}: ${String(cause)}`), [
-      '/team/members: Error: member page 2 timed out',
-      '/team/invitations: Error: invitation page 1 timed out',
+    const ida = await statusesOf(site.browserOf(userOf('user-ida', 'org-a')), ['portal', 'members']);
+    const pia = await statusesOf(site.browserOf(userOf('user-pia', 'org-a')), ['portal', 'members']);
+
+    assert.deepEqual([rolesOf(site, 'user-ida', 'org-a'), rolesOf(site, 'user-pia', 'org-a')], [['user'], ['admin']]);
+    assert.deepEqual([ida, pia], [{ portal: 200, members: 403 }, { portal: 403, members: 200 }]);
+  });
+  test('Given a pending User invitation, when an Admin sends the same address as User again, also in another letter case, then nothing is sent and the browser returns to the invitations page; after another Admin revokes the invitation, a new send is a new invitation', { timeout: 20_000 }, async (t) => {
+    const site = await serve(t);
+    const eve = site.browserOf(userOf('user-eve', 'org-a'));
+    const send = (email: string) => submitOnPage(eve, 'invitations', { label: 'Invite as User', filled: { email } });
+
+    const answers = [await send('new.user@example.com'), await send('New.User@Example.com')];
+    await submitOnPage(site.browserOf(userOf('user-cy', 'org-a')), 'invitations', 'Revoke the invitation to new.user@example.com');
+    answers.push(await send('new.user@example.com'));
+
+    assert.deepEqual(answers.map(({ status, location }) => [status, location?.href]), answers.map(() => [303, invitationsPage]));
+    assert.deepEqual(site.directory.invitationChanges, ['send org-a user new.user@example.com', 'revoke invitation-1', 'send org-a user new.user@example.com']);
+    assert.deepEqual(recordLines(site.records).map((line) => line.replace(/^.* invite user for /, '')), [
+      'new.user@example.com: applied',
+      'New.User@Example.com: unchanged',
+      'user-cy in org-a: revoke-invitation user for invitation-1: applied',
+      'new.user@example.com: applied',
     ]);
   });
-
   test('Given a Super Admin whose sign-in did not complete MFA, when it opens the invitations page or sends an invitation with the form token of its session, then each is refused with the MFA notice, nothing is sent, and the refused change is recorded', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const sam = site.browserOf(userOf('user-sam', 'org-a'), { mfaCompleted: false });
