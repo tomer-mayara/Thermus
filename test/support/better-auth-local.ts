@@ -1,15 +1,14 @@
 import { DatabaseSync } from 'node:sqlite';
-import { mcp, type McpOptions } from '@better-auth/mcp';
 import { betterAuth } from 'better-auth';
 import { applySetCookies } from 'better-auth/cookies';
 import { getMigrations } from 'better-auth/db/migration';
-import { admin } from 'better-auth/plugins/admin';
-import { jwt } from 'better-auth/plugins/jwt';
+import { localProviderOptions } from '../../src/auth-better-auth/better-auth-runtime.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../src/http/server.ts';
 
 export const publicBaseUrl = 'http://localhost:8080';
 export const authIssuer = `${publicBaseUrl}/api/auth`;
 export const mcpResourceUrl = `${publicBaseUrl}/mcp`;
-export const clientAddressHeader = 'x-magumagu-client-address';
+export const clientAddressHeader = CLIENT_ADDRESS_HEADER;
 export const localInstallationId = '0f6c1e9a-4b7d-4e2a-9c35-8d1f2a6b7e40';
 
 export interface AccountCredentials {
@@ -17,53 +16,15 @@ export interface AccountCredentials {
   readonly password: string;
 }
 
-const privateHttpPaths = [
-  '/admin/create-user',
-  '/admin/list-users',
-  '/admin/set-user-password',
-  '/admin/ban-user',
-  '/admin/revoke-user-sessions',
-  '/oauth2/create-client',
-  '/oauth2/get-client',
-  '/oauth2/get-clients',
-  '/oauth2/update-client',
-  '/oauth2/client/rotate-secret',
-  '/oauth2/delete-client',
-  '/token',
-];
-
-const withoutOfflineGrants = {
-  scopes: ['openid', 'profile', 'email'],
-  grantTypes: ['authorization_code', 'client_credentials'],
-} satisfies Pick<McpOptions, 'scopes' | 'grantTypes'>;
-
-function localProviderOptions(database: DatabaseSync) {
-  return {
-    baseURL: publicBaseUrl,
-    secret: 'interface-test-secret-0123456789abcdef0123456789',
-    database,
-    telemetry: { enabled: false },
-    emailAndPassword: { enabled: true, disableSignUp: true },
-    rateLimit: { enabled: true },
-    advanced: { ipAddress: { ipAddressHeaders: [clientAddressHeader] } },
-    disabledPaths: privateHttpPaths,
-    plugins: [
-      admin(),
-      jwt(),
-      mcp({
-        resource: mcpResourceUrl,
-        loginPage: '/sign-in',
-        consentPage: '/consent',
-        ...withoutOfflineGrants,
-        clientReference: () => localInstallationId,
-      }),
-    ],
-  };
-}
-
 export async function startLocalProvider() {
   const database = new DatabaseSync(':memory:');
-  const options = localProviderOptions(database);
+  const options = localProviderOptions({
+    publicBaseUrl,
+    mcpResourceUrl,
+    secret: 'interface-test-secret-0123456789abcdef0123456789',
+    database,
+    installationId: localInstallationId,
+  });
   await (await getMigrations(options)).runMigrations();
   return { auth: betterAuth(options), database };
 }

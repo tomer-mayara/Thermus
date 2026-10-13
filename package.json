@@ -10,6 +10,9 @@
   "workspaces": [
     ".habit-hooks"
   ],
+  "imports": {
+    "#auth-local-migrations/*": "./migrations/auth-local/*"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist",

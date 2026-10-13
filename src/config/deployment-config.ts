@@ -30,6 +30,11 @@ interface HostedConfig extends PublicUrls {
 
 export type DeploymentConfig = SelfHostedConfig | HostedConfig;
 
+export interface ListenAddress {
+  readonly host: string;
+  readonly port: number;
+}
+
 export class DeploymentConfigError extends Error {
   public constructor(message: string) {
     super(message);
@@ -40,6 +45,8 @@ export class DeploymentConfigError extends Error {
 const LOOPBACK_HOSTNAMES: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]']);
 const MIN_COOKIE_PASSWORD_LENGTH = 32;
 const SPACE_OR_CONTROL_CHARACTER = /[\s\p{Cc}]/u;
+const DEFAULT_LISTEN_ADDRESS: ListenAddress = { host: '127.0.0.1', port: 8080 };
+const MAX_PORT = 65_535;
 
 export function loadDeploymentConfig(environment: Environment, transport: 'http' | 'stdio'): DeploymentConfig {
   const deployment = readDeployment(environment);
@@ -48,6 +55,29 @@ export function loadDeploymentConfig(environment: Environment, transport: 'http'
     throw new DeploymentConfigError('The hosted DEPLOYMENT serves MCP only over HTTPS, not stdio.');
   }
   return loadHostedConfig(environment);
+}
+
+export function loadListenAddress(environment: Environment): ListenAddress {
+  const address: ListenAddress = { host: readListenHost(environment), port: readListenPort(environment) };
+  return Object.freeze(address);
+}
+
+function readListenHost(environment: Environment): string {
+  const host = environment.LISTEN_HOST;
+  if (host === undefined || host === '') return DEFAULT_LISTEN_ADDRESS.host;
+  if (SPACE_OR_CONTROL_CHARACTER.test(host)) {
+    throw new DeploymentConfigError('LISTEN_HOST must not contain spaces or control characters.');
+  }
+  return host;
+}
+
+function readListenPort(environment: Environment): number {
+  const port = environment.LISTEN_PORT;
+  if (port === undefined || port === '') return DEFAULT_LISTEN_ADDRESS.port;
+  if (!/^\d{1,5}$/.test(port) || Number(port) > MAX_PORT) {
+    throw new DeploymentConfigError(`LISTEN_PORT must be a whole number from 0 to ${MAX_PORT}.`);
+  }
+  return Number(port);
 }
 
 function readDeployment(environment: Environment): Deployment {

@@ -78,6 +78,59 @@ Real issuer, signature, and key rotation checks belong in authentication interfa
 [V] Rejects a missing or relative `DATA_DIR`, a missing hosted setting, a redirect URI on another origin, and a cookie password shorter than 32 characters
 [V] Rejects hosted stdio and accepts self-hosted stdio at this layer
 [V] Names the setting and the rule in each error, without a setting value; keeps the issuer exactly as written; returns frozen records
+[V] Uses listen host `127.0.0.1` and port 8080 when `LISTEN_HOST` and `LISTEN_PORT` are missing or empty; returns a frozen address for valid hosts and ports from 0 to 65535
+[V] Rejects a `LISTEN_PORT` that is not a whole number from 0 to 65535 and a `LISTEN_HOST` with spaces or control characters, without the value in the message; reads only `LISTEN_HOST` and `LISTEN_PORT`
+
+**Local authentication migrations** (`test/unit/auth-better-auth/local-auth-migrations.test.ts`)
+
+These tests run the pinned Better Auth packages with an in-memory `node:sqlite` database and the production provider settings.
+
+[V] The shipped `0001-better-auth.sql` is the exact `compileMigrations()` output for the pinned provider settings on an empty database
+[V] After the shipped migrations, Better Auth plans no table, column, or index change, and its schema check passes
+[V] The installation table holds one identity: a second row or another singleton value fails; three accounts can still be added
+
+**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`)
+
+These tests run `startHttpServer()` on a loopback port with test handlers. Raw socket requests check request targets that `fetch` would change.
+
+[V] Listens on the configured host and a free port and reports the real address, with an IPv6 host in brackets; rejects a port in use and keeps no server; stops listening when the address cannot become a URL
+[V] Gives the handler the public origin with the path and query of the target; the `Host` and forwarded headers cannot change it
+[V] Refuses the absolute form, `*`, `//`, `\`, and `#` targets with 400 and `TRACE` with 501, without a handler call
+[V] Replaces every client copy of `x-magumagu-client-address` with the socket address and keeps all other headers
+[V] Streams a large JSON request body to the handler; a request body that the handler does not read does not block the next request on the connection
+[V] Returns the status, status text, headers, separate `Set-Cookie` headers, and body; streams events as they arrive, follows client back-pressure, and sends no body for `HEAD`
+[V] Answers a handler that throws or rejects with a generic 500 and a log line without request data; ends the connection when a streamed body fails
+[V] Aborts the request signal and cancels the response body when the client disconnects
+[V] `close()` ends idle connections at once, refuses new connections, lets running responses finish, ends a response that never ends after the grace period, and gives the same result for repeated calls
+
+**Better Auth runtime lifecycle** (`test/unit/auth-better-auth/better-auth-runtime.test.ts`)
+
+Doubles stand in for the data-directory lock, the local installation, and the provider at their public interfaces.
+
+[V] Locks the data directory, opens the installation, starts the provider with the installation ID, secret, and database, and reports tenant `local:<installation-id>`
+[V] A lock failure opens nothing; an installation failure releases the lock; a provider failure closes the installation and then releases the lock; each original error reaches the caller
+[V] When a cleanup step also fails, the remaining cleanup still runs and the caller gets both errors in a `SuppressedError`
+[V] `close()` closes the installation and then releases the lock one time, also for repeated and concurrent calls; a close failure still releases the lock and reaches the caller
+
+**Data-directory lock** (`test/unit/auth-better-auth/data-directory-lock.test.ts`)
+
+[V] A second lock from the same process or from another process fails with `DataDirectoryInUseError` until the holder releases it or ends, also after `SIGKILL`
+[V] A second release does nothing; the lock leaves only `data-directory.lock` in the directory
+[V] A missing directory or a regular file in its place fails with `DataDirectoryUnavailableError` and creates nothing
+
+**Local installation** (`test/unit/auth-better-auth/local-installation.test.ts`)
+
+[V] A fresh data directory gets one installation UUID, a generated secret, and the migrated database; `auth.sqlite` and `auth.secret` have mode `0600`
+[V] A second open keeps the identity and secret; two fresh directories get different identities and secrets; a second close does nothing
+[V] Retained data with a deleted, dropped, or invalid installation identity, or with provider tables only, fails closed with a restore message and changes no data
+[V] Retained data without `auth.secret`, with an invalid secret, or with another schema version fails closed, writes no new secret, and puts no secret in the message
+[V] A secret and an empty database from an interrupted first start give a new installation identity with that secret
+
+**Application failure reports** (`test/unit/application.test.ts`)
+
+A logger double records the lines that `operatorFailureReporter()` writes.
+
+[V] Gives each MCPServer failure report to the operator as one error line that names the failed step and keeps the cause, also for a cause that is not an error; writes no info line
 
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
@@ -364,6 +417,19 @@ These tests run MCPServer with the real access contracts through a test-only pro
 [V] Gives the operator one `access-resolution` report with the cause for an access lookup outage, and no report for a missing or rejected token, a missing scope, or an access denial
 [V] Refuses protected work when the grants lack the required permission, for example Admin without User
 
+**Local installation** (`test/integration/auth/local-installation.test.ts`)
+
+These tests run the real application, Better Auth runtime, MCPServer, and provider with SQLite files in temporary data directories.
+
+[V] A fresh data directory gives one logged `local:<installation-id>` tenant; the application holds the data-directory lock until it closes; MCP requests without a token or with a forged token get 401 with the Bearer challenge and give no failure report, and other paths get 404
+[V] Two applications that start at the same time on a fresh directory: one starts, the other fails with `DataDirectoryInUseError`, and one installation identity exists
+[V] A restart keeps the tenant and the IDs of enabled and disabled accounts
+[V] With zero accounts or only a disabled account, startup succeeds, the disabled account cannot sign in (`BANNED_USER`), and MCP requests stay denied
+[V] A copy of the complete stopped data directory keeps the tenant, the user IDs, and a browser session that its secret signed
+[V] A client that an enabled account registers through the provider has the installation ID as `reference_id` and no `user_id`
+[V] Retained data without its installation identity, and retained data with a damaged provider schema, stop startup and release the data-directory lock
+[V] The hosted deployment stops with `HostedEditionUnavailableError`
+
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
 
 ## Interface
@@ -473,6 +539,25 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 [V] Given two organizations, a seat change in one does not change the other
 
 `npm run test:acceptance` runs every acceptance test. `npm run check` does not select the acceptance directory.
+
+**Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)
+
+Each test starts the built server, `dist/src/index.js`, as a separate Node process on a loopback port with a temporary data directory. Account setup uses the Better Auth runtime in the test process while no server runs.
+
+[V] Given a fresh data directory, a start, stop, and second start persist one installation identity, report the same `local:` tenant, and exit with status 0 after `SIGTERM`
+[V] Given zero accounts, startup succeeds, MCP requests get a Bearer challenge, and no public route creates an account
+[V] Given only a disabled account, startup succeeds, MCP requests stay denied, and the account keeps its ID
+[V] Given two servers that start at the same time on a fresh directory, one serves, the other stops with a lock error before it listens, and one installation identity exists
+[V] Given retained data without its installation identity, startup stops before it listens, asks for a restore, and creates no new identity
+[V] Given a restored copy of the complete data directory, the server starts with the same tenant; a restore without `auth.secret` stops before it listens
+[V] Given a command argument, the process stops with status 2 before it listens, does not repeat the arguments, and creates no local data
+[V] Given the hosted edition with a `DATA_DIR` setting, startup stops with an unavailable-edition error and creates no local data
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/self-hosted-startup.test.js
+```
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 
