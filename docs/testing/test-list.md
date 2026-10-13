@@ -207,19 +207,29 @@ Doubles stand in for the hidden input, the runtime lifecycle, and the provider. 
 [V] Gives `undefined` for Ctrl-C and Ctrl-D, and for input that ended before the read; rejects with the input error of a failed pipe or terminal, with raw mode off
 [V] Adds no listener to the input before the first read; `close()` can run two times and ends the reading of a pipe that stays open
 
-**Application routing and failure reports** (`test/unit/application.test.ts`)
+**Operator log lines** (`test/unit/application-operator-log.test.ts`)
 
-A logger double records the lines that `operatorFailureReporter()` and `accountFailureReporter()` write.
+A logger double records the lines that `operatorFailureReporter()`, `accountFailureReporter()`, and `accountChangeRecorder()` write.
 
 [V] Gives each MCPServer failure report to the operator as one error line that names the failed step and keeps the cause, also for a cause that is not an error; writes no info line
 [V] Gives each account failure report to the operator as one error line with the path and the cause, also for a cause that is not an error
+[V] Writes each privileged change record to the operator log as one info line, `Account change record: <JSON>`; a line break in a value stays inside the JSON, so each record stays on one line
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/application-operator-log.test.js
+```
+
+**Application routing** (`test/unit/application.test.ts`)
+
 [V] Routes the complete request to MCP, provider-owned discovery and OAuth endpoints, or bundled pages under the configured public path
 [V] Refuses private provider routes, the hosted organization and onboarding paths, unrelated paths, and near-matching path suffixes without calling a route owner
 [V] Hosted routing: sends the MCP resource and both protected-resource metadata paths to the MCP handler and each other path under the configured public path to the account routes, with the complete request; paths outside the public path give 404 without a handler call
 
 **Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
 
-`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its cookie effects, and a configured answer to an organization switch. `AccessResolverMock` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
+`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its MFA evidence (completed by default), its cookie effects, and a configured answer to an organization switch. `AccessResolverMock` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
 
 [V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
 [V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
@@ -273,9 +283,67 @@ Each refusal comes before an organization check and a session switch.
 [V] Gives 405 with `Allow: POST` to GET and PUT requests for the selection route
 [V] For an unavailable or a signed-out session, gives 503 or 401 to the organization page and a selection post, and lists, checks, or switches no organization
 
+**Member and invitation pages** (`test/unit/hosted-admin/account-routes-administration-pages.test.ts`)
+
+This file and the two files below also use `fixtures/administration-routes-fixtures.ts`. `serveAdministration()` serves the routes for Ann: a signed-in session with a refreshed session cookie, a form token, and MFA evidence, and allowed access to Acme with User and Admin. The fixtures also give member and invitation overviews and one valid post for each change. `OrganizationAdministrationDouble` gives the configured overview, refusal, change result, or failure, and records each call with its actor and its request. A setup can give a session whose sign-in did not complete MFA, a session without a form token, another access decision, or another public URL. `formsIn()` from `test/support/hosted-browser.ts` reads the forms of a page.
+
+[V] For a GET and a HEAD request with forged organization values in the query and headers, gives the service the user of the decided context with the MFA evidence of the session and the organization of the context; the members page shows the seat count, each member with its status and roles, a link to the invitations page, and one form for each change with the form token, the organization, the membership, its revision, the role, and the action; sends the session cookies and the page headers with `form-action 'self'`, and no script, style, or other resource
+[V] For each identity policy, the invitations page has a send form with an email field for each role that the actor can invite, a resend and a revoke form for each pending invitation of a role of the actor, each invitation with its role and state, a link to the members page, and the policy text of the directory
+[V] For an unknown identity policy, the invitations page claims no strict address match
+[V] Shows provider values with HTML characters as text on both pages: email addresses, roles, IDs, revisions, and the organization
+[V] Without an invitation, the invitations page says "There are no invitations." and still offers a send form for each invitable role
+[V] For a session whose sign-in did not complete MFA, gives the service that evidence, and each page gets the 403 MFA notice with the session cookies and no form
+[V] When the service denies the actor, each page gets 403 with a link to the organization page and the session cookies
+[V] When the access resolver denies access, each page gets 403 before the service runs
+[V] Gives 405 with `Allow: GET, HEAD` and the session cookies to POST, PUT, and DELETE requests for both pages, and does not ask the service
+[V] For a failed overview, each page gets the 500 failure page with the session cookies, and the operator gets the path and the cause
+[V] Under a public URL path, each form posts under that path, and each link points under it
+[V] For a decided context without an organization, each page gets the 403 access denial, and the service is not asked
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/hosted-admin/account-routes-administration-pages.test.js
+```
+
+**Grant and invitation changes** (`test/unit/hosted-admin/account-routes-administration-changes.test.ts`)
+
+[V] For a valid grant, invitation, resend, and revoke post, also with a forged `X-Organization-Id` header, and an `applied` or `unchanged` answer, gives the service the actor with the MFA evidence of the session and no form token or cookie; the browser gets 303 to the members or invitations page with `Cache-Control: no-store`, an empty body, and the session cookies
+[V] For a session whose sign-in did not complete MFA, gives the service that evidence, and each post gets the 403 MFA notice with the session cookies
+[V] Gives each change exactly the fields of its form
+[V] Gives each post 403 for `denied` and `mfa-required`, 409 for `stale` and `not-pending`, and 503 for `unsupported`, each with its notice, the session cookies, and no redirect
+[V] Gives forged roles and actions to the service unchanged, also Super Admin, an account disable, a membership deactivation, a credential reset, and a Super Admin invitation; the denial of the service gives 403
+[V] For a change that fails in the service, gives the 500 failure page with the session cookies and no redirect, and gives the operator the path and the cause
+[V] Gives 401 to a change post of a signed-out session and 403 when the resolver denies access, before any form check; does not ask the service
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/hosted-admin/account-routes-administration-changes.test.js
+```
+
+**Change input checks** (`test/unit/hosted-admin/account-routes-administration-input.test.ts`)
+
+Each refusal comes before a call of the service.
+
+[V] Gives 403 with the session cookies to change posts from a foreign origin, a `null` origin, another scheme, or without an origin, and does not read the body
+[V] Gives 403 with the session cookies to change posts without a form token, with an empty or a longer token, or with the token of another session, also with an unknown field
+[V] Gives 403 to change posts with two form tokens and to each post of a session without a form token
+[V] For each change, gives 400 with the session cookies to a post with a missing, repeated, or empty field, a value with a space or with 257 characters, or an unknown field
+[V] Gives 400 to an invitation with an address without an `@`, with two, with a space or a line break, with an empty part, or with more than 254 characters
+[V] Gives 409 with the out-of-date notice and the session cookies to change posts for another organization than the one of the session
+[V] Gives 415 to JSON and 413 to a change post larger than 16 KiB, with the session cookies
+[V] Gives 405 with `Allow: POST` and the session cookies to GET and PUT requests for each change route
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/hosted-admin/account-routes-administration-input.test.js
+```
+
 **Organization administration** (`test/unit/organizations/organization-administration.test.ts`)
 
-`OrganizationDirectoryDouble` gives the configured memberships of each user subject, or a configured failure, and records each read. A test can change the memberships between calls, as the provider state changes. The tests import the access contracts as types only.
+`OrganizationDirectoryDouble` gives the configured memberships of each user subject, or a configured failure, and records each membership read. A test can change the memberships between calls, as the provider state changes. The change recorder fails the test on each record, because a list or a selection check keeps no change record. The tests import the access contracts as types only.
 
 [V] Gives an empty list for a user without a membership, so the user gets the onboarding guidance and no default organization
 [V] Lists only active memberships whose grants give at least one application permission, in directory order; an inactive membership, a role without an application permission, and a membership without a grant are not listed
@@ -286,11 +354,111 @@ Each refusal comes before an organization check and a session switch.
 [V] Refuses a selection of a membership that became inactive after the list
 [V] Gives a failed directory read to the caller unchanged, for a list and for a selection check
 
+**Grant authority** (`test/unit/organizations/organization-administration-grants.test.ts`)
+
+This file and the five files below use `fixtures/administration-fixtures.ts`. It gives the memberships of two organizations: in Acme, members with Super Admin alone, all three roles, User plus Admin, Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. `invitationsWith()` adds a pending, an accepted, a revoked, and an expired User invitation and a pending Admin invitation in Acme, and a pending User invitation in Globex. Each actor completed MFA unless a test says otherwise, and its session selected Globex, so that only the organization of the request can decide. The service gets a fixed clock and a recorder that keeps each change record; `recordLines()` checks that each record is frozen and has only the fields of the contract. `OrganizationDirectoryDouble`, in `fixtures/organization-directory-double.ts`, is a stateful double of the whole `OrganizationDirectory` contract: a change takes effect in the later reads, each grant change needs the current revision of the membership, and an acceptance activates only the role of the invitation. A test can lay out the pages of each read, make a page fail, queue a result or a failure (before or after the effect) for the next change, hold the changes to run them at the same time, and accept or expire an invitation as the provider does. `fixtures/change-answers.ts` keeps the queued answers and the held changes, and `fixtures/directory-double-records.ts` the seeds and the record helpers of the double. Each invitation of the double has a token, as a provider record has it, so that a test can show that no token reaches an overview or a record. The double records each read and change. The tests import the access contracts as types only.
+
+[V] Super Admin alone grants Admin to itself and then, with that Admin authority, User to itself, without another person; a User grant before the Admin grant is denied, and each request is recorded
+[V] Denies each grant and revoke for the actor itself and for other members, with no directory change and one record for each request: User changes by Super Admin alone, Admin changes by Admin alone, User and Admin changes by User alone, and Super Admin changes by a member with all three roles and by Admin alone
+[V] A member with Admin and Super Admin grants Admin to one member and User to a member with only the default role, with each authority; the directory changes only the requested role
+[V] A Super Admin revokes Admin from a User plus Admin member, and an Admin revokes User from another member; each removal removes only its role, and the grants of the other organization stay
+[V] An Admin with User revokes its own User grant; only that grant goes, and its Admin authority still works for the next change
+[V] A member with all three roles revokes its own Admin grant; its next User change is denied, and its retained Super Admin authority grants Admin to itself again
+[V] The revoke of the last application grant leaves the membership active with only the default role, which gives no permission; the organization list of the member then has only its other organization
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/organizations/organization-administration-grants.test.js
+```
+
+**Grant targets and checks** (`test/unit/organizations/organization-administration-targets.test.ts`)
+
+[V] Denies, before the target is read, an Admin request to revoke Admin or Super Admin, to deactivate, disable, reset the credentials of, or remove a member, to grant the default role, or with an empty role or action or a role and action in capital letters; no grant changes, and the record keeps the requested action
+[V] Denies a change of a target membership of another organization, an unknown, inactive, or pending target, and a change by an actor with no membership, only User, or an inactive membership in the organization of the request; no grant changes, and the record says `denied`
+[V] After a Super Admin revokes the Admin grant of an Admin, the current read denies the next change of that Admin
+[V] Requires MFA for an actor whose sign-in did not complete it, also for a member with all three roles, before any read; no grant changes, and each record says `mfa-required`
+[V] Gives `unchanged` with no directory change for a grant of a role that the target has and a revoke of a role that it lacks
+[V] Gives the directory one change of one role with the revision that the actor saw; the record has only the time of the clock, the actor authority and subject, the organization, the target membership, the action, the role, and the outcome
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/organizations/organization-administration-targets.test.js
+```
+
+**Safe grant changes** (`test/unit/organizations/organization-administration-changes.test.ts`)
+
+[V] Gives `stale` with no directory change for a request with an older revision of the target, and records it
+[V] A retry of an applied grant after another actor revoked it is `stale` and never restores the revoked access
+[V] Two actors change the same membership at the same time from the same revision: one change is `applied` and the other `stale`, so the grant that the second actor wanted to revoke stays
+[V] A directory change that fails after or before its effect reaches the caller and is recorded as `unknown`; a retry of the same request is then `stale` and changes nothing again, or is applied one time
+[V] Gives the `unsupported` or `stale` answer of the directory to the caller and records it; the service makes no second attempt and no change of its own
+[V] Fails and records `unknown` for a directory change without a result, with an unknown result, or with a result without an outcome
+[V] Gives a failed membership or target read to the caller before any change; the record says `failed`, and the directory changes nothing
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/organizations/organization-administration-changes.test.js
+```
+
+**Members and the User seat summary** (`test/unit/organizations/organization-administration-members.test.ts`)
+
+[V] Reads each member page of the organization with the explicit statuses `active`, `inactive`, and `pending` and follows the cursors; lists each member with its status and the roles that give an application permission; counts each active membership with User once
+[V] Each active member offers only the changes of the roles that the actor manages: User for an Admin, Admin for a Super Admin, and both for a member with both; a missing role gives a grant and a present role a revoke; inactive and pending members offer no change
+[V] Lists and counts a membership that two pages repeat one time; the record of the later page decides, also for a changed status
+[V] Counts no seat for members with only Admin, only Super Admin, or only the default role, and for inactive or pending members with User
+[V] Gives a page failure after earlier pages to the caller, with no partial count
+[V] Fails for a cursor that the directory gave before and for a page that names itself as the next page, instead of reading pages without end
+[V] Fails after 1,000 pages when each page gives a new cursor
+[V] Neither lists nor counts a page record of another organization
+[V] Refuses the overview with `denied` for a User without Admin or Super Admin, an Admin of another organization, and an Admin with an inactive membership, and with `mfa-required` for an Admin whose sign-in did not complete MFA; reads no member page and keeps no record
+[V] Gives a frozen overview: the overview, its members, their roles and changes, and each change
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/organizations/organization-administration-members.test.js
+```
+
+**Invitation changes** (`test/unit/organizations/organization-administration-invitations.test.ts`)
+
+[V] An Admin invites only User, a Super Admin only Admin, and a member with both each of them; each sent invitation names only its own role; no customer invites Super Admin or the default role, and each refusal is recorded
+[V] Refuses a User invitation by a User without Admin or an Admin of another organization with `denied`, and by an Admin whose sign-in did not complete MFA with `mfa-required`; nothing is sent, and the refusal is recorded
+[V] Gives `unsupported` when the directory cannot send an invitation safely; a send that fails reaches the caller and is recorded as `unknown`
+[V] An Admin resends and then revokes a pending User invitation, each one time; a second resend or revoke gives `not-pending` without a directory change; each record has the role of the invitation
+[V] Refuses a resend and a revoke with `not-pending` for an accepted or expired invitation, and with `denied` for an Admin invitation by an Admin, a User invitation by a Super Admin alone, an invitation of another organization, an unknown invitation, and an invitation by a User without Admin; the directory changes nothing, and each request is recorded
+[V] When the invited person accepts after the service read the invitation as pending, the `not-pending` answer of the directory to the revoke reaches the caller, and the acceptance stays
+[V] Sends nothing and gives `unchanged` while an invitation to the same address for the same role is pending, also for a retry after an unknown outcome and for the address in other letter case; sends an invitation for another role, and a new invitation after a revoke; the check reads only the explicit state `pending`, and each request is recorded
+[V] The denied record of a revoke of an invitation of another organization names no role; the denied record of an invitation of the organization keeps its role
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/organizations/organization-administration-invitations.test.js
+```
+
+**Invitation overview** (`test/unit/organizations/organization-administration-invitation-overview.test.ts`)
+
+[V] Reads the invitation pages with the explicit states `pending`, `accepted`, `revoked`, and `expired`; lists each invitation of the organization one time with its role and state, also when two pages repeat it; offers a resend and a revoke only for a pending invitation of a role that the actor manages; gives the invitable roles and the identity policy of the directory; copies no invitation token; the overview is frozen
+[V] A Super Admin alone can invite and change only Admin, and a member with both roles both; the overview gives the `provider-rules` policy of the directory
+[V] Gives a failed invitation page to the caller, and does not list a record of another organization
+[V] Refuses the invitation overview with `denied` for a User without Admin or Super Admin and with `mfa-required` for an Admin whose sign-in did not complete MFA; reads no invitation page
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/organizations/organization-administration-invitation-overview.test.js
+```
+
 **Unavailable hosted authentication** (`test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`)
 
 [V] Gives `unavailable` for each `Cookie` header, also for none or for a forged session or organization cookie
 [V] Denies access with `account-inactive` for each user, also with a selected organization, and gives no context, tenant, or grant
 [V] Gives a frozen empty membership list for each user, also with a selected organization: no membership, organization, or grant
+[V] Gives a frozen empty page for each member and invitation read, also for a forged organization or cursor, and no member or invitation for any ID; its invitation policy is `provider-rules`, so it claims no strict address match
+[V] Answers each grant change, invitation, resend, and revoke, also for a forged organization, membership, or invitation, with a frozen `unsupported` and changes nothing
 [V] `UnavailableMcpEndpoint` answers each MCP and metadata request, also a GET or DELETE and one with a forged bearer token or cookie, with 503 `temporarily_unavailable`, `Cache-Control: no-store`, and no Bearer challenge or cookie, and reads no request body; it closes two times without failure
 
 **Billing** (`test/unit/billing/billing-free.test.ts`)
@@ -593,7 +761,7 @@ These tests run the real application, Better Auth runtime, MCPServer, and provid
 
 **Hosted account routes with doubles** (`test/integration/auth/hosted-account.test.ts`)
 
-These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit signed-in sessions, `SignedInSessionDouble`, with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context. An MCP endpoint double stands in for the replaceable MCP part.
+These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit signed-in sessions, `SignedInSessionDouble`, with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context. An MCP endpoint double stands in for the replaceable MCP part. The failure reporter and the change recorder of the composition keep nothing.
 
 [V] Members of two organizations and one user with a session in each organization overlap and resolve in reverse order; each operation works only in the organization of its own session, also with forged organization IDs in the query, headers, and form
 [V] Independent Super Admin, Admin, and User plus Admin grants give each context every grant and only the union of their explicit permissions; Super Admin alone gives no product access, and Admin alone gives no billing; each refusal is the operation's `permission-required`
@@ -622,6 +790,24 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/integration/auth/hosted-organizations.test.js
+```
+
+**Hosted organization administration with doubles** (`test/integration/auth/hosted-administration.test.ts`)
+
+These tests open the shared site of `test/support/hosted-organization-site.ts` in one process with `openOrganizationSite()`, with the memberships of `test/support/hosted-administration.ts`. In Acme, these are members with Super Admin alone, all three roles, User plus Admin (two members), Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. The real hosted composition, account routes, `AdministrationRoutes`, `OrganizationAdministration`, access contracts, and MCPServer run with doubles only at the provider boundaries. `BrowserSessionStore` keeps the MFA evidence of each session. `MembershipDirectoryDouble` extends `OrganizationDirectoryDouble`, so that one stateful set of memberships, grants, revisions, and invitations gives the access resolution and the organization work, and a grant change takes effect in the next access resolution. `IdentityVerifierMock` verifies the MCP tokens. The site keeps each change record. `HostedBrowser` opens the pages and submits their forms, as a person does. `accountFailureReporter()` writes to a recording logger. No WorkOS setting, SDK, or credential exists. These tests prove application policy with doubles, not WorkOS behavior.
+
+[V] Direct service calls on the directory of the site follow the rules of the forms: a Super Admin grants Admin and then User to itself, an Admin cannot grant Admin, and a User plus Admin member revokes its own User grant; the next MCP requests use the current grants, the members page of that member still works, its other organization keeps its grants, and each call is recorded
+[V] An Admin and a Super Admin post changes of the same member from pages with the same revision, and the directory runs both at the same time: one gets 303, the other 409 with the out-of-date notice, and the grant that the second actor wanted to revoke stays; the records say `applied` and `stale`
+[V] A directory change that fails after its effect, after the provider refreshed the session, gives the 500 failure page with the refreshed session cookie, one operator log line with the path and the cause, and an `unknown` record; a retry of the same form gets 409 and changes nothing again, and the page then shows the current grant
+[V] When the directory cannot make a change safely, a grant post and an invitation post each get 503 with the notice; nothing changes, and each record says `unsupported`
+[V] With `accountChangeRecorder()`, a grant change and an invitation each give the operator log one info line with the record; no line holds the form token, the session cookie, or the invitation token
+[V] During an outage of the member pages after the provider refreshed the session, the members page gets the 500 failure page with the refreshed session cookie and no partial count; the operator log gets one line with the path and the cause
+[V] The production hosted application with the unavailable placeholder gives the 503 notice without a cookie or a form to the member and invitation pages and to each change, with the session cookie, form token, and values of the doubles; the log has only the line that hosted authentication is not available yet
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-administration.test.js
 ```
 
 **Local auth command** (`test/integration/auth/local-auth-command.test.ts`, `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`)
@@ -797,7 +983,7 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings and no WorkOS setting, unless the test adds them. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass.
 
 [V] Given hosted settings with an HTTPS public URL and no WorkOS settings, the server listens and serves the authentication-unavailable notice without a credential prompt or cookie, logs that hosted authentication is not available yet, reports no tenant, uses no network, and stops with status 0
-[V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP (POST, GET, and DELETE), account, organization, and billing operations each get the explicit 503 answer with `Cache-Control: no-store` and without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
+[V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP (POST, GET, and DELETE), account, organization, member, invitation, and billing operations, also a grant change and an invitation send, resend, and revoke with a forged form token, each get the explicit 503 answer with `Cache-Control: no-store` and without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
 [V] Given a value for each WorkOS setting, no setting turns on a provider or access, and the output shows no setting value
 [V] Given test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `MAGUMAGU_DEMO`, and a test session setting), the onboarding page, the organization list, a selection, and the billing page, with the session cookie, form token, organization, and return destination that the test doubles accept, each get the unavailable notice without a cookie; the output names no organization, tenant, or user, and the server uses no network
 [V] Given an invalid common setting, also with every WorkOS setting, startup stops before it listens with a `FATAL` line that names the setting and the rule but not the value
@@ -835,6 +1021,63 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/hosted-organization-requests.test.js
+```
+
+**Hosted grant management** (`test/acceptance/auth/hosted-grants.test.ts`)
+
+Each test of this file and the three files below starts the shared site behind the real HTTP server on a loopback port with `serveAdministrationSite()` from `test/support/hosted-administration.ts`. The site has the memberships of the AUTH-08 tests, the MCP token of five Acme members for Acme and of two of them also for Globex, and a failure reporter that records each report. `HostedBrowser` opens the members and invitations pages and submits their forms, as a person does. The doubles are the doubles of the organization tests: `BrowserSessionStore`, which also keeps the MFA evidence of each session; `MembershipDirectoryDouble`, one stateful directory of memberships, grants, revisions, and invitations that also resolves access; and `IdentityVerifierMock` for the real MCPServer with a test-only tool. `AccountOperationProbe` gives the product page. The site keeps each change record. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy with doubles, not WorkOS behavior, and are no hosted live gate pass.
+
+[V] Given a Super Admin with no other grant, the members page offers no User change; it grants Admin to itself and then, with that Admin authority, User to itself, each with 303 to the members page and without another person; the product page and the MCP tool stay refused until the User grant, also with Admin, and then both work; both grants are recorded
+[V] Given User plus Admin with a browser session and MCP tokens in two organizations, after a Super Admin revokes the Admin grant, the next members page and a form shown before are refused, while the product page and the MCP tool still work; the other organization keeps its grants and its MCP access, and the revoke and the refused change are recorded
+[V] Given User plus Admin, after the Admin revokes its own User grant, its members page still works, and the product page and the MCP tool are refused on the next request
+[V] Given User, Admin, and Super Admin, the member revokes its own Admin grant, then has no User change on its members page, and grants Admin to itself again through its remaining Super Admin authority, without another person; its User grant and its MCP access stay
+[V] Given a browser session and MCP tokens of a User in two organizations, after an Admin removes its last application grant in the selected organization, the next product and MCP requests there are refused with no default access; the membership stays active with only the default role, the organization page offers only the other organization, and there the selection, the product page, and the MCP token still work
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-grants.test.js
+```
+
+**Hosted grant change refusals** (`test/acceptance/auth/hosted-grant-refusals.test.ts`)
+
+[V] Given an Admin without Super Admin, forged forms that grant Admin or Super Admin, revoke the Admin or Super Admin grant of a combined-role member, or deactivate, disable, or reset that member each get 403 with the refusal notice; `members/deactivate`, `members/disable`, and `members/reset` get 404 because no such route exists; no grant changes, and each refusal is recorded with its requested action
+[V] Given members of two organizations, the members page of an Admin of one shows only its members; the Admin revokes a grant there and gets 403 for a form that names a member of the other organization; the other organization keeps its grants and MCP access
+[V] Given an Admin whose sign-in did not complete MFA, the members page and a grant post with the form token of its session each get the 403 MFA notice; no grant changes, and the refused change is recorded as `mfa-required`
+[V] Given a session that the provider refreshes at each request, grant posts from another site or without an origin, without the form token or with a wrong one (403), for another organization (409), or with an extra field (400) are refused before any change, and the refreshed session cookie reaches each answer; a valid post then gets 303 with the refreshed cookie, the browser keeps its session, and only that change is recorded
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-grant-refusals.test.js
+```
+
+**Hosted invitations** (`test/acceptance/auth/hosted-invitations.test.ts`)
+
+The tests accept an invitation through the directory double, as the provider does, and seed the other invitation states in it.
+
+[V] Given an Admin and a Super Admin, the invitations page offers the Admin only "Invite as User" and the Super Admin only "Invite as Admin"; each sends its invitation with 303 to the invitations page; a forged Admin or Super Admin role from the Admin and a forged User role from the Super Admin get 403; an accepted Admin invitation gives Admin without User, so the members page works and the product page gets 403; each request is recorded
+[V] Given pending, accepted, revoked, and expired invitations, the page shows each state as the directory gives it and offers a resend and a revoke only for the pending User invitation; the Admin resends and revokes it, a second resend gets 409, a forged revoke of an Admin invitation or of an invitation of another organization gets 403, and of an accepted invitation 409; the record for the other organization names no role, and no invitation token reaches a page or a record
+[V] Given a directory that enforces the invited address and then one that accepts by its own rules, the invitations page claims a strict address match only for the first
+[V] Given an inactive membership with User and Admin and a pending membership with User, an Admin invites the first address as User and a Super Admin the second as Admin; after each acceptance, the membership is active with only the role of its invitation, so no invitation restores a grant outside the authority of its sender
+[V] Given a pending User invitation, a second send to the same address, also in other letter case, sends nothing and returns to the invitations page with 303; after another Admin revokes the invitation, a new send is a new invitation; each send and the revoke are recorded
+[V] Given a Super Admin whose sign-in did not complete MFA, the invitations page and an invitation post with the form token of its session each get the 403 MFA notice; nothing is sent, and the refused invitation is recorded as `mfa-required`
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-invitations.test.js
+```
+
+**Hosted User seat summary** (`test/acceptance/auth/hosted-seats.test.ts`)
+
+[V] Given members on several pages, repeated at the page boundaries, an Admin and a Super Admin see 4 active User seats in one organization, and an Admin of the other organization sees 3; Admin-only, Super-Admin-only, default-role, pending, and inactive memberships and a pending invitation do not count; each read names the statuses and follows the cursors; a User alone gets 403 and no count; no failure is reported
+[V] Given a member page or an invitation page that fails to load, each page gives the 500 failure page without a partial count, list, or form, and the operator gets the path and the cause
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-seats.test.js
 ```
 
 **Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)
