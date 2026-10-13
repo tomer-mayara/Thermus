@@ -18,15 +18,20 @@ export interface AccountCredentials {
 
 export async function startLocalProvider() {
   const database = new DatabaseSync(':memory:');
-  const options = localProviderOptions({
-    publicBaseUrl,
-    mcpResourceUrl,
-    secret: 'interface-test-secret-0123456789abcdef0123456789',
-    database,
-    installationId: localInstallationId,
-  });
-  await (await getMigrations(options)).runMigrations();
-  return { auth: betterAuth(options), database };
+  try {
+    const options = localProviderOptions({
+      publicBaseUrl,
+      mcpResourceUrl,
+      secret: 'interface-test-secret-0123456789abcdef0123456789',
+      database,
+      installationId: localInstallationId,
+    });
+    await (await getMigrations(options)).runMigrations();
+    return { auth: betterAuth(options), database };
+  } catch (error) {
+    database.close();
+    throw error;
+  }
 }
 
 export type LocalAuth = Awaited<ReturnType<typeof startLocalProvider>>['auth'];

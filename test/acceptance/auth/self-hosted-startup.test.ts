@@ -9,6 +9,11 @@ import { ServerProcess, type ServerSettings } from '../../support/server-process
 
 const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;
+const refusedProviderVariables: ServerSettings = {
+  BETTER_AUTH_SECRETS: '1:environment-secret-0123456789abcdef0123456789',
+  BETTER_AUTH_TRUSTED_ORIGINS: 'https://foreign-origin.example',
+  BETTER_AUTH_TELEMETRY: 'telemetry-from-the-environment',
+};
 
 function hostedSettings(directory: string): ServerSettings {
   return {
@@ -138,6 +143,15 @@ describe('Self-hosted server startup with one persistent installation', () => {
 
     assert.equal(restoredTenant, tenant);
     await assertStopsBeforeListening(partial, /secret/i);
+  });
+
+  test('Given a Better Auth variable that the self-hosted runtime refuses, when the server starts, then it stops before it listens with an error that names the variable but not its value', { timeout: 60_000 }, async (t) => {
+    for (const [variable, value] of Object.entries(refusedProviderVariables)) {
+      const server = ServerProcess.launch(t, { ...selfHostedSettings(dataDirectory(t)), [variable]: value });
+
+      await assertStopsBeforeListening(server, new RegExp(`FATAL.*${variable}`));
+      assert.ok(!server.output.includes(value), `The output shows the value of ${variable}:\n${server.output}`);
+    }
   });
 
   test('Given a command argument, when the process starts, then it stops with status 2 before it listens and creates no local data', { timeout: 60_000 }, async (t) => {
