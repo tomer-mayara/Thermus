@@ -17,11 +17,13 @@ package script. Each command that runs `dist/` output makes a clean build first.
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` | Offline. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0 and public network access. |
 | All | `npm test` | `dist/test/**/*.test.js`: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
+| Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only | A WorkOS staging environment, its settings, and public network access. The [hosted live gate](#hosted-live-gate-auth-06) gives the settings. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`, and
 `npm run test:build`. It does not run the integration, acceptance, or interface
 suites. `npm test` does not run the build test, because `tsconfig.build.json`
-excludes it from `dist/`.
+excludes it from `dist/`. No suite command except `npm run test:hosted-live`
+runs the hosted live file.
 
 The interface suite needs the pinned Lightpanda executable. It also contains a
 public-site smoke test that needs public network access.
@@ -73,6 +75,12 @@ contains every change of the pull request.
    - The Better Auth interface proofs, `test/interface/auth/better-auth.test.ts`,
      for a change to the Better Auth packages, their settings, or the local
      authentication flow. They run offline with a focused command.
+   - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a
+     change to the WorkOS SDK or jose packages or to the hosted authentication
+     flow. They run offline with a focused command.
+   - The hosted live gate, `npm run test:hosted-live`, for a change to the
+     hosted authentication flow, when the WorkOS staging settings are available.
+     If they are not available, record that the gate did not run.
 
 If you are not sure that a suite applies, run it.
 
@@ -121,23 +129,48 @@ If a change adds a workflow, the AGENTS.md wait rule applies to every job that
 starts for the head. The required runs stay required. That change also updates
 this section.
 
+## Hosted live gate (AUTH-06)
+
+`npm run test:hosted-live` makes a clean build and runs only
+`dist/test/acceptance/auth/hosted.live.js`. The `.live.ts` name does not match
+the `*.test.js` globs on purpose. Thus `npm test` and `npm run test:acceptance`
+do not select it.
+
+The gate needs a WorkOS staging environment and these settings in the
+environment of the command:
+
+| Setting | Value |
+| --- | --- |
+| `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, and memberships. |
+| `WORKOS_CLIENT_ID` | The client ID of the staging environment. |
+| `WORKOS_AUTHKIT_ISSUER` | The AuthKit domain of the staging environment, exactly as WorkOS shows it: an absolute `https` URL without spaces, a username, a password, a query, or a fragment. |
+
+Configure the staging environment as the hosted edition needs it: required
+MFA, multiple roles for each membership, and the roles and permissions of the
+[hosted role mapping](../design/authentication-design.md#hosted-role-mapping).
+
+If a setting is missing, empty, or refused, the command fails with one setup
+error that names each such setting and the reason. The error shows no value.
+The command then makes no network request and runs no other test.
+`test/acceptance/auth/hosted-live-setup.test.ts` specifies this behavior
+offline.
+
+The hosted gate passes only when the dedicated command runs with the required
+settings and every live test passes. Missing hosted credentials, a setup error,
+and skipped live tests can never count as a successful hosted gate. Do not put
+credentials in the repository, in logs, or in pull request notes.
+
+The first live proofs only read: the AuthKit metadata and key set, the
+browser-session key set, and the acceptance of the API key. AUTH-06 adds the
+other live proofs and live acceptance cases that the
+[authentication plan](../design/authentication-design.md#live-provider-proofs)
+lists. Until AUTH-06 adds them, a pass of the command is not a hosted gate pass.
+
 ## Later gates
 
 Later tickets add these suites. They have no command yet. The ticket that adds a
 suite also adds its explicit command to `package.json` and to the suite table.
 A suite must not depend on another command that selects it silently.
-
-### Hosted live gate (AUTH-06)
-
-AUTH-06 adds `test/acceptance/auth/hosted.live.ts` and a dedicated command. The
-`.live.ts` name does not match the `*.test.js` globs on purpose. Thus `npm test`
-and `npm run test:acceptance` do not select it. If the required hosted
-credentials are missing, the command must fail with a clear setup error.
-
-The hosted gate passes only when the dedicated command runs with the required
-credentials and every live test passes. Missing hosted credentials, a setup
-error, and skipped live tests can never count as a successful hosted gate. Do
-not put credentials in the repository, in logs, or in pull request notes.
 
 ### Container gate (AUTH-09)
 

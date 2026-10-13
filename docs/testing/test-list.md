@@ -590,6 +590,46 @@ Run these proofs offline:
 npm run build && node --test dist/test/interface/auth/better-auth.test.js
 ```
 
+**WorkOS SDK** (`test/interface/auth/workos.test.ts`)
+
+These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/workos-fake-api.ts`) and local signing keys (`test/support/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
+
+[V] Gives an AuthKit sign-in URL with the client ID, the exact redirect URI, `response_type=code`, `provider=authkit`, an S256 challenge, and a fresh state and verifier for each call; an organization ID adds `organization_id`
+[V] Exchanges a code with the verifier and the API key as `client_secret`, and returns the user, both tokens, and an iron seal that hides the tokens; a refused code throws `OauthException` with `invalid_grant`
+[V] Authenticates a seal against the browser key set and returns `sid` as the session ID, the organization, the roles, and the permissions, with one key-set read
+[V] Gives `invalid_session_cookie` for a wrong cookie password, a changed or invalid character in the encrypted part, and a value that is not a seal, and `no_session_cookie_provided` for an empty value, without a key-set read
+[V] Throws `InvalidCharacterError` for an HMAC part that is not valid base64url, and `Invalid expiration` for an expiration part that is not a number
+[V] Gives `invalid_jwt` for an expired token, another issuer, and a forged signature; without the issuer option, accepts another issuer
+[V] Throws `ERR_JWKS_NO_MATCHING_KEY`, not a failure result, for a token with an unknown key ID
+[V] Throws `ERR_JOSE_GENERIC`, `ERR_JWKS_TIMEOUT` after 5 s, or `TypeError` for a key set that answers 500, does not answer, or refuses the connection
+[V] Keeps the browser key set for 10 minutes, so an outage changes no result until then and throws after; reads a new key ID at most once in 5 minutes
+[V] Refreshes with the stored refresh token and the current organization, and returns a new seal with the rotated token; the old seal still opens and sends the old token
+[V] Switches the organization with a refresh that sends the requested organization
+[V] Gives terminal failures for `invalid_grant`, `mfa_enrollment`, and `sso_required`, each after one request with `maxRetries: 0`
+[V] Gives retryable failures for 500, 429 (with `retryAfter` 7, or `NaN` for a date), a timeout, and a dropped or refused connection, each after one request
+[V] Throws for a 401, another 4xx, and a 5xx answer that is not JSON, instead of a failure result
+[V] With the default of 3 retries, sends 4 refresh requests with one generated `Idempotency-Key` and waits at most 60 s for each `Retry-After`
+[V] Gives the logout URL with the session ID and the return URL and posts the session revocation; a seal that does not authenticate, also one with an expired access token, gets an error instead of a logout URL
+[V] Lists memberships with the exact user, organization, status, and limit query; keeps `role` and `roles`; an answer without `roles` gives no `roles` field
+[V] Pages memberships with the `after` cursor; `autoPagination()` returns only the first page after a limit, and reads the first page again and waits 350 ms between pages without one
+[V] Lists the roles of an organization with their permissions in one unpaged request
+[V] Writes the complete role set with `PUT`, and creates, deactivates, and reactivates memberships, with no `If-Match`, no version, and no `Idempotency-Key` with `maxRetries: 0`
+[V] With the default retries, gives each membership create one generated `Idempotency-Key` and each role-set update none
+[V] Loses one of two concurrent role-set updates that start from the same read
+[V] Sends one role for each invitation and drops a role set
+[V] Verifies a Connect token with jose against the AuthKit key set, the exact issuer, the MCP audience, and RS256, and rejects another issuer, another audience, an expired token, a forged signature, and HS256
+[V] Accepts an M2M-shaped token without `sid` whose `sub` equals its `client_id`, so the MCP verifier needs its own rule
+[V] Refuses a new key ID during the key-set cooldown and accepts it after one new read
+[V] Keeps a withdrawn key until the cache age passes and then rejects its tokens
+[V] Keeps results through a key-set outage with fresh cached keys; after the cache age or without cached keys, throws a key-set error, not a token rejection
+[V] Uses the jose defaults: a 30 s cooldown and a 10 min cache age
+
+Run these proofs offline:
+
+```sh
+npm run build && node --test dist/test/interface/auth/workos.test.js
+```
+
 **Renderer network policy**
 
 [V] Blocks literal and DNS loopback targets before a connection
@@ -733,6 +773,32 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted.test.js
 ```sh
 npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.js
 ```
+
+**Hosted live gate setup** (`test/acceptance/auth/hosted-live-setup.test.ts`)
+
+These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied.
+
+[V] Without WorkOS settings, the gate exits 1 with one failed test, no passed, skipped, or todo test, a setup error that names each missing setting, and no outbound network attempt
+[V] Refuses a production API key and requires a staging key; the output shows no setting value
+[V] Counts an empty `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, or `WORKOS_AUTHKIT_ISSUER` as missing
+[V] Refuses an AuthKit issuer that is not an absolute `https` URL without spaces, a username, a password, a query, or a fragment, and shows no value
+[V] With staging settings and outbound access denied, the live proofs run, try the network, and fail; no test passes or is skipped, and the API key does not show
+[V] Only `test:hosted-live` selects the hosted live file, and the acceptance suite selects this specification
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
+```
+
+**Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
+
+These read-only live proofs need a WorkOS staging environment and the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06) settings. No staging environment was available, so they have not run. Do not mark them executed until the command passes with the staging settings.
+
+[ ] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, and S256 PKCE
+[ ] The AuthKit key set has signing keys with key IDs, and jose accepts the set
+[ ] The browser-session key set of the client ID has signing keys with key IDs, and jose accepts the set
+[ ] WorkOS accepts the staging API key for a read of organizations
+
+The [authentication plan](../design/authentication-design.md#live-provider-proofs) lists the live proofs that AUTH-06 still adds.
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 

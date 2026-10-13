@@ -17,9 +17,11 @@ target. Slice 1, contracts and request isolation, is implemented. Slice 2, the
 complete local flow, is implemented: the local runtime, its persistence, the
 installation identity, the data-directory lock, the offline user and client
 commands, the bundled sign-in and consent pages, `BetterAuthProvider`, and the
-HTTP composition of the provider routes. All later work in this plan is
-pending. The pinned Better Auth packages are proven against the local
-contracts. The owner resolved the two
+HTTP composition of the provider routes. Slice 3 has started: the WorkOS SDK
+is pinned, and its [offline proofs](#pinned-workos-sdk-proof) pass. The live
+provider proofs need a WorkOS staging environment, and they have not run. All
+other later work in this plan is pending. The pinned Better Auth packages are
+proven against the local contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found. The role
 refinement below records intended rules only; it adds no implementation work
 now.
@@ -646,6 +648,116 @@ the actual maximum token lifetime, refresh behavior, and revocation behavior
 before production release. The accepted delay is bounded by verified expiration.
 Do not use Connect `sid` to query an unrelated browser session.
 
+### Hosted role mapping
+
+AUTH-06 sets these WorkOS role and permission slugs for the accepted roles of
+[organization administration](#organization-administration). The WorkOS
+environment must define them exactly. Each role is an independent grant; the
+application combines the permissions of all current roles and never selects
+one highest role.
+
+| Role | WorkOS role slug | Permission slugs | Authority in the organization |
+| --- | --- | --- | --- |
+| User | `user` | `product:access` | The product portal and MCP. |
+| Admin | `admin` | `user-grants:manage` | Create, grant, and revoke User access, also its own User grant. |
+| Super Admin | `super-admin` | `admin-grants:manage`, `billing:manage` | Grant and revoke Admin access, also its own Admin grant, and manage billing. |
+| WorkOS default role | `member` | None | No application access. |
+
+`product:access` is also the permission of the local edition. WorkOS gives the
+default role to a membership without an explicit role, so the default role must
+have no application permission. Each of the three roles must have exactly its
+application permissions above, and each other role, such as the default role,
+must have none. Any other WorkOS role configuration is a configuration error,
+and access stays closed. The external operator grants and revokes
+`super-admin` outside the application.
+
+### Pinned WorkOS SDK proof
+
+`package.json` pins `@workos-inc/node` at exactly 11.0.0 and `jose` at exactly
+6.2.12. The SDK has no runtime dependencies: it inlines jose 6.2.12 and
+iron-webcrypto 2.0.0. The SDK has no verifier for Connect access tokens, so the
+MCP verifier uses `jose` directly, as the WorkOS MCP guide shows. The lockfile
+already had jose 6.2.12 through Better Auth.
+
+`test/interface/auth/workos.test.ts` proves the SDK side of each hosted
+contract offline. A local fake of the WorkOS API,
+`test/support/workos-fake-api.ts`, records each request and gives scripted
+answers and key sets. A replaced `fetch` records no request that leaves the
+machine. These proofs show what the pinned SDK sends, how it reads answers, and
+how it reports failures. They do not show what the WorkOS service does; the
+[live provider proofs](#live-provider-proofs) must show that.
+
+| Contract | Proven SDK result | Consequence for the hosted implementation |
+| --- | --- | --- |
+| Sign-in redirect | `getAuthorizationUrlWithPKCE({ provider: 'authkit', redirectUri })` gives `<api>/user_management/authorize` with the client ID, the exact redirect URI, `response_type=code`, an S256 challenge of the returned verifier, and a new 43-character `state` for each call. `organizationId` adds `organization_id`. | Keep `state` and the verifier in a short-lived sealed cookie. Compare `state` at the callback. |
+| Code exchange | `authenticateWithCode({ code, codeVerifier, session })` posts `grant_type=authorization_code` with the client ID, the API key as `client_secret`, the code, and `code_verifier`. With `sealSession`, it returns an iron seal that starts with `Fe26.2*`. A refused code throws `OauthException` with status 400 and `invalid_grant`. | The server is a confidential client that also uses PKCE. |
+| Session cookie | The seal holds the user, the access and refresh tokens, the organization, and the authentication method. Only the same cookie password opens it. The seal has no expiry of its own. A measurement outside the proofs gave 2,321 characters for a seal with a 946-character access token. | Give the cookie a `Max-Age`. Keep it below the 4,096-byte cookie limit. |
+| Session check | `loadSealedSession().authenticate()` checks the access token against `<api>/sso/jwks/<clientId>` and the `issuer` option. Without that option, it accepts any issuer. It returns the `sid` claim as `sessionId`, and `org_id`, `role`, `roles`, and `permissions`. A wrong cookie password, a changed character in the encrypted part, or a value that is not a seal gives `invalid_session_cookie`; an empty value gives `no_session_cookie_provided`. An expired token, another issuer, and a wrong signature all give `invalid_jwt`. | Always set the `issuer` option. `invalid_jwt` does not tell expiry from other faults. Only the server can make a seal, so the session refreshes, and the refresh result decides. |
+| Session check exceptions | A seal whose HMAC part is not valid base64url, by a character or by its length, throws `InvalidCharacterError`. A seal whose expiration part is not a number throws `Error('Invalid expiration')`. A token with an unknown `kid` throws `ERR_JWKS_NO_MATCHING_KEY`. A key-set answer other than 200 throws `ERR_JOSE_GENERIC`, a key set that does not answer throws `ERR_JWKS_TIMEOUT` after 5 seconds, and a refused connection throws `TypeError`. The SDK keeps the browser key set for 10 minutes and reads a new `kid` at most once in 5 minutes. Within the 10 minutes, a key-set outage changes no result; after them, each check throws. The errors come from a copy of jose inside the SDK, so they are not instances of the error classes of the `jose` package. | A client controls its cookie, so the two seal exceptions mean no session, not a server error. An unknown key needs a refresh. A key-set error is an outage that keeps the cookie. Classify jose errors by `code`. |
+| Refresh | `refresh()` posts `grant_type=refresh_token` with the stored refresh token and the `org_id` of the current token. `refresh({ organizationId })` sends the requested organization. Success gives a new seal with the rotated refresh token. The old seal still opens: WorkOS, not the seal, ends a used refresh token. | Each refresh and each organization switch sends the new seal in `Set-Cookie`. |
+| Refresh failures | `invalid_grant` (400), `mfa_enrollment`, and `sso_required` are terminal: `retryable: false`. A JSON 5xx answer, a 429 answer, a timeout (408), and a dropped or refused connection are `retryable: true`. A 429 gives `retryAfter` from a `Retry-After` in seconds, and `NaN` from one with a date. Other answers throw: a 401 throws `UnauthorizedException`, another 4xx throws `OauthException`, and a 5xx answer that is not JSON throws an `Error` caused by a `ParseError`. With `maxRetries: 0`, each failure comes from one request. The SDK default is 3 retries; each waits for the `Retry-After`, up to 60 seconds. | Use `maxRetries: 0` and a short `timeout` for calls during a request. Clear the cookie only after a terminal failure. A thrown 5xx is an outage, as is a retryable result. A timeout can come after WorkOS used the refresh token. WorkOS documents a 30-second grace period in which the same refresh token gives the same new tokens; the live proofs must show it. |
+| Logout | `getLogoutUrl({ returnTo })` gives `<api>/user_management/sessions/logout?session_id=<sid>&return_to=<url>`. It throws when the access token has expired. `revokeSession({ sessionId })` posts the `session_id`. | Logout reads the `sid` from the authentic seal, so it also works after the access token expires. |
+| Membership reads | `listOrganizationMemberships({ userId, organizationId, statuses, limit })` sends each filter; several statuses become one comma-separated value. Answers keep `role` and the `roles` array; an answer without `roles` gives no `roles` field. Pages use the `after` cursor. `autoPagination()` returns only the first page when the call has a `limit`; without a limit, it reads the first page two times and waits 350 ms between pages. | Read with explicit status filters, page with `after`, and limit the number of pages. A membership without `roles` is a configuration error, and access stays closed. |
+| Role reads | `authorization.listOrganizationRoles(orgId)` reads `/authorization/organizations/<orgId>/roles` without pagination. Each role has `slug`, `permissions`, and `type`. | Effective permissions come from the roles of the current membership. |
+| Grant writes | `updateOrganizationMembership(id, { roleSlugs })` replaces the complete role set with `PUT`. Update, create, deactivate, and reactivate send no `If-Match` and no version. With `maxRetries: 0`, they send no `Idempotency-Key`. With retries, the SDK gives each POST one generated `Idempotency-Key` for all of its attempts, and a PUT gets none; the caller cannot give its own key. Of two updates that start from the same read, only the last one stays. `sendInvitation` takes one `roleSlug`. | The SDK has no conditional grant write. The [hosted provider findings](#hosted-provider-findings) give the effect. |
+| Connect tokens | `jwtVerify()` with `createRemoteJWKSet(<issuer>/oauth2/jwks)` checks the exact issuer, the MCP resource in the audience, the time claims, and RS256. It accepts a token with the shape of an M2M token, without `sid` and with `sub` equal to `client_id`, when the issuer and the audience match. | The verifier must require `sid` and refuse a `sub` equal to `client_id`, in addition to the jose checks. |
+| Key rotation | A token with a new `kid` verifies after the key set adds the key and the cooldown has passed. A removed key verifies from the cache until the cache age has passed. Within the cache age, a key-set outage changes no result. After the cache age, or without keys in the cache, a key-set outage throws a key-set error, not a token rejection. The defaults are a 5-second timeout, a 30-second cooldown, and a 10-minute cache age. | A new WorkOS key is accepted within one cooldown, and a removed key stops within one cache age. A key-set outage gives `500`, not `401`. |
+
+#### Live provider proofs
+
+The offline proofs cannot show the behavior of the WorkOS service.
+`test/acceptance/auth/hosted.live.ts` runs against a WorkOS staging environment
+through `npm run test:hosted-live`. The
+[hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+gives its settings and its setup error. The first live proofs only read: the
+AuthKit authorization-server metadata and key set, the browser-session key set,
+and the acceptance of the API key. No WorkOS staging environment was available
+for AUTH-06 so far, so no live proof has run.
+
+These live proofs must pass before the hosted behavior that depends on them:
+
+- Connect and browser tokens: the actual issuers, audiences, header types, and
+  `sid` values; the scopes that a Connect client can get; the rejection of
+  browser and M2M tokens by the MCP verifier; the access-token lifetimes.
+- Browser sessions: refresh-token rotation and its 30-second grace period,
+  organization switching, logout, and session revocation.
+- Revocation limits: the time that an issued access token stays valid after
+  logout, session revocation, and consent revocation.
+- Memberships: status filters, reactivation through create, reactivate,
+  multi-role reads and writes, effective permissions, the default role and its
+  permissions, and the result of the removal of the final grant.
+- Grant changes: safe updates under retries and concurrent changes, and
+  recovery from an unknown outcome without the return of a grant that someone
+  revoked later.
+- Invitations: the role of an invitation, its states, and the identity policy.
+  Pagination of memberships and invitations.
+- Operator setup and recovery: organization setup, and Super Admin grant,
+  revocation, replacement, and recovery.
+- Required MFA: completion in the real sign-in flow and for privileged actions.
+
+#### Hosted provider findings
+
+The offline proofs found these points. Each needs a live proof or an owner
+decision before the operation that depends on it.
+
+1. **No conditional grant write.** The pinned SDK changes the organization
+   roles of a membership only with a complete replacement, without a
+   precondition or an idempotency key. If two administrators change different
+   grants of one membership at the same time, one change can be lost. A retry
+   with an old role set can return a grant that someone revoked later. The
+   resource role assignments of the SDK (`authorization.assignRole()` and
+   `removeRole()`) add or remove one role, but they need a resource, and WorkOS
+   keeps organization roles on the membership. The live proofs must show if the
+   service has a safe alternative. If it has none, the owner must select a
+   resolution before AUTH-07 implements grant changes.
+2. **Create can reactivate.** The SDK documents that a create for an inactive
+   membership activates it with the given roles. A retried create can thus undo
+   a later deactivation. A grant operation must read the current state before
+   each retry.
+3. **One role for each invitation.** `sendInvitation()` accepts one `roleSlug`.
+   This agrees with the planned invitations, which give User or Admin, but not
+   both.
+
 ## Hosted browser sessions
 
 `WorkOSBrowserSession` owns sign-in redirects, callback verification, session
@@ -886,7 +998,7 @@ behavior.
 | `test/unit/organizations/organization-administration.test.ts` | Actor/target organization checks, current/proposed grants, self-grants, selective removal, and safe retry decisions with a directory double. |
 | `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. |
 | `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. |
-| `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. |
+| `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. `workos.test.ts` is implemented for the SDK side, offline, with a fake WorkOS API; the [live provider proofs](#live-provider-proofs) show the service side. |
 | `test/integration/auth/mcp-context.test.ts` | Real provider/MCP collaboration, error mapping, and sequential/concurrent isolation. |
 | `test/integration/auth/local-auth-command.test.ts` | CLI entry point, configuration, and provider collaboration: add/list/reset/disable, duplicate emails, concurrent initialization, live-lock rejection, zero-account recovery, client registration without a remaining session, and per-user session and MCP token revocation without affecting peers. Implemented, with `local-auth-command-lock.test.ts`, `local-auth-command-grants.test.ts`, and a SQL trace that shows no command SQL on provider tables. |
 | `test/acceptance/auth/local-user-commands.test.ts`, `local-client-registration.test.ts` | Implemented: offline add and list with hidden passwords and no network, targeted reset and disable with peers, the live-server lock for each command, zero-account recovery, and approved client registration. |
@@ -895,7 +1007,7 @@ behavior.
 | `test/integration/auth/hosted-account.test.ts` | Browser/session/service collaboration; same-user browser/MCP isolation across organizations, IDOR, forbidden grant changes, self-grants, selective removal, invitations, current-token revocation, safe retries, and User-seat pagination/failures. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
 | `test/acceptance/auth/self-hosted-container.test.ts` | Offline bundled CLI with stopped-server volume access; commands reject the live lock; two-user login and authorization after restart and container/image replacement; installation/user IDs survive backup/restore. |
-| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. |
+| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented so far: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline, and the first read-only live proofs. |
 | Existing `test/unit/billing/billing-free.test.ts` and `test/acceptance/billing/free-billing.test.ts` | `BillingFree` through the `Billing` interface: free plan, no billed seat, and refused input. The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists the paid billing tests. |
 
 Include these explicit acceptance specifications:
