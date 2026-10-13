@@ -12,6 +12,7 @@ runtime guides stay current after implementation.
 
 ## Current reference
 
+- [User portal](user-portal.md): browser build, environment, and WorkOS application setup.
 - [Website fetcher](reference/website-fetcher.md): rendering, readiness, and error behavior.
 - [Fetch result URL metadata](reference/fetch-result-url-metadata.md): requested and final URLs.
 - [Renderer network policy](reference/renderer-network-policy.md): destination checks and network restrictions.

@@ -381,6 +381,12 @@ Use the [documentation index](docs/README.md) to find current reference guides, 
 
 Read the [coding principles](docs/coding-principles.md) for general design guidance and [AGENTS.md](AGENTS.md) for repository work rules. The [completed OO refactoring record](docs/archive/oo-refactoring-plan.md) preserves the implementation scope and verification evidence.
 
+## User portal
+
+The TypeScript browser portal is in `src/user-portal/`. It uses the WorkOS
+AuthKit browser SDK and the root pnpm installation. See the [portal guide](docs/user-portal.md)
+for configuration, development, browser builds, and WorkOS verification.
+
 ## Requirements
 
 Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and Node runs the output in `dist/`. Build acceptance tests run directly from TypeScript source on Node 24. `tsx` is only for local development.
@@ -404,7 +410,11 @@ pnpm test:integration # clean build, then node --test on dist/test/integration/
 pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
 pnpm test:container   # clean build, then the container gate: the image and its containers without outbound access
-pnpm typecheck   # tsc --noEmit
+pnpm typecheck   # server and portal types; no output
+pnpm dev:user-portal     # Vite at http://localhost:5173
+pnpm build:user-portal   # portal types and browser bundle
+pnpm preview:user-portal # preview the browser bundle
+pnpm test:user-portal    # offline portal unit and acceptance tests
 ```
 
 `pnpm start` runs `dist/src/index.js` because `src/` and `test/` share one compilation root. A test import such as `../../src/application.ts` still resolves after emit.
@@ -412,7 +422,9 @@ pnpm typecheck   # tsc --noEmit
 ## Layout
 
 ```
-src/         TypeScript source
+src/         Node server TypeScript source
+src/user-portal/
+             Browser TypeScript, HTML, CSS, and Vite configuration
 test/        node:test files
 migrations/  Shipped SQL migrations, such as auth-local/ for the self-hosted edition
 docs/        Documentation, design plans, and archived records
@@ -422,6 +434,10 @@ Dockerfile, compose.yaml, .dockerignore
 ```
 
 ## TypeScript
+
+`tsconfig.user-portal.json` checks browser source and portal tests in strict
+mode with DOM types and Bundler resolution. The server configs exclude these
+files, so browser globals do not enter the Node build.
 
 `tsconfig.json` is ESM with `module` and `moduleResolution` set to `NodeNext`, in strict mode, targeting ES2024. It adds the `ESNext.Disposable` library for `AsyncDisposableStack`, which Node 24 supplies. Relative imports use the `.ts` extension, and `rewriteRelativeImportExtensions` makes `tsc` emit `.js`:
 
@@ -440,8 +456,10 @@ import { createApplication } from './application.ts';
 The unit, integration, and acceptance suites are offline. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
 
 `pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
+It also runs portal acceptance tests and builds the portal bundle. Portal tests
+run from TypeScript source on Node 24 because the Node build excludes browser source.
 
-`npm run check` does not run the integration, acceptance, interface, or container suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+`npm run check` does not run the full integration, acceptance, interface, or container suites. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
 
 `pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
 

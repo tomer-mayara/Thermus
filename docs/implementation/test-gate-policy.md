@@ -11,17 +11,18 @@ package script. Each command that runs `dist/` output makes a clean build first.
 
 | Suite | Command | Selects | Needs |
 | --- | --- | --- | --- |
-| Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` | Offline. No renderer. |
+| Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. No renderer. |
 | Build | `npm run test:build` | `test/unit/build-output.test.ts`, from source | Offline. It builds temporary projects with the real compiler. |
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
-| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` | Offline. |
+| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` and `test/acceptance/user-portal/**/*.test.ts` | Offline. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0 and public network access. |
-| All | `npm test` | `dist/test/**/*.test.js`: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
+| Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
+| All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
 
-`npm run check` runs `npm run typecheck`, `npm run test:unit`, and
-`npm run test:build`. It does not run the integration, acceptance, interface, or
-container suites. `npm test` does not run the build test, because `tsconfig.build.json`
+`npm run check` runs `npm run typecheck`, `npm run test:unit`,
+`npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
+It does not run the full integration, acceptance, interface, or container suites. `npm test` does not run the build test, because `tsconfig.build.json`
 excludes it from `dist/`.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
@@ -55,6 +56,13 @@ Run a new or changed test file:
 
 ```sh
 npm run build && node --test dist/test/<suite>/<path>.test.js
+```
+
+Portal tests run directly from source; the separate portal TypeScript config
+checks them. Use this focused command for each changed portal test file:
+
+```sh
+node --test test/<suite>/user-portal/<path>.test.ts
 ```
 
 Run one case in that file. The pattern is a regular expression:
