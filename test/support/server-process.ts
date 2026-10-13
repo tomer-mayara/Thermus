@@ -22,16 +22,16 @@ export class ServerProcess {
   private readonly listening = Promise.withResolvers<URL>();
   private text = '';
 
-  private constructor(settings: ServerSettings) {
-    this.child = spawn(process.execPath, [serverEntry], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
+  private constructor(settings: ServerSettings, args: readonly string[]) {
+    this.child = spawn(process.execPath, [serverEntry, ...args], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
     this.exit = once(this.child, 'exit').then(([code, signal]) => ({ code, signal }));
     for (const stream of [this.child.stdout, this.child.stderr]) {
       stream.setEncoding('utf8').on('data', (chunk: string) => this.record(chunk));
     }
   }
 
-  static launch(t: TestContext, settings: ServerSettings): ServerProcess {
-    const server = new ServerProcess(settings);
+  static launch(t: TestContext, settings: ServerSettings, args: readonly string[] = []): ServerProcess {
+    const server = new ServerProcess(settings, args);
     t.after(() => server.kill());
     return server;
   }

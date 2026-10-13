@@ -140,6 +140,18 @@ describe('Self-hosted server startup with one persistent installation', () => {
     await assertStopsBeforeListening(partial, /secret/i);
   });
 
+  test('Given a command argument, when the process starts, then it stops with status 2 before it listens and creates no local data', { timeout: 60_000 }, async (t) => {
+    const directory = dataDirectory(t);
+
+    const server = ServerProcess.launch(t, selfHostedSettings(directory), ['users', 'add', 'alice@example.com']);
+
+    assert.equal(await server.listeningOrExit(), undefined, server.output);
+    assert.deepEqual(await server.exited(), { code: 2, signal: null });
+    assert.match(server.output, /Unknown command/);
+    assert.doesNotMatch(server.output, /alice@example\.com/);
+    assert.deepEqual(readdirSync(directory), []);
+  });
+
   test('Given the hosted edition with a data directory setting, when the server starts, then it stops with an unavailable-edition error and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 

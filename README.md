@@ -132,8 +132,41 @@ The [discovery test](test/unit/mcp/discovery.test.ts) connects a real SDK client
 - `PUBLIC_BASE_URL` is the canonical public address. It gives the MCP resource URL (`<base>/mcp`) and its protected-resource metadata URL. Forwarded request headers never change it. It has no credentials, query, or fragment. The hosted edition requires `https`. The self-hosted edition requires `https`, but it can use `http` on `localhost`, `127.0.0.1`, or `[::1]` for local development.
 - The self-hosted edition reads `DATA_DIR`, an absolute path.
 - The hosted edition reads `WORKOS_AUTHKIT_ISSUER`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_REDIRECT_URI` (same origin as `PUBLIC_BASE_URL`), and `WORKOS_COOKIE_PASSWORD` (at least 32 characters). The issuer stays exactly as written, because token issuers are compared as exact strings. Hosted startup rejects stdio.
+- [`loadListenAddress(environment)`](src/config/deployment-config.ts) reads the optional `LISTEN_HOST` and `LISTEN_PORT` for both editions. The defaults are `127.0.0.1` and `8080`. The port is a whole number from 0 to 65535; with 0, the system selects a free port. The listen address never changes the public identity from `PUBLIC_BASE_URL`. Use `LISTEN_HOST=0.0.0.0` in a container.
 
-Application startup does not call the loader yet; the HTTP composition adds that call.
+The server calls both loaders before it opens any resource or listens.
+
+## Self-hosted server
+
+Start the server from a build. `DATA_DIR` must be an existing directory:
+
+```sh
+mkdir -p /tmp/magumagu-data
+pnpm build
+DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/magumagu-data pnpm start
+```
+
+[`src/index.ts`](src/index.ts) starts the server when it gets no arguments. With an argument, it stops with exit status 2; the local user commands come later. The server loads the settings, calls [`createApplication(config, logger)`](src/application.ts), and serves the application through the Node HTTP bridge, [`startHttpServer()`](src/http/server.ts). It writes `Listening on <address>` to stderr. `SIGINT` or `SIGTERM` stops it: the HTTP server stops, then the application releases its resources, and the process exits with status 0. A second signal ends the process at once. A startup failure writes one `FATAL` line, which names the problem but no secret, and exits with status 1.
+
+`createApplication()` makes the one edition branch. The hosted edition is not available yet: startup stops with `HostedEditionUnavailableError` and never falls back to the self-hosted edition. Only the self-hosted branch loads the Better Auth runtime.
+
+[`openBetterAuthRuntime(settings)`](src/auth-better-auth/better-auth-runtime.ts) owns the local resources and opens them in this order:
+
+1. The exclusive data-directory lock, `DATA_DIR/data-directory.lock`, from [`lockDataDirectory()`](src/auth-better-auth/data-directory-lock.ts). Another server or command that uses the same directory stops with `DataDirectoryInUseError` and changes no data. The operating system releases the lock when the process ends, also after a crash.
+2. The installation, from [`openLocalInstallation()`](src/auth-better-auth/local-installation.ts). For fresh data, it writes a generated secret to `auth.secret`. Then, in one transaction, it applies the shipped migrations to `auth.sqlite` and stores one installation UUID in the singleton `magumagu_installation` row. Both files have mode `0600`. The singleton holds only the installation identity; it does not limit the number of accounts.
+3. Better Auth with the [proven provider settings](docs/design/authentication-design.md#pinned-provider-proof). `clientReference` returns the installation ID, so the installation owns each registered client. Startup waits for the provider's schema check and stops if the schema does not match.
+
+The runtime reports the tenant `local:<installation-id>`, and the server logs it at startup. If a startup step fails, the runtime releases the resources that it already holds, in reverse order. `close()` closes the database and then releases the lock.
+
+Retained data keeps its identity. Startup stops with `LocalInstallationError` when a database with schema objects has no valid installation identity, when `auth.secret` is missing or not valid, or when the database has another schema version. The server never creates a new identity for retained data. To recover, restore the complete data directory from a backup, or move the data away to start a new installation. Fresh data always gets a new tenant.
+
+The server starts with zero accounts or with only disabled accounts, and protected access stays denied. The MCP endpoint, `<base>/mcp`, answers each request with `401` and a Bearer challenge, because the self-hosted edition accepts no MCP access token yet. The server forwards no Better Auth route yet, so there is no public sign-up or account-create route. Other paths give `404`.
+
+The HTTP bridge builds each request URL from the origin of `PUBLIC_BASE_URL` and the request target, so the `Host` header and forwarded headers cannot change it. It refuses a target that is not in origin form (`/path?query`) with `400`, and `TRACE` with `501`. It removes every client copy of `x-magumagu-client-address` and sets that header to the socket address, for the provider's rate limits. It streams request and response bodies and keeps each `Set-Cookie` header separate. When a client disconnects, it aborts the request signal and cancels the response body. A handler failure gives a generic `500` and a log line without request data. When the server stops, the bridge refuses new connections, lets running responses finish, and ends the remaining connections after five seconds.
+
+To make a backup, stop the server and copy the complete data directory. To restore, copy all of its files together into an empty directory, and start the server with that `DATA_DIR`. The installation ID, the tenant, the user IDs, and the browser sessions stay the same. Filesystem access to the data directory is administration authority for the installation; it gives no application role.
+
+[`migrations/auth-local/`](migrations/auth-local/) holds the shipped SQL. `0001-better-auth.sql` is the output of Better Auth `compileMigrations()` for the pinned packages and the provider settings on an empty database. `0002-installation.sql` adds the singleton installation table. The server never downloads a migration tool. A unit test fails if the shipped SQL is different from the output of the pinned provider; after a change to the provider packages or settings, generate the file again.
 
 ## Billing
 
@@ -167,7 +200,7 @@ Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and N
 pnpm install
 pnpm dev         # tsx watch src/index.ts
 pnpm build       # clean build
-pnpm start       # node dist/src/index.js
+pnpm start       # node dist/src/index.js: start the server
 pnpm test             # clean build, then node --test on dist/test/
 pnpm test:unit        # clean build, then node --test on dist/test/unit/
 pnpm test:integration # clean build, then node --test on dist/test/integration/
@@ -176,24 +209,27 @@ pnpm test:interface   # clean build, then node --test on dist/test/interface/
 pnpm typecheck   # tsc --noEmit
 ```
 
-`pnpm start` runs `dist/src/index.js` because `src/` and `test/` share one compilation root. A test import such as `../src/hello.js` still resolves after emit.
+`pnpm start` runs `dist/src/index.js` because `src/` and `test/` share one compilation root. A test import such as `../../src/application.ts` still resolves after emit.
 
 ## Layout
 
 ```
-src/      TypeScript source
-test/     node:test files
-docs/     Documentation, design plans, and archived records
-dist/     tsc output (gitignored)
+src/         TypeScript source
+test/        node:test files
+migrations/  Shipped SQL migrations, such as auth-local/ for the self-hosted edition
+docs/        Documentation, design plans, and archived records
+dist/        tsc output (gitignored)
 ```
 
 ## TypeScript
 
-`tsconfig.json` is ESM with `module` and `moduleResolution` set to `NodeNext`, in strict mode, targeting ES2024. Relative imports use the `.js` extension that `tsc` emits:
+`tsconfig.json` is ESM with `module` and `moduleResolution` set to `NodeNext`, in strict mode, targeting ES2024. It adds the `ESNext.Disposable` library for `AsyncDisposableStack`, which Node 24 supplies. Relative imports use the `.ts` extension, and `rewriteRelativeImportExtensions` makes `tsc` emit `.js`:
 
 ```ts
-import { hello } from './hello.js';
+import { createApplication } from './application.ts';
 ```
+
+`package.json` maps `#auth-local-migrations/*` to `migrations/auth-local/*`, so code in `src/` and in `dist/src/` reads the same SQL files.
 
 ## Build and test commands
 

@@ -3,11 +3,12 @@ import { betterAuth } from 'better-auth';
 import { applySetCookies } from 'better-auth/cookies';
 import { getMigrations } from 'better-auth/db/migration';
 import { localProviderOptions } from '../../src/auth-better-auth/better-auth-runtime.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../src/http/server.ts';
 
 export const publicBaseUrl = 'http://localhost:8080';
 export const authIssuer = `${publicBaseUrl}/api/auth`;
 export const mcpResourceUrl = `${publicBaseUrl}/mcp`;
-export const clientAddressHeader = 'x-magumagu-client-address';
+export const clientAddressHeader = CLIENT_ADDRESS_HEADER;
 export const localInstallationId = '0f6c1e9a-4b7d-4e2a-9c35-8d1f2a6b7e40';
 
 export interface AccountCredentials {

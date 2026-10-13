@@ -4,10 +4,9 @@ import { betterAuth } from 'better-auth';
 import { admin } from 'better-auth/plugins/admin';
 import { jwt } from 'better-auth/plugins/jwt';
 import type { DeploymentConfig } from '../config/deployment-config.ts';
+import { CLIENT_ADDRESS_HEADER } from '../http/server.ts';
 import { lockDataDirectory, type DataDirectoryLock } from './data-directory-lock.ts';
 import { openLocalInstallation, type LocalInstallation } from './local-installation.ts';
-
-const CLIENT_ADDRESS_HEADER = 'x-magumagu-client-address';
 
 const PRIVATE_HTTP_PATHS = [
   '/admin/create-user',

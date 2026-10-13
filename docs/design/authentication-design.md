@@ -13,8 +13,10 @@ customer membership administration. It collects no payments: until AUTH-11
 passes its paid gates, the hosted edition uses `BillingFree`, which bills no
 organization. Payment integration remains required work before the paid
 product is complete. HTTP is the first end-to-end delivery
-target. Slice 1, contracts and request isolation, is implemented; all other
-implementation work in this plan is pending. The pinned Better Auth packages are
+target. Slice 1, contracts and request isolation, is implemented. In slice 2,
+the local runtime, its persistence, the installation identity, the data-directory
+lock, and the HTTP composition are implemented; the other slice 2 work and all
+later work in this plan are pending. The pinned Better Auth packages are
 proven against the local contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found, so
 slice 2 can continue. The role refinement below records intended rules only; it
@@ -165,6 +167,15 @@ provider, and returns a small runtime record with the HTTP handler and cleanup.
 It owns startup failure cleanup and shutdown. The HTTP module adapts Node
 requests and routes them; it does not know membership policy.
 
+The server reads its listen address from `LISTEN_HOST` (default `127.0.0.1`)
+and `LISTEN_PORT` (default `8080`) through `loadListenAddress(environment)`.
+The listen address does not change the public identity from `PUBLIC_BASE_URL`.
+Until slice 3, `createApplication()` stops the hosted edition with
+`HostedEditionUnavailableError` and loads no local module. The self-hosted
+application serves the MCP resource path through `MCPServer`; until local token
+introspection exists, that endpoint accepts no access token, so every MCP request
+gets `401` with the Bearer challenge. It forwards no Better Auth route yet.
+
 Keep the existing low-level stdio API and its tests. Hosted application startup
 rejects stdio. If local stdio is subsequently exposed, bind it explicitly to the
 selected local user in the same installation and check current account status.
@@ -236,6 +247,19 @@ installation identity fails closed and requires explicit operator recovery;
 never silently mint a new identity and reassign retained data. Backup and restore
 preserve the complete database and secrets together. A fresh installation with
 new data starts a new tenant. No generic tenant repository is needed.
+
+The implemented runtime keeps three files in `DATA_DIR`. `data-directory.lock`
+holds the exclusive lock: an open exclusive SQLite transaction, which the
+operating system releases when the process ends. `auth.sqlite` holds the
+provider data and the singleton `magumagu_installation` row. `auth.secret` holds
+the generated provider secret. Both data files have mode `0600`. A database
+without schema objects is fresh: the runtime writes the secret first, and then
+applies `0001-better-auth.sql`, `0002-installation.sql`, the installation row, and
+`user_version` 2 in one transaction. A database with schema objects must have a
+valid installation identity, schema version 2, and a valid `auth.secret`;
+otherwise startup stops with `LocalInstallationError`. The runtime gives
+`clientReference` the installation ID and reports the tenant
+`local:<installation-id>`.
 
 Use Better Auth's MCP/OAuth handler for local authorization and both discovery
 documents. It owns those routes, including protected-resource metadata. The
@@ -630,7 +654,9 @@ shows a separate role, invariant, or lifecycle.
 | `src/mcp/mcp-server.ts` | Resolve access after verification and bind context to request handlers. | 1 |
 | `src/config/deployment-config.ts` | Add `DeploymentConfig` and `loadDeploymentConfig()`. | 1 |
 | `src/auth-better-auth/better-auth-provider.ts` | Add `BetterAuthProvider`, implementing both MCP roles. | 2 |
-| `src/auth-better-auth/better-auth-runtime.ts` | Add provider composition and database/lock cleanup functions when distinct from provider behavior. | 2 |
+| `src/auth-better-auth/better-auth-runtime.ts` | Add provider composition and database/lock cleanup functions when distinct from provider behavior. Implemented: `localProviderOptions()` and `openBetterAuthRuntime()`. | 2 |
+| `src/auth-better-auth/data-directory-lock.ts` | Implemented: `lockDataDirectory()`, the exclusive data-directory lock that the runtime and the local commands share. | 2 |
+| `src/auth-better-auth/local-installation.ts` | Implemented: `openLocalInstallation()`, which owns the database file, the secret file, the shipped migrations, and the singleton installation identity. | 2 |
 | `src/auth-better-auth/local-auth-command.ts` | Use `runLocalAuthCommand()` to parse local user commands and register approved local OAuth clients. | 2 |
 | `src/auth-better-auth/local-user-administration.ts` | Add `LocalUserAdministration` to own account lifecycle, supported provider operations, and per-user revocation; keep argument parsing in the CLI. | 2 |
 | `src/auth-better-auth/local-auth-pages.ts` | Bundled sign-in and consent handlers. | 2 |
