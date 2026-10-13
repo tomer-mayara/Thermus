@@ -217,6 +217,13 @@ A logger double records the lines that `operatorFailureReporter()` and `accountF
 [V] Refuses private provider routes, the hosted organization and onboarding paths, unrelated paths, and near-matching path suffixes without calling a route owner
 [V] Hosted routing: sends the MCP resource and both protected-resource metadata paths to the MCP handler and each other path under the configured public path to the account routes, with the complete request; paths outside the public path give 404 without a handler call
 
+**Server start and stop** (`test/unit/index.test.ts`)
+
+These tests run `serve()` from `src/index.ts` with hosted settings on a loopback port. An `EventEmitter` is the double for the process signal registration. A logger double records, for each line, the stop signals that have a handler.
+
+[V] Registers the `SIGINT` and `SIGTERM` handlers after the startup lines and before the `Listening on` line; after `SIGINT` or `SIGTERM`, writes `Stopping after <signal>` and removes both handlers
+[V] Given a listen port that another server uses, rejects with the listen error before the `Listening on` line, and no stop handler stays registered
+
 **Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
 
 `BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its cookie effects, and a configured answer to an organization switch. `AccessResolverMock` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
@@ -826,9 +833,11 @@ npm run build && node --test dist/test/acceptance/auth/hosted-organization-reque
 
 **Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)
 
-Each test starts the built server, `dist/src/index.js`, as a separate Node process on a loopback port with a temporary data directory. Account setup uses the Better Auth runtime in the test process while no server runs.
+Each test starts the built server, `dist/src/index.js`, as a separate Node process on a loopback port with a temporary data directory. Account setup uses the Better Auth runtime in the test process while no server runs. When startup fails before the server listens, the test also checks that the process writes a `FATAL` line and exits with status 1, not by a signal.
 
 [V] Given a fresh data directory, a start, stop, and second start persist one installation identity, report the same `local:` tenant, and exit with status 0 after `SIGTERM`
+[V] Given eight servers that start at the same time, each gets `SIGTERM` in the same tick in which its `Listening on` line arrives; each run writes `Stopping after SIGTERM` and exits with status 0, not by the signal
+[V] Given eight servers that start at the same time, each gets `SIGINT` in the same tick in which its `Listening on` line arrives; each run writes `Stopping after SIGINT` and exits with status 0, not by the signal
 [V] Given zero accounts, startup succeeds, MCP requests get a Bearer challenge, and no public route creates an account
 [V] Given only a disabled account, startup succeeds, MCP requests stay denied, and the account keeps its ID
 [V] Given two servers that start at the same time on a fresh directory, one serves, the other stops with a lock error before it listens, and one installation identity exists
