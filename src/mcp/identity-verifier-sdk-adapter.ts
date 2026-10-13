@@ -19,9 +19,11 @@ type VerifiedClaims = {
 
 export class IdentityVerifierSdkAdapter implements OAuthTokenVerifier {
   private readonly verifier: IdentityVerifier;
+  private readonly reportUnexpectedFailure: (cause: unknown) => void;
 
-  constructor(verifier: IdentityVerifier) {
+  constructor(verifier: IdentityVerifier, reportUnexpectedFailure: (cause: unknown) => void) {
     this.verifier = verifier;
+    this.reportUnexpectedFailure = reportUnexpectedFailure;
   }
 
   async verifyAccessToken(token: string): Promise<AuthInfo> {
@@ -42,6 +44,7 @@ export class IdentityVerifierSdkAdapter implements OAuthTokenVerifier {
       return await this.verifier.verifyAccessToken(token);
     } catch (error) {
       if (error instanceof InvalidAccessTokenError) throw invalidToken();
+      this.reportUnexpectedFailure(error);
       throw error;
     }
   }

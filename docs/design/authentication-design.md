@@ -107,7 +107,9 @@ values.
 Missing, malformed, expired, or rejected credentials produce `401`. Missing
 granted OAuth scopes retain the SDK's `403 insufficient_scope` response. Access
 denial produces a distinct `403`; provider outages produce a generic `5xx` and
-no protected work. Logs must not include passwords, raw tokens, cookies, or
+no protected work. MCPServer gives each unexpected verification or access
+failure, with the failed step and the cause, to an operator callback that the
+composition supplies. Logs must not include passwords, raw tokens, cookies, or
 private provider errors in public responses.
 
 Slice 1 settles these details. The SDK adapter rejects an identity without a

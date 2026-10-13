@@ -16,6 +16,13 @@ import { IdentityVerifierSdkAdapter, verifiedUserOf } from './identity-verifier-
 
 export type RequestToolRegistration = (server: McpServer, context: RequestContext) => void;
 
+export interface FailureReport {
+  readonly step: 'token-verification' | 'access-resolution';
+  readonly cause: unknown;
+}
+
+export type FailureReporter = (report: FailureReport) => void;
+
 export interface McpHttpAuthOptions {
   verifier: IdentityVerifier;
   accessResolver: AccessResolver;
@@ -25,17 +32,26 @@ export interface McpHttpAuthOptions {
 }
 
 type BearerGate = (request: Request) => Promise<AuthInfo | Response>;
+type AccessGate = (authInfo: AuthInfo) => Promise<RequestContext | Response>;
 
 export class MCPServer {
   private connection?: StdioServerHandle;
   private readonly contextsByRequestAuth = new WeakMap<AuthInfo, RequestContext>();
   private readonly httpHandler = createMcpHandler(({ authInfo }) => this.serverForRequest(authInfo));
-  private readonly http?: { authenticate: BearerGate; accessResolver: AccessResolver };
+  private readonly http?: { authenticate: BearerGate; resolveAccess: AccessGate };
   private readonly registerTools?: RequestToolRegistration;
 
-  constructor(options?: { auth: McpHttpAuthOptions; registerTools?: RequestToolRegistration }) {
+  constructor(options?: {
+    auth: McpHttpAuthOptions;
+    registerTools?: RequestToolRegistration;
+    reportFailure: FailureReporter;
+  }) {
     if (options !== undefined) {
-      this.http = { authenticate: bearerGate(options.auth), accessResolver: options.auth.accessResolver };
+      const { auth, reportFailure } = options;
+      this.http = {
+        authenticate: bearerGate(auth, reportFailure),
+        resolveAccess: accessGate(auth.accessResolver, reportFailure),
+      };
       this.registerTools = options.registerTools;
     }
   }
@@ -50,7 +66,7 @@ export class MCPServer {
     }
     const authInfo = await this.http.authenticate(request);
     if (authInfo instanceof Response) return authInfo;
-    const context = await resolveRequestContext(this.http.accessResolver, authInfo);
+    const context = await this.http.resolveAccess(authInfo);
     if (context instanceof Response) return context;
     return this.httpHandler.fetch(request, { authInfo: this.newRequestAuthBoundTo(context, authInfo) });
   }
@@ -78,9 +94,9 @@ function serverWithoutTools(): McpServer {
   return new McpServer({ name: 'magumagu', version: '0.0.0' });
 }
 
-function bearerGate(auth: McpHttpAuthOptions): BearerGate {
+function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): BearerGate {
   const options = {
-    verifier: new IdentityVerifierSdkAdapter(auth.verifier),
+    verifier: new IdentityVerifierSdkAdapter(auth.verifier, (cause) => reportFailure({ step: 'token-verification', cause })),
     resourceMetadataUrl: auth.resourceMetadataUrl,
     expectedResource: auth.expectedResource,
     requiredScopes: auth.requiredScopes === undefined ? undefined : [...auth.requiredScopes],
@@ -98,14 +114,17 @@ function bearerGate(auth: McpHttpAuthOptions): BearerGate {
   };
 }
 
-async function resolveRequestContext(resolver: AccessResolver, authInfo: AuthInfo): Promise<RequestContext | Response> {
-  try {
-    const decision = await resolver.resolve(verifiedUserOf(authInfo));
-    if (decision.allowed !== true) return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
-    return requireTrustedTenant(frozenCopy(decision.context));
-  } catch {
-    return errorResponse(OAuthErrorCode.ServerError, 'Internal Server Error', 500);
-  }
+function accessGate(resolver: AccessResolver, reportFailure: FailureReporter): AccessGate {
+  return async (authInfo) => {
+    try {
+      const decision = await resolver.resolve(verifiedUserOf(authInfo));
+      if (decision.allowed !== true) return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
+      return requireTrustedTenant(frozenCopy(decision.context));
+    } catch (cause) {
+      reportFailure({ step: 'access-resolution', cause });
+      return errorResponse(OAuthErrorCode.ServerError, 'Internal Server Error', 500);
+    }
+  };
 }
 
 function requireTrustedTenant(context: RequestContext): RequestContext {

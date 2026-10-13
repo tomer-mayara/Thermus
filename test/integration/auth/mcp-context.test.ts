@@ -10,6 +10,7 @@ import type { VerifiedIdentity } from '../../../src/mcp/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
 import { AccessResolverMock, type ConfiguredAccess } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
+import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 import { mcpRequest, rpcResult, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
@@ -48,6 +49,7 @@ function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>,
     ['scopeless-token', identityFor(members[0] as AuthenticatedUser, [])],
   ]));
   const resolver = new AccessResolverMock(decisions);
+  const reporter = new FailureReporterMock();
   const server = new MCPServer({
     auth: {
       verifier,
@@ -57,9 +59,10 @@ function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>,
       requiredScopes: ['openid'],
     },
     registerTools: probe.register,
+    reportFailure: reporter.report,
   });
   t.after(() => server.close());
-  return { server, verifier, resolver, probe };
+  return { server, verifier, resolver, probe, reporter };
 }
 
 function callProbe(t: TestContext, token: string | undefined, url = 'https://example.com/page'): Request {
@@ -121,22 +124,24 @@ describe('MCP access context with the real access contracts', () => {
     assert.deepEqual(probe.work.map(({ step }) => step), ['fetch', 'clean']);
   });
 
-  for (const { label, token, access, status } of [
-    { label: 'no token', token: undefined, access: undefined, status: 401 },
-    { label: 'a rejected token', token: 'forged-token', access: undefined, status: 401 },
-    { label: 'a token without the required scope', token: 'scopeless-token', access: undefined, status: 403 },
-    { label: 'an inactive membership', token: 'user-ann-token', access: { allowed: false, reason: 'membership-inactive' } as const, status: 403 },
-    { label: 'an access lookup outage', token: 'user-ann-token', access: new Error('private outage'), status: 500 },
+  const lookupOutage = new Error('private outage');
+  for (const { label, token, access, status, reports } of [
+    { label: 'no token', token: undefined, access: undefined, status: 401, reports: [] },
+    { label: 'a rejected token', token: 'forged-token', access: undefined, status: 401, reports: [] },
+    { label: 'a token without the required scope', token: 'scopeless-token', access: undefined, status: 403, reports: [] },
+    { label: 'an inactive membership', token: 'user-ann-token', access: { allowed: false, reason: 'membership-inactive' } as const, status: 403, reports: [] },
+    { label: 'an access lookup outage', token: 'user-ann-token', access: lookupOutage, status: 500, reports: [{ step: 'access-resolution', cause: lookupOutage }] },
   ]) {
-    test(`Given ${label}, when a client calls the protected tool, then the server returns ${status} and no tool, fetch, or clean step runs`, { timeout: 10_000 }, async (t) => {
+    test(`Given ${label}, when a client calls the protected tool, then the server returns ${status}, no tool, fetch, or clean step runs, and the operator gets ${reports.length === 0 ? 'no failure report' : 'one access-resolution report'}`, { timeout: 10_000 }, async (t) => {
       const decisions = new Map<string, ConfiguredAccess>(access === undefined ? [] : [['user-ann', access]]);
-      const { server, probe } = serve(t, decisions);
+      const { server, probe, reporter } = serve(t, decisions);
 
       const response = await server.fetch(callProbe(t, token));
 
       assert.equal(response.status, status);
       assert.deepEqual(probe.contexts, []);
       assert.deepEqual(probe.work, []);
+      assert.deepEqual(reporter.reports, reports);
     });
   }
 
