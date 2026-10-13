@@ -5,15 +5,15 @@ verification evidence. It also retains deferred work for future design decisions
 
 **Status: all four implementation slices merged.** This handoff uses design baseline Git commit `68a8eda`, dated 2026-10-11. It follows the [coding principles](../coding-principles.md). The review applies published design ideas; it does not claim author endorsement.
 
-[PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30) merged at `2026-10-11T21:48:11Z`, with merge commit `f91d59b9518daebe5198fcc13e08dc5137e7517f`. Slice 1 focused tests, `npm run check`, all acceptance tests, and `habit-hooks --branch origin/main` passed before merge; the snooze file was empty.
+[PR #30](https://github.com/3-headed-monkey/Thermus/pull/30) merged at `2026-10-11T21:48:11Z`, with merge commit `f91d59b9518daebe5198fcc13e08dc5137e7517f`. Slice 1 focused tests, `npm run check`, all acceptance tests, and `habit-hooks --branch origin/main` passed before merge; the snooze file was empty.
 
-[PR #32](https://github.com/3-headed-monkey/Magumagu/pull/32) merged at `2026-10-11T22:03:33Z`, with merge commit `4e7472500f98d4cf95add5d2f6dee4b8cf4eba03`. Slice 2 began with 122 passing baseline tests across 10 source/sanitizer unit files, the sanitizer deletion interface suite, and all acceptance tests. Its seven new source contract tests failed on the missing export, then passed after implementation. All 135 focused tests passed, covering source, visibility, repeated scans, counts, decoded styles, and authored font mode. The complete candidate passed `npm run check`: type checking, 1,241 unit tests, and 8 build tests. A separate run passed all 16 acceptance tests, 9 sanitizer deletion interface tests, and 7 new contract tests. The contract tests also appear in the unit count.
+[PR #32](https://github.com/3-headed-monkey/Thermus/pull/32) merged at `2026-10-11T22:03:33Z`, with merge commit `4e7472500f98d4cf95add5d2f6dee4b8cf4eba03`. Slice 2 began with 122 passing baseline tests across 10 source/sanitizer unit files, the sanitizer deletion interface suite, and all acceptance tests. Its seven new source contract tests failed on the missing export, then passed after implementation. All 135 focused tests passed, covering source, visibility, repeated scans, counts, decoded styles, and authored font mode. The complete candidate passed `npm run check`: type checking, 1,241 unit tests, and 8 build tests. A separate run passed all 16 acceptance tests, 9 sanitizer deletion interface tests, and 7 new contract tests. The contract tests also appear in the unit count.
 
 The manager signed off slice 2 code, tests, and eight habit retention reasons after independent review. `habit-hooks --branch origin/main` exited with status 1: seven explanatory comments and scanner size reduced from 239 to 225 lines were retained with reasons documented in PR #32. No suppressions were added; the snooze file was empty. The PR links contain the detailed review and verification records. This record confirms the merges and local evidence; it makes no separate claim about CI results.
 
-[PR #33](https://github.com/3-headed-monkey/Magumagu/pull/33) merged at `2026-10-11T22:16:00Z`, with merge commit `05d1ef6ff841f93bf42ffa60e1571f62b31f3847`. Slice 3 was implemented on `codex/hidden-html-removal-session`. All 95 existing baseline tests passed before implementation. The new session contract tests first failed because the module was missing; after implementation, all 54 focused tests passed, including the 8 new cases. The change preserves failure behavior and range algorithms. The manager reviewed the code, tests, and documents against the coding principles and signed off the per-invocation owner, preserved behavior, local range function, and absence of extra abstractions. This record confirms the merge and local evidence; it makes no separate claim about CI results.
+[PR #33](https://github.com/3-headed-monkey/Thermus/pull/33) merged at `2026-10-11T22:16:00Z`, with merge commit `05d1ef6ff841f93bf42ffa60e1571f62b31f3847`. Slice 3 was implemented on `codex/hidden-html-removal-session`. All 95 existing baseline tests passed before implementation. The new session contract tests first failed because the module was missing; after implementation, all 54 focused tests passed, including the 8 new cases. The change preserves failure behavior and range algorithms. The manager reviewed the code, tests, and documents against the coding principles and signed off the per-invocation owner, preserved behavior, local range function, and absence of extra abstractions. This record confirms the merge and local evidence; it makes no separate claim about CI results.
 
-[PR #34](https://github.com/3-headed-monkey/Magumagu/pull/34) merged at `2026-10-11T22:27:20Z`, with merge commit `a5996cc52238a033a749d01000d025d3290f1898`. Slice 4 was implemented on `codex/prepared-html-document`, from the slice 3 merge commit. Before source edits, the baseline build and all 194 selected tests passed: HTML-to-Markdown tests, encoded invisible controls, Markdown counters, noscript examples, redirect metadata, sanitized pipeline content, the three LinkeDOM/Defuddle interface files, and all acceptance tests. The manager reviewed slice 4 and its local checks are complete. This record confirms the merge and local evidence; it makes no separate claim about CI results.
+[PR #34](https://github.com/3-headed-monkey/Thermus/pull/34) merged at `2026-10-11T22:27:20Z`, with merge commit `a5996cc52238a033a749d01000d025d3290f1898`. Slice 4 was implemented on `codex/prepared-html-document`, from the slice 3 merge commit. Before source edits, the baseline build and all 194 selected tests passed: HTML-to-Markdown tests, encoded invisible controls, Markdown counters, noscript examples, redirect metadata, sanitized pipeline content, the three LinkeDOM/Defuddle interface files, and all acceptance tests. The manager reviewed slice 4 and its local checks are complete. This record confirms the merge and local evidence; it makes no separate claim about CI results.
 
 The slice 3 candidate passed `npm run check`: type checking, 1,249 unit tests, and 8 build tests. A separate 33-test run passed all 16 acceptance tests, 9 sanitizer deletion interface tests, and 8 new session contract tests. The new tests also appear in the unit count; the required suites contain 1,282 distinct tests. `habit-hooks --branch origin/main` exited with status 0 and reported two transferred rationale comments in `hidden-html-removal-session.ts`. The manager retained both: the last removal can form hidden markup, which explains withholding after exhaustion; rescans can see the same tags, which explains maxima instead of sums. No suppressions were added, and the snooze file remains `[]`.
 
@@ -63,7 +63,7 @@ Completion: affected baseline checks pass, missing coverage is identified, and r
 
 ## Slice 1: engine ownership in the ad cleaner
 
-This slice is complete in merged [PR #30](https://github.com/3-headed-monkey/Magumagu/pull/30). The specification below records its scope; do not repeat the implementation.
+This slice is complete in merged [PR #30](https://github.com/3-headed-monkey/Thermus/pull/30). The specification below records its scope; do not repeat the implementation.
 
 Change only [`CleanHtmlAdsAdblockRs.selectorsFor`](../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts) and its caller first. Replace the private static `(adblock, url, document)` signature with private instance `(url, document)`, using `this.engine`. Keep one engine per cleaner and constructor validation. Add no new service or interface.
 
@@ -75,7 +75,7 @@ Completion: there is no engine parameter passed back into its own owner and focu
 
 ## Slice 2: parsed source ownership
 
-This slice is complete in merged [PR #32](https://github.com/3-headed-monkey/Magumagu/pull/32). The specification below records its scope; do not repeat the implementation.
+This slice is complete in merged [PR #32](https://github.com/3-headed-monkey/Thermus/pull/32). The specification below records its scope; do not repeat the implementation.
 
 `SourceHtmlDocument` is implemented in the existing [`css-visibility-tree.ts`](../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts). Keeping the implementation here avoids an extra facade module. Its factory is `SourceHtmlDocument.parse(html: string): SourceHtmlDocument`. It owns the parsed document, element list, authored parsing mode, source identities, adopted locations, decoded style values, and `HtmlTextSourceRanges` for one parse.
 
@@ -102,7 +102,7 @@ Completion: no public `adoptedSources`, `decodedStyleValues`, or mutable source 
 
 ## Slice 3: hidden-removal invocation lifetime
 
-This slice is complete in merged [PR #33](https://github.com/3-headed-monkey/Magumagu/pull/33). The specification below records its scope; do not repeat the implementation.
+This slice is complete in merged [PR #33](https://github.com/3-headed-monkey/Thermus/pull/33). The specification below records its scope; do not repeat the implementation.
 
 `hidden-html-removal-session.ts` now sits beside [`prompt-injection-remover-sanitizer.ts`](../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts). Its `HiddenHtmlRemovalSession` constructor takes cleaned HTML; `run()` returns the existing removal-result shape with an explicit type. One object owns current HTML, provenance, removal counts, warning maxima, exfiltration reasons, visible style values, and scan count. It is created once inside each `invoke`, after control sanitation, and is never stored on the reusable sanitizer.
 
@@ -118,7 +118,7 @@ Completion: scan state and provenance have one invocation owner; `invoke` only c
 
 ## Slice 4: prepared extraction ownership
 
-This slice is complete in merged [PR #34](https://github.com/3-headed-monkey/Magumagu/pull/34). The specification below records its scope; do not repeat the implementation.
+This slice is complete in merged [PR #34](https://github.com/3-headed-monkey/Thermus/pull/34). The specification below records its scope; do not repeat the implementation.
 
 `PreparedHtmlDocument` is defined in [`prepare-html-document.ts`](../../src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts). It uses `PreparedHtmlDocument.fromHtml(html, url)` as the factory and `extract(sanitizeText): Promise<{ content: string; title: string }>` as the message. The factory parses HTML and captures the original fragment flag only. The converter supplies its per-conversion sanitizer callback once, to `extract`. That operation owns all remaining preparation, concrete extraction, and finishing work. The object keeps the parsed DOM, original fragment flag, and original URL private for one conversion. Extraction options, extraction URL, and the unique code marker stay local inside `extract`; they need no additional fields.
 

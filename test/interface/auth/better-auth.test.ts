@@ -76,7 +76,7 @@ async function registerClients(auth: LocalAuth, account: AccountCredentials) {
     await auth.api.adminCreateOAuthClient({
       headers,
       body: {
-        client_name: 'Magumagu MCP resource server',
+        client_name: 'Thermus MCP resource server',
         token_endpoint_auth_method: 'client_secret_basic',
         grant_types: ['client_credentials'],
       },

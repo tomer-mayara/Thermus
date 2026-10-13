@@ -46,7 +46,7 @@ describe('HostedAccountRoutes organization page', () => {
     assert.deepEqual(formsIn(body).map(({ fields, label }) => [fields.organization_id, label]), [['org-"><script>x</script>', '<b>Acme & Sons</b> "Ltd" \'s']]);
   });
 
-  for (const publicBaseUrl of ['https://magumagu.example/team/', 'https://magumagu.example/team']) {
+  for (const publicBaseUrl of ['https://thermus.example/team/', 'https://thermus.example/team']) {
     test(`Given the public URL ${publicBaseUrl} and no return destination, when the organization page opens, then each form posts under the public path and returns to the organization page there`, async () => {
       const { routes } = serveAnn({}, { publicBaseUrl });
 
@@ -88,7 +88,7 @@ describe('HostedAccountRoutes organization page', () => {
     ['two values', 'return_to=/team/account&return_to=/team/billing'],
   ] as const) {
     test(`Given a return destination with ${label}, when the organization page opens, then it gets 400 with the session cookies and lists no organization`, async () => {
-      const { routes, organizations } = serveAnn({}, { publicBaseUrl: 'https://magumagu.example/team' });
+      const { routes, organizations } = serveAnn({}, { publicBaseUrl: 'https://thermus.example/team' });
 
       const response = await routes.handle(accountRequest(`/team/organizations?${query}`, 'session=ann'));
 

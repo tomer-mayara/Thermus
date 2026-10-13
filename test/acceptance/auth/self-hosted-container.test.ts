@@ -24,10 +24,10 @@ import { LocalMcpUser } from '../../support/local-mcp-user.ts';
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
 const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const lockError = /in use by another Magumagu process/;
+const lockError = /in use by another Thermus process/;
 // Only the dedicated command arms the gate. npm test and npm run test:acceptance report these tests as skipped.
-const gateArmed = process.env.MAGUMAGU_CONTAINER_GATE === '1';
-const hostedSettings = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example', ...workOSSettings };
+const gateArmed = process.env.THERMUS_CONTAINER_GATE === '1';
+const hostedSettings = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', ...workOSSettings };
 // The hosted and paid capabilities: WorkOS sign-in, onboarding, organizations, grants, invitations, seats, and
 // billing, with the provider routes that could add them. The self-hosted composition routes none of them.
 const hostedAndPaidPaths = [
@@ -487,7 +487,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     const facts = await probeImage<ImageFacts>(images.current, 'image');
     const config = JSON.parse(await dockerOutput(['image', 'inspect', '--format', '{{json .Config}}', images.current])) as ImageConfig;
     const compose = await composeConfig();
-    const service = compose.services.magumagu;
+    const service = compose.services.thermus;
     const settings = Object.fromEntries(config.Env.map((setting) => setting.split(/=(.*)/s, 2)));
 
     assert.deepEqual(facts.applicationEntries, ['dist', 'migrations', 'node_modules', 'package.json']);
@@ -510,13 +510,13 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.equal(settings.LISTEN_PORT, '8080');
     assert.equal(settings.PUBLIC_BASE_URL, undefined);
     assert.deepEqual(Object.keys(settings).filter((name) => /TELEMETRY|BETTER_AUTH|^AUTH_/.test(name)), []);
-    assert.deepEqual(Object.keys(compose.services), ['magumagu']);
-    assert.ok(service, 'the compose file has the magumagu service');
+    assert.deepEqual(Object.keys(compose.services), ['thermus']);
+    assert.ok(service, 'the compose file has the thermus service');
     assert.equal(service.build.dockerfile, 'Dockerfile');
     assert.equal(service.init, true);
     assert.deepEqual(service.environment, { PUBLIC_BASE_URL: publicBaseUrl });
     assert.deepEqual(service.ports.map(({ host_ip, published, target }) => ({ host_ip, published, target })), [{ host_ip: '127.0.0.1', published: '8080', target: 8080 }]);
-    assert.deepEqual(service.volumes.map(({ type, source, target }) => ({ type, source, target })), [{ type: 'volume', source: 'magumagu-data', target: containerDataDirectory }]);
-    assert.deepEqual(Object.keys(compose.volumes), ['magumagu-data']);
+    assert.deepEqual(service.volumes.map(({ type, source, target }) => ({ type, source, target })), [{ type: 'volume', source: 'thermus-data', target: containerDataDirectory }]);
+    assert.deepEqual(Object.keys(compose.volumes), ['thermus-data']);
   });
 });

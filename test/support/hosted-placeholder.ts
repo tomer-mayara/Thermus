@@ -1,8 +1,8 @@
 export const workOSSettings: Readonly<Record<string, string>> = {
-  WORKOS_AUTHKIT_ISSUER: 'https://magumagu-test.authkit.app',
+  WORKOS_AUTHKIT_ISSUER: 'https://thermus-test.authkit.app',
   WORKOS_CLIENT_ID: 'client_placeholder',
   WORKOS_API_KEY: 'workos-api-key-placeholder',
-  WORKOS_REDIRECT_URI: 'https://magumagu.example/auth/callback',
+  WORKOS_REDIRECT_URI: 'https://thermus.example/auth/callback',
   WORKOS_COOKIE_PASSWORD: 'cookie-password-placeholder-0032',
 };
 

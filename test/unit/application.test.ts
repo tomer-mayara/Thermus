@@ -3,9 +3,9 @@ import { test } from 'node:test';
 import { routeHostedRequests, routeLocalRequests } from '../../src/application.ts';
 
 const routeConfig = {
-  publicBaseUrl: 'https://magumagu.example/team/',
-  mcpResourceUrl: 'https://magumagu.example/team/mcp',
-  resourceMetadataUrl: 'https://magumagu.example/.well-known/oauth-protected-resource/team/mcp',
+  publicBaseUrl: 'https://thermus.example/team/',
+  mcpResourceUrl: 'https://thermus.example/team/mcp',
+  resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/team/mcp',
 };
 
 function recordingRoutes() {
@@ -41,7 +41,7 @@ const publicRoutes = [
 for (const { path, owner } of publicRoutes) {
   test(`Given a local installation under a URL path, when ${path} is requested, then its owner receives the complete request`, async () => {
     const { route, calls } = recordingRoutes();
-    const request = new Request(`https://magumagu.example${path}?state=opaque-value`, { method: 'POST', body: 'request body' });
+    const request = new Request(`https://thermus.example${path}?state=opaque-value`, { method: 'POST', body: 'request body' });
 
     const response = await route(request);
 
@@ -76,7 +76,7 @@ test('Given a local installation, when private, hosted organization, or unknown 
   const { route, calls } = recordingRoutes();
 
   for (const path of privateRoutes) {
-    const response = await route(new Request(`https://magumagu.example${path}`, { method: 'POST' }));
+    const response = await route(new Request(`https://thermus.example${path}`, { method: 'POST' }));
     assert.equal(response.status, 404, path);
   }
 
@@ -109,7 +109,7 @@ const hostedRoutes = [
 for (const { path, owner } of hostedRoutes) {
   test(`Given a hosted installation under a URL path, when ${path} is requested, then the ${owner} handler receives the complete request`, async () => {
     const { route, calls } = recordingHostedRoutes();
-    const request = new Request(`https://magumagu.example${path}?organizationId=org-a`, { method: 'POST', body: 'organizationId=org-b' });
+    const request = new Request(`https://thermus.example${path}?organizationId=org-a`, { method: 'POST', body: 'organizationId=org-b' });
 
     const response = await route(request);
 
@@ -123,7 +123,7 @@ test('Given a hosted installation under a URL path, when paths outside that path
   const { route, calls } = recordingHostedRoutes();
 
   for (const path of ['/', '/team', '/mcp', '/account', '/billing/seats', '/.well-known/oauth-authorization-server/team/api/auth', '/teams/account']) {
-    const response = await route(new Request(`https://magumagu.example${path}`, { method: 'POST' }));
+    const response = await route(new Request(`https://thermus.example${path}`, { method: 'POST' }));
     assert.equal(response.status, 404, path);
   }
 

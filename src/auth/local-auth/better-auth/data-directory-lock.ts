@@ -11,7 +11,7 @@ export interface DataDirectoryLock {
 
 export class DataDirectoryInUseError extends Error {
   constructor() {
-    super('The data directory is in use by another Magumagu process. Stop that process, then try again.');
+    super('The data directory is in use by another Thermus process. Stop that process, then try again.');
     this.name = 'DataDirectoryInUseError';
   }
 }

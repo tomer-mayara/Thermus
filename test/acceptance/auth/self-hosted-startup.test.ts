@@ -19,7 +19,7 @@ const refusedProviderVariables: ServerSettings = {
 function hostedSettings(directory: string): ServerSettings {
   return {
     DEPLOYMENT: 'hosted',
-    PUBLIC_BASE_URL: 'https://magumagu.example',
+    PUBLIC_BASE_URL: 'https://thermus.example',
     ...workOSSettings,
     DATA_DIR: directory,
     LISTEN_HOST: '127.0.0.1',
@@ -147,7 +147,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
   test('Given retained authentication data without its installation identity, when the server starts, then it stops before it listens, asks for operator recovery, and creates no new identity', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
     await (await ServerProcess.start(t, selfHostedSettings(directory))).stop();
-    changeDatabase(directory, 'DELETE FROM "magumagu_installation"');
+    changeDatabase(directory, 'DELETE FROM "thermus_installation"');
 
     const server = ServerProcess.launch(t, selfHostedSettings(directory));
 

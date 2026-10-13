@@ -1,6 +1,6 @@
 # Test gate policy
 
-This policy gives the test commands and gates for a Magumagu pull request.
+This policy gives the test commands and gates for a Thermus pull request.
 [AGENTS.md](../../AGENTS.md) gives the rules, and this policy gives the details.
 If the two disagree, follow AGENTS.md and correct this policy.
 
@@ -17,7 +17,7 @@ package script. Each command that runs `dist/` output makes a clean build first.
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` | Offline. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0 and public network access. |
 | All | `npm test` | `dist/test/**/*.test.js`: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0 and public network access. |
-| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `MAGUMAGU_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
+| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`, and
 `npm run test:build`. It does not run the integration, acceptance, interface, or
@@ -25,7 +25,7 @@ container suites. `npm test` does not run the build test, because `tsconfig.buil
 excludes it from `dist/`.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
-Without `MAGUMAGU_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
+Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
 `npm run test:container` sets the setting.
 
 The interface suite needs the pinned Lightpanda executable. It also contains a
@@ -131,7 +131,7 @@ the reason. Do not record that run as a pass.
 AUTH-09 added the container acceptance suite
 `test/acceptance/auth/self-hosted-container.test.ts` and its own command,
 `npm run test:container`. The command makes a clean build, sets
-`MAGUMAGU_CONTAINER_GATE=1`, and runs the file. The suite:
+`THERMUS_CONTAINER_GATE=1`, and runs the file. The suite:
 
 - builds the image of the current candidate from `Dockerfile` two times. The
   second build has another revision label, so it is another image with the same
@@ -140,7 +140,7 @@ AUTH-09 added the container acceptance suite
   real provider and SQLite on Docker volumes;
 - gives the containers only the settings of the image and `PUBLIC_BASE_URL`, so
   the normal production telemetry settings apply;
-- puts each container that runs Magumagu on an internal Docker network without a
+- puts each container that runs Thermus on an internal Docker network without a
   route out, so each outbound connection fails. An edge container forwards the
   test connections to the server and is the DNS server of the containers, so it
   records each outbound connection that they try by name. A connection to an IP
@@ -158,13 +158,13 @@ them is never a container gate pass. Without the docker CLI, a running engine,
 Buildx, or Compose, the suite fails with a setup error.
 
 An interrupted run can leave resources. Each one has the label
-`magumagu.container-gate`, so these commands remove them:
+`thermus.container-gate`, so these commands remove them:
 
 ```sh
-docker container rm --force $(docker container ls --all --quiet --filter label=magumagu.container-gate)
-docker network rm $(docker network ls --quiet --filter label=magumagu.container-gate)
-docker volume rm $(docker volume ls --quiet --filter label=magumagu.container-gate)
-docker image rm --force $(docker image ls --quiet --filter label=magumagu.container-gate)
+docker container rm --force $(docker container ls --all --quiet --filter label=thermus.container-gate)
+docker network rm $(docker network ls --quiet --filter label=thermus.container-gate)
+docker volume rm $(docker volume ls --quiet --filter label=thermus.container-gate)
+docker image rm --force $(docker image ls --quiet --filter label=thermus.container-gate)
 ```
 
 ## Hosted placeholder checks

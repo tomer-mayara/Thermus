@@ -16,7 +16,7 @@ function formRequest(body: RequestInit['body'], signal?: AbortSignal): Request {
 }
 
 describe('HostedAccountRoutes selection input checks', () => {
-  for (const [label, origin] of [['a foreign origin', 'https://evil.example'], ['a null origin', 'null'], ['another scheme', 'http://magumagu.example'], ['another port', 'https://magumagu.example:8443'], ['no origin', undefined]] as const) {
+  for (const [label, origin] of [['a foreign origin', 'https://evil.example'], ['a null origin', 'null'], ['another scheme', 'http://thermus.example'], ['another port', 'https://thermus.example:8443'], ['no origin', undefined]] as const) {
     test(`Given a selection post with ${label}, when it arrives, then it gets 403 with the session cookies, its body stays unread, and no organization is checked or switched`, async () => {
       const { routes, annSession, organizations } = serveAnn();
       const request = accountRequest('/organizations/select', 'session=ann', {

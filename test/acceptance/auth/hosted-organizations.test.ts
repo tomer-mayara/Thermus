@@ -59,7 +59,7 @@ describe('Hosted organization onboarding and selection through the public routes
       { action: '/team/organizations/select', label: 'Globex', organization: 'org-b', returnTo: '/team/administration/users' },
     ]);
     assert.equal(selected.status, 303);
-    assert.equal(selected.location?.href, 'https://magumagu.example/team/administration/users');
+    assert.equal(selected.location?.href, 'https://thermus.example/team/administration/users');
     assert.equal(selected.cookies.length, 1);
     assert.notEqual(browser.cookieHeader, before);
     assert.equal(destination.status, 200);
@@ -106,7 +106,7 @@ describe('Hosted organization onboarding and selection through the public routes
     const tool = await site.callTool('user-sam-token');
 
     assert.deepEqual(forms.map(({ label }) => label), ['Acme']);
-    assert.equal(selected.location?.href, 'https://magumagu.example/team/billing');
+    assert.equal(selected.location?.href, 'https://thermus.example/team/billing');
     assertHtmlPage(billing);
     assert.match(billing.body, /Plan: Free/);
     assert.deepEqual(formsIn(billing.body), []);

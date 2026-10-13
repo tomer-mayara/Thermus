@@ -12,7 +12,7 @@ test('a deployment without test fixtures applies supplied rules across working d
   );
   const compiledSource = new URL('dist/src/', packageRoot);
   assert.ok(existsSync(compiledSource), 'Run pnpm build before this deployment test.');
-  const directory = mkdtempSync(join(tmpdir(), 'magumagu-ad-rules-'));
+  const directory = mkdtempSync(join(tmpdir(), 'thermus-ad-rules-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const deployment = join(directory, 'deployment');
   const firstCwd = join(directory, 'first');

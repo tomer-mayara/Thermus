@@ -11,7 +11,7 @@
 
 **MCP Server**
 
-[V] Connects to the MCP server and runs server/discover; advertises protocol 2026-07-28 and the magumagu identity (`test/unit/mcp/discovery.test.ts`)
+[V] Connects to the MCP server and runs server/discover; advertises protocol 2026-07-28 and the thermus identity (`test/unit/mcp/discovery.test.ts`)
 [] Every tool call is logged (with the user name)
 [] Lists one tool, fetchURLAsMarkdown(url), with its URL input schema
 [] Calls the fetcher with the requested URL, passes fetched HTML and the final URL to the pipeline, and returns the pipeline's Markdown
@@ -70,7 +70,7 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Listens on the configured host and a free port and reports the real address, with an IPv6 host in brackets; rejects a port in use and keeps no server; stops listening when the address cannot become a URL
 [V] Gives the handler the public origin with the path and query of the target; the `Host` and forwarded headers cannot change it
 [V] Refuses the absolute form, `*`, `//`, `\`, and `#` targets with 400 and `TRACE` with 501, without a handler call
-[V] Replaces every client copy of `x-magumagu-client-address` with the socket address and keeps all other headers
+[V] Replaces every client copy of `x-thermus-client-address` with the socket address and keeps all other headers
 [V] Streams a large JSON request body to the handler; a request body that the handler does not read does not block the next request on the connection
 [V] Returns the status, status text, headers, separate `Set-Cookie` headers, and body; streams events as they arrive, follows client back-pressure, and sends no body for `HEAD`
 [V] Answers a handler that throws or rejects with a generic 500 and a log line without request data; ends the connection when a streamed body fails
@@ -1056,7 +1056,7 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 [V] Given hosted settings with an HTTPS public URL and no WorkOS settings, the server listens and serves the authentication-unavailable notice without a credential prompt or cookie, logs that hosted authentication is not available yet, reports no tenant, uses no network, and stops with status 0
 [V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP (POST, GET, and DELETE), account, organization, member, invitation, and billing operations, also a grant change and an invitation send, resend, and revoke with a forged form token, each get the explicit 503 answer with `Cache-Control: no-store` and without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
 [V] Given a value for each WorkOS setting, no setting turns on a provider or access, and the output shows no setting value
-[V] Given test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `MAGUMAGU_DEMO`, and a test session setting), the onboarding page, the organization list, a selection, and the billing page, with the session cookie, form token, organization, and return destination that the test doubles accept, each get the unavailable notice without a cookie; the output names no organization, tenant, or user, and the server uses no network
+[V] Given test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `THERMUS_DEMO`, and a test session setting), the onboarding page, the organization list, a selection, and the billing page, with the session cookie, form token, organization, and return destination that the test doubles accept, each get the unavailable notice without a cookie; the output names no organization, tenant, or user, and the server uses no network
 [V] Given an invalid common setting, also with every WorkOS setting, startup stops before it listens with a `FATAL` line that names the setting and the rule but not the value
 
 Run only these tests:
@@ -1199,6 +1199,8 @@ Each test runs the built entry point as a separate process with the passwords on
 
 **Offline approved MCP client registration** (`test/acceptance/auth/local-client-registration.test.ts`)
 
+[V] Given the Thermus program, an unknown command gives usage that names `thermus users` and `thermus clients register`
+[V] Given a fresh Thermus installation with an approved client, a user signs in on a page that names Thermus and discovers an MCP server with the `thermus` identity
 [V] Given an enabled account, client registration with an exact loopback redirect URI persists the client in the data directory, leaves no registration session, and lets a user authorize; unknown, disabled, and wrong-password targets and non-loopback, fragment, and credential redirect URIs give safe errors and register nothing
 
 Run only the tests of the offline commands:

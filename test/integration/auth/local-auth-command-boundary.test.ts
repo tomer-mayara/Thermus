@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { runLocalAuthCommand, type LocalAuthCommandContext } from '../../../src/auth/local-auth/local-auth-command.ts';
 import type { LocalUserAdministration } from '../../../src/auth/local-auth/local-user-administration.ts';
 
-const environment = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/magumagu' };
+const environment = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/thermus' };
 const account = { id: 'account-id', email: 'alice@example.com', disabled: false };
 const password = 'account-password';
 

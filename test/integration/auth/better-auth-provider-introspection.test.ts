@@ -69,7 +69,7 @@ describe('BetterAuthProvider token introspection', () => {
     await assert.rejects(verifier.verifyAccessToken(token), unexpectedFailure(token, (error) => {
       assert.match(error.message, /no resource-server client/i);
       assert.match(error.message, /PUBLIC_BASE_URL/);
-      assert.match(error.message, /magumagu clients register/);
+      assert.match(error.message, /thermus clients register/);
     }));
 
     assert.deepEqual(provider.requests, []);

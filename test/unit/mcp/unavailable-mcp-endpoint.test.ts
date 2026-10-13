@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import { UnavailableMcpEndpoint } from '../../../src/mcp/unavailable-mcp-endpoint.ts';
 import { mcpUnavailableAnswer } from '../../support/hosted-placeholder.ts';
 
-const resourceUrl = 'https://magumagu.example/mcp';
+const resourceUrl = 'https://thermus.example/mcp';
 
 function mcpRequests(): Request[] {
   const call = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'fetch', arguments: { organizationId: 'org_01FORGED' } } });
@@ -13,7 +13,7 @@ function mcpRequests(): Request[] {
     new Request(resourceUrl, { method: 'POST', headers: { ...json, Cookie: 'wos-session=forged-sealed-session' }, body: call }),
     new Request(resourceUrl, { headers: { Accept: 'text/event-stream', Authorization: 'Bearer forged-connect-token' } }),
     new Request(resourceUrl, { method: 'DELETE', headers: { 'Mcp-Session-Id': 'forged-session-id' } }),
-    new Request('https://magumagu.example/.well-known/oauth-protected-resource/mcp'),
+    new Request('https://thermus.example/.well-known/oauth-protected-resource/mcp'),
   ];
 }
 

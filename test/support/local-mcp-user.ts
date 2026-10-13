@@ -56,7 +56,7 @@ export class LocalMcpUser {
 
   private async connected(t: TestContext, transport: StreamableHTTPClientTransport): Promise<Client> {
     const client = new Client(
-      { name: 'magumagu-acceptance', version: '0.0.0' },
+      { name: 'thermus-acceptance', version: '0.0.0' },
       { versionNegotiation: { mode: { pin: '2026-07-28' }, probe: { timeoutMs: 5_000, maxRetries: 0 } } },
     );
     t.after(() => client.close());

@@ -10,10 +10,10 @@ describe('Local page paths', () => {
     assert.deepEqual(paths, { signIn: '/sign-in', consent: '/consent', authorizationError: '/authorization-error' });
   });
 
-  test('Given a public base URL with the path /magumagu/, when the page paths are made, then each page is under that path', () => {
-    const paths = localPagePaths('https://example.com/magumagu/');
+  test('Given a public base URL with the path /thermus/, when the page paths are made, then each page is under that path', () => {
+    const paths = localPagePaths('https://example.com/thermus/');
 
-    assert.deepEqual(paths, { signIn: '/magumagu/sign-in', consent: '/magumagu/consent', authorizationError: '/magumagu/authorization-error' });
+    assert.deepEqual(paths, { signIn: '/thermus/sign-in', consent: '/thermus/consent', authorizationError: '/thermus/authorization-error' });
   });
 
   test('Given the pages, when they are asked about pathnames, then they handle only the three page paths', () => {

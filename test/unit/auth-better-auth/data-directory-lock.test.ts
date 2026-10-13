@@ -79,7 +79,7 @@ test('Given a data directory that another process locks, when this process locks
 
   assert.throws(() => lockDataDirectory(directory), (error) => {
     assert.ok(error instanceof DataDirectoryInUseError);
-    assert.equal(error.message, 'The data directory is in use by another Magumagu process. Stop that process, then try again.');
+    assert.equal(error.message, 'The data directory is in use by another Thermus process. Stop that process, then try again.');
     return true;
   });
   holder.kill('SIGKILL');

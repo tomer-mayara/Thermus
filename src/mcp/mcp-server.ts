@@ -91,7 +91,7 @@ export class MCPServer {
 }
 
 function serverWithoutTools(): McpServer {
-  return new McpServer({ name: 'magumagu', version: '0.0.0' });
+  return new McpServer({ name: 'thermus', version: '0.0.0' });
 }
 
 function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): BearerGate {

@@ -22,8 +22,8 @@ Both slices merged with owner approval on 2026-10-13:
 
 | Slice | Pull request | Merge time (UTC) | Merge commit |
 | --- | --- | --- | --- |
-| 1. Local role and lazy opener | [#56](https://github.com/3-headed-monkey/Magumagu/pull/56) | `2026-10-13T20:42:10Z` | `f677c5cd0556c7376efdd7529484a50042636873` |
-| 2. File relocation and direct boundaries | [#57](https://github.com/3-headed-monkey/Magumagu/pull/57) | `2026-10-13T21:00:58Z` | `e44e296fd3145ace899145d3e89d9f54540a8a18` |
+| 1. Local role and lazy opener | [#56](https://github.com/3-headed-monkey/Thermus/pull/56) | `2026-10-13T20:42:10Z` | `f677c5cd0556c7376efdd7529484a50042636873` |
+| 2. File relocation and direct boundaries | [#57](https://github.com/3-headed-monkey/Thermus/pull/57) | `2026-10-13T21:00:58Z` | `e44e296fd3145ace899145d3e89d9f54540a8a18` |
 
 ## Scope
 
@@ -216,7 +216,7 @@ a complete-candidate gate result.
 
 ### 1. Extract the local role and lazy opener
 
-Status: complete and merged in [pull request #56](https://github.com/3-headed-monkey/Magumagu/pull/56)
+Status: complete and merged in [pull request #56](https://github.com/3-headed-monkey/Thermus/pull/56)
 after owner review and approval.
 
 The neutral role, consumer records, and existing settings shape are extracted.
@@ -239,7 +239,7 @@ remain covered and passing.
 
 ### 2. Relocate once and enforce direct boundaries
 
-Status: complete and merged in [pull request #57](https://github.com/3-headed-monkey/Magumagu/pull/57),
+Status: complete and merged in [pull request #57](https://github.com/3-headed-monkey/Thermus/pull/57),
 based on merged slice 1, after owner review and approval.
 
 The files use their final paths. The concrete administrator is renamed, and the

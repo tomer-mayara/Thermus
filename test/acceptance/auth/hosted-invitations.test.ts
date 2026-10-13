@@ -4,7 +4,7 @@ import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shown
 import { formsIn } from '../../support/hosted-browser.ts';
 import { adminGrant, formFor, statusesOf, userGrant, userOf } from '../../support/hosted-organization-site.ts';
 
-const invitationsPage = 'https://magumagu.example/team/invitations';
+const invitationsPage = 'https://thermus.example/team/invitations';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
 
 function invitationLines(body: string): readonly string[] {

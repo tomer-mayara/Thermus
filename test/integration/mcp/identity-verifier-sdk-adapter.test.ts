@@ -7,13 +7,13 @@ import { IdentityVerifierMock, type ConfiguredClaims } from '../../unit/mcp/fixt
 
 function verifiedIdentity(): VerifiedIdentity {
   return {
-    user: { authority: 'https://auth.magumagu.example', subject: 'user-1', selectedOrganizationId: 'org-1' },
-    issuer: 'https://issuer.magumagu.example/',
+    user: { authority: 'https://auth.thermus.example', subject: 'user-1', selectedOrganizationId: 'org-1' },
+    issuer: 'https://issuer.thermus.example/',
     clientId: 'client',
     scopes: ['read'],
     issuedAtUnixSeconds: 2_524_604_400,
     expiresAtUnixSeconds: 2_524_608_000,
-    resource: new URL('https://magumagu.example/mcp'),
+    resource: new URL('https://thermus.example/mcp'),
   };
 }
 
@@ -44,13 +44,13 @@ describe('IdentityVerifierSdkAdapter', () => {
     const result = await verify(verifiedIdentity());
 
     assert.deepEqual(result.extra, {
-      user: { authority: 'https://auth.magumagu.example', subject: 'user-1', selectedOrganizationId: 'org-1' },
-      issuer: 'https://issuer.magumagu.example/',
+      user: { authority: 'https://auth.thermus.example', subject: 'user-1', selectedOrganizationId: 'org-1' },
+      issuer: 'https://issuer.thermus.example/',
       clientId: 'client',
       scopes: ['read'],
       issuedAt: 2_524_604_400,
       expiresAt: 2_524_608_000,
-      audience: 'https://magumagu.example/mcp',
+      audience: 'https://thermus.example/mcp',
     });
   });
 
@@ -66,7 +66,7 @@ describe('IdentityVerifierSdkAdapter', () => {
 
     assert.equal(verifiedUserOf(result).subject, 'user-1');
     assert.deepEqual(result.scopes, ['read']);
-    assert.equal(result.resource?.href, 'https://magumagu.example/mcp');
+    assert.equal(result.resource?.href, 'https://thermus.example/mcp');
     for (const value of [result.extra, result.extra?.user, result.extra?.scopes]) assert.ok(Object.isFrozen(value));
   });
 
@@ -80,16 +80,16 @@ describe('IdentityVerifierSdkAdapter', () => {
   for (const { label, claims } of [
     { label: 'no user', claims: { user: undefined } },
     { label: 'an empty user authority', claims: { user: { authority: '', subject: 'user-1' } } },
-    { label: 'no user subject', claims: { user: { authority: 'https://auth.magumagu.example' } } },
-    { label: 'an empty selected organization', claims: { user: { authority: 'https://auth.magumagu.example', subject: 'user-1', selectedOrganizationId: '' } } },
-    { label: 'a client ID in place of the user subject', claims: { user: { authority: 'https://auth.magumagu.example', subject: 'client' } } },
+    { label: 'no user subject', claims: { user: { authority: 'https://auth.thermus.example' } } },
+    { label: 'an empty selected organization', claims: { user: { authority: 'https://auth.thermus.example', subject: 'user-1', selectedOrganizationId: '' } } },
+    { label: 'a client ID in place of the user subject', claims: { user: { authority: 'https://auth.thermus.example', subject: 'client' } } },
     { label: 'no issuer', claims: { issuer: '' } },
     { label: 'no client ID', claims: { clientId: undefined } },
     { label: 'no issue time', claims: { issuedAtUnixSeconds: undefined } },
     { label: 'an issue time that is not a number', claims: { issuedAtUnixSeconds: Number.NaN } },
     { label: 'no expiration time', claims: { expiresAtUnixSeconds: undefined } },
     { label: 'no audience', claims: { resource: undefined } },
-    { label: 'an audience that is not a URL', claims: { resource: 'https://magumagu.example/mcp' } },
+    { label: 'an audience that is not a URL', claims: { resource: 'https://thermus.example/mcp' } },
   ]) {
     test(`Given verified claims with ${label}, when the SDK adapter verifies the token, then it rejects the token as invalid_token`, async () => {
       await assert.rejects(

@@ -80,7 +80,7 @@ describe('HostedAccountRoutes cookie effects', () => {
       sessions: new Map([['session=ann', signedIn(ann, { cookies })]]),
       decisions: new Map([[ann.subject, annAllowed()]]),
       operationAnswer: async (request) => (new URL(request.url).pathname === '/moved'
-        ? Response.redirect('https://magumagu.example/account', 303)
+        ? Response.redirect('https://thermus.example/account', 303)
         : new Response('done', { status: 201, statusText: 'Created here', headers: { 'Set-Cookie': 'preference=compact; Path=/', 'X-Operation': 'kept' } })),
     });
 
@@ -90,7 +90,7 @@ describe('HostedAccountRoutes cookie effects', () => {
     assert.deepEqual([done.status, done.statusText, done.headers.get('X-Operation')], [201, 'Created here', 'kept']);
     assert.deepEqual(done.headers.getSetCookie(), [...cookies, 'preference=compact; Path=/']);
     assert.equal(await done.text(), 'done');
-    assert.deepEqual([moved.status, moved.headers.get('Location')], [303, 'https://magumagu.example/account']);
+    assert.deepEqual([moved.status, moved.headers.get('Location')], [303, 'https://thermus.example/account']);
     assert.deepEqual(moved.headers.getSetCookie(), cookies);
   });
 
@@ -106,7 +106,7 @@ describe('HostedAccountRoutes cookie effects', () => {
 
   test('Given a denial under a public URL path, when a signed-in user opens a tenant page, then the 403 page points to the organization page under that path', async () => {
     const { routes } = serve({
-      publicBaseUrl: 'https://magumagu.example/team/',
+      publicBaseUrl: 'https://thermus.example/team/',
       sessions: new Map([['session=ann', signedIn(ann)]]),
       decisions: new Map([[ann.subject, { allowed: false, reason: 'organization-required' }]]),
     });

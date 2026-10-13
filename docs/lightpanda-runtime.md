@@ -1,6 +1,6 @@
 # Lightpanda runtime
 
-Magumagu supports the official Lightpanda **1.0.0** release. The renderer is an external executable. `pnpm install` does not install it. The [release page](https://github.com/lightpanda-io/browser/releases/tag/1.0.0) provides four platform assets. The recipe below pins that release and checks each asset against its recorded SHA256 digest.
+Thermus supports the official Lightpanda **1.0.0** release. The renderer is an external executable. `pnpm install` does not install it. The [release page](https://github.com/lightpanda-io/browser/releases/tag/1.0.0) provides four platform assets. The recipe below pins that release and checks each asset against its recorded SHA256 digest.
 
 Use macOS or Linux on x86-64 or ARM64. The Linux binary requires glibc; Alpine Linux with musl is not supported by this recipe. On Windows, run the Linux recipe inside WSL2. See the [official installation guide](https://lightpanda.io/docs/open-source/installation/) for WSL2 setup.
 

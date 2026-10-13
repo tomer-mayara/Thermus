@@ -1,4 +1,4 @@
-# The self-hosted evaluation image of Magumagu. It holds the server and the offline commands of the same program.
+# The self-hosted evaluation image of Thermus. It holds the server and the offline commands of the same program.
 # All data is on the volume at DATA_DIR. README.md#container-installation gives the commands.
 
 # The base images are pinned by digest. Change a tag and its digest together.
@@ -33,12 +33,12 @@ COPY src src
 RUN pnpm build
 
 FROM ${NODE_IMAGE}
-LABEL org.opencontainers.image.title="Magumagu" \
-      org.opencontainers.image.description="Magumagu self-hosted evaluation edition with local accounts and one data volume" \
-      org.opencontainers.image.source="https://github.com/3-headed-monkey/Magumagu"
+LABEL org.opencontainers.image.title="Thermus" \
+      org.opencontainers.image.description="Thermus self-hosted evaluation edition with local accounts and one data volume" \
+      org.opencontainers.image.source="https://github.com/3-headed-monkey/Thermus"
 ENV NODE_ENV=production \
     DEPLOYMENT=self-hosted \
-    DATA_DIR=/var/lib/magumagu \
+    DATA_DIR=/var/lib/thermus \
     LISTEN_HOST=0.0.0.0 \
     LISTEN_PORT=8080
 WORKDIR /app
@@ -47,7 +47,7 @@ COPY --from=dependencies /app/node_modules node_modules
 COPY --from=build /app/dist/src dist/src
 COPY migrations migrations
 # The data directory holds the database and the secrets, so only the node user can open it.
-RUN install -d -m 0700 -o node -g node /var/lib/magumagu
+RUN install -d -m 0700 -o node -g node /var/lib/thermus
 USER node
 EXPOSE 8080
 ENTRYPOINT ["node", "/app/dist/src/index.js"]

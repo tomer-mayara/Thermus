@@ -84,9 +84,9 @@ function retainedIdentity(database: DatabaseSync, directory: string): Installati
 }
 
 function storedInstallationId(database: DatabaseSync): string | undefined {
-  const table = database.prepare(`SELECT 1 FROM sqlite_schema WHERE "type" = 'table' AND "name" = 'magumagu_installation'`).get();
+  const table = database.prepare(`SELECT 1 FROM sqlite_schema WHERE "type" = 'table' AND "name" = 'thermus_installation'`).get();
   if (table === undefined) return undefined;
-  const id = database.prepare('SELECT "id" FROM "magumagu_installation"').get()?.id;
+  const id = database.prepare('SELECT "id" FROM "thermus_installation"').get()?.id;
   return typeof id === 'string' && UUID.test(id) ? id : undefined;
 }
 
@@ -96,7 +96,7 @@ function newIdentity(database: DatabaseSync, directory: string): InstallationIde
   const id = randomUUID();
   inTransaction(database, () => {
     for (const migration of MIGRATIONS) database.exec(readMigration(migration));
-    database.prepare('INSERT INTO "magumagu_installation" ("singleton", "id") VALUES (1, ?)').run(id);
+    database.prepare('INSERT INTO "thermus_installation" ("singleton", "id") VALUES (1, ?)').run(id);
     database.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
   });
   return { id, secret };
@@ -195,15 +195,15 @@ function syncDirectory(directory: string): void {
 function missingIdentity(): LocalInstallationError {
   return new LocalInstallationError(
     'The data directory has authentication data but no valid installation identity. '
-      + 'Magumagu does not create a new identity for retained data. '
+      + 'Thermus does not create a new identity for retained data. '
       + 'Restore the complete data directory from a backup, or move the data away to start a new installation.',
   );
 }
 
 function unsupportedSchemaVersion(version: number): LocalInstallationError {
   return new LocalInstallationError(
-    `The authentication database has schema version ${version}, but this Magumagu version uses schema version ${SCHEMA_VERSION}. `
-      + 'Use the Magumagu version that created the data, or restore a backup for this version.',
+    `The authentication database has schema version ${version}, but this Thermus version uses schema version ${SCHEMA_VERSION}. `
+      + 'Use the Thermus version that created the data, or restore a backup for this version.',
   );
 }
 
@@ -223,6 +223,6 @@ function invalidSecret(): LocalInstallationError {
 function invalidResourceServerClient(): LocalInstallationError {
   return new LocalInstallationError(
     `The ${RESOURCE_SERVER_CLIENT_FILE} file in the data directory is not valid. `
-      + 'Restore the complete data directory from a backup, or remove the file and run magumagu clients register again.',
+      + 'Restore the complete data directory from a backup, or remove the file and run thermus clients register again.',
   );
 }

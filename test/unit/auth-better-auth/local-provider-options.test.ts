@@ -66,9 +66,9 @@ test('Given local provider settings, when options are built, then only private i
 });
 
 test('Given a public base URL with a path, when provider options are built, then authorization errors use the bundled local page', () => {
-  const options = localProviderOptions({ ...settings, publicBaseUrl: 'https://magumagu.example/team/' });
+  const options = localProviderOptions({ ...settings, publicBaseUrl: 'https://thermus.example/team/' });
 
-  assert.deepEqual(options.onAPIError, { errorURL: 'https://magumagu.example/team/authorization-error' });
+  assert.deepEqual(options.onAPIError, { errorURL: 'https://thermus.example/team/authorization-error' });
 });
 
 test('Given local consent pages, when provider options are built, then the provider permits client metadata lookup from a signed authorization query without a browser session', () => {

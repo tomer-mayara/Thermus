@@ -18,7 +18,7 @@ import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm 
 import { MembershipDirectoryDouble, type MembershipRecord } from './membership-directory-double.ts';
 import { RequestContextProbe } from './request-context-probe.ts';
 
-export const hostedConfig = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example/team' }, 'http');
+export const hostedConfig = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
 export const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
 export const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };

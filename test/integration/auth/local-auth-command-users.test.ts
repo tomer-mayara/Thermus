@@ -71,7 +71,7 @@ describe('runLocalAuthCommand users', () => {
       const result = await run(['users', 'list']);
 
       assert.equal(result.code, 0);
-      assert.equal(result.output, 'No local accounts. Add one with: magumagu users add <email>\n');
+      assert.equal(result.output, 'No local accounts. Add one with: thermus users add <email>\n');
     });
 
     test('Given two users with sessions, when users reset-password targets one, then it asks for the new password two times, ends only that user\'s sessions, keeps its ID and state, and reveals no password', async () => {

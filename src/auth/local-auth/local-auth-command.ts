@@ -120,7 +120,7 @@ function resetMessage(account: LocalAccount): string {
 }
 
 function accountTable(accounts: readonly LocalAccount[]): string {
-  if (accounts.length === 0) return 'No local accounts. Add one with: magumagu users add <email>\n';
+  if (accounts.length === 0) return 'No local accounts. Add one with: thermus users add <email>\n';
   const rows = [['EMAIL', 'STATE', 'ID'], ...accounts.map(({ email, disabled, id }) => [email, disabled ? 'disabled' : 'enabled', id])];
   const emailWidth = Math.max(...rows.map(([email = '']) => email.length));
   const stateWidth = Math.max(...rows.map(([, state = '']) => state.length));

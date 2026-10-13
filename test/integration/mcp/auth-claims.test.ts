@@ -13,12 +13,12 @@ import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mo
 import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 
 describe('MCPServer verified claim validation', () => {
-  const resourceUrl = 'https://magumagu.example/mcp';
-  const resourceMetadataUrl = 'https://magumagu.example/.well-known/oauth-protected-resource/mcp';
+  const resourceUrl = 'https://thermus.example/mcp';
+  const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
   const nowUnixSeconds = 2_000_000_000;
   const validIdentity: VerifiedIdentity = {
-    user: { authority: 'https://auth.magumagu.example', subject: 'test-user' },
-    issuer: 'https://auth.magumagu.example',
+    user: { authority: 'https://auth.thermus.example', subject: 'test-user' },
+    issuer: 'https://auth.thermus.example',
     clientId: 'test-client',
     scopes: ['mcp:read'],
     issuedAtUnixSeconds: nowUnixSeconds - 60,
@@ -133,7 +133,7 @@ describe('MCPServer verified claim validation', () => {
           params: {
             _meta: {
               [PROTOCOL_VERSION_META_KEY]: protocolVersion,
-              [CLIENT_INFO_META_KEY]: { name: 'magumagu-test', version: '0.0.0' },
+              [CLIENT_INFO_META_KEY]: { name: 'thermus-test', version: '0.0.0' },
               [CLIENT_CAPABILITIES_META_KEY]: {},
             },
           },

@@ -7,12 +7,12 @@ type Environment = Record<string, string | undefined>;
 type Edition = DeploymentConfig['deployment'];
 
 const valid: Readonly<Record<Edition, Environment>> = {
-  'self-hosted': { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'https://magumagu.example', DATA_DIR: '/var/lib/magumagu' },
-  hosted: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://magumagu.example' },
+  'self-hosted': { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'https://thermus.example', DATA_DIR: '/var/lib/thermus' },
+  hosted: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' },
 };
 const valueSettings = Object.keys({ ...valid['self-hosted'], ...valid.hosted, ...workOSSettings }).filter((name) => name !== 'DEPLOYMENT');
-const rootUrls = { publicBaseUrl: 'https://magumagu.example/', mcpResourceUrl: 'https://magumagu.example/mcp',
-  resourceMetadataUrl: 'https://magumagu.example/.well-known/oauth-protected-resource/mcp' };
+const rootUrls = { publicBaseUrl: 'https://thermus.example/', mcpResourceUrl: 'https://thermus.example/mcp',
+  resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' };
 
 function environment(edition: Edition, overrides: Environment = {}): Environment {
   return { ...valid[edition], ...overrides };
@@ -39,7 +39,7 @@ function rejectionMessage(settings: Environment, transport: 'http' | 'stdio' = '
 }
 
 test('Given a valid self-hosted environment, when it loads for HTTP, then it returns the derived URLs and the data directory', () => {
-  assert.deepEqual(load('self-hosted'), { deployment: 'self-hosted', ...rootUrls, dataDirectory: '/var/lib/magumagu' } satisfies DeploymentConfig);
+  assert.deepEqual(load('self-hosted'), { deployment: 'self-hosted', ...rootUrls, dataDirectory: '/var/lib/thermus' } satisfies DeploymentConfig);
 });
 
 test('Given a valid hosted environment without WorkOS settings, when it loads for HTTP, then it selects the hosted edition with only the derived URLs', () => {
@@ -71,7 +71,7 @@ for (const edition of ['self-hosted', 'hosted'] as const) {
 }
 
 const ignoredSettings: ReadonlyArray<[Edition, Environment]> = [
-  ['hosted', { DATA_DIR: '/var/lib/magumagu' }], ['hosted', { AUTH_MODE: 'mock' }], ['self-hosted', { AUTH_MODE: 'hosted' }],
+  ['hosted', { DATA_DIR: '/var/lib/thermus' }], ['hosted', { AUTH_MODE: 'mock' }], ['self-hosted', { AUTH_MODE: 'hosted' }],
   ['self-hosted', { AUTH_MODE: 'mock', ENABLE_PAID_FEATURES: 'true' }],
   ['self-hosted', { WORKOS_AUTHKIT_ISSUER: 'not-a-url', WORKOS_COOKIE_PASSWORD: 'short' }],
   ['hosted', workOSSettings], ['hosted', { WORKOS_AUTHKIT_ISSUER: 'not-a-url', WORKOS_COOKIE_PASSWORD: 'short', WORKOS_API_KEY: '' }],
@@ -137,17 +137,17 @@ const settingRules: ReadonlyArray<[Edition, Environment, RegExp]> = [
   ['hosted', { PUBLIC_BASE_URL: 'http://127.0.0.1:8080' }, /^PUBLIC_BASE_URL must use https\.$/],
   ['hosted', { PUBLIC_BASE_URL: 'http://[::1]:8080' }, /^PUBLIC_BASE_URL must use https\.$/],
   ['hosted', { ...workOSSettings, PUBLIC_BASE_URL: 'http://localhost:8080', WORKOS_REDIRECT_URI: 'http://localhost:8080/callback' }, /^PUBLIC_BASE_URL must use https\.$/],
-  ['self-hosted', { PUBLIC_BASE_URL: 'http://magumagu.example' }, /^PUBLIC_BASE_URL must use https\. It can use http only on localhost, 127\.0\.0\.1, or \[::1\]\.$/],
-  ['self-hosted', { PUBLIC_BASE_URL: 'http://localhost.magumagu.example' }, /^PUBLIC_BASE_URL must use https\./],
+  ['self-hosted', { PUBLIC_BASE_URL: 'http://thermus.example' }, /^PUBLIC_BASE_URL must use https\. It can use http only on localhost, 127\.0\.0\.1, or \[::1\]\.$/],
+  ['self-hosted', { PUBLIC_BASE_URL: 'http://localhost.thermus.example' }, /^PUBLIC_BASE_URL must use https\./],
   ['self-hosted', { PUBLIC_BASE_URL: 'http://192.168.1.20:8080' }, /^PUBLIC_BASE_URL must use https\./],
-  ['self-hosted', { DATA_DIR: 'relative/magumagu-data' }, /^DATA_DIR must be an absolute path\./],
-  ['self-hosted', { DATA_DIR: './magumagu-data' }, /^DATA_DIR must be an absolute path\./],
+  ['self-hosted', { DATA_DIR: 'relative/thermus-data' }, /^DATA_DIR must be an absolute path\./],
+  ['self-hosted', { DATA_DIR: './thermus-data' }, /^DATA_DIR must be an absolute path\./],
   ['hosted', { DEPLOYMENT: undefined, AUTH_MODE: 'hosted' }, /^DEPLOYMENT must be set to self-hosted or hosted\./],
   ['hosted', { DEPLOYMENT: undefined, ...workOSSettings }, /^DEPLOYMENT must be set to self-hosted or hosted\./],
   ['hosted', { AUTH_MODE: 'mock', PUBLIC_BASE_URL: undefined }, /^PUBLIC_BASE_URL is required\./],
   ['hosted', { AUTH_MODE: 'hosted', PUBLIC_BASE_URL: 'http://localhost:8080' }, /^PUBLIC_BASE_URL must use https\./],
-  ['hosted', { ...workOSSettings, ENABLE_PAID_FEATURES: 'true', PUBLIC_BASE_URL: 'https://magumagu.example?plan=paid' }, /^PUBLIC_BASE_URL must not contain a query\./],
-  ['hosted', { ...workOSSettings, DATA_DIR: '/var/lib/magumagu', PUBLIC_BASE_URL: undefined }, /^PUBLIC_BASE_URL is required\./],
+  ['hosted', { ...workOSSettings, ENABLE_PAID_FEATURES: 'true', PUBLIC_BASE_URL: 'https://thermus.example?plan=paid' }, /^PUBLIC_BASE_URL must not contain a query\./],
+  ['hosted', { ...workOSSettings, DATA_DIR: '/var/lib/thermus', PUBLIC_BASE_URL: undefined }, /^PUBLIC_BASE_URL is required\./],
 ];
 for (const [edition, overrides, rule] of settingRules) {
   test(`Given a ${edition} environment with ${assignments(overrides)}, when it loads, then it rejects the invalid setting by name and rule`, () => {
@@ -156,7 +156,7 @@ for (const [edition, overrides, rule] of settingRules) {
 }
 
 test('Given a hosted base URL with a password and values for each WorkOS setting, when it loads, then the message names the rule but no secret, URL, or WorkOS value', () => {
-  const url = 'https://operator:hunter2@magumagu.example';
+  const url = 'https://operator:hunter2@thermus.example';
   const message = rejectionMessage(environment('hosted', { ...workOSSettings, PUBLIC_BASE_URL: url }));
   assert.match(message, /^PUBLIC_BASE_URL must not contain a username or password\./);
   for (const secret of [url, 'hunter2', ...Object.values(workOSSettings)]) assert.ok(!message.includes(String(secret)));
