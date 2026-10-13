@@ -6,6 +6,28 @@ import { LocalProviderDouble } from './fixtures/local-provider-double.ts';
 
 const loopbackRedirectUri = 'http://127.0.0.1:33418/callback';
 
+function aliceOnInstallationWithoutResourceServerClient() {
+  const provider = new LocalProviderDouble();
+  const alice = provider.addUser('alice@example.com', 'alice-password-1');
+  provider.resourceServerClient.stored = undefined;
+  return { provider, alice, administration: new LocalUserAdministration(provider.auth, provider.resourceServerClient) };
+}
+
+function registerForAlice(administration: LocalUserAdministration, redirectUri = loopbackRedirectUri) {
+  return administration.registerClient('alice@example.com', new PasswordAnswers('alice-password-1').read, {
+    name: 'Native MCP client',
+    redirectUris: [redirectUri],
+  });
+}
+
+function authMethodsOf(provider: LocalProviderDouble): unknown[] {
+  return provider.clients.map(({ metadata }) => metadata.token_endpoint_auth_method);
+}
+
+function operationsOf(provider: LocalProviderDouble): string[] {
+  return provider.calls.map((call) => call.split(' ')[0] ?? '');
+}
+
 describe('LocalUserAdministration client registration', () => {
   describe('register client', () => {
     test('Given an enabled account with a browser session, when an approved client is registered, then the provider creates a native public client with that account\'s new session, deletes only that session, and the browser session stays', async () => {
@@ -13,7 +35,7 @@ describe('LocalUserAdministration client registration', () => {
       const alice = provider.addUser('alice@example.com', 'alice-password-1');
       const browserSession = provider.startSession(alice.id);
 
-      const client = await new LocalUserAdministration(provider.auth).registerClient(
+      const client = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('alice-password-1').read,
         { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] },
@@ -31,14 +53,19 @@ describe('LocalUserAdministration client registration', () => {
           application_type: 'native',
         },
       }]);
-      assert.deepEqual(client, { clientId: provider.clients[0]?.clientId, name: 'Native MCP client', redirectUris: [loopbackRedirectUri] });
+      assert.deepEqual(client, {
+        clientId: provider.clients[0]?.clientId,
+        name: 'Native MCP client',
+        redirectUris: [loopbackRedirectUri],
+        resourceServerClientRegistered: false,
+      });
       assert.deepEqual(provider.sessionsOf(alice.id), [browserSession]);
     });
 
     test('Given an unknown or a disabled account, when a client is registered for it, then it fails before it asks for a password and creates no session or client', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('dana@example.com', 'dana-password-1', true);
-      const administration = new LocalUserAdministration(provider.auth);
+      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
       const answers = new PasswordAnswers('carol-password-1', 'dana-password-1');
       const client = { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] };
 
@@ -53,7 +80,7 @@ describe('LocalUserAdministration client registration', () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
 
-      await assert.rejects(new LocalUserAdministration(provider.auth).registerClient(
+      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('wrong-password-1').read,
         { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] },
@@ -65,7 +92,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given an account that the provider refuses to sign in as disabled, when a client is registered, then it fails with disabled-account', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth);
+      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
       const banBeforeSignIn: PasswordSource = async () => {
         const alice = provider.userByEmail('alice@example.com');
         if (alice) alice.banned = true;
@@ -83,7 +110,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given redirect URIs outside the approved loopback form, when a client is registered, then each fails with invalid-redirect-uri and a message without the URI, before any provider call or password prompt', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth);
+      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
       const answers = new PasswordAnswers();
       const refused = [
         [],
@@ -125,7 +152,7 @@ describe('LocalUserAdministration client registration', () => {
         'http://127.0.0.1:33418',
       ];
 
-      await new LocalUserAdministration(provider.auth).registerClient(
+      await new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('alice-password-1').read,
         { name: 'Native MCP client', redirectUris },
@@ -137,7 +164,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given an empty or control-character client name, when a client is registered, then it fails with invalid-client-name before any provider call', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth);
+      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
 
       for (const name of ['', '   ', 'Native\nclient']) {
         await assert.rejects(
@@ -155,7 +182,7 @@ describe('LocalUserAdministration client registration', () => {
       const failure = new Error('client storage failed');
       provider.failures.set('adminCreateOAuthClient', failure);
 
-      await assert.rejects(new LocalUserAdministration(provider.auth).registerClient(
+      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).registerClient(
         'alice@example.com',
         new PasswordAnswers('alice-password-1').read,
         { name: 'Native MCP client', redirectUris: [loopbackRedirectUri] },
@@ -168,7 +195,7 @@ describe('LocalUserAdministration client registration', () => {
     test('Given a registration session that cannot be deleted, when a client is registered, then the caller gets the cleanup error; when the creation also fails, the caller gets both errors', async () => {
       const provider = new LocalProviderDouble();
       provider.addUser('alice@example.com', 'alice-password-1');
-      const administration = new LocalUserAdministration(provider.auth);
+      const administration = new LocalUserAdministration(provider.auth, provider.resourceServerClient);
       const cleanupFailure = new Error('session delete failed');
       const creationFailure = new Error('client storage failed');
       const register = () => administration.registerClient(
@@ -186,6 +213,75 @@ describe('LocalUserAdministration client registration', () => {
         assert.equal(error.suppressed, creationFailure);
         return true;
       });
+    });
+  });
+
+  describe('resource-server client', () => {
+    test('Given an installation without a resource-server client, when a client is registered, then the registration session first creates the confidential resource-server client and the record gets its ID and secret, then the session creates the native client and is deleted', async () => {
+      const { provider, alice, administration } = aliceOnInstallationWithoutResourceServerClient();
+
+      const client = await registerForAlice(administration);
+
+      const [resourceServer, native] = provider.clients;
+      assert.ok(resourceServer && native);
+      assert.deepEqual(resourceServer, {
+        clientId: resourceServer.clientId,
+        sessionUserId: alice.id,
+        metadata: { client_name: 'Magumagu MCP resource server', token_endpoint_auth_method: 'client_secret_basic', grant_types: ['client_credentials'] },
+      });
+      assert.deepEqual(provider.resourceServerClient.recorded, [
+        { clientId: resourceServer.clientId, clientSecret: LocalProviderDouble.clientSecretOf(resourceServer.clientId) },
+      ]);
+      assert.deepEqual(authMethodsOf(provider), ['client_secret_basic', 'none']);
+      assert.deepEqual(client, { clientId: native.clientId, name: 'Native MCP client', redirectUris: [loopbackRedirectUri], resourceServerClientRegistered: true });
+      assert.deepEqual(operationsOf(provider), ['signInEmail', 'adminCreateOAuthClient', 'adminCreateOAuthClient', 'deleteSession']);
+      assert.deepEqual(provider.sessionsOf(alice.id), []);
+    });
+
+    test('Given an installation without a resource-server client, when two clients are registered, then only the first registration creates and records a resource-server client, and the second creates only its native client', async () => {
+      const { provider, administration } = aliceOnInstallationWithoutResourceServerClient();
+
+      const first = await registerForAlice(administration);
+      const second = await registerForAlice(administration, 'http://127.0.0.1:33419/callback');
+
+      assert.deepEqual([first.resourceServerClientRegistered, second.resourceServerClientRegistered], [true, false]);
+      assert.deepEqual(authMethodsOf(provider), ['client_secret_basic', 'none', 'none']);
+      assert.equal(provider.resourceServerClient.recorded.length, 1);
+      assert.deepEqual(provider.resourceServerClient.current(), provider.resourceServerClient.recorded[0]);
+    });
+
+    test('Given an installation without a resource-server client and a provider failure while that client is created, when a client is registered, then the registration session is deleted, the provider error reaches the caller, nothing is recorded, and no native client is created', async () => {
+      const { provider, alice, administration } = aliceOnInstallationWithoutResourceServerClient();
+      const failure = new Error('client storage failed');
+      provider.failures.set('adminCreateOAuthClient', failure);
+
+      await assert.rejects(registerForAlice(administration), (error) => error === failure);
+
+      assert.deepEqual(operationsOf(provider), ['signInEmail', 'adminCreateOAuthClient', 'deleteSession']);
+      assert.deepEqual([provider.clients, provider.resourceServerClient.recorded, provider.sessionsOf(alice.id)], [[], [], []]);
+    });
+
+    test('Given a provider that gives no secret for the resource-server client, when a client is registered, then it fails, records nothing, creates no native client, and deletes the registration session', async () => {
+      const { provider, alice, administration } = aliceOnInstallationWithoutResourceServerClient();
+      provider.withholdClientSecrets = true;
+
+      await assert.rejects(registerForAlice(administration), { message: 'The provider gave no secret for the resource-server client.' });
+
+      assert.deepEqual(authMethodsOf(provider), ['client_secret_basic']);
+      assert.deepEqual([provider.resourceServerClient.recorded, provider.sessionsOf(alice.id)], [[], []]);
+    });
+
+    test('Given a resource-server client record that fails to read or to store, when a client is registered, then the record error reaches the caller, no native client is created, and the registration session is deleted', async () => {
+      for (const failing of ['readFailure', 'recordFailure'] as const) {
+        const { provider, alice, administration } = aliceOnInstallationWithoutResourceServerClient();
+        const failure = new Error('The record failed.');
+        provider.resourceServerClient[failing] = failure;
+
+        await assert.rejects(registerForAlice(administration), (error) => error === failure);
+
+        assert.ok(!authMethodsOf(provider).includes('none'), `${failing}: a native client was created`);
+        assert.deepEqual([provider.resourceServerClient.recorded, provider.sessionsOf(alice.id)], [[], []], failing);
+      }
     });
   });
 });

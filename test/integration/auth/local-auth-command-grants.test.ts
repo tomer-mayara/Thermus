@@ -21,6 +21,7 @@ import {
   resourceServerClient,
   signedInUserId,
   signIn,
+  storedResourceServerClient,
   userGrant,
 } from '../../support/local-commands.ts';
 import { withRuntime } from '../../support/local-runtime.ts';
@@ -141,6 +142,7 @@ describe('Local auth command, account state, and grants with the real provider',
       assert.deepEqual(await provider.internalAdapter.listSessions(aliceId), []);
       const clients = await withRegistrationSession(auth, alice, (headers) => auth.api.getOAuthClients({ headers }));
       assert.deepEqual(clients?.map(({ client_id, redirect_uris, token_endpoint_auth_method }) => ({ client_id, redirect_uris, token_endpoint_auth_method })), [
+        { client_id: storedResourceServerClient(directory).clientId, redirect_uris: [], token_endpoint_auth_method: 'client_secret_basic' },
         { client_id: clientId, redirect_uris: redirectUris, token_endpoint_auth_method: 'none' },
       ]);
       const browser = new HttpAgent(auth);

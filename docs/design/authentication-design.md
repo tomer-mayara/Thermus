@@ -13,14 +13,16 @@ customer membership administration. It collects no payments: until AUTH-11
 passes its paid gates, the hosted edition uses `BillingFree`, which bills no
 organization. Payment integration remains required work before the paid
 product is complete. HTTP is the first end-to-end delivery
-target. Slice 1, contracts and request isolation, is implemented. In slice 2,
-the local runtime, its persistence, the installation identity, the data-directory
-lock, the HTTP composition, and the offline user and client commands are
-implemented; the other slice 2 work and all later work in this plan are pending. The pinned Better Auth packages are
-proven against the local contracts. The owner resolved the two
-[provider blockers](#resolved-provider-blockers) that the proofs found, so
-slice 2 can continue. The role refinement below records intended rules only; it
-adds no implementation work now.
+target. Slice 1, contracts and request isolation, is implemented. Slice 2, the
+complete local flow, is implemented: the local runtime, its persistence, the
+installation identity, the data-directory lock, the offline user and client
+commands, the bundled sign-in and consent pages, `BetterAuthProvider`, and the
+HTTP composition of the provider routes. All later work in this plan is
+pending. The pinned Better Auth packages are proven against the local
+contracts. The owner resolved the two
+[provider blockers](#resolved-provider-blockers) that the proofs found. The role
+refinement below records intended rules only; it adds no implementation work
+now.
 
 ## Requirements and delivery scope
 
@@ -172,11 +174,19 @@ and `LISTEN_PORT` (default `8080`) through `loadListenAddress(environment)`.
 The listen address does not change the public identity from `PUBLIC_BASE_URL`.
 Until slice 3, `createApplication()` stops the hosted edition with
 `HostedEditionUnavailableError` and loads no local module. The self-hosted
-application serves the MCP resource path through `MCPServer`; until local token
-introspection exists, that endpoint accepts no access token, so every MCP request
-gets `401` with the Bearer challenge. The application writes each MCPServer
+application routes each request by its path. The MCP resource path goes to
+`MCPServer`, which uses `BetterAuthProvider` as its verifier and its access
+resolver. Six public provider routes go to the Better Auth handler: both
+protected-resource metadata paths, the authorization-server metadata, the
+OpenID configuration, `/oauth2/authorize`, and `/oauth2/token`. The bundled
+sign-in, consent, and authorization error pages go to `LocalAuthPages`. Every
+other path gives `404`, also the provider's own sign-in, sign-up, session,
+introspection, and client routes. The application writes each MCPServer
 failure report to the operator log as one error line with the failed step and
-the cause. It forwards no Better Auth route yet.
+the cause. Without a resource-server client for the MCP resource of
+`PUBLIC_BASE_URL`, the MCP endpoint cannot check a token: a request with a valid
+token gets a generic `500`, and its operator report tells the operator to run
+`magumagu clients register`.
 
 Keep the existing low-level stdio API and its tests. Hosted application startup
 rejects stdio. If local stdio is subsequently exposed, bind it explicitly to the
@@ -250,7 +260,7 @@ never silently mint a new identity and reassign retained data. Backup and restor
 preserve the complete database and secrets together. A fresh installation with
 new data starts a new tenant. No generic tenant repository is needed.
 
-The implemented runtime keeps three files in `DATA_DIR`. `data-directory.lock`
+The implemented runtime keeps four files in `DATA_DIR`. `data-directory.lock`
 holds the exclusive lock: an open SQLite write transaction (`BEGIN IMMEDIATE`),
 which the operating system releases when the process ends. Only one connection
 can hold its RESERVED lock, and the lock does not wait. Thus another process
@@ -266,13 +276,46 @@ the installation row, and `user_version` 2 in one transaction. A database with
 schema objects must have a valid installation identity, schema version 2, and a
 valid `auth.secret`; otherwise startup stops with `LocalInstallationError`. The
 runtime gives `clientReference` the installation ID and reports the tenant
-`local:<installation-id>`.
+`local:<installation-id>`. `resource-server-client.json`, also with mode `0600`,
+holds the ID, the secret, and the MCP resource of the installation's
+resource-server client. The provider keeps only a hash of that secret, so the
+installation keeps the secret for the MCP verifier. The first `clients register`
+writes the file; a fresh installation has no such file.
 
 Use Better Auth's MCP/OAuth handler for local authorization and both discovery
 documents. It owns those routes, including protected-resource metadata. The
 application supplies bundled sign-in and consent pages. Do not register a second
 OAuth provider plugin or an independent competing metadata response.
 [Better Auth MCP](https://better-auth.com/docs/plugins/mcp)
+
+`LocalAuthPages` implements the bundled pages: `<base>/sign-in`, which the
+`mcp()` `loginPage` names, `<base>/consent`, which `consentPage` names, and
+`<base>/authorization-error`, which `onAPIError.errorURL` names. The provider
+sends a browser to the sign-in and consent pages with a signed copy of the
+authorization request. Before it shows consent, the page asks the provider's
+`/oauth2/public-client-prelogin` handler to verify that signed query and return
+the client name, and reads the current account through `/get-session`. Both
+routes remain private at the application router. The metadata request omits
+the session cookie: it is a public data read, and a browser GET navigation has
+no origin header for the provider's cookie-bearing POST check. Authentication
+posts retain the original browser cookie and origin. The consent page shows
+the client, the account email, and the requested scopes.
+
+Each page keeps the signed query in a hidden form field. A form
+post goes to the page, and the page sends the provider route a request of its
+own: `/sign-in/email` or `/oauth2/consent`, with the signed copy, through the
+Better Auth handler. The page copies only the cookie, origin, referer,
+user-agent, `Sec-Fetch-*`, and client-address headers. Thus the provider's
+origin check, CSRF check, ban check, and rate limits apply to each post. The page
+answers a provider redirect with `303` and the provider's cookies, and each
+refusal with a page of its own text: it never shows provider text. The pages use
+no script, font, image, or external link, and they send a Content Security
+Policy that allows only their one inline style. The authorization error page
+shows only an error code, for an authorization request that the provider cannot
+send back to the client, such as an unknown client ID or an unregistered
+redirect URI. Form bodies and authorization queries have a 16 KiB limit. The
+pages refuse duplicate required form fields and stop reading an oversized or
+aborted body before they call the provider.
 
 The local auth command also registers approved MCP clients and exact redirect URLs.
 It signs in one selected enabled account through the server API, with that
@@ -281,7 +324,13 @@ session and then deletes the session. The installation, not that account, owns
 each client. Support a documented, tested client set. The implemented command
 registers one public native client for each call, with the `authorization_code`
 grant only, and accepts only `http` redirect URIs on `localhost`, `127.0.0.1`, or
-`[::1]`, without user information or a fragment. Disable network
+`[::1]`, without user information or a fragment. In the same registration
+session, the first call also registers the installation's resource-server
+client: a confidential client with `client_secret_basic` and the
+`client_credentials` grant, as in the provider proof. The command keeps its
+credentials in `resource-server-client.json` and registers a new one only when
+the file has none for the MCP resource of `PUBLIC_BASE_URL`. That client has no
+`client_credentials` scope, so it cannot get tokens; it only introspects. Disable network
 client-metadata discovery and dynamic registration in this edition. Do not
 claim arbitrary MCP client compatibility offline. Persist keys, sessions,
 clients, consents, and grants on the local volume. Local authentication must
@@ -299,6 +348,32 @@ Disabled or missing users have no workspace access. Supported provider
 operations and user-state checks must also prevent disabled users from logging
 in or receiving tokens. A still-valid signature must not let a disabled user
 perform protected work.
+
+`BetterAuthProvider` implements both roles. `verifyAccessToken(token)` first
+checks the JWT in the process with `verifyJwsAccessToken()` from
+`better-auth/oauth2` and the provider's own key set from `auth.api.getJwks()`:
+type `at+jwt`, algorithm EdDSA, the exact issuer, the MCP resource in the
+audience, and the time claims. The token must also have `sub`, `sid`,
+`client_id`, `scope`, `iat`, and `exp`; a token without `sid` gets no session
+check at introspection. Only then does the provider introspect the token
+through the Better Auth handler with the resource-server client. The local check
+comes first because the pinned introspection answers `500` for a changed
+payload, a key of another installation, or `alg: none`, and a forged token must
+give `401`, not look like an outage. A failed check gives
+`InvalidAccessTokenError` (`401`). A missing resource-server client, a refused
+introspection request, or a failed key-set read is unexpected: the client gets
+a generic `500`, and the operator gets a `token-verification` report. The
+identity has the authority `better-auth:<installation-id>`, so it does not
+change with `PUBLIC_BASE_URL`. `resolve(user)` reads the current user with
+`internalAdapter.findUserById()` for each request. A missing or banned user, or
+an identity of another authority, gets the denial `account-inactive` (`403`).
+Each enabled user gets the same context: the tenant `local:<installation-id>`
+and one grant, role `user` with the permission `product:access`.
+
+The provider limits `/oauth2/introspect` to 100 requests in 60 seconds for each
+client address. The MCP verifier introspects once for each MCP request in the
+server process, so `rateLimit.customRules` turns off the limit for that route
+only. The HTTP router does not forward the route, so no other client reaches it.
 
 The local edition issues no offline grants and no refresh tokens. Each MCP
 access token carries the `sid` of the browser session that authorized it, and
@@ -343,12 +418,14 @@ native SQLite package is needed.
 | `database` | A `node:sqlite` `DatabaseSync`. Run `getMigrations(options)` and `runMigrations()` before `betterAuth(options)`; otherwise the provider logs a false schema error. `compileMigrations()` gives the SQL to ship. |
 | `telemetry` | `{ enabled: false }`. The proofs replace `fetch` with a blocker and record no outbound request. |
 | `emailAndPassword` | `{ enabled: true, disableSignUp: true }` with no `sendResetPassword`. Signup gives `400 EMAIL_PASSWORD_SIGN_UP_DISABLED` over HTTP and from the server API. Email reset gives `400 RESET_PASSWORD_DISABLED`. |
-| `rateLimit` | `{ enabled: true }`. Without it, limits apply only when `NODE_ENV=production`. The memory store is shared by the whole process. |
+| `rateLimit` | `{ enabled: true, customRules: { '/oauth2/introspect': false } }`. Without `enabled`, limits apply only when `NODE_ENV=production`. The memory store is shared by the whole process. The custom rule turns off the limit of the introspection route only, which the MCP verifier calls in the process for each MCP request and the HTTP router does not forward. |
+| `onAPIError.errorURL` | `<base>/authorization-error`, the bundled authorization error page. Without it, the provider sends an authorization request that it cannot return to the client, such as an unknown client ID, to its own `/error` page, which links to the Better Auth site. |
 | `advanced.ipAddress.ipAddressHeaders` | One header that the HTTP bridge sets from the socket address after it removes any copy from the client. Without a client address, all clients share one bucket for each path. |
 | `advanced.disableOriginCheck` | `false`. Without it, `NODE_ENV=test`, or `TEST` with a value other than `false`, turns off the origin and CSRF checks. |
 | `disabledPaths` | The admin, client-management, client-secret rotation, and session-JWT (`/token`) routes. It refuses exact paths with `404` on HTTP only; server API calls still work. It cannot match routes with parameters, so the HTTP bridge must forward only the provider routes that the local edition uses. |
 | `plugins` | `admin()`, `jwt()`, and `mcp()` with the options below. Dynamic registration stays off, and no client-metadata plugin is installed. |
-| `mcp()` `resource`, `loginPage`, `consentPage` | `<base>/mcp` and the bundled sign-in and consent pages. |
+| `mcp()` `resource`, `loginPage`, `consentPage` | `<base>/mcp` and the bundled sign-in and consent pages, `<base>/sign-in` and `<base>/consent`. |
+| `mcp()` `allowPublicClientPrelogin` | `true`, so the bundled consent page can verify a signed authorization query before showing the client name. The application router keeps both public-client lookup routes private. |
 | `mcp()` `scopes` | `["openid", "profile", "email"]`, without `offline_access`. An authorization request with `offline_access` returns to the client with `invalid_scope`, client registration refuses that scope, and no token response has a refresh token. |
 | `mcp()` `grantTypes` | `["authorization_code", "client_credentials"]`, without `refresh_token`. A refresh request gives `400 unsupported_grant_type`, client registration refuses the refresh grant, and the metadata does not list it. The `grant_types` of a client cannot prevent refresh tokens, because the provider lets each `authorization_code` client refresh. |
 | `mcp()` `clientReference` | A function that returns the installation ID. Each registered client gets it as `reference_id` and has no `user_id`, so the installation owns the client. |
@@ -459,6 +536,14 @@ These findings apply to the local runtime:
   The provider's token clean-up hook then does nothing, so session deletion
   through `internalAdapter` leaves token records unchanged. Introspection still
   ends tokens that carry a `sid`.
+- Introspection answers `500` and logs a stack for a JWT with a changed payload,
+  a key of another installation, or `alg: none`; it answers `{ "active": false }`
+  for a value that is not a JWT and for an ID token. The MCP verifier therefore
+  checks the JWT itself before it introspects.
+- The provider sends an authorization request with an unknown client ID or an
+  unregistered redirect URI to `onAPIError.errorURL`, because it cannot send the
+  error to the client. A client ID that is a URL is an unknown client: without a
+  client-metadata plugin, the provider fetches nothing.
 
 #### Provider environment variables
 
@@ -704,7 +789,7 @@ shows a separate role, invariant, or lifecycle.
 | `src/mcp/identity-verifier-sdk-adapter.ts` | Map additional claims through `AuthInfo.extra`. | 1 |
 | `src/mcp/mcp-server.ts` | Resolve access after verification and bind context to request handlers. | 1 |
 | `src/config/deployment-config.ts` | Add `DeploymentConfig` and `loadDeploymentConfig()`. | 1 |
-| `src/auth-better-auth/better-auth-provider.ts` | Add `BetterAuthProvider`, implementing both MCP roles. | 2 |
+| `src/auth-better-auth/better-auth-provider.ts` | Implemented: `BetterAuthProvider`, the local verifier and access resolver. It checks the JWT with the provider's own key set, introspects the token with the resource-server client, and reads the current user for each request. | 2 |
 | `src/auth-better-auth/better-auth-runtime.ts` | Add provider composition and database/lock cleanup functions when distinct from provider behavior. Implemented: `localProviderOptions()`, which stops startup with `ProviderEnvironmentError` for the provider variables that it refuses, and `openBetterAuthRuntime()`. | 2 |
 | `src/auth-better-auth/data-directory-lock.ts` | Implemented: `lockDataDirectory()`, the exclusive data-directory lock that the runtime and the local commands share. | 2 |
 | `src/auth-better-auth/local-installation.ts` | Implemented: `openLocalInstallation()`, which owns the database file, the secret file, the shipped migrations, and the singleton installation identity. | 2 |
@@ -712,7 +797,7 @@ shows a separate role, invariant, or lifecycle.
 | `src/auth-better-auth/local-auth-command-line.ts` | Implemented: `parseLocalAuthCommand()` turns the arguments into one command record or a usage error that repeats no argument. | 2 |
 | `src/auth-better-auth/local-user-administration.ts` | Implemented: `LocalUserAdministration` owns the account lifecycle, approved client registration, the supported provider operations, and per-user revocation; argument parsing stays in the CLI. | 2 |
 | `src/terminal/hidden-line-input.ts` | Implemented: `HiddenLineInput`, the hidden password prompt on a terminal and line input from a pipe. | 2 |
-| `src/auth-better-auth/local-auth-pages.ts` | Bundled sign-in and consent handlers. | 2 |
+| `src/auth-better-auth/local-auth-pages.ts` | Implemented: `LocalAuthPages`, the bundled sign-in, consent, and authorization error pages, which send each form post to the provider route through the Better Auth handler and adapt the answer. | 2 |
 | `migrations/auth-local/0001-better-auth.sql` | Generated schema for pinned provider configuration, including the selected admin plugin/account-status storage if used. | 2 |
 | `migrations/auth-local/0002-installation.sql` | Singleton installation identity only; no restriction on user count. | 2 |
 | `src/auth-workos/workos-auth-provider.ts` | Add `WorkOSAuthProvider`, verification and current access resolution. | 3 |
@@ -722,8 +807,8 @@ shows a separate role, invariant, or lifecycle.
 | `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. | 3–4 |
 | `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. | 3–4 |
 | `docs/implementation/hosted-organization-setup.md` | Document external operator setup, Super Admin replacement/recovery, MFA, and change records. | 4 |
-| `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. | 2–3 |
-| `src/http/server.ts` | Node HTTP bridge, routing, hosted metadata, and shutdown. | 2–3 |
+| `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. | 2–3 |
+| `src/http/server.ts` | Node HTTP bridge and shutdown, implemented; hosted metadata in slice 3. | 2–3 |
 | `src/index.ts` | Replace hello-world startup; dispatch server and operator commands. | 2–4 |
 | `src/billing/billing.ts` | `Billing` interface and `BillingState`. Implemented. | 6 |
 | `src/billing/billing-free.ts` | `BillingFree`, which bills no organization, until AUTH-11 replaces it in the hosted composition. Implemented. | 6 |

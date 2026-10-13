@@ -5,16 +5,27 @@ import { DatabaseSync } from 'node:sqlite';
 
 const DATABASE_FILE = 'auth.sqlite';
 const SECRET_FILE = 'auth.secret';
+const RESOURCE_SERVER_CLIENT_FILE = 'resource-server-client.json';
 const MIGRATIONS = ['0001-better-auth.sql', '0002-installation.sql'];
 const SCHEMA_VERSION = MIGRATIONS.length;
 const OWNER_ONLY = 0o600;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const GENERATED_SECRET = /^[A-Za-z0-9_-]{43}$/;
 
+export interface StoredResourceServerClient {
+  readonly clientId: string;
+  readonly clientSecret: string;
+  readonly resource: string;
+}
+
 export interface LocalInstallation {
   readonly id: string;
   readonly secret: string;
   readonly database: DatabaseSync;
+  // Gives undefined when the data directory has no resource-server client.
+  readResourceServerClient(): StoredResourceServerClient | undefined;
+  // Replaces a stored client. The client is durable when this returns.
+  writeResourceServerClient(client: StoredResourceServerClient): void;
   close(): void;
 }
 
@@ -37,6 +48,8 @@ export function openLocalInstallation(directory: string): LocalInstallation {
     return {
       ...identity,
       database,
+      readResourceServerClient: () => readResourceServerClient(directory),
+      writeResourceServerClient: (client) => writeResourceServerClient(directory, client),
       close: () => {
         if (database.isOpen) database.close();
       },
@@ -105,13 +118,8 @@ function readMigration(name: string): string {
 }
 
 function readSecret(directory: string): string | undefined {
-  let content: string;
-  try {
-    content = readFileSync(join(directory, SECRET_FILE), 'utf8');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
-    throw error;
-  }
+  const content = readFileIfPresent(join(directory, SECRET_FILE));
+  if (content === undefined) return undefined;
   const secret = content.endsWith('\n') ? content.slice(0, -1) : content;
   if (!GENERATED_SECRET.test(secret)) throw invalidSecret();
   return secret;
@@ -119,13 +127,60 @@ function readSecret(directory: string): string | undefined {
 
 function writeNewSecret(directory: string): string {
   const secret = randomBytes(32).toString('base64url');
-  const path = join(directory, SECRET_FILE);
+  replaceOwnerOnlyFile(directory, SECRET_FILE, `${secret}\n`);
+  return secret;
+}
+
+function readResourceServerClient(directory: string): StoredResourceServerClient | undefined {
+  const content = readFileIfPresent(join(directory, RESOURCE_SERVER_CLIENT_FILE));
+  if (content === undefined) return undefined;
+  const client = storedClientOf(parsedJson(content));
+  if (client === undefined) throw invalidResourceServerClient();
+  return client;
+}
+
+function writeResourceServerClient(directory: string, { clientId, clientSecret, resource }: StoredResourceServerClient): void {
+  replaceOwnerOnlyFile(directory, RESOURCE_SERVER_CLIENT_FILE, `${JSON.stringify({ clientId, clientSecret, resource })}\n`);
+}
+
+// A parse error can quote the content, and the content has the client secret, so the error is not kept.
+function parsedJson(content: string): unknown {
+  try {
+    return JSON.parse(content);
+  } catch {
+    return undefined;
+  }
+}
+
+function storedClientOf(value: unknown): StoredResourceServerClient | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const { clientId, clientSecret, resource } = value as Record<string, unknown>;
+  return isFilledString(clientId) && isFilledString(clientSecret) && isFilledString(resource) && URL.canParse(resource)
+    ? { clientId, clientSecret, resource }
+    : undefined;
+}
+
+function isFilledString(value: unknown): value is string {
+  return typeof value === 'string' && value !== '';
+}
+
+function readFileIfPresent(path: string): string | undefined {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw error;
+  }
+}
+
+// The rename replaces the file in one step, and the sync of the directory makes the rename durable.
+function replaceOwnerOnlyFile(directory: string, name: string, content: string): void {
+  const path = join(directory, name);
   const temporary = `${path}.new`;
   rmSync(temporary, { force: true });
-  writeFileSync(temporary, `${secret}\n`, { mode: OWNER_ONLY, flag: 'wx', flush: true });
+  writeFileSync(temporary, content, { mode: OWNER_ONLY, flag: 'wx', flush: true });
   renameSync(temporary, path);
   syncDirectory(directory);
-  return secret;
 }
 
 function syncDirectory(directory: string): void {
@@ -162,5 +217,12 @@ function missingSecret(): LocalInstallationError {
 function invalidSecret(): LocalInstallationError {
   return new LocalInstallationError(
     `The ${SECRET_FILE} file in the data directory is not valid. Restore it from the same backup as the database.`,
+  );
+}
+
+function invalidResourceServerClient(): LocalInstallationError {
+  return new LocalInstallationError(
+    `The ${RESOURCE_SERVER_CLIENT_FILE} file in the data directory is not valid. `
+      + 'Restore the complete data directory from a backup, or remove the file and run magumagu clients register again.',
   );
 }

@@ -11,7 +11,7 @@ describe('LocalUserAdministration revocation', () => {
       const { alice, bob } = twoUsersWithSessions(provider);
       const answers = new PasswordAnswers('alice-password-2');
 
-      const account = await new LocalUserAdministration(provider.auth).resetPassword('alice@example.com', answers.read);
+      const account = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).resetPassword('alice@example.com', answers.read);
 
       assert.deepEqual(account, { id: alice.id, email: 'alice@example.com', disabled: false });
       assert.equal(provider.credentials.get(alice.id), LocalProviderDouble.hashOf('alice-password-2'));
@@ -27,7 +27,7 @@ describe('LocalUserAdministration revocation', () => {
       const dana = provider.addUser('dana@example.com', 'dana-password-1', true);
       provider.startSession(dana.id);
 
-      const account = await new LocalUserAdministration(provider.auth).resetPassword('dana@example.com', new PasswordAnswers('dana-password-2').read);
+      const account = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).resetPassword('dana@example.com', new PasswordAnswers('dana-password-2').read);
 
       assert.deepEqual(account, { id: dana.id, email: 'dana@example.com', disabled: true });
       assert.equal(provider.users.get(dana.id)?.banned, true);
@@ -41,7 +41,7 @@ describe('LocalUserAdministration revocation', () => {
       const before = providerSnapshot(provider);
       const answers = new PasswordAnswers('carol-password-1');
 
-      await assert.rejects(new LocalUserAdministration(provider.auth).resetPassword('carol@example.com', answers.read), rejectsWith('unknown-account'));
+      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).resetPassword('carol@example.com', answers.read), rejectsWith('unknown-account'));
 
       assert.equal(answers.asked, 0);
       assert.deepEqual(providerSnapshot(provider), before);
@@ -52,7 +52,7 @@ describe('LocalUserAdministration revocation', () => {
       twoUsersWithSessions(provider);
       const before = providerSnapshot(provider);
 
-      await assert.rejects(new LocalUserAdministration(provider.auth).resetPassword('alice@example.com', new PasswordAnswers('short').read), rejectsWith('invalid-password'));
+      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).resetPassword('alice@example.com', new PasswordAnswers('short').read), rejectsWith('invalid-password'));
 
       assert.deepEqual(providerSnapshot(provider), before);
     });
@@ -64,7 +64,7 @@ describe('LocalUserAdministration revocation', () => {
       const before = providerSnapshot(provider);
       const answers = new PasswordAnswers('erin-password-1');
 
-      await assert.rejects(new LocalUserAdministration(provider.auth).resetPassword('erin@example.com', answers.read), rejectsWith('no-password-login'));
+      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).resetPassword('erin@example.com', answers.read), rejectsWith('no-password-login'));
 
       assert.equal(answers.asked, 0);
       assert.deepEqual(providerSnapshot(provider), before);
@@ -76,7 +76,7 @@ describe('LocalUserAdministration revocation', () => {
       const provider = new LocalProviderDouble();
       const { alice, bob } = twoUsersWithSessions(provider);
 
-      const account = await new LocalUserAdministration(provider.auth).disableUser('bob@example.com');
+      const account = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).disableUser('bob@example.com');
 
       assert.deepEqual(account, { id: bob.id, email: 'bob@example.com', disabled: true });
       assert.deepEqual({ banned: provider.users.get(bob.id)?.banned, banExpires: provider.users.get(bob.id)?.banExpires }, { banned: true, banExpires: null });
@@ -91,7 +91,7 @@ describe('LocalUserAdministration revocation', () => {
       const dana = provider.addUser('dana@example.com', 'dana-password-1', true);
       provider.startSession(dana.id);
 
-      const account = await new LocalUserAdministration(provider.auth).disableUser('dana@example.com');
+      const account = await new LocalUserAdministration(provider.auth, provider.resourceServerClient).disableUser('dana@example.com');
 
       assert.deepEqual(account, { id: dana.id, email: 'dana@example.com', disabled: true });
       assert.deepEqual(provider.sessionsOf(dana.id), []);
@@ -102,7 +102,7 @@ describe('LocalUserAdministration revocation', () => {
       twoUsersWithSessions(provider);
       const before = providerSnapshot(provider);
 
-      await assert.rejects(new LocalUserAdministration(provider.auth).disableUser('carol@example.com'), rejectsWith('unknown-account'));
+      await assert.rejects(new LocalUserAdministration(provider.auth, provider.resourceServerClient).disableUser('carol@example.com'), rejectsWith('unknown-account'));
 
       assert.deepEqual(providerSnapshot(provider), before);
     });

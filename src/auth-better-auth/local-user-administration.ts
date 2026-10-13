@@ -1,5 +1,5 @@
 import { applySetCookies } from 'better-auth/cookies';
-import type { LocalAuth } from './better-auth-runtime.ts';
+import type { LocalAuth, ResourceServerClientRecord } from './better-auth-runtime.ts';
 
 export interface LocalAccount {
   readonly id: string;
@@ -14,6 +14,7 @@ export interface ApprovedClient {
 
 export interface RegisteredClient extends ApprovedClient {
   readonly clientId: string;
+  readonly resourceServerClientRegistered: boolean;
 }
 
 // The administration asks for a password only after it has checked the target.
@@ -72,9 +73,11 @@ const LOOPBACK_REDIRECT_URI = /^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\
 // Only supported Better Auth operations: the provider hashes each password and owns its tables.
 export class LocalUserAdministration {
   private readonly auth: LocalAuth;
+  private readonly resourceServerClient: ResourceServerClientRecord;
 
-  constructor(auth: LocalAuth) {
+  constructor(auth: LocalAuth, resourceServerClient: ResourceServerClientRecord) {
     this.auth = auth;
+    this.resourceServerClient = resourceServerClient;
   }
 
   async addUser(email: string, password: PasswordSource): Promise<LocalAccount> {
@@ -125,6 +128,7 @@ export class LocalUserAdministration {
     const session = await this.signIn(account.email, await password());
     await using cleanup = new AsyncDisposableStack();
     cleanup.defer(async () => (await this.auth.$context).internalAdapter.deleteSession(session.token));
+    const resourceServerClientRegistered = await this.registerMissingResourceServerClient(session);
     const registered = await this.auth.api.adminCreateOAuthClient({
       headers: session.headers,
       body: {
@@ -136,7 +140,23 @@ export class LocalUserAdministration {
         application_type: 'native',
       },
     });
-    return { clientId: registered.client_id, name: client.name, redirectUris: [...client.redirectUris] };
+    return { clientId: registered.client_id, name: client.name, redirectUris: [...client.redirectUris], resourceServerClientRegistered };
+  }
+
+  // The provider keeps only a hash of the client secret, so the record keeps the secret for the MCP server.
+  private async registerMissingResourceServerClient(session: RegistrationSession): Promise<boolean> {
+    if (this.resourceServerClient.current() !== undefined) return false;
+    const registered = await this.auth.api.adminCreateOAuthClient({
+      headers: session.headers,
+      body: {
+        client_name: 'Magumagu MCP resource server',
+        token_endpoint_auth_method: 'client_secret_basic',
+        grant_types: ['client_credentials'],
+      },
+    });
+    if (!registered.client_secret) throw new Error('The provider gave no secret for the resource-server client.');
+    this.resourceServerClient.record({ clientId: registered.client_id, clientSecret: registered.client_secret });
+    return true;
   }
 
   private async findAccount(email: string): Promise<LocalAccount | undefined> {
