@@ -11,13 +11,22 @@ const GRANT_ACTIONS: readonly GrantAction[] = Object.freeze(['grant', 'revoke'])
 // The permission that a member needs in the organization to grant, revoke, or invite each customer role. User gives
 // none of them, and no customer permission manages Super Admin.
 const MANAGING_PERMISSION: Readonly<Record<AssignableRole, string>> = Object.freeze({ user: 'user-grants:manage', admin: 'admin-grants:manage' });
+const BILLING_PERMISSION = 'billing:manage';
 
 // The customer roles that the user of these memberships manages in the organization: only from an active membership
 // there, and only from the permissions of its current grants, so that no role inherits another.
 export function managedRoles(memberships: readonly OrganizationMembership[], organizationId: string): readonly AssignableRole[] {
-  const membership = memberships.find((candidate) => candidate.organizationId === organizationId && candidate.active);
-  const permissions = new Set(membership?.grants.flatMap((grant) => grant.permissions));
+  const permissions = activePermissionsIn(memberships, organizationId);
   return ASSIGNABLE_ROLES.filter((role) => permissions.has(MANAGING_PERMISSION[role]));
+}
+
+export function managesBilling(memberships: readonly OrganizationMembership[], organizationId: string): boolean {
+  return activePermissionsIn(memberships, organizationId).has(BILLING_PERMISSION);
+}
+
+function activePermissionsIn(memberships: readonly OrganizationMembership[], organizationId: string): ReadonlySet<string> {
+  const membership = memberships.find((candidate) => candidate.organizationId === organizationId && candidate.active);
+  return new Set(membership?.grants.flatMap((grant) => grant.permissions));
 }
 
 // The role and the action of a request, when the actor manages that role; otherwise undefined. Any other text, such as

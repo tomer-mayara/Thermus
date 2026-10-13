@@ -1,4 +1,5 @@
 import type { AuthenticatedUser } from '../../../../src/auth/access-context.ts';
+import type { BillingState } from '../../../../src/billing/billing.ts';
 import type { OrganizationService } from '../../../../src/hosted-admin/account-routes.ts';
 import type { InvitationOverview, MemberOverview } from '../../../../src/organizations/administration-overviews.ts';
 import type { ChangeResult } from '../../../../src/organizations/change-records.ts';
@@ -22,6 +23,7 @@ export interface AdministrationSetup {
   readonly members?: MemberOverview | AdministrationRefusal | Error;
   readonly invitations?: InvitationOverview | AdministrationRefusal | Error;
   readonly change?: ChangeResult | Error;
+  readonly billing?: BillingState | AdministrationRefusal | Error;
 }
 
 export interface AdministrationCall {
@@ -74,6 +76,10 @@ export class OrganizationAdministrationDouble implements OrganizationService {
 
   async revokeInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult> {
     return this.answer({ operation: 'revokeInvitation', actor, request }, this.administration.change ?? 'applied');
+  }
+
+  async billingState(actor: Actor, organizationId: string): Promise<BillingState | AdministrationRefusal> {
+    return this.answer({ operation: 'billingState', actor, request: organizationId }, this.administration.billing ?? 'denied');
   }
 
   private answer<T>(call: AdministrationCall, configured: T | Error): T {

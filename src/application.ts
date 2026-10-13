@@ -136,7 +136,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     publicBaseUrl: config.publicBaseUrl,
     session: parts.session,
     accessResolver: parts.accessResolver,
-    organizations: new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords }),
+    organizations: new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing }),
     reportFailure: account.reportFailure,
     operation: account.operation,
   });

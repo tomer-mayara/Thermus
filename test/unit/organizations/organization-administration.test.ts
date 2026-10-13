@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-context.ts';
+import type { Billing } from '../../../src/billing/billing.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
 import type { OrganizationMembership } from '../../../src/organizations/organization-directory.ts';
 import { OrganizationDirectoryDouble } from './fixtures/organization-directory-double.ts';
@@ -28,9 +29,14 @@ const miaMemberships: readonly OrganizationMembership[] = [
   membership('org-f', [superAdminGrant]),
 ];
 
+const billing: Billing = {
+  stateOf: () => assert.fail('an organization list or selection reads no billing'),
+  updateSeats: () => assert.fail('an organization list or selection changes no billing'),
+};
+
 function administrationWith(memberships: ReadonlyMap<string, readonly OrganizationMembership[] | Error>) {
   const directory = new OrganizationDirectoryDouble(memberships);
-  return { directory, administration: new OrganizationAdministration({ directory, records: { record: () => assert.fail('a read keeps no change record') } }) };
+  return { directory, administration: new OrganizationAdministration({ directory, records: { record: () => assert.fail('a read keeps no change record') }, billing }) };
 }
 
 describe('OrganizationAdministration', () => {

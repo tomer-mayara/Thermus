@@ -51,7 +51,12 @@ const INVITATION_STATES: readonly InvitationState[] = Object.freeze(['pending', 
 export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string, managed: readonly AssignableRole[]): Promise<MemberOverview> {
   const members = await membersOf(directory, organizationId);
   const entries = members.map((member) => memberEntry(member, managed));
-  return Object.freeze({ organizationId, members: Object.freeze(entries), activeUserSeats: members.filter(holdsUserSeat).length });
+  return Object.freeze({ organizationId, members: Object.freeze(entries), activeUserSeats: userSeatsOf(members) });
+}
+
+// From every member page, so that a failed page fails the count and no partial count looks complete.
+export async function activeUserSeatCount(directory: OrganizationDirectory, organizationId: string): Promise<number> {
+  return userSeatsOf(await membersOf(directory, organizationId));
 }
 
 export async function readInvitationOverview(directory: OrganizationDirectory, organizationId: string, managed: readonly AssignableRole[]): Promise<InvitationOverview> {
@@ -63,6 +68,10 @@ export async function readInvitationOverview(directory: OrganizationDirectory, o
     invitableRoles: Object.freeze([...managed]),
     identityPolicy: directory.invitationIdentityPolicy,
   });
+}
+
+function userSeatsOf(members: readonly OrganizationMember[]): number {
+  return members.filter(holdsUserSeat).length;
 }
 
 // A seat is an active membership with User. Each membership counts once, also with Admin or Super Admin.

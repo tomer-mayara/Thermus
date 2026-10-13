@@ -7,12 +7,12 @@ import type {
 } from '../organizations/organization-administration.ts';
 import { grantChangeIn, invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
 import { accessDeniedPage, noticePage, seeOther, type NoticeName } from './account-pages.ts';
-import { invitationsPage, membersPage } from './administration-pages.ts';
+import { billingPage, invitationsPage, membersPage } from './administration-pages.ts';
 import type { SignedInBrowserSession } from './browser-session.ts';
 
 export type AdministrationService = Pick<
   OrganizationAdministration,
-  'memberOverview' | 'changeGrant' | 'invitationOverview' | 'sendInvitation' | 'resendInvitation' | 'revokeInvitation'
+  'memberOverview' | 'changeGrant' | 'invitationOverview' | 'sendInvitation' | 'resendInvitation' | 'revokeInvitation' | 'billingState'
 >;
 
 export type AdministrationHandler = (request: Request, session: SignedInBrowserSession, context: RequestContext) => Promise<Response>;
@@ -45,6 +45,7 @@ interface AdministrationPaths {
   readonly send: string;
   readonly resend: string;
   readonly revoke: string;
+  readonly billing: string;
 }
 
 const REFUSAL_NOTICES: Readonly<Record<Exclude<ChangeResult, 'applied' | 'unchanged'>, NoticeName>> = {
@@ -55,9 +56,9 @@ const REFUSAL_NOTICES: Readonly<Record<Exclude<ChangeResult, 'applied' | 'unchan
   unsupported: 'changeUnsupported',
 };
 
-// The member and invitation pages and their changes. Each runs after the account routes resolved current access to the
-// organization that the session selected, so that only that organization can be the organization of a request. The
-// service then checks the actor and each target again with current reads.
+// The member, invitation, and billing pages, and the member and invitation changes. Each runs after the account routes
+// resolved current access to the organization that the session selected, so that only that organization can be the
+// organization of a request. The service then checks the actor and each target again with current reads.
 export class AdministrationRoutes {
   private readonly organizations: AdministrationService;
   private readonly publicOrigin: string;
@@ -77,6 +78,7 @@ export class AdministrationRoutes {
       send: pathOf('invitations/send'),
       resend: pathOf('invitations/resend'),
       revoke: pathOf('invitations/revoke'),
+      billing: pathOf('billing'),
     };
     this.routes = new Map<string, ScopedRoute>([
       [this.paths.members, (request, scope) => this.membersPage(request, scope)],
@@ -85,6 +87,7 @@ export class AdministrationRoutes {
       [this.paths.send, (request, scope) => this.sendInvitation(request, scope)],
       [this.paths.resend, (request, scope) => this.resendInvitation(request, scope)],
       [this.paths.revoke, (request, scope) => this.revokeInvitation(request, scope)],
+      [this.paths.billing, (request, scope) => this.billingPage(request, scope)],
     ]);
   }
 
@@ -116,6 +119,10 @@ export class AdministrationRoutes {
       actions: { send: this.paths.send, resend: this.paths.resend, revoke: this.paths.revoke },
       membersPage: this.paths.members,
     }));
+  }
+
+  private billingPage(request: Request, scope: AdministrationScope): Promise<Response> {
+    return this.page(request, () => this.organizations.billingState(scope.actor, scope.organizationId), (state) => billingPage(state));
   }
 
   private changeGrant(request: Request, scope: AdministrationScope): Promise<Response> {
