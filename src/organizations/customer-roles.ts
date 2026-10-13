@@ -1,7 +1,6 @@
 import type { RoleGrant } from '../auth/access-context.ts';
 import type { AssignableRole, GrantAction, OrganizationMembership } from './organization-directory.ts';
 
-// A grant or a revoke of one customer role.
 export interface RoleChange {
   readonly role: AssignableRole;
   readonly action: GrantAction;

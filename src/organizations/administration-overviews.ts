@@ -42,14 +42,12 @@ export interface InvitationEntry {
 export interface InvitationOverview {
   readonly organizationId: string;
   readonly invitations: readonly InvitationEntry[];
-  // The roles that the actor can invite.
   readonly invitableRoles: readonly AssignableRole[];
   readonly identityPolicy: InvitationIdentityPolicy;
 }
 
 const INVITATION_STATES: readonly InvitationState[] = Object.freeze(['pending', 'accepted', 'revoked', 'expired']);
 
-// The members of the organization, each with the changes of the managed roles, and the active User seats.
 export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string, managed: readonly AssignableRole[]): Promise<MemberOverview> {
   const members = await membersOf(directory, organizationId);
   const entries = members.map((member) => memberEntry(member, managed));

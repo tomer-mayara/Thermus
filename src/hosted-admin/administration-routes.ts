@@ -24,7 +24,6 @@ export interface AdministrationRoutesOptions {
   readonly organizationsPage: string;
 }
 
-// The actor and the organization of one administration request, and the form token of its session.
 interface AdministrationScope {
   readonly actor: Actor;
   readonly organizationId: string;
@@ -36,8 +35,7 @@ type ScopedRoute = (request: Request, scope: AdministrationScope) => Promise<Res
 interface ChangeRoute<Fields extends { readonly organizationId: string }> {
   readonly parse: (form: URLSearchParams, csrfToken: string) => Fields | FormRefusal;
   readonly change: (actor: Actor, fields: Fields) => Promise<ChangeResult>;
-  // The page that shows the current state after the change.
-  readonly page: string;
+  readonly pageAfterChange: string;
 }
 
 interface AdministrationPaths {
@@ -121,19 +119,19 @@ export class AdministrationRoutes {
   }
 
   private changeGrant(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: grantChangeIn, change: (actor, fields) => this.organizations.changeGrant(actor, fields), page: this.paths.members });
+    return this.changeOnPost(request, scope, { parse: grantChangeIn, change: (actor, fields) => this.organizations.changeGrant(actor, fields), pageAfterChange: this.paths.members });
   }
 
   private sendInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationIn, change: (actor, fields) => this.organizations.sendInvitation(actor, fields), page: this.paths.invitations });
+    return this.changeOnPost(request, scope, { parse: invitationIn, change: (actor, fields) => this.organizations.sendInvitation(actor, fields), pageAfterChange: this.paths.invitations });
   }
 
   private resendInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.resendInvitation(actor, fields), page: this.paths.invitations });
+    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.resendInvitation(actor, fields), pageAfterChange: this.paths.invitations });
   }
 
   private revokeInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields), page: this.paths.invitations });
+    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields), pageAfterChange: this.paths.invitations });
   }
 
   private async page<Overview extends object>(request: Request, read: () => Promise<Overview | AdministrationRefusal>, render: (overview: Overview) => Response): Promise<Response> {
@@ -154,7 +152,7 @@ export class AdministrationRoutes {
     if (typeof fields === 'string') return noticePage(fields);
     if (fields.organizationId !== scope.organizationId) return noticePage('changeStale');
     const outcome = await route.change(scope.actor, fields);
-    if (outcome === 'applied' || outcome === 'unchanged') return seeOther(new URL(route.page, this.publicOrigin).href);
+    if (outcome === 'applied' || outcome === 'unchanged') return seeOther(new URL(route.pageAfterChange, this.publicOrigin).href);
     return noticePage(REFUSAL_NOTICES[outcome]);
   }
 }
