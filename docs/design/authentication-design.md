@@ -174,7 +174,9 @@ Until slice 3, `createApplication()` stops the hosted edition with
 `HostedEditionUnavailableError` and loads no local module. The self-hosted
 application serves the MCP resource path through `MCPServer`; until local token
 introspection exists, that endpoint accepts no access token, so every MCP request
-gets `401` with the Bearer challenge. It forwards no Better Auth route yet.
+gets `401` with the Bearer challenge. The application writes each MCPServer
+failure report to the operator log as one error line with the failed step and
+the cause. It forwards no Better Auth route yet.
 
 Keep the existing low-level stdio API and its tests. Hosted application startup
 rejects stdio. If local stdio is subsequently exposed, bind it explicitly to the

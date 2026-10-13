@@ -1,7 +1,7 @@
 import type { AccessResolver } from './auth/access-context.ts';
 import type { DeploymentConfig } from './config/deployment-config.ts';
 import { InvalidAccessTokenError, type IdentityVerifier } from './mcp/identity-verifier.ts';
-import { MCPServer } from './mcp/mcp-server.ts';
+import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
 
@@ -12,6 +12,7 @@ export interface Application {
 
 export interface ApplicationLogger {
   info(message: string): void;
+  error(message: string): void;
 }
 
 export class HostedEditionUnavailableError extends Error {
@@ -37,6 +38,10 @@ export async function createApplication(config: DeploymentConfig, logger: Applic
   return createSelfHostedApplication(config, logger);
 }
 
+export function operatorFailureReporter(logger: ApplicationLogger): FailureReporter {
+  return ({ step, cause }) => logger.error(`An MCP request failed unexpectedly in ${step}: ${String(cause)}`);
+}
+
 async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger): Promise<Application> {
   const { openBetterAuthRuntime } = await import('./auth-better-auth/better-auth-runtime.ts');
   await using owned = new AsyncDisposableStack();
@@ -48,6 +53,7 @@ async function createSelfHostedApplication(config: SelfHostedConfig, logger: App
       resourceMetadataUrl: config.resourceMetadataUrl,
       expectedResource: new URL(config.mcpResourceUrl),
     },
+    reportFailure: operatorFailureReporter(logger),
   }), (server) => server.close());
   logger.info(`The self-hosted installation uses tenant ${runtime.tenantId}.`);
   return applicationRecord(routeRequests(new URL(config.mcpResourceUrl).pathname, mcp), owned.move());

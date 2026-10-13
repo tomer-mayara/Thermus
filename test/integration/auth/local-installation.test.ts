@@ -16,10 +16,8 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{1
 
 class RecordingLogger {
   readonly lines: string[] = [];
-
-  info(message: string): void {
-    this.lines.push(message);
-  }
+  readonly info = (message: string): void => { this.lines.push(message); };
+  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
 }
 
 async function startApplication(t: TestContext, directory: string, logger = new RecordingLogger()): Promise<Application> {
@@ -50,7 +48,7 @@ function assertLockIsFree(directory: string): void {
 }
 
 describe('Local installation with the real application and provider', () => {
-  test('Given a fresh data directory, when the application starts, then it reports one local tenant, holds the data-directory lock until it closes, and denies MCP requests', async (t) => {
+  test('Given a fresh data directory, when the application starts, then it reports one local tenant, holds the data-directory lock until it closes, and denies MCP requests without a failure report', async (t) => {
     const directory = dataDirectory(t);
     const logger = new RecordingLogger();
 

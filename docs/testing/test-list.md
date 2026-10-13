@@ -126,6 +126,12 @@ Doubles stand in for the data-directory lock, the local installation, and the pr
 [V] Retained data without `auth.secret`, with an invalid secret, or with another schema version fails closed, writes no new secret, and puts no secret in the message
 [V] A secret and an empty database from an interrupted first start give a new installation identity with that secret
 
+**Application failure reports** (`test/unit/application.test.ts`)
+
+A logger double records the lines that `operatorFailureReporter()` writes.
+
+[V] Gives each MCPServer failure report to the operator as one error line that names the failed step and keeps the cause, also for a cause that is not an error; writes no info line
+
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
 `BillingFree` is the only `Billing` implementation until the owner chooses a payment provider. No paid billing test exists yet; the [AUTH-11 specification](../design/billing-design.md#auth-11-implementation-specification) lists the planned tests.
@@ -415,7 +421,7 @@ These tests run MCPServer with the real access contracts through a test-only pro
 
 These tests run the real application, Better Auth runtime, MCPServer, and provider with SQLite files in temporary data directories.
 
-[V] A fresh data directory gives one logged `local:<installation-id>` tenant; the application holds the data-directory lock until it closes; MCP requests without a token or with a forged token get 401 with the Bearer challenge, and other paths get 404
+[V] A fresh data directory gives one logged `local:<installation-id>` tenant; the application holds the data-directory lock until it closes; MCP requests without a token or with a forged token get 401 with the Bearer challenge and give no failure report, and other paths get 404
 [V] Two applications that start at the same time on a fresh directory: one starts, the other fails with `DataDirectoryInUseError`, and one installation identity exists
 [V] A restart keeps the tenant and the IDs of enabled and disabled accounts
 [V] With zero accounts or only a disabled account, startup succeeds, the disabled account cannot sign in (`BANNED_USER`), and MCP requests stay denied
