@@ -9,7 +9,7 @@ import { ServerProcess, type ServerSettings } from '../../support/server-process
 
 const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;
-const unpinnableProviderVariables: ServerSettings = {
+const refusedProviderVariables: ServerSettings = {
   BETTER_AUTH_SECRETS: '1:environment-secret-0123456789abcdef0123456789',
   BETTER_AUTH_TRUSTED_ORIGINS: 'https://foreign-origin.example',
   BETTER_AUTH_TELEMETRY: 'telemetry-from-the-environment',
@@ -145,8 +145,8 @@ describe('Self-hosted server startup with one persistent installation', () => {
     await assertStopsBeforeListening(partial, /secret/i);
   });
 
-  test('Given a Better Auth variable that the local provider settings cannot pin, when the server starts, then it stops before it listens with an error that names the variable but not its value', { timeout: 60_000 }, async (t) => {
-    for (const [variable, value] of Object.entries(unpinnableProviderVariables)) {
+  test('Given a Better Auth variable that the self-hosted runtime refuses, when the server starts, then it stops before it listens with an error that names the variable but not its value', { timeout: 60_000 }, async (t) => {
+    for (const [variable, value] of Object.entries(refusedProviderVariables)) {
       const server = ServerProcess.launch(t, { ...selfHostedSettings(dataDirectory(t)), [variable]: value });
 
       await assertStopsBeforeListening(server, new RegExp(`FATAL.*${variable}`));

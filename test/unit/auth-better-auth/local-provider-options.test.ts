@@ -16,7 +16,7 @@ const settings: LocalProviderSettings = {
   installationId: '0f6c1e9a-4b7d-4e2a-9c35-8d1f2a6b7e40',
 };
 
-const unpinnableVariables = {
+const refusedVariables = {
   BETTER_AUTH_SECRETS: '1:environment-secret-0123456789abcdef0123456789',
   BETTER_AUTH_TRUSTED_ORIGINS: 'https://foreign-origin.example',
   BETTER_AUTH_TELEMETRY: 'telemetry-from-the-environment',
@@ -30,7 +30,7 @@ test('Given the local provider settings, when the provider options are built, th
   assert.equal(options.advanced.disableOriginCheck, false);
 });
 
-for (const [variable, value] of Object.entries(unpinnableVariables)) {
+for (const [variable, value] of Object.entries(refusedVariables)) {
   test(`Given ${variable} with a value in the process environment, when the provider options are built, then they throw ProviderEnvironmentError that names the variable but not its value`, (t) => {
     setProcessEnvironment(t, { [variable]: value });
 

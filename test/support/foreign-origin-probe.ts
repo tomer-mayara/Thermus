@@ -15,7 +15,7 @@ try {
   const { user } = await auth.api.createUser({ body: { ...credentials, name: credentials.email } });
   const response = await new HttpAgent(auth).request('POST', '/api/auth/sign-in/email', { origin: 'https://evil.example', json: credentials });
   const sessions = await (await auth.$context).internalAdapter.listSessions(user.id);
-  process.stdout.write(JSON.stringify({ status: response.status, code: await errorCodeOf(response), sessions: sessions.length, outboundRequests }));
+  process.stdout.write(`${JSON.stringify({ status: response.status, code: await errorCodeOf(response), sessions: sessions.length, outboundRequests })}\n`);
 } finally {
   database.close();
 }

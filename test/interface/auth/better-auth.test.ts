@@ -118,8 +118,8 @@ async function assertStartupStops(start: Promise<unknown>, variable: string, hid
 }
 
 async function foreignOriginSignInInNewProcess(environment: Readonly<Record<string, string>>): Promise<unknown> {
-  const { stdout } = await execFileAsync(process.execPath, [foreignOriginProbe], { env: { ...environment } });
-  return JSON.parse(stdout);
+  const { stdout } = await execFileAsync(process.execPath, [foreignOriginProbe], { env: { ...environment }, timeout: 30_000 });
+  return JSON.parse(stdout.trimEnd().split('\n').at(-1) ?? '');
 }
 
 describe('Pinned Better Auth local provider contracts', () => {

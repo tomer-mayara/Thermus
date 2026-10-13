@@ -444,7 +444,7 @@ Run the integration suite with `npm run test:integration`. `npm run check` does 
 
 **Better Auth local provider** (`test/interface/auth/better-auth.test.ts`)
 
-These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts. The `NODE_ENV` and `TEST` proofs run `dist/test/support/foreign-origin-probe.js` in a new Node process with only that variable, because the provider reads `NODE_ENV` when its modules load. That process also blocks `fetch` and reports its outbound requests.
+These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts. The `NODE_ENV` and `TEST` proofs run `dist/test/support/foreign-origin-probe.js` in a new Node process with only that variable. The `NODE_ENV` proof needs the new process, because the provider reads `NODE_ENV` when its modules load. That process also blocks `fetch` and reports its outbound requests.
 
 [V] Rejects public signup over HTTP and from the server API, and rejects email password reset; no account exists
 [V] Rejects a duplicate email in another letter case through the private create operation and keeps the original account
