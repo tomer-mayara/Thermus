@@ -435,14 +435,11 @@ ticket. Do not create another one.
 - The hosted work of AUTH-06 to AUTH-08 is complete. AUTH-11 uses its hosted
   composition, account pages, change records, and complete count of active
   User seats.
-- AUTH-08W is complete. It reads the members of each organization from
-  WorkOS, so it gives the complete count of active User seats. Until
-  AUTH-08W, `WorkOSOrganizations.memberPage()` fails, so the hosted edition
-  cannot count the seats. A pass of the
-  [hosted offline checks](../implementation/test-gate-policy.md#hosted-offline-checks)
-  is not enough: the AUTH-08W proofs and cases of the
+- AUTH-08W is complete. It gives the complete count of active User seats
+  from WorkOS: `WorkOSOrganizations.memberPage()` reads the members of each
+  organization. The AUTH-08W proofs and cases of the
   [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
-  must pass.
+  passed in run r3 of AUTH-08W.
 
 ### Steps
 
