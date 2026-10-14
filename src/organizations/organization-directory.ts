@@ -83,9 +83,10 @@ export interface InvitationRequest {
   readonly role: AssignableRole;
 }
 
-// 'unsupported': the directory cannot send the invitation safely, so it sent none.
+// 'address-in-use': the address already belongs to a member of the organization or has a pending invitation there, so
+// the directory sent none. 'unsupported': the directory cannot send the invitation safely, so it sent none.
 export interface InvitationSendResult {
-  readonly outcome: 'applied' | 'unsupported';
+  readonly outcome: 'applied' | 'address-in-use' | 'unsupported';
 }
 
 // 'not-pending': the invitation is accepted, revoked, or expired, so nothing changed.

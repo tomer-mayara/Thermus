@@ -25,6 +25,15 @@ export interface FakeResponse {
 
 export type FakeAnswer = FakeResponse | 'hang' | 'close';
 type Responder = FakeAnswer | ((request: RecordedRequest) => FakeAnswer | Promise<FakeAnswer>);
+// A responder for the requests of a route pattern. It gets the path segment of the ID, decoded.
+type IdResponder = (request: RecordedRequest, id: string) => FakeAnswer | Promise<FakeAnswer>;
+
+interface PatternRoute {
+  readonly segments: readonly string[];
+  readonly responder: IdResponder;
+}
+
+const idSegment = ':id';
 
 export class KeySetEndpoint {
   #keys: readonly SigningKey[] = [];
@@ -53,6 +62,7 @@ export class WorkOSFakeApi {
   readonly browserKeySet = new KeySetEndpoint();
   readonly authkitKeySet = new KeySetEndpoint();
   readonly #responders = new Map<string, Responder>();
+  readonly #patternRoutes: PatternRoute[] = [];
   #requests: RecordedRequest[] = [];
 
   private constructor(port: number) {
@@ -90,6 +100,12 @@ export class WorkOSFakeApi {
     this.#responders.set(methodAndPath, responder);
   }
 
+  // Answers each request that fits a method and a path with one ":id" segment, for example
+  // 'GET /user_management/users/:id'. A route of answer() for the exact path comes first.
+  answerEach(methodAndPattern: string, responder: IdResponder): void {
+    this.#patternRoutes.push({ segments: methodAndPattern.split('/'), responder });
+  }
+
   takeRequests(): RecordedRequest[] {
     const requests = this.#requests;
     this.#requests = [];
@@ -100,9 +116,31 @@ export class WorkOSFakeApi {
     const recorded = await recordedRequest(request);
     this.#requests.push(recorded);
     const route = `${recorded.method} ${recorded.path.split('?')[0]}`;
-    const responder = this.#responders.get(route) ?? { status: 501, body: { message: `No answer is scripted for ${route}` } };
-    send(typeof responder === 'function' ? await responder(recorded) : responder, request, response);
+    send(await this.#answerFor(route, recorded), request, response);
   }
+
+  async #answerFor(route: string, recorded: RecordedRequest): Promise<FakeAnswer> {
+    const responder = this.#responders.get(route);
+    if (responder !== undefined) return typeof responder === 'function' ? responder(recorded) : responder;
+    const segments = route.split('/');
+    for (const pattern of this.#patternRoutes) {
+      const id = idIn(pattern.segments, segments);
+      if (id !== undefined) return pattern.responder(recorded, id);
+    }
+    return { status: 501, body: { message: `No answer is scripted for ${route}` } };
+  }
+}
+
+// The decoded ID segment of a route that fits the pattern, or undefined.
+function idIn(pattern: readonly string[], route: readonly string[]): string | undefined {
+  if (pattern.length !== route.length) return undefined;
+  let id: string | undefined;
+  for (const [index, part] of pattern.entries()) {
+    const actual = route[index] ?? '';
+    if (part === idSegment && actual !== '') id = decodeURIComponent(actual);
+    else if (part !== actual) return undefined;
+  }
+  return id;
 }
 
 export interface FakeClientSettings {

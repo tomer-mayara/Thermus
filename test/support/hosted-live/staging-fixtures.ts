@@ -7,6 +7,9 @@ import { TotpAuthenticator } from './totp.ts';
 export interface LiveOrganization {
   readonly id: string;
   readonly name: string;
+  // The external ID that WorkOS keeps for the organization, or null without one. WorkOS names the authorization
+  // resource of an organization by its external ID, and by its organization ID only when it has none.
+  readonly externalId: string | null;
 }
 
 export interface LiveUser {
@@ -63,11 +66,12 @@ export class FixtureFactory {
     this.runId = runId;
   }
 
-  async organization(label: string): Promise<LiveOrganization> {
+  // An organization with an external ID is like each customer organization of the operator runbook.
+  async organization(label: string, externalId?: string): Promise<LiveOrganization> {
     const name = `${fixtureNamePrefix}${this.runId} ${label}`;
-    const { id } = await this.#workos.organizations.createOrganization({ name });
-    this.#registry.record('organization', id);
-    return { id, name };
+    const created = await this.#workos.organizations.createOrganization({ name, externalId });
+    this.#registry.record('organization', created.id);
+    return { id: created.id, name, externalId: created.externalId };
   }
 
   async user(label: string): Promise<LiveUser> {

@@ -64,6 +64,16 @@ describe('OrganizationAdministration invitation changes', () => {
     assert.deepEqual(records.map(({ outcome }) => outcome), ['unsupported', 'unknown']);
   });
 
+  test('Given a directory that refuses the address of an invitation, because it belongs to a member or has a pending invitation for another role, when an Admin sends the invitation, then the result is address-in-use, and the record keeps that outcome', async () => {
+    const { directory, records, administration } = administrationWith();
+    directory.queue('sendInvitation', { result: 'address-in-use' });
+
+    const sent = await administration.sendInvitation(actorOf('user-eve'), { organizationId: 'org-a', email: 'member@example.com', role: 'user' });
+
+    assert.equal(sent, 'address-in-use');
+    assert.deepEqual(recordLines(records), ['user-eve in org-a: invite user for member@example.com: address-in-use']);
+  });
+
   test('Given a pending User invitation, when an Admin resends and then revokes it, then each is applied once, and a second resend or revoke finds it no longer pending without a directory change', async () => {
     const { directory, records, administration } = invitationsWith();
     const eve = actorOf('user-eve');

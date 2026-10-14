@@ -3,6 +3,8 @@ import { after, describe, test, type TestContext } from 'node:test';
 import { createLocalJWKSet, type JSONWebKeySet } from 'jose';
 import { LiveRun } from '../../support/hosted-live/live-run.ts';
 import { authkitKeySetUrl, requestTimeout, workosClient, type HostedLiveSettings } from '../../support/hosted-live/settings.ts';
+import { describeAdministrationProofs } from './hosted-live/administration-proofs.ts';
+import { describeAdministrationServerCases } from './hosted-live/administration-server.ts';
 import { describeBrowserSignInProofs } from './hosted-live/browser-sign-in.ts';
 import { describeConfigurationProofs } from './hosted-live/configuration.ts';
 import { describeConnectAuthorizationProofs } from './hosted-live/connect-authorization.ts';
@@ -167,9 +169,11 @@ if ('problems' in setup) {
   describeConnectTokenProofs(run);
   describeMembershipProofs(run);
   describeOperatorSetupProofs(run);
+  describeAdministrationProofs(run);
   // The AUTH-07W cases come before the AUTH-06 cases, so that the 300-second wait of the AUTH-06 cases also lets the
-  // access token of the AUTH-07W selection session expire before its expiry case.
+  // access token of the AUTH-07W selection session expire before its expiry case. The AUTH-08W cases come between them.
   const describeExpiredSelectionCase = describeOrganizationServerCases(run);
+  describeAdministrationServerCases(run);
   describeHostedServerCases(run);
   describeExpiredSelectionCase();
 }

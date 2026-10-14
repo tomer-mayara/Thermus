@@ -1,8 +1,5 @@
 import assert from 'node:assert/strict';
-import childProcess, { ChildProcess, type ExecFileException } from 'node:child_process';
-import dns from 'node:dns/promises';
 import { getEventListeners } from 'node:events';
-import { syncBuiltinESMExports } from 'node:module';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
@@ -15,23 +12,13 @@ import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-f
 import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
 import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
 import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
-
-type ProcessCompletion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
+import { mockRenderer } from '../../support/renderer-process-double.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given a running renderer through ${era} HTTP, when shutdown starts, then its child, timer, and abort listener close once before provider release`, { timeout: 5_000 }, async (t) => {
     const resource = new URL('https://thermus.example/mcp');
     const provider = new NoAuthProvider(resource);
-    const launched = Promise.withResolvers<ProcessCompletion>();
-    const child = new ChildProcess();
-    const kill = t.mock.method(child, 'kill', () => true);
-    t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
-    t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => {
-      launched.resolve(args[3] as ProcessCompletion);
-      return child;
-    }) as typeof childProcess.execFile);
-    syncBuiltinESMExports();
-    t.after(() => { t.mock.restoreAll(); syncBuiltinESMExports(); });
+    const renderer = mockRenderer(t);
 
     const fetcher = new WebsiteFetcherLightpanda();
     const signals: AbortSignal[] = [];
@@ -63,7 +50,7 @@ for (const era of mcpProtocolEras) {
     const client = new Client({ name: 'renderer-shutdown-acceptance', version: '0.0.0' }, {
       versionNegotiation: eraNegotiation(era),
     });
-    let finish: ProcessCompletion | undefined;
+    let finish: typeof renderer.finish | undefined;
     t.after(async () => {
       finish?.(new Error('Test cleanup'), '', '');
       finish = undefined;
@@ -76,7 +63,8 @@ for (const era of mcpProtocolEras) {
     const scheduled = t.mock.method(globalThis, 'setTimeout');
     const cleared = t.mock.method(globalThis, 'clearTimeout');
     const response = client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments }).then((result) => result, () => undefined);
-    finish = await launched.promise;
+    await renderer.launched;
+    finish = renderer.finish;
     const [signal] = signals;
     assert.ok(signal);
     assert.equal(getEventListeners(signal, 'abort').length, 1);
@@ -88,8 +76,7 @@ for (const era of mcpProtocolEras) {
 
     const closing = application.close(listener.close());
     assert.equal(signal.aborted, true);
-    assert.equal(kill.mock.callCount(), 1);
-    assert.deepEqual(kill.mock.calls[0]?.arguments, ['SIGKILL']);
+    assert.deepEqual(renderer.child.signals, ['SIGKILL']);
     assert.equal(getEventListeners(signal, 'abort').length, 0);
     assert.equal(removeListener.mock.callCount(), 1);
     assert.equal(cleared.mock.calls.filter(({ arguments: args }) => args[0] === readinessTimer).length, 1);
@@ -97,7 +84,7 @@ for (const era of mcpProtocolEras) {
     assert.equal(events.length, 0);
     assert.equal(records.length, 0);
     t.mock.timers.tick(60_000);
-    assert.equal(kill.mock.callCount(), 1);
+    assert.deepEqual(renderer.child.signals, ['SIGKILL']);
     events.push('renderer reaped');
     const lateSuccess = JSON.stringify({ url: 'https://example.com/final', http_status: 200, content: '<p>Late source</p>', error: null });
     finish(null, lateSuccess, '');
@@ -108,7 +95,7 @@ for (const era of mcpProtocolEras) {
     await Promise.all([application.close(), application.close()]);
     t.mock.timers.tick(60_000);
 
-    assert.equal(kill.mock.callCount(), 1);
+    assert.deepEqual(renderer.child.signals, ['SIGKILL']);
     assert.equal(removeListener.mock.callCount(), 1);
     assert.equal(cleared.mock.calls.filter(({ arguments: args }) => args[0] === readinessTimer).length, 1);
     assert.equal(getEventListeners(signal, 'abort').length, 0);

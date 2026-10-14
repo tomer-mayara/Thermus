@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import type { WorkOS } from '@workos-inc/node';
+import { createAdministrationFixtures, type AdministrationFixtures } from './administration-fixtures.ts';
 import { signInWithAuthKit, type BrowserSignIn } from './browser-session.ts';
 import { authorizeWithConnect, type ConnectGrant } from './connect-grant.ts';
 import { FixtureRegistry, type FixtureKind } from './fixture-registry.ts';
@@ -30,6 +31,7 @@ export class LiveRun {
   readonly #registry: FixtureRegistry;
   readonly fixtures: () => Promise<StagingFixtures>;
   readonly organizationFixtures: () => Promise<OrganizationFixtures>;
+  readonly administrationFixtures: () => Promise<AdministrationFixtures>;
   readonly newUserSignIn: () => Promise<BrowserSignIn>;
   readonly newUserLaterSignIn: () => Promise<BrowserSignIn>;
   readonly organizationSignIn: () => Promise<BrowserSignIn>;
@@ -44,6 +46,7 @@ export class LiveRun {
     this.#registry = new FixtureRegistry(this.workos);
     this.fixtures = once(() => createStagingFixtures(this.workos, this.#registry));
     this.organizationFixtures = once(async () => createOrganizationFixtures(this.workos, this.#registry, await this.fixtures()));
+    this.administrationFixtures = once(async () => createAdministrationFixtures(this.workos, this.#registry, await this.fixtures()));
     this.newUserSignIn = once(async () => signInWithAuthKit(this, { user: (await this.fixtures()).newUser }));
     this.newUserLaterSignIn = once(async () => {
       await this.newUserSignIn();

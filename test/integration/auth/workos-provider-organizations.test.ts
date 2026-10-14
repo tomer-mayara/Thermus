@@ -65,7 +65,7 @@ async function openSite(t: TestContext) {
   const { settings, workos, authkitKeySet } = world.connection();
   const failures: AccountFailureReport[] = [];
   const reportFailure = (report: AccountFailureReport): void => { failures.push(report); };
-  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const session = new WorkOSBrowserSession({ workos, settings, authority });
   const pages = new AccountOperationProbe(destinations);

@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import type { Page } from 'playwright';
+import type { PageForm } from '../hosted-browser.ts';
 import { completeAuthKit } from './authkit-driver.ts';
 import type { LiveRun } from './live-run.ts';
+import { originAndPath } from './navigations.ts';
 import { localOrigin } from './settings.ts';
 import type { LiveUser } from './staging-fixtures.ts';
 
@@ -27,10 +29,29 @@ export async function signInThroughPortal(run: LiveRun, user: LiveUser, organiza
   await page.goto(`${localOrigin}/`);
   await page.getByRole('button', { name: 'Sign In' }).click();
   const pages = await completeAuthKit(page, { user, authkitHost, ...(organizationName === undefined ? {} : { organizationName }) });
-  await page.waitForURL(`${localOrigin}/`);
-  await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
-  await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor();
+  await waitForPortal(page);
   return { page, pages, signedInAt: Date.now() };
+}
+
+// The acceptance of an organization invitation through its link. AuthKit sends the browser through the Initiate login
+// URI to /login of the server, which starts a sign-in. AuthKit then shows the invitation again, the sign-in pages, and
+// the callback of the server. The link holds the invitation token, so no message shows it.
+export async function acceptInvitationThroughPortal(run: LiveRun, user: LiveUser, invitationLink: string): Promise<PortalVisit> {
+  await run.site();
+  const authkitHost = new URL(run.settings.authkitIssuer).host;
+  const page = await run.browser.newPage();
+  await openInvitationLink(page, invitationLink, authkitHost);
+  const pages = await completeAuthKit(page, { user, authkitHost });
+  await waitForPortal(page);
+  return { page, pages, signedInAt: Date.now() };
+}
+
+// The form of a page with this button text. The message gives only the button texts, because the fields hold the form
+// token of the session.
+export function formNamed(forms: readonly PageForm[], label: string): PageForm {
+  const form = forms.find((candidate) => candidate.label === label);
+  assert.ok(form, `The page offers no form "${label}": ${JSON.stringify(forms.map((candidate) => candidate.label))}`);
+  return form;
 }
 
 // A request of the browser with its cookies, which follows no redirect.
@@ -53,4 +74,22 @@ export async function sessionJson(page: Page): Promise<Readonly<Record<string, u
 
 function setCookiesOf(headers: readonly { readonly name: string; readonly value: string }[]): string[] {
   return headers.filter(({ name }) => name.toLowerCase() === 'set-cookie').map(({ value }) => value);
+}
+
+async function waitForPortal(page: Page): Promise<void> {
+  await page.waitForURL(`${localOrigin}/`);
+  await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
+  await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor();
+}
+
+// The sign-in that the server starts shows the invitation again, with the AuthKit authorization session in the query.
+async function openInvitationLink(page: Page, invitationLink: string, authkitHost: string): Promise<void> {
+  try {
+    await page.goto(invitationLink, { waitUntil: 'commit' });
+    await page.waitForURL((url) => url.host === authkitHost && url.searchParams.has('authorization_session_id'), { waitUntil: 'commit' });
+  } catch (error) {
+    // A Playwright message can quote the link, so the error gives only the page of the browser, without its query.
+    const name = error instanceof Error ? error.name : 'Error';
+    throw new Error(`The invitation link did not lead to a sign-in of the server: the browser stopped at ${originAndPath(page.url())} (${name}).`);
+  }
 }

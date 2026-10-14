@@ -73,6 +73,8 @@ export function invitationsPage(form: InvitationsPageForm): Response {
   const page = htmlDocument('Invitations', [
     `<p>${identityPolicyText(overview.identityPolicy)}</p>`,
     '<p>An invitation gives only the role that it names: an Admin invitation gives no User access. The sign-in service sends the email, and it activates the membership when the invited person accepts.</p>',
+    // WorkOS gives the role of an invitation from the current role of its membership.
+    '<p>The acceptance of a pending invitation gives the role that the page shows. For an accepted, revoked, or expired invitation, the sign-in service can show the current role of the member instead.</p>',
     `<p><a href="${escapeHtml(form.membersPage)}">Members</a></p>`,
     ...sendForms,
     overview.invitations.length === 0 ? '<p>There are no invitations.</p>' : '<ul>',
