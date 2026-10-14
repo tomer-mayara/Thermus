@@ -13,8 +13,8 @@ import { dataDirectory } from '../../support/data-directory.ts';
 import { InProcessServer } from '../../support/in-process-server.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/local-mcp-user.ts';
-import { mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
 import { selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
+import { mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
 import { RendererProcessDouble } from '../../support/renderer-process-double.ts';
 
 const [alice, bob, carol, dana] = ['alice', 'bob', 'carol', 'dana'].map((name): AccountCredentials => ({

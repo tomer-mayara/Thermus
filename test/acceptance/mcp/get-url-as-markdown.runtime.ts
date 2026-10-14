@@ -13,8 +13,8 @@ import { dataDirectory } from '../../support/data-directory.ts';
 import { InProcessServer } from '../../support/in-process-server.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/local-commands.ts';
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/local-mcp-user.ts';
-import { mcpProtocolEras, type McpProtocolEra } from '../../support/mcp-protocol-eras.ts';
 import { selfHostedServerSettings } from '../../support/local-runtime.ts';
+import { mcpProtocolEras, type McpProtocolEra } from '../../support/mcp-protocol-eras.ts';
 import { permitIPv4Fixture, startFixture } from '../../support/network-fixture.ts';
 
 const runCommand = promisify(execFile);

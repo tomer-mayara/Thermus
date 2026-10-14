@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import { cpSync } from 'node:fs';
+import { cpSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
+import adblockRust from 'adblock-rs';
 import { applySetCookies } from 'better-auth/cookies';
 import { createApplication, type Application } from '../../../src/application.ts';
 import type { BetterAuthRuntime } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
@@ -166,6 +168,31 @@ describe('Local installation with the real application and provider', () => {
     });
 
     assert.deepEqual({ reference_id: client.reference_id, user_id: client.user_id }, { reference_id: installationId, user_id: undefined });
+  });
+
+  test('Given AD_RULES_FILE that names a missing file, when the application starts on a fresh data directory, then it rejects with the rules error before it opens the data directory or reports a tenant', async (t) => {
+    const directory = dataDirectory(t);
+    const logger = new RecordingLogger();
+    const settings = selfHostedServerSettings(directory, join(dataDirectory(t), 'missing-ad-rules.txt'));
+
+    await assert.rejects(createApplication(selfHostedConfig(directory), logger, settings), { name: 'AdRulesFileError', message: 'AD_RULES_FILE could not be read (ENOENT).' });
+
+    assert.deepEqual(readdirSync(directory), []);
+    assert.deepEqual(logger.lines, []);
+  });
+
+  test('Given trusted rules and a native rule parser that fails, when the application starts on a fresh data directory, then it rejects with the cleaner error, keeps the parser error only as the cause, and opens no data directory', async (t) => {
+    const directory = dataDirectory(t);
+    const nativeFailure = new Error('private-native-marker');
+    t.mock.method(adblockRust.FilterSet.prototype, 'addFilters', () => { throw nativeFailure; });
+
+    await assert.rejects(createApplication(selfHostedConfig(directory), new RecordingLogger(), selfHostedServerSettings(directory)), (error) => {
+      assert.ok(error instanceof Error);
+      assert.deepEqual([error.name, error.message, error.cause], ['AdRulesFileError', 'The ad cleaner could not load the rules in AD_RULES_FILE.', nativeFailure]);
+      return true;
+    });
+
+    assert.deepEqual(readdirSync(directory), []);
   });
 
   for (const { label, damage, failure } of [
