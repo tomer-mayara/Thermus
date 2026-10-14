@@ -5,6 +5,7 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/hosted-browser.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
+import type { FakeAnswer } from '../../support/workos-fake-api.ts';
 import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
 import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
@@ -514,5 +515,69 @@ describe('Hosted WorkOS edition: the User seat summary from every WorkOS page', 
     assert.ok(site.log.lines.some((line) => line.startsWith('ERROR An account request failed unexpectedly for /team/members:')), site.log.lines.join('\n'));
     assert.deepEqual(site.world.rolesOf(gus, acme), ['member', 'user']);
     assert.deepEqual(recordSummaries(site), [`${dan.id} grant user in ${acme}: applied`]);
+  });
+});
+
+// The answers of a WorkOS read that a page read cannot avoid. The operator report names the status, the code, and the
+// request ID of each, as the pinned SDK gives them, so that a failed page shows which WorkOS answer stopped it. The
+// SDK gives no answer within its timeout as a 408.
+const unavoidableAnswers: readonly { readonly label: string; readonly answer: FakeAnswer; readonly cause: RegExp }[] = [
+  {
+    label: 'an HTML 502 page of the WorkOS edge',
+    answer: { status: 502, body: '<html><body>502 Bad Gateway</body></html>', headers: { 'content-type': 'text/html', 'x-request-id': 'request-502' } },
+    cause: /^Error: Unexpected error: ParseError: .+ \(status 502, request ID request-502\)$/,
+  },
+  {
+    label: 'a WorkOS 503 answer',
+    answer: { status: 503, body: { message: 'Service unavailable', code: 'server_error' }, headers: { 'x-request-id': 'request-503' } },
+    cause: /^GenericServerException: Service unavailable \(status 503, code server_error, request ID request-503\)$/,
+  },
+  {
+    label: 'a WorkOS 429 answer',
+    answer: { status: 429, body: { message: 'Too many requests' }, headers: { 'x-request-id': 'request-429', 'retry-after': '7' } },
+    cause: /^RateLimitExceededException: Too many requests \(status 429, request ID request-429\)$/,
+  },
+  { label: 'no WorkOS answer within the client timeout', answer: 'hang', cause: /^OauthException: Error: Request timeout \(status 408\)$/ },
+];
+
+function failureReportsIn(site: Site, path: string): string[] {
+  const prefix = `ERROR An account request failed unexpectedly for /team/${path}: `;
+  return site.log.lines.filter((line) => line.startsWith('ERROR ')).map((line) => (line.startsWith(prefix) ? line.slice(prefix.length) : line));
+}
+
+function assertFailurePage(answer: BrowserAnswer): void {
+  assert.equal(answer.status, 500, answer.body);
+  assert.match(answer.body, /The request failed\. Try again later\./);
+  assert.doesNotMatch(answer.body, /Active User seats|ada@example\.com|invitation/i);
+}
+
+describe('Hosted WorkOS edition: page reads that a WorkOS failure stops', () => {
+  for (const { label, answer, cause } of unavoidableAnswers) {
+    test(`Given ${label} for a later page of the members, when Dan opens the members page, then the page gives the 500 failure page without a member or a count, and the one operator report names the WorkOS answer and no credential`, async (t) => {
+      const site = await openSite(t);
+      site.world.membershipPageSize = 3;
+      const browser = await signIn(site, dan);
+      site.world.laterMembershipPageOutage = answer;
+
+      const page = await browser.open('members');
+      const reports = failureReportsIn(site, 'members');
+
+      assertFailurePage(page);
+      assert.equal(reports.length, 1, reports.join('\n'));
+      assert.match(reports[0] ?? '', cause);
+      assert.ok(!site.log.lines.some((line) => line.includes(site.world.settings.apiKey) || line.includes(browser.cookieHeader ?? 'no cookie')), 'The operator log holds the API key or the session cookie.');
+    });
+  }
+
+  test('Given a WorkOS 503 answer for the invitation read, when Dan opens the invitations page, then the page gives the 500 failure page without an invitation, and the one operator report names the WorkOS answer', async (t) => {
+    const site = await openSite(t);
+    const browser = await signIn(site, dan);
+    site.world.invitationOutage = { status: 503, body: { message: 'Service unavailable', code: 'server_error' }, headers: { 'x-request-id': 'request-503' } };
+
+    const page = await browser.open('invitations');
+    const reports = failureReportsIn(site, 'invitations');
+
+    assertFailurePage(page);
+    assert.deepEqual(reports, ['GenericServerException: Service unavailable (status 503, code server_error, request ID request-503)']);
   });
 });
