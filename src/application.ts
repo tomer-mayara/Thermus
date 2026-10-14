@@ -56,7 +56,7 @@ export interface HostedAccountParts {
 
 export interface Application {
   handle(request: Request): Promise<Response>;
-  close(): Promise<void>;
+  close(listenerDrain?: Promise<void>): Promise<void>;
 }
 
 export interface ApplicationLogger {
@@ -79,6 +79,7 @@ async function createSelfHostedApplication(config: SelfHostedConfig, logger: App
   const { BetterAuthProvider } = await import('./auth/local-auth/better-auth/better-auth-provider.ts');
   const { LocalAuthPages, localPagePaths } = await import('./auth/local-auth/better-auth/local-auth-pages.ts');
   await using owned = new AsyncDisposableStack();
+  await using requestResources = new AsyncDisposableStack();
   const runtime = owned.adopt(await openBetterAuthRuntime(config), (opened) => opened.close());
   const issuer = new URL('api/auth', config.publicBaseUrl).href;
   const provider = new BetterAuthProvider(runtime.auth, {
@@ -88,7 +89,7 @@ async function createSelfHostedApplication(config: SelfHostedConfig, logger: App
     resourceServerClient: runtime.resourceServerClient.current(),
   });
   const pages = new LocalAuthPages(runtime.auth.handler, { issuer, paths: localPagePaths(config.publicBaseUrl) });
-  const mcp = owned.adopt(new MCPServer({
+  const mcp = requestResources.adopt(new MCPServer({
     auth: {
       verifier: provider,
       accessResolver: provider,
@@ -99,7 +100,8 @@ async function createSelfHostedApplication(config: SelfHostedConfig, logger: App
   }), (server) => server.close());
   logger.info(`The self-hosted installation uses tenant ${runtime.tenantId}.`);
   const handle = routeLocalRequests(config, { mcp: (request) => mcp.fetch(request), provider: runtime.auth.handler, pages });
-  return applicationRecord(handle, owned.move());
+  const requests = requestResources.move();
+  return composeApplication(handle, { close: () => requests.disposeAsync() }, owned.move());
 }
 
 // Only these public paths reach the provider. Its browser and administration APIs stay private.
@@ -139,8 +141,6 @@ export function accountChangeRecorder(logger: ApplicationLogger): ChangeRecorder
 }
 
 export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts): Application {
-  const owned = new AsyncDisposableStack();
-  owned.defer(() => parts.mcp.close());
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
     session: parts.session,
@@ -150,7 +150,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     operation: account.operation,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
-  return applicationRecord(handle, owned);
+  return composeApplication(handle, parts.mcp);
 }
 
 export function routeHostedRequests(config: RouteConfig, handlers: HostedRequestHandlers): FetchHandler {
@@ -169,7 +169,25 @@ export function routeHostedRequests(config: RouteConfig, handlers: HostedRequest
   };
 }
 
-function applicationRecord(handle: Application['handle'], owned: AsyncDisposableStack): Application {
+export function composeApplication(handle: Application['handle'], mcp: Pick<MCPServer, 'close'>, providerResources = new AsyncDisposableStack()): Application {
+  const owned = new AsyncDisposableStack();
+  owned.use(providerResources);
+  let drained = Promise.resolve<PromiseSettledResult<void>>({ status: 'fulfilled', value: undefined });
+  owned.defer(async () => {
+    const result = await drained;
+    if (result.status === 'rejected') throw result.reason;
+  });
+  owned.defer(() => mcp.close());
   let closing: Promise<void> | undefined;
-  return Object.freeze({ handle, close: () => closing ??= owned.disposeAsync() });
+  return Object.freeze({ handle, close: (listenerDrain?: Promise<void>) => {
+    if (closing === undefined) {
+      // Observe drain failures now, even when MCP cleanup takes longer than listener cleanup.
+      drained = (listenerDrain ?? Promise.resolve()).then(
+        (value) => ({ status: 'fulfilled', value }),
+        (reason: unknown) => ({ status: 'rejected', reason }),
+      );
+      closing = owned.disposeAsync();
+    }
+    return closing;
+  } });
 }

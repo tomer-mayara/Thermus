@@ -31,7 +31,7 @@ function serveWith(t: TestContext, context: RequestContext, requiredPermission?:
       expectedResource: new URL(resourceUrl),
       ...(requiredPermission === undefined ? {} : { requiredPermission }),
     },
-    registerTools: tools.register,
+    buildServer: tools.buildServer,
     reportFailure: reporter.report,
   });
   t.after(() => server.close());

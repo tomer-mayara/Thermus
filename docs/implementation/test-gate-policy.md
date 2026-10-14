@@ -9,6 +9,12 @@ If the two disagree, follow AGENTS.md and correct this policy.
 Run each command from the repository root. `pnpm <script>` runs the same
 package script. Each command that runs `dist/` output makes a clean build first.
 
+Install dependencies with `pnpm install --frozen-lockfile` before the checks.
+The manifest and lockfile pin Node 24.20.0 for pnpm scripts, including non-login
+workers. The initial installation needs network access if that runtime is not
+cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
+`node` commands, select the same version with `nvm use` or your runtime manager.
+
 | Suite | Command | Selects | Needs |
 | --- | --- | --- | --- |
 | Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. No renderer. |

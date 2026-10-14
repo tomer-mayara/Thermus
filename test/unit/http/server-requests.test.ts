@@ -101,4 +101,55 @@ describe('HTTP server request body', () => {
 
     assert.match(await connection.ended, /HTTP\/1\.1 204 No Content/);
   });
+
+  test('Given a large POST body that is still arriving, when the handler cancels after its first chunk, then its refusal arrives and the connection serves the next request without a stream error', { timeout: 5_000 }, async (t) => {
+    const messages: string[] = [];
+    const server = await serve(t, async (request) => {
+      if (request.method === 'GET') return new Response(null, { status: 204 });
+      assert.ok(request.body);
+      const reader = request.body.getReader();
+      const first = await reader.read();
+      assert.equal(first.done, false);
+      await reader.cancel();
+      return new Response(null, { status: 413 });
+    }, { logger: { error: (message) => messages.push(message) } });
+    const body = 'x'.repeat(5 * 1024 * 1024);
+
+    const connection = RawConnection.open(t, server).send([
+      'POST /large HTTP/1.1', 'Host: localhost:8080', `Content-Length: ${body.length}`,
+    ], body);
+    const refusal = await connection.received('HTTP/1.1 413 Payload Too Large');
+    connection.send(['GET /next HTTP/1.1', 'Host: localhost:8080', 'Connection: close']);
+
+    assert.match(refusal, /^HTTP\/1\.1 413 Payload Too Large\r\n/);
+    assert.match(await connection.ended, /HTTP\/1\.1 204 No Content/);
+    assert.deepEqual(messages, []);
+  });
+
+  test('Given a handler that is reading a partial POST body, when the client disconnects, then the body read rejects and the request signal aborts', { timeout: 5_000 }, async (t) => {
+    const started = Promise.withResolvers<AbortSignal>();
+    const failed = Promise.withResolvers<unknown>();
+    const aborted = Promise.withResolvers<void>();
+    const server = await serve(t, async (request) => {
+      request.signal.addEventListener('abort', () => aborted.resolve(), { once: true });
+      started.resolve(request.signal);
+      try {
+        await request.text();
+      } catch (error) {
+        failed.resolve(error);
+      }
+      return new Response();
+    });
+    const connection = RawConnection.open(t, server).send([
+      'POST /partial HTTP/1.1', 'Host: localhost:8080', 'Content-Length: 1000',
+    ], 'first');
+    const signal = await started.promise;
+
+    connection.disconnect();
+    const failure = await failed.promise;
+    await aborted.promise;
+
+    assert.ok(failure instanceof Error);
+    assert.equal(signal.aborted, true);
+  });
 });

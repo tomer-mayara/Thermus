@@ -1,7 +1,10 @@
 # MCP server implementation plan
 
-Status: implementation plan with board tickets. Date: 2026-10-13.
-This publication changes documents only; no implementation verification is claimed.
+Status: P01 and P02 are implemented with test-injected tool dependencies; P03
+remains planned. Date: 2026-10-14. The [P01 implementation record](mcp-p01.md)
+describes its delivered scope and gate repair. The [P02 implementation record](mcp-p02.md)
+describes shutdown ownership, request isolation, and current verification.
+The original plan publication changed documents only.
 The [fictional design review](mcp-server-plan-review.md) explains the corrections.
 
 ## Objective and agreed scope
@@ -143,11 +146,14 @@ Pass MCP signals through fetcher/process APIs; check before/after fetch, between
 stages, and before return. Renderer owns child/timer/listener cleanup; pipeline
 needs no MCP types. No synchronous preemption; keep guards. P01 proves per-call cancel.
 
-P02 adds MCPServer-owned shutdown cancellation and awaits active work in modern
-and legacy HTTP; SDK close alone does not cancel legacy work. Initiate HTTP close
-to stop accepting, cancel MCP work, await drain/tasks, then release providers.
-Revise the current listener-before-application disposal order. Repeated close
-succeeds with cleanup once and isolated state for concurrent requests.
+P02 supplies MCPServer-owned shutdown cancellation and awaits active work in
+modern and legacy HTTP; SDK close alone does not cancel legacy work. The entry
+point starts HTTP close to stop accepting, passes its drain promise to application
+close, and cancels MCP work before awaiting drain. Providers close after both
+drain and active tasks finish. Repeated close shares cleanup, and failures remain
+visible. The request builder receives a frozen context and a lifetime whose
+signal and task registration keep detached legacy tool work owned. Request
+identities, reasons, cancellation, results, and completion records stay separate.
 
 ## Rules and local runtime
 
@@ -167,9 +173,9 @@ provisioning is separate future work.
 
 ## Tests and gates
 
-The source [test inventory](../testing/test-list.md) supplies pending MCP cases.
-Its username wording becomes canonical identity fields; POST remains deferred.
-Update that inventory during implementation, not during this plan edit.
+The source [test inventory](../testing/test-list.md) records completed P01 cases
+and pending MCP work. Records use canonical identity fields; POST remains deferred.
+Update that inventory as each remaining slice is implemented.
 
 Start each slice with Given/When/Then acceptance, then focused failing tests,
 implementation, and refactoring until green. Pure refactors start with passing
@@ -185,7 +191,9 @@ configured resource, finite current times, and empty scopes. Keep the Bearer gat
 for refusals/isolation. Retain auth tests and prove real Better Auth valid-token
 and forged/revoked/disabled-user tool calls. Hosted remains `503`.
 
-Keep normal integration/acceptance offline and renderer-free. Propose
+Keep normal MCP integration and acceptance cases offline and renderer-free.
+The full acceptance suite also runs OTel logger tests with live Axiom export,
+as required by the [gate policy](test-gate-policy.md). Propose
 `npm run test:mcp:renderer`, which explicitly builds/runs
 `test/acceptance/mcp/get-url-as-markdown.runtime.ts` outside default test globs.
 It uses the real SDK HTTP path, Lightpanda, real pipeline, local JS/redirect
@@ -197,15 +205,19 @@ Run changed tests before commit and complete-candidate [policy gates](test-gate-
 `check` omits full integration/acceptance/interface/container suites. MCP/auth/app
 changes need integration/acceptance/container; renderer/network also needs its
 interface tests. P03 adds renderer script/gate docs. Record commands/status/counts.
-Keep habit snoozes empty and follow existing PR rules. This document records no implementation test runs.
+Keep habit snoozes empty and follow existing PR rules. The [P01 record](mcp-p01.md)
+contains historical runs; record gate results for the current candidate separately.
 
 ## Appendix: board tickets and dependencies
 
 Tickets were created in the Thermus project board `magumagu` and read back.
 Each was in Backlog at creation. These labels map to real ticket UUIDs; the table
 records status and dependencies at creation, not current implementation progress.
-MCP-P01 implementation has a separate [PR #62](https://github.com/3-headed-monkey/Thermus/pull/62). Each slice starts tests first and
-finishes green; this documentation publication makes no completion claim.
+MCP-P01 implementation has a separate [PR #62](https://github.com/3-headed-monkey/Thermus/pull/62)
+and an [implementation record](mcp-p01.md). P02 has its own
+[implementation record](mcp-p02.md); P03 remains planned.
+Each slice starts tests first and finishes green. The ticket table preserves
+the original planning status.
 
 | Planning label | Board ticket UUID | Status at creation | Dependencies at creation |
 | --- | --- | --- | --- |

@@ -69,7 +69,7 @@ export function serveAccess(
       expectedResource: new URL(resourceUrl),
       requiredScopes: options.requiredScopes,
     },
-    registerTools: tools.register,
+    buildServer: tools.buildServer,
     reportFailure: reporter.report,
   });
   t.after(() => server.close());

@@ -50,6 +50,24 @@ describe('HTTP server listening', () => {
 
     assert.deepEqual(listening.map((server) => server.listening), [false]);
   });
+
+  test('Given an opened listener with an invalid address, when startup and listener cleanup both fail, then both failures stay visible and cleanup runs once', { timeout: 5_000 }, async (t) => {
+    const cleanupFailure = new Error('Listener cleanup failed');
+    const originalClose = Server.prototype.close;
+    t.mock.method(Server.prototype, 'address', () => ({ address: 'fe80::1%en0', family: 'IPv6', port: 8080 }));
+    const close = t.mock.method(Server.prototype, 'close', function (this: Server, callback?: (error?: Error) => void) {
+      return originalClose.call(this, () => callback?.(cleanupFailure));
+    });
+
+    await assert.rejects(startHttpServer(async () => new Response('never'), { listen: loopback, publicBaseUrl }), (error) => {
+      assert.ok(error instanceof SuppressedError);
+      assert.equal(error.error, cleanupFailure);
+      assert.equal(error.suppressed.code, 'ERR_INVALID_URL');
+      return true;
+    });
+
+    assert.equal(close.mock.callCount(), 1);
+  });
 });
 
 describe('HTTP server cancellation', () => {
@@ -150,10 +168,36 @@ describe('HTTP server close', () => {
 
   test('Given close is called two times, when both calls finish, then both resolve, the server is closed, and a later call also resolves', { timeout: 5_000 }, async (t) => {
     const server = await serve(t, async () => new Response('ok'));
+    const close = t.mock.method(Server.prototype, 'close');
+    const schedule = t.mock.method(globalThis, 'setTimeout');
+    const clear = t.mock.method(globalThis, 'clearTimeout');
 
-    await Promise.all([server.close(), server.close()]);
+    const first = server.close();
+    const second = server.close();
+    assert.equal(first, second);
+    await Promise.all([first, second]);
 
     assert.equal((await connectionError(server)).code, 'ECONNREFUSED');
     await server.close();
+    assert.equal(close.mock.callCount(), 1);
+    assert.equal(schedule.mock.callCount(), 1);
+    assert.deepEqual(clear.mock.calls.map(({ arguments: args }) => args[0]), [schedule.mock.calls[0]?.result]);
+  });
+
+  test('Given a listener cleanup failure, when concurrent and later close calls finish, then every call observes the same failure and the deadline is cleared once', { timeout: 5_000 }, async (t) => {
+    const server = await startHttpServer(async () => new Response('ok'), { listen: loopback, publicBaseUrl });
+    const failure = new Error('Listener cleanup failed');
+    const originalClose = Server.prototype.close;
+    const close = t.mock.method(Server.prototype, 'close', function (this: Server, callback?: (error?: Error) => void) {
+      return originalClose.call(this, () => callback?.(failure));
+    });
+    const clear = t.mock.method(globalThis, 'clearTimeout');
+    const first = server.close();
+    assert.equal(server.close(), first);
+    await assert.rejects(first, (error) => error === failure);
+    await assert.rejects(server.close(), (error) => error === failure);
+
+    assert.equal(close.mock.callCount(), 1);
+    assert.equal(clear.mock.callCount(), 1);
   });
 });

@@ -69,5 +69,12 @@
     "linkedom": "^0.18.13",
     "parse5": "8.0.1",
     "parse5-htmlparser2-tree-adapter": "8.0.1"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.20.0",
+      "onFail": "download"
+    }
   }
 }
