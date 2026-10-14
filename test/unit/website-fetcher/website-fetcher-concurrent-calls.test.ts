@@ -31,6 +31,8 @@ test('Given one fetcher with a configured executable, when two calls run concurr
     { url: 'https://second.example/page?call=2', finalUrl: 'https://second.example/final', html: '<html>Second page</html>' },
   ];
   const launches: Launch[] = [];
+  // The calls stay open until the test completes them. Fake timers keep the readiness deadline away, also in a slow run.
+  t.mock.timers.enable({ apis: ['setTimeout'] });
   t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
   t.mock.method(childProcess, 'execFile', ((...launch: Launch): ChildProcess => {
     launches.push(launch);
