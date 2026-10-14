@@ -1,19 +1,44 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { describe, test, type TestContext } from 'node:test';
-import type { Organization, OrganizationMembership } from '@workos-inc/node';
+import type { Organization, OrganizationMembership, WorkOS } from '@workos-inc/node';
 import { WorkOSOrganizations } from '../../../../src/auth/hosted-auth/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { BillingFree } from '../../../../src/billing/billing-free.ts';
 import { OrganizationAdministration } from '../../../../src/organizations/organization-administration.ts';
 import type { LiveRun } from '../../../support/hosted-live/live-run.ts';
-import { rolesOf, superAdminRole, type OperatorRecord } from '../../../support/hosted-live/operator-runbook.ts';
-import type { OrganizationFixtures } from '../../../support/hosted-live/organization-fixtures.ts';
+import { OperatorRunbook, rolesOf, superAdminRole, type OperatorRecord } from '../../../support/hosted-live/operator-runbook.ts';
+import { operatorActor, type OrganizationFixtures } from '../../../support/hosted-live/organization-fixtures.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
 const proofOptions = { timeout: 120_000 };
 const superAdminGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
 const recordFields = ['time', 'actor', 'organizationId', 'target', 'action', 'outcome'];
+
+// A runbook whose first inspection is followed by a change of another person before the runbook writes: a change at
+// the same time as the operator step, in the order in which a replacement of the complete role set loses it.
+class RunbookWithChangeAfterInspection extends OperatorRunbook {
+  #change: (() => Promise<unknown>) | undefined;
+
+  constructor(workos: WorkOS, change: () => Promise<unknown>) {
+    super(workos, operatorActor);
+    this.#change = change;
+  }
+
+  override async membership(userId: string, organizationId: string): Promise<OrganizationMembership | undefined> {
+    const membership = await super.membership(userId, organizationId);
+    const change = this.#change;
+    this.#change = undefined;
+    await change?.();
+    return membership;
+  }
+}
+
+// One role of a membership on the authorization resource of the organization, as a customer grant change of AUTH-08W
+// writes it. The resource has the external ID of the organization.
+function organizationRole(fixtures: OrganizationFixtures, membership: OrganizationMembership, roleSlug: string) {
+  return { organizationMembershipId: membership.id, roleSlug, resourceTypeSlug: 'organization', resourceExternalId: fixtures.organizationRequest.externalId };
+}
 
 function statusOf(error: unknown): unknown {
   return typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined;
@@ -107,6 +132,59 @@ export function describeOperatorSetupProofs(run: LiveRun): void {
       assert.deepEqual([revoked.outcome, revoked.rolesAfter], ['applied', ['admin', 'user']]);
       assert.deepEqual([identity.id, identity.email], [user.id, user.email]);
       assert.deepEqual(after, before);
+    });
+
+    test('Given a membership made without a role, when its role assignments are read and the operator grants Super Admin, then the default role member is a role assignment on the authorization resource of type organization with the external ID of the organization, a role assignment that names the organization ID instead is refused with 404 entity_not_found and changes nothing, and the grant adds super-admin and keeps member', proofOptions, async (t) => {
+      const fixtures = await run.organizationFixtures();
+      const user = fixtures.users['member-only'];
+      const { externalId } = fixtures.organizationRequest;
+      const membership = await membershipOf(fixtures, user);
+      assert.ok(membership, 'The identity has no membership.');
+      const { organizationId } = membership;
+
+      const { data: assignments } = await workos.authorization.listRoleAssignments({ organizationMembershipId: membership.id });
+      const byOrganizationId = await workos.authorization.assignRole({ ...organizationRole(fixtures, membership, superAdminRole), resourceExternalId: organizationId }).then(() => undefined, (error: unknown) => error);
+      const rolesAfterRefusal = rolesOf(await membershipOf(fixtures, user));
+      const granted = await fixtures.runbook.grantSuperAdmin({ organizationId, email: user.email });
+      t.diagnostic(`role assignments: ${JSON.stringify(assignments.map(({ role, resource }) => `${role.slug} on ${resource.resourceTypeSlug} ${resource.externalId === externalId ? 'with the external ID' : 'with another external ID'}`))}`);
+      t.diagnostic(`a role assignment by the organization ID: ${byOrganizationId === undefined ? 'accepted' : `refused with HTTP ${String(statusOf(byOrganizationId))} ${String(codeOf(byOrganizationId))}`}`);
+      describeRecord(t, granted);
+
+      assert.deepEqual(assignments.map(({ role, resource }) => [role.slug, resource.resourceTypeSlug, resource.externalId]), [['member', 'organization', externalId]]);
+      assert.deepEqual([statusOf(byOrganizationId), codeOf(byOrganizationId)], [404, 'entity_not_found']);
+      assert.deepEqual(rolesAfterRefusal, ['member']);
+      assert.deepEqual([granted.outcome, granted.rolesBefore, granted.rolesAfter], ['applied', ['member'], ['member', superAdminRole]]);
+    });
+
+    test('Given an active membership with User and Admin, when the operator grants Super Admin and a customer revokes Admin with a single-role write after the inspection of the runbook and before its write, then the grant adds only super-admin, and the Admin revocation of the customer stays', proofOptions, async (t) => {
+      const fixtures = await run.organizationFixtures();
+      const user = fixtures.users['concurrent-grant'];
+      const membership = await membershipOf(fixtures, user);
+      assert.ok(membership, 'The identity has no membership.');
+      const runbook = new RunbookWithChangeAfterInspection(workos, () => workos.authorization.removeRole(organizationRole(fixtures, membership, 'admin')));
+
+      const granted = await runbook.grantSuperAdmin({ organizationId: membership.organizationId, email: user.email });
+      const roles = rolesOf(await membershipOf(fixtures, user));
+      describeRecord(t, granted);
+
+      assert.deepEqual(roles, [superAdminRole, 'user'], 'The operator grant did not keep the Admin revocation of the customer at the same time.');
+      assert.deepEqual([granted.outcome, granted.rolesBefore, granted.rolesAfter], ['applied', ['admin', 'user'], [superAdminRole, 'user']]);
+    });
+
+    test('Given an active membership with only Super Admin, when the operator revokes Super Admin and a customer grants User with a single-role write after the inspection of the runbook and before its write, then the revocation removes only super-admin, and the User grant of the customer stays', proofOptions, async (t) => {
+      const fixtures = await run.organizationFixtures();
+      const user = fixtures.users['concurrent-revoke'];
+      const membership = await membershipOf(fixtures, user);
+      assert.ok(membership, 'The identity has no membership.');
+      const runbook = new RunbookWithChangeAfterInspection(workos, () => workos.authorization.assignRole(organizationRole(fixtures, membership, 'user')));
+
+      const revoked = await runbook.revokeSuperAdmin({ organizationId: membership.organizationId, email: user.email });
+      const current = await membershipOf(fixtures, user);
+      describeRecord(t, revoked);
+
+      assert.deepEqual(rolesOf(current), ['user'], 'The operator revocation did not keep the User grant of the customer at the same time.');
+      assert.equal(current?.status, 'active');
+      assert.deepEqual([revoked.outcome, revoked.rolesBefore, revoked.rolesAfter], ['applied', [superAdminRole], ['user']]);
     });
 
     test('Given a membership whose only grant is Super Admin, when the operator revokes it, then the membership stays active with only the default role, which gives no application permission: the organization service lists no organization for the identity, and the identity stays', proofOptions, async (t) => {
