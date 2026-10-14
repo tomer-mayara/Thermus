@@ -453,12 +453,13 @@ import { createApplication } from './application.ts';
 
 `pnpm test` builds and runs all compiled tests. `pnpm test:unit`, `pnpm test:integration`, `pnpm test:acceptance`, and `pnpm test:interface` build and run only their respective suites. Each command removes output from deleted or renamed source files. Use `pnpm build` before a focused `node --test dist/...` command. `pnpm start` runs `dist/src/index.js` from the last build. `pnpm typecheck` checks source without emitting or clearing output.
 
-The unit, integration, and acceptance suites are offline. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
+The unit and integration suites are offline. The acceptance and interface OTel logger tests send logs to Axiom on every run and need ingest credentials and public network access. Live renderer tests need the pinned Lightpanda executable. The [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives separate commands for local fixture tests and the public-site smoke test. `pnpm test` and `pnpm test:interface` include the public-site smoke test and need public network access.
 
 `pnpm test:interface:axiom` runs the separate OTel interface test against Axiom and
-sends one test log. It needs Axiom ingest settings and public network access.
-Normal suite commands do not select it. The [OTel logger test guide](docs/testing/otel-logger.md)
-gives the settings and a command that loads them from `.env.local`.
+sends one additional test log to `system-log-test`. Normal suite commands do not
+select this separate file, but their OTel logger tests also export to that dataset.
+The [OTel logger test guide](docs/testing/otel-logger.md) gives the settings, which
+the tests read from the environment or the repository's `.env.local`.
 
 `pnpm test:build` runs the source TypeScript build acceptance tests with Node 24, temporary projects, and the real compiler. The main TypeScript config checks these tests. `tsconfig.build.json` excludes them from emitted output, so compiled test discovery cannot run them again. `npm run check` includes these tests after type checking and the unit suite.
 It also runs portal acceptance tests and builds the portal bundle. Portal tests

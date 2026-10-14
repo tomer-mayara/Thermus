@@ -26,13 +26,18 @@ not read Axiom settings or install a global provider.
 | `error` | 17 | `ERROR` |
 | `fatal` | 21 | `FATAL` |
 
-The unit tests use an emitter double. The acceptance and local interface tests
-use the real SDK and OTLP HTTP JSON exporter with a loopback receiver. The
-interface checks cover the exported body, severity, timestamp, and HTTP contract.
+The unit tests use an in-memory `emit` double and block outbound network calls.
+They do not create an SDK provider or exporter, and need no Axiom credentials.
+The acceptance and interface tests use the real SDK and OTLP HTTP JSON exporter.
+On every run, they export the same records to a loopback receiver and to Axiom's
+[`system-log-test` dataset](https://app.axiom.co/thermus-ai-spao/datasets/system-log-test).
+The loopback checks cover the exported body, severity, timestamp, and HTTP
+contract. The Axiom checks require a successful exporter result after flush.
 The SDK can assign the timestamp; the tests do not require the adapter to set it.
 
 ## Local runs
 
+Set the Axiom settings below before running the acceptance or interface files.
 Use the focused build command:
 
 ```sh
@@ -43,37 +48,48 @@ The OpenTelemetry API, SDK, and HTTP exporter are pinned to 0.223.0. The API is
 a production dependency. The SDK and HTTP exporter are test dependencies; the
 caller supplies them when it configures an export destination.
 
-## Axiom run
+## Axiom settings and runs
 
-`test/interface/logging/otel-logger-axiom.live.ts` is separate from normal test
-globs. Export these settings in the shell:
+The acceptance and interface `otel-logger.test.ts` files require Axiom on every
+run. Export these settings in the shell or put them in the repository's
+`.env.local`:
 
 ```ini
 AXIOM_API_KEY=<ingest token>
 AXOIM_ENDPOINT_URL=https://us-east-1.aws.edge.axiom.co
-AXIOM_SYSTEM_LOG_DATA_SET=system-log
+AXIOM_SYSTEM_LOG_TEST_DATA_SET=system-log-test
 ```
 
 `AXOIM_ENDPOINT_URL` retains the spelling supplied for the local environment.
-The test requires all three settings and does not load an environment file.
+Use the HTTPS ingestion endpoint, not the dataset page URL. The token needs
+ingest access to `system-log-test` in the `thermus-ai-spao` organization.
+The tests read `.env.local` without shell evaluation. Exported environment
+values take precedence. Keep the file and its credentials out of version
+control and test reports.
+
+The test dataset setting defaults to `system-log-test`. The tests reject another
+value and never use the production `AXIOM_SYSTEM_LOG_DATA_SET` setting. Missing
+credentials, an invalid endpoint, and a rejected or timed-out export fail the
+test; they do not skip it or fall back to local delivery.
+
+`npm run test:acceptance`, `npm run test:interface`, and `npm test` select the
+regular logger tests, so those suites also need Axiom settings and network
+access. `npm run check` runs the offline unit coverage; it does not select these
+logger acceptance and interface files.
+
+`test/interface/logging/otel-logger-axiom.live.ts` provides an additional test
+with a unique INFO message. It is separate from normal test globs and uses the
+same test dataset and settings:
 
 ```sh
 npm run test:interface:axiom
 ```
 
-If the settings are in the repository's `.env.local`, load that file with Node:
-
-```sh
-npm run build && node --env-file=.env.local --test dist/test/interface/logging/otel-logger-axiom.live.js
-```
-
-Node reads the file without shell evaluation. Keep the file and its credentials
-out of version control and test reports.
-
-This command sends one uniquely named test log. It checks the exporter result;
-flush completion alone does not prove that Axiom accepted the request. A pass
-shows successful export to the configured endpoint. It does not prove that the
-log is visible in an Axiom query. The token needs ingest access to the dataset.
+The focused acceptance and interface run sends eight records: one default INFO
+record, five severity records, and two text records. The additional live command
+sends one more record. Each fixture reports a unique scope name to identify its
+records. A pass shows successful export to Axiom. It does not prove that the log
+is visible in an Axiom query; that check needs query access.
 
 Axiom documents the `/v1/logs` endpoint, bearer authorization, and
 `X-Axiom-Dataset` header in its [OpenTelemetry guide](https://axiom.co/docs/send-data/opentelemetry).

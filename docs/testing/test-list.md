@@ -460,7 +460,8 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] Preserves the log methods, default INFO level, thresholds, and caller location of `BaseLogger`
 [V] Maps each accepted level to an OpenTelemetry severity and preserves the message body
 [V] Exports OTLP log records through the SDK to a loopback receiver with the Axiom headers
-[V] Sends one test log to Axiom through the separate live interface command and checks the exporter result
+[V] Sends acceptance and interface log records to Axiom's `system-log-test` dataset on every run and checks the exporter result
+[V] Sends one additional test log to `system-log-test` through the separate live interface command
 
 **Renderer network policy**
 
