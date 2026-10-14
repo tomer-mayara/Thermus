@@ -393,11 +393,17 @@ for configuration, development, browser builds, and WorkOS verification.
 
 Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and Node runs the output in `dist/`. Build acceptance tests run directly from TypeScript source on Node 24. `tsx` is only for local development.
 
-- Node 24 (`nvm use` reads `.nvmrc`)
+- Node 24 for production; Node 24.20.0 for development and checks (`nvm use` reads `.nvmrc`)
 - pnpm 12.10.1
 - A POSIX shell for build commands (macOS or Linux)
 - Lightpanda 1.0.0 for rendering and live renderer tests; follow [runtime setup](docs/lightpanda-runtime.md). `pnpm install` does not install it. The unit suite needs no renderer.
 - Docker Engine with Buildx and Compose for the [container installation](#container-installation) and `pnpm test:container`. No other suite needs Docker.
+
+`package.json` and `pnpm-lock.yaml` pin the development runtime to Node 24.20.0,
+the same version as the Docker image. `pnpm install` installs this runtime if it
+is not cached, and pnpm scripts use it even when the shell has another Node
+version. Use `pnpm exec node --version` to check it. Before direct `npm` or
+`node` commands, run `nvm use` or select Node 24.20.0 with your runtime manager.
 
 ## Scripts
 

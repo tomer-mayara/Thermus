@@ -2,7 +2,7 @@
 
 Status: P01 is implemented with test-injected dependencies; P02 and P03 remain
 planned. Date: 2026-10-13. The [P01 implementation record](mcp-p01.md) describes
-the delivered scope and its historical verification before rebase.
+the delivered scope, historical verification, and the gate repair after rebase.
 The original plan publication changed documents only.
 The [fictional design review](mcp-server-plan-review.md) explains the corrections.
 

@@ -3,9 +3,9 @@
 ## MCP-P01: HTTP fetch with supplied dependencies
 
 Ticket: `6792e30e-bbd2-483e-958d-21db4ced6da6`. The ticket has no dependency.
-This file records the implemented slice and its historical verification before
-rebase. The [full MCP plan](mcp-server-plan.md) defines the remaining P02 and P03
-scope.
+This file records the implemented slice, historical verification, and the gate
+repair below. The [full MCP plan](mcp-server-plan.md) defines the remaining P02
+and P03 scope.
 
 The request builder reuses `MCPServer` authentication and context binding. It
 accepts a trusted `RequestContext` and returns an SDK `Server` or `McpServer`.
@@ -85,6 +85,85 @@ for the following reasons; `.habit-hooks/snooze.json` remains `[]`:
   keeps the input, result, permission, failure, and cancellation contract of one
   operation together. A split only to meet the line limit would not improve
   either test's scope.
+
+## Gate repair after rebase on 2026-10-14
+
+The branch was rebased onto pinned base
+`96e9dfd53e232d37a763c2ab2fa3a5cbbda1cdb8`. The test-inventory conflict keeps
+the completed P01 cases, canonical identity fields, and the named deferred
+`postURLAsMarkdown(url, params, reason)` tool. The base's `Hello` log fixtures
+and code-review-agents submodule revision remain intact.
+
+Before the repair, the non-login worker selected Node 22.14.0; the login shell
+selected Node 24.20.0. `pnpm typecheck && pnpm test:unit` passed on Node 24.20.0
+but reproduced the saved failure on Node 22.14.0: exit 1, 1,997 tests,
+1,899 passes, 98 failures, and no cancelled, skipped, or todo tests.
+The older runtime lacks `mock.property`, `AsyncDisposableStack`,
+`SuppressedError`, and SQLite APIs used by the existing tests and application.
+
+`package.json` now pins the development runtime with
+`devEngines.runtime` to Node 24.20.0 and allows pnpm to download it.
+`pnpm runtime set node 24.20.0 --save-dev --yes` generated the runtime lock
+entries, including platform checksums. No existing dependency version changed.
+`.nvmrc` selects the same version as this pin and the existing Docker image.
+Production code and all existing tests remain unchanged by the repair.
+
+Manager review accepted the delegated runtime change. In a non-login shell,
+`pnpm exec node --version` now reports `v24.20.0`. A runtime probe checks the
+four missing APIs above and exits 0. The exact pipeline command uses the pinned
+runtime without a login-shell setup or global runtime change.
+
+The following runs use the complete repaired candidate. Counts are
+tests/pass/fail/cancelled/skipped/todo.
+
+| Command | Exit | Result |
+| --- | --- | --- |
+| `pnpm install --frozen-lockfile` | 0 | The lockfile is current; no dependency resolution or lockfile change. No test counts apply. |
+| `pnpm typecheck && pnpm test:unit` in the non-login worker | 0 | Unit 1997/1997/0/0/0/0; portal unit 6/6/0/0/0/0. Type checks passed. |
+| `npm run check` | 0 | Unit 1997/1997/0/0/0/0; portal unit 6/6/0/0/0/0; build 10/10/0/0/0/0; portal acceptance 4/4/0/0/0/0. Type checks and portal build passed. |
+| `npm run test:integration` | 0 | 251/251/0/0/0/0 |
+| `npm run test:acceptance` | 1 | Server 163/162/1/0/0/0. The live Axiom test requires the absent `AXIOM_API_KEY`. The command did not reach portal tests; `check` ran those above. |
+| `LIGHTPANDA_BIN="$PWD/.cache/lightpanda/1.0.0/lightpanda" npm run test:interface` | 1 | 83/81/2/0/0/0. Only the two live Axiom tests failed, for the absent key. |
+| `npm run test:container` | 1 | 8/0/0/8/0/0. Image setup failed in the native dependency installation; no acceptance case ran. |
+| Focused command below | 0 | 487/487/0/0/0/0 |
+| `habit-hooks` | 1 | The same 14 comment findings and two file-length findings; retained reasons are above. No new finding. Snooze file remains `[]`. |
+
+The Lightpanda executable reports 1.0.0 and its SHA256 matches the runtime guide.
+The full acceptance, interface, and container gates are not green. Supply the
+documented Axiom test settings and restore crate download access before Ready,
+then rerun these gates.
+
+To diagnose the image failure, this command retried its dependency stage:
+
+```sh
+docker build --progress=plain --target dependencies \
+  --tag thermus-mcp-p01-r4-build-probe .
+```
+
+It exited 1 with no test count. Cargo reported HTTP/2 framing errors and could
+not download `thiserror` 1.0.69 from `static.crates.io`. The native `adblock-rs`
+postinstall exited 101. The retry did not produce an image. Dockerfile and
+production telemetry settings were not changed.
+
+The built focused command covers the original failing fixtures, P01 tests,
+retained auth checks, and the public renderer cancellation contract:
+
+```sh
+npm run build && \
+LIGHTPANDA_BIN="$PWD/.cache/lightpanda/1.0.0/lightpanda" node --test \
+  "dist/test/unit/mcp/*.test.js" "dist/test/unit/website-fetcher/*.test.js" \
+  dist/test/unit/config/deployment-config.test.js \
+  dist/test/unit/config/listen-address.test.js \
+  dist/test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.js \
+  dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-text.test.js \
+  "dist/test/integration/mcp/*.test.js" \
+  dist/test/integration/auth/local-access.test.js \
+  dist/test/integration/auth/mcp-context.test.js \
+  dist/test/acceptance/auth/mcp-access.test.js "dist/test/acceptance/mcp/*.test.js" \
+  dist/test/acceptance/architecture/auth-boundaries.test.js \
+  dist/test/interface/auth/better-auth.test.js \
+  dist/test/interface/website-fetcher-cancellation.test.js
+```
 
 ## Deferred work
 

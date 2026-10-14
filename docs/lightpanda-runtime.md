@@ -88,7 +88,11 @@ A selected executable that is missing produces an error that points to this docu
 
 ## Verify rendering
 
-Install Node 24 and pnpm 12.10.1, then install project dependencies with `pnpm install`. The unit suite uses process doubles. It needs no Lightpanda executable or public network access:
+Use Node 24.20.0 and pnpm 12.10.1, then install project dependencies with `pnpm install`.
+The project pins this Node version for pnpm scripts; the initial installation
+downloads it if needed. Select the same version with `nvm use` before direct
+`node` commands below. The unit suite uses process doubles. It needs no
+Lightpanda executable or public network access after installation:
 
 ```sh
 pnpm test:unit
