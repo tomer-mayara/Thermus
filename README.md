@@ -454,6 +454,7 @@ pnpm test:interface   # clean build, then node --test on dist/test/interface/
 pnpm test:container   # clean build, then the container gate: the image and its containers without outbound access
 pnpm test:hosted-live # clean build, portal build, then the hosted live gate; needs WorkOS staging settings and Playwright Chromium
 pnpm test:mcp:renderer # clean build, then the renderer gate: the fetch tool with the pinned Lightpanda; needs LIGHTPANDA_BIN
+pnpm work-slice:basic-mcp-url-fetch # the basic MCP URL fetch work slice: the fetch tool with the mock provider, a local LLM client, and Axiom logs; needs LIGHTPANDA_BIN and the Axiom settings
 pnpm typecheck   # server and portal types; no output
 pnpm dev:user-portal     # Vite at http://localhost:5173
 pnpm build:user-portal   # portal types and browser bundle
@@ -470,6 +471,8 @@ src/         Node server TypeScript source
 src/user-portal/
              Browser TypeScript, HTML, CSS, and Vite configuration
 test/        node:test files
+test/acceptance/work-slice/
+             Work slice entry points, their acceptance tests, and their guide
 migrations/  Shipped SQL migrations, such as auth-local/ for the self-hosted edition
 docs/        Documentation, design plans, and archived records
 dist/        tsc output (gitignored)
@@ -514,6 +517,8 @@ run from TypeScript source on Node 24 because the Node build excludes browser so
 `pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
 
 `pnpm test:mcp:renderer` makes a clean build and runs the explicit renderer gate, `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select it. Set `LIGHTPANDA_BIN` to the absolute path of the pinned Lightpanda 1.0.0 executable first; the [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) tells how. The gate needs no public network access and no Axiom credentials: its pages are local HTTP fixtures on `127.0.0.1`. Without the pinned renderer, setup fails, and no test passes. Only a pass of this command is proof of rendered tool behavior; the container gate checks only one local page with the renderer of the image. The [renderer gate](docs/implementation/test-gate-policy.md#renderer-gate-mcp-p03) gives the rules.
+
+`pnpm work-slice:basic-mcp-url-fetch` runs `test/acceptance/work-slice/basic-mcp-url-fetch.ts` from source with `tsx`. The file name has no `.test`, so `pnpm test` and `pnpm test:acceptance` do not select it, as with the `.runtime.ts` and `.live.ts` files. The script serves the fetch tool with the test-only mock provider, which accepts any Bearer token. It prints the command that adds the server to Claude Code with a static `Authorization` header. It sends its log to Axiom's `system-log-test` dataset: one tool call writes the URL before the fetch, the Markdown after it, and the completion record. The script needs `LIGHTPANDA_BIN` set to the pinned Lightpanda 1.0.0 and the Axiom settings of the [OTel logger test guide](docs/testing/otel-logger.md) in the environment or in `.env.local`. It also needs public network access and a free port 8080 or another port in `LISTEN_PORT`. The [work slice guide](test/acceptance/work-slice/README.md) describes each slice, and the [work slice plan](docs/implementation/basic-mcp-url-fetch-plan.md) records the decisions and the run. The acceptance test of the slice, `test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`, runs offline in the acceptance suite with a renderer double. The script is a development tool. Production keeps Better Auth and the hosted WorkOS provider, and no server setting selects the mock provider.
 
 The hosted WorkOS, organization, and administration tests are offline, and the unit, integration, and acceptance suites select them. To run only the hosted integration and acceptance files:
 

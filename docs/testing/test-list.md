@@ -851,6 +851,31 @@ The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` doubl
 npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
 ```
 
+**Work slice: basic MCP URL fetch** (`test/unit/work-slice/work-slice-settings.test.ts`, `work-slice-logger.test.ts`, `work-slice-server.test.ts`)
+
+Doubles stand in for the OpenTelemetry output, the console stream, the fetch operation, and the MCP handler. The tests need no renderer, no Axiom settings, and no network access.
+
+[V] `readWorkSliceSettings()` with only `LIGHTPANDA_BIN`, also with empty optional settings, gives a frozen record: listen host `127.0.0.1`, port 8080, the base, MCP resource, and metadata URLs of that address, and no ad rules
+[V] Makes the default base URL from `LISTEN_HOST` and `LISTEN_PORT`, also for an IPv6 host; adds the missing final slash to a `PUBLIC_BASE_URL`, also one with a path, and makes the MCP resource and the metadata URL from it
+[V] Refuses a relative `PUBLIC_BASE_URL`, a scheme other than `http` or `https`, a username or password, and a query or fragment, also an empty one; each message names the rule without the value
+[V] Refuses `LISTEN_PORT=0`, because the client URL must be known before the server listens; the `DeploymentConfigError` of a `LISTEN_PORT` that is not a number passes through unchanged
+[V] Requires `LIGHTPANDA_BIN` as an absolute path; the message for a missing or empty value names the runtime guide
+[V] Gives no ad rules without `AD_RULES_FILE` and the contents of the file with it; the `AdRulesFileError` of a relative path passes through unchanged
+[V] Reads only the supplied record and ignores `process.env`
+[V] `WorkSliceLogger` writes one console line and emits one OpenTelemetry record for each accepted message; both show the call site of the caller
+[V] Gives each level the OpenTelemetry severity number and label of `OtelLogger`
+[V] Starts at INFO, so DEBUG is hidden; `setLevel` applies each new threshold, also NONE, to the console and to the records
+[V] Writes the console line to stderr when it gets no console stream
+[V] `observeFetches()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
+[V] Counts code points, not UTF-16 units; above the limit, the completed line keeps the first code points without a split surrogate pair and ends with `[cut: <n> more characters]`, and the caller still gets the whole Markdown; the default limit is 65,536 code points
+[V] When the operation fails with an `Error`, a cancellation `DOMException`, or a value that is not an `Error`, writes one ERROR line with the message and throws the same value again
+[V] Gives the operation the same URL, request context, and signal
+[V] `routeRequests()` sends each POST, GET, or DELETE request on the MCP path, also with a query, unchanged to the MCP handler; each other path, also a near match, gets a `404` text response, and the handler gets no request
+
+```sh
+npm run build && node --test dist/test/unit/work-slice/work-slice-settings.test.js dist/test/unit/work-slice/work-slice-logger.test.js dist/test/unit/work-slice/work-slice-server.test.js
+```
+
 ### Planned Cache Key Tests
 
 No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
@@ -1331,6 +1356,19 @@ Run the applicable local renderer interface cases with the pinned runtime:
 npm run build && node --test dist/test/interface/website-fetcher-cancellation.test.js dist/test/interface/website-fetcher-http.test.js dist/test/interface/website-fetcher-network.test.js dist/test/interface/website-fetcher-readiness.test.js dist/test/interface/website-fetcher-redirects.test.js
 ```
 
+**Work slice logging** (`test/interface/work-slice/work-slice-logging.test.ts`)
+
+`openAxiomLogging()` runs with the real OpenTelemetry SDK and OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access. The closed-port case takes about 9 seconds, because the exporter retries a refused connection until its deadline.
+
+[V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets the line and no failure line
+[V] Given a receiver that refuses the export with HTTP 401, the console gets one failure line with the error name and the HTTP status, without the error message or the response body; `close()` rejects with the count, `1 log export`
+[V] Given two refused batches, the console gets two failure lines, and `close()` rejects with the plural count, `2 log exports`
+[V] Given a closed loopback port, the console gets one failure line with the system error name `ECONNREFUSED`, without an HTTP status or the address; `close()` rejects with the count
+
+```sh
+npm run build && node --test dist/test/interface/work-slice/work-slice-logging.test.js
+```
+
 ## Acceptance
 
 **MCP HTTP fetch tool** (`test/acceptance/mcp/http-fetch.test.ts`, `http-fetch-refusals.test.ts`, `http-fetch-cancellation.test.ts`)
@@ -1449,6 +1487,19 @@ Run the renderer gate with the pinned runtime. The `.runtime.ts` name keeps the 
 
 ```sh
 npm run test:mcp:renderer
+```
+
+**Work slice: basic MCP URL fetch** (`test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`)
+
+`startWorkSliceServer()` runs in the test process with the mock provider, no ad rules, the real cleaning pipeline, the production MCP server, and the production HTTP bridge. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
+
+[V] Given the work-slice server with the mock provider, no ad rules, and a renderer double that serves `https://news.example/story`, when an MCP client in each protocol era with the token `any-token` lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown, the log has the started line, the completed line, and one completion record, and `close()` stops the server
+[V] Given the work-slice server, when a request has no `Authorization` header, then it gets 401 with a Bearer challenge, a request to another path gets 404, no renderer starts, and the log has no fetch line
+
+The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test, and the [work slice guide](../../test/acceptance/work-slice/README.md) describes it.
+
+```sh
+npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch.test.js
 ```
 
 **Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)

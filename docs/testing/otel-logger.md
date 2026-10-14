@@ -67,6 +67,11 @@ The tests read `.env.local` without shell evaluation. Exported environment
 values take precedence. Keep the file and its credentials out of version
 control and test reports.
 
+The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
+reads the same settings with the same reader and exports to the same test
+dataset. It shows each refused or failed export on its console. After such a
+failure, it exits with status 1 when it stops.
+
 The test dataset setting defaults to `system-log-test`. The tests reject another
 value and never use the production `AXIOM_SYSTEM_LOG_DATA_SET` setting. Missing
 credentials, an invalid endpoint, and a rejected or timed-out export fail the

@@ -217,12 +217,15 @@ Startup failure releases resources that already opened and preserves the
 startup error. A cancelled call records `cancelled`, not a fetch failure, and
 cannot publish success. A disconnected client might receive no response.
 
-`NoAuthProvider` exists only in `test/support/auth/no-auth-provider.ts`. Tests
+`NoAuthProvider` exists only in `test/support/auth/no-auth-provider.ts`. The
+tests and the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
 inject it as both `IdentityVerifier` and `AccessResolver`. It accepts supplied
 token contents and returns a fixed synthetic identity and workspace, only
 `product:access`, a distinct client ID, a synthetic issuer, the configured
 resource, current finite times, and empty scopes. It does not bypass Bearer
 syntax checks. Production retains Better Auth and the hosted WorkOS provider.
+The work slice is a development script outside `src/`; no server setting
+selects the provider.
 
 The P01 and P02 HTTP acceptance cases use the real SDK client and production
 HTTP bridge with fetcher and pipeline doubles. The P03 offline fetch tool
