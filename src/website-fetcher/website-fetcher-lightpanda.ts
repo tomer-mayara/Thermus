@@ -1,6 +1,6 @@
 import { execFile, type ChildProcess, type ExecFileException } from 'node:child_process';
 import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
-import { WebsiteFetchHttpError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
+import { WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
 const LIGHTPANDA_DEFAULT_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
@@ -51,12 +51,20 @@ function assertSuccessfulHttpStatus(result: Record<string, unknown>, cause: Exec
 
 function assertRendererExit(cause: ExecFileException | null, executable: string): void {
   if (cause === null) return;
-  if (cause.code === 'ENOENT') {
-    throw new Error(`Lightpanda executable "${executable}" was not found. See docs/lightpanda-runtime.md for setup.`, { cause });
-  }
+  const launchFailure = launchError(cause, executable);
+  if (launchFailure !== undefined) throw launchFailure;
   if (cause.killed || cause.signal != null || typeof cause.code !== 'number') {
     throw cause;
   }
+}
+
+// Node gives a system error code, such as ENOENT or EACCES, when the process cannot start. A process that started
+// gives an exit code or a signal. The process error repeats the arguments with the URL, so it stays only the cause.
+function launchError(error: unknown, executable: string): WebsiteFetchLaunchError | undefined {
+  const code = (error as { code?: unknown } | null)?.code;
+  if (typeof code !== 'string' || !/^E[A-Z0-9]+$/.test(code)) return undefined;
+  const problem = code === 'ENOENT' ? 'was not found' : `could not start (${code})`;
+  return new WebsiteFetchLaunchError(code, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error });
 }
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
@@ -150,7 +158,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
         }
       } catch (error) {
         cleanup();
-        reject(signal?.aborted ? signal.reason : error);
+        reject(signal?.aborted ? signal.reason : launchError(error, this.executable) ?? error);
       }
     });
   }
