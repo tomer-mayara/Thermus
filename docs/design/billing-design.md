@@ -469,12 +469,13 @@ ticket. Do not create another one.
 3. Connect the provider implementation. `composeWorkOSApplication()` in
    `src/hosted-workos-application.ts` creates it instead of `BillingFree`, and
    `composeHostedApplication()` gives it to `OrganizationAdministration`. Thus
-   the current callers of `Billing` use it. `changeGrant()` of
-   `OrganizationAdministration` gives the complete count of active User seats
-   to `updateSeats` after each applied User grant change. The billing page
-   reads `stateOf` through `billingState()` of `OrganizationAdministration`.
-   Connect each new caller to the same `Billing`. If no approved rule still
-   uses `BillingFree` after this change, remove it.
+   the two current callers of `Billing`, `changeGrant()` and `billingState()`
+   of `OrganizationAdministration`, use the provider implementation.
+   `changeGrant()` gives the complete count of active User seats to
+   `updateSeats` after each applied User grant change. `billingState()` reads
+   `stateOf` for the billing page. Connect each new caller to the same
+   `Billing`. If no approved rule still uses `BillingFree` after this change,
+   remove it.
 4. Pass the [paid gates](#paid-gates).
 
 ### Files and storage
