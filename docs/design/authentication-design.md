@@ -312,10 +312,10 @@ AUTH-06 applied these rules to the replacement:
   Admin grant management, invitations, basic change records, and the User
   seat summary on these roles,
   with the member, grant, and invitation methods of `OrganizationDirectory`.
-  AUTH-08W, which is deferred with WorkOS, implements these methods in
-  `WorkOSOrganizations`, with live seat reads, and proves the safe grant and
-  invitation effects in WorkOS. It must answer `unsupported` when it cannot
-  make a change safely. Their tests use doubles of the roles, like the doubles
+  AUTH-08W implemented these methods in `WorkOSOrganizations`, with live seat
+  reads, and proved the safe grant and invitation effects in WorkOS. It
+  answers `unsupported` when it cannot make a change safely. Their tests use
+  doubles of the roles, like the doubles
   in [files and ownership](#files-and-ownership). No double, mock mode, or
   setting becomes a production sign-in, and `DEPLOYMENT` stays the one edition
   selector.
@@ -376,20 +376,18 @@ can give it a connection to a local fake of the WorkOS API:
   answer, a membership without an organization name, two active memberships
   in one organization, a repeated page cursor, more than 10 pages, a
   `HostedRoleConfigurationError`, and each SDK failure.
-- Until AUTH-08W, `memberPage()`, `member()`, `invitationPage()`, and
-  `invitation()` throw, so that no empty page looks like an organization
-  without members or invitations. `changeGrant()`, `sendInvitation()`,
-  `resendInvitation()`, and `revokeInvitation()` answer `unsupported` without
-  a WorkOS call. The invitation policy is `provider-rules`.
-- Thus the organization page, the organization selection, and the billing
-  page work with current WorkOS reads. A user can also choose the
-  organization of a browser session at the AuthKit sign-in. For an Admin or a
-  Super Admin with MFA, the member and invitation pages and their change posts
-  give the `500` failure page with an operator report, because their reads
-  fail, and the record of a change says `failed`. Without MFA or without such
-  a permission, the answer stays `403`. A grant change or an invitation of a
-  role that the actor does not manage, also a customer grant of Super Admin,
-  still gets `403` before any member or invitation read.
+- Since AUTH-08W, `memberPage()`, `member()`, `invitationPage()`, and
+  `invitation()` read WorkOS, and `changeGrant()`, `sendInvitation()`,
+  `resendInvitation()`, and `revokeInvitation()` change WorkOS, as
+  [WorkOS organization administration](#workos-organization-administration-of-auth-08w)
+  gives. The invitation policy is `provider-rules`.
+- Thus the organization page, the organization selection, the billing page,
+  the members and invitations pages, and their changes work with current
+  WorkOS reads and changes. A user can also choose the organization of a
+  browser session at the AuthKit sign-in. Without MFA or without the
+  permission of a change, the answer stays `403`. A grant change or an
+  invitation of a role that the actor does not manage, also a customer grant
+  of Super Admin, gets `403` before any member or invitation read.
 - The billing stays `BillingFree`.
 
 The routes answer in this order: the MCP resource and both protected-resource
@@ -1121,29 +1119,64 @@ expiry of the access token carried the refreshed session cookie.
 
 #### Hosted provider findings
 
-The offline proofs found these points. Each needs a live proof or an owner
-decision before the operation that depends on it.
+The offline proofs found the first three points. Each needed a live proof or an
+owner decision before the operation that depends on it. The probes and the live
+proofs of AUTH-08W resolved them and found the other points.
 
 1. **No conditional grant write.** The pinned SDK changes the organization
-   roles of a membership only with a complete replacement, without a
-   precondition or an idempotency key. If two administrators change different
-   grants of one membership at the same time, one change can be lost. A retry
-   with an old role set can return a grant that someone revoked later. The
-   resource role assignments of the SDK (`authorization.assignRole()` and
-   `removeRole()`) add or remove one role, but they need a resource, and WorkOS
-   keeps organization roles on the membership. The live proofs of AUTH-08W must
-   recheck this finding against the pinned provider and show if the service has
-   a safe alternative. Until they show a safe effect, `WorkOSOrganizations`
-   answers `unsupported` to each grant change, so customer grant changes stay
-   unavailable. If the service has no safe alternative, the owner must select a
-   resolution before AUTH-08W enables grant changes.
+   roles of a membership with a complete replacement,
+   `updateOrganizationMembership(id, { roleSlugs })`, without a precondition or
+   an idempotency key. If two administrators change different grants of one
+   membership at the same time, one change can be lost. A retry with an old
+   role set can return a grant that someone revoked later. AUTH-08W found the
+   safe alternative in WorkOS: the organization roles of a membership are role
+   assignments on the authorization resource of the organization (resource
+   type `organization`, with the organization ID as its external ID).
+   `authorization.assignRole()` and `removeRole()` with that resource add or
+   remove exactly one role and keep each other role, also when other
+   single-role changes of the same membership run at the same time. Thus
+   customer grant changes use only these single-role writes, and never the
+   replacement. WorkOS has no precondition for them either, so the directory
+   reads the revision again just before each write (see
+   [WorkOS organization administration](#workos-organization-administration-of-auth-08w)).
+   The operator runbook of AUTH-07W still uses the replacement for Super Admin,
+   with its documented limit; the follow-up ticket
+   `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changes it to the single-role writes.
 2. **Create can reactivate.** The SDK documents that a create for an inactive
    membership activates it with the given roles. A retried create can thus undo
-   a later deactivation. A grant operation must read the current state before
-   each retry. AUTH-08W owns this proof.
+   a later deactivation. No customer operation creates, reactivates,
+   deactivates, or deletes a membership: the directory changes only the roles
+   of an active membership. A single-role write on an inactive membership
+   changes its roles and does not reactivate it, so the directory refuses it
+   (`unsupported`): a later reactivation would give the changed roles. The only
+   customer path to a membership is an invitation, and its acceptance gives
+   only the invited role (point 5).
 3. **One role for each invitation.** `sendInvitation()` accepts one `roleSlug`.
    This agrees with the planned invitations, which give User or Admin, but not
    both.
+4. **Send refusals.** WorkOS refuses a send to an address that has a pending
+   invitation of the organization, for any role and in any letter case, with
+   `400` `email_already_invited_to_organization`, and a send to the address of
+   an active member with `400` `user_already_organization_member`. The
+   directory answers `address-in-use` for both. A resend of a revoked or an
+   accepted invitation gives `400` `invite_revoked` or `invite_accepted`, and a
+   revoke of an invitation that is not pending gives `400`
+   `invite_not_pending`.
+5. **Invitations make pending memberships.** A send to a new address makes an
+   unverified WorkOS user and a pending membership with only the invited role.
+   A send to the address of a user with an inactive membership turns that
+   membership into a pending membership with only the invited role; its earlier
+   roles go. The acceptance makes the pending membership active with only that
+   role. A revoke leaves the pending membership pending, without access; a
+   later invitation to the same address uses it again with the new role.
+6. **The role of an invitation follows its membership.** WorkOS gives the
+   `role_slug` of an invitation from the current role of its membership, not
+   from the send. After an acceptance and a later role change of the
+   membership, the accepted invitation shows the later role. Only the role of a
+   pending invitation is the role that its acceptance gives.
+7. **No email on a membership.** A WorkOS membership has the user ID but no
+   email, and the user list of an organization gives only the users with an
+   active membership. The member reads thus read each user.
 
 ## Hosted browser sessions
 
@@ -1389,7 +1422,10 @@ change, its effect is not known:
   `expired`). A record holds no token or link, because they are credentials of
   the invited person. `invitation()` finds the invitation in any organization.
 - `sendInvitation({ organizationId, email, role })` gives `{ outcome }`:
-  `applied` or `unsupported`. `resendInvitation(invitationId)` and
+  `applied`, `address-in-use`, or `unsupported`. `address-in-use` means that
+  the address already belongs to a member of the organization or has a pending
+  invitation there, so the directory sent none (AUTH-08W added it, because
+  WorkOS refuses these sends). `resendInvitation(invitationId)` and
   `revokeInvitation(invitationId)` give `{ outcome }`: `applied`,
   `not-pending`, or `unsupported`. The directory sends the email and owns the acceptance and the
   activation of the membership. An acceptance activates only the role of the
@@ -1457,7 +1493,8 @@ The invitation changes have the same authority:
   role is pending, it sends nothing, and the result is `unchanged`. Thus a
   repeated post or a retry after an unknown outcome sends no second
   invitation. A send after another administrator revoked an invitation is a
-  new decision of the actor, so it sends a new invitation.
+  new decision of the actor, so it sends a new invitation. Only an explicit
+  directory result counts: `applied`, `address-in-use`, or `unsupported`.
 - `resendInvitation()` and `revokeInvitation()` need an invitation that
   exists, belongs to the organization of the request, and has a role that the
   actor manages; else `denied`. It must be pending; else `not-pending`, with no
@@ -1465,8 +1502,8 @@ The invitation changes have the same authority:
   when the invited person accepted at the same time.
 
 The results (`ChangeResult`, in `src/organizations/change-records.ts`) are
-`applied`, `unchanged`, `denied`, `mfa-required`, `stale`, `not-pending`, and
-`unsupported`. `ChangeRecording` runs each change in two steps: its checks with
+`applied`, `unchanged`, `denied`, `mfa-required`, `stale`, `not-pending`,
+`address-in-use`, and `unsupported`. `ChangeRecording` runs each change in two steps: its checks with
 current reads, and then its one directory change. `ChangeRecorder.record(entry)`
 gets one frozen record for each grant change, invitation, resend, and revoke
 request, also a refused one. An overview keeps no record. A record has:
@@ -1570,7 +1607,11 @@ context without an organization gives the `403` access denial.
   `409`, "The organization, the member, or the invitation changed after the
   page was shown. Nothing changed. Open the page again and check the current
   state."; `not-pending` gives `409`, "The invitation is no longer pending: it
-  was accepted, revoked, or expired. Nothing changed."; and `unsupported` gives
+  was accepted, revoked, or expired. Nothing changed."; `address-in-use` gives
+  `409`, "This email address already belongs to a member of the organization,
+  or it has a pending invitation. Nothing changed.", with the advice to change
+  the roles of a member on the members page, or to revoke the pending
+  invitation before an invitation with another role; and `unsupported` gives
   `503`, "The account directory cannot make this change safely now. Nothing
   changed." A failure gives the `500` failure page and an operator report.
 - Each answer after a sign-in carries the cookie effects of the session, also a
@@ -1581,13 +1622,14 @@ one `INFO` line in the operator log, `Account change record: <JSON>`, until
 hosted storage exists. Thus the change records stay in the operator log, and
 AUTH-08 adds no hosted storage.
 
-The WorkOS side of these methods stays deferred. AUTH-08W, which is deferred
-with WorkOS, implements these directory methods in `WorkOSOrganizations`, with
-live seat reads, and the provider proofs of safe grant and invitation effects:
-conditional changes on the revision, retries, concurrent changes, the default
-role, and an acceptance that activates only the role of the invitation, also
-for a membership that becomes active again. It must answer `unsupported` when
-it cannot make a change safely.
+AUTH-08W implemented these directory methods in `WorkOSOrganizations`, with
+live seat reads, and proved the safe grant and invitation effects in WorkOS:
+single-role changes on the revision that the page showed, retries, concurrent
+changes, the default role, and an acceptance that activates only the role of
+the invitation, also for a membership that becomes active again. It answers
+`unsupported` when it cannot make a change safely.
+[WorkOS organization administration](#workos-organization-administration-of-auth-08w)
+gives the rules.
 
 AUTH-07W implemented the reads of AUTH-07 in `WorkOSOrganizations`.
 `membershipsOf(user)` reads each active membership of a WorkOS user with the
@@ -1597,13 +1639,7 @@ the grants of the [hosted role mapping](#hosted-role-mapping), and nothing to
 a user of another authority. Each unexpected answer, role configuration error,
 and read failure throws, so that access fails closed. The
 [hosted composition with WorkOS](#hosted-composition-with-workos) gives the
-complete rules. Until AUTH-08W, the member and invitation reads of
-`WorkOSOrganizations` throw, so that no empty page looks like an organization
-without members or invitations, and its changes answer `unsupported` without a
-WorkOS call. Thus, for an Admin or a Super Admin with MFA, the member and
-invitation pages and each change post that needs a member or invitation read
-give the `500` failure page, and the record of the change says `failed`.
-AUTH-07W also wrote the
+complete rules. AUTH-07W also wrote the
 [operator runbook](../implementation/hosted-organization-setup.md) for the
 operator setup and recovery.
 
@@ -1685,6 +1721,87 @@ Super-Admin-only memberships, pending invitations, and inactive memberships do
 not count. A failed page fails the summary rather than showing an incomplete
 number. This is an observed live count, not a transactional billing snapshot.
 Billing authority belongs to Super Admin in that organization.
+
+### WorkOS organization administration of AUTH-08W
+
+AUTH-08W implemented the member, grant, and invitation methods of
+`OrganizationDirectory` in `WorkOSOrganizations`. Each call reads or changes
+WorkOS again; nothing is kept. Each unexpected answer and each WorkOS failure
+throws, so that no partial page, count, or result shows. The
+[live provider proofs](#live-provider-proofs) show the WorkOS behavior that
+each rule needs.
+
+- **Member reads.** `memberPage({ organizationId, statuses, cursor })` reads
+  one page of the memberships of the organization with
+  `listOrganizationMemberships({ organizationId, statuses, limit: 100, after })`,
+  with exactly the statuses that the read names. A read without a status fails
+  before WorkOS gets a request, because WorkOS would then give only active
+  memberships. A membership of another organization or of a status that the
+  read did not name fails the read. The email of each member comes from a user
+  read (`getUser`): a WorkOS membership has no email, and the user list of an
+  organization gives only the users with an active membership. The grants come
+  from the [hosted role mapping](#hosted-role-mapping), with one role read of
+  the organization for each page. `member(membershipId)` reads one membership
+  (`getOrganizationMembership`) in any organization; a WorkOS `404` gives
+  `undefined`.
+- **Revision.** The revision of a member is a digest of its WorkOS update
+  time, its status, and its sorted role slugs. WorkOS changes the update time
+  with each change of the roles or the status; the status and the roles make
+  sure that two states with the same time still differ.
+- **Grant changes.** WorkOS keeps the organization roles of a membership as
+  role assignments on the authorization resource of the organization.
+  `changeGrant()` reads the membership again just before its write. It
+  answers `stale` without a write when the membership is gone or has another
+  revision, and `unsupported` without a write when the membership is not
+  active, because a later reactivation or acceptance would give the changed
+  roles, or when a directory connection manages it. Then it makes one
+  single-role write: `assignRole()` for a grant and `removeRole()` for a
+  revoke, each with the role and the organization of the membership as the
+  resource (`resourceTypeSlug: 'organization'` and
+  `resourceExternalId: <organization ID>`). It never replaces the role set
+  with `updateOrganizationMembership()`, and it never creates, deactivates,
+  reactivates, or deletes a membership. A failed write throws, so that the
+  service records `unknown`. Nothing repeats a write: the SDK client has no
+  retry.
+- **Why the grant changes are safe.** A single-role write keeps each other
+  role, also when another administrator changes another role at the same
+  time. WorkOS refuses a role assignment on the resource of another
+  organization. When the last role goes, WorkOS gives the default role
+  `member`, which gives no application permission; the membership, the
+  identity, and the other memberships stay. WorkOS takes no precondition for a
+  write. Thus a change of the same role by another administrator between the
+  read and the write is not found, and the later write decides; separate
+  provider calls are not one transaction. A second post of a form after an
+  unknown outcome gets `stale` when the first write took effect, so it never
+  returns a grant that someone removed after that write.
+- **Invitation reads.** `invitationPage({ organizationId, states, cursor })`
+  reads one page with `listInvitations({ organizationId, limit: 100, after })`
+  and keeps only the states that the read names, because WorkOS has no state
+  filter. A pending invitation whose expiry time has passed counts as
+  `expired`. Each record copies only the ID, the organization, the address,
+  the role, and the state; the token and the link of WorkOS stay out.
+  `invitation(invitationId)` reads one invitation; a WorkOS `404` and an
+  invitation without an organization give `undefined`.
+- **Invitation changes.** `sendInvitation()` sends one invitation with the one
+  role of the request (`roleSlug`). The answer must be a pending invitation of
+  that organization, address, and role. WorkOS refuses an address that has a
+  pending invitation of the organization, for any role, and the address of an
+  active member: the result is `address-in-use`. `resendInvitation()` and
+  `revokeInvitation()` change one invitation. When WorkOS refuses one with
+  `400`, a read of the invitation decides: an invitation that is no longer
+  pending gives `not-pending`, else the refusal fails.
+- **Acceptance.** AuthKit owns the acceptance. An invitation to the address of
+  a user with an inactive membership turns that membership into a pending
+  membership with only the invited role, and the acceptance makes it active
+  with only that role: no earlier grant returns. A revoke leaves the pending
+  membership without access.
+- **The role of an invitation.** WorkOS gives the role of an invitation from
+  the current role of its membership. Thus only the role of a pending
+  invitation is the role that its acceptance gives. For an accepted or a
+  revoked invitation, WorkOS can give a later role of the membership.
+- **Identity policy.** `provider-rules`: WorkOS documents that a sign-in with
+  another address of the same domain can accept an organization invitation of
+  a corporate domain, so the invitations page claims no strict address match.
 
 ## Files and ownership
 
