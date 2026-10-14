@@ -68,9 +68,8 @@ function trackConnections(server: Server): ReadonlySet<Socket> {
 
 async function closeServer(server: Server, connections: ReadonlySet<Socket>, graceMs: number): Promise<void> {
   const closed = new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
-  // close() ends idle connections, but Node keeps a connection that has sent no bytes as if a request were active.
-  // After a fetch client aborts a request, it can open such a connection and keep it until its idle timeout. Node
-  // starts a request only after it reads bytes, so ending such a connection loses no work.
+  // close() keeps a connection without bytes as if a request were active. A fetch client can open one after it aborts
+  // a request and keep it until its idle timeout. Node starts a request only after it reads bytes, so no work is lost.
   for (const socket of connections) if (socket.bytesRead === 0) socket.destroy();
   const deadline = setTimeout(() => server.closeAllConnections(), graceMs);
   try {
