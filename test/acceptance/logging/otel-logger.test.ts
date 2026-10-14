@@ -3,15 +3,13 @@ import { test } from 'node:test';
 import { OtelLogger } from '../../../src/logging/otel-logger.ts';
 import { createOtlpFixture, logRecordsOf } from '../../support/otel-log-receiver.ts';
 
-test('Given a default OtelLogger and an OTLP destination, when DEBUG and INFO are logged and flushed, then the destination receives only INFO with its source', { timeout: 10_000 }, async (t) => {
-  const fixture = await createOtlpFixture();
-  t.after(fixture.close);
-  const { provider, requests } = fixture;
-  const logger = new OtelLogger(provider.getLogger('thermus'));
+test('Given a default OtelLogger and Axiom system-log-test, when DEBUG and INFO are logged and flushed, then Axiom accepts the export and the HTTP body contains only INFO with its source', { timeout: 20_000 }, async (t) => {
+  const { provider, requests, flush, scopeName } = await createOtlpFixture(t);
+  const logger = new OtelLogger(provider.getLogger(scopeName));
 
   logger.debug('hidden debug event');
   logger.info('system log event');
-  await provider.forceFlush({ timeoutMillis: 3_000 });
+  await flush();
 
   assert.equal(requests.length, 1);
   const records = logRecordsOf(requests[0]);

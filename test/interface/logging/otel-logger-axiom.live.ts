@@ -3,25 +3,17 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider, type LogRecordExporter } from '@opentelemetry/sdk-logs';
+import { axiomTestSettings } from '../../support/axiom-test-export.ts';
 import { OtelLogger } from '../../../src/logging/otel-logger.ts';
-
-function requiredEnvironment(name: string): string {
-  const value = process.env[name];
-  assert.ok(typeof value === 'string' && value.trim() !== '', `Set ${name} before running the live Axiom test.`);
-  return value;
-}
 
 describe('OtelLogger live Axiom OTLP interface', () => {
   let fixture: { provider: LoggerProvider; resultCodes: number[] } | undefined;
 
   beforeEach(async () => {
     fixture = undefined;
-    const apiKey = requiredEnvironment('AXIOM_API_KEY');
-    const endpoint = new URL('/v1/logs', requiredEnvironment('AXOIM_ENDPOINT_URL'));
-    const dataset = requiredEnvironment('AXIOM_SYSTEM_LOG_DATA_SET');
-    assert.equal(endpoint.protocol, 'https:', 'The live Axiom endpoint must use HTTPS.');
+    const { apiKey, endpoint, dataset } = axiomTestSettings();
     const output = new OTLPLogExporter({
-      url: endpoint.href,
+      url: endpoint,
       headers: { Authorization: `Bearer ${apiKey}`, 'X-Axiom-Dataset': dataset },
       timeoutMillis: 5_000,
     });
