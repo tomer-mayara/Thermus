@@ -60,7 +60,9 @@ test('Given one fetcher with a configured executable, when two calls run concurr
     const [command, args, options] = launchFor(url);
     assert.equal(command, executable);
     assert.deepEqual(args, productionArguments(url));
-    assert.deepEqual(options, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, timeout: 60_000 });
+    assert.deepEqual(options, {
+      encoding: 'utf8', env: { ...process.env, LIGHTPANDA_DISABLE_TELEMETRY: 'true' }, maxBuffer: 32 * 1024 * 1024, timeout: 60_000,
+    });
   }
   for (const { url, finalUrl, html } of pages.toReversed()) {
     const [, , , finish] = launchFor(url);
