@@ -13,22 +13,35 @@ connect an LLM client to the tool, and monitor each fetch in Axiom.
 
 - Entry point: `basic-mcp-url-fetch.ts`. Acceptance test: `basic-mcp-url-fetch.test.ts`.
 - Command, from the repository root: `pnpm work-slice:basic-mcp-url-fetch`.
-- Before you start the script, make sure that you have these items:
+- Before you start the script, make sure that you have these items. The script
+  reads the settings of the server:
+  - `PUBLIC_BASE_URL` with the address of the listener, for example
+    `http://127.0.0.1:8080`.
+  - `AD_RULES_FILE` with the absolute path of a rules file. An empty file gives
+    no ad rules.
   - `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0. If
     the executable shows a different version, the script stops before it listens.
   - `AXIOM_API_KEY` and `AXOIM_ENDPOINT_URL`, in the environment or in `.env.local`
     of the current directory. The log goes to the dataset `system-log-test`.
   - Public network access, for the pages and for Axiom.
-  - A free port 8080, or a different port in `LISTEN_PORT`. `LISTEN_HOST`,
-    `PUBLIC_BASE_URL`, and `AD_RULES_FILE` are optional.
-- stdout shows the client command, the Axiom link, the scope name of the run,
-  and an APL filter. stderr and Axiom get the log. Stop the script with Ctrl+C.
+  - Optional: `LISTEN_HOST` and `LISTEN_PORT`. The defaults are `127.0.0.1` and
+    8080, and the port must be free. For a different port, change
+    `PUBLIC_BASE_URL` to the same port. The script refuses `LISTEN_PORT=0`,
+    because the client needs the URL before the server listens.
+- stdout shows the instructions: the client command, the Axiom link, the scope
+  name of the run, and an APL filter. The log goes to Axiom only. The console
+  shows only the export failures and, when the script fails, one `FATAL` line.
+  Stop the script with Ctrl+C.
 
 The slice shows that an LLM client gets web pages as Markdown through the real
 MCP server, HTTP bridge, cleaning pipeline, and pinned renderer. The mock
-provider accepts each Bearer token. The acceptance test shows the same path
-offline, with a renderer double. The manual run also shows the client, the
-renderer, and the export to Axiom.
+provider accepts each Bearer token. The slice composes the production parts,
+`createFetchOperation`, `fetchToolServers`, `MCPServer`, `routeLocalRequests`,
+`composeApplication`, and `serveApplication`, with the test-only mock provider.
+Only the mock provider and the two log lines with the full URL and the Markdown
+are slice-only. The acceptance test shows the same path offline, with a renderer
+double. The manual run also shows the client, the renderer, and the export to
+Axiom.
 
 One tool call writes three log lines in this sequence:
 

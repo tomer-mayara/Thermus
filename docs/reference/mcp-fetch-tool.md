@@ -59,9 +59,9 @@ body parser or alternate JSON-RPC implementation.
 
 The self-hosted server registers the tool. Its application branch loads
 [`src/fetch-tool.ts`](../../src/fetch-tool.ts) and calls
-`fetchToolServers(environment, logger)` before it opens the Better Auth runtime.
-That call reads the [ad rules file](ad-rules.md#server-rules-file) one time. Then
-it makes these parts one time:
+`createFetchOperation(environment, logger)` before it opens the Better Auth
+runtime. That call reads the [ad rules file](ad-rules.md#server-rules-file) one
+time. Then it makes these parts one time:
 
 - one `HtmlToMarkdownPipeline` with `CleanHtmlAdsAdblockRs`,
   `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in that
@@ -71,12 +71,13 @@ it makes these parts one time:
   reportRendererSetupFailure })`, with the
   [renderer setup report](#renderer-setup-report) of the application logger.
 
-It returns the `buildServer` function of `MCPServer`. Each MCP request gets its
-own SDK `Server` from `createFetchToolServer(context, { operation, logger },
-lifetime)`. Completion records go to the application logger: one `INFO` line of
-JSON for each dispatched `tools/call`. `requestedUrl` keeps the exact accepted
-spelling. The renderer's `finalUrl` selects the ad rules and resolves relative
-links.
+`createFetchOperation` returns the operation. Then the branch calls
+`fetchToolServers(operation, logger)`, which returns the `buildServer` function
+of `MCPServer`. Each MCP request gets its own SDK `Server` from
+`createFetchToolServer(context, { operation, logger }, lifetime)`. Completion
+records go to the application logger: one `INFO` line of JSON for each
+dispatched `tools/call`. `requestedUrl` keeps the exact accepted spelling. The
+renderer's `finalUrl` selects the ad rules and resolves relative links.
 
 Better Auth verifies each token and checks the current account before the tool
 runs. A forged token, a token that a password reset revoked, and a token of a

@@ -2,11 +2,12 @@ import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type Ca
 import type { RequestContext } from '../auth/access-context.ts';
 import type { BaseLogger } from '../logging/base-logger.ts';
 import { fetchToolInputSchema, parseFetchToolArguments } from './fetch-tool-schema.ts';
+import type { FetchOperation } from './get-url-as-markdown.ts';
 import { formatToolCompletion, type CompletionStatus } from './tool-completion-record.ts';
 import type { McpRequestLifetime } from './mcp-server.ts';
 
 export function createFetchToolServer(context: RequestContext, dependencies: {
-  operation: (url: string, context: RequestContext, signal: AbortSignal) => Promise<string>;
+  operation: FetchOperation;
   logger: Pick<BaseLogger, 'info' | 'error'>;
 }, lifetime?: McpRequestLifetime): Server {
   const server = new Server({ name: 'thermus', version: '0.0.0' }, { capabilities: { tools: {} } });

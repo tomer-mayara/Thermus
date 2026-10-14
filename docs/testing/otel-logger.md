@@ -68,9 +68,12 @@ values take precedence. Keep the file and its credentials out of version
 control and test reports.
 
 The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
-reads the same settings with the same reader and exports to the same test
-dataset. It shows each refused or failed export on its console. After such a
-failure, it exits with status 1 when it stops.
+uses the production `OtelLogger` through `openAxiomLogging()` in
+`test/support/axiom-test-export.ts`. It reads the same settings with the same
+reader and exports to the same test dataset. The log lines go to Axiom only.
+The console gets only the export failure lines: one line for each refused or
+failed export. After such a failure, the script writes one `FATAL` line and
+exits with status 1 when it stops.
 
 The test dataset setting defaults to `system-log-test`. The tests reject another
 value and never use the production `AXIOM_SYSTEM_LOG_DATA_SET` setting. Missing

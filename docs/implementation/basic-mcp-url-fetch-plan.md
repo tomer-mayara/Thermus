@@ -1,6 +1,7 @@
 # Basic MCP URL fetch: work slice plan
 
-Status: done. Date: 2026-10-14. Branch: `claude/basic-mcp-url-fetch-d00f84`.
+Status: done; refactored onto production seams on 2026-10-14.
+Date: 2026-10-14. Branch: `claude/basic-mcp-url-fetch-d00f84`.
 Entry point: `test/acceptance/work-slice/basic-mcp-url-fetch.ts`.
 The owner accepted the defaults of each decision on 2026-10-14, with one
 change: the entry point lives under `test/acceptance/work-slice/`, not under
@@ -47,6 +48,25 @@ candidate, the new tests passed 53 of 53, `npm run check`, `npm run typecheck`,
 `habit-hooks`, and `npx knip` passed, and the documents of step 6 were updated.
 The pull request of the branch records each run.
 
+Refactoring on 2026-10-14: the owner asked why the slice keeps its own settings
+reader, logger, and composition instead of the production mechanisms. The slice
+now uses `loadPublicUrls`, `createFetchOperation`, `fetchToolServers`,
+`routeLocalRequests`, `composeApplication`, `serveApplication`,
+`failureMessage`, and `OtelLogger` from production; production gained these
+seams where it had private copies. Only the mock provider and the page-text
+lines stay slice-only, by decision.
+
+The slice ran again after the refactoring, on 2026-10-14, with the settings
+of the server: `PUBLIC_BASE_URL=http://127.0.0.1:8080`, an empty
+`AD_RULES_FILE`, and the pinned renderer. Scope name
+`thermus-work-slice-e6a5d85b-905a-4f37-b110-56dacc4e79a3`. The console stayed
+empty. Claude Code connected with the static header, and a non-interactive
+session read `https://www.iana.org/help/example-domains` through the tool and
+summarized it. Axiom held the four events of the run, now with the production
+call sites: `index.ts` for the listening line, `work-slice-application.ts` for
+the started and completed lines, and `fetch-tool-server.ts` for the record.
+`SIGINT` gave exit status 0, so every export was accepted.
+
 ## Goal
 
 One script starts the MCP fetch tool for a local LLM and shows each fetch in
@@ -58,7 +78,7 @@ Axiom. The slice has three steps:
    through it.
 3. Watch the Axiom logs. See the URL go out and the Markdown page come back.
 
-The slice is a development tool. It changes no production code and no
+The slice is a development tool. It changes no production behavior and no
 production setting. The product keeps Better Auth and the hosted WorkOS
 provider.
 
@@ -86,12 +106,12 @@ Each decision has a default. Confirm or change it before step 1.
 
 | ID | Decision | Default | Alternative |
 | --- | --- | --- | --- |
-| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. The composition modules in `test/support/work-slice/`. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
+| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. The composition module is `test/support/work-slice/work-slice-application.ts`. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
 | D2 | Page text in the logs | The slice logs the full requested URL before the fetch and the Markdown after it, cut at 65,536 code points. These two lines come from the slice only. The production completion record stays as it is. | Log only the Markdown length. |
 | D3 | Axiom dataset and settings | Reuse `axiomTestSettings()`: `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL`, and the dataset `system-log-test`, from the environment or from `.env.local`. | A new reader for a dedicated dataset. |
 | D4 | LLM client | Claude Code with a static `Authorization` header. | Codex with `http_headers` in `~/.codex/config.toml`. |
 | D5 | Renderer | `LIGHTPANDA_BIN` is required and must report 1.0.0. The script checks this before it listens. | Accept the nightly build on PATH. The documents do not support it. |
-| D6 | Ad rules | `AD_RULES_FILE` is optional. Without it, the ad cleaner gets no rules. With it, the production reader loads the file. | Require the file, as the server does. |
+| D6 | Ad rules | `AD_RULES_FILE` is required, as for the server. An empty file gives no rules. The production reader loads the file. | Optional, with no rules when it is not set. The slice used this rule until the refactoring of 2026-10-14. |
 | D7 | Bearer token | Any non-empty token. The printed client command uses `local-dev`. | None. |
 | D8 | Proof | An offline acceptance test with the renderer double and a recording logger. The manual run proves the Axiom export, and the pull request records it. | Also a `.live.ts` test of the Axiom wiring. |
 
@@ -100,81 +120,90 @@ Each decision has a default. Confirm or change it before step 1.
 ### Files
 
 ```
-test/acceptance/work-slice/README.md                 A short description of each work slice
-test/acceptance/work-slice/basic-mcp-url-fetch.ts     The entry point: settings, renderer check, Axiom logging, start, stop
+src/logging/failure-message.ts                        failureMessage(error), shared by src/index.ts, the local commands, and the slice
+src/config/deployment-config.ts                       loadPublicUrls(environment, deployment), now exported
+src/fetch-tool.ts                                     createFetchOperation(environment, logger) and fetchToolServers(operation, logger)
+src/mcp/get-url-as-markdown.ts                        the FetchOperation type, now exported
+src/index.ts                                          serveApplication(open, options), ProcessSignals, and ServeOptions, now exported
+test/acceptance/work-slice/README.md                  A short description of each work slice
+test/acceptance/work-slice/basic-mcp-url-fetch.ts     The entry point: settings, renderer check, Axiom logging, serveApplication()
 test/acceptance/work-slice/basic-mcp-url-fetch.test.ts   The acceptance test
-test/support/work-slice/work-slice-server.ts          startWorkSliceServer(settings, logger): the composition
-test/support/work-slice/work-slice-logger.ts          WorkSliceLogger and openAxiomLogging()
-test/support/work-slice/work-slice-settings.ts        readWorkSliceSettings(environment)
-test/unit/work-slice/work-slice-settings.test.ts
-test/unit/work-slice/work-slice-logger.test.ts
-test/unit/work-slice/work-slice-server.test.ts
-test/interface/work-slice/work-slice-logging.test.ts   openAxiomLogging() against a loopback OTLP receiver
+test/support/work-slice/work-slice-application.ts     observeFetches(), MARKDOWN_LOG_LIMIT, and createWorkSliceApplication(environment, logger)
+test/support/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
+test/unit/work-slice/work-slice-application.test.ts   observeFetches()
+test/unit/logging/failure-message.test.ts             failureMessage()
+test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
 
-Nothing in `src/` changes, and `tsconfig.json` does not change, because
-`test/` is already in its `include` list. The entry point imports from `src/`
-and from `test/support/`.
+The slice added these seams to `src/` by the owner's rule. When production has
+a mechanism, the slice uses that mechanism. When production lacks a mechanism,
+the slice adds the mechanism to production. `src/index.ts` and the local
+commands had private copies of `failureMessage()`, and the slice had the third
+copy, so DRY3 made one shared function. `loadPublicUrls()` was private in
+`deployment-config.ts`, and the serve sequence of `serveApplication()` was
+inside `serve()`. `fetchToolServers()` did not expose the operation, so
+`createFetchOperation()` now makes the operation. `src/application.ts`,
+`src/auth/local-auth/local-auth-command.ts`, and `src/mcp/fetch-tool-server.ts`
+use the new exports. No production behavior changes. `tsconfig.json` does not
+change, because `test/` is already in its `include` list. The entry point
+imports from `src/` and from `test/support/`.
 
 ### Settings
 
-`readWorkSliceSettings(environment)` reads these variables. The names are the
-server names, so one shell setup serves the server and the script.
+The slice reads the settings of the server with the production loaders. Thus
+one shell setup serves the server and the script.
 
 | Variable | Rule | Default |
 | --- | --- | --- |
-| `LISTEN_HOST`, `LISTEN_PORT` | Read with `loadListenAddress()`. Port 0 is refused, because the client URL must be known before the server listens. | `127.0.0.1`, `8080` |
-| `PUBLIC_BASE_URL` | Optional. `http` or `https`. The MCP resource is `<base>/mcp`. The metadata URL comes from the SDK helper, as in `deployment-config.ts`. | `http://<host>:<port>/` |
-| `LIGHTPANDA_BIN` | Required. An absolute path. The entry point runs `version` and requires `1.0.0`. | None |
-| `AD_RULES_FILE` | Optional. When set, `readAdRulesFile()` loads it. | No rules |
+| `LISTEN_HOST`, `LISTEN_PORT` | Read with `loadListenAddress()`. The entry point refuses port 0, because the client needs the URL before the server listens. | `127.0.0.1`, `8080` |
+| `PUBLIC_BASE_URL` | Required. Read with `loadPublicUrls()` and the rule of the self-hosted edition: `https`, or `http` on a loopback host. The MCP resource is `<base>/mcp`. | None |
+| `LIGHTPANDA_BIN` | Required. An absolute path. `createFetchOperation()` gives the path to the fetcher. The entry point runs `version` and requires `1.0.0` before it listens. | None |
+| `AD_RULES_FILE` | Required. `createFetchOperation()` loads the file with `readAdRulesFile()`, as for the server. An empty file gives no rules. | None |
 | `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL` | Read by `axiomTestSettings()`, also from `.env.local` in the current directory. | None |
 
 ### Composition
 
-`startWorkSliceServer(settings, logger)` makes the parts in this order and
-returns `{ url, close }`:
+`createWorkSliceApplication(environment, logger)` composes the production parts
+with the mock provider, in this order:
 
-1. The pipeline: `CleanHtmlAdsAdblockRs(rules)`,
-   `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in the
-   production order.
-2. The fetcher: `WebsiteFetcherLightpanda(settings.lightpandaBin)`.
-3. The operation: `createGetURLAsMarkdown({ fetcher, pipeline,
-   reportRendererSetupFailure })`, wrapped by `observeFetches()`. See
-   [Logging](#logging).
-4. The mock provider: `new NoAuthProvider(new URL(settings.mcpResourceUrl))`.
-   It is the verifier and the access resolver.
-5. The MCP server: `new MCPServer({ auth: { verifier, accessResolver,
+1. The public URLs: `loadPublicUrls(environment, 'self-hosted')`.
+2. The operation: `createFetchOperation(environment, logger)`, wrapped by
+   `observeFetches()`. See [Logging](#logging). `createFetchOperation()` makes
+   the production pipeline, the fetcher with `LIGHTPANDA_BIN`, and the renderer
+   setup reporter.
+3. The mock provider: `new NoAuthProvider(new URL(mcpResourceUrl))`. It is the
+   verifier and the access resolver.
+4. The MCP server: `new MCPServer({ auth: { verifier, accessResolver,
    resourceMetadataUrl, expectedResource }, buildServer, reportFailure })`.
-   `buildServer` gives each request
-   `createFetchToolServer(context, { operation, logger }, lifetime)`.
-   `reportFailure` is `operatorFailureReporter(logger)` from
-   `src/application.ts`.
-6. The routes: the MCP path goes to `mcp.fetch(request)`. Each other path gets
-   `404`. The script serves no metadata document, because the client sends a
-   static header and does no OAuth discovery.
-7. The listener: `startHttpServer(handle, { listen, publicBaseUrl, logger })`.
+   `buildServer` is `fetchToolServers(operation, logger)`. `reportFailure` is
+   `operatorFailureReporter(logger)` from `src/application.ts`.
+5. The routes: the production `routeLocalRequests()`. The MCP path goes to
+   `mcp.fetch(request)`. The provider paths and the pages get `404`, because
+   the slice has no OAuth provider and no pages. The client sends a static
+   header and does no OAuth discovery.
+6. The application: `composeApplication(handle, mcp)`.
 
-`close()` follows the production order: start `listener.close()`, then await
-`mcp.close()`, then await the listener drain.
+The entry point gives `createWorkSliceApplication()` to `serveApplication()` of
+`src/index.ts`. `serveApplication()` starts the listener and registers the stop
+handlers before it writes the `Listening on` line. At the stop,
+`serveApplication()` uses the production close order. First,
+`listener.close()` starts. Then the application stops the MCP work and awaits
+the listener drain.
 
-This is the second copy of the composition in `src/fetch-tool.ts`. DRY3
-permits it. The production function does not expose the fetcher or the
-pipeline, and the slice must observe the operation.
+The slice keeps no copy of a production composition.
 
 ### Logging
 
-`WorkSliceLogger` extends `BaseLogger`. Its `write()` writes one line to
-stderr, in the console format, and emits one OTel record with the severity map
-of `OtelLogger`. The call site stays correct, because `BaseLogger` finds the
-call site before it calls `write()`. A wrapper around two loggers would show
-the wrapper as the call site.
+The slice uses the production `OtelLogger`. The log goes to Axiom only. The
+console gets only the export failure lines.
 
-`openAxiomLogging(settings, scopeName)` builds one `OTLPLogExporter` with the
-Axiom headers, one `BatchLogRecordProcessor` with `scheduledDelayMillis: 1_000`
-and `exportTimeoutMillis: 10_000`, and one `LoggerProvider`. It returns the
-logger and a `close()` that calls `provider.shutdown()`, which flushes. The
-scope name is `thermus-work-slice-<run id>`, with a new run ID for each start.
-The script prints it. The OTel tests use the same approach to find their
+`openAxiomLogging(settings, scopeName, console?)` in
+`test/support/axiom-test-export.ts` builds one `OTLPLogExporter` with the Axiom
+headers, one `BatchLogRecordProcessor` with `scheduledDelayMillis: 1_000` and
+`exportTimeoutMillis: 10_000`, and one `LoggerProvider`. It returns the
+`OtelLogger` and a `close()` that calls `provider.shutdown()`, which flushes.
+The scope name is `thermus-work-slice-<run id>`, with a new run ID for each
+start. The script prints it. The OTel tests use the same approach to find their
 records in Axiom.
 
 `observeFetches(operation, logger)` wraps the operation and writes the two
@@ -205,8 +234,7 @@ export, with the error name and the HTTP status but never the response body,
 and `close()` rejects with the count of the failed exports after the shutdown.
 The entry point then writes the `FATAL` line and exits with status 1.
 
-The instructions for the user go to stdout. The log lines go to stderr and to
-Axiom.
+The instructions for the user go to stdout. The log lines go to Axiom only.
 
 ### Client configuration
 
@@ -252,50 +280,52 @@ uses `RendererProcessDouble` for the renderer and DNS, a recording logger for
 the log, and the real MCP SDK HTTP client through the real HTTP bridge. It runs
 for both protocol eras of `mcpProtocolEras`.
 
-- Given the work-slice server with the mock provider, no ad rules, and a
-  renderer double that serves `https://news.example/story`, when an MCP client
-  with the token `any-token` lists the tools and calls `getURLAsMarkdown` with
-  that URL and a reason, then:
-  - the client gets the cleaned Markdown of the page;
+- Given the work-slice application with the mock provider, the trusted rules
+  fixture, and a renderer double that serves `https://news.example/story`, when
+  an MCP client with the token `any-token` lists the tools and calls
+  `getURLAsMarkdown` with that URL and a reason, then:
+  - the client gets the cleaned Markdown of the page, without the paragraph
+    that the fixture rule removes;
   - the log has, in order, the started line with the URL, the completed line
     with the Markdown, and one completion record with the status `success`
     and the synthetic authority;
   - `close()` stops the listener and the MCP server.
-- Given the work-slice server, when a request has no `Authorization` header,
-  then it gets `401` with a `Bearer` challenge, no renderer starts, and the log
-  has no fetch line.
+- Given the work-slice application, when a request has no `Authorization`
+  header, then it gets `401` with a `Bearer` challenge, no renderer starts, and
+  the log has no fetch line.
 
 ### Unit
 
-- `work-slice-settings.test.ts`: the defaults; a `PUBLIC_BASE_URL` with and
-  without the final slash; `LISTEN_PORT=0` refused; a missing or relative
-  `LIGHTPANDA_BIN` refused; `AD_RULES_FILE` unset gives no rules, and set gives
-  the file contents.
-- `work-slice-logger.test.ts`: one stderr line and one OTel record for each
-  accepted message, with the severity map; the call site of the caller; `DEBUG`
-  hidden at the default level. The OTel output is an in-memory `emit` double,
-  as in the `OtelLogger` unit test.
-- `work-slice-server.test.ts`: `observeFetches()` with an operation double:
-  the started and completed lines, the cut at the limit, the failed line, and
-  the error that passes through; the route function: the MCP path and a `404`
-  for another path.
+- `work-slice-application.test.ts`: `observeFetches()` with an operation
+  double: the started and completed lines, the cut at the limit, the failed
+  line, and the error that passes through.
+- The production seams have their own cases: `failure-message.test.ts` for
+  `failureMessage()`, a `loadPublicUrls()` case in `deployment-config.test.ts`,
+  and a `serveApplication()` case in
+  `test/integration/server-stop-signals.test.ts`.
 
 ### Interface
 
-- `work-slice-logging.test.ts`: `openAxiomLogging()` against a loopback OTLP
-  receiver, never Axiom: the headers, the scope name, and the record of one
-  export; a refused export with HTTP 401 and a closed port each give one
-  console line without the body, and `close()` rejects with the count. The
-  closed-port case takes about 9 seconds, because the exporter retries a
-  refused connection until its deadline.
+- `test/interface/logging/axiom-logging.test.ts`: `openAxiomLogging()` against
+  a loopback OTLP receiver, never Axiom: the headers, the scope name, and the
+  record of one export, with no console line; a refused export with HTTP 401
+  and a closed port each give one console line without the body, and `close()`
+  rejects with the count. The closed-port case takes about 9 seconds, because
+  the exporter retries a refused connection until its deadline.
 
 ### Commands
 
 ```bash
-npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/interface/work-slice/*.test.js dist/test/acceptance/work-slice/*.test.js
+npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/logging/failure-message.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/*.test.js
 ```
 
 ## Steps
+
+Steps 0 to 6 record the first delivery, before the refactoring of 2026-10-14.
+For a new run, the slice also needs `PUBLIC_BASE_URL` and `AD_RULES_FILE`, as
+the server does. The log lines go to Axiom only, so the script terminal shows
+no log line. The [work slice guide](../../test/acceptance/work-slice/README.md)
+lists the settings.
 
 ### Step 0: prerequisites on this Mac
 
@@ -490,10 +520,10 @@ test rules of AGENTS.md.
 | HTTPS pages fail in the renderer for a certificate reason. | The first fetch. | The macOS build loads the system certificates, and the smoke test passed on this platform. A failure shows `Page fetch failed` and a renderer log line. |
 | The Axiom field names differ from the plan. | Step 5, point 4. | Closed on 2026-10-14: the names match the filter of the script. |
 | Page text goes to the shared test dataset. | D2. | Log only the length instead. |
-| Port 8080 is busy. | `lsof` in step 0. | Set `LISTEN_PORT`. The default public base URL follows it. |
+| Port 8080 is busy. | `lsof` in step 0. | Set `LISTEN_PORT`, and use the same port in `PUBLIC_BASE_URL`. |
 | Claude Code keeps an old tool list. | Step 5, point 3. | Start a new session after `claude mcp add`. |
 | A Markdown page is larger than the cut. | The completed line shows the full length. | Raise the cut constant. Stay below the 1 MB field limit. |
-| A bad `AD_RULES_FILE` shows the parser message in the local `FATAL` line. | The slice does not wrap the parser error as `src/fetch-tool.ts` does. | Accepted: the line stays on the local console. |
+| A bad `AD_RULES_FILE` shows the parser message in the local `FATAL` line. | The slice does not wrap the parser error as `src/fetch-tool.ts` does. | Closed on 2026-10-14: the slice uses `createFetchOperation()`, which wraps the parser error. |
 | The script does not find `.env.local`. | The script stops at start with the message of `axiomTestSettings()`. | Run from the worktree root, or export the variables. |
 
 ## Out of scope
@@ -502,5 +532,6 @@ test rules of AGENTS.md.
   OAuth discovery.
 - A query of Axiom from the script. The ingest token cannot query. The user
   watches the dataset page.
-- Changes to the completion record or to `src/fetch-tool.ts`.
+- Changes to the completion record or to the behavior of `src/fetch-tool.ts`.
+  The refactoring of 2026-10-14 only split its composition.
 - Claude Desktop, which needs an OAuth proxy for a static header.

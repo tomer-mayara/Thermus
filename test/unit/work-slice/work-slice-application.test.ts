@@ -1,9 +1,10 @@
 import '../../support/deny-network.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import type { ApplicationLogger } from '../../../src/application.ts';
 import type { RequestContext } from '../../../src/auth/access-context.ts';
-import type { FetchHandler } from '../../../src/http/server.ts';
-import { MARKDOWN_LOG_LIMIT, observeFetches, routeRequests, type FetchOperation, type WorkSliceLog } from '../../support/work-slice/work-slice-server.ts';
+import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
+import { MARKDOWN_LOG_LIMIT, observeFetches } from '../../support/work-slice/work-slice-application.ts';
 
 const url = 'https://news.example/story?page=2';
 const context: RequestContext = {
@@ -24,7 +25,7 @@ interface ObservedFetch {
 function observedFetch(outcome: () => Promise<string>, limit?: number): ObservedFetch {
   const timeline: string[] = [];
   const calls: ObservedFetch['calls'] = [];
-  const log: WorkSliceLog = {
+  const log: ApplicationLogger = {
     info: (message) => { timeline.push(`INFO ${message}`); },
     error: (message) => { timeline.push(`ERROR ${message}`); },
   };
@@ -121,48 +122,4 @@ test('Given an observed fetch, when it runs, then the operation gets the same UR
   assert.equal(calls[0].url, url);
   assert.equal(calls[0].context, context);
   assert.equal(calls[0].signal, signal);
-});
-
-interface RecordedRoute {
-  readonly route: FetchHandler;
-  readonly requests: Request[];
-  readonly answer: Response;
-}
-
-function recordedRoute(): RecordedRoute {
-  const requests: Request[] = [];
-  const answer = new Response('MCP answer');
-  const route = routeRequests('/team/mcp', async (request) => {
-    requests.push(request);
-    return answer;
-  });
-  return { route, requests, answer };
-}
-
-for (const method of ['POST', 'GET', 'DELETE']) {
-  test(`Given the MCP path /team/mcp, when a ${method} request with a query comes to that path, then the MCP handler gets the same request and the client gets its response`, async () => {
-    const { route, requests, answer } = recordedRoute();
-    const request = new Request('https://thermus.example/team/mcp?session=opaque-value', { method, body: method === 'POST' ? '{"jsonrpc":"2.0"}' : null });
-
-    const response = await route(request);
-
-    assert.equal(response, answer);
-    assert.equal(requests.length, 1);
-    assert.equal(requests[0], request);
-  });
-}
-
-const otherPaths = ['/', '/mcp', '/team', '/team/', '/team/mcp/', '/team/mcp/extra', '/team/MCP', '/.well-known/oauth-protected-resource/team/mcp'];
-
-test('Given the MCP path /team/mcp, when requests come to other paths, then each gets a 404 text response and the MCP handler gets no request', async () => {
-  const { route, requests } = recordedRoute();
-
-  for (const path of otherPaths) {
-    const response = await route(new Request(`https://thermus.example${path}`, { method: 'POST', body: '{}' }));
-
-    assert.equal(response.status, 404, path);
-    assert.match(response.headers.get('Content-Type') ?? '', /^text\/plain/, path);
-    assert.equal(await response.text(), 'Not Found', path);
-  }
-  assert.deepEqual(requests, []);
 });

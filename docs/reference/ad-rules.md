@@ -56,7 +56,7 @@ The test uses 32, 128, and 512 matches on short lines, in minified source, and i
 
 ## Server rules file
 
-The self-hosted server reads its trusted rules from the file that `AD_RULES_FILE` names. [`readAdRulesFile(environment)`](../../src/config/ad-rules-file.ts) reads the setting from the server environment. [`fetchToolServers()`](../../src/fetch-tool.ts) gives the text to one `CleanHtmlAdsAdblockRs` when the server starts.
+The self-hosted server reads its trusted rules from the file that `AD_RULES_FILE` names. [`readAdRulesFile(environment)`](../../src/config/ad-rules-file.ts) reads the setting from the server environment. [`createFetchOperation()`](../../src/fetch-tool.ts) gives the text to one `CleanHtmlAdsAdblockRs` when the server starts.
 
 - The value must be the absolute path of a trusted file.
 - The server reads the file one time, with one `readFileSync` call. There is no check before the read, so the file cannot change between a check and the read.

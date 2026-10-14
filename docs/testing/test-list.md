@@ -60,6 +60,7 @@ records are type-only imports; these cases execute no shared-auth behavior.
 [V] Names the setting and the rule in each error, without a setting value or a WorkOS value; returns frozen records
 [V] Uses listen host `127.0.0.1` and port 8080 when `LISTEN_HOST` and `LISTEN_PORT` are missing or empty; returns a frozen address for valid hosts and ports from 0 to 65535
 [V] Rejects a `LISTEN_PORT` that is not a whole number from 0 to 65535 and a `LISTEN_HOST` with spaces or control characters, without the value in the message; reads only `LISTEN_HOST` and `LISTEN_PORT`
+[V] `loadPublicUrls()` makes the public base, MCP resource, and metadata URLs from `PUBLIC_BASE_URL` for each edition; it requires the setting, applies the HTTPS rule of the edition, gives a frozen record, and reads no `process.env`
 
 **Ad rules file** (`test/unit/config/ad-rules-file.test.ts`)
 
@@ -561,6 +562,17 @@ AUTH-07W added these tests. A double of the narrow SDK part gives the page of ea
 [V] Sends acceptance and interface log records to Axiom's `system-log-test` dataset on every run and checks the exporter result
 [V] Sends one additional test log to `system-log-test` through the separate live interface command
 
+**Failure message** (`test/unit/logging/failure-message.test.ts`)
+
+The server entry point, the local account and client commands, and the work slice use the same `failureMessage()` for their failure lines.
+
+[V] Gives the message of an `Error` and the text of another value
+[V] Gives both messages of a `SuppressedError`: first the failure, then the cleanup failure; also for a nested `SuppressedError`
+
+```sh
+npm run build && node --test dist/test/unit/logging/failure-message.test.js
+```
+
 **Renderer network policy**
 
 [V] Rejects blocked IPv4 and IPv6 ranges, obfuscated loopback addresses, mixed DNS answers, and failed DNS before renderer launch
@@ -851,29 +863,17 @@ The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` doubl
 npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
 ```
 
-**Work slice: basic MCP URL fetch** (`test/unit/work-slice/work-slice-settings.test.ts`, `work-slice-logger.test.ts`, `work-slice-server.test.ts`)
+**Work slice: basic MCP URL fetch** (`test/unit/work-slice/work-slice-application.test.ts`)
 
-Doubles stand in for the OpenTelemetry output, the console stream, the fetch operation, and the MCP handler. The tests need no renderer, no Axiom settings, and no network access.
+A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
 
-[V] `readWorkSliceSettings()` with only `LIGHTPANDA_BIN`, also with empty optional settings, gives a frozen record: listen host `127.0.0.1`, port 8080, the base, MCP resource, and metadata URLs of that address, and no ad rules
-[V] Makes the default base URL from `LISTEN_HOST` and `LISTEN_PORT`, also for an IPv6 host; adds the missing final slash to a `PUBLIC_BASE_URL`, also one with a path, and makes the MCP resource and the metadata URL from it
-[V] Refuses a relative `PUBLIC_BASE_URL`, a scheme other than `http` or `https`, a username or password, and a query or fragment, also an empty one; each message names the rule without the value
-[V] Refuses `LISTEN_PORT=0`, because the client URL must be known before the server listens; the `DeploymentConfigError` of a `LISTEN_PORT` that is not a number passes through unchanged
-[V] Requires `LIGHTPANDA_BIN` as an absolute path; the message for a missing or empty value names the runtime guide
-[V] Gives no ad rules without `AD_RULES_FILE` and the contents of the file with it; the `AdRulesFileError` of a relative path passes through unchanged
-[V] Reads only the supplied record and ignores `process.env`
-[V] `WorkSliceLogger` writes one console line and emits one OpenTelemetry record for each accepted message; both show the call site of the caller
-[V] Gives each level the OpenTelemetry severity number and label of `OtelLogger`
-[V] Starts at INFO, so DEBUG is hidden; `setLevel` applies each new threshold, also NONE, to the console and to the records
-[V] Writes the console line to stderr when it gets no console stream
 [V] `observeFetches()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
 [V] Counts code points, not UTF-16 units; above the limit, the completed line keeps the first code points without a split surrogate pair and ends with `[cut: <n> more characters]`, and the caller still gets the whole Markdown; the default limit is 65,536 code points
 [V] When the operation fails with an `Error`, a cancellation `DOMException`, or a value that is not an `Error`, writes one ERROR line with the message and throws the same value again
 [V] Gives the operation the same URL, request context, and signal
-[V] `routeRequests()` sends each POST, GET, or DELETE request on the MCP path, also with a query, unchanged to the MCP handler; each other path, also a near match, gets a `404` text response, and the handler gets no request
 
 ```sh
-npm run build && node --test dist/test/unit/work-slice/work-slice-settings.test.js dist/test/unit/work-slice/work-slice-logger.test.js dist/test/unit/work-slice/work-slice-server.test.js
+npm run build && node --test dist/test/unit/work-slice/work-slice-application.test.js
 ```
 
 ### Planned Cache Key Tests
@@ -926,7 +926,7 @@ The operation runs with the real permission helper and with fetcher, pipeline, a
 
 **Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
 
-`fetchToolServers` runs with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. No renderer runs.
+`createFetchOperation` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. No renderer runs.
 
 [V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets exactly one line for each code, in order, with the exact report text
 
@@ -1213,10 +1213,11 @@ npm run build && node --test dist/test/integration/auth/local-access.test.js
 
 **Server start and stop** (`test/integration/server-stop-signals.test.ts`)
 
-These tests run `serve()` from `src/index.ts` with the real hosted application and HTTP bridge on a loopback port. An `EventEmitter` is the double for the process signal registration. A logger double records, for each line, the stop signals that have a handler.
+These tests run `serve()` from `src/index.ts` with the real hosted application and HTTP bridge on a loopback port. The `serveApplication()` case uses an application double in place of the hosted application. An `EventEmitter` is the double for the process signal registration. A logger double records, for each line, the stop signals that have a handler.
 
 [V] Registers the `SIGINT` and `SIGTERM` handlers after the startup lines and before the `Listening on` line; after `SIGINT` or `SIGTERM`, writes `Stopping after <signal>` and removes both handlers
 [V] Given a listen port that another server uses, rejects with the listen error before the `Listening on` line, and no stop handler stays registered
+[V] `serveApplication()` with an application double and a signals double writes `Listening on` first, serves a request, writes `Stopping after SIGTERM` after the signal, calls `close` one time with the listener drain, and frees the port
 
 Run only these tests:
 
@@ -1356,17 +1357,17 @@ Run the applicable local renderer interface cases with the pinned runtime:
 npm run build && node --test dist/test/interface/website-fetcher-cancellation.test.js dist/test/interface/website-fetcher-http.test.js dist/test/interface/website-fetcher-network.test.js dist/test/interface/website-fetcher-readiness.test.js dist/test/interface/website-fetcher-redirects.test.js
 ```
 
-**Work slice logging** (`test/interface/work-slice/work-slice-logging.test.ts`)
+**Axiom logging** (`test/interface/logging/axiom-logging.test.ts`)
 
-`openAxiomLogging()` runs with the real OpenTelemetry SDK and OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access. The closed-port case takes about 9 seconds, because the exporter retries a refused connection until its deadline.
+`openAxiomLogging()` of `test/support/axiom-test-export.ts` runs with the production `OtelLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access. The closed-port case takes about 9 seconds, because the exporter retries a refused connection until its deadline.
 
-[V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets the line and no failure line
+[V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets no line
 [V] Given a receiver that refuses the export with HTTP 401, the console gets one failure line with the error name and the HTTP status, without the error message or the response body; `close()` rejects with the count, `1 log export`
 [V] Given two refused batches, the console gets two failure lines, and `close()` rejects with the plural count, `2 log exports`
 [V] Given a closed loopback port, the console gets one failure line with the system error name `ECONNREFUSED`, without an HTTP status or the address; `close()` rejects with the count
 
 ```sh
-npm run build && node --test dist/test/interface/work-slice/work-slice-logging.test.js
+npm run build && node --test dist/test/interface/logging/axiom-logging.test.js
 ```
 
 ## Acceptance
@@ -1491,10 +1492,10 @@ npm run test:mcp:renderer
 
 **Work slice: basic MCP URL fetch** (`test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`)
 
-`startWorkSliceServer()` runs in the test process with the mock provider, no ad rules, the real cleaning pipeline, the production MCP server, and the production HTTP bridge. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
+`createWorkSliceApplication()` composes the production parts with the mock provider and the trusted rules fixture, `test/support/fixtures/trusted-ad-rules.txt`. The test starts the production HTTP bridge itself. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
 
-[V] Given the work-slice server with the mock provider, no ad rules, and a renderer double that serves `https://news.example/story`, when an MCP client in each protocol era with the token `any-token` lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown, the log has the started line, the completed line, and one completion record, and `close()` stops the server
-[V] Given the work-slice server, when a request has no `Authorization` header, then it gets 401 with a Bearer challenge, a request to another path gets 404, no renderer starts, and the log has no fetch line
+[V] Given the work-slice application with the mock provider, the trusted rules fixture, and a renderer double that serves `https://news.example/story`, when an MCP client in each protocol era with the token `any-token` lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the fixture rule for `news.example` removes, the log has the started line, the completed line, and one completion record, and `close()` stops the application
+[V] Given the work-slice application, when a request has no `Authorization` header, then it gets 401 with a Bearer challenge, a request to another path gets 404, no renderer starts, and the log has no fetch line
 
 The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test, and the [work slice guide](../../test/acceptance/work-slice/README.md) describes it.
 

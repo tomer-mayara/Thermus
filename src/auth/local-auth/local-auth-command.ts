@@ -1,4 +1,5 @@
 import { loadDeploymentConfig } from '../../config/deployment-config.ts';
+import { failureMessage } from '../../logging/failure-message.ts';
 import type { LocalUserAdministration, LocalAccount, LocalAuthSettings, PasswordSource, RegisteredClient } from './local-user-administration.ts';
 import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';
 
@@ -125,11 +126,4 @@ function accountTable(accounts: readonly LocalAccount[]): string {
   const emailWidth = Math.max(...rows.map(([email = '']) => email.length));
   const stateWidth = Math.max(...rows.map(([, state = '']) => state.length));
   return rows.map(([email = '', state = '', id = '']) => `${email.padEnd(emailWidth)}  ${state.padEnd(stateWidth)}  ${id}\n`).join('');
-}
-
-function failureMessage(error: unknown): string {
-  if (error instanceof SuppressedError) {
-    return `${failureMessage(error.suppressed)} The cleanup after this failure also failed: ${failureMessage(error.error)}`;
-  }
-  return error instanceof Error ? error.message : String(error);
 }
