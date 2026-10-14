@@ -53,5 +53,5 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
     fetch: options.httpSignal === undefined ? undefined : (url, init) => fetch(url, { ...init, signal: AbortSignal.any([options.httpSignal as AbortSignal, ...(init?.signal ? [init.signal] : [])]) }),
   }), { signal: t.signal, timeout: 5_000 });
   assert.equal(client.getNegotiatedProtocolVersion(), era);
-  return { client, url, records, fetchCalls, pipelineCalls, server, firstCompletion: completed.promise };
+  return { client, url, records, fetchCalls, pipelineCalls, server, listener, firstCompletion: completed.promise };
 }
