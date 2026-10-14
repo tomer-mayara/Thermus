@@ -66,6 +66,6 @@ export class RendererProcessDouble {
       }
       complete(null, JSON.stringify({ url: page.finalUrl, http_status: 200, content: page.html, error: null }), '');
     });
-    return new ChildProcess();
+    return new RendererChildDouble();
   }
 }

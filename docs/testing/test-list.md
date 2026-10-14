@@ -841,7 +841,7 @@ AUTH-07W added these tests. A double of the narrow SDK part gives the page of ea
 
 **Renderer process double** (`test/unit/website-fetcher/renderer-process-double.test.ts`)
 
-`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double.
+`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double, and `RendererProcessDouble` gives one for each launch.
 
 [V] Records `SIGKILL` and sends no signal to a process when the readiness deadline or a cancellation of a running fetch requests a kill
 
