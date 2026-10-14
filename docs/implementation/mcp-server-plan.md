@@ -1,9 +1,15 @@
 # MCP server implementation plan
 
-Status: P01 and P02 are implemented with test-injected tool dependencies; P03
-remains planned. Date: 2026-10-14. The [P01 implementation record](mcp-p01.md)
-describes its delivered scope and gate repair. The [P02 implementation record](mcp-p02.md)
-describes shutdown ownership, request isolation, and current verification.
+Status: P01, P02, and P03 are implemented. P01 and P02 used test-injected tool
+dependencies; P03 adds the self-hosted production composition. Date: 2026-10-14.
+The [P01 implementation record](mcp-p01.md) describes its delivered scope and
+gate repair. The [P02 implementation record](mcp-p02.md) describes shutdown
+ownership, request isolation, and its verification. The
+[P03 implementation record](mcp-p03.md) describes the production composition,
+the ad rules file, the local runtime, and the renderer gate.
+AUTH-06 later replaced the hosted `503` placeholder with the WorkOS provider.
+The hosted `503` statements below keep the plan as written; the hosted edition
+registers no fetch tool.
 The original plan publication changed documents only.
 The [fictional design review](mcp-server-plan-review.md) explains the corrections.
 
@@ -173,9 +179,9 @@ provisioning is separate future work.
 
 ## Tests and gates
 
-The source [test inventory](../testing/test-list.md) records completed P01 cases
-and pending MCP work. Records use canonical identity fields; POST remains deferred.
-Update that inventory as each remaining slice is implemented.
+The source [test inventory](../testing/test-list.md) records completed P01, P02,
+and P03 cases and pending MCP work. Records use canonical identity fields; POST
+remains deferred. Update that inventory as each remaining slice is implemented.
 
 Start each slice with Given/When/Then acceptance, then focused failing tests,
 implementation, and refactoring until green. Pure refactors start with passing
@@ -215,7 +221,8 @@ Each was in Backlog at creation. These labels map to real ticket UUIDs; the tabl
 records status and dependencies at creation, not current implementation progress.
 MCP-P01 implementation has a separate [PR #62](https://github.com/3-headed-monkey/Thermus/pull/62)
 and an [implementation record](mcp-p01.md). P02 has its own
-[implementation record](mcp-p02.md); P03 remains planned.
+[implementation record](mcp-p02.md), and P03 has its own
+[implementation record](mcp-p03.md).
 Each slice starts tests first and finishes green. The ticket table preserves
 the original planning status.
 
@@ -262,9 +269,9 @@ setup, inventory, and this plan. Image renderer delivery remains deferred.
 
 ## Completion checklist
 
-- [ ] Implement each vertical slice with its acceptance cases green.
-- [ ] Keep No Auth test-only and prove real-provider access/refusals.
-- [ ] Prove safe records, exact/empty Markdown, and cancellation in both eras.
-- [ ] Supply trusted rules and pinned local renderer; document image limits.
+- [x] Implement each vertical slice with its acceptance cases green.
+- [x] Keep No Auth test-only and prove real-provider access/refusals.
+- [x] Prove safe records, exact/empty Markdown, and cancellation in both eras.
+- [x] Supply trusted rules and pinned local renderer; document image limits.
 - [ ] Pass focused tests and all required gates; record actual evidence.
 - [ ] Update affected guides and complete owner review and PR gates.
