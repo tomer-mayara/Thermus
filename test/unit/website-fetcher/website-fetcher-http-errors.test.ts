@@ -42,25 +42,6 @@ for (const [status, rendererError] of [[403, 'BotChallenge'], [429, 'BotChalleng
   });
 }
 
-for (const code of ['ENOENT', 'EACCES']) {
-  test(`preserves launch error ${code} when output contains a failed HTTP status`, async (context) => {
-    const cause = Object.assign(new Error(`spawn lightpanda ${code}`), { code });
-    stubProcess(context, cause, output(500, 'ServerError'));
-
-    await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => {
-      if (code === 'ENOENT') {
-        assert.ok(error instanceof Error);
-        assert.ok(!(error instanceof WebsiteFetchHttpError));
-        assert.equal(error.message, 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.');
-        assert.equal(error.cause, cause);
-      } else {
-        assert.equal(error, cause);
-      }
-      return true;
-    });
-  });
-}
-
 test('preserves a signaled process with a numeric exit code and failed HTTP status', async (context) => {
   const cause = Object.assign(new Error('renderer terminated by signal'), {
     code: 1, signal: 'SIGTERM' as const, killed: false,

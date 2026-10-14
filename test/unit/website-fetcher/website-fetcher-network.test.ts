@@ -154,6 +154,6 @@ test('fails closed when the renderer cannot apply its policy', async (t) => {
 });
 
 test('reports a missing renderer executable', async (t) => {
-  stubRenderer(t, Object.assign(new Error('missing binary'), { code: 'ENOENT' }));
+  stubRenderer(t, Object.assign(new Error('missing binary'), { code: 'ENOENT', syscall: 'spawn lightpanda' }));
   await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://1.1.1.1/'), /Lightpanda executable "lightpanda" was not found.*docs\/lightpanda-runtime\.md/);
 });

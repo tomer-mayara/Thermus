@@ -66,4 +66,8 @@ export class InProcessServer {
   completionLines(): string[] {
     return this.lines.filter((line) => line.startsWith('{"event":"mcp.tool.completed"'));
   }
+
+  errorLines(): string[] {
+    return this.lines.filter((line) => line.startsWith('ERROR ')).map((line) => line.slice('ERROR '.length));
+  }
 }

@@ -91,8 +91,8 @@ describe('WebsiteFetcherLightpanda', () => {
   const processErrors: Array<[string, ExecFileException, string?]> = [
     ['rejects a readiness failure and discards partial HTML', Object.assign(new Error('wait failed'), { code: 1 })],
     ['preserves the output buffer limit error', Object.assign(new Error('stdout maxBuffer length exceeded'), { code: 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER' })],
-    ['reports an unavailable executable', Object.assign(new Error('spawn lightpanda ENOENT'), { code: 'ENOENT' }), 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.'],
-    ['preserves other launch errors', Object.assign(new Error('spawn lightpanda EACCES'), { code: 'EACCES' })],
+    ['reports an unavailable executable', Object.assign(new Error('spawn lightpanda ENOENT'), { code: 'ENOENT', syscall: 'spawn lightpanda' }), 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.'],
+    ['reports an executable that cannot start', Object.assign(new Error('spawn lightpanda EACCES'), { code: 'EACCES', syscall: 'spawn lightpanda' }), 'Lightpanda executable "lightpanda" could not start (EACCES). See docs/lightpanda-runtime.md for setup.'],
   ];
 
   for (const [name, error, expectedMessage] of processErrors) {

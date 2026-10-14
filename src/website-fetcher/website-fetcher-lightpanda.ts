@@ -1,12 +1,13 @@
 import { execFile, type ChildProcess, type ExecFileException } from 'node:child_process';
 import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
-import { WebsiteFetchHttpError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
+import { systemErrorName, WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
 const LIGHTPANDA_DEFAULT_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
 const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
 const LIGHTPANDA_HTTP_ERROR_EXIT_CODE = 22;
+const SYSTEM_LIMIT_CODES = new Set<unknown>(['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM']);
 
 function rendererArguments(url: string): string[] {
   return [
@@ -51,12 +52,22 @@ function assertSuccessfulHttpStatus(result: Record<string, unknown>, cause: Exec
 
 function assertRendererExit(cause: ExecFileException | null, executable: string): void {
   if (cause === null) return;
-  if (cause.code === 'ENOENT') {
-    throw new Error(`Lightpanda executable "${executable}" was not found. See docs/lightpanda-runtime.md for setup.`, { cause });
-  }
+  const launchFailure = launchError(cause, executable);
+  if (launchFailure !== undefined) throw launchFailure;
   if (cause.killed || cause.signal != null || typeof cause.code !== 'number') {
     throw cause;
   }
+}
+
+// Node marks the error of a process that cannot start with the syscall "spawn". A system limit is temporary and not a
+// setup failure, so it stays a process error. The process error repeats the arguments with the URL, so it stays only
+// the cause.
+function launchError(error: unknown, executable: string): WebsiteFetchLaunchError | undefined {
+  const { syscall, code } = (error ?? {}) as { syscall?: unknown; code?: unknown };
+  if (typeof syscall !== 'string' || !syscall.startsWith('spawn') || SYSTEM_LIMIT_CODES.has(code)) return undefined;
+  const name = systemErrorName(code);
+  const problem = name === 'ENOENT' ? 'was not found' : `could not start (${name})`;
+  return new WebsiteFetchLaunchError(name, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error });
 }
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
@@ -113,33 +124,24 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       };
       signal?.addEventListener('abort', cancel, { once: true });
       try {
-        child = execFile(
-          this.executable,
-          rendererArguments(url),
-          {
-            encoding: 'utf8',
-            maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
-            timeout: LIGHTPANDA_TIMEOUT_MS,
-          },
-          (error, stdout) => {
-            if (completed) return;
-            cleanup();
-            try {
-              signal?.throwIfAborted();
-              if (readinessLimitReached) {
-                throw new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
-                  cause: error ?? undefined,
-                });
-              }
-              assertRendererExit(error, this.executable);
-              const result = WebsiteFetcherLightpanda.parseResult(requestedUrl, stdout, error);
-              signal?.throwIfAborted();
-              resolve(result);
-            } catch (error) {
-              reject(signal?.aborted ? signal.reason : error);
+        child = this.startRenderer(url, (error, stdout) => {
+          if (completed) return;
+          cleanup();
+          try {
+            signal?.throwIfAborted();
+            if (readinessLimitReached) {
+              throw new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
+                cause: error ?? undefined,
+              });
             }
-          },
-        );
+            assertRendererExit(error, this.executable);
+            const result = WebsiteFetcherLightpanda.parseResult(requestedUrl, stdout, error);
+            signal?.throwIfAborted();
+            resolve(result);
+          } catch (error) {
+            reject(signal?.aborted ? signal.reason : error);
+          }
+        });
         if (signal?.aborted) cancel();
         if (!completed && !signal?.aborted) {
           readinessTimer = setTimeout(() => {
@@ -153,6 +155,19 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
         reject(signal?.aborted ? signal.reason : error);
       }
     });
+  }
+
+  // Node refuses some starts at once, for example with ENOEXEC. They become launch errors, as the later ones do.
+  private startRenderer(url: string, complete: (error: ExecFileException | null, stdout: string) => void): ChildProcess {
+    try {
+      return execFile(this.executable, rendererArguments(url), {
+        encoding: 'utf8',
+        maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
+        timeout: LIGHTPANDA_TIMEOUT_MS,
+      }, complete);
+    } catch (error) {
+      throw launchError(error, this.executable) ?? error;
+    }
   }
 
   private static parseResult(requestedUrl: string, stdout: string, cause: ExecFileException | null): WebsiteFetchResult {

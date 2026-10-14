@@ -75,11 +75,12 @@ describe('WebsiteFetcherLightpanda process contract', () => {
   });
 
   test('preserves the missing executable cause', async (context) => {
-    const cause = Object.assign(new Error('spawn lightpanda ENOENT'), { code: 'ENOENT' });
+    const cause = Object.assign(new Error('spawn lightpanda ENOENT'), { code: 'ENOENT', syscall: 'spawn lightpanda' });
     stubProcess(context, { error: cause });
 
     await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), {
-      name: 'Error', message: 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.', cause,
+      name: 'WebsiteFetchLaunchError', kind: 'launch', code: 'ENOENT', failure: 'missing',
+      message: 'Lightpanda executable "lightpanda" was not found. See docs/lightpanda-runtime.md for setup.', cause,
     });
   });
 

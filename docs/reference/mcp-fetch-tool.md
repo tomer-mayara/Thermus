@@ -67,7 +67,9 @@ it makes these parts one time:
   `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in that
   order;
 - one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
-- one operation, `createGetURLAsMarkdown({ fetcher, pipeline })`.
+- one operation, `createGetURLAsMarkdown({ fetcher, pipeline,
+  reportRendererSetupFailure })`, with the
+  [renderer setup report](#renderer-setup-report) of the application logger.
 
 It returns the `buildServer` function of `MCPServer`. Each MCP request gets its
 own SDK `Server` from `createFetchToolServer(context, { operation, logger },
@@ -84,14 +86,51 @@ write no completion record.
 
 Startup does not run or check the renderer. Without a usable renderer, each page
 fetch fails with `Page fetch failed` and a `fetch_failed` record. The tool does
-not pass on the fetcher error. The container image has no renderer, so a server
-container lists the tool, but each page fetch in it fails in this way. Renderer
-image provisioning is separate future work.
+not pass on the fetcher error. The operator log gets a
+[renderer setup report](#renderer-setup-report) instead. The container image has
+no renderer, so a server container lists the tool, but each page fetch in it
+fails in this way. Renderer image provisioning is separate future work.
 
 The hosted edition does not register the tool. Since AUTH-06, its MCP resource
 checks WorkOS Connect tokens, and its MCP server has no tool. P03 adds no POST
 tool, stdio tool, cache, OAuth provider, rule subscription, rule updater, or
 exporter setup.
+
+## Renderer setup report
+
+A renderer setup failure is a renderer process that cannot start. The fetcher
+then rejects with a `WebsiteFetchLaunchError`; the [website fetcher
+reference](website-fetcher.md) gives its contract. The operation gives the
+optional `reportRendererSetupFailure` dependency a new value with only two
+fields: `failure`, which is `missing` for `ENOENT` or `cannot-start` for each
+other code, and `code`, the system error name or `UNKNOWN`. The error message
+and its cause stay out of the report, because the cause holds the renderer
+arguments with the URL. A reporter that throws does not change the tool result.
+A cancelled call gives no report.
+
+The self-hosted server writes the report as one `ERROR` line of the application
+logger:
+
+```text
+Renderer setup failure: the Lightpanda executable is missing (ENOENT). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.
+Renderer setup failure: the Lightpanda executable cannot start (EACCES). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.
+```
+
+The line names the failure class, the code, and the
+[runtime guide](../lightpanda-runtime.md#renderer-setup-report). It holds no URL,
+reason, renderer arguments, page text, token, executable path, or process output.
+
+The server writes the report one time for each code in the life of its process.
+Thus a renderer that stays missing adds one line, not one line for each call. A
+new code, for example `EACCES` after the operator puts a file without execute
+permission at the path, adds one new line. A corrected file at the same path
+needs no restart; a changed `LIGHTPANDA_BIN` needs one, because the server reads
+it at startup. After a correction, a recurrence of a reported code writes no new
+line until the next server start. The client result stays `Page fetch failed`,
+and the completion record stays `fetch_failed`. Other fetch failures, such as
+HTTP errors, timeouts, signals, DNS failures, blocked destinations, and system
+limits such as `EMFILE`, write no report. The local commands and the hosted
+edition load no renderer and write no report.
 
 ## Completion records
 

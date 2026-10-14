@@ -214,7 +214,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     assert.doesNotMatch(site.server.completionLines().join('\n'), /private-query|private-fragment|127\.0\.0\.1/);
   });
 
-  test('Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than the ad cleaner limit, when the real pipeline runs, then hidden content is removed, withheld HTML gives exact empty success, and the failures give fixed errors without partial Markdown', { timeout: 120_000 }, async (t) => {
+  test('Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than the ad cleaner limit, when the real pipeline runs, then hidden content is removed, withheld HTML gives exact empty success, the failures give fixed errors without partial Markdown, and the server writes no renderer setup report', { timeout: 120_000 }, async (t) => {
     const site = await openRuntimeSite(t, executable);
     const fixture = await openPageFixture(t);
     const client = await connect(t, site);
@@ -230,6 +230,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['success', 'success', 'fetch_failed', 'processing_failed']);
     assert.doesNotMatch(site.server.completionLines().join('\n'), /private-|Hidden instruction|Display none|Missing page|HtmlDepthLimitError/);
     assert.equal(site.pipelineRuns.mock.calls.length, 3);
+    assert.deepEqual(site.server.errorLines(), []);
   });
 
   test('Given a page that keeps the renderer waiting, when the modern client cancels its call, then the renderer child stops, the client gets no Markdown, and the server writes one cancelled record', { timeout: 120_000 }, async (t) => {

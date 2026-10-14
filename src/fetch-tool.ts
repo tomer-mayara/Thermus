@@ -5,7 +5,7 @@ import { HtmlToMarkdownPipeline } from './html-cleaner-pipeline/html-to-markdown
 import { CleanHtmlToMarkdownDefuddle } from './html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { PromptInjectionRemoverSanitizer } from './html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from './mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from './mcp/get-url-as-markdown.ts';
+import { createGetURLAsMarkdown, type RendererSetupFailure } from './mcp/get-url-as-markdown.ts';
 import type { RequestServerBuilder } from './mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from './website-fetcher/website-fetcher-lightpanda.ts';
 
@@ -19,8 +19,23 @@ export function fetchToolServers(environment: Environment, logger: ApplicationLo
     new PromptInjectionRemoverSanitizer(),
     new CleanHtmlToMarkdownDefuddle(),
   ]);
-  const operation = createGetURLAsMarkdown({ fetcher: new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN), pipeline });
+  const operation = createGetURLAsMarkdown({
+    fetcher: new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN),
+    pipeline,
+    reportRendererSetupFailure: rendererSetupReporter(logger),
+  });
   return (context, lifetime) => createFetchToolServer(context, { operation, logger }, lifetime);
+}
+
+// One line for each code in the life of the server keeps the log short when the renderer stays missing.
+function rendererSetupReporter(logger: ApplicationLogger): (failure: RendererSetupFailure) => void {
+  const reported = new Set<string>();
+  return ({ failure, code }) => {
+    if (reported.has(code)) return;
+    reported.add(code);
+    const problem = failure === 'missing' ? 'is missing' : 'cannot start';
+    logger.error(`Renderer setup failure: the Lightpanda executable ${problem} (${code}). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.`);
+  };
 }
 
 // A native parser error can repeat rule text, so the startup error keeps that error only as its cause.
