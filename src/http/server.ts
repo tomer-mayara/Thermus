@@ -30,6 +30,7 @@ const ORIGIN_FORM_TARGET = /^\/(?!\/)[^\\#]*$/;
 const DEFAULT_SHUTDOWN_GRACE_MS = 5_000;
 
 export async function startHttpServer(handler: FetchHandler, options: HttpServerOptions): Promise<HttpServer> {
+  await using owned = new AsyncDisposableStack();
   const bridge: Bridge = { handler, publicOrigin: new URL(options.publicBaseUrl).origin, logger: options.logger };
   const server = createServer((incoming, outgoing) => {
     // After close(), Node keeps a finished keep-alive connection open until its timeout.
@@ -40,23 +41,20 @@ export async function startHttpServer(handler: FetchHandler, options: HttpServer
   });
   server.listen({ host: options.listen.host, port: options.listen.port });
   await once(server, 'listening');
-  const url = listenUrlOrClose(server);
+  owned.defer(() => closeServer(server, options.shutdownGraceMs ?? DEFAULT_SHUTDOWN_GRACE_MS));
+  const url = listenUrl(server);
+  const resources = owned.move();
   let closing: Promise<void> | undefined;
   return {
     url,
-    close: () => (closing ??= closeServer(server, options.shutdownGraceMs ?? DEFAULT_SHUTDOWN_GRACE_MS)),
+    close: () => (closing ??= resources.disposeAsync()),
   };
 }
 
-function listenUrlOrClose(server: Server): URL {
+function listenUrl(server: Server): URL {
   const { address, port } = server.address() as AddressInfo;
   const host = address.includes(':') ? `[${address}]` : address;
-  try {
-    return new URL(`http://${host}:${port}/`);
-  } catch (error) {
-    server.close();
-    throw error;
-  }
+  return new URL(`http://${host}:${port}/`);
 }
 
 async function closeServer(server: Server, graceMs: number): Promise<void> {
