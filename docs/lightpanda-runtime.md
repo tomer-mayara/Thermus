@@ -78,7 +78,7 @@ Lightpanda SHA256 check failed for linux/arm64: the asset has the digest <digest
 A container start downloads nothing. The image sets these settings:
 
 - `LIGHTPANDA_BIN=/opt/lightpanda/1.0.0/lightpanda`. The executable and its directory belong to root, and the mode of the executable is `0755`, so the `node` user of the image cannot change them.
-- `LIGHTPANDA_DISABLE_TELEMETRY=true`. Without this variable, each Lightpanda 1.0.0 run sends telemetry to `telemetry.lightpanda.io`, also a `fetch` run. Any value of the variable turns telemetry off.
+- `LIGHTPANDA_DISABLE_TELEMETRY=true`. Without this variable, each Lightpanda 1.0.0 run sends telemetry to `telemetry.lightpanda.io`, also a `fetch` run. Any value of the variable turns telemetry off. The fetcher also sets it for each renderer run. See [Telemetry](#telemetry).
 
 The renderer reads the CA certificates of the system for HTTPS pages. Node uses its own certificates. The slim Node image has no CA certificates: without them, the renderer logs `No certificates loaded`, and each HTTPS page fails with `PeerFailedVerification`. Thus the image copies `/etc/ssl/certs/ca-certificates.crt`, the bundle of the Debian `ca-certificates` package, from the pinned Rust image of the build, which has the same Debian release. The bundle changes when that image changes.
 
@@ -86,7 +86,7 @@ The fetcher keeps its options in the container: the network block list, the read
 
 ## Select the executable
 
-The self-hosted server reads `LIGHTPANDA_BIN` from its environment when it starts. It gives the value to the fetcher constructor. The fetcher itself reads no environment variable. A nonempty value selects the executable. Use an absolute path so it works from any working directory. Paths with spaces work when quoted in shell commands:
+The self-hosted server reads `LIGHTPANDA_BIN` from its environment when it starts. It gives the value to the fetcher constructor. The fetcher reads no setting from the environment. A nonempty value selects the executable. Use an absolute path so it works from any working directory. Paths with spaces work when quoted in shell commands:
 
 ```sh
 export LIGHTPANDA_BIN="/absolute/path with spaces/lightpanda"
@@ -101,9 +101,13 @@ command -v lightpanda
 lightpanda version
 ```
 
-Lightpanda 1.0.0 sends telemetry to `telemetry.lightpanda.io` on each run when `LIGHTPANDA_DISABLE_TELEMETRY` is not set. The server and the fetcher do not set it. To turn telemetry off for a local server, export `LIGHTPANDA_DISABLE_TELEMETRY=true` in the shell that starts the server. The image sets it.
-
 A selected executable that is missing or cannot start produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Server startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the fetcher error. The server log gets a [renderer setup report](#renderer-setup-report). The operator must verify the runtime before use with the commands above.
+
+## Telemetry
+
+Lightpanda 1.0.0 sends telemetry to `telemetry.lightpanda.io` on each run, also a `fetch` run, when `LIGHTPANDA_DISABLE_TELEMETRY` is not set. Any value of the variable turns telemetry off. The fetcher starts each renderer run with the environment of the server and `LIGHTPANDA_DISABLE_TELEMETRY=true`. Thus telemetry is off also when the server environment does not set the variable, for example for a local server. The other variables of the server environment, such as `PATH` and `HOME`, reach the renderer unchanged. The image sets the variable too.
+
+The `version` command stops before telemetry starts, so the version checks in this document send nothing. Other Lightpanda commands that you start yourself, such as `fetch`, send telemetry unless you set the variable.
 
 ## Renderer setup report
 
@@ -156,7 +160,7 @@ pnpm build
 node --test dist/test/interface/website-fetcher.test.js
 ```
 
-`pnpm test:interface` and `pnpm test` include that public-site smoke test. `npm run check` runs type checking, offline unit tests, and build acceptance tests. It does not run the live renderer interface tests or the renderer gate.
+`pnpm test:interface` and `pnpm test` include that public-site smoke test. The fetcher turns [telemetry](#telemetry) off for each renderer run of these tests and of the renderer gate. `npm run check` runs type checking, offline unit tests, and build acceptance tests. It does not run the live renderer interface tests or the renderer gate.
 
 With `LIGHTPANDA_BIN` set to the verified executable, run the explicit renderer gate. It proves the production fetch tool with this renderer:
 
@@ -164,11 +168,12 @@ With `LIGHTPANDA_BIN` set to the verified executable, run the explicit renderer 
 npm run test:mcp:renderer
 ```
 
-The command makes a clean build and runs `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select the file. The gate runs the self-hosted server in the test process with real Better Auth, the real cleaning pipeline, trusted test rules, and this renderer. The real MCP SDK HTTP client calls `getURLAsMarkdown` for local HTTP pages on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address in the test scope. The gate needs no public network access and no Axiom credentials.
+The command makes a clean build and runs `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select the file. The gate runs the self-hosted server in the test process with real Better Auth, the real cleaning pipeline, trusted test rules, and this renderer. The real MCP SDK HTTP client calls `getURLAsMarkdown` for local HTTP pages on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address in the test scope. It keeps the other launch options of the fetcher, also the renderer environment. The gate needs no public network access and no Axiom credentials.
 
-The six cases prove these behaviors:
+The seven cases prove these behaviors:
 
 - In the modern 2026-07-28 and legacy 2025-11-25 protocol eras, a user signs in and consents on the bundled pages. The client then gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record.
+- A local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY` gets a local JavaScript page, and the renderer run has telemetry off. The case gives the server a new `HOME`. Lightpanda 1.0.0 makes its data directory there at each start, on Linux under `XDG_DATA_HOME`. With telemetry on, it writes its telemetry install ID, the file `iid`, there and starts the telemetry sender, which alone connects to `telemetry.lightpanda.io`. The case checks that the directory holds no file.
 - After a redirect that changes the host and the path, `requestedUrl` keeps the requested spelling. The final URL selects the ad rules and resolves the relative links.
 - Hidden content is removed. HTML that the sanitizer withholds gives exact empty success. An HTTP error gives `Page fetch failed` and no renderer setup report. A DOM deeper than 256 levels gives `Page processing failed`.
 - A modern client cancellation stops the renderer child, and the server writes one `cancelled` record.
@@ -180,4 +185,4 @@ Setup fails when `LIGHTPANDA_BIN` is unset or empty, when it is relative, when i
 
 Other releases, nightly builds, and unverified local builds are unsupported. They can reject required flags or change JSON output, HTTP errors, readiness, or network blocking. If a required option fails, keep the failure visible. Do not remove safety flags to make another build run.
 
-To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check`, the local renderer interface tests, and the renderer gate with that executable. The renderer gate accepts only version 1.0.0, so change its version check in the same change. Review its network policy and CLI behavior. Update the fetcher and network policy documents if behavior changes. Change the image in the same change: the asset URLs and the two Linux digests in the `Dockerfile` and in `docker/check-lightpanda-digest.sh`, the version in the `LIGHTPANDA_BIN` path, and the version checks of the container gate. Then run `npm run test:container`. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.
+To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check`, the local renderer interface tests, and the renderer gate with that executable. The renderer gate accepts only version 1.0.0, so change its version check in the same change. Review its network policy, CLI behavior, and telemetry. The fetcher turns telemetry off with `LIGHTPANDA_DISABLE_TELEMETRY`, and the telemetry case of the renderer gate needs the `iid` file of 1.0.0. Update the fetcher and network policy documents if behavior changes. Change the image in the same change: the asset URLs and the two Linux digests in the `Dockerfile` and in `docker/check-lightpanda-digest.sh`, the version in the `LIGHTPANDA_BIN` path, and the version checks of the container gate. Then run `npm run test:container`. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.

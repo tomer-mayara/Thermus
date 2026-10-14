@@ -2,13 +2,15 @@
 
 `WebsiteFetcher.fetchURL(url, signal?)` returns a `WebsiteFetchResult` for a successful HTTP response. The result has `requestedUrl`, `finalUrl`, and `html`. `requestedUrl` keeps the URL as supplied. `finalUrl` is the page URL after redirects. The HTML contains the rendered page.
 
-The Lightpanda implementation accepts only `http:` and `https:` URLs. The constructor argument selects the executable: `new WebsiteFetcherLightpanda(executable)`. A nonempty value is the exact executable path, including spaces. An empty or missing value selects `lightpanda` from `PATH`. The fetcher reads no environment variable. The self-hosted server reads `LIGHTPANDA_BIN` when it starts and passes it to the constructor. Use an absolute path and verify the supported version before use. See [Lightpanda runtime setup](../lightpanda-runtime.md) for the pinned release, download checks, executable selection, and upgrade policy.
+The Lightpanda implementation accepts only `http:` and `https:` URLs. The constructor argument selects the executable: `new WebsiteFetcherLightpanda(executable)`. A nonempty value is the exact executable path, including spaces. An empty or missing value selects `lightpanda` from `PATH`. The fetcher reads no setting from the environment. The self-hosted server reads `LIGHTPANDA_BIN` when it starts and passes it to the constructor. Use an absolute path and verify the supported version before use. See [Lightpanda runtime setup](../lightpanda-runtime.md) for the pinned release, download checks, executable selection, and upgrade policy.
 
 The fetcher uses JSON output, HTML dump, HTTP failure reporting, and the production readiness and network safety options:
 
 ```text
 fetch --json --dump html --fail-on-http-error --wait-until networkidle --wait-ms 60000 --block-private-networks --block-cidrs <blocked CIDRs> --http-proxy '' <url>
 ```
+
+Each renderer run gets the environment of the server process with `LIGHTPANDA_DISABLE_TELEMETRY=true`. Without that variable, Lightpanda 1.0.0 sends telemetry to `telemetry.lightpanda.io` on each run, also a `fetch` run. The fetcher sets the value `true` also when the server environment does not set the variable or sets another value. It reads the server environment at each run and does not change it. See [Lightpanda runtime telemetry](../lightpanda-runtime.md#telemetry).
 
 The `--json` option provides HTTP status and fetch error data. The `--fail-on-http-error` option makes Lightpanda exit with code 22 for an HTTP status of 400 or above. A renderer error can use a different exit code. For example, a bot challenge can produce exit code 1 with `error: "BotChallenge"` and HTTP status 403 or 429. The fetcher checks the JSON status for completed renderer runs, including those with a nonzero exit code. Successful responses and successful redirects return the rendered HTML with the requested and final URLs.
 
@@ -18,7 +20,7 @@ A renderer process that cannot start produces the exported `WebsiteFetchLaunchEr
 
 Lightpanda blocks private network destinations by default. The five-second readiness deadline includes navigation. If the child has exited when that deadline fires, the fetcher preserves its completion result. If the child is still running, the fetcher sends `SIGKILL`, waits for the process callback, and rejects with `Lightpanda readiness limit exceeded after 5000 ms`. It does not return partial HTML. The separate process timeout is 60000 ms, and the output limit is 32 MiB. Readiness does not guarantee that content that appears much later will be present.
 
-The local HTTP tests use a fixture server on loopback. The `permitIPv4Fixture` test helper mocks DNS for the fixture hostname and adjusts the Lightpanda blocked CIDRs for that child process. This setting exists only in the test scope. The renderer gate uses the same helper. Production fetches keep private-network blocking enabled.
+The local HTTP tests use a fixture server on loopback. The `permitIPv4Fixture` test helper mocks DNS for the fixture hostname and adjusts the Lightpanda blocked CIDRs for that child process. It keeps the other launch options of the fetcher, also the renderer environment. This setting exists only in the test scope. The renderer gate uses the same helper. Production fetches keep private-network blocking enabled.
 
 The optional `AbortSignal` belongs to one fetch. An already cancelled signal
 starts no DNS or renderer work. Cancellation during DNS prevents renderer
@@ -31,10 +33,10 @@ signals. A cancellation observed at completion
 takes priority over renderer errors and partial output. The fetcher rejects with
 the signal's reason; the MCP boundary exposes only its safe cancellation result.
 
-The unit tests cover executable selection by the constructor argument, the `PATH` fallback, a `LIGHTPANDA_BIN` value in `process.env` that the fetcher ignores, CLI options, HTML success, redirects, HTTP status errors, launch errors (`ENOENT`, `EACCES`, and `ENOEXEC` or a code without a system error name from the start call) and how they differ from HTTP, timeout, signal, output limit, system limit, failed kill, and DNS failures, other process failures, invalid output, and unsupported URL schemes. One test runs two concurrent calls on one fetcher: both use the same executable, arguments, and limits, and each call gets its own result. The tests use process doubles and need no installed renderer:
+The unit tests cover executable selection by the constructor argument, the `PATH` fallback, a `LIGHTPANDA_BIN` value in `process.env` that the fetcher ignores, CLI options, the renderer environment with `LIGHTPANDA_DISABLE_TELEMETRY=true` for each run, HTML success, redirects, HTTP status errors, launch errors (`ENOENT`, `EACCES`, and `ENOEXEC` or a code without a system error name from the start call) and how they differ from HTTP, timeout, signal, output limit, system limit, failed kill, and DNS failures, other process failures, invalid output, and unsupported URL schemes. One test runs two concurrent calls on one fetcher: both use the same executable, arguments, and limits, and each call gets its own result. The tests use process doubles and need no installed renderer:
 
 ```bash
 pnpm test:unit
 ```
 
-After you install and select the pinned runtime, run the [local renderer interface tests](../lightpanda-runtime.md#verify-rendering). These tests give `process.env.LIGHTPANDA_BIN` to the constructor, so their commands do not change. The separate public-site smoke test requires public network access. The runtime setup document gives both commands and the renderer gate, `npm run test:mcp:renderer`, which runs this fetcher in the production fetch tool. `npm run check` does not run any of these renderer tests.
+After you install and select the pinned runtime, run the [local renderer interface tests](../lightpanda-runtime.md#verify-rendering). These tests give `process.env.LIGHTPANDA_BIN` to the constructor, so their commands do not change. Each of their renderer runs has telemetry off. The separate public-site smoke test requires public network access. The runtime setup document gives both commands and the renderer gate, `npm run test:mcp:renderer`, which runs this fetcher in the production fetch tool. `npm run check` does not run any of these renderer tests.
