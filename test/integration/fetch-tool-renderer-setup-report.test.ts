@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import childProcess, { type ExecFileException } from 'node:child_process';
+import childProcess, { type ChildProcess, type ExecFileException } from 'node:child_process';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { Client, InMemoryTransport, type CallToolResult } from '@modelcontextprotocol/client';
@@ -7,6 +7,7 @@ import { createRequestContext } from '../../src/auth/access-context.ts';
 import { createFetchOperation, fetchToolServers } from '../../src/fetch-tool.ts';
 import type { RequestServerBuilder } from '../../src/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
+import { RendererChildDouble } from '../support/renderer-process-double.ts';
 
 const executable = '/opt/thermus-test/lightpanda';
 // An address literal needs no DNS lookup.
@@ -22,13 +23,13 @@ type ProcessCompletion = (error: ExecFileException | null, stdout: string, stder
 // Node reports ENOENT and EACCES after the start call, but it throws other codes, such as ENOEXEC, at once.
 function failedStarts(t: TestContext, codes: readonly string[]): void {
   const remaining = [...codes];
-  t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => {
+  t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
     const code = remaining.shift() ?? 'ENOENT';
     const error = Object.assign(new Error(`spawn ${executable} ${code}`), { code, syscall: `spawn ${executable}`, cmd: `${executable} fetch ${url}` });
     if (code !== 'ENOENT' && code !== 'EACCES') throw error;
     const complete = args.at(-1) as ProcessCompletion;
     setImmediate(() => complete(error, '', ''));
-    return new childProcess.ChildProcess();
+    return new RendererChildDouble();
   }) as typeof childProcess.execFile);
   syncBuiltinESMExports();
   t.after(() => {

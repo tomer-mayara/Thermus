@@ -7,8 +7,8 @@ import { FixtureFactory, settled, type LiveUser, type StagingFixtures } from './
 export const operatorActor = 'operator:hosted-live-gate';
 
 const userLabels = [
-  'selector', 'inactive-only', 'new-super-admin', 'independent', 'sole-super-admin', 'outgoing', 'incoming', 'lost', 'recovering',
-  'unknown-outcome', 'inactive-retry', 'hosted-super-admin',
+  'selector', 'inactive-only', 'new-super-admin', 'independent', 'member-only', 'concurrent-grant', 'concurrent-revoke', 'sole-super-admin',
+  'outgoing', 'incoming', 'lost', 'recovering', 'unknown-outcome', 'inactive-retry', 'hosted-super-admin',
 ] as const;
 
 export type OrganizationUserLabel = (typeof userLabels)[number];
@@ -26,7 +26,9 @@ export interface OrganizationFixtures {
 // - selector: User and Admin in A, User in B, and an inactive membership in the operator organization;
 // - inactive-only: only an inactive membership in A;
 // - independent: User and Admin in the operator organization, and User in B;
-// - sole-super-admin: only Super Admin in the operator organization;
+// - member-only: a membership in the operator organization made without a role, so that it has the default role;
+// - concurrent-grant: User and Admin in the operator organization;
+// - concurrent-revoke and sole-super-admin: only Super Admin in the operator organization;
 // - outgoing: Super Admin and User in the operator organization;
 // - lost: an inactive Super Admin membership in the operator organization;
 // - inactive-retry: an inactive User membership in the operator organization;
@@ -47,6 +49,9 @@ export async function createOrganizationFixtures(workos: WorkOS, registry: Fixtu
     make.deactivatedMembership(users['inactive-only'], organizationA),
     make.membership(users.independent, operatorOrganization, ['user', 'admin']),
     make.membership(users.independent, organizationB, ['user']),
+    make.membership(users['member-only'], operatorOrganization, []),
+    make.membership(users['concurrent-grant'], operatorOrganization, ['user', 'admin']),
+    make.membership(users['concurrent-revoke'], operatorOrganization, ['super-admin']),
     make.membership(users['sole-super-admin'], operatorOrganization, ['super-admin']),
     make.membership(users.outgoing, operatorOrganization, ['super-admin', 'user']),
     make.deactivatedMembership(users.lost, operatorOrganization, ['super-admin']),

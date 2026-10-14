@@ -52,7 +52,7 @@ export interface OrganizationAdministrationOptions {
 }
 
 const GRANT_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'stale', 'unsupported']);
-const SEND_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'unsupported']);
+const SEND_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'address-in-use', 'unsupported']);
 const UPDATE_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'not-pending', 'unsupported']);
 
 // Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user, and

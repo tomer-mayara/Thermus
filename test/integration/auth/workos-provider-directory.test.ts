@@ -77,7 +77,7 @@ async function directoryWorld(t: TestContext) {
   const fake = await WorkOSFakeApi.start(t);
   fake.authkitKeySet.publish(authkitKey);
   const workos = workosClientFor(fake);
-  const grants = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const grants = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const keySet = createRemoteJWKSet(fake.authkitKeySetUrl);
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: fake.authkitIssuer, mcpResourceUrl, keySet, grants });
   const requestLines = () => fake.takeRequests().map(({ method, path }) => `${method} ${path}`);

@@ -145,10 +145,10 @@ contains every change of the pull request.
      change to the WorkOS SDK or jose packages or to the hosted authentication
      flow. They run offline with a focused command.
    - The hosted live gate, `npm run test:hosted-live`, for a change to the
-     hosted authentication flow, to the WorkOS organization reads, or to the
-     steps of the [operator runbook](hosted-organization-setup.md), when the
-     WorkOS staging settings are available. If they are not available, record
-     that the gate did not run.
+     hosted authentication flow, to the WorkOS organization reads or changes,
+     or to the steps of the [operator runbook](hosted-organization-setup.md),
+     when the WorkOS staging settings are available. If they are not
+     available, record that the gate did not run.
 
 If you are not sure that a suite applies, run it.
 
@@ -317,7 +317,8 @@ management, invitations, change records, and the User seat summary. AUTH-06
 replaced the placeholder in production with the WorkOS provider, and AUTH-07W
 connected the organization reads of the hosted edition to WorkOS. After that,
 no composition used the placeholder, and a follow-up of AUTH-07W removed it
-and its unit test. These tests run offline and need no WorkOS account,
+and its unit test. AUTH-08W connected the member and invitation reads and
+changes to WorkOS. These tests run offline and need no WorkOS account,
 credential, or network access. They use doubles at the provider contracts, or
 the pinned SDK with a local fake of the WorkOS API
 (`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
@@ -340,6 +341,9 @@ They are in the existing suites:
   `test/unit/organizations/organization-administration-invitation-overview.test.ts`,
   the WorkOS provider tests in `test/unit/auth-workos/`, with
   `test/unit/auth-workos/workos-organizations-memberships.test.ts`,
+  `test/unit/auth-workos/workos-organizations-members.test.ts`,
+  `test/unit/auth-workos/workos-organizations-grants.test.ts`,
+  `test/unit/auth-workos/workos-organizations-invitations.test.ts`,
   `test/unit/mcp/protected-resource-endpoint.test.ts`,
   `test/unit/config/deployment-config.test.ts`,
   `test/unit/application.test.ts`, and
@@ -353,12 +357,14 @@ They are in the existing suites:
   `test/integration/auth/workos-provider-access.test.ts`,
   `test/integration/auth/workos-provider-directory.test.ts`,
   `test/integration/auth/workos-provider-organizations.test.ts`,
+  `test/integration/auth/workos-provider-administration.test.ts`,
   `test/integration/auth/workos-browser-session.test.ts`, and
   `test/integration/mcp/required-permission.test.ts`, in
   `npm run test:integration`;
 - acceptance: `test/acceptance/auth/hosted-startup.test.ts`,
   `test/acceptance/auth/hosted-workos.test.ts`,
   `test/acceptance/auth/hosted-workos-organizations.test.ts`,
+  `test/acceptance/auth/hosted-workos-administration.test.ts`,
   `test/acceptance/auth/hosted-organizations.test.ts`,
   `test/acceptance/auth/hosted-organization-requests.test.ts`,
   `test/acceptance/auth/hosted-grants.test.ts`,
@@ -370,16 +376,17 @@ They are in the existing suites:
 
 This command is the offline hosted gate. It runs the hosted integration and
 acceptance files. Its glob `workos-*.test.js` selects each WorkOS integration
-file, also `workos-provider-organizations.test.js`:
+file, also `workos-provider-organizations.test.js` and
+`workos-provider-administration.test.js`:
 
 ```sh
-npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/integration/auth/portal-access.test.js dist/test/integration/auth/workos-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-workos.test.js dist/test/acceptance/auth/hosted-workos-organizations.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/integration/auth/portal-access.test.js dist/test/integration/auth/workos-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-workos.test.js dist/test/acceptance/auth/hosted-workos-organizations.test.js dist/test/acceptance/auth/hosted-workos-administration.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
 ```
 
 A pass shows the application side of the hosted edition: the WorkOS provider
-and its organization reads with the pinned SDK against a fake, and the
-application policy of the hosted routes and of `OrganizationAdministration`
-with doubles. It is never a pass of the
+and its organization reads and changes with the pinned SDK against a fake,
+and the application policy of the hosted routes and of
+`OrganizationAdministration` with doubles. It is never a pass of the
 [hosted live gate](#hosted-live-gate-auth-06) and never proof of WorkOS
 behavior, such as the claims of real tokens, safe grant changes, or invitation
 acceptance in WorkOS. Do not report it as either.
@@ -442,7 +449,7 @@ environment of the command:
 
 | Setting | Value |
 | --- | --- |
-| `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, and memberships. |
+| `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, memberships, and invitations. |
 | `WORKOS_CLIENT_ID` | The client ID of the staging environment. |
 | `WORKOS_AUTHKIT_ISSUER` | The AuthKit domain of the staging environment, exactly as WorkOS shows it: an absolute `https` URL without spaces, a username, a password, a query, or a fragment. |
 
@@ -485,8 +492,8 @@ The gate also needs:
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 
-A complete run takes about 10 minutes: run r2 of AUTH-07W ran its tests in 541
-seconds after the builds. One AUTH-06 case waits for the 300-second access
+A complete run takes about 12 minutes: the third complete run of AUTH-08W
+run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
 tokens to expire, and the AUTH-07W expiry case after it uses the same wait.
 
 If a setting is missing, empty, or refused, the command fails with one setup
@@ -500,7 +507,7 @@ settings and every live test passes. Missing hosted credentials, a setup error,
 and skipped live tests can never count as a successful hosted gate. Do not put
 credentials in the repository, in logs, or in pull request notes.
 
-The command has four parts:
+The command has six parts:
 
 - The provider proofs of AUTH-06: the AuthKit metadata and key sets, the saved
   configuration, the browser sign-in with required MFA, sessions and their
@@ -528,8 +535,13 @@ The command has four parts:
   real `WorkOSOrganizations` and `OrganizationAdministration`. The proofs cover
   the organization setup by external ID, the Super Admin grant, revocation,
   replacement, and recovery, the inspection after an unknown outcome, and the
-  operator records. The driver is test support only: the product has no
-  operator method or route.
+  operator records. Each Super Admin change is one role assignment on the
+  authorization resource of the organization, or its removal. The proofs also
+  cover that resource, which has the external ID of the organization, and a
+  customer single-role change between the inspection of the runbook and its
+  write, which stays. The driver is test support only: the product has no
+  operator method or route. Its decisions also have a focused unit test with
+  an SDK double, `test/unit/auth-workos/operator-runbook.test.ts`.
 - The AUTH-07W cases of the hosted server, in
   `test/acceptance/auth/hosted-live/organization-server.ts`, with the same
   local HTTPS test server. The cases cover the onboarding of users without an
@@ -541,29 +553,113 @@ The command has four parts:
   the AUTH-06 cases and the expiry case after them, so that the 300-second
   wait of the AUTH-06 cases also lets the access token of the selection
   session expire.
+- The AUTH-08W provider proofs, in
+  `test/acceptance/auth/hosted-live/administration-proofs.ts`. They run the
+  single-role writes of WorkOS with the pinned SDK, and the grant changes,
+  member reads, User seat count, and invitation changes of the real
+  `WorkOSOrganizations`, against the staging environment. The proofs cover a
+  repeated write, concurrent writes of two roles, the removal of a role that
+  the membership does not have, a write on the resource of another
+  organization, retries on an old revision, the removal of the last role,
+  inactive and pending memberships, the member reads in pages of two with
+  each status filter, the User seat count, and the invitation send, its
+  refusals, the resend, and the revoke.
+- The AUTH-08W cases of the hosted server, in
+  `test/acceptance/auth/hosted-live/administration-server.ts`, with the same
+  local HTTPS test server. The cases cover a forged Admin grant of an
+  Admin-only member, the self-grants of a Super Admin with MFA and their
+  change records, the revoke and the regrant of its own Admin, the
+  revocation of Admin and then of User of a member with a browser session
+  and an MCP token, the removal of the last grant, forged posts and a post on
+  an old revision, the invitation forms, and the acceptance of two
+  invitations. For an acceptance, Playwright opens the invitation link.
+  AuthKit sends the browser through the Initiate login URI to `/login` of the
+  server, which starts a sign-in. AuthKit shows the invitation in that
+  sign-in and accepts it before the callback
+  (`acceptInvitationThroughPortal()` in
+  `test/support/hosted-live/portal-visit.ts`, with the `/invite` step of
+  `test/support/hosted-live/authkit-driver.ts`). `hosted.live.ts` registers
+  the AUTH-08W proofs after the AUTH-07W proofs, and the AUTH-08W cases after
+  the first four AUTH-07W cases and before the AUTH-06 cases. Thus the
+  AUTH-07W expiry case still comes after the 300-second wait.
 
 For the AUTH-07W proofs and cases, the run makes its own operator
 organization, `Thermus live <run ID> operator` with the external ID
-`thermus-live-<run ID>-operator`, and 12 more users
+`thermus-live-<run ID>-operator`, and 15 more users
 (`test/support/hosted-live/organization-fixtures.ts`). It deletes them at the
 end with its other fixtures. They need no other setting or prerequisite.
-AUTH-08W adds its own proofs and cases.
+
+For the AUTH-08W proofs and cases, the run makes two more organizations,
+`Thermus live <run ID> C` for the cases and `Thermus live <run ID> D` for the
+proofs, and 25 more users, each with a password and a verified email, with
+their memberships (`test/support/hosted-live/administration-fixtures.ts`).
+Organization C has the external ID `thermus-live-<run ID>-c`, as each
+customer organization of the operator runbook has one. WorkOS names the
+authorization resource of such an organization only by its external ID, so
+the grant cases in C cover the role writes on a resource that the external ID
+names. Organization D has no external ID, so the proofs in D cover an
+organization without one, whose resource WorkOS names by the organization ID.
+Organization B of the staging fixtures holds the second membership of two of
+these users. The invitations of the proofs and cases go only to these
+existing users, because an invitation to a new address needs an email
+verification code at the acceptance. The run deletes them at the end with
+its other fixtures. They need no other setting or prerequisite. With them,
+the complete command has 77 tests: the 60 tests of AUTH-06 and AUTH-07W, with
+the three operator proofs of the ticket
+`9255ad59-3484-43bd-bdf5-e6e391e07bd6`, and the 17 AUTH-08W tests.
 
 Record the results of the AUTH-06 cases separately from the full hosted release
 gate. A pass of the AUTH-06 cases lets AUTH-06 complete its scope: identity
 verification, browser sessions, and read-only access resolution. It is not a
 pass of the full hosted gate. The first hosted release also needs the
 applicable AUTH-07W and AUTH-08W live cases, and the operator and customer
-changes that they prove stay unavailable until those cases pass.
+changes that they prove stay unavailable until those cases pass. The
+AUTH-07W cases passed in run r2 of AUTH-07W, and the AUTH-08W cases in run
+r3 of AUTH-08W.
 
 Record the results of the AUTH-07W proofs and cases separately in the same
 way. Run r2 of AUTH-07W on 2026-10-14 passed them with the complete command:
-57 of 57 tests. The runbook also requires a completed operator MFA before each
-write ([before you start](hosted-organization-setup.md#before-you-start)). This
+57 of 57 tests. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the
+Super Admin steps of the runbook to single-role writes and added three
+operator proofs. Its run r1 on 2026-10-14 passed them with the complete
+command: 60 of 60 tests. The runbook also requires a completed operator MFA
+before each write ([before you start](hosted-organization-setup.md#before-you-start)). This
 precondition is a manual check of the operator, not a part of this gate: the
 WorkOS API cannot show a completed operator MFA. On 2026-10-14, the owner
 removed its proof from AUTH-07W. The decision ticket
 `ae984833-e115-4da9-bebe-7c4b1fb1a025` decides how it is enforced and proven.
+
+Record the results of the AUTH-08W proofs and cases separately in the same
+way. First, a run of only the AUTH-08W tests, with the name pattern
+`AUTH-08W`, passed the 16 proofs and cases that existed then. It ran through
+the staging launcher after `npm run build && npm run build:user-portal`:
+
+```sh
+node ~/.config/thermus/with-workos-staging.cjs node --test --test-name-pattern="AUTH-08W" dist/test/acceptance/auth/hosted.live.js
+```
+
+It reported 16 tests, 16 passed, 0 failed, and 0 skipped. A run with a name
+pattern runs only a part of the gate, so it is a record of those tests, not a
+gate pass. The ninth AUTH-08W provider proof came after it. Then run r3 of
+AUTH-08W ran the complete command, `npm run test:hosted-live`, three times on
+2026-10-14 with the staging launcher:
+
+1. Before the merge of main, on commit 564bdff: status 0, 74 tests in 17
+   suites, 74 passed.
+2. After the merge of main (77 tests with the three operator proofs of the
+   ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6`) and the organization read of
+   the role writes, with an external ID for C, on commit fd3967a: status 1,
+   74 passed and 3 failed. Three AUTH-08W cases in C got the `500` failure
+   page for a page read after successful changes; the run kept no cause. The
+   cases now show the last operator reports of the server for a failed page,
+   and a run of only the 17 AUTH-08W tests then passed each of them. A failed
+   complete run is not a pass, and a pattern run does not replace it.
+3. On commit 9b47df0: status 0, 77 tests in 17 suites, 77 passed, 0 failed,
+   0 cancelled, 0 skipped, and 0 todo, in 688 seconds after the builds.
+
+Thus the third complete run of AUTH-08W run r3 is a pass of the AUTH-08W part
+and of the hosted live gate as a whole. The completed operator MFA stays a
+manual check outside this gate, as the paragraph above gives.
 
 Until the AUTH-06 cases pass, the hosted edition is not released. The
 [hosted offline checks](#hosted-offline-checks) never count as this gate.
