@@ -86,7 +86,7 @@ test('Given a caller and a message, when INFO is logged, then the body has the c
 
 test('Given an empty or Unicode multiline message, when INFO is logged, then the body keeps the message unchanged after its source', () => {
   const { logger, records } = capture();
-  const messages = ['', 'שלום 🌡️\nsecond line'];
+  const messages = ['', 'Hello 🌡️\nsecond line'];
 
   for (const message of messages) {
     runInNewContext('logger.info(message)', { logger, message }, { filename: 'application-caller.js' });
