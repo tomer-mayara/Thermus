@@ -789,18 +789,25 @@ A double of the narrow SDK part records each read.
 [V] Uses a nonempty constructor argument as the exact executable path, including spaces, without a shell or version subprocess (`test/unit/website-fetcher/website-fetcher-runtime.test.ts`)
 [V] Uses lightpanda from PATH when the constructor gets no executable or an empty one
 [V] Ignores LIGHTPANDA_BIN in `process.env`; only the constructor argument selects the executable
-[V] Keeps the missing executable cause, reports the selected path and runtime setup document without the requested URL, and does not fall back to another executable
+[V] Gives a `WebsiteFetchLaunchError` for a missing executable that keeps the cause, reports the selected path and runtime setup document without the requested URL, and does not fall back to another executable
 [V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
 [V] Returns HTML with the requested and final URLs on immediate success
 [V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
 [V] Preserves a child result or error when the child has already exited at the deadline, and rejects a late success when the child was still running at the deadline
 [V] Cancels the readiness timer after success or a process error
-[V] Preserves process timeout and output limit errors, and handles missing executable (ENOENT), permission error (EACCES), and synchronous launch failure
+[V] Preserves process timeout and output limit errors, reports a missing executable (ENOENT) and a permission error (EACCES) with their launch error messages, and keeps a synchronous launch failure without a system error code
 [V] Keeps an HTTP failure when the child exits before the readiness deadline
 [V] Reports a readiness failure when an HTTP error callback arrives after the deadline
 [V] Reports HTTP status failures with WebsiteFetchHttpError and preserves the status and process cause when available
 [V] Preserves a failed HTTP status from renderer errors with exit code 1, including bot challenges
 [V] Uses --json and --fail-on-http-error while preserving the readiness, timeout, output, and network-blocking options
+
+**Fetcher launch errors** (`test/unit/website-fetcher/website-fetcher-launch-errors.test.ts`)
+
+[V] Gives a `WebsiteFetchLaunchError` with kind `launch` for `ENOENT` (failure `missing`) and `EACCES` (failure `cannot-start`), also when the output holds a failed HTTP status; it is not a `WebsiteFetchHttpError`, keeps the process error as its cause, names the executable and the runtime guide, and shows no URL
+[V] Gives a `cannot-start` launch error with the code `ENOEXEC` when Node refuses the start at once
+[V] Keeps an HTTP 404 error, the process timeout, a signal, and the output limit distinct from launch errors
+[V] Starts no renderer for a DNS failure with the code `ENOTFOUND`, and the failure is not a launch error
 
 **Fetcher cancellation** (`test/unit/website-fetcher/website-fetcher-cancellation.test.ts`)
 
@@ -849,6 +856,8 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Rejects HTML above the shared 10 MiB UTF-8 limit before all pipeline work and accepts the exact byte boundary
 [V] Preserves completed empty Markdown even with withholding warnings, and rejects absent or nonstring Markdown
 [V] Classifies cancellation before generic errors and checks again after each asynchronous stage
+[V] Gives a renderer launch failure (`ENOENT` or `EACCES`) to the operator reporter one time with only the failure class and the code; the client still gets only `Page fetch failed` without a cause, and no processing starts
+[V] Gives no operator report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination; a reporter that throws does not change the safe fetch error
 
 **MCP operation and real pipeline** (`test/integration/mcp/get-url-as-markdown-pipeline.test.ts`)
 
@@ -861,6 +870,7 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Returns exact redirected Markdown through an SDK client with one safe completion record
 [V] Preserves empty success after real sanitizer scan failure or exhaustion
 [V] Observes SDK cancellation during a real sanitizer stage, prevents Markdown conversion, and records cancellation once
+[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure and an HTTP error; only the launch failure gives one operator report with only the failure class and the code
 
 Focused commands:
 
@@ -1335,6 +1345,18 @@ Each test runs the production `serve()` in the test process with `InProcessServe
 npm run build && node --test dist/test/acceptance/mcp/self-hosted-fetch-tool.test.js
 ```
 
+**Renderer setup report** (`test/acceptance/mcp/renderer-setup-report.test.ts`)
+
+Each test runs the production `serve()` in the test process with `InProcessServer`, real Better Auth on SQLite files, and trusted test rules. An authorized SDK client calls `getURLAsMarkdown`. The first two tests let Node start a missing executable and a file without execute permission, so the server gets the real `ENOENT` and `EACCES`; no renderer runs. Their address-literal URL needs no DNS lookup. The third test uses `RendererProcessDouble`. These cases are offline.
+
+[V] Given `LIGHTPANDA_BIN` that names a missing executable, two calls each get `Page fetch failed` and a `fetch_failed` record, and the operator log has exactly one error line: the report that names the missing renderer (`ENOENT`) and the runtime guide, without the URL, the reason, the token, the executable path, the renderer arguments, or the process error
+[V] Given a server that reported its missing executable, after the operator puts a file without execute permission at that path, two more calls still get `Page fetch failed` and `fetch_failed` records, and the log gets one more report, which names an executable that cannot start (`EACCES`)
+[V] Given a renderer process double, an HTTP 404 error and a blocked destination each give `Page fetch failed` and a `fetch_failed` record, and the server writes no renderer setup report
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/renderer-setup-report.test.js
+```
+
 **Self-hosted startup with the ad rules file** (`test/acceptance/mcp/self-hosted-rules-startup.test.ts`)
 
 Each test starts the built server, `dist/src/index.js`, as a separate Node process with outbound access denied and a temporary data directory. A preload can make the native rule parser fail with a private message.
@@ -1349,8 +1371,8 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 
 The built entry point runs in separate processes with an import hook that blocks the rules reader, the renderer, the cleaning pipeline, and adblock-rs. The rules file and the renderer are missing.
 
-[V] Given the guard, the operator adds two users, lists them, registers a client, resets a password, and disables a user; each command exits with status 0 and loads no server-only module
-[V] Given the guard and the WorkOS settings, the hosted edition listens, asks for a sign-in on the account page, and answers an MCP tool call with a Bearer token and a session cookie with 401 and a Bearer challenge; it loads no server-only module, uses no network, stops with status 0 after `SIGTERM`, and creates no data
+[V] Given the guard, the operator adds two users, lists them, registers a client, resets a password, and disables a user; each command exits with status 0, loads no server-only module, and writes no renderer setup report
+[V] Given the guard and the WorkOS settings, the hosted edition listens, asks for a sign-in on the account page, and answers an MCP tool call with a Bearer token and a session cookie with 401 and a Bearer challenge; it loads no server-only module, writes no renderer setup report, uses no network, stops with status 0 after `SIGTERM`, and creates no data
 [V] Given the guard and trusted rules, the self-hosted server stops with status 1 before it listens, and its `FATAL` line shows the guard message, so the guard sees the modules that the server loads
 
 ```sh
@@ -1373,7 +1395,7 @@ The production `serve()` runs in the test process with real Better Auth, the rea
 
 [V] Given the pinned renderer and a real Better Auth token in each protocol era, after the user signs in and consents on the bundled pages, the client gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record
 [V] Given a redirect that changes the host and the path, `requestedUrl` keeps the accepted spelling, and the final URL selects the ad rules and resolves the relative links
-[V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed` and `Page processing failed` without partial Markdown
+[V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed` and `Page processing failed` without partial Markdown; the server writes no renderer setup report
 [V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
 [V] Given a legacy call that keeps the renderer waiting, server shutdown cancels it; the renderer child stops before the server finishes stopping, and the server writes one `cancelled` record
 
@@ -1646,7 +1668,7 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.j
 
 The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image has no renderer, so the suite does not prove renderer behavior.
 
-[V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed` and a `fetch_failed` record, because the image has no renderer; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
+[V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed` and a `fetch_failed` record, because the image has no renderer, and the server log gets one renderer setup report with `ENOENT`; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
 [V] Given two users with tokens and consents, a restart, a new container, and a container of the rebuilt image on the same volume each keep the tenant, the user IDs, the clients, the signing keys, the sessions, the consents, and the tokens of both users usable
 [V] Given a tar backup of the complete stopped volume, a restore into a new volume keeps the tenant, the user IDs, the tokens, the sessions, and the consents; a fresh volume gets a new tenant; a restore without the installation identity or without `auth.secret` stops the server before it listens, asks for a restore, and gets no new identity
 [V] Given a fresh volume and a server container without the trusted rules file, the server stops before it listens with the `FATAL` line `AD_RULES_FILE could not be read (ENOENT).` and writes nothing to the volume; a command container, which reads no rules, still adds an account

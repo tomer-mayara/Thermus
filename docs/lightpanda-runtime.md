@@ -84,7 +84,27 @@ command -v lightpanda
 lightpanda version
 ```
 
-A selected executable that is missing produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Server startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the missing-executable error. The operator must verify the runtime before use with the commands above.
+A selected executable that is missing or cannot start produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Server startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the fetcher error. The server log gets a [renderer setup report](#renderer-setup-report). The operator must verify the runtime before use with the commands above.
+
+## Renderer setup report
+
+When the renderer cannot start, the self-hosted server writes one `ERROR` line to its log, for example:
+
+```text
+Renderer setup failure: the Lightpanda executable is missing (ENOENT). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.
+```
+
+The line gives the failure class, `is missing` or `cannot start`, and the system error code. It shows no URL, reason, renderer arguments, page text, token, executable path, or process output. The client still gets `Page fetch failed`, and the completion record still has `fetch_failed`. HTTP errors, timeouts, and blocked destinations write no such line.
+
+The server writes the line one time for each code in the life of its process, so a renderer that stays missing adds only one line. A new code adds one new line.
+
+| Code | Failure class | Usual cause | Correction |
+| --- | --- | --- | --- |
+| `ENOENT` | is missing | `LIGHTPANDA_BIN` names a file that does not exist, or it is unset and `lightpanda` is not on the `PATH` of the server. | Install the pinned release with the recipe above. Set `LIGHTPANDA_BIN` to the absolute path of the executable. |
+| `EACCES` | cannot start | The file has no execute permission, or the path is a directory. | Give the file execute permission, for example with `chmod 755`. Set `LIGHTPANDA_BIN` to the executable, not to its directory. |
+| `ENOEXEC` | cannot start | The file is not an executable for this platform, for example the asset of another operating system. | Install the asset for this platform with the recipe above. |
+
+Another code shows another reason why the system cannot start the process. In each case, verify the executable with `"$LIGHTPANDA_BIN" version`. The server reads `LIGHTPANDA_BIN` when it starts, so restart it after you change the setting. If you correct the file at the same path, the next page fetch uses it without a restart. After a correction, a recurrence of a reported code writes no new line until the next server start.
 
 ## Verify rendering
 
@@ -131,7 +151,7 @@ The six cases prove these behaviors:
 
 - In the modern 2026-07-28 and legacy 2025-11-25 protocol eras, a user signs in and consents on the bundled pages. The client then gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record.
 - After a redirect that changes the host and the path, `requestedUrl` keeps the requested spelling. The final URL selects the ad rules and resolves the relative links.
-- Hidden content is removed. HTML that the sanitizer withholds gives exact empty success. An HTTP error gives `Page fetch failed`. A DOM deeper than 256 levels gives `Page processing failed`.
+- Hidden content is removed. HTML that the sanitizer withholds gives exact empty success. An HTTP error gives `Page fetch failed` and no renderer setup report. A DOM deeper than 256 levels gives `Page processing failed`.
 - A modern client cancellation stops the renderer child, and the server writes one `cancelled` record.
 - Server shutdown cancels a legacy call. The renderer child stops before the server finishes stopping, and the server writes one `cancelled` record.
 

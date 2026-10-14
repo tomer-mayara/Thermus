@@ -198,7 +198,8 @@ AUTH-09 added the container acceptance suite
   volume, and that a command container still adds an account;
 - calls the fetch tool with an address-literal URL, so the call needs no DNS
   lookup. The image has no renderer, so the call gets `Page fetch failed` and a
-  `fetch_failed` record;
+  `fetch_failed` record, and the server log gets one renderer setup report with
+  `ENOENT`;
 - removes its containers, networks, volumes, and images when it ends.
 
 Only a run of `npm run test:container` that exits with status 0 and shows each
@@ -248,8 +249,8 @@ The real MCP SDK HTTP client calls `getURLAsMarkdown`. The six cases cover:
 - a redirect that changes the host and the path: `requestedUrl` keeps the
   requested spelling, and the final URL selects the rules and resolves links;
 - hidden content, sanitizer-withheld HTML with exact empty success, an HTTP
-  error with `Page fetch failed`, and a DOM deeper than 256 levels with
-  `Page processing failed`;
+  error with `Page fetch failed` and no renderer setup report, and a DOM deeper
+  than 256 levels with `Page processing failed`;
 - a modern client cancellation that stops the renderer child and writes one
   `cancelled` record;
 - a legacy call that server shutdown cancels: the renderer child stops before

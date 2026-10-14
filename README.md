@@ -167,7 +167,7 @@ DEPLOYMENT=self-hosted PUBLIC_BASE_URL=http://localhost:8080 DATA_DIR=/tmp/therm
 - `AD_RULES_FILE must contain UTF-8 text.`: the file is not UTF-8.
 - `The ad cleaner could not load the rules in AD_RULES_FILE.`: the native adblock-rs parser failed. Its message is not shown.
 
-**Renderer.** Startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then gets the tool error `Page fetch failed` and a `fetch_failed` completion record. The error that names the missing executable does not reach the client or the record. Verify the runtime before use with the [runtime setup guide](docs/lightpanda-runtime.md).
+**Renderer.** Startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then gets the tool error `Page fetch failed` and a `fetch_failed` completion record. The error that names the missing executable does not reach the client or the record. The server log gets one `Renderer setup failure` line for each error code, such as `ENOENT` or `EACCES`, without request data; the [renderer setup report](docs/lightpanda-runtime.md#renderer-setup-report) explains it. Verify the runtime before use with the [runtime setup guide](docs/lightpanda-runtime.md).
 
 [`openBetterAuthRuntime(settings)`](src/auth/local-auth/better-auth/better-auth-runtime.ts) owns the local resources and opens them in this order:
 
@@ -189,7 +189,7 @@ To make a backup, stop the server and copy the complete data directory. To resto
 
 ## Container installation
 
-The container image is the self-hosted evaluation edition. It holds the server and the offline commands of the same program, the shipped migrations, the bundled sign-in and consent pages, and the pinned production packages. The server and the commands need no outbound connection: a start downloads nothing, and telemetry is off. The image has no Lightpanda renderer. The server lists the `getURLAsMarkdown` tool, but each page fetch in the container fails with `Page fetch failed`. Before that failure, a call with a host name still looks up the host in DNS. Renderer image provisioning is separate future work.
+The container image is the self-hosted evaluation edition. It holds the server and the offline commands of the same program, the shipped migrations, the bundled sign-in and consent pages, and the pinned production packages. The server and the commands need no outbound connection: a start downloads nothing, and telemetry is off. The image has no Lightpanda renderer. The server lists the `getURLAsMarkdown` tool, but each page fetch in the container fails with `Page fetch failed`, and the server log gets one renderer setup report with `ENOENT`. Before that failure, a call with a host name still looks up the host in DNS. Renderer image provisioning is separate future work.
 
 You need Docker Engine with Buildx and Compose. The image build downloads the pinned base images and packages, so the build needs network access. Run the commands from the repository root. Before the first `docker compose up` or `docker compose run`, make the trusted rules file `ad-rules.txt` next to `compose.yaml`:
 
