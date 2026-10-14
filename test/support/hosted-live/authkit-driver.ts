@@ -81,6 +81,8 @@ const awaitNextPage: AuthKitStep = async (page) => {
 
 const steps: ReadonlyArray<readonly [RegExp, AuthKitStep]> = [
   [/^\/$/, enterEmail],
+  // AuthKit shows the invitation of a sign-in that started after the browser opened an invitation link.
+  [/^\/invite\/?$/, enterEmail],
   [/^\/password/, enterPassword],
   [/^\/mfa\/enrollment/, enrollAuthenticator],
   [/^\/mfa\/verification/, enterOneTimeCode],
