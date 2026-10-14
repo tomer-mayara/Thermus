@@ -48,8 +48,8 @@ implemented the WorkOS side of the member and invitation pages: the pages read
 WorkOS, and their changes change WorkOS, as
 [WorkOS organization administration](#workos-organization-administration-of-auth-08w)
 gives. Its live proofs and cases passed in run r3 of AUTH-08W, with the
-complete command: each of the 74 tests of the hosted live gate passed, also
-the proofs and cases of AUTH-06 and AUTH-07W. The paid billing of slice 6 is
+complete command: in its third complete run, each of the 77 tests of the
+hosted live gate passed, also the proofs and cases of AUTH-06 and AUTH-07W. The paid billing of slice 6 is
 pending. The pinned Better Auth packages are proven against the local
 contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found. The role
@@ -1169,28 +1169,45 @@ the organization ID. The invitations go only to these users, because an
 invitation to a new address needs an email verification code at the
 acceptance.
 
-Before AUTH-08W run r3, a run of only the AUTH-08W tests, with the name
-pattern `AUTH-08W`, passed the 16 proofs and cases that existed then: 16
+In AUTH-08W run r3, a run of only the AUTH-08W tests, with the name
+pattern `AUTH-08W`, first passed the 16 proofs and cases that existed then: 16
 tests, 16 passed, 0 failed, and 0 skipped. The ninth provider proof, the
 write on the resource of another organization, came after that run. A run
 with a name pattern is a record of its tests, not a pass of the hosted live
 gate.
 
-AUTH-08W run r3 ran the complete command on 2026-10-14 with the staging
-launcher. It exited with status 0: 74 tests in 17 suites, 74 passed, 0 failed,
-0 cancelled, 0 skipped, and 0 todo. The tests ran in 710 seconds after the
-builds. The 74 tests are the 57 provider proofs and cases of AUTH-06 and
-AUTH-07W and the 17 AUTH-08W tests: 9 provider proofs and 8 cases of the hosted
-server. Thus the hosted live gate passed as a whole in AUTH-08W run r3. The
-completed operator MFA stays a manual precondition without a proof; the
-decision ticket above decides how it is enforced and proven.
+Run r3 then ran the complete command three times on 2026-10-14 with the
+staging launcher:
+
+1. Before the merge of main, on commit 564bdff: status 0, 74 tests in 17
+   suites, 74 passed, in 710 seconds after the builds. The 74 tests were the
+   57 provider proofs and cases of AUTH-06 and AUTH-07W and the 17 AUTH-08W
+   tests. In this run, C had no external ID, and the directory named the
+   resource of each role write by the organization ID.
+2. After the merge of main, which added the three operator proofs of the
+   ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6`, and after the organization
+   read of the role writes, with an external ID for C, on commit fd3967a:
+   status 1, 77 tests, 74 passed, 3 failed. Three AUTH-08W cases in C got the
+   `500` failure page for a read of the members page or of the invitations
+   page after successful changes, and the cases after them in C passed. The
+   cases did not show the operator reports of the server, so the run kept no
+   cause. Now a failed page of the cases shows the last operator reports.
+   After that change, a run of only the 17 AUTH-08W tests passed each of them.
+3. On commit 9b47df0: status 0, 77 tests in 17 suites, 77 passed, 0 failed,
+   0 cancelled, 0 skipped, and 0 todo, in 688 seconds after the builds. The
+   77 tests are the 60 proofs and cases of AUTH-06, of AUTH-07W, and of the
+   ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6`, and the 17 AUTH-08W tests:
+   9 provider proofs and 8 cases of the hosted server.
+
+Thus the hosted live gate passed as a whole in the third complete run of
+AUTH-08W run r3. The completed operator MFA stays a manual precondition
+without a proof; the decision ticket above decides how it is enforced and
+proven.
 
 The values in the table below come from the diagnostics and the checks of the
-pattern run before AUTH-08W run r3, and run r3 passed the same checks. The
-result of the ninth proof comes from run r3. In these runs, C did not have an
-external ID yet, and the directory named the resource by the organization ID.
-C got its external ID after run r3, together with the organization read of
-the directory.
+first pattern run and the first complete run. The third complete run passed
+the same checks, with C named by its external ID. The result of the ninth
+proof comes from the complete runs.
 
 | Contract | Live result | Consequence for the hosted implementation |
 | --- | --- | --- |
@@ -2216,7 +2233,7 @@ behavior.
 | `test/acceptance/auth/hosted-seats.test.ts` | Implemented, with the same site: the User seat count of two organizations across pages with repeated members, without Admin-only, Super-Admin-only, default-role, pending, and inactive memberships and invitations; and a failed member or invitation page without a partial count or list. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
 | `test/acceptance/auth/self-hosted-container.test.ts` | Implemented with `npm run test:container`: offline bundled CLI with stopped-server volume access; commands reject the live lock, also inside the server container; two-user login, consent, and re-authorization after restart and container/image replacement; installation/user IDs, sessions, consents, and tokens survive backup/restore; fresh and identity-less data; targeted reset/disable with peer access; zero-account recovery; refused hosted and paid paths; a hosted container with placeholder WorkOS settings that gives a local session and its token no access; image contents and the Compose service. |
-| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline; the provider proofs in `test/acceptance/auth/hosted-live/`; and the AUTH-06 cases of the hosted server in `hosted-live/hosted-server.ts`, with the local HTTPS test server of `test/support/hosted-live/`. AUTH-07W added its provider proofs in `hosted-live/operator-setup.ts`, which run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) through `test/support/hosted-live/operator-runbook.ts`, and its cases of the hosted server in `hosted-live/organization-server.ts`; they passed in run r2 of AUTH-07W. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; the complete command passed in its run r1. AUTH-08W added its provider proofs in `hosted-live/administration-proofs.ts` and its cases of the hosted server in `hosted-live/administration-server.ts`, with organizations C and D and their users from `test/support/hosted-live/administration-fixtures.ts` and the acceptance of an invitation through AuthKit in `test/support/hosted-live/portal-visit.ts`. C, the organization of the cases, has an external ID, as each customer organization of the runbook has one; D, the organization of the proofs, has none. Run r3 of AUTH-08W passed each of the 74 tests of the command. |
+| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline; the provider proofs in `test/acceptance/auth/hosted-live/`; and the AUTH-06 cases of the hosted server in `hosted-live/hosted-server.ts`, with the local HTTPS test server of `test/support/hosted-live/`. AUTH-07W added its provider proofs in `hosted-live/operator-setup.ts`, which run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) through `test/support/hosted-live/operator-runbook.ts`, and its cases of the hosted server in `hosted-live/organization-server.ts`; they passed in run r2 of AUTH-07W. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; the complete command passed in its run r1. AUTH-08W added its provider proofs in `hosted-live/administration-proofs.ts` and its cases of the hosted server in `hosted-live/administration-server.ts`, with organizations C and D and their users from `test/support/hosted-live/administration-fixtures.ts` and the acceptance of an invitation through AuthKit in `test/support/hosted-live/portal-visit.ts`. C, the organization of the cases, has an external ID, as each customer organization of the runbook has one; D, the organization of the proofs, has none. The third complete run of AUTH-08W run r3 passed each of the 77 tests of the command. |
 | `test/unit/auth-workos/` | Implemented in AUTH-06: the WorkOS settings, the grant reads with an SDK double, the sealed cookies, the browser session, and the session routes with narrow doubles. AUTH-07W added `workos-organizations-memberships.test.ts`: the paged membership reads of a user with the organization names and grants, and each refused answer. AUTH-08W added `workos-organizations-members.test.ts`, `workos-organizations-grants.test.ts`, and `workos-organizations-invitations.test.ts` with `WorkOSOrganizationsDouble`: the member pages and the revision, the single-role grant writes on the resource that the organization read names and their refusals, and the invitation reads and changes. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added `operator-runbook.test.ts`: the decisions of the test-support driver of the operator runbook with an SDK double. |
 | `test/integration/auth/workos-provider-verification.test.ts`, `workos-provider-access.test.ts`, `workos-provider-directory.test.ts`, and `workos-browser-session.test.ts` | Implemented in AUTH-06: the Connect verification with the real rejection class, the access resolution with real context creation, and the provider and the browser session with the pinned SDK against the local fake WorkOS API. |
 | `test/integration/auth/workos-provider-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS session, organization directory, and access resolver with the pinned SDK against the local fake WorkOS API, together with the real `OrganizationAdministration`, account routes, and MCPServer, and `AccountOperationProbe` destinations. Super Admin alone without an inferred Admin or User grant; each destination, also the billing page, in the selected organization only; the exact WorkOS reads of the organization page and a selection; the organization service over the WorkOS reads; and the `500` failure page for a WorkOS answer that the read refuses. These tests prove the application side, not WorkOS behavior. |

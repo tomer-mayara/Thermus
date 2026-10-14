@@ -492,8 +492,8 @@ The gate also needs:
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 
-A complete run takes about 12 minutes: run r3 of AUTH-08W ran its tests in 710
-seconds after the builds. One AUTH-06 case waits for the 300-second access
+A complete run takes about 12 minutes: the third complete run of AUTH-08W
+run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
 tokens to expire, and the AUTH-07W expiry case after it uses the same wait.
 
 If a setting is missing, empty, or refused, the command fails with one setup
@@ -641,14 +641,25 @@ node ~/.config/thermus/with-workos-staging.cjs node --test --test-name-pattern="
 It reported 16 tests, 16 passed, 0 failed, and 0 skipped. A run with a name
 pattern runs only a part of the gate, so it is a record of those tests, not a
 gate pass. The ninth AUTH-08W provider proof came after it. Then run r3 of
-AUTH-08W on 2026-10-14 ran the complete command, `npm run test:hosted-live`,
-with the staging launcher. It exited with status 0: 74 tests in 17 suites, 74
-passed, 0 failed, 0 cancelled, 0 skipped, and 0 todo. The 74 tests are the 57
-provider proofs and cases of AUTH-06 and AUTH-07W and the 17 AUTH-08W tests:
-9 provider proofs and 8 cases of the hosted server. Thus run r3 of AUTH-08W
-is a pass of the AUTH-08W part and of the hosted live gate as a whole. The
-completed operator MFA stays a manual check outside this gate, as the
-paragraph above gives.
+AUTH-08W ran the complete command, `npm run test:hosted-live`, three times on
+2026-10-14 with the staging launcher:
+
+1. Before the merge of main, on commit 564bdff: status 0, 74 tests in 17
+   suites, 74 passed.
+2. After the merge of main (77 tests with the three operator proofs of the
+   ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6`) and the organization read of
+   the role writes, with an external ID for C, on commit fd3967a: status 1,
+   74 passed and 3 failed. Three AUTH-08W cases in C got the `500` failure
+   page for a page read after successful changes; the run kept no cause. The
+   cases now show the last operator reports of the server for a failed page,
+   and a run of only the 17 AUTH-08W tests then passed each of them. A failed
+   complete run is not a pass, and a pattern run does not replace it.
+3. On commit 9b47df0: status 0, 77 tests in 17 suites, 77 passed, 0 failed,
+   0 cancelled, 0 skipped, and 0 todo, in 688 seconds after the builds.
+
+Thus the third complete run of AUTH-08W run r3 is a pass of the AUTH-08W part
+and of the hosted live gate as a whole. The completed operator MFA stays a
+manual check outside this gate, as the paragraph above gives.
 
 Until the AUTH-06 cases pass, the hosted edition is not released. The
 [hosted offline checks](#hosted-offline-checks) never count as this gate.
