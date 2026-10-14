@@ -99,14 +99,14 @@ exporter setup.
 ## Renderer setup report
 
 A renderer setup failure is a renderer process that cannot start. The fetcher
-then rejects with a `WebsiteFetchLaunchError`; the
-[website fetcher reference](website-fetcher.md) gives its contract. The operation
-gives the optional `reportRendererSetupFailure` dependency a new value with only
-two fields: `failure`, which is `missing` for `ENOENT` or `cannot-start` for each
-other code, and `code`, the system error code. The error message and its cause
-stay out of the report, because the cause holds the renderer arguments with the
-URL. A reporter that throws does not change the tool result. A cancelled call
-gives no report.
+then rejects with a `WebsiteFetchLaunchError`; the [website fetcher
+reference](website-fetcher.md) gives its contract. The operation gives the
+optional `reportRendererSetupFailure` dependency a new value with only two
+fields: `failure`, which is `missing` for `ENOENT` or `cannot-start` for each
+other code, and `code`, the system error name or `UNKNOWN`. The error message
+and its cause stay out of the report, because the cause holds the renderer
+arguments with the URL. A reporter that throws does not change the tool result.
+A cancelled call gives no report.
 
 The self-hosted server writes the report as one `ERROR` line of the application
 logger:
@@ -128,9 +128,9 @@ needs no restart; a changed `LIGHTPANDA_BIN` needs one, because the server reads
 it at startup. After a correction, a recurrence of a reported code writes no new
 line until the next server start. The client result stays `Page fetch failed`,
 and the completion record stays `fetch_failed`. Other fetch failures, such as
-HTTP errors, timeouts, signals, DNS failures, and blocked destinations, write no
-report. The local commands and the hosted edition load no renderer and write no
-report.
+HTTP errors, timeouts, signals, DNS failures, blocked destinations, and system
+limits such as `EMFILE`, write no report. The local commands and the hosted
+edition load no renderer and write no report.
 
 ## Completion records
 

@@ -4,6 +4,7 @@ import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchLaunchError } from '../../../src/website-fetcher/website-fetcher.ts';
 
 const url = 'https://example.com/';
 const html = '<html>Configured runtime</html>';
@@ -62,11 +63,11 @@ for (const configured of [undefined, '/opt/Missing runtime/lightpanda']) {
   const executable = configured ?? 'lightpanda';
   test(`Given ${executable} is missing, when fetching, then the error names it and the setup guide but not the requested URL`, async (t) => {
     const requestedUrl = 'https://example.com/account?session=private-value';
-    const cause = Object.assign(new Error(`spawn ${executable} ENOENT`), { code: 'ENOENT' });
+    const cause = Object.assign(new Error(`spawn ${executable} ENOENT`), { code: 'ENOENT', syscall: `spawn ${executable}` });
     const execute = stubRuntime(t, cause);
 
     await assert.rejects(new WebsiteFetcherLightpanda(configured).fetchURL(requestedUrl), (error) => {
-      assert.ok(error instanceof Error);
+      assert.ok(error instanceof WebsiteFetchLaunchError);
       assert.match(error.message, /Lightpanda/);
       assert.ok(error.message.includes(executable));
       assert.ok(error.message.includes('docs/lightpanda-runtime.md'));

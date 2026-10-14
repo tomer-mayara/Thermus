@@ -1,12 +1,13 @@
 import { execFile, type ChildProcess, type ExecFileException } from 'node:child_process';
 import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
-import { WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
+import { systemErrorName, WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
 const LIGHTPANDA_DEFAULT_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
 const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
 const LIGHTPANDA_HTTP_ERROR_EXIT_CODE = 22;
+const SYSTEM_LIMIT_CODES = new Set<unknown>(['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM']);
 
 function rendererArguments(url: string): string[] {
   return [
@@ -58,13 +59,15 @@ function assertRendererExit(cause: ExecFileException | null, executable: string)
   }
 }
 
-// Node gives a system error code, such as ENOENT or EACCES, when the process cannot start. A process that started
-// gives an exit code or a signal. The process error repeats the arguments with the URL, so it stays only the cause.
+// Node marks the error of a process that cannot start with the syscall "spawn". A system limit is temporary and not a
+// setup failure, so it stays a process error. The process error repeats the arguments with the URL, so it stays only
+// the cause.
 function launchError(error: unknown, executable: string): WebsiteFetchLaunchError | undefined {
-  const code = (error as { code?: unknown } | null)?.code;
-  if (typeof code !== 'string' || !/^E[A-Z0-9]+$/.test(code)) return undefined;
-  const problem = code === 'ENOENT' ? 'was not found' : `could not start (${code})`;
-  return new WebsiteFetchLaunchError(code, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error });
+  const { syscall, code } = (error ?? {}) as { syscall?: unknown; code?: unknown };
+  if (typeof syscall !== 'string' || !syscall.startsWith('spawn') || SYSTEM_LIMIT_CODES.has(code)) return undefined;
+  const name = systemErrorName(code);
+  const problem = name === 'ENOENT' ? 'was not found' : `could not start (${name})`;
+  return new WebsiteFetchLaunchError(name, `Lightpanda executable "${executable}" ${problem}. See docs/lightpanda-runtime.md for setup.`, { cause: error });
 }
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {

@@ -21,14 +21,21 @@ export class WebsiteFetchHttpError extends Error {
   }
 }
 
+// A report can show a system error name, such as ENOENT. Another value becomes UNKNOWN.
+export function systemErrorName(code: unknown): string {
+  return typeof code === 'string' && /^E[A-Z0-9]+$/.test(code) ? code : 'UNKNOWN';
+}
+
 // The message shows no requested URL, but the cause can: the process error repeats the renderer arguments.
 export class WebsiteFetchLaunchError extends Error {
   public readonly kind = 'launch';
+  public readonly code: string;
   public readonly failure: 'missing' | 'cannot-start';
 
-  public constructor(public readonly code: string, message: string, options?: ErrorOptions) {
+  public constructor(code: unknown, message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = 'WebsiteFetchLaunchError';
-    this.failure = code === 'ENOENT' ? 'missing' : 'cannot-start';
+    this.code = systemErrorName(code);
+    this.failure = this.code === 'ENOENT' ? 'missing' : 'cannot-start';
   }
 }

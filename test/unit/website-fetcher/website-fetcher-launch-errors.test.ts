@@ -69,6 +69,42 @@ test('Given Node cannot start the renderer and throws ENOEXEC at once, when fetc
   });
 });
 
+test('Given Node cannot start the renderer and throws a code without a system error name, such as for a Mach-O binary of another CPU, when fetching, then a cannot-start launch error shows UNKNOWN', async (t) => {
+  const cause = Object.assign(new Error('spawn Unknown system error -86'), { code: 'Unknown system error -86', errno: -86, syscall: 'spawn' });
+  stubProcess(t, () => { throw cause; });
+
+  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => {
+    assert.ok(error instanceof WebsiteFetchLaunchError);
+    assert.deepEqual({ code: error.code, failure: error.failure }, { code: 'UNKNOWN', failure: 'cannot-start' });
+    assert.equal(error.message, `Lightpanda executable "${executable}" could not start (UNKNOWN). See docs/lightpanda-runtime.md for setup.`);
+    assert.equal(error.cause, cause);
+    return true;
+  });
+});
+
+for (const code of ['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM']) {
+  test(`Given the renderer cannot start because the system reached the limit ${code}, when fetching, then the process error stays and is not a launch error`, async (t) => {
+    const cause = launchFailure(code);
+    stubProcess(t, (complete) => complete(cause, '', ''));
+
+    await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error === cause);
+  });
+}
+
+test('Given a started renderer that the process timeout cannot stop because kill fails with EPERM, when fetching, then the process error stays and is not a launch error', async (t) => {
+  const cause = Object.assign(new Error('kill EPERM'), { code: 'EPERM', errno: -1, syscall: 'kill' });
+  stubProcess(t, (complete) => complete(cause, '', ''));
+
+  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error === cause);
+});
+
+test('Given a launch error made with a code that is not a system error name, when it is made, then its code is UNKNOWN, so a report cannot show other text', () => {
+  for (const code of ['ENOENT\nERROR forged line', 'https://example.com/', undefined, 42]) {
+    const error = new WebsiteFetchLaunchError(code, 'Lightpanda executable could not start.');
+    assert.deepEqual({ code: error.code, failure: error.failure }, { code: 'UNKNOWN', failure: 'cannot-start' });
+  }
+});
+
 const startedProcessFailures: readonly { name: string; cause: ExecFileException; stdout: string }[] = [
   { name: 'an HTTP 404 error', cause: Object.assign(new Error('Command failed'), { code: 22 }), stdout: failedHttpOutput },
   { name: 'the process timeout', cause: Object.assign(new Error('Command failed'), { code: null, killed: true, signal: 'SIGTERM' as const }), stdout: failedHttpOutput },

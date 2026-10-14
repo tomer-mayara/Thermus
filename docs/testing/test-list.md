@@ -805,7 +805,9 @@ A double of the narrow SDK part records each read.
 **Fetcher launch errors** (`test/unit/website-fetcher/website-fetcher-launch-errors.test.ts`)
 
 [V] Gives a `WebsiteFetchLaunchError` with kind `launch` for `ENOENT` (failure `missing`) and `EACCES` (failure `cannot-start`), also when the output holds a failed HTTP status; it is not a `WebsiteFetchHttpError`, keeps the process error as its cause, names the executable and the runtime guide, and shows no URL
-[V] Gives a `cannot-start` launch error with the code `ENOEXEC` when Node refuses the start at once
+[V] Gives a `cannot-start` launch error with the code `ENOEXEC` when Node refuses the start at once, and with the code `UNKNOWN` when Node throws a start failure without a system error name
+[V] Keeps the system limits `EAGAIN`, `EMFILE`, `ENFILE`, and `ENOMEM` and a kill that fails with `EPERM` as process errors, not launch errors
+[V] Changes a launch error code that is not a system error name to `UNKNOWN`, so a report cannot show other text
 [V] Keeps an HTTP 404 error, the process timeout, a signal, and the output limit distinct from launch errors
 [V] Starts no renderer for a DNS failure with the code `ENOTFOUND`, and the failure is not a launch error
 
