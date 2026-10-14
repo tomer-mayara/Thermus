@@ -19,7 +19,7 @@
 [V] Formats canonical authority, subject, and tenant fields; removes URL userinfo, query, and fragment; includes only a valid bounded reason or field-status codes; escapes line breaks and omits unknown tool names, raw arguments, credentials, and causes (`test/unit/mcp/tool-completion-record.test.ts`)
 [V] Cancels owned work and waits for its cleanup; repeated close calls share one result (`test/unit/mcp/lifetime.test.ts`)
 [V] Removes completed tasks from active work, preserves cleanup errors, waits for in-progress authentication, and refuses work after shutdown (`test/unit/mcp/lifetime.test.ts`)
-[V] Releases the HTTP response of a cancelled modern call before its owned cleanup ends; close still waits for that cleanup (`test/unit/mcp/lifetime.test.ts`)
+[V] Releases the HTTP response of a cancelled modern call before its owned cleanup ends; close still waits for that cleanup (`test/unit/mcp/request-lifetime-isolation.test.ts`)
 [V] Keeps request context and cancellation separate between connections (P02 unit and HTTP acceptance cases below)
 [V] Supplies production rules and runtime dependencies to the self-hosted server (P03 unit, integration, and acceptance cases below)
 [] Lists `postURLAsMarkdown(url, params, reason)` with its URL input schema (deferred)
@@ -84,7 +84,7 @@ These tests run the pinned Better Auth packages with an in-memory `node:sqlite` 
 [V] After the shipped migrations, Better Auth plans no table, column, or index change, and its schema check passes
 [V] The installation table holds one identity: a second row or another singleton value fails; three accounts can still be added
 
-**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`)
+**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`, `server-close.test.ts`)
 
 These tests run `startHttpServer()` on a loopback port with test handlers. Raw socket requests check request targets that `fetch` would change.
 
