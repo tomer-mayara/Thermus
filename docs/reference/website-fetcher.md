@@ -22,9 +22,12 @@ The local HTTP tests use a fixture server on loopback. The `permitIPv4Fixture` t
 
 The optional `AbortSignal` belongs to one fetch. An already cancelled signal
 starts no DNS or renderer work. Cancellation during DNS prevents renderer
-startup. Cancellation during rendering stops the child with `SIGKILL` and waits
-for its process callback. Completion, failure, and cancellation remove the
-per-call listener and readiness timer. A cancellation observed at completion
+startup. Cancellation during rendering removes the per-call listener and
+readiness timer, requests `SIGKILL` once, and waits for the process callback.
+The readiness deadline and cancellation share that one kill request. Completion
+and failure also release those resources once; late callbacks cannot publish
+success or repeat cleanup. Concurrent fetches keep separate resources and
+signals. A cancellation observed at completion
 takes priority over renderer errors and partial output. The fetcher rejects with
 the signal's reason; the MCP boundary exposes only its safe cancellation result.
 

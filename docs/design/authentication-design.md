@@ -189,6 +189,12 @@ provider, and returns a small runtime record with the HTTP handler and cleanup.
 It owns startup failure cleanup and shutdown. The HTTP module adapts Node
 requests and routes them; it does not know membership policy.
 
+Shutdown starts listener close to refuse new connections, then passes its drain
+promise to `Application.close()`. MCP cancellation starts before that drain is
+awaited. Provider resources close after MCP work and listener drain finish.
+Repeated close calls share cleanup; cleanup errors remain visible. See the
+[MCP lifecycle contract](../reference/mcp-fetch-tool.md#cancellation-and-test-composition).
+
 The server reads its listen address from `LISTEN_HOST` (default `127.0.0.1`)
 and `LISTEN_PORT` (default `8080`) through `loadListenAddress(environment)`.
 The listen address does not change the public identity from `PUBLIC_BASE_URL`.

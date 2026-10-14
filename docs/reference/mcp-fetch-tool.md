@@ -28,8 +28,9 @@ and `tools/call` handlers. It projects each tool result with
 ## Authentication and failures
 
 `MCPServer` verifies Bearer credentials and resolves access before it builds a
-request server. `buildServer(context)` receives the frozen trusted
-`RequestContext` and returns an SDK `Server` or `McpServer`. Headers and tool
+request server. `buildServer(context, lifetime)` receives the frozen trusted
+`RequestContext` and the request lifetime, and returns an SDK `Server` or
+`McpServer`. Headers and tool
 arguments cannot replace its authority, subject, or tenant. Missing or malformed
 Bearer credentials retain HTTP 401; a denied access decision retains HTTP 403.
 The operation also requires `product:access` before it fetches the page.
@@ -74,7 +75,8 @@ These records are best effort; they are not durable audit storage.
 Each call supplies its `AbortSignal` to the operation, fetcher, and pipeline.
 Cancellation is checked before work, between asynchronous stages, and before
 return. Renderer cancellation stops the child and releases per-call resources.
-Synchronous parsing cannot be preempted. The renderer keeps its existing timing,
+Synchronous parsing cannot be preempted by cancellation; the existing HTML size
+and depth guards bound that work. The renderer keeps its existing timing,
 output, and network limits.
 
 The modern SDK client forwards a call's cancellation to its HTTP stream. The
@@ -84,6 +86,28 @@ call. A legacy caller must abort that call's HTTP stream. The acceptance test
 uses the client's public fetch option to do this and checks that the SDK closes
 the request server and signals the active operation. It does not claim that the
 legacy `callTool` signal alone stops server work.
+
+`MCPServer` owns a shutdown signal. Each request lifetime combines it with that
+request's signal. Pass the lifetime to `createFetchToolServer` as its third
+argument. The tool combines that signal with the SDK call signal and registers
+its complete handler task, including its completion record. This keeps legacy
+work owned after the SDK returns an HTTP response. Cancelling a request cannot
+cancel a peer. Shutdown cancels every active request in both protocol eras.
+
+The entry point starts `listener.close()` to refuse new connections, then calls
+`application.close(listenerDrain)` without first awaiting the listener. The
+application starts MCP cancellation, awaits active work and listener drain, and
+then releases provider resources. Authentication already in progress is awaited;
+shutdown prevents it from starting the next stage. The request body remains a
+stream with the SDK as its only parser; abort also cancels an incomplete body.
+MCPServer awaits body-transfer cleanup and retains a failure to cancel the body.
+
+The first application close call supplies the listener drain promise. Repeated
+and concurrent close calls share cleanup. Owned transports and request servers
+close once, and cleanup failures remain visible even when the SDK catches them.
+Startup failure releases resources that already opened and preserves the
+startup error. A cancelled call records `cancelled`, not a fetch failure, and
+cannot publish success. A disconnected client might receive no response.
 
 `NoAuthProvider` exists only in `test/support/auth/no-auth-provider.ts`. Tests
 inject it as both `IdentityVerifier` and `AccessResolver`. It accepts supplied

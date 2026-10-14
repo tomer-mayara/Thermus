@@ -1,8 +1,9 @@
 # MCP server implementation plan
 
-Status: P01 is implemented with test-injected dependencies; P02 and P03 remain
-planned. Date: 2026-10-13. The [P01 implementation record](mcp-p01.md) describes
-the delivered scope, historical verification, and the gate repair after rebase.
+Status: P01 and P02 are implemented with test-injected tool dependencies; P03
+remains planned. Date: 2026-10-14. The [P01 implementation record](mcp-p01.md)
+describes its delivered scope and gate repair. The [P02 implementation record](mcp-p02.md)
+describes shutdown ownership, request isolation, and current verification.
 The original plan publication changed documents only.
 The [fictional design review](mcp-server-plan-review.md) explains the corrections.
 
@@ -145,11 +146,14 @@ Pass MCP signals through fetcher/process APIs; check before/after fetch, between
 stages, and before return. Renderer owns child/timer/listener cleanup; pipeline
 needs no MCP types. No synchronous preemption; keep guards. P01 proves per-call cancel.
 
-P02 adds MCPServer-owned shutdown cancellation and awaits active work in modern
-and legacy HTTP; SDK close alone does not cancel legacy work. Initiate HTTP close
-to stop accepting, cancel MCP work, await drain/tasks, then release providers.
-Revise the current listener-before-application disposal order. Repeated close
-succeeds with cleanup once and isolated state for concurrent requests.
+P02 supplies MCPServer-owned shutdown cancellation and awaits active work in
+modern and legacy HTTP; SDK close alone does not cancel legacy work. The entry
+point starts HTTP close to stop accepting, passes its drain promise to application
+close, and cancels MCP work before awaiting drain. Providers close after both
+drain and active tasks finish. Repeated close shares cleanup, and failures remain
+visible. The request builder receives a frozen context and a lifetime whose
+signal and task registration keep detached legacy tool work owned. Request
+identities, reasons, cancellation, results, and completion records stay separate.
 
 ## Rules and local runtime
 
@@ -210,7 +214,8 @@ Tickets were created in the Thermus project board `magumagu` and read back.
 Each was in Backlog at creation. These labels map to real ticket UUIDs; the table
 records status and dependencies at creation, not current implementation progress.
 MCP-P01 implementation has a separate [PR #62](https://github.com/3-headed-monkey/Thermus/pull/62)
-and an [implementation record](mcp-p01.md). P02 and P03 remain planned.
+and an [implementation record](mcp-p01.md). P02 has its own
+[implementation record](mcp-p02.md); P03 remains planned.
 Each slice starts tests first and finishes green. The ticket table preserves
 the original planning status.
 

@@ -17,8 +17,9 @@
 [V] Uses operation and logger doubles to check exact projected text, safe argument errors, safe unknown-tool errors, and one completion attempt per dispatched call (`fetch-tool-server.test.ts`)
 [V] Keeps operation errors and logger failures from exposing causes, replacing results, or repeating work (`fetch-tool-server.test.ts`)
 [V] Formats canonical authority, subject, and tenant fields; removes URL userinfo, query, and fragment; includes only a valid bounded reason or field-status codes; escapes line breaks and omits unknown tool names, raw arguments, credentials, and causes (`test/unit/mcp/tool-completion-record.test.ts`)
-[] Closes the transport and cancels pending requests when the server closes; repeated close calls succeed (P02)
-[] Keeps request state separate between connections (P02)
+[V] Cancels owned work and waits for its cleanup; repeated close calls share one result (`test/unit/mcp/lifetime.test.ts`)
+[V] Removes completed tasks from active work, preserves cleanup errors, waits for in-progress authentication, and refuses work after shutdown (`test/unit/mcp/lifetime.test.ts`)
+[V] Keeps request context and cancellation separate between connections (P02 unit and HTTP acceptance cases below)
 [] Supplies production rules and runtime dependencies (P03)
 [] Lists `postURLAsMarkdown(url, params, reason)` with its URL input schema (deferred)
 
@@ -34,6 +35,7 @@ records are type-only imports; these cases execute no shared-auth behavior.
 [V] Supplies the verified user and tenant context to the tool handler; request headers and tool arguments cannot replace that context, and the OAuth client ID is never a user or tenant (`test/unit/mcp/request-context-binding.test.ts`)
 [V] Keeps user and tenant context separate for sequential and concurrent requests, including resolutions that finish in reverse order, a slow request body, and overlapping tool handlers (`test/unit/mcp/request-context-binding.test.ts`)
 [V] Binds a frozen copy of the decided context; later changes to the resolver's records cannot reach the request (`test/unit/mcp/request-context-binding.test.ts`)
+[V] Keeps reverse-bound contexts and lifetime signals separate; one request abort leaves its peer active, and shutdown awaits both held cleanups (`test/unit/mcp/request-lifetime-isolation.test.ts`)
 
 **Access context** (`test/unit/auth/access-context.test.ts`)
 
@@ -75,10 +77,22 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Refuses the absolute form, `*`, `//`, `\`, and `#` targets with 400 and `TRACE` with 501, without a handler call
 [V] Replaces every client copy of `x-thermus-client-address` with the socket address and keeps all other headers
 [V] Streams a large JSON request body to the handler; a request body that the handler does not read does not block the next request on the connection
+[V] Cancels body consumption without losing an early refusal response or the next keep-alive request; a disconnected partial body rejects its reader
 [V] Returns the status, status text, headers, separate `Set-Cookie` headers, and body; streams events as they arrive, follows client back-pressure, and sends no body for `HEAD`
 [V] Answers a handler that throws or rejects with a generic 500 and a log line without request data; ends the connection when a streamed body fails
 [V] Aborts the request signal and cancels the response body when the client disconnects
 [V] `close()` ends idle connections at once, refuses new connections, lets running responses finish, ends a response that never ends after the grace period, and gives the same result for repeated calls
+[V] Creates and clears the close deadline once; repeated failed closes retain the same error
+[V] Startup failure after listen closes the listener once and preserves both startup and cleanup errors
+
+**Application lifecycle** (`test/unit/application-lifecycle.test.ts`)
+
+MCP and provider resources are public collaborator doubles; listener drain is a
+controlled promise. Real listener/provider order is integration coverage below.
+
+[V] Starts MCP cleanup while listener drain is pending and waits for both before closing providers
+[V] Shares cleanup across concurrent and later close calls
+[V] Closes each resource once and preserves MCP, listener, and provider cleanup errors
 
 **Better Auth runtime lifecycle** (`test/unit/auth-better-auth/better-auth-runtime.test.ts`)
 
@@ -719,6 +733,9 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] Kills an active child once, waits for its callback, and returns cancellation before success, process error, or HTTP error
 [V] Removes the abort listener and readiness timer on success, failure, synchronous launch failure, and cancellation
 [V] Checks cancellation again after output parsing before returning success
+[V] Shares one child kill across readiness timeout and later cancellation
+[V] Releases the listener and readiness timer at cancellation, awaits child completion, and ignores repeated callbacks
+[V] Cancels one of two concurrent fetches without changing the peer's signal, resources, or result
 
 **Local renderer fixture launcher** (`test/unit/website-fetcher/network-fixture.test.ts`)
 
@@ -731,6 +748,12 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
 
 ## Integration
+
+**Entry shutdown and startup cleanup** (`test/integration/server-stop-signals.test.ts`)
+
+[V] Registers stop handlers before the listening log and removes them after SIGINT or SIGTERM
+[V] Starts MCP cleanup before real listener drain, refuses new connections, and keeps the real provider lock until both finish
+[V] Releases the provider lock and listener after startup logging fails, removes signal listeners, and retains a simultaneous MCP cleanup failure
 
 **MCP SDK HTTP contract** (`test/integration/mcp/sdk-http.test.ts`)
 
@@ -1088,6 +1111,25 @@ These cases are offline and renderer-free.
 Modern client cancellation aborts its call stream. Legacy cancellation coverage
 aborts that stream through the public SDK fetch option. A legacy cancel
 notification alone cannot reach a call on a different stateless request server.
+
+**MCP HTTP shutdown and request isolation** (`test/acceptance/mcp/http-shutdown.test.ts`, `http-renderer-shutdown.test.ts`, `http-request-isolation.test.ts`)
+
+These cases use the real SDK client and HTTP bridge in both eras. Shutdown uses
+the application lifetime with a provider cleanup probe. Fetcher, pipeline, and
+identity/access collaborators are supplied through public interfaces. These
+cases stay offline and use no renderer.
+
+The renderer shutdown cases use the real fetcher with process and DNS doubles.
+No renderer executable runs. They observe the child, readiness timer, abort
+listener, and delayed process callback through the real MCP HTTP path.
+
+[V] Cancels active work before listener drain and awaits fetch cleanup before provider close
+[V] Refuses new connections, skips later pipeline work, records cancellation once, and permits repeated close
+[V] Kills the renderer child and removes its timer/listener once, awaits the process callback before provider close, and refuses late success
+[V] Keeps trusted identities, tenants, reasons, signals, exact results, and completion records separate when calls finish in reverse order
+[V] Cancels one client call without cancelling a peer; shutdown cancels all active calls, including legacy work
+[V] Waits for both independent cleanup tasks even when one finishes first
+[V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
 
 ```sh
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"

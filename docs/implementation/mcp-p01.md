@@ -167,6 +167,6 @@ LIGHTPANDA_BIN="$PWD/.cache/lightpanda/1.0.0/lightpanda" node --test \
 
 ## Deferred work
 
-- P02 supplies shutdown cancellation.
+- [P02](mcp-p02.md) now supplies shutdown cancellation and request isolation.
 - P03 supplies production rule and runtime composition.
 - POST, cache, exporter setup, and a verified local stdio tool are outside P01.
