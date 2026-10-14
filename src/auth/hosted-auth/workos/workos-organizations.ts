@@ -76,6 +76,10 @@ export interface WorkOSOrganizationsOptions {
     assignRole(options: AssignRoleOptions): Promise<unknown>;
     removeRole(options: RemoveRoleOptions): Promise<unknown>;
   };
+  // A role write needs the external ID of the organization. WorkOS gives null for an organization without one.
+  readonly organizations: {
+    getOrganization(organizationId: string): Promise<{ readonly id: string; readonly externalId: string | null }>;
+  };
   // The time that decides the expiry of an invitation. The default is the system clock.
   readonly clock?: () => Date;
 }
@@ -106,12 +110,14 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   private readonly authority: string;
   private readonly userManagement: WorkOSOrganizationsOptions['userManagement'];
   private readonly authorization: WorkOSOrganizationsOptions['authorization'];
+  private readonly organizations: WorkOSOrganizationsOptions['organizations'];
   private readonly clock: () => Date;
 
   constructor(options: WorkOSOrganizationsOptions) {
     this.authority = options.authority;
     this.userManagement = options.userManagement;
     this.authorization = options.authorization;
+    this.organizations = options.organizations;
     this.clock = options.clock ?? (() => new Date());
   }
 
@@ -187,7 +193,8 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     // A single-role write on the organization resource keeps each other role, also under a concurrent write of another
     // role. When the last role goes, WorkOS gives the default role, which gives no permission. A failed write throws as
     // it is, because its effect is not known.
-    const write = { organizationMembershipId: record.id, roleSlug: change.role, resourceTypeSlug: 'organization', resourceExternalId: record.organizationId };
+    const resourceExternalId = await this.resourceExternalIdOf(record.organizationId);
+    const write = { organizationMembershipId: record.id, roleSlug: change.role, resourceTypeSlug: 'organization', resourceExternalId };
     await (change.action === 'grant' ? this.authorization.assignRole(write) : this.authorization.removeRole(write));
     return APPLIED;
   }
@@ -269,6 +276,16 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     const record = await unlessNotFound(() => this.userManagement.getOrganizationMembership(membershipId));
     if (record !== undefined && record.id !== membershipId) throw new Error('WorkOS answered a membership that the read did not ask for');
     return record;
+  }
+
+  // WorkOS names the authorization resource of an organization by the external ID of the organization. Only an
+  // organization without an external ID has its organization ID as the external ID of its resource. WorkOS refuses the
+  // organization ID of an organization that has an external ID, so each role write reads the organization first. A
+  // failed read, also a 404, and an answer for another organization throw before the write.
+  private async resourceExternalIdOf(organizationId: string): Promise<string> {
+    const organization = await this.organizations.getOrganization(organizationId);
+    if (organization.id !== organizationId) throw new Error('WorkOS answered an organization that the read did not ask for');
+    return organization.externalId ?? organizationId;
   }
 
   // WorkOS refuses a change of an invitation that is not pending with 400, but 400 can have other causes. Thus a read of

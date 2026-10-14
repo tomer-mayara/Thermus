@@ -17,7 +17,7 @@ const authority = 'workos:client_test';
 const alice = 'user_01ALICE';
 const acme = 'org_01ACME';
 
-// Access resolution never reads a member or an invitation and never writes a role.
+// Access resolution never reads a member, an invitation, or an organization, and never writes a role.
 const notCalled = async (): Promise<never> => assert.fail('Access resolution made a call of organization administration.');
 
 function rolesWith(slug: string, permissions: readonly string[]): RoleRecord[] {
@@ -72,6 +72,8 @@ class WorkOSReadsDouble {
     assignRole: notCalled,
     removeRole: notCalled,
   };
+
+  readonly organizations = { getOrganization: notCalled };
 }
 
 function grantsWith(answers: ReadAnswers) {

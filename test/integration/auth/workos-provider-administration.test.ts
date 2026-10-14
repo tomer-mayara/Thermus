@@ -28,6 +28,8 @@ const authority = workosAuthority(fakeClientId);
 const publicBaseUrl = 'https://thermus.example/team/';
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
+// Acme has an external ID, as each customer organization of the operator runbook has one. Globex has none.
+const acmeExternalId = 'customer-acme';
 const recordTime = '2026-10-14T09:00:00.000Z';
 const internalError: FakeAnswer = { status: 500, body: { message: 'Internal error' } };
 
@@ -77,9 +79,10 @@ async function openSite(t: TestContext) {
   const world = await WorkOSWorld.start(t, publicBaseUrl, [acme, globex]);
   world.memberships = memberships;
   world.organizationNames = { [acme]: 'Acme', [globex]: 'Globex' };
+  world.organizationExternalIds = { [acme]: acmeExternalId };
   world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
   const { settings, workos, authkitKeySet } = world.connection();
-  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: world.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const records: ChangeRecord[] = [];
   const billing = new BillingRecorder();
@@ -144,11 +147,13 @@ function memberPageReads(site: Site): string[] {
     .filter((path) => path.startsWith('/user_management/organization_memberships?') && !path.includes('user_id='));
 }
 
+// A single-role write on the authorization resource of Acme. WorkOS names that resource by the external ID of Acme,
+// not by its organization ID.
 function roleWrite(method: 'POST' | 'DELETE', membershipId: string, role: string): WorkOSChange {
   return {
     method,
     path: `/authorization/organization_memberships/${membershipId}/role_assignments`,
-    body: { role_slug: role, resource_type_slug: 'organization', resource_external_id: acme },
+    body: { role_slug: role, resource_type_slug: 'organization', resource_external_id: acmeExternalId },
   };
 }
 
@@ -325,6 +330,27 @@ describe('WorkOS grant changes by direct calls of the organization service', () 
     assert.deepEqual(changesIn(site), [roleWrite('DELETE', beaId, 'user')]);
     assert.deepEqual(site.records, [grantRecord(byCal, revoke, 'applied')]);
     assert.deepEqual(site.billing.updates, [`${acme}: 2`]);
+  });
+
+  test('Given Globex, which has no external ID, and Pia with User and Admin in Globex, when Pia revokes User from Bea in Globex, then the one single-role WorkOS write names the authorization resource of Globex by its organization ID, Bea keeps User in Acme, and billing gets the one User seat of Pia in Globex', async (t) => {
+    const site = await openSite(t);
+    site.world.setRoles(pia, globex, ['user', 'admin']);
+    const beaInGlobex = site.world.membershipId(bea, globex);
+    const byPia: Actor = { user: { authority, subject: pia.id, selectedOrganizationId: globex }, mfaCompleted: true };
+    const revoke = { ...await changeAt(site, beaInGlobex, 'revoke user'), organizationId: globex };
+    changesIn(site);
+
+    const outcome = await site.service.changeGrant(byPia, revoke);
+
+    assert.equal(outcome, 'applied');
+    assert.deepEqual(changesIn(site), [{
+      method: 'DELETE',
+      path: `/authorization/organization_memberships/${beaInGlobex}/role_assignments`,
+      body: { role_slug: 'user', resource_type_slug: 'organization', resource_external_id: globex },
+    }]);
+    assert.deepEqual([site.world.rolesOf(bea, globex), site.world.rolesOf(bea, acme)], [['member'], ['user']]);
+    assert.deepEqual(site.records, [grantRecord(byPia, revoke, 'applied')]);
+    assert.deepEqual(site.billing.updates, [`${globex}: 1`]);
   });
 });
 

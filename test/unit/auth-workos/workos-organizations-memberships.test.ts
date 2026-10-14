@@ -16,7 +16,7 @@ const alice = 'user_01ALICE';
 const aliceUser: AuthenticatedUser = { authority, subject: alice, selectedOrganizationId: 'org_01ACME' };
 const names: Readonly<Record<string, string>> = { org_01ACME: 'Acme', org_02GLOBEX: 'Globex', org_03INITECH: 'Initech' };
 
-// Access resolution never reads a member or an invitation and never writes a role.
+// Access resolution never reads a member, an invitation, or an organization, and never writes a role.
 const notCalled = async (): Promise<never> => assert.fail('Access resolution made a call of organization administration.');
 
 function membership(organizationId: string, roleSlugs: readonly string[] | undefined, changes: Partial<MembershipRecord> = {}): MembershipRecord {
@@ -78,6 +78,8 @@ class MembershipReadsDouble {
     assignRole: notCalled,
     removeRole: notCalled,
   };
+
+  readonly organizations = { getOrganization: notCalled };
 }
 
 function directoryWith(pages: readonly MembershipPage[]) {

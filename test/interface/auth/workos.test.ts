@@ -157,6 +157,21 @@ function invitationJson(id: string, state: 'pending' | 'revoked') {
   };
 }
 
+// An organization as WorkOS answers it. Without an external ID argument, the answer has no external_id field.
+function organizationJson(id: string, externalId?: string | null) {
+  return {
+    object: 'organization',
+    id,
+    name: 'Acme',
+    allow_profiles_outside_organization: false,
+    domains: [],
+    ...(externalId === undefined ? {} : { external_id: externalId }),
+    metadata: {},
+    created_at: '2026-10-01T08:00:00.000Z',
+    updated_at: '2026-10-13T08:00:00.000Z',
+  };
+}
+
 function roleSlugsOf(membership: OrganizationMembership): string[] {
   return (membership.roles ?? [membership.role]).map(({ slug }) => slug);
 }
@@ -912,6 +927,24 @@ describe('Pinned WorkOS SDK and jose contracts against a local fake WorkOS API',
         updatedAt: '2026-10-14T08:00:00.000Z',
       });
       assert.deepEqual([removedWith204, removedWith200], [undefined, undefined]);
+    });
+
+    test('Given an organization with an external ID, one whose external_id is null, and one whose answer has no external_id, when the app reads each by ID, then the SDK sends one GET to /organizations/<id> for each and gives the ID and the external ID, or null for each organization without one', async (t) => {
+      const fake = await WorkOSFakeApi.start(t);
+      const workos = workosClientFor(fake);
+      fake.answer('GET /organizations/org_01ACME', { status: 200, body: organizationJson('org_01ACME', 'customer-acme') });
+      fake.answer('GET /organizations/org_02GLOBEX', { status: 200, body: organizationJson('org_02GLOBEX', null) });
+      fake.answer('GET /organizations/org_03INITECH', { status: 200, body: organizationJson('org_03INITECH') });
+
+      const read = [];
+      for (const id of ['org_01ACME', 'org_02GLOBEX', 'org_03INITECH']) read.push(await workos.organizations.getOrganization(id));
+
+      assert.deepEqual(requestLines(fake), ['GET /organizations/org_01ACME', 'GET /organizations/org_02GLOBEX', 'GET /organizations/org_03INITECH']);
+      assert.deepEqual(read.map(({ id, externalId }) => ({ id, externalId })), [
+        { id: 'org_01ACME', externalId: 'customer-acme' },
+        { id: 'org_02GLOBEX', externalId: null },
+        { id: 'org_03INITECH', externalId: null },
+      ]);
     });
 
     test('Given invitations on two pages, when the app lists the invitations of an organization with limit 100, follows the after cursor, and reads one invitation, then the SDK sends organization_id, limit, after, and order=desc and one GET to /user_management/invitations/<id>, and each deserialized invitation keeps token and acceptInvitationUrl, so the directory must drop them', async (t) => {

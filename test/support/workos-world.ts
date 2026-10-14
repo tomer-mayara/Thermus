@@ -70,6 +70,7 @@ const firstUpdateTime = Date.parse('2026-10-13T08:00:00.000Z');
 const invitationLifetimeMs = 7 * 24 * 60 * 60 * 1_000;
 const membershipNotFound = notFound('UserOrganizationMembership not found');
 const invitationNotFound = notFound('Invite not found');
+const organizationNotFound = notFound('Organization not found');
 const resendRefusals: Readonly<Record<WorldInvitation['state'], FakeAnswer | undefined>> = {
   pending: undefined,
   accepted: refusal('invite_accepted', 'Invite has already been accepted.'),
@@ -157,10 +158,11 @@ function refusal(code: string, message: string): FakeAnswer {
   return { status: 400, body: { code, message } };
 }
 
-// A local WorkOS environment for the offline tests of the hosted WorkOS composition: a fake WorkOS API with users,
-// memberships, the hosted roles, role assignments, invitations, browser sign-ins and refreshes, and AuthKit-signed
-// Connect tokens. The membership at index i of memberships has the ID om_i. The answers follow what WorkOS staging
-// showed; the design document gives these findings.
+// A local WorkOS environment for the offline tests of the hosted WorkOS composition: a fake WorkOS API with
+// organizations, users, memberships, the hosted roles, role assignments, invitations, browser sign-ins and refreshes,
+// and AuthKit-signed Connect tokens. The membership at index i of memberships has the ID om_i. The world knows the
+// organizations of start() and of organizationNames. The answers follow what WorkOS staging showed; the design document
+// gives these findings.
 export class WorkOSWorld {
   readonly fake: WorkOSFakeApi;
   readonly browserKey: SigningKey;
@@ -174,6 +176,9 @@ export class WorkOSWorld {
   invitations: readonly WorldInvitation[] = [];
   // The name of each organization in the membership answers. An organization without a name here has its ID as name.
   organizationNames: Readonly<Record<string, string>> = {};
+  // The external ID of each organization. An organization without an entry here has none. WorkOS names the
+  // authorization resource of an organization by its external ID, and by its organization ID only when it has none.
+  organizationExternalIds: Readonly<Record<string, string>> = {};
   // The most records on one page. WorkOS gives at most the limit of the read, and it can give fewer.
   membershipPageSize = 100;
   invitationPageSize = 100;
@@ -188,6 +193,8 @@ export class WorkOSWorld {
   laterMembershipPageOutage: FakeAnswer | undefined;
   invitationOutage: FakeAnswer | undefined;
   refreshOutage: FakeAnswer | undefined;
+  // The organizations of start().
+  readonly #organizations: ReadonlySet<string>;
   #memberships: readonly WorldMembership[] = [];
   // The number of changes of the roles or the status of each membership, by index, and of each invitation, by ID.
   // The update times come from them.
@@ -198,10 +205,11 @@ export class WorkOSWorld {
   #accessTokenLifetime = 300;
   #counter = 0;
 
-  private constructor(parts: { fake: WorkOSFakeApi; browserKey: SigningKey; authkitKey: SigningKey; publicBaseUrl: string }) {
+  private constructor(parts: { fake: WorkOSFakeApi; browserKey: SigningKey; authkitKey: SigningKey; publicBaseUrl: string; organizations: readonly string[] }) {
     this.fake = parts.fake;
     this.browserKey = parts.browserKey;
     this.authkitKey = parts.authkitKey;
+    this.#organizations = new Set(parts.organizations);
     this.mcpResourceUrl = new URL('mcp', parts.publicBaseUrl).href;
     this.settings = Object.freeze({
       apiKey: fakeApiKey,
@@ -220,7 +228,7 @@ export class WorkOSWorld {
     const [browserKey, authkitKey] = await Promise.all([SigningKey.generate('browser-key-1'), SigningKey.generate('authkit-key-1')]);
     fake.browserKeySet.publish(browserKey);
     fake.authkitKeySet.publish(authkitKey);
-    const world = new WorkOSWorld({ fake, browserKey, authkitKey, publicBaseUrl });
+    const world = new WorkOSWorld({ fake, browserKey, authkitKey, publicBaseUrl, organizations });
     for (const organization of organizations) {
       fake.answer(`GET /authorization/organizations/${organization}/roles`, { status: 200, body: { object: 'list', data: Object.keys(environmentRoles).map(roleJson) } });
     }
@@ -315,11 +323,13 @@ export class WorkOSWorld {
     this.invitations = this.invitations.map((each) => (each === invitation ? expired : each));
   }
 
-  // The routes of the member reads, the role assignments, and the invitations of the organization administration.
+  // The routes of the member and organization reads, the role assignments, and the invitations of the organization
+  // administration.
   private answerAdministration(): void {
     const { fake } = this;
     fake.answerEach(`${membershipsRoute}/:id`, (_request, id) => this.membershipAnswer(id));
     fake.answerEach('GET /user_management/users/:id', (_request, id) => this.userAnswer(id));
+    fake.answerEach('GET /organizations/:id', (_request, id) => this.organizationAnswer(id));
     fake.answerEach(`POST ${roleAssignmentsPath}`, (request, id) => this.roleAssignmentAnswer(request, id));
     fake.answerEach(`DELETE ${roleAssignmentsPath}`, (request, id) => this.roleAssignmentAnswer(request, id));
     fake.answer(`GET ${invitationsPath}`, (request) => this.invitationsAnswer(request));
@@ -358,17 +368,31 @@ export class WorkOSWorld {
     return user === undefined ? notFound('User not found') : { status: 200, body: userJson(user) };
   }
 
+  private organizationAnswer(organizationId: string): FakeAnswer {
+    const known = this.#organizations.has(organizationId) || Object.hasOwn(this.organizationNames, organizationId);
+    return known ? { status: 200, body: this.organizationJson(organizationId) } : organizationNotFound;
+  }
+
   // A role assignment names one role and the authorization resource of the organization of the membership. A POST
   // adds that role and a DELETE removes it. Each other role and the status stay, also on a membership that is not
-  // active.
+  // active. The resource of an organization with an external ID has only that external ID: WorkOS refuses the
+  // organization ID of such an organization.
   private roleAssignmentAnswer(request: RecordedRequest, membershipId: string): FakeAnswer {
     const index = this.indexOfId(membershipId);
     const membership = this.#memberships[index];
     if (membership === undefined) return membershipNotFound;
     const { role_slug: role, resource_type_slug: resourceType, resource_external_id: resource } = (request.body ?? {}) as RoleAssignmentBody;
-    if (resourceType !== 'organization' || resource !== membership.organizationId) return notFound(`AuthorizationResource not found: '${resource}'.`);
+    if (resourceType !== 'organization' || resource !== this.resourceExternalIdOf(membership.organizationId)) {
+      return notFound(`AuthorizationResource not found: '${resource}'.`);
+    }
     if (!isKnownRole(role)) return notFound('Role not found');
     return request.method === 'POST' ? this.assignRole(index, role) : this.removeRole(index, role);
+  }
+
+  // The external ID of the authorization resource of an organization: the external ID of the organization, or its
+  // organization ID when it has none.
+  private resourceExternalIdOf(organizationId: string): string {
+    return this.organizationExternalIds[organizationId] ?? organizationId;
   }
 
   // A second assignment of a role changes nothing and gives the same assignment.
@@ -461,8 +485,17 @@ export class WorkOSWorld {
     const changedAt = updateTime(this.changesOf(index));
     return {
       object: 'role_assignment', id: `role_assignment_${membershipId}_${role}`, organization_membership_id: membershipId, role: { slug: role },
-      resource: { id: `authz_resource_${organizationId}`, external_id: organizationId, resource_type_slug: 'organization' },
+      resource: { id: `authz_resource_${organizationId}`, external_id: this.resourceExternalIdOf(organizationId), resource_type_slug: 'organization' },
       source: { type: 'direct', group_role_assignment_id: null }, created_at: changedAt, updated_at: changedAt,
+    };
+  }
+
+  // The JSON of an organization, as the pinned SDK reads it.
+  private organizationJson(organizationId: string) {
+    return {
+      object: 'organization', id: organizationId, name: this.organizationNames[organizationId] ?? organizationId,
+      allow_profiles_outside_organization: false, domains: [], external_id: this.organizationExternalIds[organizationId] ?? null,
+      metadata: {}, created_at: createdAt, updated_at: createdAt,
     };
   }
 

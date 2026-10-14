@@ -299,8 +299,11 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       for (const fields of forgedFields) forged.push(await submit(page, template, fields));
       const after = await Promise.all(watched.map((id) => membershipState(id)));
       const shownBeforeChange = formNamed((await shownPage(page, 'members')).forms, `Revoke User from ${users['c-target'].email}`);
-      // Another administrator changes the membership in WorkOS after the page was shown.
-      await workos.authorization.assignRole({ organizationMembershipId: memberships.targetInC, roleSlug: 'admin', resourceTypeSlug: 'organization', resourceExternalId: organizationC.id });
+      // Another administrator changes the membership in WorkOS after the page was shown. WorkOS names the authorization
+      // resource of C by the external ID of C.
+      const resourceOfC = organizationC.externalId;
+      assert.ok(resourceOfC !== null, 'Organization C has no external ID.');
+      await workos.authorization.assignRole({ organizationMembershipId: memberships.targetInC, roleSlug: 'admin', resourceTypeSlug: 'organization', resourceExternalId: resourceOfC });
       const changed = await membershipState(memberships.targetInC);
       const stale = await submit(page, shownBeforeChange);
       const afterStale = await membershipState(memberships.targetInC);

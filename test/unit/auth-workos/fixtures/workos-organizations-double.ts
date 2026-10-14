@@ -40,6 +40,12 @@ export interface RoleRecord {
   readonly permissions: readonly string[];
 }
 
+// The fields of a WorkOS organization that the directory reads. The external ID is null for an organization without one.
+export interface OrganizationRecord {
+  readonly id: string;
+  readonly externalId: string | null;
+}
+
 export interface SdkCall {
   readonly method: string;
   readonly input: unknown;
@@ -55,6 +61,8 @@ type InvitationChange = 'sendInvitation' | 'resendInvitation' | 'revokeInvitatio
 const authority = 'workos:client_test';
 export const acme = 'org_01ACME';
 export const globex = 'org_02GLOBEX';
+// The external ID of Acme, as each customer organization of the operator runbook has one. Globex has none.
+export const acmeExternalId = 'customer-acme';
 // The time of the clock that the directory gets from the double.
 export const now = new Date('2026-10-14T12:00:00.000Z');
 
@@ -122,6 +130,11 @@ export class WorkOSOrganizationsDouble {
   membershipList: ListAnswer<MembershipRecord> = { data: [], after: null };
   invitationList: ListAnswer<InvitationRecord> = { data: [], after: null };
   organizationRoles: readonly RoleRecord[] = stagingRoles();
+  // The organizations that the organization reads give, by ID.
+  readonly organizationRecords = new Map<string, OrganizationRecord>([
+    [acme, { id: acme, externalId: acmeExternalId }],
+    [globex, { id: globex, externalId: null }],
+  ]);
   // An answer of an invitation change in place of the default answer.
   readonly changeAnswers = new Map<InvitationChange, InvitationRecord>();
   // A failure for each method name. The double records the call before it fails.
@@ -144,9 +157,14 @@ export class WorkOSOrganizationsDouble {
     removeRole: async (options: RemoveRoleOptions) => this.answer('removeRole', options, () => this.changeRole(options.organizationMembershipId, options.roleSlug, 'remove')),
   };
 
+  readonly organizations = {
+    getOrganization: async (id: string) => this.answer('getOrganization', id, () => this.organizationRecords.get(id) ?? missing()),
+  };
+
   // The directory under test. The default clock gives the fixed time.
   directory(clock: () => Date = () => new Date(now)): WorkOSOrganizations {
-    return new WorkOSOrganizations({ authority, userManagement: this.userManagement, authorization: this.authorization, clock });
+    const { userManagement, authorization, organizations } = this;
+    return new WorkOSOrganizations({ authority, userManagement, authorization, organizations, clock });
   }
 
   methods(): string[] {

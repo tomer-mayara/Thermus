@@ -56,7 +56,8 @@ function stateOf(membership: OrganizationMembership): MembershipState {
   return { status: membership.status, roles: rolesOf(membership), updatedAt: membership.updatedAt };
 }
 
-// The single-role write of the directory: one role on the authorization resource of the organization.
+// The single-role write of the directory: one role on the authorization resource of an organization without an external
+// ID, such as D or B. WorkOS names the resource of such an organization by its organization ID.
 function organizationRole(organizationId: string, membershipId: string, roleSlug: string) {
   return { organizationMembershipId: membershipId, roleSlug, resourceTypeSlug: 'organization', resourceExternalId: organizationId };
 }
@@ -99,10 +100,10 @@ export function describeAdministrationProofs(run: LiveRun): void {
   const { workos, settings } = run;
   const authority = workosAuthority(settings.clientId);
   // The directory of the hosted edition, as the composition makes it, against the staging environment.
-  const directory = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const directory = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
 
   function pagedDirectory(reads: MembershipListRead[]): WorkOSOrganizations {
-    return new WorkOSOrganizations({ authority, userManagement: withPagesOfTwo(workos.userManagement, reads), authorization: workos.authorization });
+    return new WorkOSOrganizations({ authority, userManagement: withPagesOfTwo(workos.userManagement, reads), authorization: workos.authorization, organizations: workos.organizations });
   }
 
   async function membershipState(membershipId: string): Promise<MembershipState> {

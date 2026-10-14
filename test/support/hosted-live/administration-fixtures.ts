@@ -25,9 +25,9 @@ interface MembershipSetting {
 export type AdministrationMembershipName = keyof ReturnType<typeof membershipsToMake>;
 
 export interface AdministrationFixtures {
-  // The organization of the AUTH-08W cases of the hosted server.
+  // The organization of the AUTH-08W cases of the hosted server. It has an external ID.
   readonly organizationC: LiveOrganization;
-  // The organization of the AUTH-08W provider proofs.
+  // The organization of the AUTH-08W provider proofs. It has no external ID.
   readonly organizationD: LiveOrganization;
   readonly users: Readonly<Record<AdministrationUserLabel, LiveUser>>;
   // The ID of each membership that the fixtures made.
@@ -75,7 +75,10 @@ function membershipsToMake({ make, workos, users, organizationB, organizationC, 
 }
 
 // The data of the AUTH-08W proofs and cases, after the staging fixtures of the run, with the same run ID. Each user is
-// new, so that no other proof or case changes it. Organization B is the one of the staging fixtures.
+// new, so that no other proof or case changes it. Organization B is the one of the staging fixtures. Organization C has
+// the external ID thermus-live-<run ID>-c, as each customer organization of the operator runbook has an external ID,
+// and organization D has none. Thus the grant changes in C name the authorization resource by its external ID, and
+// those in D by the organization ID.
 // Organization D, of the provider proofs:
 // - d-repeat, d-concurrent, d-absent, and d-retry: User;
 // - d-last-role: User, and User in B;
@@ -96,7 +99,7 @@ function membershipsToMake({ make, workos, users, organizationB, organizationC, 
 // - c-invitee-user and c-invitee-revoked: no membership.
 export async function createAdministrationFixtures(workos: WorkOS, registry: FixtureRegistry, staging: StagingFixtures): Promise<AdministrationFixtures> {
   const make = new FixtureFactory(workos, registry, staging.runId);
-  const [organizationC, organizationD] = await settled(['C', 'D'].map((label) => make.organization(label)));
+  const [organizationC, organizationD] = await settled([make.organization('C', `thermus-live-${staging.runId}-c`), make.organization('D')]);
   const created = await settled(userLabels.map((label) => make.user(label)));
   const users = Object.fromEntries(userLabels.map((label, index) => [label, created[index]])) as Record<AdministrationUserLabel, LiveUser>;
   const toMake = membershipsToMake({ make, workos, users, organizationB: staging.organizationB, organizationC, organizationD });

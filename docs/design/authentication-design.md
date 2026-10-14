@@ -1898,11 +1898,18 @@ behavior that each rule needs.
   without a write when the membership is not active, because a later
   reactivation or acceptance would give the changed roles, or when a directory
   connection manages it. A failed read, an answer with another ID, and a
-  membership without a role list fail before any write. Then it makes one
-  single-role write: `assignRole()` for a grant and `removeRole()` for a
-  revoke, each with the role and the organization of the current membership
-  as the resource (`resourceTypeSlug: 'organization'` and
-  `resourceExternalId: <organization ID>`). When the write answers, the result
+  membership without a role list fail before any write. Then it reads the
+  organization of the current membership (`organizations.getOrganization()`)
+  and makes one single-role write: `assignRole()` for a grant and
+  `removeRole()` for a revoke, each with the role and the authorization
+  resource of that organization (`resourceTypeSlug: 'organization'` and, as
+  `resourceExternalId`, the external ID of the organization, or the
+  organization ID when the organization has no external ID). WorkOS refuses
+  the organization ID of an organization with an external ID with `404`
+  `entity_not_found`, and each organization that the operator runbook makes
+  has an external ID. A failed organization read and an answer with another
+  ID fail before the write; as for each failure of the directory change, the
+  service records `unknown`. When the write answers, the result
   is `applied`; the directory does not use the answer. It never replaces the
   role set with `updateOrganizationMembership()`, and it never creates,
   deactivates, reactivates, or deletes a membership. A failed write throws as

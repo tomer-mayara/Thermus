@@ -17,6 +17,8 @@ const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'ht
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
 const organizationNames = { [acme]: 'Acme', [globex]: 'Globex' };
+// Acme has an external ID, as each customer organization of the operator runbook has one.
+const acmeExternalId = 'customer-acme';
 
 function person(name: string): WorldUser {
   return { id: `user_01${name.toUpperCase()}`, email: `${name}@example.com`, firstName: `${name.charAt(0).toUpperCase()}${name.slice(1)}` };
@@ -68,6 +70,7 @@ async function openSite(t: TestContext): Promise<Site> {
   const world = await WorkOSWorld.start(t, config.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
+  world.organizationExternalIds = { [acme]: acmeExternalId };
   world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
   const log = new LogLines();
   const application = await composeWorkOSApplication(config, world.connection(), log);
@@ -101,6 +104,16 @@ function labelsOf(forms: readonly PageForm[]): string[] {
   return forms.map(({ label }) => label);
 }
 
+// The form token of the session, as the portal reads it from the session answer. A page that the server refuses has no
+// form that holds it.
+async function formTokenOf(browser: HostedBrowser): Promise<string> {
+  const answer = await browser.open('session', { Accept: 'application/json' });
+  assert.equal(answer.status, 200, answer.body);
+  const { csrfToken } = JSON.parse(answer.body) as { readonly csrfToken?: unknown };
+  assert.ok(typeof csrfToken === 'string' && csrfToken !== '', `The session answer has no form token: ${answer.body}`);
+  return csrfToken;
+}
+
 function seatsIn(body: string): number {
   const seats = /Active User seats: (\d+)/.exec(body)?.[1];
   assert.ok(seats !== undefined, `The members page shows no seat count: ${body}`);
@@ -126,12 +139,13 @@ function changesIn(site: Site): WorkOSChange[] {
     .map(({ method, path, body }) => ({ method, path: path.split('?')[0] ?? path, body }));
 }
 
-// A single-role write on the organization resource of Acme.
+// A single-role write on the authorization resource of Acme. WorkOS names that resource by the external ID of Acme,
+// not by its organization ID.
 function roleWrite(method: 'POST' | 'DELETE', membershipId: string, role: string): WorkOSChange {
   return {
     method,
     path: `/authorization/organization_memberships/${membershipId}/role_assignments`,
-    body: { role_slug: role, resource_type_slug: 'organization', resource_external_id: acme },
+    body: { role_slug: role, resource_type_slug: 'organization', resource_external_id: acmeExternalId },
   };
 }
 
@@ -339,22 +353,22 @@ describe('Hosted WorkOS edition: changes on stale, inactive, foreign, and forged
     assert.deepEqual(site.world.rolesOf(bea, acme), ['user']);
   });
 
-  test('Given a session whose sign-in gave no MFA evidence, when Dan opens the members and invitations pages and posts a grant, then each gets the 403 MFA notice, and WorkOS gets no member, invitation, or role read or write', async (t) => {
+  test('Given a session whose sign-in gave no MFA evidence, when Dan opens the members and invitations pages and posts a grant with the form token of the session, then each gets the 403 MFA notice, and WorkOS gets no member, invitation, or role read or write', async (t) => {
     const site = await openSite(t);
     site.world.authenticationMethod = 'GoogleOAuth';
     const browser = await signIn(site, dan);
+    const csrfToken = await formTokenOf(browser);
     site.world.fake.takeRequests();
 
     const answers = [
       await browser.open('members'),
       await browser.open('invitations'),
-      await browser.post('members/grants', { organization_id: acme, membership_id: site.world.membershipId(bea, acme), revision: 'r1', role: 'admin', action: 'grant', csrf_token: 'any' }),
+      await browser.post('members/grants', { organization_id: acme, membership_id: site.world.membershipId(bea, acme), revision: 'r1', role: 'admin', action: 'grant', csrf_token: csrfToken }),
     ];
     const administrationRequests = site.world.fake.takeRequests()
       .filter(({ path }) => /role_assignments|\/invitations|\/users\/|organization_memberships\/om_/.test(path) || (path.includes('organization_id=') && !path.includes('user_id=')));
 
-    for (const answer of answers.slice(0, 2)) assertNotice(answer, 403, /Administration needs a sign-in that completed multi-factor authentication\./);
-    assert.equal(answers[2]?.status, 403);
+    for (const answer of answers) assertNotice(answer, 403, /Administration needs a sign-in that completed multi-factor authentication\./);
     assert.deepEqual(administrationRequests, []);
   });
 });
@@ -437,7 +451,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     assert.equal(await mcpStatus(site, eve, acme), 200);
   });
 
-  test('Given Cal with only Admin and an invitation to Admin whose expiry passed while WorkOS still says pending, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired invitation, then the page offers only User invitations and shows the expiry, and both posts are refused without a WorkOS change', async (t) => {
+  test('Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers only User invitations and shows the expired User invitation and the pending Admin invitation, and both posts are refused without a WorkOS change', async (t) => {
     const site = await openSite(t);
     site.world.invitations = [
       { id: 'invitation_01OLD', email: 'old@example.com', organizationId: acme, roleSlug: 'user', state: 'pending', expiresAt: '2099-01-01T00:00:00.000Z' },
