@@ -235,9 +235,6 @@ importers:
       '@types/node':
         specifier: ^24.19.1
         version: 24.19.1
-      '@workos-inc/authkit-js':
-        specifier: ^0.12.0
-        version: 0.12.0
       eslint:
         specifier: 10.10.0
         version: 10.10.0(jiti@2.7.0)
@@ -1435,9 +1432,6 @@ packages:
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
-
-  '@workos-inc/authkit-js@0.12.0':
-    resolution: {integrity: sha512-InOA64y3IEbv13vzGJdAdz/HHWiEVzOCZxx0xDAQBxIOXciK5yUiFRUJLlpv1LJa+J5w4aDGOnMABSk7X9cLpA==}
 
   '@workos-inc/node@11.0.0':
     resolution: {integrity: sha512-swUT6CbkuVQXMOtUpI70LZ8usjSg8OXcKMjKdoYLeqCApRI0Oo97l+nZ0lKzZ5GxjxgcVZGGVK025h7z9WyCJg==}
@@ -3144,8 +3138,6 @@ snapshots:
 
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
-
-  '@workos-inc/authkit-js@0.12.0': {}
 
   '@workos-inc/node@11.0.0': {}
 

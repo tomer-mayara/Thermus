@@ -11,7 +11,7 @@ import {
 import { BrowserSessionStore } from '../../support/browser-session-store.ts';
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/hosted-administration.ts';
 import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';
-import { hostedStartupLine, unavailableNotice } from '../../support/hosted-placeholder.ts';
+import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';
 import { formFor, hostedConfig, openOrganizationSite, userOf, type OrganizationSite } from '../../support/hosted-organization-site.ts';
 
 class RecordingLogger {
@@ -159,9 +159,9 @@ describe('Hosted grant management with the real composition, routes, service, an
     assert.deepEqual(site.logger.lines, ['ERROR An account request failed unexpectedly for /team/members: Error: member page 2 timed out']);
   });
 
-  test('Given the production hosted application with the unavailable placeholder, when the member and invitation pages and their changes arrive with the session cookie, form token, and values of the doubles, then each gets the 503 notice without a cookie or a form, and nothing is recorded', async () => {
+  test('Given the production hosted application with the WorkOS provider, when the member and invitation pages and their changes arrive with the session cookie, form token, and values of the doubles, then each asks for a sign-in without a cookie or a form, and nothing is recorded', async () => {
     const logger = new RecordingLogger();
-    const application = await createApplication(hostedConfig, logger);
+    const application = await createApplication(hostedConfig, logger, workOSSettingsFor(hostedConfig.publicBaseUrl));
     const browser = new HostedBrowser(application.handle, hostedConfig.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-eve', 'org-a')));
     const form = { csrf_token: 'forged-token', organization_id: 'org-a' };
 
@@ -176,8 +176,8 @@ describe('Hosted grant management with the real composition, routes, service, an
     await application.close();
 
     for (const answer of answers) {
-      assert.equal(answer.status, 503);
-      assert.match(answer.body, unavailableNotice);
+      assert.equal(answer.status, 401);
+      assert.match(answer.body, /Sign-in required/);
       assert.deepEqual(answer.cookies, []);
       assert.doesNotMatch(answer.body, /<form/);
     }

@@ -10,8 +10,8 @@ const sourceFiles = [
   '**/*.cjs',
 ];
 
-const providerPackages = '(?:better-auth|@better-auth/mcp)(?:/|$)';
-const providerPaths = '(?:local-auth/better-auth(?:/|$)|hosted-auth/unavailable-hosted-authentication(?:\\.[jt]s)?$)';
+const providerPackages = '(?:better-auth|@better-auth/mcp|@workos-inc/node)(?:/|$)';
+const providerPaths = '(?:local-auth/better-auth(?:/|$)|hosted-auth/workos(?:/|$)|hosted-auth/unavailable-hosted-authentication(?:\\.[jt]s)?$)';
 const sharedImports = [
   providerPackages,
   `(?:\\./|(?:\\.\\./)+auth/)${providerPaths}`,

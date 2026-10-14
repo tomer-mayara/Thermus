@@ -21,7 +21,7 @@ const liveFile = fileURLToPath(new URL('./hosted.live.js', import.meta.url));
 // With --import before --test, the blocker loads in the process that runs the test file. There, each outbound attempt fails and writes a line to the report.
 const networkBlocker = new URL('../../support/deny-network.js', import.meta.url).href;
 const repositoryRoot = new URL('../../../../', import.meta.url);
-const liveCommand = 'npm run build && node --test dist/test/acceptance/auth/hosted.live.js';
+const liveCommand = 'npm run build && npm run build:user-portal && node --test dist/test/acceptance/auth/hosted.live.js';
 const liveSource = 'test/acceptance/auth/hosted.live.ts';
 const liveOutput = 'dist/test/acceptance/auth/hosted.live.js';
 const setupSpecificationOutput = 'dist/test/acceptance/auth/hosted-live-setup.test.js';

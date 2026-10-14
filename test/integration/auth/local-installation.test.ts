@@ -9,7 +9,8 @@ import { LocalInstallationError } from '../../../src/auth/local-auth/better-auth
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
-import { hostedStartupLine, unavailableNotice } from '../../support/hosted-placeholder.ts';
+import { hostedStartupLine, workOSSettings } from '../../support/hosted-placeholder.ts';
+import { WorkOSSettingsError } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { accountsOf, addAccount, passwordOf, selfHostedConfig, withRuntime } from '../../support/local-runtime.ts';
 
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;
@@ -181,15 +182,16 @@ describe('Local installation with the real application and provider', () => {
     });
   }
 
-  test('Given the hosted deployment, when the application starts and closes, then it selects the unavailable hosted shell instead of the local runtime: account and MCP requests get 503, and repeated closes give one result', async () => {
+  test('Given the hosted deployment, when the application starts, then it selects the WorkOS provider instead of the local runtime: without the WorkOS settings it refuses to start, and with them account and MCP requests without credentials get 401, and repeated closes give one result', async () => {
+    const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http');
+    await assert.rejects(createApplication(config, new RecordingLogger()), WorkOSSettingsError);
     const logger = new RecordingLogger();
-    const application = await createApplication(loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http'), logger);
+    const application = await createApplication(config, logger, workOSSettings);
 
     const answers = [await application.handle(new Request('https://thermus.example/account')), await application.handle(mcpRequest('forged-token'))];
     const closes = [application.close(), application.close()];
 
-    assert.deepEqual([answers.map(({ status }) => status), closes[0] === closes[1]], [[503, 503], true]);
-    assert.match(await answers[0]?.text() ?? '', unavailableNotice);
+    assert.deepEqual([answers.map(({ status }) => status), closes[0] === closes[1]], [[401, 401], true]);
     await Promise.all(closes);
     assert.deepEqual(logger.lines, [hostedStartupLine]);
   });

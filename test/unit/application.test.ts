@@ -129,3 +129,27 @@ test('Given a hosted installation under a URL path, when paths outside that path
 
   assert.deepEqual(calls, []);
 });
+
+test('Given hosted browser routes of the provider, when their paths are requested, then they answer before the account routes, and every other path keeps its owner', async () => {
+  const calls: string[] = [];
+  const handler = (route: string) => async () => {
+    calls.push(route);
+    return new Response(route);
+  };
+  const browserPaths = new Set(['/team/login', '/team/callback', '/team/logout', '/team/session']);
+  const route = routeHostedRequests(routeConfig, {
+    mcp: handler('mcp'),
+    account: handler('account'),
+    browser: { handles: (pathname) => browserPaths.has(pathname), handle: handler('browser') },
+  });
+
+  const owners = [];
+  for (const path of ['/team/login', '/team/callback', '/team/logout', '/team/session', '/team/organizations', '/team/mcp', '/team/loginx', '/login']) {
+    owners.push([path, await (await route(new Request(`https://thermus.example${path}`))).text()]);
+  }
+
+  assert.deepEqual(owners, [
+    ['/team/login', 'browser'], ['/team/callback', 'browser'], ['/team/logout', 'browser'], ['/team/session', 'browser'],
+    ['/team/organizations', 'account'], ['/team/mcp', 'mcp'], ['/team/loginx', 'account'], ['/login', 'Not Found'],
+  ]);
+});

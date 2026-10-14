@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
-import { unavailableNotice, workOSSettings } from '../../support/hosted-placeholder.ts';
+import { workOSSettings } from '../../support/hosted-placeholder.ts';
 import { accountsOf, addAccount, selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
 
@@ -197,15 +197,15 @@ describe('Self-hosted server startup with one persistent installation', () => {
     assert.deepEqual(readdirSync(directory), []);
   });
 
-  test('Given the hosted edition with a data directory setting, when the server starts, then it serves only the authentication-unavailable notice, reports no local tenant, and creates no local data', { timeout: 60_000 }, async (t) => {
+  test('Given the hosted edition with a data directory setting, when the server starts, then it serves the WorkOS edition, which asks for a sign-in, reports no local tenant, and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
     const server = await ServerProcess.start(t, hostedSettings(directory));
     const notice = await server.request('/');
     const exit = await server.stop();
 
-    assert.deepEqual([notice.status, exit], [503, { code: 0, signal: null }]);
-    assert.match(await notice.text(), unavailableNotice);
+    assert.deepEqual([notice.status, exit], [401, { code: 0, signal: null }]);
+    assert.match(await notice.text(), /Sign-in required/);
     assert.doesNotMatch(server.output, /tenant/);
     assert.deepEqual(readdirSync(directory), []);
   });

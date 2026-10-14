@@ -1,4 +1,2 @@
-interface ImportMetaEnv {
-  readonly VITE_WORKOS_CLIENT_ID?: string;
-  readonly VITE_WORKOS_REDIRECT_URI?: string;
-}
+// The portal reads no build-time setting: it uses the server session of its own origin.
+interface ImportMetaEnv {}

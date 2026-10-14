@@ -49,7 +49,7 @@ export async function serve(environment: Environment, logger: ApplicationLogger,
   const config = loadDeploymentConfig(environment, 'http');
   const listen = loadListenAddress(environment);
   await using owned = new AsyncDisposableStack();
-  const application = owned.adopt(await createApplication(config, logger), (started) => started.close());
+  const application = owned.adopt(await createApplication(config, logger, environment), (started) => started.close());
   const server = owned.adopt(
     await startHttpServer(application.handle, { listen, publicBaseUrl: config.publicBaseUrl, logger }),
     (listening) => listening.close(),
