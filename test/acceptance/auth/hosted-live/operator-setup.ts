@@ -253,7 +253,7 @@ export function describeOperatorSetupProofs(run: LiveRun): void {
       await fixtures.runbook.grantSuperAdmin(request);
       const granted = await membershipOf(fixtures, user);
       assert.ok(granted, 'The grant made no membership.');
-      await workos.userManagement.updateOrganizationMembership(granted.id, { roleSlugs: [superAdminRole, 'user'] });
+      await workos.authorization.assignRole(organizationRole(fixtures, granted, 'user'));
 
       const inPlace = await fixtures.runbook.inspectAfterUnknownOutcome(request);
       const blindCreate = await workos.userManagement.createOrganizationMembership({ organizationId, userId: user.id, roleSlugs: [superAdminRole] }).then(() => undefined, (error: unknown) => error);

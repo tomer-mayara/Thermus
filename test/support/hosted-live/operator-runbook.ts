@@ -1,4 +1,14 @@
-import type { Organization, OrganizationMembership, User, WorkOS } from '@workos-inc/node';
+import type {
+  AssignRoleOptions,
+  CreateOrganizationMembershipOptions,
+  CreateOrganizationOptions,
+  ListOrganizationMembershipsOptions,
+  ListUsersOptions,
+  Organization,
+  OrganizationMembership,
+  RemoveRoleOptions,
+  User,
+} from '@workos-inc/node';
 
 // The steps of the operator runbook, docs/implementation/hosted-organization-setup.md, with the pinned SDK. The live
 // proofs run these steps against the staging environment, so that each rule of the runbook rests on WorkOS behavior.
@@ -34,16 +44,41 @@ export interface SuperAdminRequest {
   readonly email: string;
 }
 
+// The calls of the pinned SDK client that the runbook makes. The client fits this shape, and a focused test can give a
+// double. It has no write of the complete role set: each grant change is one role assignment on the organization.
+export interface RunbookClient {
+  readonly organizations: {
+    getOrganization(organizationId: string): Promise<Organization>;
+    getOrganizationByExternalId(externalId: string): Promise<Organization>;
+    createOrganization(options: CreateOrganizationOptions): Promise<Organization>;
+  };
+  readonly userManagement: {
+    listUsers(options: ListUsersOptions): Promise<{ readonly data: readonly User[] }>;
+    listOrganizationMemberships(options: ListOrganizationMembershipsOptions): Promise<{ readonly data: readonly OrganizationMembership[] }>;
+    createOrganizationMembership(options: CreateOrganizationMembershipOptions): Promise<unknown>;
+  };
+  readonly authorization: {
+    assignRole(options: AssignRoleOptions): Promise<unknown>;
+    removeRole(options: RemoveRoleOptions): Promise<unknown>;
+  };
+}
+
 interface MembershipState {
   readonly user: User;
   readonly membership: OrganizationMembership | undefined;
   readonly roles: readonly string[];
 }
 
+interface SuperAdminAssignment {
+  readonly organizationMembershipId: string;
+  readonly roleSlug: string;
+  readonly resourceTypeSlug: 'organization';
+  readonly resourceExternalId: string;
+}
+
 type RecordFacts = Omit<OperatorRecord, 'time' | 'actor'>;
 
 export const superAdminRole = 'super-admin';
-const defaultRole = 'member';
 
 export function rolesOf(membership: OrganizationMembership | undefined): string[] {
   if (membership === undefined) return [];
@@ -54,17 +89,21 @@ function statusOf(error: unknown): unknown {
   return typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined;
 }
 
-function sameRoles(actual: readonly string[], expected: readonly string[]): boolean {
-  return actual.length === expected.length && expected.every((role) => actual.includes(role));
+function withSuperAdmin(roles: readonly string[]): boolean {
+  return roles.includes(superAdminRole);
+}
+
+function withoutSuperAdmin(roles: readonly string[]): boolean {
+  return !withSuperAdmin(roles);
 }
 
 export class OperatorRunbook {
   readonly records: OperatorRecord[] = [];
-  readonly #workos: WorkOS;
+  readonly #workos: RunbookClient;
   readonly #actor: string;
 
   // The actor names the operator, for example the WorkOS dashboard account of the person, never a credential.
-  constructor(workos: WorkOS, actor: string) {
+  constructor(workos: RunbookClient, actor: string) {
     this.#workos = workos;
     this.#actor = actor;
   }
@@ -111,32 +150,33 @@ export class OperatorRunbook {
     return data[0];
   }
 
-  // Step 4: add only the explicit Super Admin grant. Each other grant stays. An inactive or pending membership stops
-  // the runbook: a create would activate it, and a reactivation would restore its earlier roles.
+  // Step 4: add only the explicit Super Admin grant, with one role assignment. Each other role stays, also a change of
+  // a customer at the same time. An inactive or pending membership stops the runbook: a create would activate it, and
+  // a reactivation would restore its earlier roles.
   async grantSuperAdmin(request: SuperAdminRequest): Promise<OperatorRecord> {
     const state = await this.stateOf(request);
     const facts = this.factsOf(request, state, 'grant-super-admin');
     const { membership, roles } = state;
     if (membership === undefined) {
-      return this.written(facts, [superAdminRole], () => this.#workos.userManagement.createOrganizationMembership({ organizationId: request.organizationId, userId: state.user.id, roleSlugs: [superAdminRole] }));
+      return this.written(facts, withSuperAdmin, () => this.#workos.userManagement.createOrganizationMembership({ organizationId: request.organizationId, userId: state.user.id, roleSlugs: [superAdminRole] }));
     }
     if (membership.status !== 'active') return this.record({ ...facts, outcome: 'stopped', reason: `the membership is ${membership.status}: no create and no reactivation without a decision` });
     if (roles.includes(superAdminRole)) return this.record({ ...facts, rolesAfter: roles, outcome: 'unchanged' });
-    const expected = [...roles, superAdminRole];
-    return this.written(facts, expected, () => this.#workos.userManagement.updateOrganizationMembership(membership.id, { roleSlugs: expected }));
+    const assignment = await this.superAdminAssignment(membership);
+    return this.written(facts, withSuperAdmin, () => this.#workos.authorization.assignRole(assignment));
   }
 
-  // Remove only Super Admin. Each other grant, the identity, and the other memberships stay. Without another role, the
-  // membership keeps the default role, which gives no application permission.
+  // Remove only Super Admin, with the removal of its one role assignment. Each other role, the identity, and the other
+  // memberships stay. Without another role, WorkOS gives the membership the default role, which gives no application
+  // permission.
   async revokeSuperAdmin(request: SuperAdminRequest): Promise<OperatorRecord> {
     const state = await this.stateOf(request);
     const facts = this.factsOf(request, state, 'revoke-super-admin');
     const { membership, roles } = state;
     if (membership === undefined || !roles.includes(superAdminRole)) return this.record({ ...facts, rolesAfter: roles, outcome: 'unchanged' });
     if (membership.status !== 'active') return this.record({ ...facts, outcome: 'stopped', reason: `the membership is ${membership.status}: no change without a decision` });
-    const remaining = roles.filter((role) => role !== superAdminRole);
-    const expected = remaining.length === 0 ? [defaultRole] : remaining;
-    return this.written(facts, expected, () => this.#workos.userManagement.updateOrganizationMembership(membership.id, { roleSlugs: expected }));
+    const assignment = await this.superAdminAssignment(membership);
+    return this.written(facts, withoutSuperAdmin, () => this.#workos.authorization.removeRole(assignment));
   }
 
   // After an unknown outcome of a Super Admin grant, the operator inspects and writes nothing. A grant in place needs no
@@ -162,9 +202,19 @@ export class OperatorRunbook {
     return { organizationId: request.organizationId, target: { userId: state.user.id, email: request.email }, action, rolesBefore: state.roles, outcome: 'unknown' };
   }
 
-  // Step 5: read the membership again. Only an active membership with exactly the expected roles counts as applied. A
-  // failed write leaves its effect unknown, so the record says unknown before the failure reaches the caller.
-  private async written(facts: RecordFacts, expected: readonly string[], write: () => Promise<OrganizationMembership>): Promise<OperatorRecord> {
+  // The authorization resource of a runbook organization has the external ID of the operator. WorkOS refuses the
+  // organization ID of an organization with an external ID.
+  private async superAdminAssignment(membership: OrganizationMembership): Promise<SuperAdminAssignment> {
+    const { externalId } = await this.#workos.organizations.getOrganization(membership.organizationId);
+    if (externalId === null) throw new Error('The organization has no external ID. Locate it by the external ID of the operator with step 1.');
+    return { organizationMembershipId: membership.id, roleSlug: superAdminRole, resourceTypeSlug: 'organization', resourceExternalId: externalId };
+  }
+
+  // Step 5: read the membership again. Only an active membership whose Super Admin role matches the change counts as
+  // applied. Its other roles can differ from the inspection: a customer can change them at the same time, and the role
+  // assignment keeps that change. A failed write leaves its effect unknown, so the record says unknown before the
+  // failure reaches the caller.
+  private async written(facts: RecordFacts, changed: (roles: readonly string[]) => boolean, write: () => Promise<unknown>): Promise<OperatorRecord> {
     try {
       await write();
     } catch (error) {
@@ -174,7 +224,7 @@ export class OperatorRunbook {
     const userId = facts.target.userId ?? '';
     const current = await this.membership(userId, facts.organizationId);
     const rolesAfter = rolesOf(current);
-    const applied = current?.status === 'active' && sameRoles(rolesAfter, expected);
+    const applied = current?.status === 'active' && changed(rolesAfter);
     return this.record({ ...facts, rolesAfter, outcome: applied ? 'applied' : 'unknown', ...(applied ? {} : { reason: 'the membership differs from the change' }) });
   }
 
