@@ -102,9 +102,9 @@ The server writes the line one time for each code in the life of its process, so
 | --- | --- | --- | --- |
 | `ENOENT` | is missing | `LIGHTPANDA_BIN` names a file that does not exist, or it is unset and `lightpanda` is not on the `PATH` of the server. | Install the pinned release with the recipe above. Set `LIGHTPANDA_BIN` to the absolute path of the executable. |
 | `EACCES` | cannot start | The file has no execute permission, or the path is a directory. | Give the file execute permission, for example with `chmod 755`. Set `LIGHTPANDA_BIN` to the executable, not to its directory. |
-| `ENOEXEC` | cannot start | The file is not an executable for this platform, for example the asset of another operating system. | Install the asset for this platform with the recipe above. |
+| `ENOEXEC` | cannot start | macOS only: the file is not an executable for this platform, for example the asset of another operating system. | Install the asset for this platform with the recipe above. |
 
-Another code shows another reason why the system cannot start the process. In each case, verify the executable with `"$LIGHTPANDA_BIN" version`. The server reads `LIGHTPANDA_BIN` when it starts, so restart it after you change the setting. If you correct the file at the same path, the next page fetch uses it without a restart. After a correction, a recurrence of a reported code writes no new line until the next server start.
+On Linux, the system gives a file that it cannot execute to `/bin/sh`. The process then starts and fails, so each page fetch fails without a renderer setup report. Another code shows another reason why the system cannot start the process. In each case, verify the executable with `"$LIGHTPANDA_BIN" version`. The server reads `LIGHTPANDA_BIN` when it starts, so restart it after you change the setting. If you correct the file at the same path, the next page fetch uses it without a restart. After a correction, a recurrence of a reported code writes no new line until the next server start.
 
 ## Verify rendering
 
