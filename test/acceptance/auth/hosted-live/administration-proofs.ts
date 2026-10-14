@@ -209,6 +209,21 @@ export function describeAdministrationProofs(run: LiveRun): void {
       assert.deepEqual(before.roles, ['user']);
       assert.deepEqual(after, before);
     });
+
+    test('Given a membership with User in D, when a single-role write names the organization resource of B, then WorkOS refuses it with 404 entity_not_found and changes neither the roles nor the update time', proofOptions, async (t) => {
+      const { organizationB } = await run.fixtures();
+      const { memberships } = await run.administrationFixtures();
+      const id = memberships.absentInD;
+      const before = await membershipState(id);
+
+      const refusal = await workos.authorization.assignRole(organizationRole(organizationB.id, id, 'super-admin')).then(() => undefined, (error: unknown) => error);
+      const after = await membershipState(id);
+      const answer = typeof refusal === 'object' && refusal !== null ? { status: Reflect.get(refusal, 'status'), code: Reflect.get(refusal, 'code') } : undefined;
+      t.diagnostic(`assignment on the resource of another organization: ${JSON.stringify(answer ?? 'accepted')}`);
+
+      assert.deepEqual(answer, { status: 404, code: 'entity_not_found' });
+      assert.deepEqual(after, before);
+    });
   });
 
   describe('Hosted live proofs (AUTH-08W): grant changes of the directory against WorkOS', () => {
