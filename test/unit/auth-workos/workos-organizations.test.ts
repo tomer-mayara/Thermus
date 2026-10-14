@@ -1,21 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { ListOrganizationMembershipsOptions, OrganizationMembershipStatus } from '@workos-inc/node';
+import type { ListOrganizationMembershipsOptions } from '@workos-inc/node';
 import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
 import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
-
-interface MembershipRecord {
-  readonly userId: string;
-  readonly organizationId: string;
-  readonly organizationName: string;
-  readonly status: OrganizationMembershipStatus;
-  readonly roles?: readonly { readonly slug: string }[];
-}
-
-interface RoleRecord {
-  readonly slug: string;
-  readonly permissions: readonly string[];
-}
+import { stagingRoles, type MembershipRecord, type RoleRecord } from './fixtures/workos-organizations-double.ts';
 
 interface ReadAnswers {
   readonly memberships?: readonly MembershipRecord[];
@@ -29,15 +17,8 @@ const authority = 'workos:client_test';
 const alice = 'user_01ALICE';
 const acme = 'org_01ACME';
 
-// The roles of the WorkOS staging environment, which follow the hosted role mapping.
-function stagingRoles(): RoleRecord[] {
-  return [
-    { slug: 'member', permissions: [] },
-    { slug: 'user', permissions: ['product:access'] },
-    { slug: 'admin', permissions: ['user-grants:manage'] },
-    { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] },
-  ];
-}
+// Access resolution never reads a member or an invitation and never writes a role.
+const notCalled = async (): Promise<never> => assert.fail('Access resolution made a call of organization administration.');
 
 function rolesWith(slug: string, permissions: readonly string[]): RoleRecord[] {
   return [...stagingRoles().filter((role) => role.slug !== slug), { slug, permissions }];
@@ -45,10 +26,13 @@ function rolesWith(slug: string, permissions: readonly string[]): RoleRecord[] {
 
 function activeMembership(roleSlugs: readonly string[] | undefined, changes: Partial<MembershipRecord> = {}): MembershipRecord {
   return {
+    id: 'om_01ALICE',
     userId: alice,
     organizationId: acme,
     organizationName: 'Acme',
     status: 'active',
+    updatedAt: '2026-10-14T08:00:00.000Z',
+    directoryManaged: false,
     ...(roleSlugs === undefined ? {} : { roles: roleSlugs.map((slug) => ({ slug })) }),
     ...changes,
   };
@@ -70,6 +54,13 @@ class WorkOSReadsDouble {
       if (this.answers.membershipFailure !== undefined) throw this.answers.membershipFailure;
       return { data: this.answers.memberships ?? [], listMetadata: { before: null, after: this.answers.after ?? null } };
     },
+    getOrganizationMembership: notCalled,
+    getUser: notCalled,
+    listInvitations: notCalled,
+    getInvitation: notCalled,
+    sendInvitation: notCalled,
+    resendInvitation: notCalled,
+    revokeInvitation: notCalled,
   };
 
   readonly authorization = {
@@ -78,6 +69,8 @@ class WorkOSReadsDouble {
       if (this.answers.roleFailure !== undefined) throw this.answers.roleFailure;
       return { object: 'list' as const, data: this.answers.roles ?? stagingRoles() };
     },
+    assignRole: notCalled,
+    removeRole: notCalled,
   };
 }
 

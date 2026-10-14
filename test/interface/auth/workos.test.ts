@@ -3,7 +3,9 @@ import { createHash } from 'node:crypto';
 import { after, before, describe, test, type TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import {
+  BadRequestException,
   GenericServerException,
+  NotFoundException,
   OauthException,
   UnauthorizedException,
   type OrganizationMembership,
@@ -132,6 +134,26 @@ function roleJson(slug: string, permissions: readonly string[], type: 'Environme
     type,
     created_at: '2026-10-01T08:00:00.000Z',
     updated_at: '2026-10-01T08:00:00.000Z',
+  };
+}
+
+function invitationJson(id: string, state: 'pending' | 'revoked') {
+  return {
+    object: 'invitation',
+    id,
+    email: 'carol@example.com',
+    state,
+    accepted_at: null,
+    revoked_at: state === 'revoked' ? '2026-10-14T09:00:00.000Z' : null,
+    expires_at: '2026-10-21T08:00:00.000Z',
+    organization_id: 'org_01ACME',
+    inviter_user_id: null,
+    accepted_user_id: null,
+    role_slug: 'user',
+    token: `token_${id}`,
+    accept_invitation_url: `https://authkit.example/invite?invitation_token=token_${id}`,
+    created_at: '2026-10-14T08:00:00.000Z',
+    updated_at: '2026-10-14T08:00:00.000Z',
   };
 }
 
@@ -817,6 +839,167 @@ describe('Pinned WorkOS SDK and jose contracts against a local fake WorkOS API',
         body: { email: 'carol@example.com', organization_id: 'org_01ACME', inviter_user_id: alice.id, role_slug: 'member' },
       }]);
       assert.deepEqual(Object.keys(invitationOptionFields), ['email', 'organizationId', 'expiresInDays', 'inviterUserId', 'roleSlug', 'locale']);
+    });
+  });
+
+  describe('Organization administration: member reads, single-role writes, and invitations', () => {
+    test('Given a pending, directory-managed membership with two roles and its user, when the app reads each by ID, then the SDK sends one GET to /user_management/organization_memberships/<id> and one to /user_management/users/<id> and returns id, organizationId, status, updatedAt, directoryManaged, roles, and the email; a 404 entity_not_found answer throws NotFoundException with status 404 and code entity_not_found', async (t) => {
+      const fake = await WorkOSFakeApi.start(t);
+      const workos = workosClientFor(fake);
+      fake.answer('GET /user_management/organization_memberships/om_01', { status: 200, body: { ...membershipJson('om_01', ['user', 'admin']), status: 'pending', directory_managed: true } });
+      fake.answer(`GET /user_management/users/${alice.id}`, { status: 200, body: alice });
+      fake.answer('GET /user_management/organization_memberships/om_gone', { status: 404, body: { code: 'entity_not_found', message: 'UserOrganizationMembership not found' } });
+
+      const membership = await workos.userManagement.getOrganizationMembership('om_01');
+      const user = await workos.userManagement.getUser(alice.id);
+      await assert.rejects(workos.userManagement.getOrganizationMembership('om_gone'), (error: unknown) => {
+        assert.ok(error instanceof NotFoundException, String(error));
+        assert.deepEqual({ status: error.status, code: error.code }, { status: 404, code: 'entity_not_found' });
+        return true;
+      });
+
+      assert.deepEqual(requestLines(fake), [
+        'GET /user_management/organization_memberships/om_01',
+        `GET /user_management/users/${alice.id}`,
+        'GET /user_management/organization_memberships/om_gone',
+      ]);
+      const { id, organizationId, status, updatedAt, directoryManaged, roles } = membership;
+      assert.deepEqual(
+        { id, organizationId, status, updatedAt, directoryManaged, roles },
+        { id: 'om_01', organizationId: 'org_01ACME', status: 'pending', updatedAt: '2026-10-13T08:00:00.000Z', directoryManaged: true, roles: [{ slug: 'user' }, { slug: 'admin' }] },
+      );
+      assert.equal(user.email, alice.email);
+    });
+
+    test('Given maxRetries 0, when the app assigns and then removes one role of a membership on the authorization resource of its organization, then the SDK posts and deletes the same JSON body (role_slug, resource_type_slug organization, resource_external_id) at /authorization/organization_memberships/<id>/role_assignments without If-Match or Idempotency-Key, assignRole returns the role assignment, and removeRole reads no answer body and resolves undefined for a 204 without a body and for a 200', async (t) => {
+      const fake = await WorkOSFakeApi.start(t);
+      const workos = workosClientFor(fake);
+      const path = '/authorization/organization_memberships/om_01/role_assignments';
+      const change = { organizationMembershipId: 'om_01', roleSlug: 'admin', resourceTypeSlug: 'organization', resourceExternalId: 'org_01ACME' };
+      const roleAssignment = {
+        object: 'role_assignment',
+        id: 'role_assignment_01',
+        organization_membership_id: 'om_01',
+        role: { slug: 'admin' },
+        resource: { id: 'authz_resource_01', external_id: 'org_01ACME', resource_type_slug: 'organization' },
+        source: { type: 'direct', group_role_assignment_id: null },
+        created_at: '2026-10-14T08:00:00.000Z',
+        updated_at: '2026-10-14T08:00:00.000Z',
+      };
+      fake.answer(`POST ${path}`, { status: 201, body: roleAssignment });
+      fake.answer(`DELETE ${path}`, { status: 204 });
+
+      const assignment = await workos.authorization.assignRole(change);
+      const removedWith204 = await workos.authorization.removeRole(change);
+      fake.answer(`DELETE ${path}`, { status: 200, body: roleAssignment });
+      const removedWith200 = await workos.authorization.removeRole(change);
+
+      const sentBody = { role_slug: 'admin', resource_type_slug: 'organization', resource_external_id: 'org_01ACME' };
+      const unconditional = { idempotencyKey: undefined, ifMatch: undefined };
+      assert.deepEqual(fake.takeRequests().map(({ method, path: sentPath, body, idempotencyKey, ifMatch }) => ({ method, path: sentPath, body, idempotencyKey, ifMatch })), [
+        { method: 'POST', path, body: sentBody, ...unconditional },
+        { method: 'DELETE', path, body: sentBody, ...unconditional },
+        { method: 'DELETE', path, body: sentBody, ...unconditional },
+      ]);
+      assert.deepEqual(assignment, {
+        object: 'role_assignment',
+        id: 'role_assignment_01',
+        organizationMembershipId: 'om_01',
+        role: { slug: 'admin' },
+        resource: { id: 'authz_resource_01', externalId: 'org_01ACME', resourceTypeSlug: 'organization' },
+        source: { type: 'direct', groupRoleAssignmentId: null },
+        createdAt: '2026-10-14T08:00:00.000Z',
+        updatedAt: '2026-10-14T08:00:00.000Z',
+      });
+      assert.deepEqual([removedWith204, removedWith200], [undefined, undefined]);
+    });
+
+    test('Given invitations on two pages, when the app lists the invitations of an organization with limit 100, follows the after cursor, and reads one invitation, then the SDK sends organization_id, limit, after, and order=desc and one GET to /user_management/invitations/<id>, and each deserialized invitation keeps token and acceptInvitationUrl, so the directory must drop them', async (t) => {
+      const fake = await WorkOSFakeApi.start(t);
+      const workos = workosClientFor(fake);
+      fake.answer('GET /user_management/invitations', (request) => {
+        const lastPage = new URL(request.path, fake.origin).searchParams.get('after') === 'invitation_01';
+        const data = [lastPage ? invitationJson('invitation_02', 'revoked') : invitationJson('invitation_01', 'pending')];
+        return { status: 200, body: { object: 'list', data, list_metadata: { before: null, after: lastPage ? null : 'invitation_01' } } };
+      });
+      fake.answer('GET /user_management/invitations/invitation_02', { status: 200, body: invitationJson('invitation_02', 'revoked') });
+
+      const first = await workos.userManagement.listInvitations({ organizationId: 'org_01ACME', limit: 100 });
+      const last = await workos.userManagement.listInvitations({ organizationId: 'org_01ACME', limit: 100, after: first.listMetadata.after ?? undefined });
+      const one = await workos.userManagement.getInvitation('invitation_02');
+
+      assert.deepEqual(requestLines(fake), [
+        'GET /user_management/invitations?organization_id=org_01ACME&limit=100&order=desc',
+        'GET /user_management/invitations?organization_id=org_01ACME&limit=100&after=invitation_01&order=desc',
+        'GET /user_management/invitations/invitation_02',
+      ]);
+      assert.equal(last.listMetadata.after, null);
+      const read = [...first.data, ...last.data, one].map(({ id, organizationId, email, roleSlug, state, expiresAt, token, acceptInvitationUrl }) => ({ id, organizationId, email, roleSlug, state, expiresAt, token, acceptInvitationUrl }));
+      const expected = (id: string, state: string) => ({
+        id,
+        organizationId: 'org_01ACME',
+        email: 'carol@example.com',
+        roleSlug: 'user',
+        state,
+        expiresAt: '2026-10-21T08:00:00.000Z',
+        token: `token_${id}`,
+        acceptInvitationUrl: `https://authkit.example/invite?invitation_token=token_${id}`,
+      });
+      assert.deepEqual(read, [expected('invitation_01', 'pending'), expected('invitation_02', 'revoked'), expected('invitation_02', 'revoked')]);
+    });
+
+    test('Given an invitation of one role without an inviter, when the app sends it, then the SDK posts exactly email, organization_id, and role_slug to /user_management/invitations; the 400 refusals email_already_invited_to_organization, user_already_organization_member, and invalid_role, whose body has a code and a message but no errors list, each throw GenericServerException with status 400 and that code, not BadRequestException', async (t) => {
+      const fake = await WorkOSFakeApi.start(t);
+      const workos = workosClientFor(fake);
+      const invitation = { email: 'carol@example.com', organizationId: 'org_01ACME', roleSlug: 'user' };
+      const refusals = [
+        { code: 'email_already_invited_to_organization', message: 'Email already invited to organization.' },
+        { code: 'user_already_organization_member', message: 'User already a member of organization.' },
+        { code: 'invalid_role', message: 'The role is invalid.' },
+      ];
+      fake.answer('POST /user_management/invitations', { status: 201, body: invitationJson('invitation_01', 'pending') });
+
+      const sent = await workos.userManagement.sendInvitation(invitation);
+      const firstSend = fake.takeRequests().map(({ method, path, body }) => ({ method, path, body }));
+      for (const refusal of refusals) {
+        fake.answer('POST /user_management/invitations', { status: 400, body: refusal });
+        await assert.rejects(workos.userManagement.sendInvitation(invitation), (error: unknown) => {
+          assert.ok(error instanceof GenericServerException, String(error));
+          assert.deepEqual({ status: error.status, code: error.code, badRequest: error instanceof BadRequestException }, { status: 400, code: refusal.code, badRequest: false });
+          return true;
+        });
+      }
+
+      assert.deepEqual(firstSend, [{
+        method: 'POST',
+        path: '/user_management/invitations',
+        body: { email: 'carol@example.com', organization_id: 'org_01ACME', role_slug: 'user' },
+      }]);
+      assert.deepEqual({ id: sent.id, state: sent.state }, { id: 'invitation_01', state: 'pending' });
+      assert.equal(fake.takeRequests().length, refusals.length);
+    });
+
+    test('Given a pending invitation, when the app resends it and then revokes it, then the SDK posts {} to /user_management/invitations/<id>/resend and an empty body to /revoke and returns each answer; a 400 invite_not_pending answer to a revoke throws GenericServerException with status 400 and code invite_not_pending', async (t) => {
+      const fake = await WorkOSFakeApi.start(t);
+      const workos = workosClientFor(fake);
+      fake.answer('POST /user_management/invitations/invitation_01/resend', { status: 200, body: invitationJson('invitation_01', 'pending') });
+      fake.answer('POST /user_management/invitations/invitation_01/revoke', { status: 200, body: invitationJson('invitation_01', 'revoked') });
+
+      const resent = await workos.userManagement.resendInvitation('invitation_01');
+      const revoked = await workos.userManagement.revokeInvitation('invitation_01');
+      const sent = fake.takeRequests().map(({ method, path, body }) => ({ method, path, body }));
+      fake.answer('POST /user_management/invitations/invitation_01/revoke', { status: 400, body: { code: 'invite_not_pending', message: 'Invite is not pending.' } });
+      await assert.rejects(workos.userManagement.revokeInvitation('invitation_01'), (error: unknown) => {
+        assert.ok(error instanceof GenericServerException, String(error));
+        assert.deepEqual({ status: error.status, code: error.code }, { status: 400, code: 'invite_not_pending' });
+        return true;
+      });
+
+      assert.deepEqual(sent, [
+        { method: 'POST', path: '/user_management/invitations/invitation_01/resend', body: {} },
+        { method: 'POST', path: '/user_management/invitations/invitation_01/revoke', body: undefined },
+      ]);
+      assert.deepEqual([resent.state, revoked.state], ['pending', 'revoked']);
     });
   });
 

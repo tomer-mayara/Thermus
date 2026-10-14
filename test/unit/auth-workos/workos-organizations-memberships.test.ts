@@ -1,22 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { ListOrganizationMembershipsOptions, OrganizationMembershipStatus } from '@workos-inc/node';
+import type { ListOrganizationMembershipsOptions } from '@workos-inc/node';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
 import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
 import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
-
-interface MembershipRecord {
-  readonly userId: string;
-  readonly organizationId: string;
-  readonly organizationName: string;
-  readonly status: OrganizationMembershipStatus;
-  readonly roles?: readonly { readonly slug: string }[];
-}
-
-interface RoleRecord {
-  readonly slug: string;
-  readonly permissions: readonly string[];
-}
+import { stagingRoles, type MembershipRecord, type RoleRecord } from './fixtures/workos-organizations-double.ts';
 
 interface MembershipPage {
   readonly data: readonly MembershipRecord[];
@@ -28,21 +16,18 @@ const alice = 'user_01ALICE';
 const aliceUser: AuthenticatedUser = { authority, subject: alice, selectedOrganizationId: 'org_01ACME' };
 const names: Readonly<Record<string, string>> = { org_01ACME: 'Acme', org_02GLOBEX: 'Globex', org_03INITECH: 'Initech' };
 
-function stagingRoles(): RoleRecord[] {
-  return [
-    { slug: 'member', permissions: [] },
-    { slug: 'user', permissions: ['product:access'] },
-    { slug: 'admin', permissions: ['user-grants:manage'] },
-    { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] },
-  ];
-}
+// Access resolution never reads a member or an invitation and never writes a role.
+const notCalled = async (): Promise<never> => assert.fail('Access resolution made a call of organization administration.');
 
 function membership(organizationId: string, roleSlugs: readonly string[] | undefined, changes: Partial<MembershipRecord> = {}): MembershipRecord {
   return {
+    id: `om_${organizationId}`,
     userId: alice,
     organizationId,
     organizationName: names[organizationId] ?? organizationId,
     status: 'active',
+    updatedAt: '2026-10-14T08:00:00.000Z',
+    directoryManaged: false,
     ...(roleSlugs === undefined ? {} : { roles: roleSlugs.map((slug) => ({ slug })) }),
     ...changes,
   };
@@ -75,6 +60,13 @@ class MembershipReadsDouble {
       assert.ok(answer, `the double has no page for the cursor ${String(options.after)}`);
       return answer;
     },
+    getOrganizationMembership: notCalled,
+    getUser: notCalled,
+    listInvitations: notCalled,
+    getInvitation: notCalled,
+    sendInvitation: notCalled,
+    resendInvitation: notCalled,
+    revokeInvitation: notCalled,
   };
 
   readonly authorization = {
@@ -83,6 +75,8 @@ class MembershipReadsDouble {
       if (this.roleFailure !== undefined) throw this.roleFailure;
       return { object: 'list' as const, data: this.rolesByOrganization.get(organizationId) ?? stagingRoles() };
     },
+    assignRole: notCalled,
+    removeRole: notCalled,
   };
 }
 
@@ -227,40 +221,4 @@ describe('WorkOSOrganizations memberships of a user', () => {
       await assert.rejects(organizations.membershipsOf(aliceUser), (error) => error === failure);
     });
   }
-});
-
-describe('WorkOSOrganizations organization administration before its WorkOS member and invitation methods', () => {
-  test('Given the member and invitation reads, when each is called, then each fails without a WorkOS call, so that no empty page looks like an organization without members or invitations', async () => {
-    const { reads, organizations } = directoryWith([page([])]);
-    const calls: [string, Promise<unknown>][] = [
-      ['memberPage', organizations.memberPage({ organizationId: 'org_01ACME', statuses: ['active'] })],
-      ['member', organizations.member('om_01')],
-      ['invitationPage', organizations.invitationPage({ organizationId: 'org_01ACME', states: ['pending'] })],
-      ['invitation', organizations.invitation('inv_01')],
-    ];
-
-    for (const [name, call] of calls) {
-      await assert.rejects(call, (error: unknown) => {
-        assert.ok(error instanceof Error, name);
-        assert.match(error.message, /does not read .* from WorkOS yet/, name);
-        return true;
-      });
-    }
-    assert.deepEqual([reads.membershipReads, reads.roleReads], [[], []]);
-  });
-
-  test('Given a grant change and the invitation changes, when each is asked for, then each answers unsupported without a WorkOS call, so that nothing changes; the invitation identity policy claims no strict address match', async () => {
-    const { reads, organizations } = directoryWith([page([])]);
-
-    const results = [
-      await organizations.changeGrant({ membershipId: 'om_01', role: 'user', action: 'grant', revision: 'r1' }),
-      await organizations.sendInvitation({ organizationId: 'org_01ACME', email: 'bob@example.com', role: 'user' }),
-      await organizations.resendInvitation('inv_01'),
-      await organizations.revokeInvitation('inv_01'),
-    ];
-
-    assert.deepEqual(results, results.map(() => ({ outcome: 'unsupported' })));
-    assert.equal(organizations.invitationIdentityPolicy, 'provider-rules');
-    assert.deepEqual([reads.membershipReads, reads.roleReads], [[], []]);
-  });
 });
