@@ -87,9 +87,10 @@ write no completion record.
 Startup does not run or check the renderer. Without a usable renderer, each page
 fetch fails with `Page fetch failed` and a `fetch_failed` record. The tool does
 not pass on the fetcher error. The operator log gets a
-[renderer setup report](#renderer-setup-report) instead. The container image has
-no renderer, so a server container lists the tool, but each page fetch in it
-fails in this way. Renderer image provisioning is separate future work.
+[renderer setup report](#renderer-setup-report) instead. The container image
+holds the pinned renderer, as the
+[runtime guide](../lightpanda-runtime.md#container-image) tells, so a server
+container renders pages with the same fetcher options.
 
 The hosted edition does not register the tool. Since AUTH-06, its MCP resource
 checks WorkOS Connect tokens, and its MCP server has no tool. P03 adds no POST

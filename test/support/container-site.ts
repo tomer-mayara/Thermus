@@ -12,6 +12,8 @@ import type { Operator } from './local-commands.ts';
 import { ServerContainer } from './server-container.ts';
 
 const edgeScript = fileURLToPath(new URL('./container-edge.js', import.meta.url));
+const pageScript = fileURLToPath(new URL('./container-page.js', import.meta.url));
+const containerPageScript = '/tmp/container-page.mjs';
 const outboundQuery = /^Outbound DNS query.*$/gm;
 let sites = 0;
 
@@ -20,6 +22,8 @@ export interface ServerContainerOptions {
   readonly environment?: Readonly<Record<string, string>>;
   // false starts the server without the trusted rules file.
   readonly adRules?: false;
+  // Loads the test-only page seam of container-page.ts into the server, with renderer access to the page or without it.
+  readonly page?: 'permitted' | 'blocked';
 }
 
 interface SiteNames {
@@ -66,7 +70,7 @@ export class ContainerSite {
     await dockerOutput(['container', 'start', names.edge]);
     await waitForLog(names.edge, /Edge ready/);
     const [published = ''] = (await dockerOutput(['container', 'port', names.edge, '8080/tcp'])).split('\n');
-    const dns = await dockerOutput(['container', 'inspect', '--format', `{{(index .NetworkSettings.Networks "${names.network}").IPAddress}}`, names.edge]);
+    const dns = await networkAddress(names.network, names.edge);
     const site = new ContainerSite(image, names, { url: new URL(`http://${published}/`), dns });
     await waitForConnection(site.address());
     await site.lookUpControlName();
@@ -86,9 +90,11 @@ export class ContainerSite {
     this.servers += 1;
     const name = `thermus-gate-${this.names.id}-server-${this.servers}`;
     const server = ['container', 'create', '--init', '--name', name, '--network-alias', 'thermus'];
-    await dockerOutput([...server, ...this.containerSettings(volume, options.environment), options.image ?? this.image]);
-    // The engine copies the file into the container, so the gate needs no host path that the engine shares.
+    const page: Record<string, string> = options.page === undefined ? {} : { NODE_OPTIONS: `--import=${containerPageScript}`, CONTAINER_GATE_PAGE: options.page };
+    await dockerOutput([...server, ...this.containerSettings(volume, { ...options.environment, ...page }), options.image ?? this.image]);
+    // The engine copies the files into the container, so the gate needs no host path that the engine shares.
     if (options.adRules !== false) await dockerOutput(['container', 'cp', trustedAdRulesFile, `${name}:${containerAdRulesFile}`]);
+    if (options.page !== undefined) await dockerOutput(['container', 'cp', pageScript, `${name}:${containerPageScript}`]);
     return new ServerContainer(name);
   }
 
@@ -114,6 +120,10 @@ export class ContainerSite {
     return volume;
   }
 
+  async privateAddress(container: string): Promise<string> {
+    return networkAddress(this.names.network, container);
+  }
+
   async outboundQueries(): Promise<string[]> {
     const logs = await docker(['container', 'logs', this.names.edge]);
     return (logs.stdout.toString('utf8').match(outboundQuery) ?? []).filter((line) => !line.includes(this.controlName));
@@ -136,6 +146,10 @@ export class ContainerSite {
     const settings = Object.entries({ PUBLIC_BASE_URL: publicBaseUrl, ...environment }).flatMap(([name, value]) => ['--env', `${name}=${value}`]);
     return [...siteLabels(this.names.id), '--network', this.names.network, '--dns', this.dns, '--volume', `${volume}:${containerDataDirectory}`, ...settings];
   }
+}
+
+function networkAddress(network: string, container: string): Promise<string> {
+  return dockerOutput(['container', 'inspect', '--format', `{{(index .NetworkSettings.Networks "${network}").IPAddress}}`, container]);
 }
 
 function siteLabel(id: string): string {

@@ -1,10 +1,10 @@
 # Lightpanda runtime
 
-Thermus supports the official Lightpanda **1.0.0** release. The renderer is an external executable. `pnpm install` does not install it. The [release page](https://github.com/lightpanda-io/browser/releases/tag/1.0.0) provides four platform assets. The recipe below pins that release and checks each asset against its recorded SHA256 digest.
+Thermus supports the official Lightpanda **1.0.0** release. The renderer is an external executable. `pnpm install` does not install it. The [release page](https://github.com/lightpanda-io/browser/releases/tag/1.0.0) provides four platform assets. The recipe below pins that release and checks each asset against its recorded SHA256 digest. The [container image](#container-image) holds the pinned Linux executable, so a container needs no installation.
 
 Use macOS or Linux on x86-64 or ARM64. The Linux binary requires glibc; Alpine Linux with musl is not supported by this recipe. On Windows, run the Linux recipe inside WSL2. See the [official installation guide](https://lightpanda.io/docs/open-source/installation/) for WSL2 setup.
 
-The macOS ARM64 asset download, SHA256 digest, and `version` output were verified for this change. The 29 local renderer interface tests passed with that executable. The Linux and macOS x86-64 binaries are official vendor assets; they were not exercised for this change.
+The macOS ARM64 asset download, SHA256 digest, and `version` output were verified. The 29 local renderer interface tests and the renderer gate passed with that executable. The Linux ARM64 executable runs in the container gate. A `linux/amd64` build of the renderer stage, with emulation on an ARM64 host, checked the digest of the Linux x86-64 asset, and that executable reported `1.0.0`. No test rendered a page with it. The macOS x86-64 asset was not exercised.
 
 ## Install the pinned release
 
@@ -67,6 +67,23 @@ export LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda"
 
 The command must print `1.0.0`. Keep the export in the shell that starts the application or tests. The [fetcher contract](reference/website-fetcher.md) lists the required CLI options and process limits.
 
+## Container image
+
+The self-hosted image holds the pinned renderer. The image build downloads the official Linux asset of the target platform: `lightpanda-x86_64-linux` for `linux/amd64` and `lightpanda-aarch64-linux` for `linux/arm64`. The release has no other Linux asset, so the image supports only these two platforms. A build for another platform stops, because the `Dockerfile` has no `lightpanda-asset-<architecture>` stage for it: BuildKit reports that it cannot pull an image with that name. The [`Dockerfile`](../Dockerfile) gives each download the Linux digest that the recipe above records, and BuildKit stops a download that does not match with `digest mismatch`. Then [`docker/check-lightpanda-digest.sh`](../docker/check-lightpanda-digest.sh) checks the asset again before the install. Thus an asset from another source, for example a build context with the name `lightpanda-asset`, also stops the build, with this error:
+
+```text
+Lightpanda SHA256 check failed for linux/arm64: the asset has the digest <digest>, but docs/lightpanda-runtime.md records <digest>. The image build stops.
+```
+
+A container start downloads nothing. The image sets these settings:
+
+- `LIGHTPANDA_BIN=/opt/lightpanda/1.0.0/lightpanda`. The executable and its directory belong to root, and the mode of the executable is `0755`, so the `node` user of the image cannot change them.
+- `LIGHTPANDA_DISABLE_TELEMETRY=true`. Without this variable, each Lightpanda 1.0.0 run sends telemetry to `telemetry.lightpanda.io`, also a `fetch` run. Any value of the variable turns telemetry off.
+
+The renderer reads the CA certificates of the system for HTTPS pages. Node uses its own certificates. The slim Node image has no CA certificates: without them, the renderer logs `No certificates loaded`, and each HTTPS page fails with `PeerFailedVerification`. Thus the image copies `/etc/ssl/certs/ca-certificates.crt`, the bundle of the Debian `ca-certificates` package, from the pinned Rust image of the build, which has the same Debian release. The bundle changes when that image changes.
+
+The fetcher keeps its options in the container: the network block list, the readiness and process limits, and the output limit. The [container gate](implementation/test-gate-policy.md#container-gate) proves the renderer of the image without outbound access. It cannot reach a public HTTPS page. A manual check with network access fetched `https://example.com/` with the production options in a `linux/arm64` container of the image.
+
 ## Select the executable
 
 The self-hosted server reads `LIGHTPANDA_BIN` from its environment when it starts. It gives the value to the fetcher constructor. The fetcher itself reads no environment variable. A nonempty value selects the executable. Use an absolute path so it works from any working directory. Paths with spaces work when quoted in shell commands:
@@ -83,6 +100,8 @@ unset LIGHTPANDA_BIN
 command -v lightpanda
 lightpanda version
 ```
+
+Lightpanda 1.0.0 sends telemetry to `telemetry.lightpanda.io` on each run when `LIGHTPANDA_DISABLE_TELEMETRY` is not set. The server and the fetcher do not set it. To turn telemetry off for a local server, export `LIGHTPANDA_DISABLE_TELEMETRY=true` in the shell that starts the server. The image sets it.
 
 A selected executable that is missing or cannot start produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Server startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the fetcher error. The server log gets a [renderer setup report](#renderer-setup-report). The operator must verify the runtime before use with the commands above.
 
@@ -161,4 +180,4 @@ Setup fails when `LIGHTPANDA_BIN` is unset or empty, when it is relative, when i
 
 Other releases, nightly builds, and unverified local builds are unsupported. They can reject required flags or change JSON output, HTTP errors, readiness, or network blocking. If a required option fails, keep the failure visible. Do not remove safety flags to make another build run.
 
-To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check`, the local renderer interface tests, and the renderer gate with that executable. The renderer gate accepts only version 1.0.0, so change its version check in the same change. Review its network policy and CLI behavior. Update the fetcher and network policy documents if behavior changes. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.
+To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check`, the local renderer interface tests, and the renderer gate with that executable. The renderer gate accepts only version 1.0.0, so change its version check in the same change. Review its network policy and CLI behavior. Update the fetcher and network policy documents if behavior changes. Change the image in the same change: the asset URLs and the two Linux digests in the `Dockerfile` and in `docker/check-lightpanda-digest.sh`, the version in the `LIGHTPANDA_BIN` path, and the version checks of the container gate. Then run `npm run test:container`. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.

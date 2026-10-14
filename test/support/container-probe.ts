@@ -1,9 +1,10 @@
 // Runs in a one-off container of the image under test; container-gate.ts sends it on standard input.
 // PROBE names one of the probes at the end of this file, and the script prints the result as JSON.
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { accessSync, constants, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
 const APPLICATION = '/app';
@@ -56,6 +57,38 @@ function adRulesFile(): string | null {
   return file !== '' && existsSync(file) ? readFileSync(file, 'utf8') : null;
 }
 
+function writable(path: string): boolean {
+  try {
+    accessSync(path, constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// The messages that the renderer logs for an HTTPS page without a network. The renderer reads the CA certificates of
+// the system when it starts, and it logs "No certificates loaded" when it finds none.
+function offlineHttpsLog(path: string): string[] {
+  const { stderr } = spawnSync(path, ['fetch', '--dump', 'html', 'https://192.0.2.1/'], { encoding: 'utf8', timeout: 10_000 });
+  return [...stderr.matchAll(/\$msg="([^"]*)"/g)].map(([, message]) => message ?? '');
+}
+
+// The probe runs as the image user, so the writable paths are the renderer paths that this user could change.
+function renderer(): unknown {
+  const path = process.env.LIGHTPANDA_BIN ?? '';
+  if (path === '' || !existsSync(path)) return null;
+  const file = statSync(path);
+  return {
+    path,
+    ownerId: file.uid,
+    groupId: file.gid,
+    mode: (file.mode & 0o777).toString(8),
+    writablePaths: [path, dirname(path)].filter(writable),
+    version: execFileSync(path, ['version'], { encoding: 'utf8', timeout: 10_000 }).trim(),
+    offlineHttpsLog: offlineHttpsLog(path),
+  };
+}
+
 function imageFacts(): unknown {
   const data = statSync(DATA_DIR);
   return {
@@ -67,6 +100,7 @@ function imageFacts(): unknown {
     pinnedPackages: Object.fromEntries(PINNED_PACKAGES.map((name) => [name, packageVersion(name)])),
     adBlockerSelectors: adBlockerSelectors(),
     adRulesFile: adRulesFile(),
+    renderer: renderer(),
     userId: process.getuid?.(),
     dataDirectory: { path: DATA_DIR, ownerId: data.uid, mode: (data.mode & 0o777).toString(8), entries: readdirSync(DATA_DIR) },
   };

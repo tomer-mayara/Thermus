@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { after, before, describe, test, type TestContext } from 'node:test';
-import { UnauthorizedError } from '@modelcontextprotocol/client';
+import { UnauthorizedError, type CallToolResult, type Client } from '@modelcontextprotocol/client';
 import { jwtClaims } from '../../support/better-auth-agents.ts';
 import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/better-auth-local.ts';
 import { assertExit, assertRevealsNone, type CommandResult } from '../../support/command-process.ts';
 import {
   buildGateImages,
+  buildWithLightpandaAsset,
   containerAdRulesFile,
   containerDataDirectory,
   probeImage,
@@ -21,6 +23,7 @@ import { dockerOutput } from '../../support/docker-cli.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { LocalMcpUser, type McpConnection } from '../../support/local-mcp-user.ts';
+import type { ServerContainer } from '../../support/server-container.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
@@ -53,10 +56,13 @@ const hostedAndPaidPaths = [
 ] as const;
 
 let images: GateImages;
-// The server lists the fetch tool. The image has no renderer, so a call gets the fixed fetch failure.
 const fetchToolNames = ['getURLAsMarkdown'];
-const missingRendererReport = 'Renderer setup failure: the Lightpanda executable is missing (ENOENT). '
-  + 'Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.';
+const fetchReason = 'Read the rendered page for the task';
+const pinnedRenderer = '/opt/lightpanda/1.0.0/lightpanda';
+// The page of the test-only seam in container-page.ts, on port 8090 of a server container.
+const containerPage = 'http://localhost:8090';
+const storyMarkdown = '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\nFinal host target\n\n'
+  + `Related [article](${containerPage}/related) and [root](${containerPage}/root).`;
 
 interface Installation {
   readonly site: ContainerSite;
@@ -77,8 +83,19 @@ interface ImageFacts {
   readonly adBlockerSelectors: readonly string[];
   // The contents of AD_RULES_FILE, or null when the image has no file there.
   readonly adRulesFile: string | null;
+  readonly renderer: RendererFacts | null;
   readonly userId: number;
   readonly dataDirectory: { readonly path: string; readonly ownerId: number; readonly mode: string; readonly entries: readonly string[] };
+}
+
+interface RendererFacts {
+  readonly path: string;
+  readonly ownerId: number;
+  readonly groupId: number;
+  readonly mode: string;
+  readonly writablePaths: readonly string[];
+  readonly version: string;
+  readonly offlineHttpsLog: readonly string[];
 }
 
 interface ImageConfig {
@@ -151,6 +168,14 @@ function assertRenewedToken(user: LocalMcpUser, owner: { readonly userId?: strin
   assert.equal(claims.sid, jwtClaims(firstToken).sid);
 }
 
+function seamLines(server: ServerContainer, event: 'renderer launch' | 'page connection' | 'page request'): string[] {
+  return [...server.output.matchAll(new RegExp(`^Container ${event}(?: (.*))?$`, 'gm'))].map((line) => line[1] ?? '');
+}
+
+async function fetchPage(client: Client, url: string): Promise<CallToolResult> {
+  return await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason: fetchReason } }) as CallToolResult;
+}
+
 async function refreshAttempt(site: ContainerSite, clientId: string, token: string): Promise<{ status: number; error?: string }> {
   const response = await fetch(new URL('/api/auth/oauth2/token', site.address()), {
     method: 'POST',
@@ -194,7 +219,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
   after(() => removeGateResources());
 
-  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call gets the fixed fetch failure, because the image has no renderer, and the server log gets one renderer setup report without request data; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address gets the fixed fetch failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t);
     const server = await setup.site.startServer(setup.volume);
     const users = mcpUsers(setup);
@@ -202,8 +227,8 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     const connections = [];
     for (const user of users) connections.push(await user.connect(t));
     const [{ client }] = connections as [McpConnection];
-    // An address literal needs no DNS lookup, so the call reaches the missing renderer without an outbound query.
-    const fetchCall = await client.callTool({ name: 'getURLAsMarkdown', arguments: { url: 'https://93.184.216.34/page', reason: 'Show the image limit' } });
+    // An address literal needs no DNS lookup, so the renderer tries the connection without an outbound query.
+    const fetchCall = await client.callTool({ name: 'getURLAsMarkdown', arguments: { url: 'https://93.184.216.34/page', reason: 'Show the network limit' } });
     const firstTokens = users.map((user) => user.accessToken);
     const reauthorizations = await reauthorize(t, users);
     const refreshes = [];
@@ -214,9 +239,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
     assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed' }], true]);
     assert.match(server.output, /"tool":"getURLAsMarkdown","url":"https:\/\/93\.184\.216\.34\/page".*"status":"fetch_failed"/);
-    const rendererReports = server.output.split('\n').filter((line) => line.includes('Renderer setup failure'));
-    assert.equal(rendererReports.length, 1, server.output);
-    assert.ok(rendererReports[0]?.endsWith(missingRendererReport), server.output);
+    assert.doesNotMatch(server.output, /Renderer setup failure/);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);
     assert.notEqual(jwtClaims(firstTokens[0] ?? '').sid, jwtClaims(firstTokens[1] ?? '').sid);
     assert.deepEqual(reauthorizations, [[], []]);
@@ -321,6 +344,68 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(await probeImage(images.current, 'data-files', withoutSecret), ['auth.sqlite', 'data-directory.lock', 'resource-server-client.json']);
     assert.deepEqual(await probeImage(images.current, 'installation-ids', withoutIdentity), []);
     await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given a server container of the image with trusted rules, outbound access denied, and a test-only JavaScript page on 127.0.0.1 that only the renderer of this container can reach, when an authorized MCP client calls getURLAsMarkdown for the page, then LIGHTPANDA_BIN names the pinned executable, which reports 1.0.0, the client gets the exact cleaned Markdown, the server writes one safe completion record, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t, [alice]);
+    const server = await setup.site.startServer(setup.volume, { page: 'permitted' });
+    const { client } = await new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice).connect(t);
+    const url = `${containerPage}/story`;
+
+    const result = await fetchPage(client, url);
+    const renderer = await server.runProgram(['sh', '-c', 'printf "%s\\n" "$LIGHTPANDA_BIN" && "$LIGHTPANDA_BIN" version']);
+    const tenant = server.tenant();
+    const exit = await server.stop();
+
+    assertExit(renderer, 0);
+    assert.deepEqual(renderer.stdout.split('\n'), [pinnedRenderer, '1.0.0', '']);
+    assert.deepEqual(result.content, [{ type: 'text', text: storyMarkdown }]);
+    assert.equal(result.isError === true, false);
+    assert.equal(result.structuredContent, undefined);
+    assert.deepEqual(seamLines(server, 'renderer launch'), [url]);
+    assert.deepEqual(seamLines(server, 'page request'), ['/story', '/story.js']);
+    const records = server.completionRecords();
+    assert.equal(records.length, 1);
+    const { durationMs, ...record } = records[0] as Record<string, unknown>;
+    assert.equal(typeof durationMs, 'number');
+    assert.deepEqual(record, {
+      event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`, subject: setup.userIds.get(alice.email), tenantId: tenant,
+      tool: 'getURLAsMarkdown', url, urlStatus: 'valid', reason: fetchReason, reasonStatus: 'valid', status: 'success',
+    });
+    assert.doesNotMatch(server.completionLines().join('\n'), /Runtime story|Hidden instruction|Final host target/);
+    assert.deepEqual(exit, { code: 0, signal: null });
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, each call gets Page fetch failed and one fetch_failed record, the page gets no connection, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+    const setup = await installation(t, [alice]);
+    const server = await setup.site.startServer(setup.volume, { page: 'blocked' });
+    const privateAddress = await setup.site.privateAddress(server.name);
+    const { client } = await new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice).connect(t);
+    const urls = ['http://127.0.0.1:8090/story', `http://${privateAddress}:8090/story`, `${containerPage}/story`];
+
+    const results = [];
+    for (const url of urls) results.push(await fetchPage(client, url));
+    const exit = await server.stop();
+
+    assert.deepEqual(results.map(({ content, isError }) => [content, isError]), urls.map(() => [[{ type: 'text', text: 'Page fetch failed' }], true]));
+    assert.deepEqual(server.completionRecords().map(({ url, status }) => ({ url, status })), urls.map((url) => ({ url, status: 'fetch_failed' })));
+    assert.deepEqual(seamLines(server, 'renderer launch'), [`${containerPage}/story`]);
+    assert.deepEqual([...seamLines(server, 'page connection'), ...seamLines(server, 'page request')], []);
+    assert.deepEqual(exit, { code: 0, signal: null });
+    await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given an image build with a Lightpanda asset that does not match the SHA256 digest that docs/lightpanda-runtime.md records, when the build runs, then it stops with the Lightpanda digest error and makes no image', { timeout: 600_000 }, async (t) => {
+    const asset = mkdtempSync(join(tmpdir(), 'thermus-gate-asset-'));
+    t.after(() => rmSync(asset, { recursive: true, force: true }));
+    writeFileSync(join(asset, 'lightpanda'), 'This file is not the Lightpanda 1.0.0 asset.\n');
+
+    const build = await buildWithLightpandaAsset(asset);
+
+    assert.notEqual(build.code, 0, build.stderr);
+    assert.match(build.stderr, /Lightpanda SHA256 check failed for linux\/(?:amd64|arm64)/);
+    assert.equal(await dockerOutput(['image', 'ls', '--quiet', build.tag]), '');
   });
 
   test('Given a fresh volume and a server container without the trusted rules file, when the server starts, then it stops before it listens with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container, which reads no rules, still adds an account', { timeout: 300_000 }, async (t) => {
@@ -520,7 +605,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await setup.site.assertNoOutboundRequests();
   });
 
-  test('Given the image and the compose file, when they are inspected, then the image holds the compiled server and commands of this build, the shipped migrations, and the pinned production packages with the native ad blocker built for its platform, but no TypeScript source, test output, or development package; it runs as a non-root user with production settings, no telemetry setting, its data directory on the one volume, and the path of the trusted ad rules, but no rules file; the compose service mounts only that volume and the read-only rules file of the operator, which Compose must not make, starts with an init process, and publishes its port on the loopback address', { timeout: 300_000 }, async () => {
+  test('Given the image and the compose file, when they are inspected, then the image holds the compiled server and commands of this build, the shipped migrations, the pinned production packages with the native ad blocker built for its platform, and the pinned Lightpanda 1.0.0 at LIGHTPANDA_BIN, owned by root and not writable by the image user, which loads the CA certificates of the image, but no TypeScript source, test output, or development package; it runs as a non-root user with production settings, no telemetry setting except the one that turns off the renderer telemetry, its data directory on the one volume, and the path of the trusted ad rules, but no rules file; the compose service mounts only that volume and the read-only rules file of the operator, which Compose must not make, starts with an init process, and publishes its port on the loopback address', { timeout: 300_000 }, async () => {
     const facts = await probeImage<ImageFacts>(images.current, 'image');
     const config = JSON.parse(await dockerOutput(['image', 'inspect', '--format', '{{json .Config}}', images.current])) as ImageConfig;
     const compose = await composeConfig();
@@ -547,8 +632,12 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.equal(settings.LISTEN_PORT, '8080');
     assert.equal(settings.AD_RULES_FILE, containerAdRulesFile);
     assert.equal(facts.adRulesFile, null);
+    assert.equal(settings.LIGHTPANDA_BIN, pinnedRenderer);
+    // The renderer loads the CA certificates of the image, so an HTTPS fetch without a network fails only at the connection.
+    assert.deepEqual(facts.renderer, { path: pinnedRenderer, ownerId: 0, groupId: 0, mode: '755', writablePaths: [], version: '1.0.0', offlineHttpsLog: ['page failed'] });
+    assert.equal(settings.LIGHTPANDA_DISABLE_TELEMETRY, 'true');
     assert.equal(settings.PUBLIC_BASE_URL, undefined);
-    assert.deepEqual(Object.keys(settings).filter((name) => /TELEMETRY|BETTER_AUTH|^AUTH_/.test(name)), []);
+    assert.deepEqual(Object.keys(settings).filter((name) => /TELEMETRY|BETTER_AUTH|^AUTH_/.test(name)), ['LIGHTPANDA_DISABLE_TELEMETRY']);
     assert.deepEqual(Object.keys(compose.services), ['thermus']);
     assert.ok(service, 'the compose file has the thermus service');
     assert.equal(service.build.dockerfile, 'Dockerfile');

@@ -3,6 +3,7 @@
 *
 !.habit-hooks/package.json
 !.npmrc
+!docker/check-lightpanda-digest.sh
 !migrations/
 !package.json
 !patches/
