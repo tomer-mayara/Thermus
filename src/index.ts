@@ -3,7 +3,6 @@ import { createApplication, type Application, type ApplicationLogger } from './a
 import { loadDeploymentConfig, loadListenAddress, type ListenAddress } from './config/deployment-config.ts';
 import { startHttpServer } from './http/server.ts';
 import { ConsoleLogger } from './logging/console-logger.ts';
-import { failureMessage } from './logging/failure-message.ts';
 import { HiddenLineInput } from './terminal/hidden-line-input.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -31,7 +30,7 @@ async function run(args: readonly string[], environment: Environment, logger: Co
     await serve(environment, logger, process);
     return 0;
   } catch (error) {
-    logger.fatal(failureMessage(error));
+    logger.fatal(error);
     return 1;
   }
 }

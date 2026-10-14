@@ -1,14 +1,18 @@
 import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../auth/access-context.ts';
-import type { BaseLogger } from '../logging/base-logger.ts';
 import { fetchToolInputSchema, parseFetchToolArguments } from './fetch-tool-schema.ts';
 import type { FetchOperation } from './get-url-as-markdown.ts';
 import { formatToolCompletion, type CompletionStatus } from './tool-completion-record.ts';
 import type { McpRequestLifetime } from './mcp-server.ts';
 
+interface CompletionLogger {
+  info(record: string): void;
+  error(record: string): void;
+}
+
 export function createFetchToolServer(context: RequestContext, dependencies: {
   operation: FetchOperation;
-  logger: Pick<BaseLogger, 'info' | 'error'>;
+  logger: CompletionLogger;
 }, lifetime?: McpRequestLifetime): Server {
   const server = new Server({ name: 'thermus', version: '0.0.0' }, { capabilities: { tools: {} } });
   server.setRequestHandler('tools/list', () => ({ tools: [{
@@ -68,7 +72,7 @@ function safeFailure(error: unknown, signal: AbortSignal): { status: CompletionS
   return { status: 'processing_failed', message: 'Page processing failed' };
 }
 
-function emitCompletion(logger: Pick<BaseLogger, 'info' | 'error'>, record: string): void {
+function emitCompletion(logger: CompletionLogger, record: string): void {
   try {
     logger.info(record);
   } catch {

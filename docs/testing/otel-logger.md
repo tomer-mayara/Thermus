@@ -13,10 +13,14 @@ const logger = new OtelLogger(provider.getLogger('thermus'), LogLevel.INFO);
 logger.info('The server started.');
 ```
 
-It keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. Each accepted
-call emits one plain log body with the caller file, line, and original message.
-The caller owns the SDK provider, exporter, flush, and shutdown. The adapter does
-not read Axiom settings or install a global provider.
+It keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. `error`
+and `fatal` accept a message or a failure. `BaseLogger` renders an `Error` as
+its message, a `SuppressedError` as both messages, and another value as its
+text; `BaseLogger.messageOf()` gives the same text to a caller that composes a
+longer line. Each accepted call emits one plain log body with the caller file,
+line, and original message. The caller owns the SDK provider, exporter, flush,
+and shutdown. The adapter does not read Axiom settings or install a global
+provider.
 
 | Method | Severity number | Severity text |
 | --- | --- | --- |

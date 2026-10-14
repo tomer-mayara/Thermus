@@ -618,6 +618,9 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Includes the caller file and line, including filenames with parentheses and files beside the logging directory
 [V] Starts at INFO by default and applies each constructor threshold from DEBUG through NONE
 [V] Applies threshold changes, hides all levels at NONE, and resumes when the threshold is lowered
+[V] Writes the message of an `Error`, a string as it is, and the text of another value, such as a number or a plain object, from `error()` and `fatal()` after the caller file and line
+[V] Writes both messages of a `SuppressedError` from `error()` and `fatal()`: first the failure, then the cleanup failure; also for a nested `SuppressedError`
+[V] Gives the same text from `BaseLogger.messageOf()`, for a caller that composes a longer line
 
 **OTel logger** ([test contract and commands](otel-logger.md))
 
@@ -626,17 +629,6 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Exports OTLP log records through the SDK to a loopback receiver with the Axiom headers
 [V] Sends acceptance and interface log records to Axiom's `system-log-test` dataset on every run and checks the exporter result
 [V] Sends one additional test log to `system-log-test` through the separate live interface command
-
-**Failure message** (`test/unit/logging/failure-message.test.ts`)
-
-The server entry point, the local account and client commands, and the work slice use the same `failureMessage()` for their failure lines.
-
-[V] Gives the message of an `Error` and the text of another value
-[V] Gives both messages of a `SuppressedError`: first the failure, then the cleanup failure; also for a nested `SuppressedError`
-
-```sh
-npm run build && node --test dist/test/unit/logging/failure-message.test.js
-```
 
 **Renderer network policy**
 

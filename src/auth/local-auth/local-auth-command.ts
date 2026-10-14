@@ -1,5 +1,4 @@
 import { loadDeploymentConfig } from '../../config/deployment-config.ts';
-import { failureMessage } from '../../logging/failure-message.ts';
 import type { LocalUserAdministration, LocalAccount, LocalAuthSettings, PasswordSource, RegisteredClient } from './local-user-administration.ts';
 import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';
 
@@ -21,7 +20,7 @@ export interface LocalAuthCommandContext {
   readonly environment: Environment;
   readonly input: HiddenInput;
   readonly output: { write(text: string): void };
-  readonly logger: { error(message: string): void };
+  readonly logger: { error(failure: unknown): void };
   readonly openAdministration: OpenAdministration;
 }
 
@@ -53,7 +52,7 @@ export async function runLocalAuthCommand(args: readonly string[], context: Loca
     await runWithAdministration(command, context);
     return EXIT_SUCCESS;
   } catch (error) {
-    context.logger.error(failureMessage(error));
+    context.logger.error(error);
     return EXIT_FAILURE;
   }
 }

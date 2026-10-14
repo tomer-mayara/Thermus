@@ -7,7 +7,6 @@ import { promisify } from 'node:util';
 import { loadListenAddress, loadPublicUrls, type PublicUrls } from '../../../src/config/deployment-config.ts';
 import { serveApplication } from '../../../src/index.ts';
 import { ConsoleLogger } from '../../../src/logging/console-logger.ts';
-import { failureMessage } from '../../../src/logging/failure-message.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../support/axiom-test-export.ts';
 import { createWorkSliceApplication } from '../../support/work-slice/work-slice-application.ts';
 
@@ -22,7 +21,7 @@ async function run(consoleLog: ConsoleLogger): Promise<number> {
     await serveWorkSlice();
     return 0;
   } catch (error) {
-    consoleLog.fatal(failureMessage(error));
+    consoleLog.fatal(error);
     return 1;
   }
 }

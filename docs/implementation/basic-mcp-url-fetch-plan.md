@@ -52,9 +52,9 @@ Refactoring on 2026-10-14: the owner asked why the slice keeps its own settings
 reader, logger, and composition instead of the production mechanisms. The slice
 now uses `loadPublicUrls`, `createFetchOperation`, `fetchToolServers`,
 `routeLocalRequests`, `composeApplication`, `serveApplication`,
-`failureMessage`, and `OtelLogger` from production; production gained these
-seams where it had private copies. Only the mock provider and the page-text
-lines stay slice-only, by decision.
+`BaseLogger.messageOf`, and `OtelLogger` from production; production gained
+these seams where it had private copies. Only the mock provider and the
+page-text lines stay slice-only, by decision.
 
 The slice ran again after the refactoring, on 2026-10-14, with the settings
 of the server: `PUBLIC_BASE_URL=http://127.0.0.1:8080`, an empty
@@ -120,7 +120,7 @@ Each decision has a default. Confirm or change it before step 1.
 ### Files
 
 ```
-src/logging/failure-message.ts                        failureMessage(error), shared by src/index.ts, the local commands, and the slice
+src/logging/base-logger.ts                            error() and fatal() accept a failure; BaseLogger.messageOf(failure) renders it
 src/config/deployment-config.ts                       loadPublicUrls(environment, deployment), now exported
 src/fetch-tool.ts                                     createFetchOperation(environment, logger) and fetchToolServers(operation, logger)
 src/mcp/get-url-as-markdown.ts                        the FetchOperation type, now exported
@@ -131,22 +131,22 @@ test/acceptance/work-slice/basic-mcp-url-fetch.test.ts   The acceptance test
 test/support/work-slice/work-slice-application.ts     observeFetches(), MARKDOWN_LOG_LIMIT, and createWorkSliceApplication(environment, logger)
 test/support/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
 test/unit/work-slice/work-slice-application.test.ts   observeFetches()
-test/unit/logging/failure-message.test.ts             failureMessage()
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
 
 The slice added these seams to `src/` by the owner's rule. When production has
 a mechanism, the slice uses that mechanism. When production lacks a mechanism,
 the slice adds the mechanism to production. `src/index.ts` and the local
-commands had private copies of `failureMessage()`, and the slice had the third
-copy, so DRY3 made one shared function. `loadPublicUrls()` was private in
-`deployment-config.ts`, and the serve sequence of `serveApplication()` was
-inside `serve()`. `fetchToolServers()` did not expose the operation, so
-`createFetchOperation()` now makes the operation. `src/application.ts`,
-`src/auth/local-auth/local-auth-command.ts`, and `src/mcp/fetch-tool-server.ts`
-use the new exports. No production behavior changes. `tsconfig.json` does not
-change, because `test/` is already in its `include` list. The entry point
-imports from `src/` and from `test/support/`.
+commands had private copies of the failure message rule, and the slice had the
+third copy, so DRY3 made one shared rule. The rule now lives in `BaseLogger`,
+because the owner asked for the logger abstraction instead of a one-function
+module. `loadPublicUrls()` was private in `deployment-config.ts`, and the serve
+sequence of `serveApplication()` was inside `serve()`. `fetchToolServers()` did
+not expose the operation, so `createFetchOperation()` now makes the operation.
+`src/application.ts`, `src/auth/local-auth/local-auth-command.ts`, and
+`src/mcp/fetch-tool-server.ts` use the new exports. No production behavior
+changes. `tsconfig.json` does not change, because `test/` is already in its
+`include` list. The entry point imports from `src/` and from `test/support/`.
 
 ### Settings
 
@@ -299,9 +299,9 @@ for both protocol eras of `mcpProtocolEras`.
 - `work-slice-application.test.ts`: `observeFetches()` with an operation
   double: the started and completed lines, the cut at the limit, the failed
   line, and the error that passes through.
-- The production seams have their own cases: `failure-message.test.ts` for
-  `failureMessage()`, a `loadPublicUrls()` case in `deployment-config.test.ts`,
-  and a `serveApplication()` case in
+- The production seams have their own cases: the failure cases of
+  `console-logger.test.ts` for `BaseLogger.messageOf()`, a `loadPublicUrls()`
+  case in `deployment-config.test.ts`, and a `serveApplication()` case in
   `test/integration/server-stop-signals.test.ts`.
 
 ### Interface
@@ -316,7 +316,7 @@ for both protocol eras of `mcpProtocolEras`.
 ### Commands
 
 ```bash
-npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/logging/failure-message.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/*.test.js
+npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/*.test.js
 ```
 
 ## Steps

@@ -1,7 +1,7 @@
 import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application, type ApplicationLogger } from '../../../src/application.ts';
 import { loadPublicUrls } from '../../../src/config/deployment-config.ts';
 import { createFetchOperation, fetchToolServers } from '../../../src/fetch-tool.ts';
-import { failureMessage } from '../../../src/logging/failure-message.ts';
+import { BaseLogger } from '../../../src/logging/base-logger.ts';
 import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../auth/no-auth-provider.ts';
@@ -38,7 +38,7 @@ export function observeFetches(operation: FetchOperation, logger: ApplicationLog
     try {
       markdown = await operation(url, context, signal);
     } catch (error) {
-      logger.error(`work-slice fetch failed: ${url}: ${failureMessage(error)}`);
+      logger.error(`work-slice fetch failed: ${url}: ${BaseLogger.messageOf(error)}`);
       throw error;
     }
     logger.info(completedLine(url, markdown, limit));
