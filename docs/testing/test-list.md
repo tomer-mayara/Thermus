@@ -84,7 +84,7 @@ These tests run the pinned Better Auth packages with an in-memory `node:sqlite` 
 [V] After the shipped migrations, Better Auth plans no table, column, or index change, and its schema check passes
 [V] The installation table holds one identity: a second row or another singleton value fails; three accounts can still be added
 
-**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`, `server-close.test.ts`)
+**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`, `server-close.test.ts`, `server-close-request-body.test.ts`)
 
 These tests run `startHttpServer()` on a loopback port with test handlers. Raw socket requests check request targets that `fetch` would change.
 
@@ -99,6 +99,7 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Aborts the request signal and cancels the response body when the client disconnects
 [V] `close()` ends idle connections at once, refuses new connections, lets running responses finish, ends a response that never ends after the grace period, and gives the same result for repeated calls
 [V] `close()` ends a connection that has sent no bytes at once, also the unused connection that a fetch client opens after it aborts a streamed response that the handler leaves open
+[V] After a response finishes, `close()` ends its connection as soon as Node has read the complete request: unread 600 B, 64 KiB, and 1 MiB bodies, a 1 MiB body that the handler reads, and a request without a body close before the grace period when the handler answers after close starts; a client that still sends an unread body keeps its connection until it sends the rest, also when the response finished before close
 [V] Creates and clears the close deadline once; repeated failed closes retain the same error
 [V] Startup failure after listen closes the listener once and preserves both startup and cleanup errors
 
@@ -1370,6 +1371,7 @@ listener, and delayed process callback through the real MCP HTTP path.
 [V] Waits for both independent cleanup tasks even when one finishes first
 [V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
 [V] After a client cancels a call while the fetcher waits, the server stop that follows the `cancelled` record does not wait for the client connections
+[V] A call that is still in authentication when the server stops gets a generic `500`, does not start the fetch tool, and does not make the server stop wait for the grace period
 
 ```sh
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"

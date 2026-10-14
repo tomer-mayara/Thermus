@@ -83,4 +83,82 @@ for (const era of mcpProtocolEras) {
     assert.doesNotMatch(records[0], /Late source|Late success/);
     await Promise.all([application.close(), application.close(), server.close(), server.close(), listener.close(), listener.close()]);
   });
+
+  test(`Given a ${era} MCP call that is still in authentication, when the server stops and refuses it, then the stop does not wait for the grace period`, { timeout: 10_000 }, async (t) => {
+    const resource = new URL('https://thermus.example/mcp');
+    const provider = new NoAuthProvider(resource);
+    const heldToken = 'token-held-in-authentication';
+    const inAuthentication = Promise.withResolvers<void>();
+    const stopping = Promise.withResolvers<void>();
+    const failures: string[] = [];
+    const records: string[] = [];
+    const operationCalls: string[] = [];
+    const operation = createGetURLAsMarkdown({
+      fetcher: { fetchURL: async (url) => {
+        operationCalls.push('fetch');
+        return { requestedUrl: url, finalUrl: url, html: '<p>Source</p>' };
+      } },
+      pipeline: { process: async (page) => {
+        operationCalls.push('pipeline');
+        return { ...page, markdown: 'Markdown', removed: 0, skipped: 0 };
+      } },
+    });
+    const server = new MCPServer({
+      auth: {
+        verifier: { verifyAccessToken: async (token) => {
+          if (token === heldToken) {
+            inAuthentication.resolve();
+            await stopping.promise;
+          }
+          return provider.verifyAccessToken(token);
+        } },
+        accessResolver: provider,
+        expectedResource: resource,
+        resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp',
+      },
+      buildServer: (context, lifetime) => createFetchToolServer(context, { operation, logger: { info: (record) => records.push(record), error: (record) => records.push(record) } }, lifetime),
+      reportFailure: () => {},
+    });
+    const application = composeApplication((request) => server.fetch(request), server);
+    const listener = await startHttpServer(application.handle, {
+      listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href, shutdownGraceMs: 3_000, logger: { error: (message) => failures.push(message) },
+    });
+    const client = new Client({ name: 'authentication-shutdown-acceptance', version: '0.0.0' }, {
+      versionNegotiation: eraNegotiation(era),
+    });
+    t.after(async () => {
+      stopping.resolve();
+      await client.close();
+      await application.close(listener.close());
+    });
+    await client.connect(new StreamableHTTPClientTransport(new URL('mcp', listener.url), {
+      authProvider: { token: async () => 'test-token' }, fetch: sendToolCallWith(heldToken),
+    }), { signal: t.signal, timeout: 5_000 });
+    const refused = assert.rejects(client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments }), {
+      name: 'SdkHttpError', data: { status: 500, statusText: 'Internal Server Error', text: 'Internal Server Error' },
+    });
+    await inAuthentication.promise;
+
+    const stoppingAt = performance.now();
+    const stopped = application.close(listener.close());
+    stopping.resolve();
+    await stopped;
+    const elapsedMs = performance.now() - stoppingAt;
+
+    await refused;
+    assert.ok(elapsedMs < 1_000, `server stop took ${elapsedMs.toFixed(1)} ms`);
+    assert.deepEqual(failures, ['The HTTP handler failed for POST /mcp: Error']);
+    assert.deepEqual(operationCalls, []);
+    assert.deepEqual(records, []);
+  });
+}
+
+// The client sends only its tool call with this token, so the verifier can hold that request alone.
+function sendToolCallWith(token: string): (url: string | URL, init?: RequestInit) => Promise<Response> {
+  return (url, init) => {
+    if (typeof init?.body !== 'string' || JSON.parse(init.body).method !== 'tools/call') return fetch(url, init);
+    const headers = new Headers(init.headers);
+    headers.set('Authorization', `Bearer ${token}`);
+    return fetch(url, { ...init, headers });
+  };
 }
