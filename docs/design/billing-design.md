@@ -466,11 +466,15 @@ ticket. Do not create another one.
 2. Use focused TDD for each part that the specification needs. Write a failing
    unit test with doubles for the provider client, the storage, and the
    membership count. Then make it pass.
-3. Connect each caller that does not use `Billing` yet. The membership and
-   grant changes give the complete count to `updateSeats`. The account page
-   reads `stateOf`. The hosted composition creates the provider
-   implementation. If no approved rule still uses `BillingFree` after this
-   change, remove it.
+3. Connect the provider implementation. `composeWorkOSApplication()` in
+   `src/hosted-workos-application.ts` creates it instead of `BillingFree`, and
+   `composeHostedApplication()` gives it to `OrganizationAdministration`. Thus
+   the current callers of `Billing` use it. `changeGrant()` of
+   `OrganizationAdministration` gives the complete count of active User seats
+   to `updateSeats` after each applied User grant change. The billing page
+   reads `stateOf` through `billingState()` of `OrganizationAdministration`.
+   Connect each new caller to the same `Billing`. If no approved rule still
+   uses `BillingFree` after this change, remove it.
 4. Pass the [paid gates](#paid-gates).
 
 ### Files and storage
@@ -486,7 +490,7 @@ recommended options.
 | `src/billing/seat-reconciliation.ts` | Gives the complete count to `updateSeats` after each membership change and on a schedule. |
 | `src/billing/billing-store.ts`, `migrations/billing/0001-billing.sql` | For D11 (a): SQLite through `node:sqlite` on the hosted persistent volume. The store keeps the provider customer and subscription IDs, the last confirmed status, quantity, and period end of each organization, the IDs of processed events, and the billing change records. For D11 (b), a PostgreSQL store replaces these files. |
 | `src/hosted-admin/account-routes.ts`, `src/hosted-admin/account-pages.ts` | The Super Admin billing page and actions, with CSRF and origin checks. |
-| `src/application.ts` | The hosted composition creates the provider implementation instead of `BillingFree`. |
+| `src/hosted-workos-application.ts` | `composeWorkOSApplication()` creates the provider implementation instead of `BillingFree` and gives it as `billing` to `composeHostedApplication()`. |
 | `src/config/deployment-config.ts`, `.env.example` | The provider settings of the hosted edition. The self-hosted edition reads none. |
 | `package.json`, `pnpm-lock.yaml` | An exact pin of the provider SDK, if AUTH-11 uses one. |
 
