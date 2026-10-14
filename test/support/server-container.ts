@@ -8,6 +8,7 @@ import type { ServerExit } from './server-process.ts';
 
 const listeningLine = /Listening on http:\/\/\S+/;
 const tenantLine = /tenant (local:[0-9a-f-]+)/;
+const completionLine = /\{"event":"mcp\.tool\.completed".*\}$/gm;
 
 export class ServerContainer {
   readonly name: string;
@@ -44,6 +45,14 @@ export class ServerContainer {
     return tenant;
   }
 
+  completionLines(): string[] {
+    return this.output.match(completionLine) ?? [];
+  }
+
+  completionRecords(): Record<string, unknown>[] {
+    return this.completionLines().map((line) => JSON.parse(line) as Record<string, unknown>);
+  }
+
   async stop(): Promise<ServerExit> {
     await dockerOutput(['container', 'stop', this.name]);
     return this.current().exit;
@@ -54,7 +63,12 @@ export class ServerContainer {
   }
 
   async exec(args: readonly string[], input: readonly string[] = []): Promise<CommandResult> {
-    return dockerCommand(['container', 'exec', '--interactive', this.name, 'node', '/app/dist/src/index.js', ...args], input);
+    return this.runProgram(['node', '/app/dist/src/index.js', ...args], input);
+  }
+
+  // Runs a program in the server container, as the image user and with the settings of the container.
+  async runProgram(command: readonly string[], input: readonly string[] = []): Promise<CommandResult> {
+    return dockerCommand(['container', 'exec', '--interactive', this.name, ...command], input);
   }
 
   async inspect(field: 'Id' | 'Image'): Promise<string> {
