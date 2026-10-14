@@ -51,10 +51,14 @@ function roleJson(slug: string) {
   };
 }
 
-function membershipJson(membership: WorldMembership, index: number) {
+function matches(filter: string | null, value: string): boolean {
+  return filter === null || filter === value;
+}
+
+function membershipJson(membership: WorldMembership, index: number, organizationName: string) {
   return {
     object: 'organization_membership', id: `om_${index}`, user_id: membership.userId, organization_id: membership.organizationId,
-    organization_name: membership.organizationId, status: membership.status ?? 'active', directory_managed: false,
+    organization_name: organizationName, status: membership.status ?? 'active', directory_managed: false,
     role: { slug: membership.roles[0] ?? 'member' }, roles: (membership.roles.length === 0 ? ['member'] : membership.roles).map((slug) => ({ slug })),
     custom_attributes: {}, created_at: '2026-10-01T08:00:00.000Z', updated_at: '2026-10-13T08:00:00.000Z',
   };
@@ -69,6 +73,10 @@ export class WorkOSWorld {
   readonly settings: WorkOSSettings;
   readonly mcpResourceUrl: string;
   memberships: readonly WorldMembership[] = [];
+  // The name of each organization in the membership answers. An organization without a name here has its ID as name.
+  organizationNames: Readonly<Record<string, string>> = {};
+  // The most memberships on one page. WorkOS gives at most the limit of the read, and it can give fewer.
+  membershipPageSize = 100;
   // Set to an answer, such as a 500, to make the membership reads or the refreshes fail.
   membershipOutage: FakeAnswer | undefined;
   refreshOutage: FakeAnswer | undefined;
@@ -140,16 +148,21 @@ export class WorkOSWorld {
     });
   }
 
+  // A read names a user, an organization, or both. Without statuses, WorkOS gives only active memberships. The after
+  // cursor is the ID of the last membership of the page before.
   private membershipsAnswer(request: RecordedRequest): FakeAnswer {
     if (this.membershipOutage) return this.membershipOutage;
     const query = new URL(request.path, 'http://fake').searchParams;
     const statuses = (query.get('statuses') ?? 'active').split(',');
-    const data = this.memberships
-      .map((membership, index) => ({ membership, index }))
-      .filter(({ membership }) => membership.userId === query.get('user_id') && membership.organizationId === query.get('organization_id'))
-      .filter(({ membership }) => statuses.includes(membership.status ?? 'active'))
-      .map(({ membership, index }) => membershipJson(membership, index));
-    return { status: 200, body: { object: 'list', data, list_metadata: { before: null, after: null } } };
+    const matching = this.memberships
+      .map((membership, index) => ({ membership, id: `om_${index}`, index }))
+      .filter(({ membership }) => matches(query.get('user_id'), membership.userId) && matches(query.get('organization_id'), membership.organizationId))
+      .filter(({ membership }) => statuses.includes(membership.status ?? 'active'));
+    const start = matching.findIndex(({ id }) => id === query.get('after')) + 1;
+    const end = start + Math.min(Number(query.get('limit') ?? 10), this.membershipPageSize);
+    const data = matching.slice(start, end).map(({ membership, index }) => membershipJson(membership, index, this.organizationNames[membership.organizationId] ?? membership.organizationId));
+    const after = end < matching.length ? matching[end - 1]?.id ?? null : null;
+    return { status: 200, body: { object: 'list', data, list_metadata: { before: null, after } } };
   }
 
   private async authenticateAnswer(request: RecordedRequest): Promise<FakeAnswer> {
