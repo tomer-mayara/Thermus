@@ -19,6 +19,12 @@ function rendererArguments(url: string): string[] {
   ];
 }
 
+// Lightpanda 1.0.0 sends telemetry to telemetry.lightpanda.io on each run, also a fetch run, unless this variable is
+// set. A local server environment often does not set it, so each run gets it with the rest of the server environment.
+function rendererEnvironment(): NodeJS.ProcessEnv {
+  return { ...process.env, LIGHTPANDA_DISABLE_TELEMETRY: 'true' };
+}
+
 function readFetchOutput(stdout: string, cause: ExecFileException | null): Record<string, unknown> {
   try {
     const output: unknown = JSON.parse(stdout);
@@ -162,6 +168,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
     try {
       return execFile(this.executable, rendererArguments(url), {
         encoding: 'utf8',
+        env: rendererEnvironment(),
         maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
         timeout: LIGHTPANDA_TIMEOUT_MS,
       }, complete);
