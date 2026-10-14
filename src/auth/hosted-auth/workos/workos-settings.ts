@@ -76,11 +76,14 @@ function redirectRefusal(publicBaseUrl: string): Refusal {
   const base = new URL(publicBaseUrl);
   return (value) => {
     const url = URL.parse(value);
-    const exact = url !== null && url.href === value && !SPACE_OR_CONTROL_CHARACTER.test(value);
-    const insideBase = url?.protocol === 'https:' && url.origin === base.origin && url.pathname.startsWith(base.pathname);
-    if (exact && insideBase && url.username === '' && url.search === '' && url.hash === '') return undefined;
+    if (url !== null && url.href === value && !SPACE_OR_CONTROL_CHARACTER.test(value) && isPageOf(url, base)) return undefined;
     return 'it must be an https URL on the origin of PUBLIC_BASE_URL, inside its path, without a username, a password, a query, or a fragment, and written as the URL parser writes it.';
   };
+}
+
+function isPageOf(url: URL, base: URL): boolean {
+  const insideBase = url.protocol === 'https:' && url.origin === base.origin && url.pathname.startsWith(base.pathname);
+  return insideBase && url.username === '' && url.search === '' && url.hash === '';
 }
 
 function cookiePasswordRefusal(value: string): string | undefined {
