@@ -66,7 +66,6 @@ export class ServerContainer {
     return this.runProgram(['node', '/app/dist/src/index.js', ...args], input);
   }
 
-  // Runs a program in the server container, as the image user and with the settings of the container.
   async runProgram(command: readonly string[], input: readonly string[] = []): Promise<CommandResult> {
     return dockerCommand(['container', 'exec', '--interactive', this.name, ...command], input);
   }

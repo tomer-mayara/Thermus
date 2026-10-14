@@ -120,7 +120,6 @@ export class ContainerSite {
     return volume;
   }
 
-  // The private address of a container of this site on the offline network.
   async privateAddress(container: string): Promise<string> {
     return networkAddress(this.names.network, container);
   }

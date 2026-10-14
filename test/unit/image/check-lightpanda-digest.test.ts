@@ -9,8 +9,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL(import.meta.url.endsWith('.ts') ? '../../../' : '../../../../', import.meta.url));
 const script = join(root, 'docker/check-lightpanda-digest.sh');
 const runtimeGuide = readFileSync(join(root, 'docs/lightpanda-runtime.md'), 'utf8');
-// The Docker target architecture and the name of the Lightpanda asset for it in the runtime guide.
-const platforms = [['amd64', 'x86_64-linux'], ['arm64', 'aarch64-linux']] as const;
+const platforms = [{ architecture: 'amd64', asset: 'x86_64-linux' }, { architecture: 'arm64', asset: 'aarch64-linux' }] as const;
 
 function recordedDigest(asset: string): string {
   const digest = new RegExp(`^ *${asset}\\) lightpanda_sha256=([0-9a-f]{64}) ;;$`, 'm').exec(runtimeGuide)?.[1];
@@ -29,7 +28,7 @@ function checkAsset(t: TestContext, architecture: string, digest: string): Spawn
   return spawnSync('sh', [script, architecture, join(directory, 'lightpanda')], { encoding: 'utf8', env: environment });
 }
 
-for (const [architecture, asset] of platforms) {
+for (const { architecture, asset } of platforms) {
   test(`Given the asset digest that docs/lightpanda-runtime.md records for linux/${architecture}, when the image build checks the asset, then the check accepts it without output`, (t) => {
     const result = checkAsset(t, architecture, recordedDigest(asset));
 
@@ -37,10 +36,10 @@ for (const [architecture, asset] of platforms) {
   });
 }
 
-for (const [architecture, asset] of platforms) {
+for (const { architecture, asset } of platforms) {
   test(`Given another digest for linux/${architecture}, also the digest of the other Linux asset, when the image build checks the asset, then the check stops the build with an error that names the platform and both digests`, (t) => {
     const expected = recordedDigest(asset);
-    const others = [...platforms.filter(([other]) => other !== architecture).map(([, name]) => recordedDigest(name)), '0'.repeat(64)];
+    const others = [...platforms.filter((other) => other.architecture !== architecture).map((other) => recordedDigest(other.asset)), '0'.repeat(64)];
 
     for (const other of others) {
       const result = checkAsset(t, architecture, other);

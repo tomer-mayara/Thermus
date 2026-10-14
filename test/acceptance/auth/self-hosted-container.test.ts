@@ -83,7 +83,6 @@ interface ImageFacts {
   readonly adBlockerSelectors: readonly string[];
   // The contents of AD_RULES_FILE, or null when the image has no file there.
   readonly adRulesFile: string | null;
-  // The file at LIGHTPANDA_BIN, or null when the image has no file there.
   readonly renderer: RendererFacts | null;
   readonly userId: number;
   readonly dataDirectory: { readonly path: string; readonly ownerId: number; readonly mode: string; readonly entries: readonly string[] };
@@ -169,8 +168,6 @@ function assertRenewedToken(user: LocalMcpUser, owner: { readonly userId?: strin
   assert.equal(claims.sid, jwtClaims(firstToken).sid);
 }
 
-// The values of one kind of line that the page seam writes: each renderer launch with its URL, and each connection
-// and request of the page.
 function seamLines(server: ServerContainer, event: 'renderer launch' | 'page connection' | 'page request'): string[] {
   return [...server.output.matchAll(new RegExp(`^Container ${event}(?: (.*))?$`, 'gm'))].map((line) => line[1] ?? '');
 }

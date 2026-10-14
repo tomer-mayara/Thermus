@@ -20,8 +20,9 @@ ADD --checksum=sha256:69791924bcee43b13b224af4c845622c5fe66fdbc1b8143bfaa39ca8f8
     https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-aarch64-linux /lightpanda
 FROM lightpanda-asset-${TARGETARCH} AS lightpanda-asset
 
-# The install checks the asset again. Thus an asset from another source, for example a build context with the name
-# lightpanda-asset, also stops the build, with a clear error. Only root can change the installed file.
+# The install checks the asset again, so an asset from another source that does not match, for example from a build
+# context with the name lightpanda-asset, also stops the build, with a clear error. Only root can change the installed
+# files.
 FROM ${NODE_IMAGE} AS lightpanda
 ARG TARGETARCH
 COPY docker/check-lightpanda-digest.sh /tmp/

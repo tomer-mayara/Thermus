@@ -73,8 +73,7 @@ function offlineHttpsLog(path: string): string[] {
   return [...stderr.matchAll(/\$msg="([^"]*)"/g)].map(([, message]) => message ?? '');
 }
 
-// The renderer at LIGHTPANDA_BIN, or null when the image has no file there. The probe runs as the image user, so the
-// writable paths are the paths of the renderer that this user could change.
+// The probe runs as the image user, so the writable paths are the renderer paths that this user could change.
 function renderer(): unknown {
   const path = process.env.LIGHTPANDA_BIN ?? '';
   if (path === '' || !existsSync(path)) return null;
