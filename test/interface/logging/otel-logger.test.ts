@@ -43,7 +43,7 @@ test('Given the official OTLP HTTP exporter with Axiom headers, when each level 
 test('Given empty and Unicode multiline messages, when the official exporter serializes them, then the OTLP bodies preserve the source and text', { timeout: 20_000 }, async (t) => {
   const { provider, requests, flush, scopeName } = await createOtlpFixture(t);
   const logger = new OtelLogger(provider.getLogger(scopeName));
-  const messages = ['', 'שלום 🌡️\nsecond line'];
+  const messages = ['', 'Hello 🌡️\nsecond line'];
 
   for (const message of messages) logger.info(message);
   await flush();

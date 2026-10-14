@@ -13,7 +13,8 @@
 
 [V] Connects to the MCP server and runs server/discover; advertises protocol 2026-07-28 and the thermus identity (`test/unit/mcp/discovery.test.ts`)
 [] Every tool call is logged (with the user name)
-[] Lists one tool, fetchURLAsMarkdown(url), with its URL input schema
+[] Lists one tool, getURLAsMarkdown(url, reason), with its URL input schema
+[] Lists another tool, postURLAsMarkdown(url, params, reason), with its URL input schema (deferred)
 [] Calls the fetcher with the requested URL, passes fetched HTML and the final URL to the pipeline, and returns the pipeline's Markdown
 [] Rejects an unknown tool or missing, malformed, or unsupported URL input without calling the fetcher or pipeline
 [] Returns a tool error when the fetcher fails, skips the pipeline, and returns no partial Markdown
