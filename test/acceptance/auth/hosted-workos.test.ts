@@ -3,7 +3,8 @@ import { describe, test, type TestContext } from 'node:test';
 import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
-import { HostedBrowser, listenerTransport, type BrowserAnswer, type BrowserTransport } from '../../support/hosted-browser.ts';
+import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../support/hosted-browser.ts';
+import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
 import { nowInSeconds } from '../../support/jwt-signing-key.ts';
 import { WorkOSWorld, type WorldUser } from '../../support/workos-world.ts';
 import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
@@ -30,9 +31,7 @@ class LogLines {
   readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
 }
 
-interface Site {
-  readonly world: WorkOSWorld;
-  readonly transport: BrowserTransport;
+interface Site extends WorkOSServerSite {
   readonly log: LogLines;
 }
 
@@ -55,22 +54,7 @@ async function openSite(t: TestContext): Promise<Site> {
     await server.close();
     await application.close();
   });
-  return { world, transport: listenerTransport(server.url), log };
-}
-
-interface SignedIn {
-  readonly browser: HostedBrowser;
-  readonly start: BrowserAnswer;
-  readonly callback: BrowserAnswer;
-}
-
-// The browser starts the sign-in at the server; AuthKit, which the test plays, sends it back with a code and the state.
-async function signIn(site: Site, user: WorldUser, organizationId?: string): Promise<SignedIn> {
-  const browser = new HostedBrowser(site.transport, config.publicBaseUrl);
-  const start = await browser.open('login');
-  const state = start.location?.searchParams.get('state') ?? '';
-  const callback = await browser.open(`callback?code=${site.world.codeFor(user, organizationId)}&state=${encodeURIComponent(state)}`);
-  return { browser, start, callback };
+  return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
 }
 
 function cookieNamed(answer: BrowserAnswer, name: string): string | undefined {
@@ -90,7 +74,7 @@ function mcp(site: Site, token?: string): Promise<Response> {
 describe('Hosted WorkOS edition: browser sign-in, the portal session, and current access', () => {
   test('Given the hosted WorkOS edition, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, the MFA evidence of the password sign-in, and a form token', async (t) => {
     const site = await openSite(t);
-    const { browser, start, callback } = await signIn(site, ada, organizationA);
+    const { browser, start, callback } = await signInThroughServer(site, ada, organizationA);
     const session = await json(browser, 'session');
 
     assert.equal(start.status, 303);
@@ -132,10 +116,10 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
     const site = await openSite(t);
     const results = [];
     for (const [user, organizationId] of [[ada, organizationA], [ben, organizationA], [cid, organizationA], [dee, undefined]] as const) {
-      const { browser } = await signIn(site, user, organizationId);
+      const { browser } = await signInThroughServer(site, user, organizationId);
       results.push([user.firstName, (await json(browser, 'portal/access')).status]);
     }
-    const { browser } = await signIn(site, ada, organizationA);
+    const { browser } = await signInThroughServer(site, ada, organizationA);
     const access = await json(browser, 'portal/access');
 
     assert.deepEqual(results, [['Ada', 200], ['Ben', 403], ['Cid', 403], ['Dee', 403]]);
@@ -146,7 +130,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
 
   test('Given a signed-in user without an active membership, when the organization page opens, then it gives the onboarding guidance, and each tenant page stays refused', async (t) => {
     const site = await openSite(t);
-    const { browser } = await signIn(site, dee);
+    const { browser } = await signInThroughServer(site, dee);
 
     const onboarding = await browser.open('organizations');
     assert.equal(onboarding.status, 200);
@@ -157,7 +141,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
   test('Given a session whose access token expired, when the next request arrives, then the server refreshes it with WorkOS, sends one new session cookie, and keeps the form token', async (t) => {
     const site = await openSite(t);
     site.world.expireAccessTokens();
-    const { browser } = await signIn(site, ada, organizationA);
+    const { browser } = await signInThroughServer(site, ada, organizationA);
     const first = await json(browser, 'session');
     const second = await json(browser, 'session');
 
@@ -169,8 +153,8 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
   test('Given an expired session that WorkOS ended, when the next request arrives, then the server answers 401 and clears the cookie; when the refresh service fails instead, then the answer is 500, the cookie stays, and the session works again after the outage', async (t) => {
     const site = await openSite(t);
     site.world.expireAccessTokens();
-    const ended = await signIn(site, ben, organizationA);
-    const recovering = await signIn(site, ada, organizationA);
+    const ended = await signInThroughServer(site, ben, organizationA);
+    const recovering = await signInThroughServer(site, ada, organizationA);
     site.world.endSessionsOf(ben);
     const endedAnswer = await ended.browser.open('session');
 
@@ -188,7 +172,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
 
   test('Given the signed-in portal, when the user posts the sign-out form with the form token from the site, then the server clears the session cookie and sends the browser to the WorkOS logout URL of the session; another origin or another token changes nothing', async (t) => {
     const site = await openSite(t);
-    const { browser } = await signIn(site, ada, organizationA);
+    const { browser } = await signInThroughServer(site, ada, organizationA);
     const token = String((await json(browser, 'session')).body.csrfToken);
 
     const foreign = await browser.post('logout', { csrf_token: token }, { origin: 'https://evil.example' });
@@ -250,7 +234,7 @@ describe('Hosted WorkOS edition: Connect tokens at the MCP endpoint', () => {
 
   test('Given a member with Admin only in A and User in B, when the browser session is in A and the MCP token is in B, then the portal refuses product access while MCP serves the token: each credential keeps its own organization', async (t) => {
     const site = await openSite(t);
-    const { browser } = await signIn(site, eve, organizationA);
+    const { browser } = await signInThroughServer(site, eve, organizationA);
     const token = await site.world.connectToken(eve, { org_id: organizationB });
 
     assert.equal((await json(browser, 'portal/access')).status, 403);
@@ -261,7 +245,7 @@ describe('Hosted WorkOS edition: Connect tokens at the MCP endpoint', () => {
   test('Given a membership read or key-set outage, when a request with a valid credential arrives, then the server answers 500 without protected work and reports the failure to the operator, without a token in the report', async (t) => {
     const site = await openSite(t);
     const token = await site.world.connectToken(ada, { org_id: organizationA });
-    const { browser } = await signIn(site, ada, organizationA);
+    const { browser } = await signInThroughServer(site, ada, organizationA);
     site.world.membershipOutage = { status: 500, body: { message: 'Internal error' } };
 
     const mcpAnswer = await mcp(site, token);

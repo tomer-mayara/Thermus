@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import { createLocalJWKSet, type JWTPayload } from 'jose';
 import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-context.ts';
 import { hostedTenantId, WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
-import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
+import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
 import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../support/jwt-signing-key.ts';
 

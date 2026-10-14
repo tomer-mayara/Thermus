@@ -43,7 +43,7 @@ export interface StagingFixtures {
 
 export type MembershipName = 'userAndAdminInA' | 'userInB' | 'connectUserInA' | 'adminOnlyInA' | 'defaultRoleInA' | 'deactivatedUserInA' | 'mixedAdminInA' | 'mixedUserInB';
 
-async function settled<T>(work: readonly Promise<T>[]): Promise<T[]> {
+export async function settled<T>(work: readonly Promise<T>[]): Promise<T[]> {
   // Wait for each creation, so that the registry knows every fixture before a failure ends the setup.
   const results = await Promise.allSettled(work);
   const failure = results.find((result) => result.status === 'rejected');
@@ -51,14 +51,16 @@ async function settled<T>(work: readonly Promise<T>[]): Promise<T[]> {
   return results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
 }
 
-class FixtureFactory {
+export class FixtureFactory {
   readonly #workos: WorkOS;
   readonly #registry: FixtureRegistry;
-  readonly runId = `${Date.now().toString(36)}${randomBytes(3).toString('hex')}`;
+  readonly runId: string;
 
-  constructor(workos: WorkOS, registry: FixtureRegistry) {
+  // The fixtures of one run share the run ID, so that their names show the run.
+  constructor(workos: WorkOS, registry: FixtureRegistry, runId = `${Date.now().toString(36)}${randomBytes(3).toString('hex')}`) {
     this.#workos = workos;
     this.#registry = registry;
+    this.runId = runId;
   }
 
   async organization(label: string): Promise<LiveOrganization> {
@@ -82,8 +84,8 @@ class FixtureFactory {
     return id;
   }
 
-  async deactivatedMembership(user: LiveUser, organization: LiveOrganization): Promise<string> {
-    const id = await this.membership(user, organization, ['user']);
+  async deactivatedMembership(user: LiveUser, organization: LiveOrganization, roleSlugs: string[] = ['user']): Promise<string> {
+    const id = await this.membership(user, organization, roleSlugs);
     await this.#workos.userManagement.deactivateOrganizationMembership(id);
     return id;
   }

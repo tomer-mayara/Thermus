@@ -1,15 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { setTimeout as sleep } from 'node:timers/promises';
-import type { Page } from 'playwright';
 import { completeAuthKit } from '../../../support/hosted-live/authkit-driver.ts';
 import { refreshedAccessToken } from '../../../support/hosted-live/browser-session.ts';
+import { serverGet, sessionJson, signInThroughPortal } from '../../../support/hosted-live/portal-visit.ts';
 import { authorizeWithConnect, type ConnectGrant } from '../../../support/hosted-live/connect-grant.ts';
 import { issuedTokens, requestMachineTokens } from '../../../support/hosted-live/connect-client.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { nextNavigation, originAndPath, recordNavigations } from '../../../support/hosted-live/navigations.ts';
 import { initiateLoginUri, localOrigin, mcpResource, signOutUri } from '../../../support/hosted-live/settings.ts';
-import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 import { readToken, secondsLeft } from '../../../support/hosted-live/tokens.ts';
 import { deleteWorkOSResource } from '../../../support/hosted-live/workos-api.ts';
 import { mcpRequest } from '../../../unit/mcp/fixtures/mcp-http-request.ts';
@@ -22,46 +21,9 @@ const signInCookie = '__Host-thermus-sign-in';
 // A browser access token and a Connect access token live for 300 seconds; a little more lets both expire.
 const tokenLifetimeWait = 305_000;
 
-interface PortalVisit {
-  readonly page: Page;
-  readonly pages: readonly string[];
-  readonly signedInAt: number;
-}
-
-interface ServerAnswer {
-  readonly status: number;
-  readonly body: string;
-  readonly setCookies: readonly string[];
-}
-
-async function serverGet(page: Page, path: string): Promise<ServerAnswer> {
-  const answer = await page.context().request.get(new URL(path, `${localOrigin}/`).href, { maxRedirects: 0 });
-  return { status: answer.status(), body: await answer.text(), setCookies: answer.headersArray().filter(({ name }) => name.toLowerCase() === 'set-cookie').map(({ value }) => value) };
-}
-
-async function sessionJson(page: Page): Promise<Readonly<Record<string, unknown>>> {
-  const answer = await serverGet(page, 'session');
-  assert.equal(answer.status, 200, `GET /session gave ${answer.status}.`);
-  return JSON.parse(answer.body) as Readonly<Record<string, unknown>>;
-}
-
 export function describeHostedServerCases(run: LiveRun): void {
   const { settings } = run;
   const authkitHost = new URL(settings.authkitIssuer).host;
-
-  // A sign-in through the portal of the local HTTPS site: the Sign In button, /login, the AuthKit pages, and the
-  // callback of the server. The browser keeps the cookies of the server, as a user's browser does.
-  async function signInThroughPortal(user: LiveUser, organizationName?: string): Promise<PortalVisit> {
-    await run.site();
-    const page = await run.browser.newPage();
-    await page.goto(`${localOrigin}/`);
-    await page.getByRole('button', { name: 'Sign In' }).click();
-    const pages = await completeAuthKit(page, { user, authkitHost, ...(organizationName === undefined ? {} : { organizationName }) });
-    await page.waitForURL(`${localOrigin}/`);
-    await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
-    await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor();
-    return { page, pages, signedInAt: Date.now() };
-  }
 
   async function mcpStatus(token: string | undefined): Promise<{ status: number; challenge: string | null; body: string }> {
     const site = await run.site();
@@ -71,7 +33,7 @@ export function describeHostedServerCases(run: LiveRun): void {
 
   const admin = once(async () => {
     const { twoOrganizationUser, organizationA } = await run.fixtures();
-    return signInThroughPortal(twoOrganizationUser, organizationA.name);
+    return signInThroughPortal(run, twoOrganizationUser, organizationA.name);
   });
   const mixedGrantInB = once(async (): Promise<ConnectGrant> => {
     const { mixedUser, organizationB, oauthApplication } = await run.fixtures();
@@ -99,7 +61,7 @@ export function describeHostedServerCases(run: LiveRun): void {
 
     test('Given a signed-in user without an active membership, when the portal and the organization page open, then the portal shows no product access, the protected portal request gives 403, and the organization page gives the onboarding guidance', signInOptions, async () => {
       const { newUser } = await run.fixtures();
-      const { page } = await signInThroughPortal(newUser);
+      const { page } = await signInThroughPortal(run, newUser);
 
       assert.match(await page.locator('.product-access').innerText(), /no product access in the selected organization/);
       assert.equal((await serverGet(page, 'portal/access')).status, 403);
@@ -112,7 +74,7 @@ export function describeHostedServerCases(run: LiveRun): void {
     test('Given an Admin-only member and a default-role member of organization A, when each signs in, then the protected portal request gives 403 for both: Admin alone gives no product access, and the default role gives no permission', signInOptions, async () => {
       const { adminOnlyUser, defaultRoleUser } = await run.fixtures();
       for (const user of [adminOnlyUser, defaultRoleUser]) {
-        const { page } = await signInThroughPortal(user);
+        const { page } = await signInThroughPortal(run, user);
         assert.equal((await serverGet(page, 'portal/access')).status, 403, `${user.email.split('@')[0]} got product access.`);
         assert.match(await page.locator('.product-access').innerText(), /no product access/);
         await page.context().close();
@@ -154,7 +116,7 @@ export function describeHostedServerCases(run: LiveRun): void {
     test('Given a member with Admin only in organization A and User in organization B, when the browser session is in A and the MCP grant is in B, then the portal has no product access while the MCP grant works: each credential keeps its own organization', signInOptions, async (t) => {
       const { mixedUser, organizationA, organizationB } = await run.fixtures();
       const grant = await mixedGrantInB();
-      const browser = await signInThroughPortal(mixedUser, organizationA.name);
+      const browser = await signInThroughPortal(run, mixedUser, organizationA.name);
       t.diagnostic(`Connect grant pages: ${grant.visit.pages.join(' > ')}; token org_id is B: ${String(readToken(grant.tokens.accessToken).claims.org_id === organizationB.id)}`);
 
       assert.equal(readToken(grant.tokens.accessToken).claims.org_id, organizationB.id);
@@ -194,7 +156,7 @@ export function describeHostedServerCases(run: LiveRun): void {
 
     test('Given the signed-in portal, when the member clicks Sign Out, then the server clears the session cookie and sends the browser to the WorkOS logout URL, WorkOS ends the session, and the browser lands on the Sign-out URI, which shows the signed-out portal', signInOptions, async (t) => {
       const { organizationB, twoOrganizationUser } = await run.fixtures();
-      const { page } = await signInThroughPortal(twoOrganizationUser, organizationB.name);
+      const { page } = await signInThroughPortal(run, twoOrganizationUser, organizationB.name);
       const activeBefore = await activeSessionsOf(run, twoOrganizationUser.id);
       const navigations = recordNavigations(page);
       const logout = page.waitForRequest((request) => request.url().startsWith('https://api.workos.com/user_management/sessions/logout'), { timeout: 15_000 });
@@ -224,7 +186,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       const { mixedUser, connectUser, organizationB, oauthApplication } = await run.fixtures();
       const { page } = await admin();
       const before = await sessionJson(page);
-      const ended = await signInThroughPortal(connectUser);
+      const ended = await signInThroughPortal(run, connectUser);
       const revoked = await revokeActiveSessionsOf(run, connectUser.id);
       const grant = await authorizeWithConnect(run, { user: mixedUser, organizationName: organizationB.name, clientId: oauthApplication.clientId });
       const status = await deleteWorkOSResource(settings, `/user_management/users/${mixedUser.id}/authorized_applications/${oauthApplication.id}`);

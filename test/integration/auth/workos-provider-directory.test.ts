@@ -4,7 +4,8 @@ import { GenericServerException } from '@workos-inc/node';
 import { createRemoteJWKSet } from 'jose';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
 import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
-import { HostedRoleConfigurationError, WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
+import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
+import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../support/jwt-signing-key.ts';
 import { fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from '../../support/workos-fake-api.ts';
@@ -76,7 +77,7 @@ async function directoryWorld(t: TestContext) {
   const fake = await WorkOSFakeApi.start(t);
   fake.authkitKeySet.publish(authkitKey);
   const workos = workosClientFor(fake);
-  const grants = new WorkOSOrganizations({ userManagement: workos.userManagement, authorization: workos.authorization });
+  const grants = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
   const keySet = createRemoteJWKSet(fake.authkitKeySetUrl);
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: fake.authkitIssuer, mcpResourceUrl, keySet, grants });
   const requestLines = () => fake.takeRequests().map(({ method, path }) => `${method} ${path}`);
