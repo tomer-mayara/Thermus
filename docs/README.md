@@ -23,6 +23,7 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
+- [MCP server implementation plan](implementation/mcp-server-plan.md): the GET-to-Markdown tool, test-only authentication, call records, verification gates, and board tickets.
 - [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, the hosted placeholder, hosted scope, and implementation gates.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.
 - [Planned cache key design](design/cache-design.md): pending cache requirements.
