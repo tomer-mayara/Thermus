@@ -1,7 +1,8 @@
 // The explicit renderer gate: npm run test:mcp:renderer. The *.test.js globs do not select this file.
 // It needs LIGHTPANDA_BIN with the pinned Lightpanda 1.0.0 (docs/lightpanda-runtime.md). Without it, setup fails.
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import childProcess, { execFile, type ChildProcess } from 'node:child_process';
+import { syncBuiltinESMExports } from 'node:module';
 import { isAbsolute } from 'node:path';
 import { before, describe, test, type TestContext } from 'node:test';
 import { promisify } from 'node:util';
@@ -106,6 +107,24 @@ async function openPageFixture(t: TestContext) {
     response.end(script ?? pages[path] ?? 'Missing page');
   });
   return { ...fixture, held };
+}
+
+// Keeps each renderer child that the production fetcher starts. The fixture sees a closed renderer connection only
+// after the network stack delivers it, which can be after the server stop ends, so a test reads the child itself.
+function watchRendererChildren(t: TestContext, executable: string): ChildProcess[] {
+  const children: ChildProcess[] = [];
+  const launch = childProcess.execFile;
+  t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => {
+    const child = Reflect.apply(launch, childProcess, args) as ChildProcess;
+    if (args[0] === executable) children.push(child);
+    return child;
+  }) as typeof childProcess.execFile);
+  syncBuiltinESMExports();
+  t.after(() => {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  });
+  return children;
 }
 
 async function callFetchTool(client: Client, url: string, options?: { signal: AbortSignal }): Promise<CallToolResult> {
@@ -235,18 +254,18 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     const site = await openRuntimeSite(t, executable);
     const fixture = await openPageFixture(t);
     const client = await connect(t, site, '2025-11-25');
-    const events: string[] = [];
-    void fixture.held.closed.promise.then(() => events.push('renderer connection closed'));
+    const renderers = watchRendererChildren(t, executable);
 
     const call = callFetchTool(client, `${fixture.hostnameOrigin}/slow`).then((result) => result, () => undefined);
     await fixture.held.requested.promise;
     await site.server.stop();
-    events.push('server stopped');
+    const renderersAtStop = renderers.map(({ exitCode, signalCode }) => ({ exitCode, signalCode }));
     // A legacy client can get no answer after the server stops. Closing it ends the call before its request timeout.
     await client.close();
     const outcome = await call;
+    await fixture.held.closed.promise;
 
-    assert.deepEqual(events, ['renderer connection closed', 'server stopped']);
+    assert.deepEqual(renderersAtStop, [{ exitCode: null, signalCode: 'SIGKILL' }]);
     assert.ok(outcome === undefined || outcome.isError === true, JSON.stringify(outcome));
     assert.doesNotMatch(JSON.stringify(outcome ?? {}), /Slow story/);
     assert.equal(site.pipelineRuns.mock.calls.length, 0);
