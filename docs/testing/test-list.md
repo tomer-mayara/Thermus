@@ -454,14 +454,6 @@ Run only these tests:
 npm run build && node --test dist/test/unit/organizations/organization-administration-invitation-overview.test.js
 ```
 
-**Unavailable hosted authentication** (`test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`)
-
-[V] Gives `unavailable` for each `Cookie` header, also for none or for a forged session or organization cookie
-[V] Denies access with `account-inactive` for each user, also with a selected organization, and gives no context, tenant, or grant
-[V] Gives a frozen empty membership list for each user, also with a selected organization: no membership, organization, or grant
-[V] Gives a frozen empty page for each member and invitation read, also for a forged organization or cursor, and no member or invitation for any ID; its invitation policy is `provider-rules`, so it claims no strict address match
-[V] Answers each grant change, invitation, resend, and revoke, also for a forged organization, membership, or invitation, with a frozen `unsupported` and changes nothing
-
 **Hosted MCP endpoint and metadata** (`test/unit/mcp/protected-resource-endpoint.test.ts`)
 
 AUTH-06 removed `UnavailableMcpEndpoint` and its unit test. A double stands in for the MCP server.

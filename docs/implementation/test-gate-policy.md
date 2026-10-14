@@ -117,8 +117,7 @@ contains every change of the pull request.
 4. Run the applicable suites:
    - `npm run test:integration` and `npm run test:acceptance` for a change that
      affects the MCP server, authentication, the access context, the hosted
-     placeholder, the hosted account routes, organization administration, or
-     billing.
+     account routes, organization administration, or billing.
    - `npm run test:integration` for a change in `test/integration/`.
    - `npm run test:acceptance` for a change in `test/acceptance/`.
    - The interface tests that cover a changed renderer runtime, network policy,
@@ -309,10 +308,12 @@ AUTH-12 added the hosted placeholder, AUTH-07 added organization onboarding and
 selection behind the provider contracts, and AUTH-08 added User and Admin grant
 management, invitations, change records, and the User seat summary. AUTH-06
 replaced the placeholder in production with the WorkOS provider, and AUTH-07W
-connected the organization reads of the hosted edition to WorkOS. These tests
-run offline and need no WorkOS account, credential, or network access. They use
-doubles at the provider contracts, or the pinned SDK with a local fake of the
-WorkOS API (`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
+connected the organization reads of the hosted edition to WorkOS. After that,
+no composition used the placeholder, and a follow-up of AUTH-07W removed it
+and its unit test. These tests run offline and need no WorkOS account,
+credential, or network access. They use doubles at the provider contracts, or
+the pinned SDK with a local fake of the WorkOS API
+(`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
 They are in the existing suites:
 
 - unit: `test/unit/hosted-admin/account-routes.test.ts`,
@@ -330,7 +331,6 @@ They are in the existing suites:
   `test/unit/organizations/organization-administration-members.test.ts`,
   `test/unit/organizations/organization-administration-invitations.test.ts`,
   `test/unit/organizations/organization-administration-invitation-overview.test.ts`,
-  `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`,
   the WorkOS provider tests in `test/unit/auth-workos/`, with
   `test/unit/auth-workos/workos-organizations-memberships.test.ts`,
   `test/unit/mcp/protected-resource-endpoint.test.ts`,
