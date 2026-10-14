@@ -66,8 +66,9 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const { ProtectedResourceEndpoint } = await import('./mcp/protected-resource-endpoint.ts');
   const { settings, workos, authkitKeySet } = connection;
   const authority = workosAuthority(settings.clientId);
-  // One directory gives the current grants to access resolution and the organizations to the account routes.
-  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  // One directory gives the current grants to access resolution, and the organizations, members, and invitations and
+  // their changes to the account routes.
+  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const session = new WorkOSBrowserSession({ workos, settings, authority });
   const server = new MCPServer({

@@ -55,6 +55,7 @@ describe('HostedAccountRoutes grant and invitation changes', () => {
     ['mfa-required', 403, /Administration needs a sign-in that completed multi-factor authentication\./],
     ['stale', 409, /changed after the page was shown\. Nothing changed\./],
     ['not-pending', 409, /The invitation is no longer pending/],
+    ['address-in-use', 409, /This email address already belongs to a member of the organization, or it has a pending invitation\. Nothing changed\./],
     ['unsupported', 503, /The account directory cannot make this change safely now\. Nothing changed\./],
   ] as const satisfies ReadonlyArray<readonly [ChangeResult, number, RegExp]>) {
     test(`Given a service that answers ${outcome}, when each change is posted, then it gets ${status} with its notice and the session cookies, and no redirect`, async () => {

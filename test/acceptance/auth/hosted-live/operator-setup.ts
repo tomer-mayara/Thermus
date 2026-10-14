@@ -55,7 +55,12 @@ function describeRecord(t: TestContext, record: OperatorRecord): void {
 export function describeOperatorSetupProofs(run: LiveRun): void {
   const { workos, settings } = run;
   // The application reads of the hosted edition, against the staging environment.
-  const directory = new WorkOSOrganizations({ authority: workosAuthority(settings.clientId), userManagement: workos.userManagement, authorization: workos.authorization });
+  const directory = new WorkOSOrganizations({
+    authority: workosAuthority(settings.clientId),
+    userManagement: workos.userManagement,
+    authorization: workos.authorization,
+    organizations: workos.organizations,
+  });
 
   async function membershipOf(fixtures: OrganizationFixtures, user: LiveUser, organizationId = fixtures.operatorOrganization.id): Promise<OrganizationMembership | undefined> {
     return fixtures.runbook.membership(user.id, organizationId);

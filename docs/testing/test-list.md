@@ -291,6 +291,7 @@ This file and the two files below also use `fixtures/administration-routes-fixtu
 
 [V] For a GET and a HEAD request with forged organization values in the query and headers, gives the service the user of the decided context with the MFA evidence of the session and the organization of the context; the members page shows the seat count, each member with its status and roles, a link to the invitations page, and one form for each change with the form token, the organization, the membership, its revision, the role, and the action; sends the session cookies and the page headers with `form-action 'self'`, and no script, style, or other resource
 [V] For each identity policy, the invitations page has a send form with an email field for each role that the actor can invite, a resend and a revoke form for each pending invitation of a role of the actor, each invitation with its role and state, a link to the members page, and the policy text of the directory
+[V] The invitations page says that the acceptance of a pending invitation gives the role that the page shows, and that for an accepted, revoked, or expired invitation the sign-in service can show the current role of the member instead
 [V] For an unknown identity policy, the invitations page claims no strict address match
 [V] Shows provider values with HTML characters as text on both pages: email addresses, roles, IDs, revisions, and the organization
 [V] Without an invitation, the invitations page says "There are no invitations." and still offers a send form for each invitable role
@@ -313,7 +314,7 @@ npm run build && node --test dist/test/unit/hosted-admin/account-routes-administ
 [V] For a valid grant, invitation, resend, and revoke post, also with a forged `X-Organization-Id` header, and an `applied` or `unchanged` answer, gives the service the actor with the MFA evidence of the session and no form token or cookie; the browser gets 303 to the members or invitations page with `Cache-Control: no-store`, an empty body, and the session cookies
 [V] For a session whose sign-in did not complete MFA, gives the service that evidence, and each post gets the 403 MFA notice with the session cookies
 [V] Gives each change exactly the fields of its form
-[V] Gives each post 403 for `denied` and `mfa-required`, 409 for `stale` and `not-pending`, and 503 for `unsupported`, each with its notice, the session cookies, and no redirect
+[V] Gives each post 403 for `denied` and `mfa-required`, 409 for `stale`, `not-pending`, and `address-in-use`, and 503 for `unsupported`, each with its notice, the session cookies, and no redirect
 [V] Gives forged roles and actions to the service unchanged, also Super Admin, an account disable, a membership deactivation, a credential reset, and a Super Admin invitation; the denial of the service gives 403
 [V] For a change that fails in the service, gives the 500 failure page with the session cookies and no redirect, and gives the operator the path and the cause
 [V] Gives 401 to a change post of a signed-out session and 403 when the resolver denies access, before any form check; does not ask the service
@@ -429,6 +430,7 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] An Admin invites only User, a Super Admin only Admin, and a member with both each of them; each sent invitation names only its own role; no customer invites Super Admin or the default role, and each refusal is recorded
 [V] Refuses a User invitation by a User without Admin or an Admin of another organization with `denied`, and by an Admin whose sign-in did not complete MFA with `mfa-required`; nothing is sent, and the refusal is recorded
 [V] Gives `unsupported` when the directory cannot send an invitation safely; a send that fails reaches the caller and is recorded as `unknown`
+[V] Gives `address-in-use` when the directory refuses the address of an invitation, because it belongs to a member or has a pending invitation for another role, and records that outcome
 [V] An Admin resends and then revokes a pending User invitation, each one time; a second resend or revoke gives `not-pending` without a directory change; each record has the role of the invitation
 [V] Refuses a resend and a revoke with `not-pending` for an accepted or expired invitation, and with `denied` for an Admin invitation by an Admin, a User invitation by a Super Admin alone, an invitation of another organization, an unknown invitation, and an invitation by a User without Admin; the directory changes nothing, and each request is recorded
 [V] When the invited person accepts after the service read the invitation as pending, the `not-pending` answer of the directory to the revoke reaches the caller, and the acceptance stays
@@ -509,7 +511,7 @@ A double of the browser session records each call (`test/unit/auth-workos/fixtur
 
 **WorkOS grant reads** (`test/unit/auth-workos/workos-organizations.test.ts`)
 
-A double of the narrow SDK part records each read.
+A double of the narrow SDK part records each read. Each call of organization administration fails the test, so access resolution reads no member, invitation, or organization and writes no role.
 
 [V] Gives one frozen grant for each role of the active membership, in the order of the membership, with its application permissions, after one exact membership read with the status `active` and one role read
 [V] Keeps each role an independent grant, without a highest role, and gives the default role a grant without a permission
@@ -520,7 +522,7 @@ A double of the narrow SDK part records each read.
 
 **WorkOS organization memberships** (`test/unit/auth-workos/workos-organizations-memberships.test.ts`)
 
-AUTH-07W added these tests. A double of the narrow SDK part gives the page of each `after` cursor and records each read.
+AUTH-07W added these tests. A double of the narrow SDK part gives the page of each `after` cursor and records each read. Each call of organization administration fails the test. AUTH-08W removed the tests of the member and invitation methods before AUTH-08W; the three files below test these methods now.
 
 [V] Gives one frozen active membership for each organization, with the WorkOS organization name and the grants of the hosted role mapping, after one read of the user with the explicit status `active` and the limit 100, and one role read for each organization
 [V] Reads each page with the `after` cursor of the page before and stops at the page without a cursor
@@ -528,7 +530,57 @@ AUTH-07W added these tests. A double of the narrow SDK part gives the page of ea
 [V] Gives a membership with only the default role one grant without a permission, keeps only application permissions, and reads WorkOS again for each call
 [V] Fails, without a membership, a grant, or a role read, for an inactive or pending membership, a membership of another user, a membership without an organization name, two active memberships in one organization, a repeated page cursor, and more than 10 pages, where it stops after the tenth read; no error names the user
 [V] Refuses a membership without a role list, a default role with `product:access`, and a membership role that the organization does not have, with a `HostedRoleConfigurationError` that names the organization and the rule; gives each failed membership or role read to the caller
-[V] Until AUTH-08W, each member and invitation read throws, each grant and invitation change answers `unsupported`, both without a WorkOS call, and the invitation policy is `provider-rules`
+
+**WorkOS member reads** (`test/unit/auth-workos/workos-organizations-members.test.ts`)
+
+AUTH-08W added this file and the two files below. They share `WorkOSOrganizationsDouble`, in `fixtures/workos-organizations-double.ts`: a double of the SDK client of the directory that answers from the records of a test, records each call in order, and changes the roles and the update time of a membership at a role write, as WorkOS does. Its organization reads give Acme the external ID `customer-acme`, as each customer organization of the operator runbook has one, and give Globex none. Its invitations have a token and a link, so that a test can show that no result holds them. A failed call that is not a configuration error must name no user ID, address, or invitation credential.
+
+[V] Reads one member page with exactly the named statuses, the limit 100, and the cursor, then one role read of the organization and one user read for each member, in page order; gives a frozen page with the email, status, grants, and revision of each member and the WorkOS cursor as `next`
+[V] Starts the user read of a member only after the user read of the member before it answered
+[V] Gives a membership with only the default role one grant without a permission; gives the last page, with the cursor `null` or empty, no `next`; gives an empty page without a role or user read
+[V] Fails before any WorkOS call for a read without a status, and without a role or user read for a membership of another organization or of a status that the read did not name
+[V] Refuses a membership without a role list with a `HostedRoleConfigurationError` that names the organization and the rule; gives each failed membership, role, or user read to the caller
+[V] Reads one member by its ID in any organization, with one membership read, one role read of its organization, and one user read; a WorkOS 404 of the membership gives `undefined` without another read; an answer with another ID fails; each other failure, also a 404 of the user read, reaches the caller
+[V] Gives one state of a membership the same revision by ID, on a page, and with its roles in another order; a later update time, another status, or one role less or more gives another revision
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/auth-workos/workos-organizations-members.test.js
+```
+
+**WorkOS grant changes** (`test/unit/auth-workos/workos-organizations-grants.test.ts`)
+
+[V] Grants Admin in Acme with one membership read, one read of Acme, and then exactly one `assignRole()` of `admin` on the organization resource, named by the external ID of Acme (`resourceTypeSlug: 'organization'` and `customer-acme` as `resourceExternalId`); User stays, and the result is a frozen `applied`
+[V] Revokes User in Globex, which has no external ID, with one read of Globex, the organization of the current membership, and one `removeRole()` that names the resource by the organization ID of Globex; Admin stays; the revoke of the only role makes one `removeRole()` and no replacement of the role set or membership change
+[V] Gives `stale` without an organization read or a write for a WorkOS 404 of the membership and for a membership that another administrator changed after the actor saw it
+[V] Gives `unsupported` without an organization read or a write for a grant and a revoke on an inactive membership, a pending membership, and an active membership that a directory connection manages
+[V] A repeated grant with the revision from before it and a grant of User with the revision from before its revoke are `stale` after only a membership read, without a second write, so a repeated post never repeats a write or returns a revoked grant
+[V] Gives a failed `assignRole()` or `removeRole()` to the caller after the one write, without a repeat; gives a failed membership read (500 or 400) to the caller without a write; fails without a write for an answer with another ID and for a membership without a role list
+[V] Gives a failed read of the organization of the membership (503 or 404) to the caller without a write; fails without a write when WorkOS answers that read with another organization
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/auth-workos/workos-organizations-grants.test.js
+```
+
+**WorkOS invitations** (`test/unit/auth-workos/workos-organizations-invitations.test.ts`)
+
+[V] Reads one invitation page of the organization with the limit 100 and the cursor, and keeps only the named states; each frozen record has only the ID, the organization, the address, the role, and the state, and no token or link; each state stays as WorkOS gives it, and an accepted invitation keeps its role
+[V] Counts a pending invitation whose expiry time is at or before the clock time as `expired`, and asks the clock again for each read
+[V] Gives the last page, with the cursor `null` or empty, no `next`, and reads an empty page without a cursor; fails before any WorkOS call for a read without a state
+[V] Fails for an invitation of another organization or without an organization, also in a state that the read does not name, for a record without a role in a named state, and for a pending invitation without a valid expiry time; leaves a record without a role in a state that the read does not name out of the page; gives a failed read to the caller
+[V] Reads one invitation by its ID in any organization; a passed expiry time gives `expired`; a WorkOS 404 and an invitation without an organization give `undefined`; an answer with another ID and an organization invitation without a role fail; a 500 or a 400 reaches the caller
+[V] Sends one invitation with exactly the address, the organization, and the one role; the answer must be a pending invitation of that organization and role to the same address in any letter case, else the send fails; 400 `email_already_invited_to_organization` and `user_already_organization_member` give a frozen `address-in-use`; 400 `invalid_role`, the member code with 422, a 500, and a send without an answer reach the caller
+[V] Resends or revokes a pending invitation with one call, and the answer must be that invitation in the state after the change (`pending` or `revoked`), else the change fails; a 400 refusal gives a frozen `not-pending` after one read when the invitation is accepted, revoked, expired, or pending after its expiry time, and the original error when it is still pending or the read gives 404; a 500 or a 404 of the change reaches the caller without a read
+[V] Gives the invitation identity policy `provider-rules`
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/auth-workos/workos-organizations-invitations.test.js
+```
 
 **Operator runbook driver** (`test/unit/auth-workos/operator-runbook.test.ts`)
 
@@ -1118,6 +1170,33 @@ AUTH-07W added these tests. The real `WorkOSBrowserSession`, `WorkOSOrganization
 [V] The real organization service over the WorkOS reads authorizes only a current active membership with an application permission, also when the session user or the request names another organization; a user of another authority gets no organization and causes no WorkOS read
 [V] When WorkOS answers the membership of another user, an inactive membership, or a default role with `product:access`, the organization page and a selection each get the 500 failure page with an operator report, show neither an organization nor the onboarding guidance, and switch nothing
 
+**WorkOS organization administration with the real organization service** (`test/integration/auth/workos-provider-administration.test.ts`)
+
+AUTH-08W added these tests. The real `WorkOSOrganizations` and `WorkOSAuthProvider` run with the pinned SDK against the local fake WorkOS API of `test/support/workos-world.ts`, in the test process, together with the real `OrganizationAdministration`, called directly as a service, and the real access resolution of Connect tokens. The fake keeps organizations, users, the roles of each membership as single-role assignments, and invitations, as the probes of WorkOS staging showed. Acme has the external ID `customer-acme`, as each customer organization of the operator runbook has one, and Globex has none. As WorkOS does, the fake accepts a role write only on the resource of the organization of the membership, named by the external ID of the organization, or by the organization ID when the organization has none. In Acme, Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only User, Eve an inactive membership that had User and Admin, and Gus only the default role; in Globex, Bea and Pia have User. `BillingRecorder` keeps each seat update. Each test checks the result, the change records, and the WorkOS requests that change something. These tests do not show what the WorkOS service sends; the hosted live gate does.
+
+[V] Sam with only Super Admin cannot change User, grants Admin and then User to itself, and grants Admin again after it revoked it; Cal with only Admin cannot grant Admin; Dan grants Admin to Bea; each applied change is one single-role WorkOS write on the resource of Acme, named by its external ID, no other membership changes, and billing gets one seat count
+[V] After Dan revokes Admin from Ada and Cal revokes User from Hal, the Connect token of Ada from before the changes keeps product access while each administration operation of Ada is denied, and the token of Hal gives no product access while Hal still manages User and grants it to itself again
+[V] After Cal revokes the only grant of Bea in Acme, WorkOS keeps the membership active with only the default role; the service lists only Globex and refuses a selection of Acme, the Acme token of Bea resolves without a permission, and its Globex token keeps product access
+[V] In Globex, which has no external ID, Pia with User and Admin revokes User from Bea; the one single-role WorkOS write names the resource of Globex by its organization ID, Bea keeps User in Acme, and billing gets the one User seat of Pia in Globex
+[V] Direct service calls of Dan that name memberships of Globex, the inactive Eve, a pending membership from an invitation, Super Admin, an unknown role, the actions disable, deactivate, reset-password, and delete, or a resend and a revoke of a Globex invitation are each denied with a record; WorkOS gets no write, and no membership or invitation changes
+[V] Dan without completed MFA gets `mfa-required`, and an actor of another authority with the subject of Dan gets `denied`, for each operation; each change has its record, and WorkOS gets no request at all
+[V] A grant whose WorkOS answer is a 500 and a revoke whose connection closes, each after WorkOS applied it, fail after one write with an `unknown` record; a retry of the same request is `stale` without a write, also after another administrator undoes the change
+[V] A grant of User by Cal and a revoke of its own Admin by Dan, from the same revision at the same time, are each `applied` or `stale`; each applied change is one single-role write, and the final roles are exactly the start roles with each applied change
+[V] A change of Bea in WorkOS before Dan asks and a change of Gus between the check of the service and the write of the directory each give `stale` without a write; the directory reads Gus again just before its write
+[V] For the inactive Eve, the service denies a revoke and the directory answers `unsupported`; an Admin invitation makes the membership pending with only Admin, and the acceptance makes it active with only Admin; WorkOS gets only the send, and no membership create, update, deactivation, reactivation, or deletion
+[V] Cal invites only User and Sam only Admin; the Admin invitation gives no User; a repeated send of the same address and role in another letter case sends nothing; the WorkOS refusals of an invited address and of an active member give `address-in-use`
+[V] The invitation overview shows the WorkOS state of accepted, revoked, expired, and pending invitations without a token or link; only the pending invitation is resent and revoked, and each other change is `not-pending` with its record and without a WorkOS change
+[V] Member pages of two that repeat one membership on the next page give each membership of Acme once with its status and application roles; the seats and the billing update count each active User membership once
+[V] During an outage of the later member pages and of the invitation reads, each overview fails without a partial result; a grant keeps its `applied` record while its seat update fails and billing gets no count; a send fails with a `failed` record before any WorkOS send
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/workos-provider-administration.test.js
+```
+
+The command after the protected portal request below also selects this file, with its glob `workos-provider-*.test.js`.
+
 **MCP required permission** (`test/integration/mcp/required-permission.test.ts`)
 
 [V] With `product:access` required, a context with the User grant reaches the tool, and a context with Admin only, Super Admin only, the default role, or no grant gets the 403 `access_denied` of a denial before the factory or MCP dispatch
@@ -1280,6 +1359,12 @@ These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against 
 [V] With the default retries, gives each membership create one generated `Idempotency-Key` and each role-set update none
 [V] Loses one of two concurrent role-set updates that start from the same read
 [V] Sends one role for each invitation and drops a role set
+[V] Reads one membership and one user by ID with one GET each; the membership keeps `id`, `organizationId`, `status`, `updatedAt`, `directoryManaged`, and `roles`, and the user its email; a 404 `entity_not_found` throws `NotFoundException` with that status and code
+[V] Assigns and removes one role with a POST and a DELETE of the same JSON body (`role_slug`, `resource_type_slug` `organization`, and `resource_external_id`) at `/authorization/organization_memberships/<id>/role_assignments`, without `If-Match` or `Idempotency-Key` with `maxRetries: 0`; `assignRole()` returns the role assignment, and `removeRole()` gives `undefined` for a 204 without a body and for a 200
+[V] Reads one organization by ID with one GET to `/organizations/<id>`, and gives its ID and its external ID; the external ID is `null` when the answer has `external_id` `null` and when the answer has no `external_id`
+[V] Lists the invitations of an organization with `organization_id`, `limit`, `after`, and `order=desc`, follows the `after` cursor, and reads one invitation by ID; each invitation keeps `token` and `acceptInvitationUrl`, so the directory must drop them
+[V] Sends an invitation with exactly `email`, `organization_id`, and `role_slug`; the 400 refusals `email_already_invited_to_organization`, `user_already_organization_member`, and `invalid_role`, without an `errors` list, each throw `GenericServerException` with status 400 and that code, not `BadRequestException`
+[V] Resends an invitation with the body `{}` and revokes it with an empty body, and returns each answer; a 400 `invite_not_pending` answer to a revoke throws `GenericServerException` with status 400 and that code
 [V] Verifies a Connect token with jose against the AuthKit key set, the exact issuer, the MCP audience, and RS256, and rejects another issuer, another audience, an expired token, a forged signature, and HS256
 [V] Accepts an M2M-shaped token without `sid` whose `sub` equals its `client_id`, so the MCP verifier needs its own rule
 [V] Refuses a new key ID during the key-set cooldown and accepts it after one new read
@@ -1576,6 +1661,30 @@ Run only these tests:
 npm run build && node --test dist/test/acceptance/auth/hosted-workos-organizations.test.js
 ```
 
+**Hosted WorkOS organization administration** (`test/acceptance/auth/hosted-workos-administration.test.ts`)
+
+AUTH-08W added these specifications. The real hosted composition with the WorkOS provider and the WorkOS organization administration, `composeWorkOSApplication()`, runs behind the real HTTP server on a loopback port. The local fake WorkOS API of `test/support/workos-world.ts` keeps organizations, users, the roles of each membership as single-role assignments, and invitations, as the probes of WorkOS staging showed. A test can repeat a membership on the next page (`membershipPageOverlap`) and make the later member pages fail (`laterMembershipPageOutage`). The memberships of Acme and Globex are the same as in `test/integration/auth/workos-provider-administration.test.ts`. Acme has the external ID `customer-acme`, as each customer organization of the operator runbook has one, and the fake accepts a role write on Acme only when it names the resource of Acme by that external ID. The browser signs in through the server with `signInThroughServer()`, and `HostedBrowser` opens the pages and submits their forms. The operator log keeps the change records. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the same flows against WorkOS.
+
+[V] Given Sam with only Super Admin and a sign-in with MFA, its members page offers no User change; Sam grants Admin to itself and then User, each with 303 and one single-role assignment on the resource of Acme, named by its external ID; the User seats go from 3 to 4, and each change has one record without a credential
+[V] Given Cal with only Admin, Sam with only Super Admin, and Dan with both, a forged Admin grant of Cal and a forged User grant of Sam get 403 without a WorkOS write, and the Admin grant of Dan to Bea is applied
+[V] Given Dan with Admin and Super Admin, Dan revokes its own Admin and grants it again with the Super Admin that it kept; the revoke removes only Admin, and the User forms go away with it and come back after the regrant
+[V] Given Ada and Hal with User and Admin, each with a browser session and an MCP token, after Dan revokes Admin from Ada and User from Hal, the next Admin request of Ada and the next MCP request of Hal get 403, while Ada keeps MCP access and Hal its Admin pages
+[V] Given Bea with only User in Acme and User in Globex, after Hal removes its last grant in Acme, WorkOS keeps the membership with only the default role; Bea gets 403 in Acme at the next request and has no seat there, and keeps its identity, Globex, and its Globex MCP access
+[V] Given a members page of Dan, a post after WorkOS changed Bea and a repeated post of an applied grant form after a later revoke each get 409 without a WorkOS write, so no old form restores a revoked grant
+[V] Given Dan in Acme, forged posts that name the inactive Eve, memberships of Globex, Super Admin, or the actions disable, deactivate, and reset-password each get 403; WorkOS gets no write, and no grant changes; the inactive membership has no change form
+[V] Given a sign-in without MFA evidence, the members and invitations pages and a grant post with the form token of the session each get the 403 MFA notice, and WorkOS gets no member, invitation, or role read or write
+[V] Given Dan, a User invitation of a new address, a repeat in another letter case, an Admin invitation of that address, and an Admin invitation of the active Ada give one accepted WorkOS send with only User, no send for the repeat, and 409 address in use for the two sends that WorkOS refuses; the resend and the revoke are each one WorkOS change; the page shows the state that WorkOS gives, and no page or log line holds the token or the link
+[V] Given Eve with an inactive membership that had User and Admin, after Hal invites Eve as User and Eve accepts in AuthKit, the membership is active with only User; no earlier Admin returns, the invitations page shows the acceptance, the User seats count Eve, and its MCP access works
+[V] Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, the page offers only "Invite as User" and shows the User invitation as expired and the Admin invitation as pending; a forged Admin invitation gets 403 and a resend of the expired User invitation 409, without a WorkOS change
+[V] Given WorkOS member pages of two that repeat one membership on the next page, the members page counts each active User membership once, Ada, Bea, and Hal, and Admin-only, Super-Admin-only, default-role, inactive, and pending memberships count zero; each member read names the organization and the three statuses
+[V] Given a WorkOS outage on a later member page, the members page and a User grant to Gus each get the 500 failure page with an operator report and no partial count; the applied grant keeps its record although its seat update failed
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-workos-administration.test.js
+```
+
 **Hosted organization onboarding and selection** (`test/acceptance/auth/hosted-organizations.test.ts`)
 
 Each test starts the shared site of `test/support/hosted-organization-site.ts` with `serveOrganizationSite()`: the real hosted composition behind the real HTTP server, `startHttpServer()`, on a loopback port. `HostedBrowser` sends each request with `node:http` and keeps the cookies of each answer, as a browser does. Doubles stand only at the provider boundaries. `BrowserSessionStore` is a stateful browser session whose cookie key changes at each refresh, as with rotating refresh tokens, so a browser that does not get the new cookie is signed out. `MembershipDirectoryDouble` reads one configured set of memberships for access resolution and for the organization list. A real MCPServer verifies tokens with `IdentityVerifierMock` and runs a test-only tool. `AccountOperationProbe` gives the selection destinations, which each check their own permission. No account request may fail: a failure report fails the test. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy, not WorkOS behavior, and are no hosted live gate pass.
@@ -1789,7 +1898,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
 
 **Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
 
-These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
 
 AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
 
@@ -1855,6 +1964,29 @@ AUTH-07W cases of the hosted server (`test/acceptance/auth/hosted-live/organizat
 [V] In the same session, selections of an organization without a membership and of the inactive membership, and selections from another origin or with another form token, each get 403 without a switch; the session stays in B
 [V] An identity that the operator made Super Admin of the operator organization is offered that organization, opens the billing page with the Free plan, and gets 403 for the protected portal request; a customer grant of Super Admin gets 403 with a change record; after the operator revokes Super Admin, the next request of the same session is refused, and the organization page gives the onboarding guidance
 [V] After the access token of the selection session expired, a refused selection gets 403 with the refreshed session cookie; the form token stays the same, and the session stays in B
+
+AUTH-08W provider proofs (`test/acceptance/auth/hosted-live/administration-proofs.ts`). They run the single-role writes of WorkOS with the pinned SDK, and the directory methods of the real `WorkOSOrganizations`, against the staging environment, in organization D. D has no external ID, so the proofs cover an organization without one, whose resource WorkOS names by the organization ID. The run makes organizations C and D and 25 users, each with a password and a verified email (`test/support/hosted-live/administration-fixtures.ts`), and deletes them at the end:
+
+[V] An assignment of Admin on the organization resource of D, named by its organization ID, adds only Admin and changes the update time; the role assignment has the organization ID of D as the external ID of its resource; the same assignment again gives the same role assignment and changes neither the roles nor the update time
+[V] Assignments of Admin and Super Admin at the same time both stay, and User stays
+[V] The removal of Admin, which the membership does not have, succeeds and changes neither the roles nor the update time
+[V] A single-role write that names the organization resource of B gets 404 `entity_not_found` and changes neither the roles nor the update time
+[V] The directory grants Admin on the revision of a page and keeps User; the same request again, and the old request again after a later revoke of Admin, are each `stale` without a write, so the revoked grant does not return
+[V] The revoke of User, the only application role in D, keeps the membership active with only the default role `member`, whose grant gives no permission; the membership in B keeps User
+[V] A grant of Admin and a revoke of User on an inactive membership and on a pending membership from an invitation are each `unsupported`; WorkOS keeps the status, the roles, and the update time of each
+[V] Member reads in pages of two give, for each status filter, exactly the memberships of a direct WorkOS read; the User seat count counts each active membership with User once, and Admin only, Super Admin only, the default role, pending, and inactive count zero
+[V] An Admin invitation to an identity without a membership gives a pending Admin invitation and a pending membership with only `admin`; a User invitation to that address in capital letters and an Admin invitation to an active member are `address-in-use` without a second invitation; the resend and the revoke are applied, the revoked invitation is listed only as revoked, and its membership stays pending without access; a second resend and revoke are `not-pending`; no result holds the token or the link
+
+AUTH-08W cases of the hosted server (`test/acceptance/auth/hosted-live/administration-server.ts`), with the same local HTTPS test server, in organization C. C has the external ID `thermus-live-<run ID>-c`, as each customer organization of the operator runbook has one, so each grant change of the directory in these cases names the resource of C by that external ID. The run registers them after the first four AUTH-07W cases and before the AUTH-06 cases:
+
+[V] An Admin-only member gets 403 and a `denied` change record for a forged Admin grant of a Super Admin; its members page offers no Admin change, and WorkOS keeps only `super-admin`
+[V] An identity with only Super Admin signs in with MFA, sees no User change, and grants Admin and then User to itself, each with 303; WorkOS has `super-admin`, `admin`, and `user`, the User seats grow by one, and the operator log has an `applied` record of each grant without a credential
+[V] The same Super Admin revokes its own Admin and grants it again with the Super Admin that it kept, each with 303; between them, its members page offers no User change; WorkOS has the three roles at the end
+[V] After the administrator revokes Admin from a member with User and Admin, its next members page gets 403 and its MCP token still works; after the administrator grants Admin again and revokes User, the MCP token gets 403 and the members page opens
+[V] After the administrator revokes the only User grant in C of a member that also has User in B, its next portal request gets 403, its organization page offers only B, the members page shows it active without a role, and WorkOS keeps C active with only `member` and B with `user`
+[V] Grant posts that name a membership of A, an inactive membership of C, the role `super-admin`, or the actions disable, deactivate, and reset-password each get 403 and change nothing; a post on the revision of a page after another administrator assigned Admin in WorkOS, on the resource of C named by its external ID, gets 409 without a write
+[V] Invitation forms of the administrator: a User and an Admin invitation and a repeated User invitation get 303; an Admin invitation to the pending address and a User invitation to an active member get 409 address in use; the resend and a third invitation with its revoke get 303; WorkOS has one invitation to each address, the pending membership of the Admin invitation has only `admin`, the page shows each state with forms only for pending invitations, each change has its record, and no page or log line holds an invitation token or link
+[V] Each invitee opens its invitation link and completes the AuthKit sign-in with MFA through `/invite`: the User invitee is active with only `user` and opens the portal; the Admin invitee, whose inactive membership had User and Admin, is active with only `admin`, gets 403 for the portal, and opens the members page; the invitations page shows both accepted, the members page shows the User seats of WorkOS, and no page or log line holds an invitation token or link
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 

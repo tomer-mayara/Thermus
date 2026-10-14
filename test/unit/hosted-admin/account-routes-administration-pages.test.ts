@@ -62,6 +62,14 @@ describe('HostedAccountRoutes member and invitation pages', () => {
     });
   }
 
+  test('Given an invitations page, when it opens, then it says that the acceptance of a pending invitation gives its role, and that the role of another invitation can be the current role of the member', async () => {
+    const { routes } = serveAdministration({ invitations: acmeInvitations });
+
+    const body = await (await routes.handle(accountRequest('/invitations', 'session=ann'))).text();
+
+    assert.match(body, /The acceptance of a pending invitation gives the role that the page shows\. For an accepted, revoked, or expired invitation, the sign-in service can show the current role of the member instead\./);
+  });
+
   test('Given an unknown identity policy from the directory, when the invitations page opens, then the page claims no strict address match', async () => {
     const { routes } = serveAdministration({ invitations: { ...acmeInvitations, identityPolicy: 'same-address-maybe' as InvitationOverview['identityPolicy'] } });
 

@@ -5,7 +5,7 @@ import type { Page } from 'playwright';
 import { formsIn, type PageForm } from '../../../support/hosted-browser.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf, superAdminRole } from '../../../support/hosted-live/operator-runbook.ts';
-import { serverGet, serverPost, sessionJson, signInThroughPortal, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
+import { formNamed, serverGet, serverPost, sessionJson, signInThroughPortal, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
 import { localOrigin } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
@@ -25,12 +25,6 @@ interface SelectionVisit extends PortalVisit {
 
 function sessionCookiesIn(answer: ServerAnswer): string[] {
   return answer.setCookies.filter((cookie) => cookie.startsWith(`${sessionCookie}=`) && !/Max-Age=0/i.test(cookie));
-}
-
-function formNamed(forms: readonly PageForm[], label: string): PageForm {
-  const form = forms.find((candidate) => candidate.label === label);
-  assert.ok(form, `The organization page offers no ${label}: ${JSON.stringify(forms.map((candidate) => candidate.label))}`);
-  return form;
 }
 
 async function organizationForms(page: Page, returnTo = '/organizations'): Promise<PageForm[]> {
