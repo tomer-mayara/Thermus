@@ -53,6 +53,7 @@ const REFUSAL_NOTICES: Readonly<Record<Exclude<ChangeResult, 'applied' | 'unchan
   'mfa-required': 'mfaRequired',
   stale: 'changeStale',
   'not-pending': 'invitationNotPending',
+  'address-in-use': 'invitationAddressInUse',
   unsupported: 'changeUnsupported',
 };
 

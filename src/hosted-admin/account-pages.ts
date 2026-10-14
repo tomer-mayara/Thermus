@@ -65,6 +65,14 @@ const NOTICES = {
     title: 'Invitation not pending',
     paragraphs: ['The invitation is no longer pending: it was accepted, revoked, or expired. Nothing changed.'],
   },
+  invitationAddressInUse: {
+    status: 409,
+    title: 'Invitation not sent',
+    paragraphs: [
+      'This email address already belongs to a member of the organization, or it has a pending invitation. Nothing changed.',
+      'To change the roles of a member, open the members page. To invite with another role, revoke the pending invitation first.',
+    ],
+  },
   changeUnsupported: {
     status: 503,
     title: 'Change not available',
