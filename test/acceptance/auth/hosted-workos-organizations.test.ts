@@ -3,7 +3,8 @@ import { describe, test, type TestContext } from 'node:test';
 import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
-import { formsIn, HostedBrowser, listenerTransport, type BrowserAnswer, type BrowserTransport, type PageForm } from '../../support/hosted-browser.ts';
+import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/hosted-browser.ts';
+import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
 import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
 import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
@@ -47,9 +48,7 @@ class LogLines {
   readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
 }
 
-interface Site {
-  readonly world: WorkOSWorld;
-  readonly transport: BrowserTransport;
+interface Site extends WorkOSServerSite {
   readonly log: LogLines;
 }
 
@@ -64,15 +63,11 @@ async function openSite(t: TestContext): Promise<Site> {
     await server.close();
     await application.close();
   });
-  return { world, transport: listenerTransport(server.url), log };
+  return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
 }
 
-// The browser starts the sign-in at the server; AuthKit, which the test plays, sends it back with a code and the state.
 async function signIn(site: Site, user: WorldUser, organizationId?: string): Promise<HostedBrowser> {
-  const browser = new HostedBrowser(site.transport, config.publicBaseUrl);
-  const start = await browser.open('login');
-  const state = start.location?.searchParams.get('state') ?? '';
-  const callback = await browser.open(`callback?code=${site.world.codeFor(user, organizationId)}&state=${encodeURIComponent(state)}`);
+  const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
 }
@@ -138,7 +133,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.ok(site.log.lines.every((line) => !line.startsWith('ERROR')), site.log.lines.join('\n'));
   });
 
-  test('Given a member with User and Admin in Acme, User in Globex, an inactive membership in Initech, and only the default role in Umbrella, whose memberships WorkOS gives on several pages, when the member opens the organization page and selects Globex for the portal, then only Acme and Globex are offered with their WorkOS names, the browser goes to the portal with a new session cookie, and the portal checks the current grants of Globex', async (t) => {
+  test('Given a member with User and Admin in Acme, User in Globex, an inactive membership in Initech, and only the default role in Umbrella, whose memberships WorkOS gives on several pages, when the member opens the organization page and selects Globex for the portal, then only Acme and Globex are offered with their WorkOS names, the browser goes to the portal with a new session cookie, and the portal and the billing page check the current grants of Globex', async (t) => {
     const site = await openSite(t);
     site.world.membershipPageSize = 1;
     const browser = await signIn(site, ada, acme);
@@ -162,6 +157,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.notEqual(browser.cookieHeader, before);
     assert.equal(portal.status, 200, portal.body);
     assert.deepEqual(JSON.parse(portal.body), { organizationId: globex, roles: ['user'] });
+    assert.equal((await browser.open('billing')).status, 403);
     assert.equal(await sessionOrganization(browser), globex);
     assert.deepEqual(relisted.map(({ label }) => label), ['Acme', 'Globex (selected)']);
     assert.deepEqual(switchesIn(site), [globex]);
@@ -211,17 +207,20 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.deepEqual(switchesIn(site), [hooli]);
   });
 
-  test('Given a member with only Super Admin in Acme, when it opens the organization page and selects Acme, then Acme is offered and selected, because Super Admin gives application permissions, but the protected portal request and the MCP endpoint refuse it: no User or Admin grant is inferred', async (t) => {
+  test('Given a member with only Super Admin in Acme, when it opens the organization page and selects Acme for the billing page, then Acme is offered and selected, and its billing page, an administration page of Super Admin, opens; but the protected portal request and the MCP endpoint refuse it, because no User grant is inferred', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, sam);
 
-    const forms = formsIn((await browser.open('organizations?return_to=/team/portal/access')).body);
+    const forms = formsIn((await browser.open('organizations?return_to=/team/billing')).body);
     const selected = await browser.submit(formFor(forms, 'Acme'));
-    const portal = await browser.follow(selected);
+    const billing = await browser.follow(selected);
+    const portal = await browser.open('portal/access');
 
     assert.deepEqual(forms.map(({ label }) => label), ['Acme']);
     assert.equal(selected.status, 303, selected.body);
     assert.equal(await sessionOrganization(browser), acme);
+    assert.equal(billing.status, 200, billing.body);
+    assert.match(billing.body, /Plan: Free/);
     assert.equal(portal.status, 403);
     assert.deepEqual(JSON.parse(portal.body), { access: 'denied' });
     assert.equal(await mcpStatus(site, sam, acme), 403);
