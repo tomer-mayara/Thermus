@@ -906,7 +906,7 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 
 **Renderer process double** (`test/unit/website-fetcher/renderer-process-double.test.ts`)
 
-`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double. The offline acceptance tests get one for each launch from `RendererProcessDouble`.
+`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double. The offline acceptance tests get one for each launch from `RendererProcessDouble`. The renderer setup report test of the server composition and the renderer shutdown cases also give this double as the renderer child.
 
 [V] Records `SIGKILL` and sends no signal to a process when the readiness deadline or a cancellation of a running fetch requests a kill
 
@@ -972,7 +972,7 @@ The operation runs with the real permission helper and with fetcher, pipeline, a
 
 **Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
 
-`fetchToolServers` runs with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. No renderer runs.
+`fetchToolServers` runs with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
 
 [V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets exactly one line for each code, in order, with the exact report text
 
@@ -1463,9 +1463,11 @@ the application lifetime with a provider cleanup probe. Fetcher, pipeline, and
 identity/access collaborators are supplied through public interfaces. These
 cases stay offline and use no renderer.
 
-The renderer shutdown cases use the real fetcher with process and DNS doubles.
-No renderer executable runs. They observe the child, readiness timer, abort
-listener, and delayed process callback through the real MCP HTTP path.
+The renderer shutdown cases use the real fetcher with the process and DNS
+doubles of `mockRenderer`. The renderer child is a `RendererChildDouble`, and
+the cases check the signals that it records. No renderer executable runs. They
+observe the child, readiness timer, abort listener, and delayed process
+callback through the real MCP HTTP path.
 
 [V] Cancels active work before listener drain and awaits fetch cleanup before provider close
 [V] Refuses new connections, skips later pipeline work, records cancellation once, and permits repeated close
