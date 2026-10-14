@@ -83,17 +83,28 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       let readinessTimer: ReturnType<typeof setTimeout> | undefined;
       let readinessLimitReached = false;
       let completed = false;
+      let resourcesReleased = false;
+      let killRequested = false;
       let child: ChildProcess | undefined;
-      const cancel = () => {
+      const releaseResources = () => {
+        if (resourcesReleased) return;
+        resourcesReleased = true;
         clearTimeout(readinessTimer);
-        if (!completed && child?.exitCode === null && child.signalCode === null) {
+        signal?.removeEventListener('abort', cancel);
+      };
+      const stopChild = () => {
+        if (!completed && !killRequested && child?.exitCode === null && child.signalCode === null) {
+          killRequested = true;
           child.kill('SIGKILL');
         }
       };
+      const cancel = () => {
+        releaseResources();
+        stopChild();
+      };
       const cleanup = () => {
         completed = true;
-        clearTimeout(readinessTimer);
-        signal?.removeEventListener('abort', cancel);
+        releaseResources();
       };
       signal?.addEventListener('abort', cancel, { once: true });
       try {
@@ -106,6 +117,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
             timeout: LIGHTPANDA_TIMEOUT_MS,
           },
           (error, stdout) => {
+            if (completed) return;
             cleanup();
             try {
               signal?.throwIfAborted();
@@ -128,7 +140,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
           readinessTimer = setTimeout(() => {
             if (completed || child?.exitCode !== null || child.signalCode !== null) return;
             readinessLimitReached = true;
-            child.kill('SIGKILL');
+            stopChild();
           }, LIGHTPANDA_READINESS_DEADLINE_MS);
         }
       } catch (error) {

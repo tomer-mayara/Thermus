@@ -5,13 +5,14 @@ import { ProtocolError } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../../../src/auth/access-context.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
+import type { McpRequestLifetime } from '../../../src/mcp/mcp-server.ts';
 
 const context: RequestContext = {
   user: { authority: 'trusted-authority', subject: 'trusted-subject' }, tenantId: 'trusted-workspace', grants: [], permissions: ['product:access'],
 };
 const validArgs = { url: 'HTTPS://Example.COM/Page?secret-query=yes#secret-fragment', reason: 'Read for the task' };
 
-async function connect(t: TestContext, options: { operation?: (url: string, context: RequestContext, signal: AbortSignal) => Promise<string>; infoFails?: boolean; errorFails?: boolean } = {}) {
+async function connect(t: TestContext, options: { operation?: (url: string, context: RequestContext, signal: AbortSignal) => Promise<string>; infoFails?: boolean; errorFails?: boolean; lifetime?: McpRequestLifetime } = {}) {
   const calls: { url: string; context: RequestContext; signal: AbortSignal }[] = [];
   const info: string[] = [];
   const completed = Promise.withResolvers<string>();
@@ -25,7 +26,7 @@ async function connect(t: TestContext, options: { operation?: (url: string, cont
       info: (entry) => { info.push(entry); completed.resolve(entry); if (options.infoFails) throw new Error('secret-info-error'); },
       error: (entry) => { errors.push(entry); if (options.errorFails) throw new Error('secret-log-error'); },
     },
-  });
+  }, options.lifetime);
   const client = new Client({ name: 'fetch-dispatch-unit', version: '0.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
@@ -136,6 +137,33 @@ test('Given nonstring operation output, when called, then the dispatch refuses i
   assert.deepEqual(await client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs }), { content: [{ type: 'text', text: 'Page processing failed' }], isError: true });
   assert.equal(info.length, 1);
   assert.equal(JSON.parse(info[0]).status, 'processing_failed');
+});
+
+test('Given an owned request lifetime, when shutdown cancels it, then the full handler stays tracked until its cancellation completion is recorded', async (t) => {
+  const shutdown = new AbortController();
+  const started = Promise.withResolvers<void>();
+  const release = Promise.withResolvers<void>();
+  const cancelled = Promise.withResolvers<void>();
+  const tracked: Promise<unknown>[] = [];
+  const lifetime: McpRequestLifetime = { signal: shutdown.signal, track: (task) => { tracked.push(task); return task; } };
+  const site = await connect(t, { lifetime, operation: async (_url, _context, signal) => {
+    started.resolve();
+    await new Promise<void>((resolve) => signal.addEventListener('abort', () => { cancelled.resolve(); resolve(); }, { once: true }));
+    await release.promise;
+    return 'late success';
+  } });
+  t.after(() => release.resolve());
+  const result = site.client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs });
+  await started.promise;
+  assert.equal(tracked.length, 1);
+  shutdown.abort();
+  await cancelled.promise;
+  assert.deepEqual(site.info, []);
+  release.resolve();
+  await Promise.all(tracked);
+  assert.equal(JSON.parse(site.info[0]).status, 'cancelled');
+  assert.deepEqual(await result, { content: [{ type: 'text', text: 'Request cancelled' }], isError: true });
+  assert.equal(site.info.length, 1);
 });
 
 test('Given an unknown tool and two failing logger methods, when called, then the safe InvalidParams error stays unchanged and no operation runs', async (t) => {

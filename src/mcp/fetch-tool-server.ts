@@ -1,23 +1,24 @@
-import { ProtocolError, ProtocolErrorCode, Server, type CallToolResult } from '@modelcontextprotocol/server';
+import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../auth/access-context.ts';
 import type { BaseLogger } from '../logging/base-logger.ts';
 import { fetchToolInputSchema, parseFetchToolArguments } from './fetch-tool-schema.ts';
 import { formatToolCompletion, type CompletionStatus } from './tool-completion-record.ts';
+import type { McpRequestLifetime } from './mcp-server.ts';
 
 export function createFetchToolServer(context: RequestContext, dependencies: {
   operation: (url: string, context: RequestContext, signal: AbortSignal) => Promise<string>;
   logger: Pick<BaseLogger, 'info' | 'error'>;
-}): Server {
+}, lifetime?: McpRequestLifetime): Server {
   const server = new Server({ name: 'thermus', version: '0.0.0' }, { capabilities: { tools: {} } });
   server.setRequestHandler('tools/list', () => ({ tools: [{
     name: 'getURLAsMarkdown',
     description: 'Fetch a web page as Markdown. Give the reason the agent needs the page.',
     inputSchema: fetchToolInputSchema,
   }] }));
-  server.setRequestHandler('tools/call', async (request, requestContext) => {
+  const callTool = async (request: CallToolRequest, requestContext: ServerContext) => {
     const startedAt = performance.now();
     const call = request.params;
-    const signal = requestContext.mcpReq.signal;
+    const signal = lifetime === undefined ? requestContext.mcpReq.signal : AbortSignal.any([requestContext.mcpReq.signal, lifetime.signal]);
     let status: CompletionStatus = 'processing_failed';
     try {
       if (call.name !== 'getURLAsMarkdown') {
@@ -43,6 +44,10 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
         name: call.name, arguments: call.arguments, status, durationMs: Math.max(0, performance.now() - startedAt),
       }));
     }
+  };
+  server.setRequestHandler('tools/call', (request, requestContext) => {
+    const task = callTool(request, requestContext);
+    return lifetime?.track(task) ?? task;
   });
   return server;
 }

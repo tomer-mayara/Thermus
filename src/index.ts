@@ -49,28 +49,35 @@ export async function serve(environment: Environment, logger: ApplicationLogger,
   const config = loadDeploymentConfig(environment, 'http');
   const listen = loadListenAddress(environment);
   await using owned = new AsyncDisposableStack();
-  const application = owned.adopt(await createApplication(config, logger), (started) => started.close());
-  const server = owned.adopt(
-    await startHttpServer(application.handle, { listen, publicBaseUrl: config.publicBaseUrl, logger }),
-    (listening) => listening.close(),
-  );
+  let listenerDrain: Promise<void> | undefined;
+  const application = owned.adopt(await createApplication(config, logger), (started) => started.close(listenerDrain));
+  const server = await startHttpServer(application.handle, { listen, publicBaseUrl: config.publicBaseUrl, logger });
+  // Start listener drain, then cancel application work before waiting for the drain.
+  owned.defer(() => { listenerDrain = server.close(); });
   // A caller can send a stop signal as soon as the "Listening on" line appears, so register the stop handlers first.
-  const stopped = stopSignal(signals);
+  using stopped = stopSignal(signals);
   logger.info(`Listening on ${server.url.origin}`);
-  const signal = await stopped;
+  const signal = await stopped.received;
   logger.info(`Stopping after ${signal}`);
 }
 
-function stopSignal(signals: ProcessSignals): Promise<NodeJS.Signals> {
-  return new Promise((resolve) => {
-    const stop = (signal: NodeJS.Signals): void => {
+function stopSignal(signals: ProcessSignals): Disposable & { readonly received: Promise<NodeJS.Signals> } {
+  const received = Promise.withResolvers<NodeJS.Signals>();
+  let registered = true;
+  const dispose = (): void => {
+    if (registered) {
+      registered = false;
       signals.off('SIGINT', stop);
       signals.off('SIGTERM', stop);
-      resolve(signal);
-    };
-    signals.once('SIGINT', stop);
-    signals.once('SIGTERM', stop);
-  });
+    }
+  };
+  const stop = (signal: NodeJS.Signals): void => {
+    dispose();
+    received.resolve(signal);
+  };
+  signals.once('SIGINT', stop);
+  signals.once('SIGTERM', stop);
+  return { received: received.promise, [Symbol.dispose]: dispose };
 }
 
 function failureMessage(error: unknown): string {
