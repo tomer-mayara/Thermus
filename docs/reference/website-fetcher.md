@@ -2,7 +2,7 @@
 
 `WebsiteFetcher.fetchURL(url, signal?)` returns a `WebsiteFetchResult` for a successful HTTP response. The result has `requestedUrl`, `finalUrl`, and `html`. `requestedUrl` keeps the URL as supplied. `finalUrl` is the page URL after redirects. The HTML contains the rendered page.
 
-The Lightpanda implementation accepts only `http:` and `https:` URLs. The constructor argument selects the executable: `new WebsiteFetcherLightpanda(executable)`. A nonempty value is the exact executable path, including spaces. An empty or missing value selects `lightpanda` from `PATH`. The fetcher reads no setting from the environment. The self-hosted server reads `LIGHTPANDA_BIN` when it starts and passes it to the constructor. Use an absolute path and verify the supported version before use. See [Lightpanda runtime setup](../lightpanda-runtime.md) for the pinned release, download checks, executable selection, and upgrade policy.
+The Lightpanda implementation accepts only `http:` and `https:` URLs. The constructor argument selects the executable: `new WebsiteFetcherLightpanda(executable)`. A nonempty value is the exact executable path, including spaces. An empty or missing value selects `lightpanda` from `PATH`. The fetcher takes no setting, such as `LIGHTPANDA_BIN`, from the environment. The self-hosted server reads `LIGHTPANDA_BIN` when it starts and passes it to the constructor. Use an absolute path and verify the supported version before use. See [Lightpanda runtime setup](../lightpanda-runtime.md) for the pinned release, download checks, executable selection, and upgrade policy.
 
 The fetcher uses JSON output, HTML dump, HTTP failure reporting, and the production readiness and network safety options:
 

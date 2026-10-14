@@ -53,8 +53,6 @@ const pages: Readonly<Record<string, string>> = {
 const redirectedPage = page('<h1>Redirected story</h1><p>The final page has a first paragraph with enough words to keep it.</p>'
   + '<p class="final-host-target">Final host target</p><p class="requested-host-target">Requested host target</p>'
   + '<p>Related <a href="child">child</a> and <a href="/root">root</a>.</p>');
-const storyMarkdown = (origin: string): string => '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\n'
-  + `Final host target\n\nRelated [article](${origin}/related) and [root](${origin}/root).`;
 
 async function pinnedRenderer(): Promise<string> {
   const executable = process.env.LIGHTPANDA_BIN;
@@ -131,13 +129,16 @@ function watchRendererChildren(t: TestContext, executable: string): ChildProcess
   return children;
 }
 
-// Removes LIGHTPANDA_DISABLE_TELEMETRY from the server environment until the test ends and gives the server a new HOME.
-// Returns the data directory that Lightpanda 1.0.0 makes at each start: on macOS under HOME, on Linux under
-// XDG_DATA_HOME. With telemetry on, the renderer writes its telemetry install ID, the file iid, there and starts the
-// telemetry sender, which alone connects to telemetry.lightpanda.io. With telemetry off, it does neither.
-function removeTelemetrySetting(t: TestContext): string {
+function newServerHomeWithoutTelemetrySetting(t: TestContext): string {
   const home = dataDirectory(t);
   setProcessEnvironment(t, { LIGHTPANDA_DISABLE_TELEMETRY: undefined, HOME: home, XDG_DATA_HOME: join(home, '.local', 'share') });
+  return home;
+}
+
+// Lightpanda 1.0.0 makes its data directory at each start: on macOS under HOME, on Linux under XDG_DATA_HOME. With
+// telemetry on, it writes its telemetry install ID, the file iid, there and starts the telemetry sender, which alone
+// connects to telemetry.lightpanda.io. With telemetry off, it does neither.
+function lightpandaDataDirectory(home: string): string {
   return process.platform === 'darwin' ? join(home, 'Library', 'Application Support', 'lightpanda') : join(home, '.local', 'share', 'lightpanda');
 }
 
@@ -186,7 +187,8 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
       const tenant = site.server.tenant();
       await site.server.stop();
 
-      assertText(result, storyMarkdown(fixture.hostnameOrigin));
+      assertText(result, '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\nFinal host target\n\n'
+        + `Related [article](${fixture.hostnameOrigin}/related) and [root](${fixture.hostnameOrigin}/root).`);
       assert.deepEqual(fixture.requests, ['/story', '/story.js']);
       assert.deepEqual(pagesSeen(site), [{ requestedUrl: url, finalUrl: url }]);
       const records = site.server.completionRecords();
@@ -202,7 +204,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
   }
 
   test('Given a local server whose environment does not set LIGHTPANDA_DISABLE_TELEMETRY, when the MCP client gets a local JavaScript page, then the renderer run has telemetry off: it writes no telemetry install ID in its data directory, so it starts no telemetry sender and tries no connection to telemetry.lightpanda.io', { timeout: 120_000 }, async (t) => {
-    const rendererData = removeTelemetrySetting(t);
+    const home = newServerHomeWithoutTelemetrySetting(t);
     const site = await openRuntimeSite(t, executable);
     const fixture = await openPageFixture(t);
     const client = await connect(t, site);
@@ -210,7 +212,9 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     const result = await callFetchTool(client, `${fixture.hostnameOrigin}/story`);
     await site.server.stop();
 
-    assertText(result, storyMarkdown(fixture.hostnameOrigin));
+    assertText(result, '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\nFinal host target\n\n'
+      + `Related [article](${fixture.hostnameOrigin}/related) and [root](${fixture.hostnameOrigin}/root).`);
+    const rendererData = lightpandaDataDirectory(home);
     assert.ok(existsSync(rendererData), 'the renderer made no data directory under the new HOME');
     assert.deepEqual(readdirSync(rendererData), []);
   });

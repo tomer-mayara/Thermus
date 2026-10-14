@@ -17,15 +17,14 @@ for (const configured of [undefined, '', '/opt/Lightpanda runtime/lightpanda']) 
     const execute = t.mock.method(childProcess, 'execFile', () => new childProcess.ChildProcess());
     permitIPv4Fixture(t);
     const executable = configured || 'lightpanda';
-    const launchOptions = { encoding: 'utf8', env: { PATH: '/usr/bin', LIGHTPANDA_DISABLE_TELEMETRY: 'true' }, timeout: 60_000 } as const;
 
-    childProcess.execFile(executable, fetchArgs, launchOptions, () => {});
+    childProcess.execFile(executable, fetchArgs, { encoding: 'utf8', env: { PATH: '/usr/bin' }, timeout: 60_000 }, () => {});
 
     assert.equal(execute.mock.callCount(), 1);
     const [command, args, options] = execute.mock.calls[0].arguments;
     assert.equal(command, executable);
     assert.deepEqual(args, [...fetchArgs.slice(0, -1), '--block-cidrs', '-127.0.0.1/32', fixtureUrl]);
-    assert.deepEqual(options, launchOptions);
+    assert.deepEqual(options, { encoding: 'utf8', env: { PATH: '/usr/bin' }, timeout: 60_000 });
     assert.throws(() => childProcess.execFile('other-renderer', fetchArgs, () => {}), assert.AssertionError);
     assert.throws(() => childProcess.execFile(executable, [...fetchArgs.slice(0, -1), 'https://example.com/'], () => {}), assert.AssertionError);
     assert.equal(execute.mock.callCount(), 1);

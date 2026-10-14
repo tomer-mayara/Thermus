@@ -61,7 +61,8 @@ LABEL org.opencontainers.image.title="Thermus" \
       org.opencontainers.image.source="https://github.com/3-headed-monkey/Thermus"
 # The server reads its trusted ad rules from AD_RULES_FILE when it starts. The image has no rules file:
 # the operator mounts one there, as compose.yaml does. The commands and the hosted edition do not read it.
-# LIGHTPANDA_BIN selects the pinned renderer. Without LIGHTPANDA_DISABLE_TELEMETRY, each renderer run sends telemetry.
+# LIGHTPANDA_BIN selects the pinned renderer. LIGHTPANDA_DISABLE_TELEMETRY turns telemetry off for each Lightpanda run
+# in the container; the fetcher also sets it for its renderer runs.
 ENV NODE_ENV=production \
     DEPLOYMENT=self-hosted \
     DATA_DIR=/var/lib/thermus \
