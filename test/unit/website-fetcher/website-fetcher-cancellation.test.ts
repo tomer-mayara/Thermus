@@ -3,32 +3,13 @@ import childProcess, { ChildProcess, type ExecFileException } from 'node:child_p
 import dns from 'node:dns/promises';
 import { getEventListeners } from 'node:events';
 import { syncBuiltinESMExports } from 'node:module';
-import { test, type TestContext } from 'node:test';
+import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { mockRenderer, RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 const requestedUrl = 'https://EXAMPLE.com';
 const success = JSON.stringify({ url: 'https://example.com/final', http_status: 200, content: '<html>Ready</html>', error: null });
-
-function mockRenderer(t: TestContext) {
-  const child = new RendererChildDouble();
-  let finish!: Completion;
-  let signalLaunch!: () => void;
-  const launched = new Promise<void>((resolve) => { signalLaunch = resolve; });
-  const lookup = t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
-  const execute = t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
-    finish = args[3] as Completion;
-    signalLaunch();
-    return child;
-  }) as typeof childProcess.execFile);
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
-  return { child, lookup, execute, launched, finish: (...args: Parameters<Completion>) => finish(...args) };
-}
 
 test('Given a cancelled call, when fetching, then it does no DNS or renderer work', async (t) => {
   const renderer = mockRenderer(t);

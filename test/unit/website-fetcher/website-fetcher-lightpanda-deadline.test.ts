@@ -1,32 +1,9 @@
 import assert from 'node:assert/strict';
-import childProcess, { ChildProcess, type ExecFileException } from 'node:child_process';
-import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
-import { test, type TestContext } from 'node:test';
+import type { ChildProcess, ExecFileException } from 'node:child_process';
+import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
-
-type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
-
-function mockRenderer(t: TestContext) {
-  const child = new RendererChildDouble();
-  let finish!: Completion;
-  let signalLaunch!: () => void;
-  const launched = new Promise<void>((resolve) => { signalLaunch = resolve; });
-  t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
-  t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
-    finish = args[3] as Completion;
-    signalLaunch();
-    return child;
-  }) as typeof childProcess.execFile);
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
-  return { child, fetcher: new WebsiteFetcherLightpanda(), launched, finish: (...args: Parameters<Completion>) => finish(...args) };
-}
+import { mockRenderer } from '../../support/renderer-process-double.ts';
 
 function setExitState(child: ChildProcess, state: { exitCode?: number; signalCode?: NodeJS.Signals }): void {
   for (const [property, value] of Object.entries(state)) {
@@ -41,7 +18,7 @@ function successResult() {
 test('keeps a clean exit completed before the deadline when its callback is delayed', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const renderer = mockRenderer(t);
-  const result = renderer.fetcher.fetchURL('https://example.com/');
+  const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
   setExitState(renderer.child, { exitCode: 0 });
@@ -54,7 +31,7 @@ test('keeps a clean exit completed before the deadline when its callback is dela
 test('preserves the original error when a failed exit precedes the deadline callback', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const renderer = mockRenderer(t);
-  const result = renderer.fetcher.fetchURL('https://example.com/');
+  const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
   setExitState(renderer.child, { signalCode: 'SIGTERM' });
@@ -72,7 +49,7 @@ test('preserves the original error when a failed exit precedes the deadline call
 test('rejects a clean callback when the still-running child reached the deadline', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const renderer = mockRenderer(t);
-  const result = renderer.fetcher.fetchURL('https://example.com/');
+  const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
   t.mock.timers.tick(5_000);
@@ -84,7 +61,7 @@ test('rejects a clean callback when the still-running child reached the deadline
 test('keeps an HTTP failure when the renderer exits before the readiness deadline', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const renderer = mockRenderer(t);
-  const result = renderer.fetcher.fetchURL('https://example.com/');
+  const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
   setExitState(renderer.child, { exitCode: 22 });
@@ -104,7 +81,7 @@ test('keeps an HTTP failure when the renderer exits before the readiness deadlin
 test('keeps a readiness failure when the late callback reports HTTP failure', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const renderer = mockRenderer(t);
-  const result = renderer.fetcher.fetchURL('https://example.com/');
+  const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
   t.mock.timers.tick(5_000);
