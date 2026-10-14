@@ -44,8 +44,6 @@ describe('Given the configured direct auth import boundaries', () => {
       await assertForbidden(filePath, [
         './local-auth/better-auth/better-auth-provider.ts',
         '../auth/local-auth/better-auth/better-auth-runtime.js',
-        './hosted-auth/unavailable-hosted-authentication.ts',
-        '../auth/hosted-auth/unavailable-hosted-authentication.js',
         './hosted-auth/workos/workos-auth-provider.ts',
         '../auth/hosted-auth/workos/workos-browser-session.js',
         'better-auth',
@@ -76,9 +74,10 @@ describe('Given the configured direct auth import boundaries', () => {
         './better-auth/better-auth-user-administration.ts',
         '../local-auth/better-auth/local-installation.js',
         '../../auth/local-auth/better-auth/local-auth-pages.ts',
-        '../hosted-auth/unavailable-hosted-authentication.ts',
+        '../hosted-auth/workos/workos-auth-provider.ts',
         'better-auth/cookies',
         '@better-auth/mcp',
+        '@workos-inc/node',
       ]);
     });
   }
@@ -88,7 +87,6 @@ describe('Given the configured direct auth import boundaries', () => {
       const root = filePath.includes('/nested/') ? '../../' : '../';
       await assertForbidden(filePath, [
         `${root}auth/local-auth/better-auth/better-auth-provider.ts`,
-        `${root}auth/hosted-auth/unavailable-hosted-authentication.ts`,
         `${root}auth/local-auth/local-auth-command.ts`,
         `${root}auth/local-auth/local-auth-command-line.js`,
         `${root}auth/hosted-auth/workos/workos-auth-provider.ts`,
@@ -142,18 +140,14 @@ describe('Given the configured direct auth import boundaries', () => {
         '@better-auth/mcp',
       ]);
     }
-    await assertAllowed('src/auth/hosted-auth/unavailable-hosted-authentication.ts', [
-      './browser-session.ts',
-      '../access-context.ts',
-      '../../organizations/organization-directory.ts',
-    ]);
-    for (const name of ['workos-auth-provider', 'workos-browser-session', 'workos-session-routes']) {
+    for (const name of ['workos-auth-provider', 'workos-browser-session', 'workos-session-routes', 'workos-organizations']) {
       await assertAllowed(`src/auth/hosted-auth/workos/${name}.ts`, [
         './workos-settings.ts',
         './workos-organizations.ts',
         '../browser-session.ts',
         '../../access-context.ts',
         '../../identity-verifier.ts',
+        '../../../organizations/organization-directory.ts',
         '@workos-inc/node',
         'jose',
       ]);
@@ -164,7 +158,6 @@ describe('Given the configured direct auth import boundaries', () => {
     for (const filePath of ['src/application.ts', 'src/index.ts', 'src/hosted-workos-application.ts']) {
       await assertAllowed(filePath, [
         './auth/local-auth/better-auth/better-auth-user-administration.ts',
-        './auth/hosted-auth/unavailable-hosted-authentication.ts',
         './auth/hosted-auth/workos/workos-auth-provider.ts',
         'better-auth',
         '@better-auth/mcp',
