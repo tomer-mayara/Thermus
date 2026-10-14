@@ -9,6 +9,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { test } from 'node:test';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 type Launch = [executable: string, args: readonly string[], options: ExecFileOptionsWithStringEncoding, finish: Completion];
@@ -30,15 +31,12 @@ test('Given one fetcher with a configured executable, when two calls run concurr
     { url: 'https://second.example/page?call=2', finalUrl: 'https://second.example/final', html: '<html>Second page</html>' },
   ];
   const launches: Launch[] = [];
-  // If an assertion fails, the calls stay open. Fake timers and kill doubles prevent a real kill at the readiness
-  // deadline: kill on an unspawned ChildProcess sends the signal to the whole process group.
+  // The calls stay open until the test completes them. Fake timers keep the readiness deadline away, also in a slow run.
   t.mock.timers.enable({ apis: ['setTimeout'] });
   t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
-  t.mock.method(childProcess, 'execFile', ((...launch: Launch) => {
+  t.mock.method(childProcess, 'execFile', ((...launch: Launch): ChildProcess => {
     launches.push(launch);
-    const child = new ChildProcess();
-    t.mock.method(child, 'kill', () => true);
-    return child;
+    return new RendererChildDouble();
   }) as typeof childProcess.execFile);
   syncBuiltinESMExports();
   t.after(() => {

@@ -5,6 +5,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchLaunchError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 const url = 'https://example.com/';
 const html = '<html>Configured runtime</html>';
@@ -14,7 +15,7 @@ function stubRuntime(t: TestContext, cause: ExecFileException | null = null) {
   t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
   const execute = t.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
     args[3]?.(cause, JSON.stringify({ url, http_status: 200, content: html, error: null }), '');
-    return new childProcess.ChildProcess();
+    return new RendererChildDouble();
   });
   syncBuiltinESMExports();
   t.after(() => {

@@ -16,6 +16,36 @@ export interface RendererLaunch {
   readonly options: unknown;
 }
 
+// A ChildProcess that did not start has no process ID, so its kill sends the signal to the whole process group and
+// stops the test runner. A failed test can leave a fetch open, and its readiness deadline can kill the child later.
+export class RendererChildDouble extends ChildProcess {
+  readonly signals: Array<NodeJS.Signals | number> = [];
+
+  override kill(signal: NodeJS.Signals | number = 'SIGTERM'): boolean {
+    this.signals.push(signal);
+    return true;
+  }
+}
+
+export function mockRenderer(t: TestContext) {
+  const child = new RendererChildDouble();
+  let finish!: ProcessCompletion;
+  let signalLaunch!: () => void;
+  const launched = new Promise<void>((resolve) => { signalLaunch = resolve; });
+  const lookup = t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
+  const execute = t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
+    finish = args[3] as ProcessCompletion;
+    signalLaunch();
+    return child;
+  }) as typeof childProcess.execFile);
+  syncBuiltinESMExports();
+  t.after(() => {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  });
+  return { child, lookup, execute, launched, finish: (...args: Parameters<ProcessCompletion>) => finish(...args) };
+}
+
 // Stands in for the Lightpanda process and DNS at their Node APIs, so the production fetcher and pipeline run offline.
 // Each public host resolves to a public address. A URL without a page gives the renderer's HTTP 404 failure.
 export class RendererProcessDouble {
@@ -55,6 +85,6 @@ export class RendererProcessDouble {
       }
       complete(null, JSON.stringify({ url: page.finalUrl, http_status: 200, content: page.html, error: null }), '');
     });
-    return new ChildProcess();
+    return new RendererChildDouble();
   }
 }

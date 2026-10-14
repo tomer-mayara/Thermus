@@ -8,6 +8,7 @@ import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 describe('WebsiteFetcherLightpanda', () => {
   const htmlResult = (url: string, html: string) => JSON.stringify({ url, http_status: 200, content: html, error: null });
@@ -23,18 +24,18 @@ describe('WebsiteFetcherLightpanda', () => {
   let finish: (error: ExecFileException | null, stdout: string, stderr: string) => void;
   let fetcher: WebsiteFetcherLightpanda;
   let launchCount: number;
-  let child: ChildProcess;
+  let child: RendererChildDouble;
   let rendererLaunched: Promise<void>;
   let signalRendererLaunch!: () => void;
 
   beforeEach(() => {
     launchCount = 0;
-    child = new ChildProcess();
+    child = new RendererChildDouble();
     rendererLaunched = new Promise((resolve) => { signalRendererLaunch = resolve; });
     mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
     mock.method(childProcess, 'execFile', ((...invocation: [
       string, readonly string[], ExecFileOptionsWithStringEncoding, typeof finish,
-    ]) => {
+    ]): ChildProcess => {
       const [executable, arguments_, executionOptions, callback] = invocation;
       launchCount += 1;
       signalRendererLaunch();
@@ -109,17 +110,15 @@ describe('WebsiteFetcherLightpanda', () => {
 
   test('kills the child at the readiness limit and rejects only after child completion', async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
-    const kill = mock.method(child, 'kill', () => true);
     const result = fetcher.fetchURL('https://example.com/');
     await rendererLaunched;
     let settled = false;
     void result.then(() => { settled = true; }, () => { settled = true; });
 
     t.mock.timers.tick(4999);
-    assert.equal(kill.mock.callCount(), 0);
+    assert.deepEqual(child.signals, []);
     t.mock.timers.tick(1);
-    assert.equal(kill.mock.callCount(), 1);
-    assert.deepEqual(kill.mock.calls[0].arguments, ['SIGKILL']);
+    assert.deepEqual(child.signals, ['SIGKILL']);
     await new Promise<void>((resolve) => { setImmediate(resolve); });
     assert.equal(settled, false);
 
@@ -134,7 +133,7 @@ describe('WebsiteFetcherLightpanda', () => {
       return true;
     });
     t.mock.timers.tick(60_000);
-    assert.equal(kill.mock.callCount(), 1);
+    assert.deepEqual(child.signals, ['SIGKILL']);
   });
 
   const timerCleanupCases: Array<[string, ExecFileException | null]> = [
@@ -145,7 +144,6 @@ describe('WebsiteFetcherLightpanda', () => {
   for (const [name, error] of timerCleanupCases) {
     test(name, async (t) => {
       t.mock.timers.enable({ apis: ['setTimeout'] });
-      const kill = mock.method(child, 'kill', () => true);
       const result = fetcher.fetchURL('https://example.com/');
       await rendererLaunched;
       finish(error, htmlResult('https://example.com/', '<html>Ready</html>'), '');
@@ -155,7 +153,7 @@ describe('WebsiteFetcherLightpanda', () => {
         await assert.rejects(result, (caught) => caught === error);
       }
       t.mock.timers.tick(60_000);
-      assert.equal(kill.mock.callCount(), 0);
+      assert.deepEqual(child.signals, []);
     });
   }
 
@@ -179,14 +177,13 @@ describe('WebsiteFetcherLightpanda', () => {
 
   test('rejects a synchronous launch error without a timer', async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
-    const kill = mock.method(child, 'kill', () => true);
     const error = new Error('launch failed');
     mock.method(childProcess, 'execFile', () => { throw error; });
     syncBuiltinESMExports();
 
     await assert.rejects(fetcher.fetchURL('https://example.com/'), (caught) => caught === error);
     t.mock.timers.tick(60_000);
-    assert.equal(kill.mock.callCount(), 0);
+    assert.deepEqual(child.signals, []);
   });
 
   test('rejects unsupported URL protocols before starting a child', async () => {

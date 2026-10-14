@@ -19,8 +19,11 @@ runs these steps against the WorkOS staging environment. The section
 - The operator grants only the explicit role `super-admin`. Super Admin gives no
   Admin and no User. A Super Admin can then grant Admin to itself in Thermus,
   and with that Admin authority, User to itself.
-- Each step keeps the other grants of the person: User, Admin, and the default
-  role `member`. A step never deactivates or deletes a membership, and it never
+- Each step adds or removes only the role `super-admin`, with one role
+  assignment on the organization. The other grants of the person stay: User,
+  Admin, and the default role `member`, also when a customer changes User or
+  Admin at the same time. No step writes the complete role set of a
+  membership. A step never deactivates or deletes a membership, and it never
   changes the identity or another membership of the person.
 - No customer role can do these steps. Thermus refuses a customer request to
   grant or revoke Super Admin with `403`, and it keeps a change record of the
@@ -119,26 +122,39 @@ roles before.
   ```
 
 - Active, with `super-admin`: nothing to do. Record `unchanged`.
-- Active, without `super-admin`: set the roles of step 3 plus `super-admin`.
-  WorkOS replaces the complete role set and takes no precondition, so send the
-  update directly after step 3 with exactly the roles that it showed.
+- Active, without `super-admin`: assign only `super-admin` to the membership,
+  on the authorization resource of the organization. The resource has the type
+  `organization` and the external ID of the organization (step 1), not the
+  organization ID: WorkOS refuses the organization ID of an organization with
+  an external ID with `404` and the code `entity_not_found`, and changes
+  nothing.
 
   ```sh
-  api -X PUT https://api.workos.com/user_management/organization_memberships/om_01SAM \
-    -d '{"role_slugs":["user","super-admin"]}'
+  api -X POST https://api.workos.com/authorization/organization_memberships/om_01SAM/role_assignments \
+    -d '{"role_slug":"super-admin","resource_type_slug":"organization","resource_external_id":"thermus-customer-0042"}'
   ```
+
+  The role assignment adds one role and keeps each other role, also a change
+  of User or Admin that a customer makes at the same time. Never send the
+  complete role set with `PUT /user_management/organization_memberships/{id}`:
+  a replacement that starts from the read of step 3 can remove a grant that a
+  customer added after that read, or return a grant that a customer removed.
 
 - Inactive or pending: stop and record `stopped`. Do not create a membership:
   WorkOS documents that a create activates an inactive membership with the
   roles of the create. Do not reactivate it: WorkOS documents that a
-  reactivation restores its earlier roles. The person who asked must decide
-  first; a later step is a new request with a new record.
+  reactivation restores its earlier roles. Do not assign a role to it either.
+  The person who asked must decide first; a later step is a new request with a
+  new record.
 
 ### 5. Verify the current access
 
-Read the membership again, as in step 3. It must be active with exactly the
-roles of step 4. If it is not, the outcome is `unknown`: continue with
-[After an unknown outcome](#after-an-unknown-outcome).
+Read the membership again, as in step 3. It must be active with
+`super-admin`. Its other roles can differ from step 3: a customer can change
+User or Admin at the same time, and the role assignment keeps that change.
+Write the roles that you read in the record as the roles after. If the
+membership is not active with `super-admin`, the outcome is `unknown`:
+continue with [After an unknown outcome](#after-an-unknown-outcome).
 
 Then ask the person to sign in to Thermus with MFA. Its organization page lists
 the organization, its billing page opens, and its portal shows no product
@@ -147,22 +163,28 @@ access: Super Admin alone gives no User. Record `applied`.
 ## Revoke Super Admin
 
 1. Do steps 2 and 3 for the person and the organization.
-2. Active, with `super-admin`: set the roles of step 3 without `super-admin`.
-   If no other role remains, set only the default role `member`, which gives no
-   application permission:
+2. Active, with `super-admin`: remove only the role assignment of
+   `super-admin`, on the same resource as in step 4 of the setup:
 
    ```sh
-   api -X PUT https://api.workos.com/user_management/organization_memberships/om_01SAM \
-     -d '{"role_slugs":["member"]}'
+   api -X DELETE https://api.workos.com/authorization/organization_memberships/om_01SAM/role_assignments \
+     -d '{"role_slug":"super-admin","resource_type_slug":"organization","resource_external_id":"thermus-customer-0042"}'
    ```
 
-   The membership stays active. The identity and the other memberships of the
-   person stay. The next request of the person in this organization gets no
-   Super Admin access, also in a browser session that is open.
+   Each other role stays, also a change that a customer makes at the same
+   time. If no other role remains, WorkOS gives the membership the default role
+   `member`, which gives no application permission. The membership stays
+   active. The identity and the other memberships of the person stay. The next
+   request of the person in this organization gets no Super Admin access, also
+   in a browser session that is open.
 3. Without `super-admin`, or without a membership: nothing to do. Record
    `unchanged`.
 4. Inactive or pending: stop and record `stopped`.
-5. Verify as in step 5 of the setup.
+5. Verify: read the membership again, as in step 3 of the setup. It must be
+   active without `super-admin`. Its other roles can differ, as in step 5 of
+   the setup. Write them in the record as the roles after. If the membership
+   still has `super-admin` or is not active, the outcome is `unknown`:
+   continue with [After an unknown outcome](#after-an-unknown-outcome).
 
 Never deactivate or delete the membership to revoke Super Admin: that removes
 each other grant of the person too.
@@ -187,7 +209,8 @@ about that membership separately.
 ## After an unknown outcome
 
 A write that fails, times out, or gives an answer that you did not read has an
-unknown effect. Do not send it again. Inspect first, with step 3:
+unknown effect. Do not send it again. Inspect first, with step 3. After a
+grant:
 
 - `super-admin` is in place: the earlier write took effect. Record `applied`.
   Write nothing.
@@ -197,6 +220,12 @@ unknown effect. Do not send it again. Inspect first, with step 3:
   never returns a grant that someone removed.
 - The membership is inactive or pending: stop and record `stopped`. Do not
   create or reactivate it.
+
+After a revocation, the same inspection decides the other way. `super-admin`
+is absent: the earlier write took effect. Record `applied`, and write nothing.
+`super-admin` is in place, or the membership is inactive or pending: stop and
+record `stopped`. Only a new decision of the person who asked starts a new
+revocation, with a new record.
 
 ## Records
 
@@ -237,9 +266,19 @@ found:
   the first create. Thus the external ID, not the key, prevents a duplicate.
 - A create with only `super-admin` gives exactly `super-admin`, and the
   application reads only the grant of Super Admin: no Admin and no User.
-- An update with the inspected roles plus or minus `super-admin` keeps each
-  other role, the identity, and the other memberships. Without another role,
-  `member` keeps the membership active without an application permission.
+- The roles of a membership are role assignments on the authorization
+  resource of the organization. That resource has the type `organization` and
+  the external ID of the organization. WorkOS refuses a role assignment that
+  names the organization ID instead with `404` `entity_not_found`, and the
+  roles stay.
+- A role assignment of `super-admin` and its removal keep each other role,
+  the identity, and the other memberships, also the default role `member`.
+  Without another role, WorkOS gives the membership the default role `member`:
+  the membership stays active without an application permission.
+- A customer single-role change between the inspection of step 3 and the
+  write of the operator stays: a grant keeps a removal of Admin, and a
+  revocation keeps a grant of User. The earlier step of this runbook, a
+  replacement of the complete role set, lost both changes in the same order.
 - A read with only the status `active` does not show an inactive membership;
   a read with the three statuses does.
 - WorkOS accepted a create for an existing active membership and changed
@@ -252,16 +291,10 @@ manual check.
 
 ## Limits
 
-- The steps of this runbook change the roles of a membership with a complete
-  replacement, without a precondition. Of two replacements that start from the
-  same read, only the last one stays. A replacement also undoes each customer
-  change of User or Admin that WorkOS made after the read of step 3. Step 5
-  finds such a change; it cannot prevent it. AUTH-08W showed that WorkOS also
-  has single-role writes (role assignments on the organization), which keep
-  each other role. The customer grant changes of Thermus use only these, so a
-  customer change never undoes a Super Admin grant or revocation. The
-  follow-up ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changes these steps
-  to them.
+- A role assignment changes only `super-admin`, so a change of User or Admin
+  at the same time stays. WorkOS takes no precondition for it: of two operator
+  changes of `super-admin` at the same time, the last one stays. Step 5 finds
+  such a change; it cannot prevent it.
 - Separate WorkOS requests are not one transaction. Work that a person started
   with an earlier grant can finish after a revocation.
 - Thermus reads the memberships for each request, so a revocation takes effect

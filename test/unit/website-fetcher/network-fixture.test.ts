@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import { test } from 'node:test';
 import { permitIPv4Fixture } from '../../support/network-fixture.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 const fixtureUrl = 'http://localhost:8123/page';
 const fetchArgs = [
@@ -14,7 +15,7 @@ for (const configured of [undefined, '', '/opt/Lightpanda runtime/lightpanda']) 
     if (configured === undefined) delete environment.LIGHTPANDA_BIN;
     else environment.LIGHTPANDA_BIN = configured;
     t.mock.property(process, 'env', environment);
-    const execute = t.mock.method(childProcess, 'execFile', () => new childProcess.ChildProcess());
+    const execute = t.mock.method(childProcess, 'execFile', () => new RendererChildDouble());
     permitIPv4Fixture(t);
     const executable = configured || 'lightpanda';
 

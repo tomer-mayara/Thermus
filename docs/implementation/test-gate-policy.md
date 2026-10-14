@@ -535,8 +535,13 @@ The command has six parts:
   real `WorkOSOrganizations` and `OrganizationAdministration`. The proofs cover
   the organization setup by external ID, the Super Admin grant, revocation,
   replacement, and recovery, the inspection after an unknown outcome, and the
-  operator records. The driver is test support only: the product has no
-  operator method or route.
+  operator records. Each Super Admin change is one role assignment on the
+  authorization resource of the organization, or its removal. The proofs also
+  cover that resource, which has the external ID of the organization, and a
+  customer single-role change between the inspection of the runbook and its
+  write, which stays. The driver is test support only: the product has no
+  operator method or route. Its decisions also have a focused unit test with
+  an SDK double, `test/unit/auth-workos/operator-runbook.test.ts`.
 - The AUTH-07W cases of the hosted server, in
   `test/acceptance/auth/hosted-live/organization-server.ts`, with the same
   local HTTPS test server. The cases cover the onboarding of users without an
@@ -580,7 +585,7 @@ The command has six parts:
 
 For the AUTH-07W proofs and cases, the run makes its own operator
 organization, `Thermus live <run ID> operator` with the external ID
-`thermus-live-<run ID>-operator`, and 12 more users
+`thermus-live-<run ID>-operator`, and 15 more users
 (`test/support/hosted-live/organization-fixtures.ts`). It deletes them at the
 end with its other fixtures. They need no other setting or prerequisite.
 
@@ -606,8 +611,11 @@ r3 of AUTH-08W.
 
 Record the results of the AUTH-07W proofs and cases separately in the same
 way. Run r2 of AUTH-07W on 2026-10-14 passed them with the complete command:
-57 of 57 tests. The runbook also requires a completed operator MFA before each
-write ([before you start](hosted-organization-setup.md#before-you-start)). This
+57 of 57 tests. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the
+Super Admin steps of the runbook to single-role writes and added three
+operator proofs. Its run r1 on 2026-10-14 passed them with the complete
+command: 60 of 60 tests. The runbook also requires a completed operator MFA
+before each write ([before you start](hosted-organization-setup.md#before-you-start)). This
 precondition is a manual check of the operator, not a part of this gate: the
 WorkOS API cannot show a completed operator MFA. On 2026-10-14, the owner
 removed its proof from AUTH-07W. The decision ticket

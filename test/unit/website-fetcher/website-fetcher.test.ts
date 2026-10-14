@@ -5,6 +5,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { describe, test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 const url = 'https://example.com/';
 const html = '<html><body>Rendered page</body></html>';
@@ -21,7 +22,7 @@ function stubProcess(
     const callback = args.at(-1);
     assert.ok(typeof callback === 'function');
     callback(result.error ?? null, result.stdout ?? '', '');
-    return new childProcess.ChildProcess();
+    return new RendererChildDouble();
   });
   context.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
   syncBuiltinESMExports();
