@@ -1,6 +1,6 @@
 import { once } from 'node:events';
 import { createServer, STATUS_CODES, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
-import type { AddressInfo } from 'node:net';
+import type { AddressInfo, Socket } from 'node:net';
 import type { ListenAddress } from '../config/deployment-config.ts';
 import { CLIENT_ADDRESS_HEADER } from './client-address.ts';
 
@@ -38,9 +38,10 @@ export async function startHttpServer(handler: FetchHandler, options: HttpServer
     });
     void serve(bridge, incoming, outgoing);
   });
+  const connections = openConnections(server);
   server.listen({ host: options.listen.host, port: options.listen.port });
   await once(server, 'listening');
-  owned.defer(() => closeServer(server, options.shutdownGraceMs ?? DEFAULT_SHUTDOWN_GRACE_MS));
+  owned.defer(() => closeServer(server, connections, options.shutdownGraceMs ?? DEFAULT_SHUTDOWN_GRACE_MS));
   const url = listenUrl(server);
   const resources = owned.move();
   let closing: Promise<void> | undefined;
@@ -56,8 +57,20 @@ function listenUrl(server: Server): URL {
   return new URL(`http://${host}:${port}/`);
 }
 
-async function closeServer(server: Server, graceMs: number): Promise<void> {
+function openConnections(server: Server): ReadonlySet<Socket> {
+  const connections = new Set<Socket>();
+  server.on('connection', (socket: Socket) => {
+    connections.add(socket);
+    socket.once('close', () => connections.delete(socket));
+  });
+  return connections;
+}
+
+async function closeServer(server: Server, connections: ReadonlySet<Socket>, graceMs: number): Promise<void> {
   const closed = new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  // close() ends idle connections, but Node keeps a connection that has sent no bytes as if a request were active.
+  // After a fetch client aborts a request, it can open such a connection and keep it until its idle timeout.
+  for (const socket of connections) if (socket.bytesRead === 0) socket.destroy();
   const deadline = setTimeout(() => server.closeAllConnections(), graceMs);
   try {
     await closed;

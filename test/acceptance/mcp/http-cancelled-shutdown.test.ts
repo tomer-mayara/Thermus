@@ -3,7 +3,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { test } from 'node:test';
 import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
 
-test('Given a 2026-07-28 SDK call cancelled while fetch waits, when the server stops after its cancelled completion, then stop does not wait for that connection', { timeout: 10_000 }, async (t) => {
+test('Given a 2026-07-28 SDK call cancelled while fetch waits, when the server stops after its cancelled completion, then the stop does not wait for the client connections', { timeout: 10_000 }, async (t) => {
   const started = Promise.withResolvers<void>();
   const cancelled = new AbortController();
   const site = await openFetchSite(t, '2026-07-28', {
@@ -11,7 +11,7 @@ test('Given a 2026-07-28 SDK call cancelled while fetch waits, when the server s
       assert.ok(signal);
       started.resolve();
       await new Promise<void>((resolve) => signal.addEventListener('abort', () => resolve(), { once: true }));
-      // Wait for asynchronous fetch cleanup before recording cancellation.
+      // Fetch cleanup takes time, as a renderer child does. Meanwhile the client opens a new connection without a request.
       await delay(50);
       return { requestedUrl: url, finalUrl: url, html: '<p>Late source</p>' };
     } },
