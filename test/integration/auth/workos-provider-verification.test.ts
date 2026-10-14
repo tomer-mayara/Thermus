@@ -77,10 +77,12 @@ function unsignedToken(): string {
   return new UnsecuredJWT(connectClaims()).setIssuer(authkitIssuer).setAudience(mcpResourceUrl).setIssuedAt(now).setExpirationTime(now + 300).encode();
 }
 
-async function remoteKeySetWorld(t: TestContext) {
+// Only the outage that never answers needs a short timeout. A busy test run can make the first answer of the fake
+// slower than that, so each other case keeps the jose default.
+async function remoteKeySetWorld(t: TestContext, timeoutDuration?: number) {
   const fake = await WorkOSFakeApi.start(t);
   fake.authkitKeySet.publish(authkitKey);
-  const provider = providerWith(createRemoteJWKSet(fake.authkitKeySetUrl, { timeoutDuration: 100 }));
+  const provider = providerWith(createRemoteJWKSet(fake.authkitKeySetUrl, timeoutDuration === undefined ? {} : { timeoutDuration }));
   return { fake, provider };
 }
 
@@ -212,7 +214,7 @@ describe('WorkOSAuthProvider Connect token verification', () => {
     { label: 'answers a body that is not a key set', outage: { status: 200, body: { keys: 'none' } }, expected: { code: 'ERR_JWKS_INVALID' } },
   ] satisfies { label: string; outage: FakeAnswer; expected: { code: string } }[]) {
     test(`Given an AuthKit key set that ${label}, when a valid token is verified, then the key-set failure is thrown as an unexpected error and not as a token rejection`, async (t) => {
-      const { fake, provider } = await remoteKeySetWorld(t);
+      const { fake, provider } = await remoteKeySetWorld(t, outage === 'hang' ? 100 : undefined);
       fake.authkitKeySet.breakWith(outage);
 
       await assertKeySetFailure(provider.verifyAccessToken(await connectToken()), expected);
