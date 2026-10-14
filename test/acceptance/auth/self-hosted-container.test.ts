@@ -53,8 +53,11 @@ const hostedAndPaidPaths = [
 ] as const;
 
 let images: GateImages;
-// The server lists the fetch tool. The image has no renderer, so a call gets the fixed fetch failure.
+// The server lists the fetch tool. The image has no renderer, so a call gets the fixed fetch failure, and the server
+// log gets one report that names the missing renderer.
 const fetchToolNames = ['getURLAsMarkdown'];
+const missingRendererReport = 'Renderer setup failure: the Lightpanda executable is missing (ENOENT). '
+  + 'Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.';
 
 interface Installation {
   readonly site: ContainerSite;
@@ -192,7 +195,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
   after(() => removeGateResources());
 
-  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call gets the fixed fetch failure, because the image has no renderer; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call gets the fixed fetch failure, because the image has no renderer, and the server log gets one renderer setup report without request data; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t);
     const server = await setup.site.startServer(setup.volume);
     const users = mcpUsers(setup);
@@ -212,6 +215,9 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
     assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed' }], true]);
     assert.match(server.output, /"tool":"getURLAsMarkdown","url":"https:\/\/93\.184\.216\.34\/page".*"status":"fetch_failed"/);
+    const rendererReports = server.output.split('\n').filter((line) => line.includes('Renderer setup failure'));
+    assert.equal(rendererReports.length, 1, server.output);
+    assert.ok(rendererReports[0]?.endsWith(missingRendererReport), server.output);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);
     assert.notEqual(jwtClaims(firstTokens[0] ?? '').sid, jwtClaims(firstTokens[1] ?? '').sid);
     assert.deepEqual(reauthorizations, [[], []]);
