@@ -1,15 +1,22 @@
 import { pathToFileURL } from 'node:url';
-import { createApplication, type ApplicationLogger } from './application.ts';
-import { loadDeploymentConfig, loadListenAddress } from './config/deployment-config.ts';
+import { createApplication, type Application, type ApplicationLogger } from './application.ts';
+import { loadDeploymentConfig, loadListenAddress, type ListenAddress } from './config/deployment-config.ts';
 import { startHttpServer } from './http/server.ts';
 import { ConsoleLogger } from './logging/console-logger.ts';
 import { HiddenLineInput } from './terminal/hidden-line-input.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-interface ProcessSignals {
+export interface ProcessSignals {
   once(signal: NodeJS.Signals, listener: NodeJS.SignalsListener): unknown;
   off(signal: NodeJS.Signals, listener: NodeJS.SignalsListener): unknown;
+}
+
+export interface ServeOptions {
+  readonly listen: ListenAddress;
+  readonly publicBaseUrl: string;
+  readonly logger: ApplicationLogger;
+  readonly signals: ProcessSignals;
 }
 
 const entry = process.argv[1];
@@ -23,7 +30,7 @@ async function run(args: readonly string[], environment: Environment, logger: Co
     await serve(environment, logger, process);
     return 0;
   } catch (error) {
-    logger.fatal(failureMessage(error));
+    logger.fatal(error);
     return 1;
   }
 }
@@ -48,10 +55,15 @@ async function runOperatorCommand(args: readonly string[], environment: Environm
 export async function serve(environment: Environment, logger: ApplicationLogger, signals: ProcessSignals): Promise<void> {
   const config = loadDeploymentConfig(environment, 'http');
   const listen = loadListenAddress(environment);
+  await serveApplication(() => createApplication(config, logger, environment), { listen, publicBaseUrl: config.publicBaseUrl, logger, signals });
+}
+
+export async function serveApplication(open: () => Application | Promise<Application>, options: ServeOptions): Promise<void> {
+  const { listen, publicBaseUrl, logger, signals } = options;
   await using owned = new AsyncDisposableStack();
   let listenerDrain: Promise<void> | undefined;
-  const application = owned.adopt(await createApplication(config, logger, environment), (started) => started.close(listenerDrain));
-  const server = await startHttpServer(application.handle, { listen, publicBaseUrl: config.publicBaseUrl, logger });
+  const application = owned.adopt(await open(), (started) => started.close(listenerDrain));
+  const server = await startHttpServer(application.handle, { listen, publicBaseUrl, logger });
   // Start listener drain, then cancel application work before waiting for the drain.
   owned.defer(() => { listenerDrain = server.close(); });
   // A caller can send a stop signal as soon as the "Listening on" line appears, so register the stop handlers first.
@@ -78,11 +90,4 @@ function stopSignal(signals: ProcessSignals): Disposable & { readonly received: 
   signals.once('SIGINT', stop);
   signals.once('SIGTERM', stop);
   return { received: received.promise, [Symbol.dispose]: dispose };
-}
-
-function failureMessage(error: unknown): string {
-  if (error instanceof SuppressedError) {
-    return `${failureMessage(error.suppressed)} The cleanup after this failure also failed: ${failureMessage(error.error)}`;
-  }
-  return error instanceof Error ? error.message : String(error);
 }

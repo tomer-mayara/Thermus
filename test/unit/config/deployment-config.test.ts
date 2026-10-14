@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DeploymentConfigError, loadDeploymentConfig, type DeploymentConfig } from '../../../src/config/deployment-config.ts';
+import { DeploymentConfigError, loadDeploymentConfig, loadPublicUrls, type DeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
 
 type Environment = Record<string, string | undefined>;
@@ -58,6 +58,27 @@ for (const [edition, base, publicBaseUrl, mcpResourceUrl, resourceMetadataUrl] o
   test(`Given a ${edition} PUBLIC_BASE_URL of ${base}, when it loads, then it derives the exact MCP resource and metadata URLs`, () => {
     const config = load(edition, { PUBLIC_BASE_URL: base });
     assert.deepEqual([config.publicBaseUrl, config.mcpResourceUrl, config.resourceMetadataUrl], [publicBaseUrl, mcpResourceUrl, resourceMetadataUrl]);
+  });
+}
+
+for (const [edition, base, publicBaseUrl, mcpResourceUrl, resourceMetadataUrl] of derivedUrls) {
+  test(`Given only a PUBLIC_BASE_URL of ${base}, when the ${edition} public URLs load, then they are the exact base, MCP resource, and metadata URLs in a frozen record`, () => {
+    const urls = loadPublicUrls({ PUBLIC_BASE_URL: base }, edition);
+    assert.deepEqual(urls, { publicBaseUrl, mcpResourceUrl, resourceMetadataUrl });
+    assert.ok(Object.isFrozen(urls));
+  });
+}
+
+const publicUrlRejections: ReadonlyArray<[Edition, Environment, string]> = [
+  ['self-hosted', { PUBLIC_BASE_URL: undefined }, 'PUBLIC_BASE_URL is required.'],
+  ['hosted', { PUBLIC_BASE_URL: undefined }, 'PUBLIC_BASE_URL is required.'],
+  ['hosted', { PUBLIC_BASE_URL: 'http://localhost:8080' }, 'PUBLIC_BASE_URL must use https.'],
+  ['self-hosted', { PUBLIC_BASE_URL: 'http://thermus.example' }, 'PUBLIC_BASE_URL must use https. It can use http only on localhost, 127.0.0.1, or [::1].'],
+];
+for (const [edition, settings, message] of publicUrlRejections) {
+  test(`Given ${assignments(settings)} and a valid PUBLIC_BASE_URL only in process.env, when the ${edition} public URLs load, then they ignore process.env and reject the setting by name and rule`, (context) => {
+    context.mock.property(process, 'env', { PUBLIC_BASE_URL: 'https://thermus.example' });
+    assert.throws(() => loadPublicUrls(settings, edition), { name: 'DeploymentConfigError', message });
   });
 }
 

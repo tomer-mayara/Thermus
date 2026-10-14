@@ -6,12 +6,14 @@ import { isValidFetchUrl } from './fetch-tool-schema.ts';
 
 export type RendererSetupFailure = Pick<WebsiteFetchLaunchError, 'failure' | 'code'>;
 
+export type FetchOperation = (url: string, context: RequestContext, signal: AbortSignal) => Promise<string>;
+
 export function createGetURLAsMarkdown({ fetcher, pipeline, reportRendererSetupFailure }: {
   fetcher: WebsiteFetcher;
   pipeline: Pick<HtmlToMarkdownPipeline, 'process'>;
   reportRendererSetupFailure?: (failure: RendererSetupFailure) => void;
-}) {
-  return async (url: string, context: RequestContext, signal: AbortSignal): Promise<string> => {
+}): FetchOperation {
+  return async (url, context, signal) => {
     throwIfCancelled(signal);
     requirePermission(context, 'product:access');
     if (!isValidFetchUrl(url)) throw new Error('Invalid tool arguments');

@@ -4,7 +4,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { Client, InMemoryTransport, type CallToolResult } from '@modelcontextprotocol/client';
 import { createRequestContext } from '../../src/auth/access-context.ts';
-import { fetchToolServers } from '../../src/fetch-tool.ts';
+import { createFetchOperation, fetchToolServers } from '../../src/fetch-tool.ts';
 import type { RequestServerBuilder } from '../../src/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
 import { RendererChildDouble } from '../support/renderer-process-double.ts';
@@ -50,10 +50,11 @@ async function connectedClient(t: TestContext, server: ReturnType<RequestServerB
 test('Given the server composition and renderer starts that fail with ENOENT and EACCES two times each and then with ENOEXEC at once, when a client calls the fetch tool for each, then each call gets Page fetch failed and the operator log gets one error line for each code, in order, with no request data', async (t) => {
   failedStarts(t, ['ENOENT', 'ENOENT', 'EACCES', 'EACCES', 'ENOEXEC']);
   const lines = { info: [] as string[], error: [] as string[] };
-  const buildServer = fetchToolServers({ AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: executable }, {
-    info: (line) => lines.info.push(line),
-    error: (line) => lines.error.push(line),
-  });
+  const logger = {
+    info: (line: string) => lines.info.push(line),
+    error: (line: string) => lines.error.push(line),
+  };
+  const buildServer = fetchToolServers(createFetchOperation({ AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: executable }, logger), logger);
   const client = await connectedClient(t, buildServer(context, { signal: new AbortController().signal, track: (task) => task }));
 
   const results: CallToolResult[] = [];

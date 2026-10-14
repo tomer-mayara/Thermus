@@ -4,7 +4,7 @@ import { Writable } from 'node:stream';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
-import { LogLevel } from '../../../src/logging/base-logger.ts';
+import { BaseLogger, LogLevel } from '../../../src/logging/base-logger.ts';
 import { ConsoleLogger } from '../../../src/logging/console-logger.ts';
 
 const ansi = '\u001b';
@@ -150,3 +150,40 @@ test('Given a logger, when its threshold changes through all levels, then each n
   assert.equal(written.length, 1);
   assert.ok(written[0].endsWith(': logging resumes\n'));
 });
+
+const cleanupAlsoFailed = ' The cleanup after this failure also failed: ';
+const failures: ReadonlyArray<{ kind: string; failure: unknown; gives: string; text: string }> = [
+  { kind: 'an Error', failure: new Error('The listen port is in use.'), gives: 'its message', text: 'The listen port is in use.' },
+  {
+    kind: 'a SuppressedError of a cleanup failure after a failure', gives: 'the failure and then the cleanup failure',
+    failure: new SuppressedError(new Error('MCP cleanup failed'), new Error('The startup log failed')),
+    text: `The startup log failed${cleanupAlsoFailed}MCP cleanup failed`,
+  },
+  {
+    kind: 'a nested SuppressedError of two cleanup failures after a failure', gives: 'the three failures in the order they occurred',
+    failure: new SuppressedError(new Error('Listener cleanup failed'), new SuppressedError(new Error('MCP cleanup failed'), new Error('The startup log failed'))),
+    text: `The startup log failed${cleanupAlsoFailed}MCP cleanup failed${cleanupAlsoFailed}Listener cleanup failed`,
+  },
+  { kind: 'a number', failure: 42, gives: 'its text', text: '42' },
+  { kind: 'a plain object', failure: { code: 'E_RENDERER' }, gives: 'its text', text: '[object Object]' },
+  { kind: 'a string', failure: 'renderer stopped', gives: 'the string', text: 'renderer stopped' },
+];
+
+for (const { kind, failure, gives, text } of failures) {
+  test(`Given ${kind}, when it is logged at ERROR and at FATAL, then each line gives ${gives} after the call site`, () => {
+    const { logger, written } = capture();
+
+    const errorLine = callerLine() + 1;
+    logger.error(failure);
+    const fatalLine = callerLine() + 1;
+    logger.fatal(failure);
+
+    assert.equal(written.length, 2);
+    assert.ok(written[0].endsWith(`[${testFile}:${errorLine}]: ${text}\n`));
+    assert.ok(written[1].endsWith(`[${testFile}:${fatalLine}]: ${text}\n`));
+  });
+
+  test(`Given ${kind}, when BaseLogger.messageOf() renders it, then it gives ${gives}`, () => {
+    assert.equal(BaseLogger.messageOf(failure), text);
+  });
+}

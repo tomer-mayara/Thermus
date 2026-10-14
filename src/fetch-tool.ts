@@ -5,25 +5,29 @@ import { HtmlToMarkdownPipeline } from './html-cleaner-pipeline/html-to-markdown
 import { CleanHtmlToMarkdownDefuddle } from './html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { PromptInjectionRemoverSanitizer } from './html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from './mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown, type RendererSetupFailure } from './mcp/get-url-as-markdown.ts';
+import { createGetURLAsMarkdown, type FetchOperation, type RendererSetupFailure } from './mcp/get-url-as-markdown.ts';
 import type { RequestServerBuilder } from './mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from './website-fetcher/website-fetcher-lightpanda.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-// Only the server loads this module. It reads AD_RULES_FILE and makes the renderer and the cleaning pipeline one
-// time. Each MCP request gets its own tool server that uses them. Startup does not run or check the renderer.
-export function fetchToolServers(environment: Environment, logger: ApplicationLogger): RequestServerBuilder {
+// Only a server composition loads this module. createFetchOperation reads AD_RULES_FILE and makes the renderer and
+// the cleaning pipeline one time. It does not run or check the renderer. fetchToolServers gives each MCP request its
+// own tool server, and each tool server uses that one operation.
+export function createFetchOperation(environment: Environment, logger: ApplicationLogger): FetchOperation {
   const pipeline = new HtmlToMarkdownPipeline([
     adCleaner(readAdRulesFile(environment)),
     new PromptInjectionRemoverSanitizer(),
     new CleanHtmlToMarkdownDefuddle(),
   ]);
-  const operation = createGetURLAsMarkdown({
+  return createGetURLAsMarkdown({
     fetcher: new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN),
     pipeline,
     reportRendererSetupFailure: rendererSetupReporter(logger),
   });
+}
+
+export function fetchToolServers(operation: FetchOperation, logger: ApplicationLogger): RequestServerBuilder {
   return (context, lifetime) => createFetchToolServer(context, { operation, logger }, lifetime);
 }
 
