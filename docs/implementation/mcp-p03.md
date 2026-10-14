@@ -188,10 +188,11 @@ interface; they are not test-first evidence.
 - A modern client cancellation stops the renderer at once. The server stop that
   follows can wait about four seconds for the HTTP connection of the cancelled
   call. This is existing HTTP bridge and SDK behavior, outside this slice.
-  Follow-up ticket 8bb47ba0 found the cause: after the abort, Node's `fetch`
-  opens a new connection that sends no request, and the listener close kept it
-  open until the client's 4-second idle timeout. The listener close now ends
-  such a connection at once; see the
+  Follow-up ticket 8bb47ba0 corrected this note. The connection of the
+  cancelled call closes at once. The stop waited for another connection: after
+  the abort, Node's `fetch` opens a new connection that sends no request, and
+  the listener close kept it open until the client's 4-second idle timeout. The
+  listener close now ends such a connection at once; see the
   [MCP fetch tool reference](../reference/mcp-fetch-tool.md#cancellation-and-test-composition).
 - A legacy client can get no answer for a call that the server shutdown
   cancels. Thus the renderer gate closes that client after shutdown. It does not

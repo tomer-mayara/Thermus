@@ -38,7 +38,7 @@ export async function startHttpServer(handler: FetchHandler, options: HttpServer
     });
     void serve(bridge, incoming, outgoing);
   });
-  const connections = openConnections(server);
+  const connections = trackConnections(server);
   server.listen({ host: options.listen.host, port: options.listen.port });
   await once(server, 'listening');
   owned.defer(() => closeServer(server, connections, options.shutdownGraceMs ?? DEFAULT_SHUTDOWN_GRACE_MS));
@@ -57,7 +57,7 @@ function listenUrl(server: Server): URL {
   return new URL(`http://${host}:${port}/`);
 }
 
-function openConnections(server: Server): ReadonlySet<Socket> {
+function trackConnections(server: Server): ReadonlySet<Socket> {
   const connections = new Set<Socket>();
   server.on('connection', (socket: Socket) => {
     connections.add(socket);
@@ -69,7 +69,8 @@ function openConnections(server: Server): ReadonlySet<Socket> {
 async function closeServer(server: Server, connections: ReadonlySet<Socket>, graceMs: number): Promise<void> {
   const closed = new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
   // close() ends idle connections, but Node keeps a connection that has sent no bytes as if a request were active.
-  // After a fetch client aborts a request, it can open such a connection and keep it until its idle timeout.
+  // After a fetch client aborts a request, it can open such a connection and keep it until its idle timeout. Node
+  // starts a request only after it reads bytes, so ending such a connection loses no work.
   for (const socket of connections) if (socket.bytesRead === 0) socket.destroy();
   const deadline = setTimeout(() => server.closeAllConnections(), graceMs);
   try {

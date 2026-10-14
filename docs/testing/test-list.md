@@ -19,7 +19,7 @@
 [V] Formats canonical authority, subject, and tenant fields; removes URL userinfo, query, and fragment; includes only a valid bounded reason or field-status codes; escapes line breaks and omits unknown tool names, raw arguments, credentials, and causes (`test/unit/mcp/tool-completion-record.test.ts`)
 [V] Cancels owned work and waits for its cleanup; repeated close calls share one result (`test/unit/mcp/lifetime.test.ts`)
 [V] Removes completed tasks from active work, preserves cleanup errors, waits for in-progress authentication, and refuses work after shutdown (`test/unit/mcp/lifetime.test.ts`)
-[V] Releases the HTTP response of a cancelled modern call before its owned cleanup ends; close still waits for that cleanup (`test/unit/mcp/request-lifetime-isolation.test.ts`)
+[V] Returns the HTTP response of a cancelled modern call before its owned cleanup ends; close still waits for that cleanup (`test/unit/mcp/request-lifetime-isolation.test.ts`)
 [V] Keeps request context and cancellation separate between connections (P02 unit and HTTP acceptance cases below)
 [V] Supplies production rules and runtime dependencies to the self-hosted server (P03 unit, integration, and acceptance cases below)
 [] Lists `postURLAsMarkdown(url, params, reason)` with its URL input schema (deferred)
@@ -1343,7 +1343,7 @@ listener, and delayed process callback through the real MCP HTTP path.
 [V] Cancels one client call without cancelling a peer; shutdown cancels all active calls, including legacy work
 [V] Waits for both independent cleanup tasks even when one finishes first
 [V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
-[V] After a modern client cancels a call while the fetcher waits, the server stop that follows the `cancelled` record does not wait for the client connections (modern era only)
+[V] After a client cancels a call while the fetcher waits, the server stop that follows the `cancelled` record does not wait for the client connections
 
 ```sh
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"

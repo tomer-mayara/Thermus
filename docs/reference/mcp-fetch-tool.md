@@ -182,16 +182,19 @@ stream with the SDK as its only parser; abort also cancels an incomplete body.
 MCPServer awaits body-transfer cleanup and retains a failure to cancel the body.
 
 `listener.close()` ends idle keep-alive connections at once. It also ends each
-connection that has sent no bytes, because Node's HTTP server keeps such a
-connection open as if a request were active. Node's `fetch` opens such a
-connection after it aborts a request: undici puts the aborted request back in
-its queue, connects again, and then drops the request. When the client has
+connection from which the server has read no bytes, because Node's HTTP server
+keeps such a connection open as if a request were active. Node starts a request
+only after it reads bytes, so such a connection has no work. A request that the
+server has not read yet is refused, as is a connection that the server has not
+accepted yet. Node's `fetch` can open such a connection after it aborts a
+request. In Node 24.20.0, with undici 7.29.0, undici keeps the aborted request
+in its queue, connects again, and then drops the request. When the client has
 another open connection to the server, as the SDK client does after
 `server/discover`, the new connection stays open until the client's idle
-timeout, 4 seconds by default. Thus a modern client cancellation does not delay
-the server stop that follows. The connection of the cancelled call closes when
-the client aborts it. A connection with a request in progress keeps the drain
-and the grace period, 5 seconds by default.
+timeout, 4 seconds by default. Because the listener ends this connection, a
+client cancellation does not delay the server stop that follows. The connection
+of the cancelled call closes when the client aborts it. A connection with a
+request in progress keeps the drain and the grace period, 5 seconds by default.
 
 The first application close call supplies the listener drain promise. Repeated
 and concurrent close calls share cleanup. Owned transports and request servers

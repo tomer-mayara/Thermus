@@ -95,7 +95,7 @@ for (const abortAlice of [false, true]) {
   });
 }
 
-test('Given a modern tool call that waits for cancellation, when its request signal aborts, then fetch releases the HTTP response before the owned cleanup ends and close waits for that cleanup', { timeout: 2_000 }, async (t) => {
+test('Given a modern tool call that waits for cancellation, when its request signal aborts, then MCPServer.fetch returns the HTTP response before the owned cleanup ends and close waits for that cleanup', { timeout: 2_000 }, async (t) => {
   const started = Promise.withResolvers<void>();
   const cleanup = Promise.withResolvers<void>();
   const cancelled = new AbortController();
