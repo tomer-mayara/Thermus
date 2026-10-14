@@ -6,18 +6,17 @@ import { createInterface } from 'node:readline';
 
 const pipelineModule = new URL(`./css-pipeline${extname(import.meta.filename)}`, import.meta.url).href;
 const loadedLine = 'pipeline loaded';
-// This bound is high, so that a slow start does not fail a case. It stops a child that does not load at all.
+// The bound is high, so that a slow start does not fail a case. Only a child that does not load at all reaches it.
 const loadTimeLimitMs = 60_000;
 
-// Runs `work` with `assert` and `createPipeline` in a new Node process and requires status 0.
-// The time limit starts when the child has loaded the pipeline, so a slow process start or
-// module load on a busy host does not count. At each limit, this process kills the child,
-// also when the work blocks the child.
+// The time limit starts after the child has loaded the pipeline, so that a slow process start or
+// module load on a busy host does not count. The work runs in a child process, because this
+// process cannot stop work that blocks its own event loop.
 export async function assertWorkPassesInChild(work: string, timeLimitMs: number): Promise<void> {
   const child = spawn(process.execPath, ['--input-type=module', '--eval', `
     import assert from 'node:assert/strict';
     import { createPipeline } from ${JSON.stringify(pipelineModule)};
-    // The work can block this process, so the line must be out before the work starts.
+    // The work can block this process. Thus, the write of the line must end before the work starts.
     await new Promise((resolve) => process.stdout.write(${JSON.stringify(`${loadedLine}\n`)}, resolve));
     ${work}
   `], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -33,9 +32,9 @@ export async function assertWorkPassesInChild(work: string, timeLimitMs: number)
   });
   try {
     assert.ok(await resolvesWithin(Promise.race([loaded, closed]), loadTimeLimitMs),
-      `The child did not load the pipeline within ${loadTimeLimitMs} ms`);
+      `The child did not load the pipeline within ${loadTimeLimitMs} ms\n${stderr}`);
     assert.ok(await resolvesWithin(closed, timeLimitMs),
-      `The selector work did not end within ${timeLimitMs} ms`);
+      `The selector work did not end within ${timeLimitMs} ms\n${stderr}`);
   } finally {
     child.kill('SIGKILL');
   }
