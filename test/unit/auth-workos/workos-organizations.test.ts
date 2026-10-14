@@ -6,6 +6,7 @@ import { HostedRoleConfigurationError, WorkOSOrganizations } from '../../../src/
 interface MembershipRecord {
   readonly userId: string;
   readonly organizationId: string;
+  readonly organizationName: string;
   readonly status: OrganizationMembershipStatus;
   readonly roles?: readonly { readonly slug: string }[];
 }
@@ -23,6 +24,7 @@ interface ReadAnswers {
   readonly roleFailure?: Error;
 }
 
+const authority = 'workos:client_test';
 const alice = 'user_01ALICE';
 const acme = 'org_01ACME';
 
@@ -44,6 +46,7 @@ function activeMembership(roleSlugs: readonly string[] | undefined, changes: Par
   return {
     userId: alice,
     organizationId: acme,
+    organizationName: 'Acme',
     status: 'active',
     ...(roleSlugs === undefined ? {} : { roles: roleSlugs.map((slug) => ({ slug })) }),
     ...changes,
@@ -79,7 +82,7 @@ class WorkOSReadsDouble {
 
 function grantsWith(answers: ReadAnswers) {
   const reads = new WorkOSReadsDouble(answers);
-  return { reads, grants: () => new WorkOSOrganizations(reads).activeGrants(alice, acme) };
+  return { reads, grants: () => new WorkOSOrganizations({ authority, ...reads }).activeGrants(alice, acme) };
 }
 
 async function assertConfigurationError(read: Promise<unknown>, ...parts: RegExp[]): Promise<void> {
@@ -133,7 +136,7 @@ describe('WorkOSOrganizations active grants', () => {
 
   test('Given two reads of the same membership, when the grants are read, then each read asks WorkOS again, because no grant is kept', async () => {
     const reads = new WorkOSReadsDouble({ memberships: [activeMembership(['user'])] });
-    const organizations = new WorkOSOrganizations(reads);
+    const organizations = new WorkOSOrganizations({ authority, ...reads });
 
     await organizations.activeGrants(alice, acme);
     await organizations.activeGrants(alice, acme);

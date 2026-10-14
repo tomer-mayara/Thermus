@@ -63,12 +63,12 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const { WorkOSBrowserSession } = await import('./auth/hosted-auth/workos/workos-browser-session.ts');
   const { WorkOSSessionRoutes } = await import('./auth/hosted-auth/workos/workos-session-routes.ts');
   const { workosAuthority } = await import('./auth/hosted-auth/workos/workos-settings.ts');
-  const { UnavailableHostedAuthentication } = await import('./auth/hosted-auth/unavailable-hosted-authentication.ts');
   const { ProtectedResourceEndpoint } = await import('./mcp/protected-resource-endpoint.ts');
   const { settings, workos, authkitKeySet } = connection;
   const authority = workosAuthority(settings.clientId);
-  const grants = new WorkOSOrganizations({ userManagement: workos.userManagement, authorization: workos.authorization });
-  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants });
+  // One directory gives the current grants to access resolution and the organizations to the account routes.
+  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const session = new WorkOSBrowserSession({ workos, settings, authority });
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
@@ -76,7 +76,5 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   });
   const mcp = new ProtectedResourceEndpoint({ server, mcpResourceUrl: config.mcpResourceUrl, resourceMetadataUrl: config.resourceMetadataUrl, authorizationServer: settings.authkitIssuer });
   const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure: accountFailureReporter(logger) });
-  // AUTH-07W replaces this organization directory with the WorkOS organization reads. Until then the organization
-  // page shows the onboarding guidance, and the selection and the administration pages give no access.
-  return { session, accessResolver: provider, organizations: new UnavailableHostedAuthentication(), mcp, browserRoutes };
+  return { session, accessResolver: provider, organizations, mcp, browserRoutes };
 }
