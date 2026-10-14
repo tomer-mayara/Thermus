@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import childProcess, { ChildProcess } from 'node:child_process';
+import childProcess from 'node:child_process';
 import { type LookupAddress } from 'node:dns';
 import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null) {
   const calls: string[][] = [];
@@ -14,7 +15,7 @@ function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null
     calls.push([...(args[1] ?? [])]);
     const url = args[1]?.at(-1) ?? 'https://public.test/';
     args[3]?.(error, JSON.stringify({ url, http_status: 200, content: '<html><body>Public page</body></html>', error: null }), '');
-    return new ChildProcess();
+    return new RendererChildDouble();
   });
   syncBuiltinESMExports();
   t.after(() => {

@@ -839,6 +839,12 @@ AUTH-07W added these tests. A double of the narrow SDK part gives the page of ea
 [V] Permits only the trusted localhost fetch scope and keeps the launch options of the fetcher, also its renderer environment
 [V] Rejects another executable or a public-site fetch through the fixture launcher
 
+**Renderer process double** (`test/unit/website-fetcher/renderer-process-double.test.ts`)
+
+`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double. The offline acceptance tests get one for each launch from `RendererProcessDouble`.
+
+[V] Records `SIGKILL` and sends no signal to a process when the readiness deadline or a cancellation of a running fetch requests a kill
+
 **Image build: Lightpanda digest check** (`test/unit/image/check-lightpanda-digest.test.ts`)
 
 The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` double gives the check the digest of the asset, because the unit suite has no Lightpanda asset. The expected digests come from `docs/lightpanda-runtime.md`.
