@@ -19,6 +19,7 @@ const fatalLine = /^\[[^\]]*\] FATAL (?:\[[^\]]*\]: )?(.*)$/gm;
 
 // Only the self-hosted server can load the rules file reader, the renderer, the ad cleaner, and the cleaning pipeline.
 const blocked = 'The test blocked a server-only module';
+const rendererReport = 'Renderer setup failure';
 const serverOnlyModuleGuard = `data:text/javascript,${encodeURIComponent(`import { registerHooks } from 'node:module';
 const serverOnly = (url) => ['/src/config/ad-rules-file.js', '/src/website-fetcher/website-fetcher-lightpanda.js'].some((end) => url.endsWith(end))
   || ['/src/html-cleaner-pipeline/', '/adblock-rs/'].some((part) => url.includes(part));
@@ -59,7 +60,7 @@ function fatalMessages(output: string): string[] {
 }
 
 describe('Modules that only the self-hosted server loads', () => {
-  test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the operator adds two users, lists them, registers a client, resets a password, and disables a user on a fresh data directory, then each command exits with status 0 and loads no server-only module', { timeout: 60_000 }, async (t) => {
+  test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the operator adds two users, lists them, registers a client, resets a password, and disables a user on a fresh data directory, then each command exits with status 0, loads no server-only module, and writes no renderer setup report', { timeout: 60_000 }, async (t) => {
     const settings = guardedSettings(selfHostedSettings(dataDirectory(t)), dataDirectory(t));
     const operator: Operator = (args, input = []) => runCommand(t, settings, { args, input });
 
@@ -74,11 +75,11 @@ describe('Modules that only the self-hosted server loads', () => {
 
     for (const result of results) {
       assertExit(result, 0);
-      assert.ok(!`${result.stdout}${result.stderr}`.includes(blocked), result.stderr);
+      for (const text of [blocked, rendererReport]) assert.ok(!`${result.stdout}${result.stderr}`.includes(text), result.stderr);
     }
   });
 
-  test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the hosted edition starts with the WorkOS settings, then it listens, asks for a sign-in on the account page, answers an MCP tool call with a Bearer token and a session cookie with a Bearer challenge, loads no server-only module, uses no network, stops with status 0 after SIGTERM, and creates no data', { timeout: 60_000 }, async (t) => {
+  test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the hosted edition starts with the WorkOS settings, then it listens, asks for a sign-in on the account page, answers an MCP tool call with a Bearer token and a session cookie with a Bearer challenge, loads no server-only module, writes no renderer setup report, uses no network, stops with status 0 after SIGTERM, and creates no data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
     const server = await ServerProcess.start(t, guardedSettings(hostedSettings(directory), dataDirectory(t)));
@@ -92,7 +93,7 @@ describe('Modules that only the self-hosted server loads', () => {
     assert.match(pageText, /Sign-in required/);
     assert.match(mcp.headers.get('WWW-Authenticate') ?? '', /^Bearer /);
     assert.ok(server.output.includes(hostedStartupLine), server.output);
-    assert.ok(!server.output.includes(blocked), server.output);
+    for (const text of [blocked, rendererReport]) assert.ok(!server.output.includes(text), server.output);
     assert.equal(server.attemptedOutboundAccess, false, server.output);
     assert.deepEqual(exit, { code: 0, signal: null });
     assert.deepEqual(readdirSync(directory), []);
