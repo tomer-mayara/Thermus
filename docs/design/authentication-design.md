@@ -29,14 +29,20 @@ pass, the [live provider proofs](#live-provider-proofs) ran against the WorkOS
 staging environment, and the [WorkOS hosted composition](#hosted-composition-with-workos)
 replaces the [hosted placeholder](#hosted-placeholder) in production: Connect
 verification, current access resolution, the server-owned browser session,
-and the portal connection. Three proofs of the saved configuration wait for
-dashboard settings of the owner, so the AUTH-06 cases of the
+and the portal connection. The AUTH-06 cases of the
 [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
-have not all passed. The WorkOS side of slice 4 (AUTH-07W and AUTH-08W) with
-the operator runbook, and the paid billing of slice 6 are pending. Until
-AUTH-07W, the organization page, the organization selection, and the
-organization administration use the unavailable organization directory, and
-they give no organization access in production. The first hosted release also
+passed in run r5, after the owner saved the dashboard settings. AUTH-07W
+implemented the WorkOS side of slice 4 for the organization reads: the
+organization page, the organization selection, and the billing page read the
+organizations from WorkOS, and the
+[operator runbook](../implementation/hosted-organization-setup.md) gives the
+operator setup and recovery. Its live cases and the proofs of the runbook steps
+passed in run r2 of AUTH-07W, with the complete command. The completed MFA of
+the operator, which the runbook requires, has no proof yet: the WorkOS API
+cannot show it, and the owner decides how it is proven. AUTH-08W, the
+member and invitation reads and changes in WorkOS, and the paid billing of
+slice 6 are pending. Until AUTH-08W, the member and invitation pages and their
+changes are not available in production. The first hosted release also
 needs the live cases of AUTH-07W and AUTH-08W. The pinned Better Auth packages are proven
 against the local contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found. The role
@@ -248,10 +254,10 @@ token, and organization switching to the browser-session role, and the
 MFA evidence of a session to the browser-session role, and the member, grant,
 and invitation methods to `OrganizationDirectory`. AUTH-06 replaced the
 placeholder parts of the production composition with the
-[WorkOS hosted composition](#hosted-composition-with-workos). The
-`UnavailableHostedAuthentication` class stays the organization directory of
-that composition until AUTH-07W, and the offline tests of the account routes
-still use it.
+[WorkOS hosted composition](#hosted-composition-with-workos), and AUTH-07W
+replaced its organization directory with `WorkOSOrganizations`. No production
+composition uses the `UnavailableHostedAuthentication` class now; only its
+unit test uses it.
 
 | File | Contract and behavior now |
 | --- | --- |
@@ -261,7 +267,7 @@ still use it.
 | `src/hosted-admin/account-pages.ts`, `administration-pages.ts`, and `page-html.ts` | `account-pages.ts` gives the notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. AUTH-08 added the notices of the administration routes: `mfaRequired` (`403`), `changeDenied` (`403`), `changeStale` (`409`, "Page out of date"), `invitationNotPending` (`409`), and `changeUnsupported` (`503`). `administration-pages.ts` gives the members and invitations pages, with the policy of the selection page; they escape each value that the provider gives. `page-html.ts` has the shared HTML parts, the page headers, and the escaping. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
 | `src/organizations/organization-directory.ts` | `OrganizationDirectory`, the provider contract of the organization reads and changes, with its records, requests, and results. `membershipsOf(user)` gives `OrganizationMembership` records: `organizationId`, `organizationName`, `active`, and `grants`, with every current grant. A grant holds only application permissions, so that a default role, which gives none, authorizes nothing. AUTH-08 added the member, grant, and invitation methods. The [organization administration](#organization-administration) section gives the contract. |
 | `src/organizations/organization-administration.ts`, `customer-roles.ts`, `change-records.ts`, `administration-overviews.ts`, and `directory-reads.ts` | `OrganizationAdministration` lists and authorizes the organizations of the session user, and it does the administration work of AUTH-08 for an `Actor`. `customer-roles.ts` gives the customer roles that an actor manages, `change-records.ts` runs each change and keeps its record, `administration-overviews.ts` builds the member and invitation overviews, and `directory-reads.ts` reads every page of a paged directory read. The [organization administration](#organization-administration) section gives the rules. |
-| `src/auth/hosted-auth/unavailable-hosted-authentication.ts` | `UnavailableHostedAuthentication` implements `BrowserSession`, `AccessResolver`, and `OrganizationDirectory`. Each session is `unavailable`, each access request is denied with `account-inactive`, and no user has a membership. Each member and invitation read gives a frozen empty page, no member or invitation exists for any ID, and each change gives `unsupported`. Its invitation policy is `provider-rules`, so it claims no strict address match. The placeholder reads no setting, calls no service, makes no change, and never gives an identity, a grant, a membership, a cookie, or a tenant. Since AUTH-06, the production composition uses it only as the `OrganizationDirectory`, until AUTH-07W. |
+| `src/auth/hosted-auth/unavailable-hosted-authentication.ts` | `UnavailableHostedAuthentication` implements `BrowserSession`, `AccessResolver`, and `OrganizationDirectory`. Each session is `unavailable`, each access request is denied with `account-inactive`, and no user has a membership. Each member and invitation read gives a frozen empty page, no member or invitation exists for any ID, and each change gives `unsupported`. Its invitation policy is `provider-rules`, so it claims no strict address match. The placeholder reads no setting, calls no service, makes no change, and never gives an identity, a grant, a membership, a cookie, or a tenant. From AUTH-06, the production composition used it only as the `OrganizationDirectory`, and AUTH-07W replaced it there with `WorkOSOrganizations`. No production composition uses it now; only its unit test does. |
 | `src/application.ts` | `composeHostedApplication(config, { session, accessResolver, organizations, mcp, browserRoutes }, { reportFailure, changeRecords, billing, operation })` composes the hosted edition from its provider parts. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. The optional `browserRoutes` are the browser routes of the provider that need no signed-in session; they answer before the account routes. AUTH-06 removed the placeholder MCP endpoint, `UnavailableMcpEndpoint`, which answered each MCP request with `503`. The third argument, `HostedAccountParts`, gives `reportFailure`, the required `changeRecords`, and an optional account operation. The composition gives the routes `OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords })`. `accountFailureReporter(logger)` writes each report as one error line: `An account request failed unexpectedly for <path>: <cause>`. `accountChangeRecorder(logger)` writes each change record as one info line, `Account change record: <JSON>`, in the operator log, until hosted storage exists. Other paths give `404`. The shell creates no `Billing`. |
 
 Until AUTH-06, the hosted edition started with a valid `https` public URL and
@@ -295,12 +301,14 @@ AUTH-06 applied these rules to the replacement:
   passes.
 - AUTH-07 added organization onboarding and selection on these roles, with
   `OrganizationAdministration` over the `OrganizationDirectory` contract.
-  AUTH-07W, which is deferred with WorkOS, implements `WorkOSOrganizations`,
-  the `OrganizationDirectory` reads from WorkOS, and the runbook for operator
-  setup and recovery. It must map each provider role to application
-  permissions; a permission that only the provider knows is not an
-  application permission. AUTH-08 added User and Admin grant management,
-  invitations, basic change records, and the User seat summary on these roles,
+  AUTH-07W implemented the `OrganizationDirectory` reads of
+  `WorkOSOrganizations` from WorkOS and the
+  [runbook for operator setup and recovery](../implementation/hosted-organization-setup.md).
+  It maps each provider role to application permissions with the
+  [hosted role mapping](#hosted-role-mapping); a permission that only the
+  provider knows is not an application permission. AUTH-08 added User and
+  Admin grant management, invitations, basic change records, and the User
+  seat summary on these roles,
   with the member, grant, and invitation methods of `OrganizationDirectory`.
   AUTH-08W, which is deferred with WorkOS, implements these methods in
   `WorkOSOrganizations`, with live seat reads, and proves the safe grant and
@@ -349,12 +357,37 @@ can give it a connection to a local fake of the WorkOS API:
   request `<base>portal/access`. It needs `product:access` and gives the
   organization and the roles of the grants that give a permission;
   otherwise it answers `403` with `{"access":"denied"}`.
-- The organization directory stays `UnavailableHostedAuthentication` until
-  AUTH-07W implements the WorkOS organization reads. Until then the
-  organization page shows the onboarding guidance to each user, the
-  organization selection refuses each organization, and the administration
-  pages deny each request. A user selects the organization of a browser
-  session at the AuthKit sign-in.
+- The organization directory is one `WorkOSOrganizations` with the WorkOS
+  authority, since AUTH-07W. `WorkOSAuthProvider` gets it as `grants`, for
+  the access resolution, and the account routes get it as `organizations`,
+  through `OrganizationAdministration`.
+- `membershipsOf(user)` gives no membership to a user of another authority
+  and sends WorkOS no read. For a WorkOS user, it reads each active membership
+  with `listOrganizationMemberships({ userId, statuses: ['active'], limit: 100, after })`,
+  page by page and at most 10 pages, and makes one role read
+  (`listOrganizationRoles`) for each organization. Each membership becomes
+  `{ organizationId, organizationName, active: true, grants }`, with the
+  WorkOS organization name and the grants of the
+  [hosted role mapping](#hosted-role-mapping). Each read asks WorkOS again;
+  nothing is kept. The read throws, so that access fails closed, for an
+  inactive or pending membership or a membership of another user in an
+  answer, a membership without an organization name, two active memberships
+  in one organization, a repeated page cursor, more than 10 pages, a
+  `HostedRoleConfigurationError`, and each SDK failure.
+- Until AUTH-08W, `memberPage()`, `member()`, `invitationPage()`, and
+  `invitation()` throw, so that no empty page looks like an organization
+  without members or invitations. `changeGrant()`, `sendInvitation()`,
+  `resendInvitation()`, and `revokeInvitation()` answer `unsupported` without
+  a WorkOS call. The invitation policy is `provider-rules`.
+- Thus the organization page, the organization selection, and the billing
+  page work with current WorkOS reads. A user can also choose the
+  organization of a browser session at the AuthKit sign-in. For an Admin or a
+  Super Admin with MFA, the member and invitation pages and their change posts
+  give the `500` failure page with an operator report, because their reads
+  fail, and the record of a change says `failed`. Without MFA or without such
+  a permission, the answer stays `403`. A grant change or an invitation of a
+  role that the actor does not manage, also a customer grant of Super Admin,
+  still gets `403` before any member or invitation read.
 - The billing stays `BillingFree`.
 
 The routes answer in this order: the MCP resource and both protected-resource
@@ -1053,6 +1086,34 @@ live cases pass:
   return of a grant that someone revoked later; invitations, with the role of an
   invitation, its states, the identity policy, and their pagination.
 
+The AUTH-07W proofs are in `test/acceptance/auth/hosted-live/operator-setup.ts`.
+They run the steps of the
+[operator runbook](../implementation/hosted-organization-setup.md) through the
+test-support driver `test/support/hosted-live/operator-runbook.ts`. The AUTH-07W
+cases of the hosted server are in `hosted-live/organization-server.ts`. No proof can show the completed operator
+MFA that the runbook requires, because the WorkOS API does not show it. How it
+is proven waits for a decision of the owner.
+
+AUTH-07W run r1 ran the complete command on 2026-10-14: 56 of its 57 tests
+passed, so it is not a pass. The failed proof found that WorkOS does not replay
+an organization create with the idempotency key of an earlier create: it
+refuses the second create with HTTP 400 and the code
+`external_id_already_used`. Thus the runbook uses no idempotency key, because
+the external ID prevents a duplicate, and the first operator proof changed to
+show this. The run also showed that WorkOS accepts a membership create for an
+existing active membership and changes nothing: no second membership exists,
+and the roles stay.
+
+AUTH-07W run r2 ran the complete command on 2026-10-14 with the staging
+launcher: each of its 57 tests passed, the provider proofs and the cases of
+AUTH-06 and of AUTH-07W. The run showed the same two WorkOS answers as run r1.
+In the AUTH-07W cases, a member with memberships in A and B and an inactive
+membership was offered only A and B, with their WorkOS names, and selected B; a
+Super Admin that the operator made opened the billing page, got `403` for the
+portal and for a customer grant of Super Admin, and lost its access at the next
+request after the revocation by the operator; and a refused selection after the
+expiry of the access token carried the refreshed session cookie.
+
 #### Hosted provider findings
 
 The offline proofs found these points. Each needs a live proof or an owner
@@ -1244,8 +1305,9 @@ with one read; AUTH-08 extended it (see below):
   failure never looks like a missing membership. Each membership comes with
   every current grant, and a grant holds only application permissions, so
   that a default role, which gives none, authorizes nothing. Thus AUTH-07W
-  must map the provider roles to application permissions; a permission that
-  only the provider knows is not an application permission.
+  maps the provider roles to application permissions with the
+  [hosted role mapping](#hosted-role-mapping); a permission that only the
+  provider knows is not an application permission.
 - `OrganizationAdministration.listOrganizations(user)` gives
   `AuthorizedOrganization` records: `organizationId`, `organizationName`, and
   `selected`. It lists only active memberships whose grants give at least one
@@ -1514,22 +1576,39 @@ one `INFO` line in the operator log, `Account change record: <JSON>`, until
 hosted storage exists. Thus the change records stay in the operator log, and
 AUTH-08 adds no hosted storage.
 
-The WorkOS side stays deferred. AUTH-08W, which is deferred with WorkOS,
-implements these directory methods in `WorkOSOrganizations`, with live seat
-reads, and the provider proofs of safe grant and invitation effects:
+The WorkOS side of these methods stays deferred. AUTH-08W, which is deferred
+with WorkOS, implements these directory methods in `WorkOSOrganizations`, with
+live seat reads, and the provider proofs of safe grant and invitation effects:
 conditional changes on the revision, retries, concurrent changes, the default
 role, and an acceptance that activates only the role of the invitation, also
 for a membership that becomes active again. It must answer `unsupported` when
-it cannot make a change safely. AUTH-07W, which is deferred with WorkOS,
-implements `WorkOSOrganizations` for the reads of AUTH-07 and documents the
-operator setup and recovery runbook. Hosted storage of the change records,
-full audit logs, step-up authentication, SSO, SCIM, Okta, and a customer
-lifecycle of Super Admin stay later work. Organization rename and other
-organization settings stay deferred until the product owner decides their
-authority. The rules below stay the design of the whole slice. AUTH-08
-implements their application part and tests it with doubles. AUTH-07W and
-AUTH-08W must prove the provider parts against WorkOS, and AUTH-07W writes the
-operator runbook.
+it cannot make a change safely.
+
+AUTH-07W implemented the reads of AUTH-07 in `WorkOSOrganizations`.
+`membershipsOf(user)` reads each active membership of a WorkOS user with the
+explicit status `active`, page by page and at most 10 pages, and the roles of
+each organization, for each call. It gives the WorkOS organization name and
+the grants of the [hosted role mapping](#hosted-role-mapping), and nothing to
+a user of another authority. Each unexpected answer, role configuration error,
+and read failure throws, so that access fails closed. The
+[hosted composition with WorkOS](#hosted-composition-with-workos) gives the
+complete rules. Until AUTH-08W, the member and invitation reads of
+`WorkOSOrganizations` throw, so that no empty page looks like an organization
+without members or invitations, and its changes answer `unsupported` without a
+WorkOS call. Thus, for an Admin or a Super Admin with MFA, the member and
+invitation pages and each change post that needs a member or invitation read
+give the `500` failure page, and the record of the change says `failed`.
+AUTH-07W also wrote the
+[operator runbook](../implementation/hosted-organization-setup.md) for the
+operator setup and recovery.
+
+Hosted storage of the change records, full audit logs, step-up
+authentication, SSO, SCIM, Okta, and a customer lifecycle of Super Admin stay
+later work. Organization rename and other organization settings stay deferred
+until the product owner decides their authority. The rules below stay the
+design of the whole slice. AUTH-08 implements their application part and tests
+it with doubles. AUTH-07W and AUTH-08W must prove the provider parts against
+WorkOS. The AUTH-07W proofs and cases passed in run r2 of AUTH-07W.
 
 Before each mutation, load current actor and target state for the requested
 organization. The actor needs authority there. Existing target memberships and
@@ -1586,7 +1665,11 @@ automatically. After an unknown outcome, inspect current provider state before
 retrying; do not create duplicates or restore a grant removed later. Record
 setup and recovery outcomes. Prove the pinned API behavior for these steps and
 for Super Admin revocation/replacement/recovery. Customer access has no creator
-metadata, signed creator-operation ID, or provisioning-state dependency.
+metadata, signed creator-operation ID, or provisioning-state dependency. The
+[operator runbook](../implementation/hosted-organization-setup.md) of AUTH-07W
+gives these steps, and the AUTH-07W proofs of the
+[hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+run them against WorkOS.
 
 The seat summary counts each unique active membership with User once across all
 pages. User plus Admin or Super Admin is still one billable seat. Admin-only and
@@ -1620,7 +1703,7 @@ shows a separate role, invariant, or lifecycle.
 | `migrations/auth-local/0001-better-auth.sql` | Generated schema for pinned provider configuration, including the selected admin plugin/account-status storage if used. | 2 |
 | `migrations/auth-local/0002-installation.sql` | Singleton installation identity only; no restriction on user count. | 2 |
 | `src/auth/hosted-auth/browser-session.ts` | Implemented: `BrowserSession`, the narrow browser-session role of the account routes. AUTH-07 added the cookie effects, the CSRF token, and `selectOrganization()`. AUTH-08 added `mfaCompleted`. | AUTH-12, AUTH-07, AUTH-08 |
-| `src/auth/hosted-auth/unavailable-hosted-authentication.ts` | Implemented: `UnavailableHostedAuthentication`, the hosted session, access, and organization placeholder. AUTH-07 added the `OrganizationDirectory` that gives no membership. AUTH-08 added empty member and invitation pages, no member or invitation for any ID, `unsupported` for each change, and the `provider-rules` policy. Slice 3 replaces them in the hosted composition. | AUTH-12, AUTH-07, AUTH-08 |
+| `src/auth/hosted-auth/unavailable-hosted-authentication.ts` | Implemented: `UnavailableHostedAuthentication`, the hosted session, access, and organization placeholder. AUTH-07 added the `OrganizationDirectory` that gives no membership. AUTH-08 added empty member and invitation pages, no member or invitation for any ID, `unsupported` for each change, and the `provider-rules` policy. AUTH-06 and AUTH-07W replaced them in the hosted composition. No production composition uses it now; only its unit test does. | AUTH-12, AUTH-07, AUTH-08 |
 | `src/mcp/unavailable-mcp-endpoint.ts` | Removed in AUTH-06: the WorkOS MCP endpoint replaced `UnavailableMcpEndpoint`, which answered each hosted MCP and metadata request with 503. | AUTH-12; removed in AUTH-06 |
 | `src/mcp/protected-resource-endpoint.ts` | Implemented in AUTH-06: `ProtectedResourceEndpoint`, the hosted MCP endpoint with its RFC 9728 protected-resource metadata, which names the AuthKit issuer. | 3 |
 | `src/mcp/mcp-server.ts` | AUTH-06 added the optional `requiredPermission` of the MCP access check: an allowed context without it gets the `403` of a denial. The hosted MCP endpoint requires `product:access`. | 3 |
@@ -1639,16 +1722,17 @@ shows a separate role, invariant, or lifecycle.
 | `src/organizations/change-records.ts` | Implemented in AUTH-08: `ChangeResult`, `ChangeOutcome`, `ChangeRecord`, `ChangeRecorder`, and `ChangeRecording`, which runs each change as its checks and then one directory change, and keeps one frozen record. | 4 |
 | `src/organizations/administration-overviews.ts` | Implemented in AUTH-08: the member overview with the User seat count and the invitation overview, each with the changes that the actor can make. | 4 |
 | `src/organizations/directory-reads.ts` | Implemented in AUTH-08: the paged directory reads, with explicit statuses or states, the cursor and page limits, each record once, and no record of another organization. | 4 |
-| `src/auth/hosted-auth/workos/workos-organizations.ts` | Add `WorkOSOrganizations`, multi-role membership/invitation mapping, safe grant updates, and pagination. Implemented in AUTH-06: `activeGrants(userId, organizationId)`, the current grant read of access resolution, with the check of the hosted role mapping. AUTH-07W adds the reads of AUTH-07. AUTH-08W adds the member, grant, and invitation methods with live seat reads and answers `unsupported` when it cannot make a change safely. | 3–4 |
+| `src/auth/hosted-auth/workos/workos-organizations.ts` | Add `WorkOSOrganizations`, multi-role membership/invitation mapping, safe grant updates, and pagination. Implemented in AUTH-06: `activeGrants(userId, organizationId)`, the current grant read of access resolution, with the check of the hosted role mapping. Implemented in AUTH-07W: `WorkOSOrganizations` implements `OrganizationDirectory`, with `membershipsOf(user)`, the paged read of the active memberships of a WorkOS user with the WorkOS organization names and the grants of the hosted role mapping, which fails closed for each unexpected answer; member and invitation reads that throw and changes that answer `unsupported`, until AUTH-08W; and the `provider-rules` invitation policy. AUTH-08W adds the member, grant, and invitation methods with live seat reads and answers `unsupported` when it cannot make a change safely. | 3–4 |
+| `src/auth/hosted-auth/workos/hosted-role-mapping.ts` | Moved in AUTH-07W from `workos-organizations.ts`, without a change of behavior: `grantsOfRoles()`, which checks the [hosted role mapping](#hosted-role-mapping) of the roles of an organization and gives one grant for each role of a membership, and `HostedRoleConfigurationError`. `activeGrants()` and `membershipsOf()` share it. | 3–4 |
 | `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. Implemented in AUTH-12: the session, access, and trusted-tenant checks before each account operation. Implemented in AUTH-07: the organization page and the selection, with origin and CSRF checks; the cookie effects of each answer after a sign-in; and the failure page with the operator report, also for an operation answer that cannot carry the cookie effects. Implemented in AUTH-08: the member and invitation paths go to `AdministrationRoutes` after the access checks. | 3–4 |
 | `src/hosted-admin/administration-routes.ts` | Implemented in AUTH-08: `AdministrationRoutes`, the member and invitation pages and their changes. The actor and the organization come from the decided context and the session. Each change post gets the method, origin, form, and organization checks, and each result gets its answer. | AUTH-08 |
 | `src/hosted-admin/account-form.ts` | Implemented in AUTH-07: the form input boundary of the account routes. It reads a form body of at most 16 KiB, and stops the reading and cancels the body when the client disconnects. It checks the CSRF token first, in a constant-time comparison, then accepts only the named fields of the form, each one time, and checks each return destination. AUTH-08 added the grant change, invitation, and invitation change forms; one field check serves the selection and these forms. An email address has at most 254 characters, one `@` between two parts, and no space or control character; each other value has 1 to 256 visible ASCII characters. | AUTH-07, AUTH-08 |
 | `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. Implemented in AUTH-12: the notice pages. Implemented in AUTH-07: the operator and invitation guidance, the authorized selection forms with escaped provider values, the refusal and failure notices, and the link from the `403` access denial page to the organization page. Implemented in AUTH-08: the notices of the administration routes. | 3–4 |
 | `src/hosted-admin/administration-pages.ts` | Implemented in AUTH-08: the members page, with the User seat count and the grant forms, and the invitations page, with the identity policy and the invitation forms. | AUTH-08 |
 | `src/hosted-admin/page-html.ts` | Implemented in AUTH-08: the shared HTML parts, the page headers, and the escaping of the account pages. | AUTH-08 |
-| `docs/implementation/hosted-organization-setup.md` | Document external operator setup, Super Admin replacement/recovery, MFA, and change records. | 4 |
+| `docs/implementation/hosted-organization-setup.md` | Document external operator setup, Super Admin replacement/recovery, MFA, and change records. Written in AUTH-07W: the [operator runbook](../implementation/hosted-organization-setup.md). The hosted live gate runs its steps through the test-support driver `test/support/hosted-live/operator-runbook.ts`; these proofs passed in run r2 of AUTH-07W. | 4 |
 | `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. Implemented for the hosted edition: `composeHostedApplication()`, `accountFailureReporter()`, `accountChangeRecorder()`, and `routeHostedRequests()`; AUTH-06 replaced the placeholder shell with the WorkOS composition and routes the browser routes of the provider before the account routes. | 2–3 |
-| `src/hosted-workos-application.ts` | Implemented in AUTH-06: the composition root of the hosted edition with WorkOS, `openWorkOSApplication()` and `composeWorkOSApplication()`, which `createApplication()` loads only for the hosted edition. | 3 |
+| `src/hosted-workos-application.ts` | Implemented in AUTH-06: the composition root of the hosted edition with WorkOS, `openWorkOSApplication()` and `composeWorkOSApplication()`, which `createApplication()` loads only for the hosted edition. Since AUTH-07W, it gives one `WorkOSOrganizations` to the access resolution and to the account routes. | 3–4 |
 | `src/http/server.ts` | Node HTTP bridge and shutdown, implemented; hosted metadata in slice 3. | 2–3 |
 | `src/index.ts` | Replace hello-world startup; dispatch server and operator commands. | 2–4 |
 | `src/billing/billing.ts` | `Billing` interface and `BillingState`. Implemented. | 6 |
@@ -1800,11 +1884,13 @@ behavior.
 | `test/acceptance/auth/hosted-seats.test.ts` | Implemented, with the same site: the User seat count of two organizations across pages with repeated members, without Admin-only, Super-Admin-only, default-role, pending, and inactive memberships and invitations; and a failed member or invitation page without a partial count or list. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
 | `test/acceptance/auth/self-hosted-container.test.ts` | Implemented with `npm run test:container`: offline bundled CLI with stopped-server volume access; commands reject the live lock, also inside the server container; two-user login, consent, and re-authorization after restart and container/image replacement; installation/user IDs, sessions, consents, and tokens survive backup/restore; fresh and identity-less data; targeted reset/disable with peer access; zero-account recovery; refused hosted and paid paths; the hosted placeholder in the image; image contents and the Compose service. |
-| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline; the provider proofs in `test/acceptance/auth/hosted-live/`; and the AUTH-06 cases of the hosted server in `hosted-live/hosted-server.ts`, with the local HTTPS test server of `test/support/hosted-live/`. AUTH-07W and AUTH-08W add their cases. |
-| `test/unit/auth-workos/` | Implemented in AUTH-06: the WorkOS settings, the grant reads with an SDK double, the sealed cookies, the browser session, and the session routes with narrow doubles. |
+| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline; the provider proofs in `test/acceptance/auth/hosted-live/`; and the AUTH-06 cases of the hosted server in `hosted-live/hosted-server.ts`, with the local HTTPS test server of `test/support/hosted-live/`. AUTH-07W added its provider proofs in `hosted-live/operator-setup.ts`, which run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) through `test/support/hosted-live/operator-runbook.ts`, and its cases of the hosted server in `hosted-live/organization-server.ts`; they passed in run r2 of AUTH-07W. AUTH-08W adds its cases. |
+| `test/unit/auth-workos/` | Implemented in AUTH-06: the WorkOS settings, the grant reads with an SDK double, the sealed cookies, the browser session, and the session routes with narrow doubles. AUTH-07W added `workos-organizations-memberships.test.ts`: the paged membership reads of a user with the organization names and grants, each refused answer, and the member and invitation methods before AUTH-08W. |
 | `test/integration/auth/workos-provider-verification.test.ts`, `workos-provider-access.test.ts`, `workos-provider-directory.test.ts`, and `workos-browser-session.test.ts` | Implemented in AUTH-06: the Connect verification with the real rejection class, the access resolution with real context creation, and the provider and the browser session with the pinned SDK against the local fake WorkOS API. |
+| `test/integration/auth/workos-provider-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS session, organization directory, and access resolver with the pinned SDK against the local fake WorkOS API, together with the real `OrganizationAdministration`, account routes, and MCPServer, and `AccountOperationProbe` destinations. Super Admin alone without an inferred Admin or User grant; each destination, also the billing page, in the selected organization only; the exact WorkOS reads of the organization page and a selection; the organization service over the WorkOS reads; and the `500` failure page for a WorkOS answer that the read refuses. These tests prove the application side, not WorkOS behavior. |
 | `test/integration/mcp/required-permission.test.ts` and `test/integration/auth/portal-access.test.ts` | Implemented in AUTH-06: the MCP access check with a required permission, and the protected portal request with the real permission check. |
 | `test/acceptance/auth/hosted-startup.test.ts` and `hosted-workos.test.ts` | Implemented in AUTH-06. `hosted-startup` replaces the placeholder specification: the built server stops without valid WorkOS settings, and with them it refuses forged credentials without a network call. `hosted-workos` runs the real WorkOS composition behind the real HTTP server with the local fake WorkOS API: sign-in, callback, the session cookie, the portal session, product access of each grant set, refresh, ended sessions, outages, sign-out, Connect tokens at the MCP endpoint, and the organization of each credential. These tests prove the application side, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-workos-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS composition with the WorkOS organization reads behind the real HTTP server with the local fake WorkOS API. Onboarding without an authorized active organization; the selection with the WorkOS names from paged reads; refused and forged selections without a switch; memberships that change after the page was shown; Super Admin alone with the billing page and without a User grant; origin and form token refusals before any organization read; and the refreshed session cookie on the `303`, the `403`, and the `500` failure page of an outage. These tests prove the application side, not WorkOS behavior. |
 | Existing `test/unit/billing/billing-free.test.ts` and `test/acceptance/billing/free-billing.test.ts` | `BillingFree` through the `Billing` interface: free plan, no billed seat, and refused input. The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists the paid billing tests. |
 
 Include these explicit acceptance specifications:

@@ -526,6 +526,18 @@ A double of the narrow SDK part records each read.
 [V] Refuses a membership without a role list, a membership role that the organization does not have, a mapped role with other application permissions, a missing mapped role, and another role with an application permission, with a `HostedRoleConfigurationError` that names the role and the rule
 [V] Refuses an answer with more than one membership, a next page, or a membership of another user, organization, or status, and gives each failed WorkOS read to the caller
 
+**WorkOS organization memberships** (`test/unit/auth-workos/workos-organizations-memberships.test.ts`)
+
+AUTH-07W added these tests. A double of the narrow SDK part gives the page of each `after` cursor and records each read.
+
+[V] Gives one frozen active membership for each organization, with the WorkOS organization name and the grants of the hosted role mapping, after one read of the user with the explicit status `active` and the limit 100, and one role read for each organization
+[V] Reads each page with the `after` cursor of the page before and stops at the page without a cursor
+[V] Gives a frozen empty list and no role read without an active membership; gives a user of another authority, also with the same subject, no membership and sends WorkOS no read
+[V] Gives a membership with only the default role one grant without a permission, keeps only application permissions, and reads WorkOS again for each call
+[V] Fails, without a membership, a grant, or a role read, for an inactive or pending membership, a membership of another user, a membership without an organization name, two active memberships in one organization, a repeated page cursor, and more than 10 pages, where it stops after the tenth read; no error names the user
+[V] Refuses a membership without a role list, a default role with `product:access`, and a membership role that the organization does not have, with a `HostedRoleConfigurationError` that names the organization and the rule; gives each failed membership or role read to the caller
+[V] Until AUTH-08W, each member and invitation read throws, each grant and invitation change answers `unsupported`, both without a WorkOS call, and the invitation policy is `provider-rules`
+
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
 `BillingFree` is the only `Billing` implementation until the owner chooses a payment provider. No paid billing test exists yet; the [AUTH-11 specification](../design/billing-design.md#auth-11-implementation-specification) lists the planned tests.
@@ -1084,6 +1096,16 @@ The real `WorkOSOrganizations` and `WorkOSAuthProvider` run with the pinned SDK 
 [V] Refuses a permissive default role, a missing mapped role, and a membership without roles with a `HostedRoleConfigurationError`
 [V] Gives a 500 answer of either read to the caller
 
+**WorkOS organization reads with the real organization service and routes** (`test/integration/auth/workos-provider-organizations.test.ts`)
+
+AUTH-07W added these tests. The real `WorkOSBrowserSession`, `WorkOSOrganizations`, and `WorkOSAuthProvider` run with the pinned SDK against the local fake WorkOS API of `test/support/workos-world.ts`, in the test process, together with the real `OrganizationAdministration`, account routes (`composeHostedApplication()`), and MCPServer. `AccountOperationProbe` gives the destinations of the product and of the User and Admin administration, each with its permission; the billing page is the real page of the routes. These tests do not show what the WorkOS service sends; the hosted live gate does.
+
+[V] A member with only Super Admin selects its organization for the billing page: the billing page with the Free plan and the Admin-grant destination accept it with exactly the `super-admin` grant from a current WorkOS read; the product page, the User administration, and the MCP tool refuse it, so no Admin or User grant is inferred
+[V] A member with User in one organization, Admin in a second, an inactive membership in a third, and only the default role in a fourth is offered only the first two; each destination, also the billing page, checks the permission of the selected organization only
+[V] The organization page gives WorkOS one read of the memberships of the session user with the explicit status `active` and the limit 100, and one role read for each active organization; a selection makes the same current reads before the refresh into the selected organization
+[V] The real organization service over the WorkOS reads authorizes only a current active membership with an application permission, also when the session user or the request names another organization; a user of another authority gets no organization and causes no WorkOS read
+[V] When WorkOS answers the membership of another user, an inactive membership, or a default role with `product:access`, the organization page and a selection each get the 500 failure page with an operator report, show neither an organization nor the onboarding guidance, and switch nothing
+
 **MCP required permission** (`test/integration/mcp/required-permission.test.ts`)
 
 [V] With `product:access` required, a context with the User grant reaches the tool, and a context with Admin only, Super Admin only, the default role, or no grant gets the 403 `access_denied` of a denial before the factory or MCP dispatch
@@ -1522,6 +1544,24 @@ Run only these tests:
 npm run build && node --test dist/test/acceptance/auth/hosted-workos.test.js
 ```
 
+**Hosted WorkOS organization onboarding and selection** (`test/acceptance/auth/hosted-workos-organizations.test.ts`)
+
+AUTH-07W added these specifications. The real hosted composition with the WorkOS provider and the WorkOS organization reads, `composeWorkOSApplication()`, runs behind the real HTTP server on a loopback port. The local fake WorkOS API of `test/support/workos-world.ts` answers the membership reads of a user with the explicit statuses, in pages by the `after` cursor (`membershipPageSize`), and with the organization names (`organizationNames`). The browser signs in through the server with `signInThroughServer()` of `test/support/workos-sign-in.ts`, which `hosted-workos.test.ts` uses too, and `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the same flows against WorkOS.
+
+[V] Given signed-in users without an authorized active organization in WorkOS (no membership, only an inactive membership, or only the default role), each gets the invitation and operator guidance without an organization or a form, and the protected portal request, the member and invitation pages, and the MCP endpoint refuse each of them, with no default tenant or role
+[V] Given a member whose memberships WorkOS gives on several pages, with User and Admin in one organization, User in a second, an inactive membership in a third, and only the default role in a fourth, only the first two are offered, with their WorkOS names; the selection of the second gives 303 to the portal with a new session cookie, and the portal and the billing page check the current grants there
+[V] Given forms that name the inactive organization, the default-role organization, the organization of another user, or an unknown organization, also with forged organization values in the query and the headers, each selection gets 403, WorkOS gets no switch, and the session keeps its organization
+[V] Given memberships that change in WorkOS after the organization page was shown, the current read decides: the deactivated organization is refused without a switch, and the organization of a new membership is selected
+[V] Given only Super Admin in an organization, its selection for the billing page opens the billing page with the Free plan, but the protected portal request and the MCP endpoint refuse it: no User grant is inferred
+[V] Given a selection from another origin, without an origin, or with another form token, each gets 403 before any organization read, and WorkOS gets no switch
+[V] Given a session whose access token expired, a selection, a refused selection, and a WorkOS membership outage each answer with the refreshed session cookie: the 303, which also has the cookie of the switch after it, the 403, and the 500 failure page with an operator report; an outage never shows the onboarding guidance
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-workos-organizations.test.js
+```
+
 **Hosted organization onboarding and selection** (`test/acceptance/auth/hosted-organizations.test.ts`)
 
 Each test starts the shared site of `test/support/hosted-organization-site.ts` with `serveOrganizationSite()`: the real hosted composition behind the real HTTP server, `startHttpServer()`, on a loopback port. `HostedBrowser` sends each request with `node:http` and keeps the cookies of each answer, as a browser does. Doubles stand only at the provider boundaries. `BrowserSessionStore` is a stateful browser session whose cookie key changes at each refresh, as with rotating refresh tokens, so a browser that does not get the new cookie is signed out. `MembershipDirectoryDouble` reads one configured set of memberships for access resolution and for the organization list. A real MCPServer verifies tokens with `IdentityVerifierMock` and runs a test-only tool. `AccountOperationProbe` gives the selection destinations, which each check their own permission. No account request may fail: a failure report fails the test. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy, not WorkOS behavior, and are no hosted live gate pass.
@@ -1735,9 +1775,9 @@ npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
 
 **Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
 
-These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran them on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each test passed. `[V]` marks a test that passed in that run; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
 
-Provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
+AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
 
 [V] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, and S256 PKCE
 [V] The AuthKit key set and the browser-session key set have signing keys with key IDs, and jose accepts them
@@ -1778,6 +1818,26 @@ AUTH-06 cases of the hosted server (`test/acceptance/auth/hosted-live/hosted-ser
 [V] An external sign-in through the Initiate login URI `/login` signs the user in
 [V] The sign-out clears the cookie, ends the WorkOS session, and lands on the Sign-out URI with the signed-out portal; the `form-action` of the portal allows the AuthKit domain
 [V] After the 300-second lifetime, a session refreshes with one new cookie and the same form token; a revoked session gives 401 with a cleared cookie; an MCP grant whose consent was revoked works until its token expires and then gives 401
+
+AUTH-07W provider proofs (`test/acceptance/auth/hosted-live/operator-setup.ts`). They run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) with the pinned SDK against the staging environment, through the test-support driver `test/support/hosted-live/operator-runbook.ts`, and read the result with the real `WorkOSOrganizations`. The run makes its own operator organization and users (`test/support/hosted-live/organization-fixtures.ts`) and deletes them at the end:
+
+[V] The operator locates or creates the organization by its external ID: the organization exists once; a second create with the same external ID is refused with `external_id_already_used`, also with an idempotency key, and a second locate step finds the organization without a change
+[V] A Super Admin grant to a verified identity without a membership gives exactly the role `super-admin`; the application reads only the Super Admin grant, no Admin and no User, and a second grant changes nothing
+[V] A grant and then a revocation of Super Admin keep User and Admin at each step; the identity and its membership in another organization do not change
+[V] The revocation of Super Admin, the only grant of a membership, keeps the membership active with only the default role; the organization service then lists no organization for the identity, and the identity stays
+[V] A replacement grants Super Admin to the new identity first, so that the organization keeps a Super Admin at each step; the old identity loses only Super Admin and keeps User
+[V] A recovery stops at the inactive membership of the lost Super Admin without a create or a reactivation, and grants Super Admin to another verified identity
+[V] After an unknown outcome, the inspection writes nothing for a grant in place, where a blind create would leave both grants; after a later revocation, it stops without a write, so that the removed grant stays removed
+[V] After an unknown outcome for an inactive membership, the inspection finds it with the explicit statuses and stops without a create or a reactivation; the membership stays inactive with its roles
+[V] Each operator record of the run names the actor, the organization, the target, the action, the time, and the outcome; each grant change names the roles before and after; no record holds a credential
+
+AUTH-07W cases of the hosted server (`test/acceptance/auth/hosted-live/organization-server.ts`), with the same local HTTPS test server. The run registers the first four cases before the AUTH-06 cases and the expiry case after them, so that the 300-second wait of the AUTH-06 cases also lets the access token of the selection session expire:
+
+[V] Users with only an inactive membership or only the default role get the invitation and operator guidance without a form, and the billing page and the protected portal request refuse them
+[V] A member with User and Admin in A, User in B, and an inactive membership in the operator organization is offered only A and B, with their WorkOS names; the selection of B gives 303 with a new session cookie, and the session and the portal are in B
+[V] In the same session, selections of an organization without a membership and of the inactive membership, and selections from another origin or with another form token, each get 403 without a switch; the session stays in B
+[V] An identity that the operator made Super Admin of the operator organization is offered that organization, opens the billing page with the Free plan, and gets 403 for the protected portal request; a customer grant of Super Admin gets 403 with a change record; after the operator revokes Super Admin, the next request of the same session is refused, and the organization page gives the onboarding guidance
+[V] After the access token of the selection session expired, a refused selection gets 403 with the refreshed session cookie; the form token stays the same, and the session stays in B
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 
