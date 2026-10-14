@@ -50,9 +50,14 @@ function stateOf(membership: OrganizationMembership): MembershipState {
   return { status: membership.status, roles: rolesOf(membership), updatedAt: membership.updatedAt };
 }
 
-async function shownPage(page: Page, path: string): Promise<ShownPage> {
+// A page that fails names the last operator reports of the server. A report names the path and the failure, never a
+// credential.
+async function shownPage(run: LiveRun, page: Page, path: string): Promise<ShownPage> {
   const answer = await serverGet(page, path);
-  assert.equal(answer.status, 200, `GET /${path}: ${answer.body}`);
+  if (answer.status !== 200) {
+    const reports = (await run.site()).log.lines.filter((line) => line.startsWith('ERROR ')).slice(-3);
+    assert.fail(`GET /${path} gave ${answer.status}. The last operator reports:\n${reports.join('\n')}`);
+  }
   return { body: answer.body, forms: formsIn(answer.body) };
 }
 
@@ -60,10 +65,6 @@ function submit(page: Page, form: PageForm, changes: Readonly<Record<string, str
   return serverPost(page, form.action, { fields: { ...form.fields, ...changes } });
 }
 
-// A person opens the page and submits the form with this button.
-async function submitFrom(page: Page, path: string, label: string): Promise<ServerAnswer> {
-  return submit(page, formNamed((await shownPage(page, path)).forms, label));
-}
 
 function seatCount(members: ShownPage): number {
   const seats = seatsIn(members.body);
@@ -96,6 +97,11 @@ export function describeAdministrationServerCases(run: LiveRun): void {
   // The two administrators keep their sessions from one case to the next.
   const superAdmin = once(async () => signInThroughPortal(run, (await run.administrationFixtures()).users['c-super-admin']));
   const administrator = once(async () => signInThroughPortal(run, (await run.administrationFixtures()).users['c-administrator']));
+
+  // A person opens the page and submits the form with this button.
+  async function submitFrom(page: Page, path: string, label: string): Promise<ServerAnswer> {
+    return submit(page, formNamed((await shownPage(run, page, path)).forms, label));
+  }
 
   async function membershipState(membershipId: string): Promise<MembershipState> {
     return stateOf(await workos.userManagement.getOrganizationMembership(membershipId));
@@ -149,7 +155,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const { users, memberships } = await run.administrationFixtures();
       const actor = users['c-admin-only'];
       const { page } = await signInThroughPortal(run, actor);
-      const shown = await shownPage(page, 'members');
+      const shown = await shownPage(run, page, 'members');
       const before = await membershipState(memberships.superAdminInC);
 
       const forged = await submit(page, formNamed(shown.forms, `Grant User to ${users['c-super-admin'].email}`), { role: 'admin' });
@@ -172,11 +178,11 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const { page, pages } = await superAdmin();
       const session = await sessionJson(page);
 
-      const first = await shownPage(page, 'members');
+      const first = await shownPage(run, page, 'members');
       const adminGrant = await submit(page, formNamed(first.forms, `Grant Admin to ${user.email}`));
-      const second = await shownPage(page, 'members');
+      const second = await shownPage(run, page, 'members');
       const userGrant = await submit(page, formNamed(second.forms, `Grant User to ${user.email}`));
-      const third = await shownPage(page, 'members');
+      const third = await shownPage(run, page, 'members');
       const { roles } = await membershipState(membershipId);
       const records = await changeRecordsOf(user);
       const log = (await run.site()).log.lines.join('\n');
@@ -206,10 +212,10 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const { page } = await superAdmin();
 
       const revoked = await submitFrom(page, 'members', `Revoke Admin from ${user.email}`);
-      const between = await shownPage(page, 'members');
+      const between = await shownPage(run, page, 'members');
       const rolesBetween = (await membershipState(memberships.superAdminInC)).roles;
       const regranted = await submit(page, formNamed(between.forms, `Grant Admin to ${user.email}`));
-      const after = await shownPage(page, 'members');
+      const after = await shownPage(run, page, 'members');
       const rolesAfter = (await membershipState(memberships.superAdminInC)).roles;
       t.diagnostic(`roles ${JSON.stringify(rolesBetween)} > ${JSON.stringify(rolesAfter)}`);
 
@@ -262,7 +268,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const revoked = await submitFrom(page, 'members', `Revoke User from ${member.email}`);
       const portalAfter = await serverGet(visit.page, 'portal/access');
       const offered = labelsOf(formsIn((await serverGet(visit.page, 'organizations')).body));
-      const members = await shownPage(page, 'members');
+      const members = await shownPage(run, page, 'members');
       const inC = await membershipState(memberships.lastUserInC);
       const inB = await membershipState(memberships.lastUserInB);
       t.diagnostic(`portal ${portalBefore.status} > ${portalAfter.status}; offered ${JSON.stringify(offered)}; C: ${inC.status} ${JSON.stringify(inC.roles)}; B: ${inB.status} ${JSON.stringify(inB.roles)}`);
@@ -282,7 +288,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const { memberships: staging } = await run.fixtures();
       const { organizationC, users, memberships } = await run.administrationFixtures();
       const { page } = await administrator();
-      const shown = await shownPage(page, 'members');
+      const shown = await shownPage(run, page, 'members');
       const template = formNamed(shown.forms, `Grant Admin to ${users['c-target'].email}`);
       const watched = [memberships.targetInC, memberships.inactiveInC, staging.userAndAdminInA];
       const before = await Promise.all(watched.map((id) => membershipState(id)));
@@ -298,7 +304,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const forged: ServerAnswer[] = [];
       for (const fields of forgedFields) forged.push(await submit(page, template, fields));
       const after = await Promise.all(watched.map((id) => membershipState(id)));
-      const shownBeforeChange = formNamed((await shownPage(page, 'members')).forms, `Revoke User from ${users['c-target'].email}`);
+      const shownBeforeChange = formNamed((await shownPage(run, page, 'members')).forms, `Revoke User from ${users['c-target'].email}`);
       // Another administrator changes the membership in WorkOS after the page was shown. WorkOS names the authorization
       // resource of C by the external ID of C.
       const resourceOfC = organizationC.externalId;
@@ -325,16 +331,16 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const actor = users['c-administrator'];
       const [inviteeUser, inviteeAdmin, inviteeRevoked] = [users['c-invitee-user'], users['c-invitee-admin'], users['c-invitee-revoked']];
       const { page } = await administrator();
-      const first = await shownPage(page, 'invitations');
+      const first = await shownPage(run, page, 'invitations');
       const invite = (role: 'User' | 'Admin', email: string) => submit(page, formNamed(first.forms, `Invite as ${role}`), { email });
 
       const sent = [await invite('User', inviteeUser.email), await invite('Admin', inviteeAdmin.email), await invite('User', inviteeUser.email)];
       const refused = [await invite('Admin', inviteeUser.email), await invite('User', actor.email)];
-      const pending = await shownPage(page, 'invitations');
+      const pending = await shownPage(run, page, 'invitations');
       const resent = await submit(page, formNamed(pending.forms, `Resend the invitation to ${inviteeUser.email}`));
       const third = await invite('User', inviteeRevoked.email);
       const revoked = await submitFrom(page, 'invitations', `Revoke the invitation to ${inviteeRevoked.email}`);
-      const after = await shownPage(page, 'invitations');
+      const after = await shownPage(run, page, 'invitations');
       const invitations = await invitationsInWorkOS(organizationC.id);
       const idOf = (invitee: LiveUser) => invitations.find(({ email }) => email === invitee.email)?.id ?? 'absent';
       const adminInvitee = await membershipState(memberships.inviteeAdminInC);
@@ -381,8 +387,8 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const userMembership = await membershipStateOfUser(inviteeUser.id, organizationC.id);
       const adminMembership = await membershipState(memberships.inviteeAdminInC);
       const { page } = await administrator();
-      const invitationsPage = await shownPage(page, 'invitations');
-      const membersPage = await shownPage(page, 'members');
+      const invitationsPage = await shownPage(run, page, 'invitations');
+      const membersPage = await shownPage(run, page, 'members');
       const seats = await activeUserSeatsInWorkOS(organizationC.id);
       const log = (await run.site()).log.lines;
       t.diagnostic(`AuthKit pages of the acceptances: ${userVisit.pages.join(' > ')}; ${adminVisit.pages.join(' > ')}`);

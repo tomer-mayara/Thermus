@@ -593,12 +593,20 @@ For the AUTH-08W proofs and cases, the run makes two more organizations,
 `Thermus live <run ID> C` for the cases and `Thermus live <run ID> D` for the
 proofs, and 25 more users, each with a password and a verified email, with
 their memberships (`test/support/hosted-live/administration-fixtures.ts`).
+Organization C has the external ID `thermus-live-<run ID>-c`, as each
+customer organization of the operator runbook has one. WorkOS names the
+authorization resource of such an organization only by its external ID, so
+the grant cases in C cover the role writes on a resource that the external ID
+names. Organization D has no external ID, so the proofs in D cover an
+organization without one, whose resource WorkOS names by the organization ID.
 Organization B of the staging fixtures holds the second membership of two of
 these users. The invitations of the proofs and cases go only to these
 existing users, because an invitation to a new address needs an email
 verification code at the acceptance. The run deletes them at the end with
 its other fixtures. They need no other setting or prerequisite. With them,
-the complete command has 74 tests.
+the complete command has 77 tests: the 60 tests of AUTH-06 and AUTH-07W, with
+the three operator proofs of the ticket
+`9255ad59-3484-43bd-bdf5-e6e391e07bd6`, and the 17 AUTH-08W tests.
 
 Record the results of the AUTH-06 cases separately from the full hosted release
 gate. A pass of the AUTH-06 cases lets AUTH-06 complete its scope: identity
