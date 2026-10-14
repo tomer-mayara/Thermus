@@ -436,8 +436,9 @@ ticket. Do not create another one.
   composition, account pages, change records, and complete count of active
   User seats.
 - AUTH-08W is complete. It gives the complete count of active User seats
-  from WorkOS: `WorkOSOrganizations.memberPage()` reads the members of each
-  organization. The AUTH-08W proofs and cases of the
+  from WorkOS: `WorkOSOrganizations.memberPage()` reads one page of the
+  members of an organization, and the count reads every page. The AUTH-08W
+  proofs and cases of the
   [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
   passed in run r3 of AUTH-08W.
 
