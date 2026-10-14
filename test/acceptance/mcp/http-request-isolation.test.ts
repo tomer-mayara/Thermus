@@ -8,8 +8,8 @@ import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../support/mcp-protocol-eras.ts';
 
-const eras = ['2026-07-28', '2025-11-25'] as const;
 const authority = 'https://identity.example';
 const resource = new URL('https://thermus.example/mcp');
 
@@ -21,7 +21,7 @@ function pendingPage() {
   };
 }
 
-async function openSite(t: TestContext, era: typeof eras[number]) {
+async function openSite(t: TestContext, era: McpProtocolEra) {
   const pages = { alice: pendingPage(), bob: pendingPage() };
   const emergencyStop = new AbortController();
   const records: Array<Record<string, unknown>> = [];
@@ -92,7 +92,7 @@ async function openSite(t: TestContext, era: typeof eras[number]) {
   const url = new URL('mcp', listener.url);
   async function connect(subject: keyof typeof pages, cancelled?: AbortSignal) {
     const client = new Client({ name: `${subject}-acceptance`, version: '0.0.0' }, {
-      versionNegotiation: { mode: era === '2026-07-28' ? { pin: era } : 'legacy' },
+      versionNegotiation: eraNegotiation(era),
     });
     clients.push(client);
     await client.connect(new StreamableHTTPClientTransport(url, {
@@ -128,7 +128,7 @@ function assertRecord(record: Record<string, unknown> | undefined, subject: stri
   assert.equal(record.status, status);
 }
 
-for (const era of eras) {
+for (const era of mcpProtocolEras) {
   test(`Given two trusted users overlap in ${era}, when calls finish in reverse order, then each result and record keeps its context`, { timeout: 5_000 }, async (t) => {
     const site = await openSite(t, era);
     const alice = await site.connect('alice');

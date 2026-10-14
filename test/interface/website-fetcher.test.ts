@@ -6,7 +6,7 @@ describe('WebsiteFetcherLightpanda', () => {
   let fetcher: WebsiteFetcherLightpanda;
 
   beforeEach(() => {
-    fetcher = new WebsiteFetcherLightpanda();
+    fetcher = new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN);
   });
 
   test('fetchURL returns rendered HTML for a JavaScript page', async () => {

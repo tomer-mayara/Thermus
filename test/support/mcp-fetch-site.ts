@@ -9,13 +9,13 @@ import { createGetURLAsMarkdown } from '../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
 import type { WebsiteFetcher, WebsiteFetchResult } from '../../src/website-fetcher/website-fetcher.ts';
 import { NoAuthProvider } from './auth/no-auth-provider.ts';
+import { eraNegotiation, type McpProtocolEra } from './mcp-protocol-eras.ts';
 
 export const exactMarkdown = '# Exact Markdown\n\nNo extra text.\n';
-export const fetchProtocolEras = ['2026-07-28', '2025-11-25'] as const;
 export const validFetchArguments = { url: 'HTTPS://Example.COM/Page?private-query=yes#private-fragment', reason: 'Read the page for this task' };
 const resourceUrl = 'https://thermus.example/mcp';
 
-export async function openFetchSite(t: TestContext, era: typeof fetchProtocolEras[number], options: {
+export async function openFetchSite(t: TestContext, era: McpProtocolEra, options: {
   fetcher?: WebsiteFetcher;
   pipeline?: Pick<HtmlToMarkdownPipeline, 'process'>;
   resolver?: AccessResolver;
@@ -44,7 +44,7 @@ export async function openFetchSite(t: TestContext, era: typeof fetchProtocolEra
   });
   const listener = await startHttpServer((request) => server.fetch(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resourceUrl });
   const client = new Client({ name: 'fetch-tool-acceptance', version: '0.0.0' }, {
-    versionNegotiation: { mode: era === '2026-07-28' ? { pin: era } : 'legacy', probe: { timeoutMs: 5_000, maxRetries: 0 } },
+    versionNegotiation: { ...eraNegotiation(era), probe: { timeoutMs: 5_000, maxRetries: 0 } },
   });
   t.after(async () => { await client.close(); await listener.close(); await server.close(); });
   const url = new URL('mcp', listener.url);

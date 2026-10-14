@@ -17,7 +17,6 @@ function stubProcess(
   context: TestContext,
   result: { error?: ExecFileException; stdout?: string },
 ) {
-  context.mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
   const stub = context.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
     const callback = args.at(-1);
     assert.ok(typeof callback === 'function');

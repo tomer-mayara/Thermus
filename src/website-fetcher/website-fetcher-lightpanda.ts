@@ -60,6 +60,13 @@ function assertRendererExit(cause: ExecFileException | null, executable: string)
 }
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
+  private readonly executable: string;
+
+  // An empty value selects lightpanda on PATH, as an unset LIGHTPANDA_BIN does.
+  public constructor(executable?: string) {
+    this.executable = executable || LIGHTPANDA_DEFAULT_BIN;
+  }
+
   public async fetchURL(url: string, signal?: AbortSignal): Promise<WebsiteFetchResult> {
     signal?.throwIfAborted();
     const parsed = new URL(url);
@@ -73,12 +80,10 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       throw error;
     }
     signal?.throwIfAborted();
-    return WebsiteFetcherLightpanda.render(parsed.href, url, signal);
+    return this.render(parsed.href, url, signal);
   }
 
-  private static render(url: string, requestedUrl: string, signal?: AbortSignal): Promise<WebsiteFetchResult> {
-    const executable = process.env.LIGHTPANDA_BIN || LIGHTPANDA_DEFAULT_BIN;
-
+  private render(url: string, requestedUrl: string, signal?: AbortSignal): Promise<WebsiteFetchResult> {
     return new Promise((resolve, reject) => {
       let readinessTimer: ReturnType<typeof setTimeout> | undefined;
       let readinessLimitReached = false;
@@ -109,7 +114,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       signal?.addEventListener('abort', cancel, { once: true });
       try {
         child = execFile(
-          executable,
+          this.executable,
           rendererArguments(url),
           {
             encoding: 'utf8',
@@ -126,7 +131,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
                   cause: error ?? undefined,
                 });
               }
-              assertRendererExit(error, executable);
+              assertRendererExit(error, this.executable);
               const result = WebsiteFetcherLightpanda.parseResult(requestedUrl, stdout, error);
               signal?.throwIfAborted();
               resolve(result);

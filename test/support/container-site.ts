@@ -3,8 +3,9 @@ import { connect } from 'node:net';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
+import { trustedAdRulesFile } from './ad-rules.ts';
 import { publicBaseUrl } from './better-auth-local.ts';
-import { containerDataDirectory, gateLabel, gateRun, removeLabelled } from './container-gate.ts';
+import { containerAdRulesFile, containerDataDirectory, gateLabel, gateRun, removeLabelled } from './container-gate.ts';
 import { docker, dockerCommand, dockerOutput } from './docker-cli.ts';
 import type { ServerAddress } from './local-browser.ts';
 import type { Operator } from './local-commands.ts';
@@ -17,6 +18,8 @@ let sites = 0;
 export interface ServerContainerOptions {
   readonly image?: string;
   readonly environment?: Readonly<Record<string, string>>;
+  // false starts the server without the trusted rules file.
+  readonly adRules?: false;
 }
 
 interface SiteNames {
@@ -84,6 +87,8 @@ export class ContainerSite {
     const name = `thermus-gate-${this.names.id}-server-${this.servers}`;
     const server = ['container', 'create', '--init', '--name', name, '--network-alias', 'thermus'];
     await dockerOutput([...server, ...this.containerSettings(volume, options.environment), options.image ?? this.image]);
+    // The engine copies the file into the container, so the gate needs no host path that the engine shares.
+    if (options.adRules !== false) await dockerOutput(['container', 'cp', trustedAdRulesFile, `${name}:${containerAdRulesFile}`]);
     return new ServerContainer(name);
   }
 

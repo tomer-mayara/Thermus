@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 export const containerDataDirectory = '/var/lib/thermus';
+// The AD_RULES_FILE of the image, where compose.yaml mounts the trusted rules of the operator.
+export const containerAdRulesFile = '/etc/thermus/ad-rules.txt';
 export const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
 export const gateRun = randomBytes(4).toString('hex');
 // Each resource of this test run has this label, so the cleanup finds it also after a failed step.

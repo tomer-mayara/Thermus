@@ -1,0 +1,108 @@
+import assert from 'node:assert/strict';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, test } from 'node:test';
+import { stripVTControlCharacters } from 'node:util';
+import type { AccountCredentials } from '../../support/better-auth-local.ts';
+import { assertExit, runCommand } from '../../support/command-process.ts';
+import { dataDirectory } from '../../support/data-directory.ts';
+import { hostedStartupLine, workOSSettings } from '../../support/hosted-placeholder.ts';
+import { addUser, registerArgs, type Operator } from '../../support/local-commands.ts';
+import { selfHostedServerSettings, selfHostedSettings } from '../../support/local-runtime.ts';
+import { withPreload } from '../../support/server-preloads.ts';
+import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
+
+const ada: AccountCredentials = { email: 'ada@example.com', password: 'ada-password-1' };
+const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
+// The console logger writes "[time] FATAL [call site]: message" and colors the label.
+const fatalLine = /^\[[^\]]*\] FATAL (?:\[[^\]]*\]: )?(.*)$/gm;
+
+// Only the self-hosted server can load the rules file reader, the renderer, the ad cleaner, and the cleaning pipeline.
+const blocked = 'The test blocked a server-only module';
+const serverOnlyModuleGuard = `data:text/javascript,${encodeURIComponent(`import { registerHooks } from 'node:module';
+const serverOnly = (url) => ['/src/config/ad-rules-file.js', '/src/website-fetcher/website-fetcher-lightpanda.js'].some((end) => url.endsWith(end))
+  || ['/src/html-cleaner-pipeline/', '/adblock-rs/'].some((part) => url.includes(part));
+registerHooks({ resolve(specifier, context, nextResolve) {
+  const result = nextResolve(specifier, context);
+  if (serverOnly(result.url)) throw new Error(${JSON.stringify(blocked)});
+  return result;
+} });`)}`;
+
+function hostedSettings(directory: string): ServerSettings {
+  return {
+    DEPLOYMENT: 'hosted',
+    PUBLIC_BASE_URL: 'https://thermus.example',
+    ...workOSSettings,
+    DATA_DIR: directory,
+    LISTEN_HOST: '127.0.0.1',
+    LISTEN_PORT: '0',
+  };
+}
+
+// The rules file and the renderer are missing, because the commands and the hosted edition must not need them.
+function guardedSettings(settings: ServerSettings, emptyDirectory: string): ServerSettings {
+  const missing = { AD_RULES_FILE: join(emptyDirectory, 'missing-ad-rules.txt'), LIGHTPANDA_BIN: join(emptyDirectory, 'missing-lightpanda') };
+  return withPreload({ ...settings, ...missing }, serverOnlyModuleGuard);
+}
+
+function mcpToolCall(headers: Readonly<Record<string, string>> = {}): RequestInit {
+  const call = { name: 'getURLAsMarkdown', arguments: { url: 'https://example.com/', reason: 'Read the page for this task' } };
+  return {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', ...headers },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: call }),
+  };
+}
+
+function fatalMessages(output: string): string[] {
+  return Array.from(stripVTControlCharacters(output).matchAll(fatalLine), ([, message]) => message ?? '');
+}
+
+describe('Modules that only the self-hosted server loads', () => {
+  test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the operator adds two users, lists them, registers a client, resets a password, and disables a user on a fresh data directory, then each command exits with status 0 and loads no server-only module', { timeout: 60_000 }, async (t) => {
+    const settings = guardedSettings(selfHostedSettings(dataDirectory(t)), dataDirectory(t));
+    const operator: Operator = (args, input = []) => runCommand(t, settings, { args, input });
+
+    const results = [
+      await addUser(operator, ada),
+      await addUser(operator, bob),
+      await operator(['users', 'list']),
+      await operator(registerArgs(ada), [ada.password]),
+      await operator(['users', 'reset-password', ada.email], ['ada-password-2', 'ada-password-2']),
+      await operator(['users', 'disable', bob.email]),
+    ];
+
+    for (const result of results) {
+      assertExit(result, 0);
+      assert.ok(!`${result.stdout}${result.stderr}`.includes(blocked), result.stderr);
+    }
+  });
+
+  test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the hosted edition starts with the WorkOS settings, then it listens, asks for a sign-in on the account page, answers an MCP tool call with a Bearer token and a session cookie with a Bearer challenge, loads no server-only module, uses no network, stops with status 0 after SIGTERM, and creates no data', { timeout: 60_000 }, async (t) => {
+    const directory = dataDirectory(t);
+
+    const server = await ServerProcess.start(t, guardedSettings(hostedSettings(directory), dataDirectory(t)));
+    const page = await server.request('/');
+    const pageText = await page.text();
+    const mcp = await server.request('/mcp', mcpToolCall({ Authorization: 'Bearer any-token', Cookie: 'wos-session=any-session' }));
+    await mcp.text();
+    const exit = await server.stop();
+
+    assert.deepEqual([page.status, mcp.status], [401, 401]);
+    assert.match(pageText, /Sign-in required/);
+    assert.match(mcp.headers.get('WWW-Authenticate') ?? '', /^Bearer /);
+    assert.ok(server.output.includes(hostedStartupLine), server.output);
+    assert.ok(!server.output.includes(blocked), server.output);
+    assert.equal(server.attemptedOutboundAccess, false, server.output);
+    assert.deepEqual(exit, { code: 0, signal: null });
+    assert.deepEqual(readdirSync(directory), []);
+  });
+
+  test('Given a guard against server-only modules and trusted rules, when the self-hosted server starts, then it stops with status 1 before it listens and its FATAL line shows the guard message, so the guard sees the modules that the server loads', { timeout: 60_000 }, async (t) => {
+    const server = ServerProcess.launch(t, withPreload(selfHostedServerSettings(dataDirectory(t)), serverOnlyModuleGuard));
+
+    assert.equal(await server.listeningOrExit(), undefined, server.output);
+    assert.deepEqual(await server.exited(), { code: 1, signal: null }, server.output);
+    assert.ok(fatalMessages(server.output).some((message) => message.includes(blocked)), server.output);
+  });
+});

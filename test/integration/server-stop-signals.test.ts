@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import { DataDirectoryInUseError, lockDataDirectory } from '../../src/auth/local-auth/better-auth/data-directory-lock.ts';
 import { serve } from '../../src/index.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
+import { trustedAdRulesFile } from '../support/ad-rules.ts';
 import { dataDirectory } from '../support/data-directory.ts';
 import { hostedStartupLine, workOSSettings } from '../support/hosted-placeholder.ts';
 
@@ -92,7 +93,7 @@ test('Given active application work and a real listener, when a stop signal arri
     await workDone.promise;
     workClosed.resolve();
   });
-  const served = serve({ ...hostedEnvironment, DEPLOYMENT: 'self-hosted', DATA_DIR: directory, PUBLIC_BASE_URL: 'http://localhost:8080' }, record.logger, record.processSignals);
+  const served = serve({ ...hostedEnvironment, DEPLOYMENT: 'self-hosted', DATA_DIR: directory, PUBLIC_BASE_URL: 'http://localhost:8080', AD_RULES_FILE: trustedAdRulesFile }, record.logger, record.processSignals);
   await Promise.race([record.listening.promise, served]);
   const listeningLine = record.lines.find(({ message }) => message.startsWith('Listening on '));
   assert.ok(listeningLine);
@@ -143,7 +144,7 @@ for (const cleanupFails of [false, true]) {
       error: record.logger.error,
     };
 
-    await assert.rejects(serve({ ...hostedEnvironment, DEPLOYMENT: 'self-hosted', DATA_DIR: directory, PUBLIC_BASE_URL: 'http://localhost:8080' }, logger, record.processSignals), (error) => {
+    await assert.rejects(serve({ ...hostedEnvironment, DEPLOYMENT: 'self-hosted', DATA_DIR: directory, PUBLIC_BASE_URL: 'http://localhost:8080', AD_RULES_FILE: trustedAdRulesFile }, logger, record.processSignals), (error) => {
       if (!cleanupFails) return error === failure;
       assert.ok(error instanceof SuppressedError);
       assert.equal(error.error, cleanupFailure);

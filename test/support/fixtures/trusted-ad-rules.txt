@@ -1,0 +1,7 @@
+! Trusted Adblock Plus rules for the Thermus server tests. Only tests use this file.
+! The final page host selects these rules after a redirect.
+news.example##.final-host-target
+127.0.0.1##.final-host-target
+! The requested host must not select these rules after a redirect.
+source.example##.requested-host-target
+localhost##.requested-host-target

@@ -15,6 +15,15 @@ services:
       - "127.0.0.1:8080:8080"
     volumes:
       - thermus-data:/var/lib/thermus
+      # The trusted ad rules that the server reads one time when it starts. Make ad-rules.txt next to this file
+      # before the first start; README.md#container-installation tells how. Without the file, Compose stops with
+      # an error, because it must not make a directory in its place.
+      - type: bind
+        source: ./ad-rules.txt
+        target: /etc/thermus/ad-rules.txt
+        read_only: true
+        bind:
+          create_host_path: false
 
 volumes:
   # The database, the installation identity, the signing keys, and the secrets.

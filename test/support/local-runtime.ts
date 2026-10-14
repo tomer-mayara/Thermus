@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { openBetterAuthRuntime, type BetterAuthRuntime } from '../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
 import { loadDeploymentConfig } from '../../src/config/deployment-config.ts';
+import { trustedAdRulesFile } from './ad-rules.ts';
 import { publicBaseUrl } from './better-auth-local.ts';
 
 type AccountWithStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };
@@ -13,6 +14,11 @@ export interface LocalAccount {
 
 export function selfHostedSettings(directory: string): Readonly<Record<string, string>> {
   return { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: publicBaseUrl, DATA_DIR: directory, LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
+}
+
+// The local commands share these settings. Only the server reads AD_RULES_FILE.
+export function selfHostedServerSettings(directory: string, adRulesFile = trustedAdRulesFile): Readonly<Record<string, string>> {
+  return { ...selfHostedSettings(directory), AD_RULES_FILE: adRulesFile };
 }
 
 export function selfHostedConfig(directory: string) {

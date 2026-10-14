@@ -7,7 +7,6 @@ import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 
 function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null) {
-  t.mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
   const calls: string[][] = [];
   const lookup = t.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
   t.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {

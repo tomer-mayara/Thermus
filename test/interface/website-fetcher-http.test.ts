@@ -49,7 +49,7 @@ describe('WebsiteFetcherLightpanda HTTP contract', () => {
     test(`returns rendered HTML for ${route} ending in HTTP 200`, async (context) => {
       permitIPv4Fixture(context);
       const requestedUrl = `${origin}/${route}/200`;
-      const { html, requestedUrl: actualRequestedUrl, finalUrl } = await new WebsiteFetcherLightpanda().fetchURL(requestedUrl);
+      const { html, requestedUrl: actualRequestedUrl, finalUrl } = await new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN).fetchURL(requestedUrl);
       assert.equal(actualRequestedUrl, requestedUrl);
       assert.equal(finalUrl, `${origin}/status/200`);
       assert.match(html, /<html[\s>]/i);
@@ -60,7 +60,7 @@ describe('WebsiteFetcherLightpanda HTTP contract', () => {
     for (const status of [403, 404, 429, 500]) {
       test(`rejects ${route} ending in HTTP ${status}`, async (context) => {
         permitIPv4Fixture(context);
-        await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(`${origin}/${route}/${status}`), (error) => {
+        await assert.rejects(new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN).fetchURL(`${origin}/${route}/${status}`), (error) => {
           assert.ok(error instanceof WebsiteFetchHttpError);
           assert.equal(error.kind, 'http');
           assert.equal(error.status, status);
@@ -73,7 +73,7 @@ describe('WebsiteFetcherLightpanda HTTP contract', () => {
     for (const [status, header] of [[403, 'cf-mitigated'], [429, 'x-vercel-mitigated']] as const) {
       test(`preserves HTTP ${status} for ${route} ending in a ${header} challenge`, async (context) => {
         permitIPv4Fixture(context);
-        await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(`${origin}/${route}/${status}/${header}`), (error) => {
+        await assert.rejects(new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN).fetchURL(`${origin}/${route}/${status}/${header}`), (error) => {
           assert.ok(error instanceof WebsiteFetchHttpError);
           assert.equal(error.kind, 'http');
           assert.equal(error.status, status);

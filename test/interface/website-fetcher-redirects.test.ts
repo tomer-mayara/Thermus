@@ -15,7 +15,7 @@ test('returns direct-page metadata and preserves rendered content', { timeout: 6
   });
   const url = `${fixture.hostnameOrigin}/directory/page`;
 
-  const page = await new WebsiteFetcherLightpanda().fetchURL(url);
+  const page = await new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN).fetchURL(url);
 
   assert.equal(page.requestedUrl, url);
   assert.equal(page.finalUrl, url);
@@ -40,7 +40,7 @@ test('uses the final host and path after a local redirect chain', { timeout: 65_
   const requestedUrl = `${source.hostnameOrigin}/redirect`;
   const finalUrl = `${destination.origin}/directory/page`;
 
-  const page = await new WebsiteFetcherLightpanda().fetchURL(requestedUrl);
+  const page = await new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN).fetchURL(requestedUrl);
 
   assert.equal(page.requestedUrl, requestedUrl);
   assert.equal(page.finalUrl, finalUrl);
