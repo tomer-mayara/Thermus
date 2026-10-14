@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import type { WorkOS } from '@workos-inc/node';
 import { signInWithAuthKit, type BrowserSignIn } from './browser-session.ts';
 import { authorizeWithConnect, type ConnectGrant } from './connect-grant.ts';
-import { FixtureRegistry } from './fixture-registry.ts';
+import { FixtureRegistry, type FixtureKind } from './fixture-registry.ts';
 import { LiveBrowser } from './live-browser.ts';
 import { LocalHttpsSite } from './local-https-site.ts';
+import { createOrganizationFixtures, type OrganizationFixtures } from './organization-fixtures.ts';
 import { requestTimeout, workosClient, type HostedLiveSettings } from './settings.ts';
 import { createStagingFixtures, type StagingFixtures } from './staging-fixtures.ts';
 
@@ -28,6 +29,7 @@ export class LiveRun {
   readonly browser: LiveBrowser;
   readonly #registry: FixtureRegistry;
   readonly fixtures: () => Promise<StagingFixtures>;
+  readonly organizationFixtures: () => Promise<OrganizationFixtures>;
   readonly newUserSignIn: () => Promise<BrowserSignIn>;
   readonly newUserLaterSignIn: () => Promise<BrowserSignIn>;
   readonly organizationSignIn: () => Promise<BrowserSignIn>;
@@ -41,6 +43,7 @@ export class LiveRun {
     this.browser = new LiveBrowser(() => checkAuthKitReachable(settings.authkitIssuer));
     this.#registry = new FixtureRegistry(this.workos);
     this.fixtures = once(() => createStagingFixtures(this.workos, this.#registry));
+    this.organizationFixtures = once(async () => createOrganizationFixtures(this.workos, this.#registry, await this.fixtures()));
     this.newUserSignIn = once(async () => signInWithAuthKit(this, { user: (await this.fixtures()).newUser }));
     this.newUserLaterSignIn = once(async () => {
       await this.newUserSignIn();
@@ -55,6 +58,11 @@ export class LiveRun {
       const { connectUser, organizationA, oauthApplication } = await this.fixtures();
       return authorizeWithConnect(this, { user: connectUser, organizationName: organizationA.name, clientId: oauthApplication.clientId });
     });
+  }
+
+  // A proof that makes staging data itself records it here, so that the run deletes it at the end.
+  recordFixture(kind: FixtureKind, id: string): void {
+    this.#registry.record(kind, id);
   }
 
   async end(): Promise<void> {

@@ -9,6 +9,8 @@ import { describeConnectAuthorizationProofs } from './hosted-live/connect-author
 import { describeConnectTokenProofs } from './hosted-live/connect-tokens.ts';
 import { describeHostedServerCases } from './hosted-live/hosted-server.ts';
 import { describeMembershipProofs } from './hosted-live/memberships.ts';
+import { describeOperatorSetupProofs } from './hosted-live/operator-setup.ts';
+import { describeOrganizationServerCases } from './hosted-live/organization-server.ts';
 import { describeSessionEndingProofs } from './hosted-live/session-ending.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -164,5 +166,10 @@ if ('problems' in setup) {
   describeConnectAuthorizationProofs(run);
   describeConnectTokenProofs(run);
   describeMembershipProofs(run);
+  describeOperatorSetupProofs(run);
+  // The AUTH-07W cases come before the AUTH-06 cases, so that the 300-second wait of the AUTH-06 cases also lets the
+  // access token of the AUTH-07W selection session expire before its expiry case.
+  const describeExpiredSelectionCase = describeOrganizationServerCases(run);
   describeHostedServerCases(run);
+  describeExpiredSelectionCase();
 }

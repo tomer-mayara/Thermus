@@ -3,7 +3,8 @@ import { describe, test, type TestContext } from 'node:test';
 import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
-import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/hosted-browser.ts';
+import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser } from '../../support/hosted-browser.ts';
+import { formFor, statusesOf } from '../../support/hosted-organization-site.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
 import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
 import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
@@ -81,18 +82,6 @@ async function sessionOrganization(browser: HostedBrowser): Promise<unknown> {
 async function mcpStatus(site: Site, user: WorldUser, organizationId: string): Promise<number> {
   const token = await site.world.connectToken(user, { org_id: organizationId });
   return (await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', token }))).status;
-}
-
-async function statusesOf(browser: HostedBrowser, paths: readonly string[]): Promise<Record<string, number>> {
-  const statuses: Record<string, number> = {};
-  for (const path of paths) statuses[path] = (await browser.open(path)).status;
-  return statuses;
-}
-
-function formFor(forms: readonly PageForm[], label: string): PageForm {
-  const form = forms.find((candidate) => candidate.label === label);
-  assert.ok(form, `the page offers no selection of ${label}: ${JSON.stringify(forms.map((candidate) => candidate.label))}`);
-  return form;
 }
 
 function sessionCookiesOf(answer: BrowserAnswer): string[] {
