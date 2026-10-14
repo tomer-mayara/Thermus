@@ -60,7 +60,17 @@ const chooseOrganization: AuthKitStep = async (page, { organizationName }) => {
   await leavePage(page, () => page.getByText(organizationName, { exact: true }).click());
 };
 
-const allowAccess: AuthKitStep = async (page) => {
+// For a user with several memberships, the consent page also asks for the organization of the grant.
+const allowAccess: AuthKitStep = async (page, { organizationName }) => {
+  const picker = page.getByRole('combobox', { name: 'Organization access' });
+  if (await picker.count() > 0) {
+    if (organizationName === undefined) throw new Error('The consent page asks for an organization, but this authorization has no organization to choose.');
+    if (await picker.evaluate((element) => element.tagName === 'SELECT')) await picker.selectOption({ label: organizationName });
+    else {
+      await picker.click();
+      await page.getByRole('option', { name: organizationName, exact: true }).click();
+    }
+  }
   await leavePage(page, () => page.getByRole('button', { name: 'Allow access' }).click());
 };
 
@@ -116,4 +126,21 @@ export async function visitAuthKit(page: Page, start: string, plan: AuthKitPlan)
   } finally {
     await page.unroute(pattern, capture);
   }
+}
+
+// Completes each AuthKit page of a sign-in that a server started, until AuthKit sends the browser back to that server.
+// The server itself answers the callback. Returns the AuthKit pages that the browser saw.
+export async function completeAuthKit(page: Page, plan: Omit<AuthKitPlan, 'callback'>): Promise<readonly string[]> {
+  const pages: string[] = [];
+  await page.waitForURL((url) => url.host === plan.authkitHost, { waitUntil: 'commit', timeout: stepTimeout });
+  for (let count = 0; count < maxPages; count += 1) {
+    await page.waitForLoadState('domcontentloaded');
+    const { host, pathname } = new URL(page.url());
+    if (host !== plan.authkitHost) return pages;
+    pages.push(pathname);
+    await stepFor(pathname)(page, { ...plan, callback: '' }).catch((error: unknown) => {
+      throw new Error(`The AuthKit page ${pathname} failed after ${pages.join(' > ')}: ${safeMessage(error)}`);
+    });
+  }
+  throw new Error(`AuthKit did not send the browser back after ${maxPages} pages: ${pages.join(' > ')}.`);
 }

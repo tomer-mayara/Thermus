@@ -1,57 +1,88 @@
 # User portal
 
-The browser portal is in `src/user-portal/`. It uses TypeScript, Vite, and
-`@workos-inc/authkit-js`. Install and run it from the repository root with
-Node 24 and pnpm 12.10.1. It shares `package.json` and `pnpm-lock.yaml` with
-the server.
+The browser portal is in `src/user-portal/`. It uses TypeScript and Vite. It
+shares `package.json` and `pnpm-lock.yaml` with the server. Install and build
+it from the repository root with Node 24 and pnpm 12.10.1.
 
 ```sh
 pnpm install
-cp src/user-portal/.env.example src/user-portal/.env.local
-pnpm dev:user-portal
-```
-
-Set `VITE_WORKOS_CLIENT_ID` to the WorkOS application's public client ID.
-Set `VITE_WORKOS_REDIRECT_URI` to its registered callback URL. Local development
-uses `http://localhost:5173/callback`. Both values are required. Vite reads
-portal environment files from `src/user-portal/`. `VITE_` values are public
-browser configuration. Keep API keys and other server secrets out of these
-files.
-
-Use these WorkOS application settings for local development:
-
-- Redirect URI: `http://localhost:5173/callback`.
-- Default Sign-out URI: `http://localhost:5173/`.
-- Initiate login URI: `http://localhost:5173/login`.
-- Allowed browser origin, if required: `http://localhost:5173`.
-
-The SDK handles the callback. `/login` starts SDK sign-in when AuthKit sends
-an external sign-in to the application. The home page starts sign-in from the
-Sign In button and shows the SDK user profile after sign-in. Sign Out uses the
-SDK to end the session and goes to the application's configured Sign-out URI.
-For a deployed portal, replace the local origin in the environment and all
-application settings. Its host must serve `index.html` for `/callback` and
-`/login` as well as `/`.
-
-```sh
 pnpm typecheck:user-portal
 pnpm test:user-portal
 pnpm build:user-portal
-pnpm preview:user-portal
 ```
 
-The build writes `src/user-portal/dist/`. The preview uses port 5173 so the
-local URLs stay the same. Both dev and preview fail if that port is in use.
+The build writes `src/user-portal/dist/`: `index.html` and the files in
+`assets/`. The portal reads no build setting and keeps no secret.
+
+## Server-owned session
+
+The hosted Thermus server owns the browser session. The portal keeps no
+session and no token of its own. The server signs in through WorkOS AuthKit,
+keeps the session in a sealed `HttpOnly`, `Secure`, `SameSite=Lax` cookie, and
+signs out. The [authentication design](design/authentication-design.md#hosted-browser-sessions)
+gives the rules of the session.
+
+The portal must be on the same origin as the server, at the public base path
+of the server. It uses these server paths, relative to the base path:
+
+| Path | Use in the portal |
+| --- | --- |
+| `session` | `GET` on load. `401` shows the signed-out page. `200` gives the profile, the organization of the session, the MFA evidence, and the form token of the session. |
+| `portal/access` | `GET` after a sign-in: the protected portal request. The server checks the session and reads the current grants of the selected organization. `200` gives the organization and its roles when the user has User; `403` shows that the account has no product access, with a link to `organizations`. |
+| `login` | The Sign In button opens it. The server starts the AuthKit sign-in. |
+| `logout` | The Sign Out button posts a form with the `csrf_token` field. The server checks the origin and the token, clears the session cookie, and sends the browser to the WorkOS logout URL. |
+| `organizations` | The organization page of the server: onboarding guidance or the organization selection. |
+
+The profile and the organization ID that the portal shows are display data.
+They never select a tenant or give access. Each protected request uses the
+verified server session and a current read of the grants. A sign-in alone
+gives no User access.
+
+## Deployment
+
+A deployment serves the portal build at the public base path and sends each
+other request to the server:
+
+- `GET` and `HEAD` of the base path itself give `index.html`.
+- `GET` and `HEAD` of `assets/<file>` give the files of the build.
+- Each other request goes unchanged to the Thermus server, also `login`,
+  `callback`, `logout`, `session`, `portal/access`, the account pages, `mcp`,
+  and the protected-resource metadata at the root.
+
+The Vite build uses absolute asset paths, so the base path must be `/`. Send
+the portal pages with a Content Security Policy that allows the form action of
+the sign-out redirect, for example
+`default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com`.
+
+The hosted live gate uses this layout at `https://localhost:46443/`. Its local
+HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
+self-signed certificate for each run, serves the portal build, and forwards
+each other request to the real hosted composition. The WorkOS staging
+environment has these settings for it:
+
+- Redirect URI (the default): `https://localhost:46443/callback`.
+- Default Sign-out URI: `https://localhost:46443/`.
+- Initiate login URI: `https://localhost:46443/login`.
+- MCP resource indicator: `https://localhost:46443/mcp`.
+- CORS origins: none. The portal makes no request to WorkOS.
+
+For another deployment, replace the origin in each of these settings and in
+`PUBLIC_BASE_URL` and `WORKOS_REDIRECT_URI`.
+
+## Tests
+
 `pnpm check` checks portal types, runs its unit and acceptance tests, and
 builds its browser bundle. `pnpm test`, `pnpm test:unit`, and
 `pnpm test:acceptance` include the applicable portal tests. These tests use a
-provider double and a local DOM. They do not verify saved WorkOS settings or
-live sign-in and sign-out.
+double of the server and a local DOM. The hosted live gate,
+`npm run test:hosted-live`, builds the portal and proves the sign-in, the
+callback, the sign-out, the external sign-in through `/login`, and the
+protected portal request with WorkOS. See the
+[test gate policy](implementation/test-gate-policy.md#hosted-live-gate-auth-06).
+
+`pnpm dev:user-portal` and `pnpm preview:user-portal` serve the portal alone on
+port 5173, without the server. The portal then shows the error page, because
+it has no server session there. Use them only for layout work.
 
 The Node server has a separate TypeScript build. Its image excludes portal
-source, local environment files, and browser output. The portal does not
-implement the server's hosted authentication provider or change the hosted
-placeholder. Before using it with a WorkOS application, verify its saved URL
-settings and test normal sign-in, callback, sign-out, and an external sign-in
-through `/login`. See the [AuthKit JavaScript SDK](https://github.com/workos/authkit-js)
-and [Sign-out URI documentation](https://workos.com/docs/authkit/sessions#sign-out-uris).
+source and browser output.

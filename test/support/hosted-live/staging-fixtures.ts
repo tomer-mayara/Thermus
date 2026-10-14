@@ -33,12 +33,15 @@ export interface StagingFixtures {
   readonly newUser: LiveUser;
   readonly twoOrganizationUser: LiveUser;
   readonly connectUser: LiveUser;
+  readonly adminOnlyUser: LiveUser;
+  readonly defaultRoleUser: LiveUser;
+  readonly mixedUser: LiveUser;
   readonly memberships: Readonly<Record<MembershipName, string>>;
   readonly oauthApplication: LiveApplication;
   readonly machineApplication: MachineApplication;
 }
 
-export type MembershipName = 'userAndAdminInA' | 'userInB' | 'connectUserInA' | 'adminOnlyInA' | 'defaultRoleInA' | 'deactivatedUserInA';
+export type MembershipName = 'userAndAdminInA' | 'userInB' | 'connectUserInA' | 'adminOnlyInA' | 'defaultRoleInA' | 'deactivatedUserInA' | 'mixedAdminInA' | 'mixedUserInB';
 
 async function settled<T>(work: readonly Promise<T>[]): Promise<T[]> {
   // Wait for each creation, so that the registry knows every fixture before a failure ends the setup.
@@ -112,18 +115,23 @@ export async function createStagingFixtures(workos: WorkOS, registry: FixtureReg
   await registry.deleteStaleFixtures();
   const make = new FixtureFactory(workos, registry);
   const [organizationA, organizationB, clientOwner] = await settled(['A', 'B', 'client owner'].map((label) => make.organization(label)));
-  const labels = ['new', 'two-organizations', 'connect', 'admin-only', 'default-role', 'deactivated'];
-  const [newUser, twoOrganizationUser, connectUser, adminOnly, defaultRole, deactivated] = await settled(labels.map((label) => make.user(label)));
-  const [userAndAdminInA, userInB, connectUserInA, adminOnlyInA, defaultRoleInA, deactivatedUserInA] = await settled([
+  const labels = ['new', 'two-organizations', 'connect', 'admin-only', 'default-role', 'deactivated', 'mixed'];
+  const [newUser, twoOrganizationUser, connectUser, adminOnlyUser, defaultRoleUser, deactivated, mixedUser] = await settled(labels.map((label) => make.user(label)));
+  const [userAndAdminInA, userInB, connectUserInA, adminOnlyInA, defaultRoleInA, deactivatedUserInA, mixedAdminInA, mixedUserInB] = await settled([
     make.membership(twoOrganizationUser, organizationA, ['user', 'admin']),
     make.membership(twoOrganizationUser, organizationB, ['user']),
     make.membership(connectUser, organizationA, ['user']),
-    make.membership(adminOnly, organizationA, ['admin']),
-    make.membership(defaultRole, organizationA, []),
+    make.membership(adminOnlyUser, organizationA, ['admin']),
+    make.membership(defaultRoleUser, organizationA, []),
     make.deactivatedMembership(deactivated, organizationA),
+    make.membership(mixedUser, organizationA, ['admin']),
+    make.membership(mixedUser, organizationB, ['user']),
   ]);
-  const memberships = { userAndAdminInA, userInB, connectUserInA, adminOnlyInA, defaultRoleInA, deactivatedUserInA };
+  const memberships = { userAndAdminInA, userInB, connectUserInA, adminOnlyInA, defaultRoleInA, deactivatedUserInA, mixedAdminInA, mixedUserInB };
   const oauthApplication = await make.oauthApplication(clientOwner);
   const machineApplication = await make.machineApplication(clientOwner);
-  return { runId: make.runId, organizationA, organizationB, clientOwner, newUser, twoOrganizationUser, connectUser, memberships, oauthApplication, machineApplication };
+  return {
+    runId: make.runId, organizationA, organizationB, clientOwner, newUser, twoOrganizationUser, connectUser, adminOnlyUser, defaultRoleUser, mixedUser,
+    memberships, oauthApplication, machineApplication,
+  };
 }

@@ -9,7 +9,7 @@ import {
 import { InvalidAccessTokenError, type IdentityVerifier, type VerifiedIdentity } from '../../identity-verifier.ts';
 
 // The fresh read of the current grants of one user in one organization. No active membership gives undefined.
-export interface ActiveGrantReader {
+interface ActiveGrantReader {
   activeGrants(userId: string, organizationId: string): Promise<readonly RoleGrant[] | undefined>;
 }
 

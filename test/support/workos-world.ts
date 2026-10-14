@@ -1,6 +1,6 @@
 import type { TestContext } from 'node:test';
 import { createRemoteJWKSet } from 'jose';
-import type { WorkOSConnection } from '../../src/application.ts';
+import type { WorkOSConnection } from '../../src/hosted-workos-application.ts';
 import type { WorkOSSettings } from '../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type RecordedRequest } from './workos-fake-api.ts';

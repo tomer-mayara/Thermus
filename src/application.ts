@@ -1,12 +1,8 @@
-import type { WorkOS } from '@workos-inc/node';
-import type { JWTVerifyGetKey } from 'jose';
 import type { LocalAuthPages } from './auth/local-auth/better-auth/local-auth-pages.ts';
 import type { AccessResolver } from './auth/access-context.ts';
-import type { WorkOSSettings } from './auth/hosted-auth/workos/workos-settings.ts';
 import type { Billing } from './billing/billing.ts';
 import type { DeploymentConfig } from './config/deployment-config.ts';
 import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation } from './hosted-admin/account-routes.ts';
-import { portalAccessOperation, PRODUCT_ACCESS } from './hosted-admin/portal-access.ts';
 import type { BrowserSession } from './auth/hosted-auth/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
@@ -18,7 +14,7 @@ type Environment = Readonly<Record<string, string | undefined>>;
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
 type HostedConfig = Extract<DeploymentConfig, { deployment: 'hosted' }>;
-type RouteConfig = Pick<DeploymentConfig, 'publicBaseUrl' | 'mcpResourceUrl' | 'resourceMetadataUrl'>;
+export type RouteConfig = Pick<DeploymentConfig, 'publicBaseUrl' | 'mcpResourceUrl' | 'resourceMetadataUrl'>;
 
 export interface LocalRequestHandlers {
   readonly mcp: FetchHandler;
@@ -28,7 +24,7 @@ export interface LocalRequestHandlers {
 
 // The browser routes of the provider that need no signed-in session: the sign-in, its callback, the sign-out, and the
 // session of the portal. They come before the account routes, which need a signed-in session.
-export interface BrowserRoutes {
+interface BrowserRoutes {
   handles(pathname: string): boolean;
   handle(request: Request): Promise<Response>;
 }
@@ -49,14 +45,6 @@ export interface HostedProviderParts {
   readonly browserRoutes?: BrowserRoutes;
 }
 
-// The connection to one WorkOS environment: its settings, an SDK client, and the AuthKit key set of the Connect
-// tokens. The production connection reaches WorkOS; a test can point the client and the key set at a local fake.
-export interface WorkOSConnection {
-  readonly settings: WorkOSSettings;
-  readonly workos: WorkOS;
-  readonly authkitKeySet: JWTVerifyGetKey;
-}
-
 export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
   // Keeps the basic records of the privileged account changes.
@@ -75,9 +63,6 @@ export interface ApplicationLogger {
   info(message: string): void;
   error(message: string): void;
 }
-
-// No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
-const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
 // The hosted provider reads its own settings from the environment, so no common setting turns it on.
 export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger, environment: Environment = {}): Promise<Application> {
@@ -138,58 +123,10 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
   };
 }
 
-// Invalid or missing WorkOS settings stop the start before the server listens. There is no fallback to local or
-// anonymous access.
+// The hosted edition loads its provider only here, as the self-hosted edition does.
 async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
-  const { browserSessionIssuer, loadWorkOSSettings } = await import('./auth/hosted-auth/workos/workos-settings.ts');
-  const settings = loadWorkOSSettings(environment, config.publicBaseUrl);
-  const { WorkOS } = await import('@workos-inc/node');
-  const { createRemoteJWKSet } = await import('jose');
-  const workos = new WorkOS({
-    apiKey: settings.apiKey,
-    clientId: settings.clientId,
-    issuer: browserSessionIssuer(settings.clientId),
-    maxRetries: 0,
-    timeout: WORKOS_REQUEST_TIMEOUT_MS,
-  });
-  const authkitKeySet = createRemoteJWKSet(new URL(`${settings.authkitIssuer}/oauth2/jwks`), { timeoutDuration: WORKOS_REQUEST_TIMEOUT_MS });
-  logger.info(`Hosted authentication uses WorkOS: the client ${settings.clientId} and the AuthKit issuer ${settings.authkitIssuer}.`);
-  return composeWorkOSApplication(config, { settings, workos, authkitKeySet }, logger);
-}
-
-export async function composeWorkOSApplication(config: RouteConfig, connection: WorkOSConnection, logger: ApplicationLogger): Promise<Application> {
-  const { BillingFree } = await import('./billing/billing-free.ts');
-  const parts = await workosProviderParts(config, connection, logger);
-  return composeHostedApplication(config, parts, {
-    reportFailure: accountFailureReporter(logger),
-    changeRecords: accountChangeRecorder(logger),
-    billing: new BillingFree(),
-    operation: portalAccessOperation(config.publicBaseUrl),
-  });
-}
-
-async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, logger: ApplicationLogger): Promise<HostedProviderParts> {
-  const { WorkOSOrganizations } = await import('./auth/hosted-auth/workos/workos-organizations.ts');
-  const { WorkOSAuthProvider } = await import('./auth/hosted-auth/workos/workos-auth-provider.ts');
-  const { WorkOSBrowserSession } = await import('./auth/hosted-auth/workos/workos-browser-session.ts');
-  const { WorkOSSessionRoutes } = await import('./auth/hosted-auth/workos/workos-session-routes.ts');
-  const { workosAuthority } = await import('./auth/hosted-auth/workos/workos-settings.ts');
-  const { UnavailableHostedAuthentication } = await import('./auth/hosted-auth/unavailable-hosted-authentication.ts');
-  const { ProtectedResourceEndpoint } = await import('./mcp/protected-resource-endpoint.ts');
-  const { settings, workos, authkitKeySet } = connection;
-  const authority = workosAuthority(settings.clientId);
-  const grants = new WorkOSOrganizations({ userManagement: workos.userManagement, authorization: workos.authorization });
-  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants });
-  const session = new WorkOSBrowserSession({ workos, settings, authority });
-  const server = new MCPServer({
-    auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
-    reportFailure: operatorFailureReporter(logger),
-  });
-  const mcp = new ProtectedResourceEndpoint({ server, mcpResourceUrl: config.mcpResourceUrl, resourceMetadataUrl: config.resourceMetadataUrl, authorizationServer: settings.authkitIssuer });
-  const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure: accountFailureReporter(logger) });
-  // AUTH-07W replaces this organization directory with the WorkOS organization reads. Until then the organization
-  // page shows the onboarding guidance, and the selection and the administration pages give no access.
-  return { session, accessResolver: provider, organizations: new UnavailableHostedAuthentication(), mcp, browserRoutes };
+  const { openWorkOSApplication } = await import('./hosted-workos-application.ts');
+  return openWorkOSApplication(config, logger, environment);
 }
 
 export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {

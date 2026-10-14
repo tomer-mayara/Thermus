@@ -82,9 +82,10 @@ export function describeMembershipProofs(run: LiveRun): void {
       assert.deepEqual(inactive.data.map(({ id }) => id), [membership.id]);
     });
 
-    test('Given organization A with five memberships, when they are read with the explicit statuses active and inactive and a page limit of 2, then the after cursor reads each membership exactly once, and the last page has no after cursor', readOptions, async (t) => {
+    test('Given organization A with six memberships, when they are read with the explicit statuses active and inactive and a page limit of 2, then the after cursor reads each membership exactly once, and the last page has no after cursor', readOptions, async (t) => {
       const { organizationA, memberships } = await run.fixtures();
-      const expected = [memberships.userAndAdminInA, memberships.connectUserInA, memberships.adminOnlyInA, memberships.defaultRoleInA, memberships.deactivatedUserInA].toSorted();
+      const inA = ['userAndAdminInA', 'connectUserInA', 'adminOnlyInA', 'defaultRoleInA', 'deactivatedUserInA', 'mixedAdminInA'] as const;
+      const expected = inA.map((name) => memberships[name]).toSorted();
       const seen: string[] = [];
       const pageSizes: number[] = [];
       let after: string | undefined;

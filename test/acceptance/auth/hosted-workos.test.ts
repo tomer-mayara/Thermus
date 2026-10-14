@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { composeWorkOSApplication } from '../../../src/application.ts';
+import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { HostedBrowser, listenerTransport, type BrowserAnswer, type BrowserTransport } from '../../support/hosted-browser.ts';

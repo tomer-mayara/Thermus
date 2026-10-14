@@ -4,6 +4,7 @@ import { signInWithAuthKit, type BrowserSignIn } from './browser-session.ts';
 import { authorizeWithConnect, type ConnectGrant } from './connect-grant.ts';
 import { FixtureRegistry } from './fixture-registry.ts';
 import { LiveBrowser } from './live-browser.ts';
+import { LocalHttpsSite } from './local-https-site.ts';
 import { requestTimeout, workosClient, type HostedLiveSettings } from './settings.ts';
 import { createStagingFixtures, type StagingFixtures } from './staging-fixtures.ts';
 
@@ -31,6 +32,8 @@ export class LiveRun {
   readonly newUserLaterSignIn: () => Promise<BrowserSignIn>;
   readonly organizationSignIn: () => Promise<BrowserSignIn>;
   readonly connectGrant: () => Promise<ConnectGrant>;
+  readonly site: () => Promise<LocalHttpsSite>;
+  #site: Promise<LocalHttpsSite> | undefined;
 
   constructor(settings: HostedLiveSettings) {
     this.settings = settings;
@@ -47,6 +50,7 @@ export class LiveRun {
       const { twoOrganizationUser, organizationA } = await this.fixtures();
       return signInWithAuthKit(this, { user: twoOrganizationUser, organizationName: organizationA.name });
     });
+    this.site = () => (this.#site ??= LocalHttpsSite.start(settings));
     this.connectGrant = once(async () => {
       const { connectUser, organizationA, oauthApplication } = await this.fixtures();
       return authorizeWithConnect(this, { user: connectUser, organizationName: organizationA.name, clientId: oauthApplication.clientId });
@@ -56,6 +60,8 @@ export class LiveRun {
   async end(): Promise<void> {
     try {
       await this.browser.close();
+      const site = await this.#site?.catch(() => undefined);
+      await site?.close();
     } finally {
       await this.#registry.deleteAll();
     }

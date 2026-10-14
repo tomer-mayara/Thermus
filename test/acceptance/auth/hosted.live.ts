@@ -7,6 +7,7 @@ import { describeBrowserSignInProofs } from './hosted-live/browser-sign-in.ts';
 import { describeConfigurationProofs } from './hosted-live/configuration.ts';
 import { describeConnectAuthorizationProofs } from './hosted-live/connect-authorization.ts';
 import { describeConnectTokenProofs } from './hosted-live/connect-tokens.ts';
+import { describeHostedServerCases } from './hosted-live/hosted-server.ts';
 import { describeMembershipProofs } from './hosted-live/memberships.ts';
 import { describeSessionEndingProofs } from './hosted-live/session-ending.ts';
 
@@ -163,4 +164,5 @@ if ('problems' in setup) {
   describeConnectAuthorizationProofs(run);
   describeConnectTokenProofs(run);
   describeMembershipProofs(run);
+  describeHostedServerCases(run);
 }
