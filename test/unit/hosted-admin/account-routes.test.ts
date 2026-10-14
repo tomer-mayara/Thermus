@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { AccessDenialReason } from '../../../src/auth/access-context.ts';
-import { unavailableNotice as notice } from '../../support/hosted-placeholder.ts';
 import type { ConfiguredAccess } from '../mcp/fixtures/access-resolver-mock.ts';
 import {
   accountRequest,
@@ -81,13 +80,16 @@ describe('HostedAccountRoutes', () => {
     assert.deepEqual([context, context?.user, context?.grants, context?.grants[0], context?.grants[0]?.permissions, context?.permissions].map(Object.isFrozen), [true, true, true, true, true, true]);
   });
 
-  test('Given hosted authentication that is unavailable, when account, organization, and billing requests arrive with forged cookies, bearer tokens, organization IDs, and form input, then each gets the 503 notice without a cookie, and no access resolution or operation runs', async () => {
-    const { routes, session, resolver, operations } = serve({
-      sessions: new Map([['session=ann', signedIn(ann)]]),
-      otherSession: { status: 'unavailable' },
+  test('Given a signed-out session with cookie effects, when account, organization, and billing requests arrive, also with forged cookies, bearer tokens, organization IDs, and form input, then each gets 401 with the cookie effects of the session, and no body read, access resolution, organization read, switch, or operation runs', async () => {
+    const clearedSession = ['session=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax'];
+    const annSession = signedIn(ann);
+    const { routes, session, resolver, organizations, operations } = serve({
+      sessions: new Map([['session=ann', annSession]]),
+      otherSession: { status: 'signed-out', cookies: clearedSession },
       decisions: new Map([[ann.subject, allowedFor(contextOf(ann, [userGrant], ['product:access']))]]),
     });
     const requests = [
+      accountRequest('/account', 'session=ended'),
       accountRequest('/', 'wos-session=forged-session'),
       accountRequest('/account', undefined, { headers: { Authorization: 'Bearer forged-token' } }),
       accountRequest('/organizations?organizationId=org-a', 'wos-session=forged-session', { headers: { 'X-Organization-Id': 'org-a' } }),
@@ -97,22 +99,12 @@ describe('HostedAccountRoutes', () => {
     ];
 
     for (const request of requests) {
-      const response = await routes.handle(request);
-      assert.equal(response.headers.get('Set-Cookie'), null);
-      await assertPage(response, { status: 503, text: notice });
+      await assertPage(await routes.handle(request), { status: 401, text: /Sign in to use this page\./, cookies: clearedSession });
       assert.equal(request.bodyUsed, false);
     }
 
-    assert.deepEqual(session.calls, ['wos-session=forged-session', null, ...Array(4).fill('wos-session=forged-session')]);
-    assert.deepEqual([resolver.calls, operations.calls], [[], []]);
-  });
-
-  test('Given no signed-in browser session, when an account request arrives, then it gets 401 and no access resolution or operation runs', async () => {
-    const { routes, resolver, operations } = serve({ decisions: new Map([[ann.subject, allowedFor(contextOf(ann, [userGrant], ['product:access']))]]) });
-
-    await assertPage(await routes.handle(accountRequest('/account', 'session=unknown')), { status: 401, text: /Sign in to use this page\./ });
-
-    assert.deepEqual([resolver.calls, operations.calls], [[], []]);
+    assert.deepEqual(session.calls, ['session=ended', 'wos-session=forged-session', null, ...Array(4).fill('wos-session=forged-session')]);
+    assert.deepEqual([resolver.calls, organizations.lists, organizations.selections, organizations.administrationCalls, annSession.switches, operations.calls], [[], [], [], [], [], []]);
   });
 
   for (const reason of ['account-inactive', 'organization-required', 'membership-inactive', 'permission-required'] satisfies AccessDenialReason[]) {

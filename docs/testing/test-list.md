@@ -237,8 +237,7 @@ npm run build && node --test dist/test/unit/application-operator-log.test.js
 [V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
 [V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
 [V] Gives the operation a frozen copy of the decided context; later changes to the resolver's records, such as another organization or added grants, cannot reach it
-[V] For an unavailable session, gives the 503 authentication-unavailable notice to account, organization, and billing requests with forged cookies, bearer tokens, organization IDs, and form input, sets no cookie, reads no body, and runs no access resolution or operation
-[V] Gives 401 for a signed-out session and runs no access resolution or operation
+[V] For a signed-out session, gives 401 with the cookie effects of the session to account, organization, and billing requests, also with forged cookies, bearer tokens, organization IDs, and form input; reads no body, and runs no access resolution, organization read, organization switch, or operation
 [V] Gives 403 without the reason for each denial reason and runs no operation
 [V] Gives 404 after allowed access when no operation exists
 [V] Gives a session lookup failure to the caller and runs no access resolution, operation, or report
@@ -284,7 +283,7 @@ Each refusal comes before an organization check and a session switch.
 [V] Gives 403 for a `refused` switch and 401 for a `signed-out` switch, with the session cookies and then the switch cookies, and no redirect
 [V] Gives the 500 failure page with the session cookies and no redirect for a failed organization check or switch, and gives the operator the path and the cause
 [V] Gives 405 with `Allow: POST` to GET and PUT requests for the selection route
-[V] For an unavailable or a signed-out session, gives 503 or 401 to the organization page and a selection post, and lists, checks, or switches no organization
+[V] For a signed-out session, gives 401 to the organization page and to a selection post with the form token of another session, and lists, checks, or switches no organization
 
 **Member and invitation pages** (`test/unit/hosted-admin/account-routes-administration-pages.test.ts`)
 
