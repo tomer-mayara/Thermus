@@ -14,6 +14,4 @@ export function workOSSettingsFor(publicBaseUrl: string): Readonly<Record<string
   return { ...workOSSettings, WORKOS_REDIRECT_URI: new URL('callback', base).href };
 }
 
-export const unavailableNotice = /Hosted authentication is not available yet\./;
-
 export const hostedStartupLine = 'Hosted authentication uses WorkOS: the client client_placeholder and the AuthKit issuer https://thermus-test.authkit.app.';

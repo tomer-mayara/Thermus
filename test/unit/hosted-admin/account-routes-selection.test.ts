@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { OrganizationSwitch } from '../../../src/auth/hosted-auth/browser-session.ts';
-import { accountRequest, ann, assertPage, formPost, postForm, publicOrigin, serve } from './fixtures/account-routes-fixtures.ts';
-import { annOrganizations, selection, serveAnn, sessionCookies, switchCookies, validSelection } from './fixtures/organization-routes-fixtures.ts';
+import { accountRequest, ann, assertPage, formPost, postForm, publicOrigin } from './fixtures/account-routes-fixtures.ts';
+import { selection, serveAnn, sessionCookies, switchCookies, validSelection } from './fixtures/organization-routes-fixtures.ts';
 
 describe('HostedAccountRoutes organization selection', () => {
   test('Given a same-origin form post with the session form token, an authorized organization, and a return destination, when it arrives, then the session switches to that organization, and the browser gets 303 to the destination with the session cookies and then the switch cookies', async () => {
@@ -81,15 +81,13 @@ describe('HostedAccountRoutes organization selection', () => {
     });
   }
 
-  test('Given an unavailable or signed-out session, when the organization page or a selection post arrives, then no organization is listed, checked, or switched', async () => {
-    const unavailable = serve({ otherSession: { status: 'unavailable' }, organizations: new Map([[ann.subject, annOrganizations]]) });
-    const signedOut = serve({ organizations: new Map([[ann.subject, annOrganizations]]) });
+  test('Given a signed-out session, when the organization page or a selection post with the form token of another session arrives, then each gets 401, and no organization is listed, checked, or switched', async () => {
+    const { routes, annSession, organizations } = serveAnn();
 
-    for (const { routes, organizations } of [unavailable, signedOut]) {
-      const page = await routes.handle(accountRequest('/organizations', 'session=forged'));
-      const post = await routes.handle(formPost('/organizations/select', 'session=forged', new URLSearchParams(validSelection).toString()));
-      assert.deepEqual([page.status, post.status], routes === unavailable.routes ? [503, 503] : [401, 401]);
-      assert.deepEqual([organizations.lists, organizations.selections], [[], []]);
-    }
+    const page = await routes.handle(accountRequest('/organizations', 'session=forged'));
+    const post = await routes.handle(formPost('/organizations/select', 'session=forged', new URLSearchParams(validSelection).toString()));
+
+    for (const answer of [page, post]) await assertPage(answer, { status: 401, text: /Sign in to use this page\./ });
+    assert.deepEqual([organizations.lists, organizations.selections, annSession.switches], [[], [], []]);
   });
 });

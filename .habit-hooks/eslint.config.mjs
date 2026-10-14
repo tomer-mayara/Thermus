@@ -11,7 +11,7 @@ const sourceFiles = [
 ];
 
 const providerPackages = '(?:better-auth|@better-auth/mcp|@workos-inc/node)(?:/|$)';
-const providerPaths = '(?:local-auth/better-auth(?:/|$)|hosted-auth/workos(?:/|$)|hosted-auth/unavailable-hosted-authentication(?:\\.[jt]s)?$)';
+const providerPaths = '(?:local-auth/better-auth(?:/|$)|hosted-auth/workos(?:/|$))';
 const sharedImports = [
   providerPackages,
   `(?:\\./|(?:\\.\\./)+auth/)${providerPaths}`,

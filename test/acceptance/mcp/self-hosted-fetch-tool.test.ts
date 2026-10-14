@@ -75,7 +75,7 @@ function productionLaunch(url: string) {
       'fetch', '--json', '--dump', 'html', '--fail-on-http-error', '--wait-until', 'networkidle', '--wait-ms', '60000',
       '--block-private-networks', '--block-cidrs', LIGHTPANDA_BLOCKED_CIDRS, '--http-proxy', '', url,
     ],
-    options: { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, timeout: 60_000 },
+    options: { encoding: 'utf8', env: { ...process.env, LIGHTPANDA_DISABLE_TELEMETRY: 'true' }, maxBuffer: 32 * 1024 * 1024, timeout: 60_000 },
   };
 }
 

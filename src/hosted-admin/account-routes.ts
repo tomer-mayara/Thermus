@@ -56,7 +56,6 @@ export class HostedAccountRoutes {
 
   async handle(request: Request): Promise<Response> {
     const session = await this.session.authenticate(request.headers.get('Cookie'));
-    if (session.status === 'unavailable') return noticePage('unavailable');
     if (session.status === 'signed-out') return withCookies(noticePage('signedOut'), session.cookies);
     return this.answerSignedIn(request, session);
   }

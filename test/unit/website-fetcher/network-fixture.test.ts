@@ -9,7 +9,7 @@ const fetchArgs = [
 ];
 
 for (const configured of [undefined, '', '/opt/Lightpanda runtime/lightpanda']) {
-  test(`fixture launcher permits the selected executable when LIGHTPANDA_BIN is ${String(configured)}`, (t) => {
+  test(`fixture launcher permits the selected executable and keeps the launch options, also the environment, when LIGHTPANDA_BIN is ${String(configured)}`, (t) => {
     const environment = { ...process.env };
     if (configured === undefined) delete environment.LIGHTPANDA_BIN;
     else environment.LIGHTPANDA_BIN = configured;
@@ -18,16 +18,13 @@ for (const configured of [undefined, '', '/opt/Lightpanda runtime/lightpanda']) 
     permitIPv4Fixture(t);
     const executable = configured || 'lightpanda';
 
-    childProcess.execFile(executable, fetchArgs, { encoding: 'utf8', timeout: 60_000 }, () => {});
+    childProcess.execFile(executable, fetchArgs, { encoding: 'utf8', env: { PATH: '/usr/bin' }, timeout: 60_000 }, () => {});
 
     assert.equal(execute.mock.callCount(), 1);
     const [command, args, options] = execute.mock.calls[0].arguments;
     assert.equal(command, executable);
     assert.deepEqual(args, [...fetchArgs.slice(0, -1), '--block-cidrs', '-127.0.0.1/32', fixtureUrl]);
-    assert.equal(options?.shell, undefined);
-    assert.equal(options?.timeout, 60_000);
-    assert.equal(options?.encoding, 'utf8');
-    assert.deepEqual(options?.env, { ...environment, LIGHTPANDA_DISABLE_TELEMETRY: 'true' });
+    assert.deepEqual(options, { encoding: 'utf8', env: { PATH: '/usr/bin' }, timeout: 60_000 });
     assert.throws(() => childProcess.execFile('other-renderer', fetchArgs, () => {}), assert.AssertionError);
     assert.throws(() => childProcess.execFile(executable, [...fetchArgs.slice(0, -1), 'https://example.com/'], () => {}), assert.AssertionError);
     assert.equal(execute.mock.callCount(), 1);

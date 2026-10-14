@@ -70,6 +70,7 @@ describe('WebsiteFetcherLightpanda', () => {
     assert.equal(args.at(-1), 'https://example.com/');
     assert.deepEqual(options, {
       encoding: 'utf8',
+      env: { ...process.env, LIGHTPANDA_DISABLE_TELEMETRY: 'true' },
       maxBuffer: 32 * 1024 * 1024,
       timeout: 60_000,
     });

@@ -84,7 +84,7 @@ These tests run the pinned Better Auth packages with an in-memory `node:sqlite` 
 [V] After the shipped migrations, Better Auth plans no table, column, or index change, and its schema check passes
 [V] The installation table holds one identity: a second row or another singleton value fails; three accounts can still be added
 
-**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`, `server-close.test.ts`)
+**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`, `server-close.test.ts`, `server-close-request-body.test.ts`)
 
 These tests run `startHttpServer()` on a loopback port with test handlers. Raw socket requests check request targets that `fetch` would change.
 
@@ -99,6 +99,7 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Aborts the request signal and cancels the response body when the client disconnects
 [V] `close()` ends idle connections at once, refuses new connections, lets running responses finish, ends a response that never ends after the grace period, and gives the same result for repeated calls
 [V] `close()` ends a connection that has sent no bytes at once, also the unused connection that a fetch client opens after it aborts a streamed response that the handler leaves open
+[V] After a response finishes, `close()` ends its connection as soon as Node has read the complete request: unread 600 B, 64 KiB, and 1 MiB bodies, a 1 MiB body that the handler reads, and a request without a body close before the grace period when the handler answers after close starts; a client that still sends an unread body keeps its connection until it sends the rest, also when the response finished before close
 [V] Creates and clears the close deadline once; repeated failed closes retain the same error
 [V] Startup failure after listen closes the listener once and preserves both startup and cleanup errors
 
@@ -236,8 +237,7 @@ npm run build && node --test dist/test/unit/application-operator-log.test.js
 [V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
 [V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
 [V] Gives the operation a frozen copy of the decided context; later changes to the resolver's records, such as another organization or added grants, cannot reach it
-[V] For an unavailable session, gives the 503 authentication-unavailable notice to account, organization, and billing requests with forged cookies, bearer tokens, organization IDs, and form input, sets no cookie, reads no body, and runs no access resolution or operation
-[V] Gives 401 for a signed-out session and runs no access resolution or operation
+[V] For a signed-out session, gives 401 with the cookie effects of the session to account, organization, and billing requests, also with forged cookies, bearer tokens, organization IDs, and form input; reads no body, and runs no access resolution, organization read, organization switch, or operation
 [V] Gives 403 without the reason for each denial reason and runs no operation
 [V] Gives 404 after allowed access when no operation exists
 [V] Gives a session lookup failure to the caller and runs no access resolution, operation, or report
@@ -283,7 +283,7 @@ Each refusal comes before an organization check and a session switch.
 [V] Gives 403 for a `refused` switch and 401 for a `signed-out` switch, with the session cookies and then the switch cookies, and no redirect
 [V] Gives the 500 failure page with the session cookies and no redirect for a failed organization check or switch, and gives the operator the path and the cause
 [V] Gives 405 with `Allow: POST` to GET and PUT requests for the selection route
-[V] For an unavailable or a signed-out session, gives 503 or 401 to the organization page and a selection post, and lists, checks, or switches no organization
+[V] For a signed-out session, gives 401 to the organization page and to a selection post with the form token of another session, and lists, checks, or switches no organization
 
 **Member and invitation pages** (`test/unit/hosted-admin/account-routes-administration-pages.test.ts`)
 
@@ -453,14 +453,6 @@ Run only these tests:
 ```sh
 npm run build && node --test dist/test/unit/organizations/organization-administration-invitation-overview.test.js
 ```
-
-**Unavailable hosted authentication** (`test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`)
-
-[V] Gives `unavailable` for each `Cookie` header, also for none or for a forged session or organization cookie
-[V] Denies access with `account-inactive` for each user, also with a selected organization, and gives no context, tenant, or grant
-[V] Gives a frozen empty membership list for each user, also with a selected organization: no membership, organization, or grant
-[V] Gives a frozen empty page for each member and invitation read, also for a forged organization or cursor, and no member or invitation for any ID; its invitation policy is `provider-rules`, so it claims no strict address match
-[V] Answers each grant change, invitation, resend, and revoke, also for a forged organization, membership, or invitation, with a frozen `unsupported` and changes nothing
 
 **Hosted MCP endpoint and metadata** (`test/unit/mcp/protected-resource-endpoint.test.ts`)
 
@@ -803,6 +795,7 @@ AUTH-07W added these tests. A double of the narrow SDK part gives the page of ea
 [V] Uses a nonempty constructor argument as the exact executable path, including spaces, without a shell or version subprocess (`test/unit/website-fetcher/website-fetcher-runtime.test.ts`)
 [V] Uses lightpanda from PATH when the constructor gets no executable or an empty one
 [V] Ignores LIGHTPANDA_BIN in `process.env`; only the constructor argument selects the executable
+[V] Gives each renderer run the server environment of that time and `LIGHTPANDA_DISABLE_TELEMETRY=true`, also when the server environment does not set the variable or sets it to `false`; the server environment does not change
 [V] Gives a `WebsiteFetchLaunchError` for a missing executable that keeps the cause, reports the selected path and runtime setup document without the requested URL, and does not fall back to another executable
 [V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
 [V] Returns HTML with the requested and final URLs on immediate success
@@ -843,7 +836,7 @@ AUTH-07W added these tests. A double of the narrow SDK part gives the page of ea
 **Local renderer fixture launcher** (`test/unit/website-fetcher/network-fixture.test.ts`)
 
 [V] Uses the selected executable for default, empty, and configured LIGHTPANDA_BIN values, including a path with spaces
-[V] Permits only the trusted localhost fetch scope, keeps the launch options, and disables fixture telemetry
+[V] Permits only the trusted localhost fetch scope and keeps the launch options of the fetcher, also its renderer environment
 [V] Rejects another executable or a public-site fetch through the fixture launcher
 
 **Image build: Lightpanda digest check** (`test/unit/image/check-lightpanda-digest.test.ts`)
@@ -1378,6 +1371,7 @@ listener, and delayed process callback through the real MCP HTTP path.
 [V] Waits for both independent cleanup tasks even when one finishes first
 [V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
 [V] After a client cancels a call while the fetcher waits, the server stop that follows the `cancelled` record does not wait for the client connections
+[V] A call that is still in authentication when the server stops gets a generic `500`, does not start the fetch tool, and does not make the server stop wait for the grace period
 
 ```sh
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"
@@ -1387,7 +1381,7 @@ npm run build && node --test "dist/test/acceptance/mcp/*.test.js"
 
 Each test runs the production `serve()` in the test process with `InProcessServer`: real Better Auth on SQLite files, trusted test rules, and the real cleaning pipeline. `RendererProcessDouble` stands in for the Lightpanda process and DNS at the Node `child_process.execFile` and DNS APIs, so no renderer runs. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
 
-[V] Given a real Better Auth token in each era, the client lists `getURLAsMarkdown` with the shared schema and gets one exact cleaned Markdown entry; the final URL selects the rules and resolves the links, the requested URL keeps its spelling, the server keeps the rules that it read at startup after the file changes, the renderer gets the production arguments and limits, and each call writes one safe completion record
+[V] Given a real Better Auth token in each era, the client lists `getURLAsMarkdown` with the shared schema and gets one exact cleaned Markdown entry; the final URL selects the rules and resolves the links, the requested URL keeps its spelling, the server keeps the rules that it read at startup after the file changes, the renderer gets the production arguments, limits, and environment with `LIGHTPANDA_DISABLE_TELEMETRY=true`, and each call writes one safe completion record
 [V] Given forged credentials (a changed token payload or a malformed token), a token that a password reset revoked, and a token of a user that `users disable` disabled, each call gets 401 in both eras, and a banned user with a live session gets 403; no fetch, cleaning, or completion record happens, and a peer with a current token still gets the cleaned page
 [V] Given an empty rules file, the ad rules do nothing, and the hidden content is still removed
 [V] Given HTML that the sanitizer withholds, HTML deeper than the ad cleaner limit, and a failed render, the client gets exact empty success, `Page processing failed`, or `Page fetch failed` without partial Markdown; no record holds a cause or page text
@@ -1445,6 +1439,7 @@ npm run build && node --test dist/test/acceptance/mcp/renderer-gate-setup.test.j
 The production `serve()` runs in the test process with real Better Auth, the real cleaning pipeline, trusted test rules, and the pinned Lightpanda 1.0.0 from `LIGHTPANDA_BIN`. The pages are local HTTP fixtures on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address. The gate needs no public network access and no Axiom credentials.
 
 [V] Given the pinned renderer and a real Better Auth token in each protocol era, after the user signs in and consents on the bundled pages, the client gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record
+[V] Given a local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY`, with a new `HOME`, the client gets exact cleaned Markdown from a local JavaScript page, and the renderer run has telemetry off: it writes no telemetry install ID (`iid`) in its data directory, so it starts no telemetry sender and tries no connection to `telemetry.lightpanda.io`
 [V] Given a redirect that changes the host and the path, `requestedUrl` keeps the accepted spelling, and the final URL selects the ad rules and resolves the relative links
 [V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed` and `Page processing failed` without partial Markdown; the server writes no renderer setup report
 [V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
@@ -1735,7 +1730,7 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.j
 
 **Self-hosted evaluation container** (`test/acceptance/auth/self-hosted-container.test.ts`)
 
-The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image holds the pinned Lightpanda 1.0.0. In the two renderer cases, `NODE_OPTIONS` loads the test-only page seam `test/support/container-page.ts` into the server. The seam serves a JavaScript page on port 8090 of the container, gives the lookup of `localhost` a public address, and logs each renderer launch and each connection and request of the page. With `CONTAINER_GATE_PAGE=permitted`, it lets the renderer reach `127.0.0.1` for the page; with `blocked`, the renderer starts with the production options. The seam keeps the telemetry setting of the image. The suite does not reach a public page, and it is not a renderer gate pass.
+The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image holds the pinned Lightpanda 1.0.0. In the two renderer cases, `NODE_OPTIONS` loads the test-only page seam `test/support/container-page.ts` into the server. The seam serves a JavaScript page on port 8090 of the container, gives the lookup of `localhost` a public address, and logs each renderer launch and each connection and request of the page. With `CONTAINER_GATE_PAGE=permitted`, it lets the renderer reach `127.0.0.1` for the page; with `blocked`, the renderer starts with the production options. The seam keeps the telemetry settings of the image and the fetcher. The suite does not reach a public page, and it is not a renderer gate pass.
 
 [V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed` and a `fetch_failed` record, because the container has no route out, and the server log gets no renderer setup report; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
 [V] Given two users with tokens and consents, a restart, a new container, and a container of the rebuilt image on the same volume each keep the tenant, the user IDs, the clients, the signing keys, the sessions, the consents, and the tokens of both users usable

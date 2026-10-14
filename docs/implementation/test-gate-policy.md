@@ -117,8 +117,7 @@ contains every change of the pull request.
 4. Run the applicable suites:
    - `npm run test:integration` and `npm run test:acceptance` for a change that
      affects the MCP server, authentication, the access context, the hosted
-     placeholder, the hosted account routes, organization administration, or
-     billing.
+     account routes, organization administration, or billing.
    - `npm run test:integration` for a change in `test/integration/`.
    - `npm run test:acceptance` for a change in `test/acceptance/`.
    - The interface tests that cover a changed renderer runtime, network policy,
@@ -216,8 +215,8 @@ AUTH-09 added the container acceptance suite
   `CONTAINER_GATE_PAGE=permitted`, it also lets the renderer reach `127.0.0.1`
   for that page, as `permitIPv4Fixture` does. With `blocked`, the renderer starts
   with the production options. The seam does not change the renderer
-  environment, so the telemetry setting of the image applies. Production has no
-  such seam;
+  environment, so the telemetry settings of the image and the fetcher apply.
+  Production has no such seam;
 - checks in the permitted case that `LIGHTPANDA_BIN` in the server container
   names the pinned executable, which reports 1.0.0, that the client gets the
   exact cleaned Markdown, and that the server writes one safe completion record;
@@ -270,15 +269,22 @@ The gate needs `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda
 setup. The gate needs no public network access and no Axiom credentials. The
 pages are local HTTP fixtures on `127.0.0.1`. The test-only `permitIPv4Fixture`
 seam in `test/support/network-fixture.ts` lets the renderer reach only that
-address in the test scope. Production has no private-network bypass.
+address in the test scope. It keeps the other launch options of the fetcher,
+also the renderer environment, so the gate checks the telemetry setting of the
+fetcher. Production has no private-network bypass.
 
 The gate runs the production `serve()` in the test process with real Better
 Auth, the real cleaning pipeline, trusted test rules, and the pinned renderer.
-The real MCP SDK HTTP client calls `getURLAsMarkdown`. The six cases cover:
+The real MCP SDK HTTP client calls `getURLAsMarkdown`. The seven cases cover:
 
 - exact cleaned Markdown from a local JavaScript page and one safe completion
   record, in the modern 2026-07-28 and the legacy 2025-11-25 era, after the
   user signs in and consents on the bundled pages;
+- a local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY`:
+  the renderer run has telemetry off. The case gives the server a new `HOME`,
+  and the renderer writes no telemetry install ID, the file `iid`, in its data
+  directory there. Thus it starts no telemetry sender and tries no connection
+  to `telemetry.lightpanda.io`;
 - a redirect that changes the host and the path: `requestedUrl` keeps the
   requested spelling, and the final URL selects the rules and resolves links;
 - hidden content, sanitizer-withheld HTML with exact empty success, an HTTP
@@ -297,7 +303,7 @@ the gate four times with bad prerequisites. It checks that each run fails with
 its setup error and that no gate test passes, is skipped, or is left as todo.
 
 Only a run of `npm run test:mcp:renderer` that exits with status 0 and shows
-each of the six cases as passed is a renderer gate pass. A run that selects zero
+each of the seven cases as passed is a renderer gate pass. A run that selects zero
 tests, skips a test, leaves a test as todo, or stops with a setup error is not a
 pass. A passing default acceptance suite never counts as rendered end-to-end
 proof, and a container gate pass does not count either. Claim rendered tool
@@ -309,10 +315,12 @@ AUTH-12 added the hosted placeholder, AUTH-07 added organization onboarding and
 selection behind the provider contracts, and AUTH-08 added User and Admin grant
 management, invitations, change records, and the User seat summary. AUTH-06
 replaced the placeholder in production with the WorkOS provider, and AUTH-07W
-connected the organization reads of the hosted edition to WorkOS. These tests
-run offline and need no WorkOS account, credential, or network access. They use
-doubles at the provider contracts, or the pinned SDK with a local fake of the
-WorkOS API (`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
+connected the organization reads of the hosted edition to WorkOS. After that,
+no composition used the placeholder, and a follow-up of AUTH-07W removed it
+and its unit test. These tests run offline and need no WorkOS account,
+credential, or network access. They use doubles at the provider contracts, or
+the pinned SDK with a local fake of the WorkOS API
+(`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
 They are in the existing suites:
 
 - unit: `test/unit/hosted-admin/account-routes.test.ts`,
@@ -330,7 +338,6 @@ They are in the existing suites:
   `test/unit/organizations/organization-administration-members.test.ts`,
   `test/unit/organizations/organization-administration-invitations.test.ts`,
   `test/unit/organizations/organization-administration-invitation-overview.test.ts`,
-  `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`,
   the WorkOS provider tests in `test/unit/auth-workos/`, with
   `test/unit/auth-workos/workos-organizations-memberships.test.ts`,
   `test/unit/mcp/protected-resource-endpoint.test.ts`,

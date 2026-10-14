@@ -59,6 +59,27 @@ for (const [executable, description] of unconfigured) {
   });
 }
 
+for (const setting of [undefined, 'false']) {
+  test(`Given LIGHTPANDA_DISABLE_TELEMETRY is ${setting === undefined ? 'not set' : `"${setting}"`} in the server environment, when the fetcher runs the renderer two times, then each run gets the server environment of that time and LIGHTPANDA_DISABLE_TELEMETRY=true, and the server environment does not change`, async (t) => {
+    const environment: NodeJS.ProcessEnv = { ...process.env, THERMUS_TEST_SETTING: 'first' };
+    if (setting === undefined) delete environment.LIGHTPANDA_DISABLE_TELEMETRY;
+    else environment.LIGHTPANDA_DISABLE_TELEMETRY = setting;
+    t.mock.property(process, 'env', environment);
+    const execute = stubRuntime(t);
+    const fetcher = new WebsiteFetcherLightpanda('/opt/lightpanda/lightpanda');
+
+    await fetcher.fetchURL(url);
+    process.env.THERMUS_TEST_SETTING = 'second';
+    await fetcher.fetchURL(url);
+
+    assert.deepEqual(execute.mock.calls.map(({ arguments: [, , options] }) => options?.env), [
+      { ...environment, THERMUS_TEST_SETTING: 'first', LIGHTPANDA_DISABLE_TELEMETRY: 'true' },
+      { ...environment, THERMUS_TEST_SETTING: 'second', LIGHTPANDA_DISABLE_TELEMETRY: 'true' },
+    ]);
+    assert.equal(process.env.LIGHTPANDA_DISABLE_TELEMETRY, setting);
+  });
+}
+
 for (const configured of [undefined, '/opt/Missing runtime/lightpanda']) {
   const executable = configured ?? 'lightpanda';
   test(`Given ${executable} is missing, when fetching, then the error names it and the setup guide but not the requested URL`, async (t) => {
