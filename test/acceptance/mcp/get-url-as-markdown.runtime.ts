@@ -2,8 +2,9 @@
 // It needs LIGHTPANDA_BIN with the pinned Lightpanda 1.0.0 (docs/lightpanda-runtime.md). Without it, setup fails.
 import assert from 'node:assert/strict';
 import childProcess, { execFile, type ChildProcess } from 'node:child_process';
+import { existsSync, readdirSync } from 'node:fs';
 import { syncBuiltinESMExports } from 'node:module';
-import { isAbsolute } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 import { before, describe, test, type TestContext } from 'node:test';
 import { promisify } from 'node:util';
 import type { CallToolResult, Client } from '@modelcontextprotocol/client';
@@ -17,6 +18,7 @@ import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/loca
 import { selfHostedServerSettings } from '../../support/local-runtime.ts';
 import { mcpProtocolEras, type McpProtocolEra } from '../../support/mcp-protocol-eras.ts';
 import { permitIPv4Fixture, startFixture } from '../../support/network-fixture.ts';
+import { setProcessEnvironment } from '../../support/process-environment.ts';
 
 const runCommand = promisify(execFile);
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
@@ -51,6 +53,8 @@ const pages: Readonly<Record<string, string>> = {
 const redirectedPage = page('<h1>Redirected story</h1><p>The final page has a first paragraph with enough words to keep it.</p>'
   + '<p class="final-host-target">Final host target</p><p class="requested-host-target">Requested host target</p>'
   + '<p>Related <a href="child">child</a> and <a href="/root">root</a>.</p>');
+const storyMarkdown = (origin: string): string => '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\n'
+  + `Final host target\n\nRelated [article](${origin}/related) and [root](${origin}/root).`;
 
 async function pinnedRenderer(): Promise<string> {
   const executable = process.env.LIGHTPANDA_BIN;
@@ -127,6 +131,16 @@ function watchRendererChildren(t: TestContext, executable: string): ChildProcess
   return children;
 }
 
+// Removes LIGHTPANDA_DISABLE_TELEMETRY from the server environment until the test ends and gives the server a new HOME.
+// Returns the data directory that Lightpanda 1.0.0 makes at each start: on macOS under HOME, on Linux under
+// XDG_DATA_HOME. With telemetry on, the renderer writes its telemetry install ID, the file iid, there and starts the
+// telemetry sender, which alone connects to telemetry.lightpanda.io. With telemetry off, it does neither.
+function removeTelemetrySetting(t: TestContext): string {
+  const home = dataDirectory(t);
+  setProcessEnvironment(t, { LIGHTPANDA_DISABLE_TELEMETRY: undefined, HOME: home, XDG_DATA_HOME: join(home, '.local', 'share') });
+  return process.platform === 'darwin' ? join(home, 'Library', 'Application Support', 'lightpanda') : join(home, '.local', 'share', 'lightpanda');
+}
+
 async function callFetchTool(client: Client, url: string, options?: { signal: AbortSignal }): Promise<CallToolResult> {
   return await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } }, options);
 }
@@ -172,8 +186,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
       const tenant = site.server.tenant();
       await site.server.stop();
 
-      assertText(result, '## Runtime story\n\nThe script rendered this paragraph with enough words to keep it.\n\nFinal host target\n\n'
-        + `Related [article](${fixture.hostnameOrigin}/related) and [root](${fixture.hostnameOrigin}/root).`);
+      assertText(result, storyMarkdown(fixture.hostnameOrigin));
       assert.deepEqual(fixture.requests, ['/story', '/story.js']);
       assert.deepEqual(pagesSeen(site), [{ requestedUrl: url, finalUrl: url }]);
       const records = site.server.completionRecords();
@@ -187,6 +200,20 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
       assert.doesNotMatch(site.server.completionLines().join('\n'), /Runtime story|Hidden instruction|Final host target/);
     });
   }
+
+  test('Given a local server whose environment does not set LIGHTPANDA_DISABLE_TELEMETRY, when the MCP client gets a local JavaScript page, then the renderer run has telemetry off: it writes no telemetry install ID in its data directory, so it starts no telemetry sender and tries no connection to telemetry.lightpanda.io', { timeout: 120_000 }, async (t) => {
+    const rendererData = removeTelemetrySetting(t);
+    const site = await openRuntimeSite(t, executable);
+    const fixture = await openPageFixture(t);
+    const client = await connect(t, site);
+
+    const result = await callFetchTool(client, `${fixture.hostnameOrigin}/story`);
+    await site.server.stop();
+
+    assertText(result, storyMarkdown(fixture.hostnameOrigin));
+    assert.ok(existsSync(rendererData), 'the renderer made no data directory under the new HOME');
+    assert.deepEqual(readdirSync(rendererData), []);
+  });
 
   test('Given a redirect that changes the host and the path, when the real rendered page is cleaned, then requestedUrl keeps the accepted spelling, and the final URL selects the ad rules and resolves the relative links', { timeout: 120_000 }, async (t) => {
     const site = await openRuntimeSite(t, executable);

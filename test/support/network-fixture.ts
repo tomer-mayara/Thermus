@@ -48,10 +48,7 @@ export function permitIPv4Fixture(t: TestContext) {
     const url = command.pop();
     assert.ok(url && url.startsWith('http://localhost:'));
     command.push('--block-cidrs', '-127.0.0.1/32', url);
-    return execute(args[0], command, {
-      ...args[2],
-      env: { ...process.env, LIGHTPANDA_DISABLE_TELEMETRY: 'true' },
-    }, args[3]);
+    return execute(args[0], command, args[2], args[3]);
   });
   syncBuiltinESMExports();
   t.after(() => {
