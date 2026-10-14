@@ -183,6 +183,9 @@ importers:
       '@opentelemetry/api-logs':
         specifier: 0.223.0
         version: 0.223.0
+      '@workos-inc/node':
+        specifier: 11.0.0
+        version: 11.0.0
       adblock-rs:
         specifier: ^0.13.3
         version: 0.13.3
@@ -204,6 +207,9 @@ importers:
       htmlparser2:
         specifier: ^12.0.0
         version: 12.0.0
+      jose:
+        specifier: 6.2.12
+        version: 6.2.12
       linkedom:
         specifier: ^0.18.13
         version: 0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590)
@@ -229,9 +235,6 @@ importers:
       '@types/node':
         specifier: ^24.19.1
         version: 24.19.1
-      '@workos-inc/authkit-js':
-        specifier: ^0.12.0
-        version: 0.12.0
       eslint:
         specifier: 10.10.0
         version: 10.10.0(jiti@2.7.0)
@@ -241,6 +244,9 @@ importers:
       node:
         specifier: runtime:24.20.0
         version: runtime:24.20.0
+      playwright:
+        specifier: 1.64.0
+        version: 1.64.0
       ts-morph:
         specifier: 28.0.0
         version: 28.0.0
@@ -1430,8 +1436,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@workos-inc/authkit-js@0.12.0':
-    resolution: {integrity: sha512-InOA64y3IEbv13vzGJdAdz/HHWiEVzOCZxx0xDAQBxIOXciK5yUiFRUJLlpv1LJa+J5w4aDGOnMABSk7X9cLpA==}
+  '@workos-inc/node@11.0.0':
+    resolution: {integrity: sha512-swUT6CbkuVQXMOtUpI70LZ8usjSg8OXcKMjKdoYLeqCApRI0Oo97l+nZ0lKzZ5GxjxgcVZGGVK025h7z9WyCJg==}
+    engines: {node: '>=22.11.0'}
 
   '@xmldom/xmldom@0.9.12':
     resolution: {integrity: sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A==}
@@ -2222,6 +2229,16 @@ packages:
   pkce-challenge@5.0.1:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
     engines: {node: '>=16.20.0'}
+
+  playwright-core@1.64.0:
+    resolution: {integrity: sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.64.0:
+    resolution: {integrity: sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   postcss@8.5.30:
     resolution: {integrity: sha512-zkd+e9S1AQHhmaBKye9zlFHWjOwVgqXl1q3ECYy8561K7qxR2cREf/STLskulBFd78k6AOFeA+ff1TtEzk9bAA==}
@@ -3257,7 +3274,7 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@workos-inc/authkit-js@0.12.0': {}
+  '@workos-inc/node@11.0.0': {}
 
   '@xmldom/xmldom@0.9.12': {}
 
@@ -4169,6 +4186,12 @@ snapshots:
   picomatch@4.0.7: {}
 
   pkce-challenge@5.0.1: {}
+
+  playwright-core@1.64.0: {}
+
+  playwright@1.64.0:
+    dependencies:
+      playwright-core: 1.64.0
 
   postcss@8.5.30:
     dependencies:

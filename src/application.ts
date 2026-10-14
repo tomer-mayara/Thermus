@@ -10,9 +10,11 @@ import type { ChangeRecorder } from './organizations/change-records.ts';
 import { OrganizationAdministration } from './organizations/organization-administration.ts';
 import type { OrganizationDirectory } from './organizations/organization-directory.ts';
 
+type Environment = Readonly<Record<string, string | undefined>>;
+
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
 type HostedConfig = Extract<DeploymentConfig, { deployment: 'hosted' }>;
-type RouteConfig = Pick<DeploymentConfig, 'publicBaseUrl' | 'mcpResourceUrl' | 'resourceMetadataUrl'>;
+export type RouteConfig = Pick<DeploymentConfig, 'publicBaseUrl' | 'mcpResourceUrl' | 'resourceMetadataUrl'>;
 
 export interface LocalRequestHandlers {
   readonly mcp: FetchHandler;
@@ -20,18 +22,27 @@ export interface LocalRequestHandlers {
   readonly pages: Pick<LocalAuthPages, 'handles' | 'handle'>;
 }
 
+// The browser routes of the provider that need no signed-in session: the sign-in, its callback, the sign-out, and the
+// session of the portal. They come before the account routes, which need a signed-in session.
+interface BrowserRoutes {
+  handles(pathname: string): boolean;
+  handle(request: Request): Promise<Response>;
+}
+
 export interface HostedRequestHandlers {
   readonly mcp: FetchHandler;
   readonly account: FetchHandler;
+  readonly browser?: BrowserRoutes;
 }
 
-// The parts that change when the hosted WorkOS provider replaces the unavailable placeholder. The MCP endpoint
-// answers the MCP resource and its protected-resource metadata, and the application closes it.
+// The parts that change with the hosted provider. The MCP endpoint answers the MCP resource and its
+// protected-resource metadata, and the application closes it.
 export interface HostedProviderParts {
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;
   readonly organizations: OrganizationDirectory;
   readonly mcp: Pick<MCPServer, 'fetch' | 'close'>;
+  readonly browserRoutes?: BrowserRoutes;
 }
 
 export interface HostedAccountParts {
@@ -53,8 +64,9 @@ export interface ApplicationLogger {
   error(message: string): void;
 }
 
-export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger): Promise<Application> {
-  if (config.deployment === 'hosted') return createHostedApplication(config, logger);
+// The hosted provider reads its own settings from the environment, so no common setting turns it on.
+export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger, environment: Environment = {}): Promise<Application> {
+  if (config.deployment === 'hosted') return createHostedApplication(config, logger, environment);
   return createSelfHostedApplication(config, logger);
 }
 
@@ -113,14 +125,10 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
   };
 }
 
-async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger): Promise<Application> {
-  const { UnavailableHostedAuthentication } = await import('./auth/hosted-auth/unavailable-hosted-authentication.ts');
-  const { BillingFree } = await import('./billing/billing-free.ts');
-  const { UnavailableMcpEndpoint } = await import('./mcp/unavailable-mcp-endpoint.ts');
-  const authentication = new UnavailableHostedAuthentication();
-  logger.info('Hosted authentication is not available yet. Each hosted request gets the authentication-unavailable notice.');
-  const parts = { session: authentication, accessResolver: authentication, organizations: authentication, mcp: new UnavailableMcpEndpoint() };
-  return composeHostedApplication(config, parts, { reportFailure: accountFailureReporter(logger), changeRecords: accountChangeRecorder(logger), billing: new BillingFree() });
+// The hosted edition loads its provider only here, as the self-hosted edition does.
+async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+  const { openWorkOSApplication } = await import('./hosted-workos-application.ts');
+  return openWorkOSApplication(config, logger, environment);
 }
 
 export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {
@@ -141,7 +149,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     reportFailure: account.reportFailure,
     operation: account.operation,
   });
-  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request) });
+  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
   return composeApplication(handle, parts.mcp);
 }
 
@@ -155,6 +163,7 @@ export function routeHostedRequests(config: RouteConfig, handlers: HostedRequest
   return async (request) => {
     const pathname = new URL(request.url).pathname;
     if (mcpPaths.has(pathname)) return handlers.mcp(request);
+    if (handlers.browser?.handles(pathname)) return handlers.browser.handle(request);
     if (pathname.startsWith(basePath)) return handlers.account(request);
     return new Response('Not Found', { status: 404 });
   };

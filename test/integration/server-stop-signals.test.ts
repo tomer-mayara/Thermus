@@ -6,10 +6,10 @@ import { DataDirectoryInUseError, lockDataDirectory } from '../../src/auth/local
 import { serve } from '../../src/index.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
 import { dataDirectory } from '../support/data-directory.ts';
-import { hostedStartupLine } from '../support/hosted-placeholder.ts';
+import { hostedStartupLine, workOSSettings } from '../support/hosted-placeholder.ts';
 
 const stopSignals = ['SIGINT', 'SIGTERM'] as const;
-const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0' };
+const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0', ...workOSSettings };
 
 interface LogLine {
   readonly message: string;

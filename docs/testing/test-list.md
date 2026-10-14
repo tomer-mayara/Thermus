@@ -210,6 +210,7 @@ npm run build && node --test dist/test/unit/application-operator-log.test.js
 [V] Routes the complete request to MCP, provider-owned discovery and OAuth endpoints, or bundled pages under the configured public path
 [V] Refuses private provider routes, the hosted organization and onboarding paths, unrelated paths, and near-matching path suffixes without calling a route owner
 [V] Hosted routing: sends the MCP resource and both protected-resource metadata paths to the MCP handler and each other path under the configured public path to the account routes, with the complete request; paths outside the public path give 404 without a handler call
+[V] Hosted routing: the browser routes of the provider (sign-in, callback, sign-out, and session) answer before the account routes, and every other path keeps its owner
 
 **Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
 
@@ -444,10 +445,69 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] Gives a frozen empty page for each member and invitation read, also for a forged organization or cursor, and no member or invitation for any ID; its invitation policy is `provider-rules`, so it claims no strict address match
 [V] Answers each grant change, invitation, resend, and revoke, also for a forged organization, membership, or invitation, with a frozen `unsupported` and changes nothing
 
-**Unavailable MCP endpoint** (`test/unit/mcp/unavailable-mcp-endpoint.test.ts`)
+**Hosted MCP endpoint and metadata** (`test/unit/mcp/protected-resource-endpoint.test.ts`)
 
-[V] Answers each MCP and metadata request, also a GET or DELETE and one with a forged bearer token or cookie, with 503 `temporarily_unavailable`, `Cache-Control: no-store`, and no Bearer challenge or cookie, and reads no request body
-[V] Closes two times without failure
+AUTH-06 removed `UnavailableMcpEndpoint` and its unit test. A double stands in for the MCP server.
+
+[V] Gives the RFC 9728 document with the MCP resource and the AuthKit issuer as its one authorization server at the root metadata path and at the path of the resource, without a call to the MCP server
+[V] Answers HEAD with 200, the JSON content type, and no body
+[V] Answers another method on a metadata path with 405 and `Allow: GET, HEAD`, without a read of the body or a call to the MCP server
+[V] Gives each MCP request and each request of another path unchanged to the MCP server
+[V] Closes the MCP server when it closes, and refuses an authorization server without https when it is made
+
+**WorkOS settings** (`test/unit/auth-workos/workos-settings.test.ts`)
+
+[V] Gives the five WorkOS settings exactly as written in a frozen record
+[V] Names each missing or empty setting in one error, without a value
+[V] Refuses a key without `sk_`, a client ID without `client_`, an issuer that is not an https origin or has a path or a final slash, a redirect URI on another origin, outside the public path, with a query or a fragment, or not in its parsed form, and a cookie password shorter than 32 characters; each message names the setting and the rule but not the value
+[V] Derives the authority `workos:<client ID>` and the browser issuer only from the client ID
+
+**Sealed session cookies** (`test/unit/auth-workos/session-cookies.test.ts`)
+
+[V] Seals the session envelope in a `__Host-` cookie with a versioned value, `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, and a `Max-Age` of 30 days, and the sign-in envelope in a `__Host-` cookie of 10 minutes; each opens to the same content, and each seal has its own random IV
+[V] Clears each cookie with an empty value, the same attributes, and `Max-Age=0`
+[V] Gives no content, and does not throw, for another cookie password, any changed character, a non-canonical text, a value of the other cookie, a value that is not an envelope, and an authentic seal of another shape
+[V] Finds the session cookie among other cookies; two cookies with its name give no content, and a cookie whose name only starts with its name is not it
+[V] Keeps the Set-Cookie value below 4,096 bytes with a 2,500-character WorkOS seal
+[V] Compares two secrets in constant time; another length or an empty secret is never equal
+
+**WorkOS browser session** (`test/unit/auth-workos/workos-browser-session.test.ts`, `workos-browser-session-refresh.test.ts`, `workos-browser-session-sign-in.test.ts`, and `workos-browser-session-end.test.ts`)
+
+A narrow double of the SDK part (`test/unit/auth-workos/fixtures/workos-session-client-double.ts`) gives scripted checks, refreshes, and exchanges.
+
+[V] Without the session cookie, the session is signed out without a cookie change and without a WorkOS call; a cookie that does not open is signed out with the cleared cookie
+[V] A seal whose access token verifies is signed in as the WorkOS user in the environment authority, with the organization of the session, the profile, the CSRF token, and the MFA evidence, without a cookie change
+[V] `invalid_session_cookie`, `no_session_cookie_provided`, and a damaged seal (`InvalidCharacterError`, `Invalid expiration`) sign out with the cleared cookie and run no refresh; a key-set outage or another SDK error rejects without a refresh, so the cookie stays
+[V] `invalid_jwt` and `ERR_JWKS_NO_MATCHING_KEY` give one refresh in the organization of the session, with one new cookie that keeps the CSRF token and the MFA evidence
+[V] A terminal refresh refusal signs out with the cleared cookie; a retryable refresh failure or a thrown SDK error rejects, so a recoverable session is not erased
+[V] An organization switch refreshes the newest seal into the organization and sends one new cookie; a 4xx refusal changes no cookie; a refresh into another organization is refused but keeps the new seal; an ended session signs out; an outage rejects
+[V] A sign-in start makes the AuthKit URL with PKCE for the redirect URI and the client ID, and a sign-in cookie with the state, the verifier, the return path, and a 10-minute expiry
+[V] A callback with the same state exchanges the code with the verifier, clears the sign-in cookie, and sets a session cookie with a new CSRF token; only a `Password` sign-in gives MFA evidence; two sign-ins get two CSRF tokens
+[V] A missing, unopenable, or expired sign-in cookie, an AuthKit error, a missing, empty, or repeated code or state, and another state refuse the sign-in with the cleared sign-in cookie and no exchange; a 4xx refusal of the code is `code-refused`; another exchange failure rejects
+[V] The end of a session gives the WorkOS logout URL of the `sid` in the seal, also after the access token expired, and the cleared cookie; without a usable seal, it gives only the cleared cookie; the logout route reads the CSRF token without a WorkOS call
+
+**WorkOS session routes** (`test/unit/auth-workos/workos-session-routes.test.ts`, `workos-session-routes-sign-in.test.ts`, and `workos-session-routes-logout.test.ts`)
+
+A double of the browser session records each call (`test/unit/auth-workos/fixtures/session-routes-fixtures.ts`).
+
+[V] Takes only the sign-in, callback, sign-out, and session paths of the public base URL, with or without its final slash; another path gets 404
+[V] The session path gives 200 JSON with the email, the name, the organization, the MFA evidence, and the CSRF token, or 401 `{"signedIn":false}`, each with the cookie effects of the session; absent values are left out; POST gets 405 JSON
+[V] The sign-in path starts a sign-in that returns to the base path or to one valid return path of at most 1,024 path characters, and sends the browser to AuthKit with the sign-in cookie; an invalid or repeated return path gets 400; POST gets 405
+[V] A completed callback goes to the return path on the public origin with the cleared sign-in cookie and the session cookie; a refused callback gets the 400 page with an escaped link to the sign-in path; a stored return path that is not a page of this service goes to the base path; POST gets 405
+[V] The sign-out with the session token from the public origin ends the session and goes to the WorkOS logout URL with the cleared cookie; without a usable session it goes to the base URL; another token gets 403 and ends nothing
+[V] The sign-out checks the method (405), the origin before the body (403, also without `Origin` or with `null`), the content type (415), the 16 KiB limit with and without `Content-Length` (413), a client abort, and exactly one CSRF token and no other field (400)
+[V] A failure of the session check, the sign-in start, the callback, or the sign-out gives a 500 page, or 500 JSON for the session path, without a cookie change, and one operator report; an aborted request gets no report
+
+**WorkOS grant reads** (`test/unit/auth-workos/workos-organizations.test.ts`)
+
+A double of the narrow SDK part records each read.
+
+[V] Gives one frozen grant for each role of the active membership, in the order of the membership, with its application permissions, after one exact membership read with the status `active` and one role read
+[V] Keeps each role an independent grant, without a highest role, and gives the default role a grant without a permission
+[V] Gives undefined without an active membership, without a role read, and reads WorkOS again for each call
+[V] Keeps only application permissions and accepts the mapped permissions in any order
+[V] Refuses a membership without a role list, a membership role that the organization does not have, a mapped role with other application permissions, a missing mapped role, and another role with an application permission, with a `HostedRoleConfigurationError` that names the role and the rule
+[V] Refuses an answer with more than one membership, a next page, or a membership of another user, organization, or status, and gives each failed WorkOS read to the caller
 
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
@@ -864,7 +924,7 @@ These tests run the real application, Better Auth runtime, MCPServer, and provid
 [V] A copy of the complete stopped data directory keeps the tenant, the user IDs, and a browser session that its secret signed
 [V] A client that an enabled account registers through the provider has the installation ID as `reference_id` and no `user_id`
 [V] Retained data without its installation identity, and retained data with a damaged provider schema, stop startup and release the data-directory lock
-[V] The hosted deployment, also with WorkOS settings, starts the unavailable hosted shell instead of the local runtime: an account request gets the 503 notice, an MCP request with a forged token gets 503 `temporarily_unavailable`, the log says that hosted authentication is not available yet, and two close calls give one result
+[V] The hosted deployment selects the WorkOS provider instead of the local runtime: without the WorkOS settings it refuses to start with `WorkOSSettingsError`; with them, an account request and an MCP request with a forged token get 401, the log names the WorkOS client and issuer, and two close calls give one result
 
 **Hosted account routes with doubles** (`test/integration/auth/hosted-account.test.ts`)
 
@@ -891,7 +951,7 @@ These tests open the shared site of `test/support/hosted-organization-site.ts` i
 [V] Selections of the organization of another user, with forged organization values in the query, the headers, and a second form field, read only the memberships of the session user, get 403 or 400, and switch no session; the other user keeps its organization
 [V] Super Admin alone and User alone select the same organization, and each destination and the MCP tool check their own permission: Super Admin reaches only Admin-grant administration and billing, and User reaches only the product and the tool
 [V] During an outage of the organization reads after the provider refreshed the session, the organization page and a selection get the 500 failure page with the refreshed session cookie; the operator log gets one line with the path and the cause for each; no session switches, and the browser keeps its session
-[V] The production hosted application with the unavailable placeholder gives the 503 notice without a cookie or a form to the organization page, a selection, and a tenant page with the session cookie, form token, and organization values of the doubles; the log has only the line that hosted authentication is not available yet
+[V] The production hosted application with the WorkOS provider asks for a sign-in (401) without a cookie or a form on the organization page, a selection, and a tenant page with the session cookie, form token, and organization values of the doubles; the log has only the WorkOS startup line
 
 Run only these tests:
 
@@ -909,12 +969,68 @@ These tests open the shared site of `test/support/hosted-organization-site.ts` i
 [V] When the directory cannot make a change safely, a grant post and an invitation post each get 503 with the notice; nothing changes, and each record says `unsupported`
 [V] With `accountChangeRecorder()`, a grant change and an invitation each give the operator log one info line with the record; no line holds the form token, the session cookie, or the invitation token
 [V] During an outage of the member pages after the provider refreshed the session, the members page gets the 500 failure page with the refreshed session cookie and no partial count; the operator log gets one line with the path and the cause
-[V] The production hosted application with the unavailable placeholder gives the 503 notice without a cookie or a form to the member and invitation pages and to each change, with the session cookie, form token, and values of the doubles; the log has only the line that hosted authentication is not available yet
+[V] The production hosted application with the WorkOS provider asks for a sign-in (401) without a cookie or a form on the member and invitation pages and each change, with the session cookie, form token, and values of the doubles; the log has only the WorkOS startup line
 
 Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/integration/auth/hosted-administration.test.js
+```
+
+**WorkOS Connect verification** (`test/integration/auth/workos-provider-verification.test.ts`)
+
+`WorkOSAuthProvider` runs with local signing keys and the real `InvalidAccessTokenError`. These tests show the application side of the [live results](../design/authentication-design.md#live-provider-proofs), not WorkOS behavior.
+
+[V] A Connect user token of the AuthKit issuer for the MCP resource gives the user in the WorkOS authority with the organization of the token, the actual issuer and client, the scopes, the time claims, and the MCP resource; a token without `org_id` gives no selected organization
+[V] Requires no particular scope, keeps only the named scopes, and gives tokens of two MCP clients of one user the one authority with their own client IDs
+[V] Accepts 30 seconds of clock skew in both directions
+[V] Refuses another issuer, another audience, a browser-token shape, an M2M shape (no `sid`, or `sub` equal to `client_id`), an expired token, an issue time in the future, HS256 and `alg: none`, another key under the published key ID, an unknown key ID, and a token without `sid`, `scope`, or `client_id`, or with an empty `org_id`, as an invalid token whose error shows neither the token nor its claims
+[V] Reads the AuthKit key set one time for two checks, and throws a key-set failure (500, a timeout, a refused connection) as an unexpected error, not as a token rejection
+
+**WorkOS access resolution** (`test/integration/auth/workos-provider-access.test.ts`)
+
+[V] Makes the tenant only from the authority and the organization
+[V] Allows an active membership with every grant and the union of their permissions after one fresh read; Admin and Super Admin alone are allowed with their grants, and the default role alone gives a context without a permission
+[V] Denies a missing active membership with `membership-inactive`, a missing or empty organization with `organization-required`, and another authority with `account-inactive`, without a read for the last two
+[V] Gives a failed grant read to the caller, so access fails closed
+[V] Gives Connect tokens of one user in one organization from two MCP clients the same tenant, and another organization another tenant
+
+**WorkOS browser session with the pinned SDK** (`test/integration/auth/workos-browser-session.test.ts` and `workos-browser-session-switch.test.ts`)
+
+The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-world.ts`).
+
+[V] A completed AuthKit sign-in exchanges the code with the verifier of the AuthKit URL, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in
+[V] A valid access token is checked against the browser key set without a refresh or a cookie change
+[V] An expired access token refreshes through `POST /user_management/authenticate` with the stored refresh token in the organization of the session; the one new cookie keeps the CSRF token
+[V] An ended session (400 `invalid_grant`) signs out with the cleared cookie; a key-set or API outage rejects without a refresh, and the same cookie works after the outage
+[V] An organization switch refreshes with the organization ID and keeps the CSRF token; `organization_membership_not_found` refuses the switch without a cookie change
+[V] The end of a session with an expired access token gives the logout URL of its `sid` without a request to WorkOS
+
+**WorkOS provider with the pinned SDK** (`test/integration/auth/workos-provider-directory.test.ts`)
+
+The real `WorkOSOrganizations` and `WorkOSAuthProvider` run with the pinned SDK against the local fake WorkOS API.
+
+[V] Verifies a token and resolves combined grants after one key-set read, one filtered membership read, and one role read
+[V] Allows the default role without a permission, and denies a missing membership after only the membership read
+[V] Refuses a permissive default role, a missing mapped role, and a membership without roles with a `HostedRoleConfigurationError`
+[V] Gives a 500 answer of either read to the caller
+
+**MCP required permission** (`test/integration/mcp/required-permission.test.ts`)
+
+[V] With `product:access` required, a context with the User grant reaches the tool, and a context with Admin only, Super Admin only, the default role, or no grant gets the 403 `access_denied` of a denial before the factory or MCP dispatch
+[V] Without the option, an allowed context without a permission reaches the tool as before
+[V] An allowed decision without a trusted tenant still gives the generic 500 and one `access-resolution` report
+
+**Protected portal request** (`test/integration/auth/portal-access.test.ts`)
+
+[V] User plus Admin gives the organization and the roles that give a permission, without a highest role, and `Cache-Control: no-store`
+[V] Admin only, the default role only, and no grant give 403 `{"access":"denied"}` without organization data
+[V] Another path gives 404, and another method gives 405 with `Allow: GET, HEAD`
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/workos-provider-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/integration/auth/portal-access.test.js
 ```
 
 **Local command dispatch and lifecycle** (`test/integration/auth/local-auth-command-lifecycle.test.ts`, `local-auth-command-users.test.ts`, `local-auth-command-clients.test.ts`)
@@ -1034,6 +1150,46 @@ Run these proofs offline:
 npm run build && node --test dist/test/interface/auth/better-auth.test.js
 ```
 
+**WorkOS SDK** (`test/interface/auth/workos.test.ts`)
+
+These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/workos-fake-api.ts`) and local signing keys (`test/support/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
+
+[V] Gives an AuthKit sign-in URL with the client ID, the exact redirect URI, `response_type=code`, `provider=authkit`, an S256 challenge, and a fresh state and verifier for each call; an organization ID adds `organization_id`
+[V] Exchanges a code with the verifier and the API key as `client_secret`, and returns the user, both tokens, and an iron seal that hides the tokens; a refused code throws `OauthException` with `invalid_grant`
+[V] Authenticates a seal against the browser key set and returns `sid` as the session ID, the organization, the roles, and the permissions, with one key-set read
+[V] Gives `invalid_session_cookie` for a wrong cookie password, a changed or invalid character in the encrypted part, and a value that is not a seal, and `no_session_cookie_provided` for an empty value, without a key-set read
+[V] Throws `InvalidCharacterError` for an HMAC part that is not valid base64url, and `Invalid expiration` for an expiration part that is not a number
+[V] Gives `invalid_jwt` for an expired token, another issuer, and a forged signature; without the issuer option, accepts another issuer
+[V] Throws `ERR_JWKS_NO_MATCHING_KEY`, not a failure result, for a token with an unknown key ID
+[V] Throws `ERR_JOSE_GENERIC`, `ERR_JWKS_TIMEOUT` after 5 s, or `TypeError` for a key set that answers 500, does not answer, or refuses the connection
+[V] Keeps the browser key set for 10 minutes, so an outage changes no result until then and throws after; reads a new key ID at most once in 5 minutes
+[V] Refreshes with the stored refresh token and the current organization, and returns a new seal with the rotated token; the old seal still opens and sends the old token
+[V] Switches the organization with a refresh that sends the requested organization
+[V] Gives terminal failures for `invalid_grant`, `mfa_enrollment`, and `sso_required`, each after one request with `maxRetries: 0`
+[V] Gives retryable failures for 500, 429 (with `retryAfter` 7, or `NaN` for a date), a timeout, and a dropped or refused connection, each after one request
+[V] Throws for a 401, another 4xx, and a 5xx answer that is not JSON, instead of a failure result
+[V] With the default of 3 retries, sends 4 refresh requests with one generated `Idempotency-Key` and waits at most 60 s for each `Retry-After`
+[V] Gives the logout URL with the session ID and the return URL and posts the session revocation; a seal that does not authenticate, also one with an expired access token, gets an error instead of a logout URL
+[V] Lists memberships with the exact user, organization, status, and limit query; keeps `role` and `roles`; an answer without `roles` gives no `roles` field
+[V] Pages memberships with the `after` cursor; `autoPagination()` returns only the first page after a limit, and reads the first page again and waits 350 ms between pages without one
+[V] Lists the roles of an organization with their permissions in one unpaged request
+[V] Writes the complete role set with `PUT`, and creates, deactivates, and reactivates memberships, with no `If-Match`, no version, and no `Idempotency-Key` with `maxRetries: 0`
+[V] With the default retries, gives each membership create one generated `Idempotency-Key` and each role-set update none
+[V] Loses one of two concurrent role-set updates that start from the same read
+[V] Sends one role for each invitation and drops a role set
+[V] Verifies a Connect token with jose against the AuthKit key set, the exact issuer, the MCP audience, and RS256, and rejects another issuer, another audience, an expired token, a forged signature, and HS256
+[V] Accepts an M2M-shaped token without `sid` whose `sub` equals its `client_id`, so the MCP verifier needs its own rule
+[V] Refuses a new key ID during the key-set cooldown and accepts it after one new read
+[V] Keeps a withdrawn key until the cache age passes and then rejects its tokens
+[V] Keeps results through a key-set outage with fresh cached keys; after the cache age or without cached keys, throws a key-set error, not a token rejection
+[V] Uses the jose defaults: a 30 s cooldown and a 10 min cache age
+
+Run these proofs offline:
+
+```sh
+npm run build && node --test dist/test/interface/auth/workos.test.js
+```
+
 **Renderer network policy**
 
 [V] Blocks literal and DNS loopback targets before a connection
@@ -1144,7 +1300,7 @@ are outside this check.
 
 [V] Refuses provider imports in shared auth and the three neutral local files, including installed provider packages and subpaths
 [V] Refuses transport implementations and MCP SDK packages in shared auth, while allowing the HTTP client-address contract
-[V] Refuses provider and local command/parser implementations in MCP and hosted-account consumers
+[V] Refuses provider and local command/parser implementations in MCP and hosted-account consumers, also the WorkOS provider files and `@workos-inc/node`
 [V] Allows public contracts, neutral config, organization use cases, the HTTP header, provider-owned browser adapters, and composition roots
 [V] Checks exact protected paths and path segments without refusing similar unrelated names
 
@@ -1183,20 +1339,44 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 
 `npm run test:acceptance` runs every acceptance test, except the container gate suite, which it skips. `npm run check` does not select the acceptance directory.
 
-**Hosted placeholder** (`test/acceptance/auth/hosted-placeholder.test.ts`)
+**Hosted startup with WorkOS** (`test/acceptance/auth/hosted-startup.test.ts`)
 
-Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings and no WorkOS setting, unless the test adds them. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass.
+AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass.
 
-[V] Given hosted settings with an HTTPS public URL and no WorkOS settings, the server listens and serves the authentication-unavailable notice without a credential prompt or cookie, logs that hosted authentication is not available yet, reports no tenant, uses no network, and stops with status 0
-[V] Given forged bearer tokens, cookies, organization IDs, and form input, MCP (POST, GET, and DELETE), account, organization, member, invitation, and billing operations, also a grant change and an invitation send, resend, and revoke with a forged form token, each get the explicit 503 answer with `Cache-Control: no-store` and without a cookie or a Bearer challenge; MCP paths get `temporarily_unavailable`, and browser paths get the notice page
-[V] Given a value for each WorkOS setting, no setting turns on a provider or access, and the output shows no setting value
-[V] Given test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `THERMUS_DEMO`, and a test session setting), the onboarding page, the organization list, a selection, and the billing page, with the session cookie, form token, organization, and return destination that the test doubles accept, each get the unavailable notice without a cookie; the output names no organization, tenant, or user, and the server uses no network
-[V] Given an invalid common setting, also with every WorkOS setting, startup stops before it listens with a `FATAL` line that names the setting and the rule but not the value
+[V] Without WorkOS settings, startup stops before it listens with a `FATAL` line that names each missing WorkOS setting, and the server uses no network
+[V] With refused WorkOS values, startup stops before it listens; the line names each setting and its rule but not the value
+[V] With valid WorkOS settings, forged bearer tokens, cookies, organization IDs, and form input give no access or session: MCP gets 401 with the Bearer challenge of the metadata, each account, organization, member, invitation, and billing path gets 401, a forged callback gets 400, a forged session cookie is only cleared, the output shows no secret or tenant, and the server uses no network
+[V] The sign-in redirects to the WorkOS AuthKit sign-in with the client ID, the registered redirect URI, an S256 challenge, a state, and a sign-in cookie; the protected-resource metadata names the AuthKit issuer; the log names the client and the issuer; no network is used
+[V] Test and demonstration settings (`NODE_ENV=test`, `AUTH_MODE=mock`, `THERMUS_DEMO`, and a test session setting) with the session cookie, form token, and organization values of the doubles still ask for a sign-in without a cookie, and the output names no organization, tenant, or user
+[V] An invalid common setting, also with every WorkOS setting, stops startup before it listens with a `FATAL` line that names the setting and the rule but not the value
 
 Run only these tests:
 
 ```sh
-npm run build && node --test dist/test/acceptance/auth/hosted-placeholder.test.js
+npm run build && node --test dist/test/acceptance/auth/hosted-startup.test.js
+```
+
+**Hosted WorkOS composition** (`test/acceptance/auth/hosted-workos.test.ts`)
+
+The real hosted composition with the WorkOS provider runs behind the real HTTP server on a loopback port. `test/support/workos-world.ts` gives the pinned SDK a local fake of the WorkOS API with users, memberships, the hosted roles, sign-ins, refreshes, and AuthKit-signed Connect tokens. `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the flows against WorkOS.
+
+[V] A sign-in through the server and the callback give one sealed `HttpOnly`, `Secure`, `SameSite=Lax` session cookie, clear the sign-in cookie, and give the portal session the profile, the organization, the MFA evidence of the password sign-in, and a form token
+[V] A callback with another state, without the sign-in cookie, with an AuthKit error, or with a refused code gives 400 and no session
+[V] Only User gives product access to the protected portal request; Admin only, the default role, and no membership get 403, and a removed membership denies the next request of an existing session
+[V] A signed-in user without a membership gets the onboarding guidance, and each tenant page stays refused
+[V] An expired access token gives a refresh with one new session cookie and the same form token
+[V] An ended session gives 401 and a cleared cookie; a refresh outage gives 500, keeps the cookie, and the session works after the outage
+[V] The sign-out from the site origin with the form token clears the cookie and redirects to the WorkOS logout URL of the session; another origin or another token changes nothing
+[V] At the MCP endpoint, Connect tokens of User in the organization of the token are served; Admin only, the default role, no organization, and no membership get 403
+[V] A browser token, an M2M-shaped token, an expired token, a token for another resource, and no token get 401 with the Bearer challenge of the metadata
+[V] The protected-resource metadata names the MCP resource and the AuthKit issuer
+[V] A browser session in one organization and an MCP token in another each keep their own organization
+[V] A membership read outage gives 500 without protected work at the MCP endpoint and the portal request, and operator reports without the token
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-workos.test.js
 ```
 
 **Hosted organization onboarding and selection** (`test/acceptance/auth/hosted-organizations.test.ts`)
@@ -1300,7 +1480,7 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 [V] Given a restored copy of the complete data directory, the server starts with the same tenant; a restore without `auth.secret` stops before it listens
 [V] Given `BETTER_AUTH_SECRETS`, `BETTER_AUTH_TRUSTED_ORIGINS`, or `BETTER_AUTH_TELEMETRY` with a value, startup stops before it listens with a `FATAL` line that names the variable but not its value
 [V] Given an unknown command, the process stops with status 2 before it listens, does not repeat the arguments, and creates no local data
-[V] Given the hosted edition with a `DATA_DIR` setting and WorkOS settings, the server serves only the authentication-unavailable answers, reports no local tenant, stops with status 0, and creates no local data
+[V] Given the hosted edition with a `DATA_DIR` setting and WorkOS settings, the server serves the WorkOS edition, which asks for a sign-in, reports no local tenant, stops with status 0, and creates no local data
 
 Run only these tests:
 
@@ -1380,7 +1560,7 @@ The suite builds the image of the current candidate two times; the second build 
 [V] Given two users with tokens, a stopped-server password reset of one user ends only its token and old password, and the user signs in again without a new consent; a later disable of the other user ends only its token and sign-in; the peer keeps working each time
 [V] Given a live server container, one-off command containers on the same volume and a command in the server container fail with the lock error, ask for no password, and change no account
 [V] Given an installation that starts with zero accounts and later has only a disabled account, a command container that adds an account while the server is stopped gives MCP access through the installation client, and the tenant stays the same
-[V] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, and the MCP session lists no tools; a container with `DEPLOYMENT=hosted` and WorkOS settings then answers the same paths and the MCP resource, also with that session and its token, with 503 and no cookie, reports no tenant, stops with status 0, and writes nothing to its volume
+[ ] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, and the MCP session lists no tools; a container with `DEPLOYMENT=hosted` and placeholder WorkOS settings then gives that session and its token no access: each account path gets 401, the forged callback gets 400 with a cleared sign-in cookie, MCP gets 401 with a Bearer challenge, nothing calls WorkOS, no tenant is reported, the container stops with status 0, and nothing is written to its volume
 [V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, and the pinned production packages with a working native ad blocker, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting, and a `0700` data directory; the compose service mounts only that volume, starts with an init process, and publishes port 8080 on `127.0.0.1`
 
 Run the container gate. It needs Docker Engine with Buildx and Compose:
@@ -1390,6 +1570,67 @@ npm run test:container
 ```
 
 `npm test` and `npm run test:acceptance` select this file but skip its suite. Only `npm run test:container` is a container gate pass.
+
+**Hosted live gate setup** (`test/acceptance/auth/hosted-live-setup.test.ts`)
+
+These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied.
+
+[V] Without WorkOS settings, the gate exits 1 with one failed test, no passed, skipped, or todo test, a setup error that names each missing setting, and no outbound network attempt
+[V] Refuses a production API key and requires a staging key; the output shows no setting value
+[V] Counts an empty `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, or `WORKOS_AUTHKIT_ISSUER` as missing
+[V] Refuses an AuthKit issuer that is not an absolute `https` URL without spaces, a username, a password, a query, or a fragment, and shows no value
+[V] With staging settings and outbound access denied, the live proofs run, try the network, and fail; no test passes or is skipped, and the API key does not show
+[V] Only `test:hosted-live` selects the hosted live file, and the acceptance suite selects this specification
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
+```
+
+**Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
+
+These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran them on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each test passed. `[V]` marks a test that passed in that run; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+
+Provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
+
+[V] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, and S256 PKCE
+[V] The AuthKit key set and the browser-session key set have signing keys with key IDs, and jose accepts them
+[V] WorkOS accepts the staging API key for a read of organizations
+[V] The saved redirect URI is exactly `https://localhost:46443/callback`, the default; no CORS origin is saved; the MCP resource indicator `https://localhost:46443/mcp` is saved
+[V] The environment roles have exactly the permissions of the hosted role mapping, and no other role has an application permission
+[V] The authentication settings require MFA, allow password sign-in, and refuse passkeys
+[V] The hosted sign-in page offers only email sign-in and no social provider
+[V] A new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
+[V] The browser access token is an RS256 token of the environment client with a `session_` sid, no audience, no organization, and a 300-second lifetime; the sealed session is shorter than 3,800 characters
+[V] A later sign-in asks for the TOTP code, not a new enrollment
+[V] A user with two memberships chooses the organization at AuthKit; the token has its `org_id`, both roles, and their combined permissions
+[V] A refresh switches the organization in the same session; an organization without a membership gives `organization_membership_not_found`, and the session still refreshes
+[V] The browser refresh token is not rotated in staging; a replay works at once and after 31 seconds
+[V] An operator revocation gives `invalid_grant` without retry, removes the session from the list, and the issued access token verifies until it expires
+[V] The WorkOS logout URL ends the session
+[V] After the logout, the browser goes through the logout of the AuthKit domain to the default Sign-out URI `https://localhost:46443/`
+[V] A visit to the AuthKit domain goes through `initiate_login` of WorkOS to the Initiate login URI `https://localhost:46443/login` before any sign-in page
+[V] A public PKCE client authorizes through AuthKit with the password, the MFA step, and the consent; the callback has the code and the state
+[V] The code exchange gives a bearer access token, a refresh token, and an ID token
+[V] The Connect access token is RS256 without `typ`, from the AuthKit issuer for the MCP resource, with the user, the MCP client, an `app_consent_` sid, the organization, the scope, `auth_time`, and a 300-second lifetime, and no role or permission claim
+[V] A Connect refresh rotates the refresh token and keeps the user, consent, organization, client, and audience
+[V] The MCP checks refuse a browser access token and an M2M token by the audience
+[V] The deletion of the authorized application ends the consent: the refresh gives `invalid_grant`, and the issued access token verifies until it expires
+[V] Membership reads give the complete role lists of independent and combined grants, Admin alone, and the default role `member` without a permission
+[V] The explicit status filter separates active and inactive memberships, and the `after` cursor reads six memberships exactly once in pages of 2
+[V] The roles of an organization are the four environment roles with their exact permissions
+
+AUTH-06 cases of the hosted server (`test/acceptance/auth/hosted-live/hosted-server.ts`), with the local HTTPS test server at `https://localhost:46443/`:
+
+[V] A member with User and Admin signs in through the portal with MFA; the server keeps a sealed `__Host-thermus-session` cookie (`HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`); the portal shows the product access of the organization; the session has MFA evidence
+[V] A user without a membership gets no product access, a 403 portal request, and the onboarding guidance
+[V] Admin alone and the default role alone get a 403 portal request
+[V] A Connect grant of a User works at the MCP endpoint; without a token, the endpoint gives 401 with the metadata URL; the metadata names the AuthKit issuer
+[V] A browser access token and an M2M token get 401 at the MCP endpoint
+[V] A browser session in one organization and an MCP grant in another keep their own organizations
+[V] An Admin-only member gets 403 `access_denied` at the MCP endpoint
+[V] An external sign-in through the Initiate login URI `/login` signs the user in
+[V] The sign-out clears the cookie, ends the WorkOS session, and lands on the Sign-out URI with the signed-out portal; the `form-action` of the portal allows the AuthKit domain
+[V] After the 300-second lifetime, a session refreshes with one new cookie and the same form token; a revoked session gives 401 with a cleared cookie; an MCP grant whose consent was revoked works until its token expires and then gives 401
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 

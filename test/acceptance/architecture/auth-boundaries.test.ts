@@ -46,10 +46,13 @@ describe('Given the configured direct auth import boundaries', () => {
         '../auth/local-auth/better-auth/better-auth-runtime.js',
         './hosted-auth/unavailable-hosted-authentication.ts',
         '../auth/hosted-auth/unavailable-hosted-authentication.js',
+        './hosted-auth/workos/workos-auth-provider.ts',
+        '../auth/hosted-auth/workos/workos-browser-session.js',
         'better-auth',
         'better-auth/plugins/admin',
         '@better-auth/mcp',
         '@better-auth/mcp/client',
+        '@workos-inc/node',
       ]);
     });
 
@@ -88,8 +91,11 @@ describe('Given the configured direct auth import boundaries', () => {
         `${root}auth/hosted-auth/unavailable-hosted-authentication.ts`,
         `${root}auth/local-auth/local-auth-command.ts`,
         `${root}auth/local-auth/local-auth-command-line.js`,
+        `${root}auth/hosted-auth/workos/workos-auth-provider.ts`,
+        `${root}auth/hosted-auth/workos/workos-session-routes.js`,
         'better-auth',
         '@better-auth/mcp',
+        '@workos-inc/node',
       ]);
     });
   }
@@ -141,15 +147,28 @@ describe('Given the configured direct auth import boundaries', () => {
       '../access-context.ts',
       '../../organizations/organization-directory.ts',
     ]);
+    for (const name of ['workos-auth-provider', 'workos-browser-session', 'workos-session-routes']) {
+      await assertAllowed(`src/auth/hosted-auth/workos/${name}.ts`, [
+        './workos-settings.ts',
+        './workos-organizations.ts',
+        '../browser-session.ts',
+        '../../access-context.ts',
+        '../../identity-verifier.ts',
+        '@workos-inc/node',
+        'jose',
+      ]);
+    }
   });
 
   it('when composition roots select concrete implementations, then static and lazy imports are allowed', async () => {
-    for (const filePath of ['src/application.ts', 'src/index.ts']) {
+    for (const filePath of ['src/application.ts', 'src/index.ts', 'src/hosted-workos-application.ts']) {
       await assertAllowed(filePath, [
         './auth/local-auth/better-auth/better-auth-user-administration.ts',
         './auth/hosted-auth/unavailable-hosted-authentication.ts',
+        './auth/hosted-auth/workos/workos-auth-provider.ts',
         'better-auth',
         '@better-auth/mcp',
+        '@workos-inc/node',
       ]);
     }
   });

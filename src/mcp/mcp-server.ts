@@ -36,6 +36,9 @@ export interface McpHttpAuthOptions {
   resourceMetadataUrl: string;
   expectedResource: URL;
   requiredScopes?: readonly string[];
+  // Each MCP request needs this application permission, such as product:access. An allowed context without it gets
+  // the answer of a denial. Without this option, each allowed context is enough.
+  requiredPermission?: string;
 }
 
 type BearerGate = (request: Request) => Promise<AuthInfo | Response>;
@@ -64,7 +67,7 @@ export class MCPServer {
       const { auth, reportFailure } = options;
       this.http = {
         authenticate: bearerGate(auth, reportFailure),
-        resolveAccess: accessGate(auth.accessResolver, reportFailure),
+        resolveAccess: accessGate(auth, reportFailure),
       };
       this.buildServer = options.buildServer;
     }
@@ -224,12 +227,15 @@ function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): B
   };
 }
 
-function accessGate(resolver: AccessResolver, reportFailure: FailureReporter): AccessGate {
+function accessGate(auth: Pick<McpHttpAuthOptions, 'accessResolver' | 'requiredPermission'>, reportFailure: FailureReporter): AccessGate {
+  const { accessResolver, requiredPermission } = auth;
   return async (authInfo) => {
     try {
-      const decision = await resolver.resolve(verifiedUserOf(authInfo));
-      if (decision.allowed !== true) return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
-      return requireTrustedTenant(frozenCopy(decision.context));
+      const decision = await accessResolver.resolve(verifiedUserOf(authInfo));
+      if (decision.allowed !== true) return accessDenied();
+      const context = requireTrustedTenant(frozenCopy(decision.context));
+      if (requiredPermission !== undefined && !context.permissions.includes(requiredPermission)) return accessDenied();
+      return context;
     } catch (cause) {
       reportFailure({ step: 'access-resolution', cause });
       return errorResponse(OAuthErrorCode.ServerError, 'Internal Server Error', 500);
@@ -254,6 +260,10 @@ function deepFreeze<T>(value: T): T {
     Object.freeze(value);
   }
   return value;
+}
+
+function accessDenied(): Response {
+  return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
 }
 
 function errorResponse(code: OAuthErrorCode, description: string, status: number): Response {

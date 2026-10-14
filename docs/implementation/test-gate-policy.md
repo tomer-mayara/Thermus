@@ -26,11 +26,13 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
+| Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
 `npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
 It does not run the full integration, acceptance, interface, or container suites. `npm test` does not run the build test, because `tsconfig.build.json`
-excludes it from `dist/`.
+excludes it from `dist/`. No suite command except `npm run test:hosted-live`
+runs the hosted live file.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
 Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
@@ -131,6 +133,12 @@ contains every change of the pull request.
      their support files. The image holds all of `dist/src`, so other changes
      in `src/` change the image too; the [self-hosted release](#self-hosted-release)
      checks run the container gate for each release.
+   - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a
+     change to the WorkOS SDK or jose packages or to the hosted authentication
+     flow. They run offline with a focused command.
+   - The hosted live gate, `npm run test:hosted-live`, for a change to the
+     hosted authentication flow, when the WorkOS staging settings are available.
+     If they are not available, record that the gate did not run.
 
 If you are not sure that a suite applies, run it.
 
@@ -192,16 +200,16 @@ docker volume rm $(docker volume ls --quiet --filter label=thermus.container-gat
 docker image rm --force $(docker image ls --quiet --filter label=thermus.container-gate)
 ```
 
-## Hosted placeholder checks
+## Hosted offline checks
 
-AUTH-12 added the hosted placeholder: with `DEPLOYMENT=hosted`, the server
-answers each request with the authentication-unavailable notice. AUTH-07 added
-organization onboarding and selection behind the provider contracts, and
-AUTH-08 added User and Admin grant management, invitations, change records, and
-the User seat summary. In production, the placeholder keeps them unavailable
-too. The tests run offline and need no WorkOS account, credential, SDK, or
-network access. They use doubles at the provider contracts. They are in the
-existing suites:
+AUTH-12 added the hosted placeholder, AUTH-07 added organization onboarding and
+selection behind the provider contracts, and AUTH-08 added User and Admin grant
+management, invitations, change records, and the User seat summary. AUTH-06
+replaced the placeholder in production with the WorkOS provider. These tests
+run offline and need no WorkOS account, credential, or network access. They use
+doubles at the provider contracts, or the pinned SDK with a local fake of the
+WorkOS API (`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
+They are in the existing suites:
 
 - unit: `test/unit/hosted-admin/account-routes.test.ts`,
   `test/unit/hosted-admin/account-routes-effects.test.ts`,
@@ -219,16 +227,24 @@ existing suites:
   `test/unit/organizations/organization-administration-invitations.test.ts`,
   `test/unit/organizations/organization-administration-invitation-overview.test.ts`,
   `test/unit/auth-unavailable/unavailable-hosted-authentication.test.ts`,
-  `test/unit/mcp/unavailable-mcp-endpoint.test.ts`,
+  the WorkOS provider tests in `test/unit/auth-workos/`,
+  `test/unit/mcp/protected-resource-endpoint.test.ts`,
   `test/unit/config/deployment-config.test.ts`,
   `test/unit/application.test.ts`, and
   `test/unit/application-operator-log.test.ts`, in `npm run check`;
 - integration: `test/integration/auth/hosted-account.test.ts`,
   `test/integration/auth/hosted-organizations.test.ts`,
-  `test/integration/auth/hosted-administration.test.ts`, and
-  `test/integration/auth/local-installation.test.ts`, in
+  `test/integration/auth/hosted-administration.test.ts`,
+  `test/integration/auth/local-installation.test.ts`,
+  `test/integration/auth/portal-access.test.ts`,
+  `test/integration/auth/workos-provider-verification.test.ts`,
+  `test/integration/auth/workos-provider-access.test.ts`,
+  `test/integration/auth/workos-provider-directory.test.ts`,
+  `test/integration/auth/workos-browser-session.test.ts`, and
+  `test/integration/mcp/required-permission.test.ts`, in
   `npm run test:integration`;
-- acceptance: `test/acceptance/auth/hosted-placeholder.test.ts`,
+- acceptance: `test/acceptance/auth/hosted-startup.test.ts`,
+  `test/acceptance/auth/hosted-workos.test.ts`,
   `test/acceptance/auth/hosted-organizations.test.ts`,
   `test/acceptance/auth/hosted-organization-requests.test.ts`,
   `test/acceptance/auth/hosted-grants.test.ts`,
@@ -236,20 +252,21 @@ existing suites:
   `test/acceptance/auth/hosted-invitations.test.ts`, and
   `test/acceptance/auth/hosted-seats.test.ts`, in
   `npm run test:acceptance`. The container gate also starts the image with
-  `DEPLOYMENT=hosted`.
+  `DEPLOYMENT=hosted` and placeholder WorkOS settings.
 
-This command is the offline gate of the placeholder. It runs the hosted
-integration and acceptance files:
+This command is the offline hosted gate. It runs the hosted integration and
+acceptance files:
 
 ```sh
-npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/acceptance/auth/hosted-placeholder.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
+npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/integration/auth/portal-access.test.js dist/test/integration/auth/workos-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-workos.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
 ```
 
-A pass shows only the behavior of the placeholder and the application policy of
-the hosted routes and of `OrganizationAdministration` with doubles. It is never
-a pass of the [hosted live gate](#hosted-live-gate-auth-06) and never proof of
-WorkOS behavior, such as safe grant changes or invitation acceptance in WorkOS.
-Do not report it as either.
+A pass shows the application side of the hosted edition: the WorkOS provider
+with the pinned SDK against a fake, and the application policy of the hosted
+routes and of `OrganizationAdministration` with doubles. It is never a pass of
+the [hosted live gate](#hosted-live-gate-auth-06) and never proof of WorkOS
+behavior, such as the claims of real tokens, safe grant changes, or invitation
+acceptance in WorkOS. Do not report it as either.
 
 ## Self-hosted release
 
@@ -297,27 +314,113 @@ If a change adds a workflow, the AGENTS.md wait rule applies to every job that
 starts for the head. The required runs stay required. That change also updates
 this section.
 
+## Hosted live gate (AUTH-06)
+
+`npm run test:hosted-live` makes a clean build, builds the portal, and runs
+only `dist/test/acceptance/auth/hosted.live.js`. The `.live.ts` name does not
+match the `*.test.js` globs on purpose. Thus `npm test` and
+`npm run test:acceptance` do not select it.
+
+The gate needs a WorkOS staging environment and these settings in the
+environment of the command:
+
+| Setting | Value |
+| --- | --- |
+| `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, and memberships. |
+| `WORKOS_CLIENT_ID` | The client ID of the staging environment. |
+| `WORKOS_AUTHKIT_ISSUER` | The AuthKit domain of the staging environment, exactly as WorkOS shows it: an absolute `https` URL without spaces, a username, a password, a query, or a fragment. |
+
+On the owner's Mac, the staging launcher reads the API key from the macOS
+Keychain and gives the three settings only to the command that it starts:
+
+```sh
+node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+```
+
+The launcher is outside the repository. Never print its key or copy it into a
+file, a ticket, or a log.
+
+Configure the staging environment as the hosted edition needs it:
+
+- Email and password sign-in with MFA required. No social sign-in provider,
+  no passkey, and no magic sign-in: only a password sign-in proves MFA.
+- Multiple roles for each membership, and the roles and permissions of the
+  [hosted role mapping](../design/authentication-design.md#hosted-role-mapping).
+- The redirect URI `https://localhost:46443/callback` as the default, the
+  default Sign-out URI `https://localhost:46443/`, the Initiate login URI
+  `https://localhost:46443/login`, and no CORS origin.
+- The MCP resource indicator `https://localhost:46443/mcp`.
+
+The WorkOS API can save the redirect URI and the resource indicator. The
+social providers, the Sign-out URI, and the Initiate login URI are dashboard
+settings. The configuration proofs of the gate read back each setting that the
+API or the hosted pages show. The session-end proofs follow the redirects of
+the WorkOS logout to the Sign-out URI and of a direct AuthKit visit to the
+Initiate login URI. A redirect is not a page, so these proofs watch the
+navigation requests of the browser.
+
+The gate also needs:
+
+- Chromium for Playwright 1.64.0: `pnpm exec playwright install chromium`.
+- OpenSSL in `PATH`: the local HTTPS test server makes a new self-signed
+  certificate for `localhost` for each run.
+- Free local ports: 46443 for the local HTTPS test server, and 46480 for the
+  callback of the test MCP client, which the browser catches.
+- One run at a time: a run deletes the staging users, organizations, and
+  Connect applications that an earlier run left, by their name prefix.
+
+A complete run takes about 10 minutes. One case waits for the 300-second access
+tokens to expire.
+
+If a setting is missing, empty, or refused, the command fails with one setup
+error that names each such setting and the reason. The error shows no value.
+The command then makes no network request and runs no other test.
+`test/acceptance/auth/hosted-live-setup.test.ts` specifies this behavior
+offline.
+
+The hosted gate passes only when the dedicated command runs with the required
+settings and every live test passes. Missing hosted credentials, a setup error,
+and skipped live tests can never count as a successful hosted gate. Do not put
+credentials in the repository, in logs, or in pull request notes.
+
+The command has two parts:
+
+- The provider proofs: the AuthKit metadata and key sets, the saved
+  configuration, the browser sign-in with required MFA, sessions and their
+  end, Connect authorization and tokens, and the membership reads. The
+  [authentication plan](../design/authentication-design.md#live-provider-proofs)
+  lists them and records their results.
+- The AUTH-06 cases of the hosted live gate, in
+  `test/acceptance/auth/hosted-live/hosted-server.ts`. The local HTTPS test
+  server, `test/support/hosted-live/local-https-site.ts`, serves the portal
+  build at `https://localhost:46443/` and forwards each other request to the
+  real hosted composition of Thermus with the staging settings. Playwright
+  drives the portal, the sign-in, and the sign-out; a test MCP client sends
+  Connect tokens to the MCP endpoint. The cases cover the sign-in with MFA and
+  the session cookie, the onboarding of a user without a membership, the
+  product access of User, Admin only, and the default role, Connect tokens at
+  the MCP endpoint, the refusal of browser and M2M tokens, the organization of
+  each credential, the external sign-in through `/login`, the sign-out, and
+  the revocation limits and cookie rotation after the 300-second token
+  lifetime.
+
+AUTH-07W and AUTH-08W add their own proofs and cases.
+
+Record the results of the AUTH-06 cases separately from the full hosted release
+gate. A pass of the AUTH-06 cases lets AUTH-06 complete its scope: identity
+verification, browser sessions, and read-only access resolution. It is not a
+pass of the full hosted gate. The first hosted release also needs the
+applicable AUTH-07W and AUTH-08W live cases, and the operator and customer
+changes that they prove stay unavailable until those cases pass.
+
+Until the AUTH-06 cases pass, the hosted edition is not released. The
+[hosted offline checks](#hosted-offline-checks) never count as this gate.
+
 ## Later gates
 
 Later tickets add these suites. They have no command yet. The ticket that adds a
 suite also adds its explicit command to `package.json` and to the suite table.
 A suite must not depend on another command that selects it silently.
-
-### Hosted live gate (AUTH-06)
-
-AUTH-06 adds `test/acceptance/auth/hosted.live.ts` and a dedicated command. The
-`.live.ts` name does not match the `*.test.js` globs on purpose. Thus `npm test`
-and `npm run test:acceptance` do not select it. If the required hosted
-credentials are missing, the command must fail with a clear setup error.
-
-The hosted gate passes only when the dedicated command runs with the required
-credentials and every live test passes. Missing hosted credentials, a setup
-error, and skipped live tests can never count as a successful hosted gate. Do
-not put credentials in the repository, in logs, or in pull request notes.
-
-Until AUTH-06 replaces the placeholder and this gate passes, the hosted edition
-gives no hosted access. The [hosted placeholder checks](#hosted-placeholder-checks)
-never count as this gate.
 
 ### Paid billing gate (AUTH-11)
 

@@ -17,7 +17,7 @@ import {
 } from '../../support/container-gate.ts';
 import { ContainerSite } from '../../support/container-site.ts';
 import { dockerOutput } from '../../support/docker-cli.ts';
-import { mcpUnavailableAnswer, unavailableNotice, workOSSettings } from '../../support/hosted-placeholder.ts';
+import { workOSSettings } from '../../support/hosted-placeholder.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { LocalMcpUser } from '../../support/local-mcp-user.ts';
 
@@ -428,7 +428,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await site.assertNoOutboundRequests();
   });
 
-  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted and WorkOS settings serves only the authentication-unavailable answers, also for that session and its token, and writes nothing to its volume', { timeout: 300_000 }, async (t) => {
+  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted and WorkOS settings gives that session and its token no access: each account path asks for a sign-in, the forged callback is refused, MCP asks for a token, nothing calls WorkOS, and nothing is written to its volume', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t, [alice]);
     const server = await setup.site.startServer(setup.volume);
     const user = new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice);
@@ -472,11 +472,14 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(tools, []);
     assert.deepEqual(statuses, hostedAndPaidPaths.map(([method, path]) => [method, path, 404]));
     assert.deepEqual(accounts.map(({ email }) => email), [alice.email]);
-    assert.deepEqual(hostedAnswers, hostedAndPaidPaths.map(([method, path]) => [method, path, 503, null]));
-    assert.deepEqual([hostedMcp.status, await hostedMcp.json()], [503, mcpUnavailableAnswer]);
-    assert.deepEqual([notice.status, notice.headers.get('Set-Cookie')], [503, null]);
-    assert.match(noticeText, unavailableNotice);
-    assert.match(hosted.output, /INFO.*Hosted authentication is not available yet\./);
+    assert.deepEqual(hostedAnswers, hostedAndPaidPaths.map(([method, path]) => (path.startsWith('/auth/callback')
+      ? [method, path, 400, '__Host-thermus-sign-in=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0']
+      : [method, path, 401, null])));
+    assert.equal(hostedMcp.status, 401);
+    assert.match(hostedMcp.headers.get('WWW-Authenticate') ?? '', /^Bearer /);
+    assert.deepEqual([notice.status, notice.headers.get('Set-Cookie')], [401, null]);
+    assert.match(noticeText, /Sign-in required/);
+    assert.match(hosted.output, /INFO.*Hosted authentication uses WorkOS: the client client_placeholder/);
     assert.doesNotMatch(hosted.output, /tenant/);
     assert.deepEqual(hostedExit, { code: 0, signal: null });
     assert.deepEqual(await probeImage(images.current, 'data-files', hostedVolume), []);

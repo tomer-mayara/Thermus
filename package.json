@@ -26,6 +26,7 @@
     "test:integration": "npm run build && node --test \"dist/test/integration/**/*.test.js\"",
     "test:acceptance": "npm run build && node --test \"dist/test/acceptance/**/*.test.js\" && node --test \"test/acceptance/user-portal/**/*.test.ts\"",
     "test:container": "npm run build && THERMUS_CONTAINER_GATE=1 node --test dist/test/acceptance/auth/self-hosted-container.test.js",
+    "test:hosted-live": "npm run build && npm run build:user-portal && node --test dist/test/acceptance/auth/hosted.live.js",
     "test:build": "node --test test/unit/build-output.test.ts",
     "dev:user-portal": "vite --config src/user-portal/vite.config.ts",
     "build:user-portal": "npm run typecheck:user-portal && vite build --config src/user-portal/vite.config.ts",
@@ -41,10 +42,10 @@
     "@types/node": "^24.19.1",
     "eslint": "10.10.0",
     "knip": "6.34.0",
+    "playwright": "1.64.0",
     "ts-morph": "28.0.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "@workos-inc/authkit-js": "^0.12.0",
     "vite": "^6.0.0"
   },
   "overrides": {
@@ -56,6 +57,7 @@
     "@better-auth/mcp": "1.7.7",
     "@modelcontextprotocol/server": "2.3.1",
     "@opentelemetry/api-logs": "0.223.0",
+    "@workos-inc/node": "11.0.0",
     "adblock-rs": "^0.13.3",
     "agent-input-sanitizer": "1.47.14",
     "better-auth": "1.7.7",
@@ -63,6 +65,7 @@
     "css-tree": "3.2.1",
     "defuddle": "^0.19.4",
     "htmlparser2": "^12.0.0",
+    "jose": "6.2.12",
     "linkedom": "^0.18.13",
     "parse5": "8.0.1",
     "parse5-htmlparser2-tree-adapter": "8.0.1"

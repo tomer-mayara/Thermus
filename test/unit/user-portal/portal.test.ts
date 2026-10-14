@@ -1,54 +1,71 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { initializePortal } from '../../../src/user-portal/portal.ts';
+import { initializePortal, type PortalOptions } from '../../../src/user-portal/portal.ts';
 
-function options() {
+type Answers = Readonly<Record<string, () => Promise<Response>>>;
+
+const session = { signedIn: true, email: 'ada@example.com', name: 'Ada Lovelace', mfaCompleted: true, csrfToken: 'csrf-secret' };
+
+function portal(answers: Answers) {
   const { document } = parseHTML('<html><body><div id="app">Loading...</div></body></html>');
-  return {
-    container: document.getElementById('app'), pathname: '/',
-    clientId: 'client_test', redirectUri: 'http://localhost:5173/callback',
+  const requests: Array<{ path: string; init: RequestInit }> = [];
+  const navigations: string[] = [];
+  const options: PortalOptions = {
+    container: document.getElementById('app'),
+    fetch: async (path, init) => {
+      requests.push({ path, init });
+      const answer = answers[path];
+      if (answer === undefined) return assert.fail(`The portal must not request ${path}`);
+      return answer();
+    },
+    navigate: (path) => navigations.push(path),
   };
+  return { document, options, requests, navigations };
 }
 
-for (const field of ['clientId', 'redirectUri'] as const) {
-  test(`Missing ${field} shows an error before the SDK is called`, async () => {
-    const input = { ...options(), [field]: undefined };
-    await initializePortal(input, async () => assert.fail('SDK must not receive missing configuration'));
-    assert.match(input.container?.textContent ?? '', /Authentication Error.*Failed to initialize authentication/s);
-    assert.ok(input.container?.querySelector('[role="alert"]'));
+const signedIn = async () => Response.json(session);
+
+test('A missing portal root makes no request', async () => {
+  const { options, requests } = portal({});
+  await initializePortal({ ...options, container: null });
+  assert.deepEqual(requests, []);
+});
+
+test('Given a session request that fails, when the portal opens, then it shows a safe error without the failure text', async () => {
+  const { document, options } = portal({ session: async () => { throw new Error('sensitive server detail'); } });
+  await initializePortal(options);
+  assert.match(document.body.textContent ?? '', /Authentication Error.*Failed to load your session/s);
+  assert.doesNotMatch(document.body.textContent ?? '', /sensitive server detail/);
+  assert.ok(document.querySelector('[role="alert"]'));
+});
+
+for (const status of [500, 503, 302]) {
+  test(`Given a session answer with status ${status}, when the portal opens, then it shows the safe error`, async () => {
+    const { document, options } = portal({ session: async () => new Response('failure', { status }) });
+    await initializePortal(options);
+    assert.match(document.body.textContent ?? '', /Failed to load your session/);
   });
 }
 
-test('A missing portal root does not start authentication', async () => {
-  await initializePortal({ ...options(), container: null }, async () => assert.fail('SDK must not run without a root'));
+test('Given a session answer without a form token, when the portal opens, then it shows the safe error and no sign-out form', async () => {
+  const { document, options } = portal({ session: async () => Response.json({ signedIn: true, email: 'ada@example.com' }) });
+  await initializePortal(options);
+  assert.match(document.body.textContent ?? '', /Failed to load your session/);
+  assert.equal(document.querySelector('form'), null);
 });
 
-test('An initialization rejection shows a safe error without the provider message', async () => {
-  const input = options();
-  await initializePortal(input, async () => { throw new Error('sensitive provider detail'); });
-  assert.match(input.container?.textContent ?? '', /Failed to initialize authentication/);
-  assert.doesNotMatch(input.container?.textContent ?? '', /sensitive provider detail/);
+test('Given a signed-in session, when the product access request fails, then the portal shows the safe error', async () => {
+  const { document, options } = portal({ session: signedIn, 'portal/access': async () => new Response('failure', { status: 500 }) });
+  await initializePortal(options);
+  assert.match(document.body.textContent ?? '', /Failed to load your session/);
 });
 
-test('A rejected button sign-in shows an authentication error', async () => {
-  const input = options();
-  await initializePortal(input, async () => ({
-    getUser: () => null,
-    signIn: async () => { throw new Error('provider failure'); },
-    signOut: async () => {},
-  }));
-  input.container?.querySelector<HTMLButtonElement>('#sign-in-btn')?.click();
-  await new Promise((resolve) => setImmediate(resolve));
-  assert.match(input.container?.textContent ?? '', /Failed to sign in/);
-});
-
-test('A rejected initiate login shows an authentication error', async () => {
-  const input = { ...options(), pathname: '/login' };
-  await initializePortal(input, async () => ({
-    getUser: () => assert.fail('Initiate login must not read a profile'),
-    signIn: async () => { throw new Error('provider failure'); },
-    signOut: async () => {},
-  }));
-  assert.match(input.container?.textContent ?? '', /Failed to initialize authentication/);
+test('Given the portal, when it reads the session and the product access, then it sends only same-origin JSON reads with the relative paths of the server', async () => {
+  const { options, requests } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_01A', roles: ['user'] }) });
+  await initializePortal(options);
+  assert.deepEqual(requests.map(({ path, init }) => [path, init.method ?? 'GET', init.credentials, init.body]), [
+    ['session', 'GET', 'same-origin', undefined],
+    ['portal/access', 'GET', 'same-origin', undefined],
+  ]);
 });

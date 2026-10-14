@@ -50,7 +50,7 @@ export async function serve(environment: Environment, logger: ApplicationLogger,
   const listen = loadListenAddress(environment);
   await using owned = new AsyncDisposableStack();
   let listenerDrain: Promise<void> | undefined;
-  const application = owned.adopt(await createApplication(config, logger), (started) => started.close(listenerDrain));
+  const application = owned.adopt(await createApplication(config, logger, environment), (started) => started.close(listenerDrain));
   const server = await startHttpServer(application.handle, { listen, publicBaseUrl: config.publicBaseUrl, logger });
   // Start listener drain, then cancel application work before waiting for the drain.
   owned.defer(() => { listenerDrain = server.close(); });
