@@ -5,34 +5,34 @@ import { getEventListeners } from 'node:events';
 import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 const requestedUrl = 'https://EXAMPLE.com';
 const success = JSON.stringify({ url: 'https://example.com/final', http_status: 200, content: '<html>Ready</html>', error: null });
 
 function mockRenderer(t: TestContext) {
-  const child = new ChildProcess();
+  const child = new RendererChildDouble();
   let finish!: Completion;
   let signalLaunch!: () => void;
   const launched = new Promise<void>((resolve) => { signalLaunch = resolve; });
   const lookup = t.mock.method(dns, 'lookup', async () => [{ address: '93.184.216.34', family: 4 }]);
-  const execute = t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => {
+  const execute = t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
     finish = args[3] as Completion;
     signalLaunch();
     return child;
   }) as typeof childProcess.execFile);
-  const kill = t.mock.method(child, 'kill', () => true);
   syncBuiltinESMExports();
   t.after(() => {
     t.mock.restoreAll();
     syncBuiltinESMExports();
   });
-  return { child, lookup, execute, kill, launched, finish: (...args: Parameters<Completion>) => finish(...args) };
+  return { child, lookup, execute, launched, finish: (...args: Parameters<Completion>) => finish(...args) };
 }
 
 test('Given a cancelled call, when fetching, then it does no DNS or renderer work', async (t) => {
   const renderer = mockRenderer(t);
-  const execute = t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => {
+  const execute = t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
     (args[3] as Completion)(null, success, '');
     return renderer.child;
   }) as typeof childProcess.execFile);
@@ -80,20 +80,19 @@ for (const completion of ['success', 'process failure', 'HTTP failure'] as const
     await renderer.launched;
 
     controller.abort(reason);
-    assert.equal(renderer.kill.mock.callCount(), 1);
-    assert.deepEqual(renderer.kill.mock.calls[0].arguments, ['SIGKILL']);
+    assert.deepEqual(renderer.child.signals, ['SIGKILL']);
     assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
     await new Promise<void>((resolve) => { setImmediate(resolve); });
     assert.equal(settled, false);
     t.mock.timers.tick(60_000);
-    assert.equal(renderer.kill.mock.callCount(), 1);
+    assert.deepEqual(renderer.child.signals, ['SIGKILL']);
     const error = completion === 'success' ? null : Object.assign(new Error('Renderer failed'), { code: completion === 'HTTP failure' ? 22 : 1 });
     renderer.finish(error, success, '');
 
     await assert.rejects(result, (caught) => caught === reason);
     assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
     t.mock.timers.tick(60_000);
-    assert.equal(renderer.kill.mock.callCount(), 1);
+    assert.deepEqual(renderer.child.signals, ['SIGKILL']);
   });
 }
 
@@ -113,7 +112,7 @@ for (const fails of [false, true]) {
     assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
     controller.abort();
     t.mock.timers.tick(60_000);
-    assert.equal(renderer.kill.mock.callCount(), 0);
+    assert.deepEqual(renderer.child.signals, []);
   });
 }
 
@@ -129,7 +128,7 @@ test('Given renderer launch fails, when fetching with a signal, then it releases
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
   controller.abort();
   t.mock.timers.tick(60_000);
-  assert.equal(renderer.kill.mock.callCount(), 0);
+  assert.deepEqual(renderer.child.signals, []);
 });
 
 test('Given cancellation happens while reading renderer output, when the result is ready, then it cannot return success', async (t) => {
@@ -147,7 +146,7 @@ test('Given cancellation happens while reading renderer output, when the result 
 
   await assert.rejects(result, (error) => error === controller.signal.reason);
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
-  assert.equal(renderer.kill.mock.callCount(), 0);
+  assert.deepEqual(renderer.child.signals, []);
 });
 
 test('Given the readiness timer killed a renderer, when cancellation follows, then the child is killed once', async (t) => {
@@ -164,10 +163,10 @@ test('Given the readiness timer killed a renderer, when cancellation follows, th
   renderer.finish(null, success, '');
   await rejected;
 
-  assert.equal(renderer.kill.mock.callCount(), 1);
+  assert.deepEqual(renderer.child.signals, ['SIGKILL']);
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
   t.mock.timers.tick(60_000);
-  assert.equal(renderer.kill.mock.callCount(), 1);
+  assert.deepEqual(renderer.child.signals, ['SIGKILL']);
 });
 
 test('Given a cancelled renderer completed, when its callback runs again, then cleanup runs once and no output is parsed', async (t) => {
@@ -186,7 +185,7 @@ test('Given a cancelled renderer completed, when its callback runs again, then c
   renderer.finish(null, success, '');
   t.mock.timers.tick(60_000);
 
-  assert.equal(renderer.kill.mock.callCount(), 1);
+  assert.deepEqual(renderer.child.signals, ['SIGKILL']);
   assert.equal(removeListener.mock.callCount(), 1);
   assert.equal(parse.mock.callCount(), 0);
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
@@ -195,10 +194,9 @@ test('Given a cancelled renderer completed, when its callback runs again, then c
 test('Given concurrent fetches share a fetcher, when one is cancelled, then the other keeps its result and resources', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const renderer = mockRenderer(t);
-  const otherChild = new ChildProcess();
-  const otherKill = t.mock.method(otherChild, 'kill', () => true);
+  const otherChild = new RendererChildDouble();
   const completions: Completion[] = [];
-  t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => {
+  t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
     completions.push(args[3] as Completion);
     return completions.length === 1 ? renderer.child : otherChild;
   }) as typeof childProcess.execFile);
@@ -213,8 +211,8 @@ test('Given concurrent fetches share a fetcher, when one is cancelled, then the 
   assert.equal(completions.length, 2);
 
   cancelled.abort();
-  assert.equal(renderer.kill.mock.callCount(), 1);
-  assert.equal(otherKill.mock.callCount(), 0);
+  assert.deepEqual(renderer.child.signals, ['SIGKILL']);
+  assert.deepEqual(otherChild.signals, []);
   assert.equal(getEventListeners(other.signal, 'abort').length, 1);
   const [firstCompletion, secondCompletion] = completions;
   assert.ok(firstCompletion);
@@ -226,5 +224,5 @@ test('Given concurrent fetches share a fetcher, when one is cancelled, then the 
   assert.deepEqual(await second, { requestedUrl: 'https://example.com/other', finalUrl: 'https://example.com/final', html: '<html>Ready</html>' });
   assert.equal(getEventListeners(other.signal, 'abort').length, 0);
   t.mock.timers.tick(60_000);
-  assert.equal(otherKill.mock.callCount(), 0);
+  assert.deepEqual(otherChild.signals, []);
 });

@@ -5,6 +5,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError, WebsiteFetchLaunchError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 const executable = '/opt/Lightpanda runtime/lightpanda';
 const url = 'https://example.com/account?session=private-value';
@@ -23,7 +24,7 @@ function stubProcess(t: TestContext, complete: (callback: (error: ExecFileExcept
     const callback = args.at(-1);
     assert.ok(typeof callback === 'function');
     complete(callback);
-    return new childProcess.ChildProcess();
+    return new RendererChildDouble();
   });
   syncBuiltinESMExports();
   t.after(() => {
