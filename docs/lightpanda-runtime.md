@@ -4,7 +4,7 @@ Thermus supports the official Lightpanda **1.0.0** release. The renderer is an e
 
 Use macOS or Linux on x86-64 or ARM64. The Linux binary requires glibc; Alpine Linux with musl is not supported by this recipe. On Windows, run the Linux recipe inside WSL2. See the [official installation guide](https://lightpanda.io/docs/open-source/installation/) for WSL2 setup.
 
-The macOS ARM64 asset download, SHA256 digest, and `version` output were verified for this change. The 27 local renderer interface tests passed with that executable. The Linux and macOS x86-64 binaries are official vendor assets; they were not exercised for this change.
+The macOS ARM64 asset download, SHA256 digest, and `version` output were verified for this change. The 29 local renderer interface tests passed with that executable. The Linux and macOS x86-64 binaries are official vendor assets; they were not exercised for this change.
 
 ## Install the pinned release
 
@@ -88,17 +88,22 @@ A selected executable that is missing produces an error that points to this docu
 
 ## Verify rendering
 
-Install Node 24 and pnpm 12.10.1, then install project dependencies with `pnpm install`. The unit suite uses process doubles. It needs no Lightpanda executable or public network access:
+Use Node 24.20.0 and pnpm 12.10.1, then install project dependencies with `pnpm install`.
+The project pins this Node version for pnpm scripts; the initial installation
+downloads it if needed. Select the same version with `nvm use` before direct
+`node` commands below. The unit suite uses process doubles. It needs no
+Lightpanda executable or public network access after installation:
 
 ```sh
 pnpm test:unit
 ```
 
-With `LIGHTPANDA_BIN` set to the verified executable, run the local renderer interface tests. These tests start local HTTP fixtures and check JavaScript rendering, redirects, HTTP errors, readiness, and network blocking. Only the trusted fixture scope permits IPv4 loopback; production options keep private networks blocked.
+With `LIGHTPANDA_BIN` set to the verified executable, run the local renderer interface tests. These tests start local HTTP fixtures and check JavaScript rendering, redirects, HTTP errors, readiness, per-call cancellation, and network blocking. Only the trusted fixture scope permits IPv4 loopback; production options keep private networks blocked.
 
 ```sh
 pnpm build
 node --test \
+  dist/test/interface/website-fetcher-cancellation.test.js \
   dist/test/interface/website-fetcher-http.test.js \
   dist/test/interface/website-fetcher-network.test.js \
   dist/test/interface/website-fetcher-readiness.test.js \

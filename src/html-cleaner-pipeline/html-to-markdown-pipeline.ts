@@ -19,11 +19,13 @@ export interface Step {
 export class HtmlToMarkdownPipeline {
   public constructor(private readonly steps: readonly Step[]) {}
 
-  public async process(page: WebsiteFetchResult): Promise<Ctx> {
+  public async process(page: WebsiteFetchResult, signal?: AbortSignal): Promise<Ctx> {
     let ctx: Ctx = { ...page, removed: 0, skipped: 0 };
     for (const step of this.steps) {
+      signal?.throwIfAborted();
       ctx = await step.invoke(ctx);
     }
+    signal?.throwIfAborted();
     return ctx;
   }
 }

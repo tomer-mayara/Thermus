@@ -1,6 +1,6 @@
 # Notes
 
-- Give reason and compare actual behaviour 
+- Record the stated reason without scoring it or comparing it with page content.
 - Block/step up large files (or requests)
 - Step
 - Looks into AI caching support
@@ -12,17 +12,19 @@
 **MCP Server**
 
 [V] Connects to the MCP server and runs server/discover; advertises protocol 2026-07-28 and the thermus identity (`test/unit/mcp/discovery.test.ts`)
-[] Every tool call is logged (with the user name)
-[] Lists one tool, getURLAsMarkdown(url, reason), with its URL input schema
-[] Lists another tool, postURLAsMarkdown(url, params, reason), with its URL input schema (deferred)
-[] Calls the fetcher with the requested URL, passes fetched HTML and the final URL to the pipeline, and returns the pipeline's Markdown
-[] Rejects an unknown tool or missing, malformed, or unsupported URL input without calling the fetcher or pipeline
-[] Returns a tool error when the fetcher fails, skips the pipeline, and returns no partial Markdown
-[] Returns a tool error when the pipeline fails and returns no partial Markdown
-[] Closes the transport and cancels pending requests when the server closes; repeated close calls succeed
-[] Keeps request state separate between connections
+[V] Lists `getURLAsMarkdown(url, reason)` with the same strict schema used for validation (`test/unit/mcp/fetch-tool-schema.test.ts`, `fetch-tool-server.test.ts`)
+[V] Checks string types, required fields, extra properties, URL semantics, reason whitespace, and code-point limits including supplementary characters; accepted inputs are not truncated (`fetch-tool-schema.test.ts`)
+[V] Uses operation and logger doubles to check exact projected text, safe argument errors, safe unknown-tool errors, and one completion attempt per dispatched call (`fetch-tool-server.test.ts`)
+[V] Keeps operation errors and logger failures from exposing causes, replacing results, or repeating work (`fetch-tool-server.test.ts`)
+[V] Formats canonical authority, subject, and tenant fields; removes URL userinfo, query, and fragment; includes only a valid bounded reason or field-status codes; escapes line breaks and omits unknown tool names, raw arguments, credentials, and causes (`test/unit/mcp/tool-completion-record.test.ts`)
+[] Closes the transport and cancels pending requests when the server closes; repeated close calls succeed (P02)
+[] Keeps request state separate between connections (P02)
+[] Supplies production rules and runtime dependencies (P03)
+[] Lists `postURLAsMarkdown(url, params, reason)` with its URL input schema (deferred)
 
-Planned tool tests use test doubles at the fetcher and pipeline public interfaces. They do not run the renderer or the real pipeline.
+Dispatch unit tests double the operation and logger. Real permission checks and
+operation/pipeline collaboration belong to integration tests below. HTTP
+acceptance uses the real MCP client and bridge with supplied dependencies.
 
 **MCP request context binding** (`test/unit/mcp/request-context-binding.test.ts`)
 
@@ -627,6 +629,12 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
+**Pipeline cancellation** (`test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.ts`)
+
+[V] Stops before the first step, between steps, and before return when the per-call signal is cancelled
+[V] Refuses a cancelled call with no steps and prevents success after cancellation in the last step
+[V] Keeps concurrent and later calls, their input records, results, and cancellation separate with step doubles
+
 **HTML to MD**
 
 [V] Converts surviving HTML text to Markdown
@@ -704,6 +712,14 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] Preserves a failed HTTP status from renderer errors with exit code 1, including bot challenges
 [V] Uses --json and --fail-on-http-error while preserving the readiness, timeout, output, and network-blocking options
 
+**Fetcher cancellation** (`test/unit/website-fetcher/website-fetcher-cancellation.test.ts`)
+
+[V] Starts no DNS or renderer work for an already cancelled signal
+[V] Prevents renderer startup after cancellation during a DNS success or failure
+[V] Kills an active child once, waits for its callback, and returns cancellation before success, process error, or HTTP error
+[V] Removes the abort listener and readiness timer on success, failure, synchronous launch failure, and cancellation
+[V] Checks cancellation again after output parsing before returning success
+
 **Local renderer fixture launcher** (`test/unit/website-fetcher/network-fixture.test.ts`)
 
 [V] Uses the selected executable for default, empty, and configured LIGHTPANDA_BIN values, including a path with spaces
@@ -715,6 +731,39 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
 
 ## Integration
+
+**MCP SDK HTTP contract** (`test/integration/mcp/sdk-http.test.ts`)
+
+[V] Uses public low-level SDK handlers and tools capability through the real HTTP bridge in modern 2026-07-28 and legacy 2025-11-25
+[V] Projects exact text with `projectCallToolResult(result, undefined)` and gives a safe unknown-tool InvalidParams error
+[V] Leaves malformed JSON and the 4 MiB/413 body refusal to the SDK, with no tool dispatch
+
+**MCP fetch operation** (`test/integration/mcp/get-url-as-markdown.test.ts`)
+
+[V] Calls the real shared permission helper before fetch and refuses a context without product:access
+[V] Validates URL semantics and code-point bounds, sends the signal to both dependencies, and preserves requested/final URL metadata and exact Markdown
+[V] Gives safe fetch or processing failures without causes or partial output and skips processing after a failed fetch
+[V] Rejects HTML above the shared 10 MiB UTF-8 limit before all pipeline work and accepts the exact byte boundary
+[V] Preserves completed empty Markdown even with withholding warnings, and rejects absent or nonstring Markdown
+[V] Classifies cancellation before generic errors and checks again after each asynchronous stage
+
+**MCP operation and real pipeline** (`test/integration/mcp/get-url-as-markdown-pipeline.test.ts`)
+
+[V] Preserves exact empty success for empty source, ad-only source, hidden-only source, internal scan failure, and scan exhaustion
+[V] Uses the final host for ad rules and the final URL for relative links while preserving requested URL spelling
+[V] Rejects oversized HTML before the ad stage, even when ads could reduce its size, and retains the existing depth refusal
+
+**MCP dispatch, operation, and real pipeline** (`test/integration/mcp/get-url-as-markdown-mcp.test.ts`)
+
+[V] Returns exact redirected Markdown through an SDK client with one safe completion record
+[V] Preserves empty success after real sanitizer scan failure or exhaustion
+[V] Observes SDK cancellation during a real sanitizer stage, prevents Markdown conversion, and records cancellation once
+
+Focused commands:
+
+```sh
+npm run build && node --test dist/test/integration/mcp/sdk-http.test.js dist/test/integration/mcp/get-url-as-markdown.test.js dist/test/integration/mcp/get-url-as-markdown-pipeline.test.js dist/test/integration/mcp/get-url-as-markdown-mcp.test.js
+```
 
 **MCP Authentication**
 
@@ -983,7 +1032,7 @@ The unit suite runs without an installed renderer or public network access:
 pnpm test:unit
 ```
 
-Use the pinned runtime for the local renderer interface tests. [Runtime setup](../lightpanda-runtime.md#verify-rendering) gives the checksum recipe and separate local fixture and public-site smoke commands. The controlled local interface suite passed 27 tests with Lightpanda 1.0.0 on macOS ARM64 for this change. Other platform binaries were not exercised. The public-site smoke tests remain a separate check.
+Use the pinned runtime for the local renderer interface tests. [Runtime setup](../lightpanda-runtime.md#verify-rendering) gives the checksum recipe and separate local fixture and public-site smoke commands. The controlled local interface suite passed 29 tests with Lightpanda 1.0.0 on macOS ARM64 for this change. Other platform binaries were not exercised. The public-site smoke tests remain a separate check.
 
 **LinkeDOM Serialization**
 
@@ -1008,7 +1057,41 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 [V] Returns the completed asynchronous DOM after its 500 ms request delay, before the full wait budget
 [V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
 
+**Website fetcher cancellation** (`test/interface/website-fetcher-cancellation.test.ts`)
+
+[V] An already cancelled signal starts no fixture connection or renderer
+[V] Cancellation of the real Lightpanda 1.0.0 process waits for its SIGKILL exit and removes the signal listener
+
+Run the applicable local renderer interface cases with the pinned runtime:
+
+```sh
+npm run build && node --test dist/test/interface/website-fetcher-cancellation.test.js dist/test/interface/website-fetcher-http.test.js dist/test/interface/website-fetcher-network.test.js dist/test/interface/website-fetcher-readiness.test.js dist/test/interface/website-fetcher-redirects.test.js
+```
+
 ## Acceptance
+
+**MCP HTTP fetch tool** (`test/acceptance/mcp/http-fetch.test.ts`, `http-fetch-refusals.test.ts`, `http-fetch-cancellation.test.ts`)
+
+The real SDK client reaches the production HTTP bridge on loopback in modern
+2026-07-28 and legacy 2025-11-25. Test initialization supplies the operation's
+fetcher and pipeline. `NoAuthProvider` is confined to test support and supplies
+fixed synthetic identity fields through the normal verifier/resolver seam.
+These cases are offline and renderer-free.
+
+[V] Lists the shared strict schema and returns one exact Markdown text entry with one safe completion record
+[V] Refuses invalid named arguments and unknown tools before fetch and records dispatched failures
+[V] Preserves Bearer 401, access-decision 403, and operation-level product permission denial before fetch
+[V] Preserves safe failures and completed empty success, without titles, warnings, or partial output
+[V] Keeps the trusted identity despite forged headers and arguments
+[V] Cancels a per-call fetch through HTTP and prevents later work and successful completion
+
+Modern client cancellation aborts its call stream. Legacy cancellation coverage
+aborts that stream through the public SDK fetch option. A legacy cancel
+notification alone cannot reach a call on a different stateless request server.
+
+```sh
+npm run build && node --test "dist/test/acceptance/mcp/*.test.js"
+```
 
 **Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)
 

@@ -138,7 +138,9 @@ whose user subject is the client ID. `AuthInfo.extra` carries frozen copies of
 Resolvers return contexts from `createRequestContext()`, which copies only the
 contract fields and combines the permissions of every grant. MCPServer binds a
 frozen copy of the context to each request through the SDK factory and
-`registerTools(server, context)`. An expected denial returns `403` with the
+`buildServer(context)`, which returns an SDK `Server` or `McpServer`. MCP-P01
+replaced the registration hook with this builder and retained the high-level
+probe tests. An expected denial returns `403` with the
 OAuth error `access_denied` and no Bearer challenge. The safe reason codes are
 `account-inactive`, `organization-required`, `membership-inactive`, and
 `permission-required`. Permissions are plain strings; slice 1 defines no

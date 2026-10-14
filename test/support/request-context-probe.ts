@@ -1,4 +1,4 @@
-import { fromJsonSchema, type McpServer } from '@modelcontextprotocol/server';
+import { fromJsonSchema, McpServer } from '@modelcontextprotocol/server';
 import { requirePermission, type RequestContext } from '../../src/auth/access-context.ts';
 
 export type ProbeArguments = Readonly<Record<string, string>> & { readonly url: string };
@@ -27,7 +27,8 @@ export class RequestContextProbe {
     this.beforeWork = beforeWork;
   }
 
-  readonly register = (server: McpServer, context: RequestContext): void => {
+  readonly buildServer = (context: RequestContext): McpServer => {
+    const server = new McpServer({ name: 'thermus', version: '0.0.0' });
     this.contexts.push(context);
     server.registerTool(RequestContextProbe.toolName, {
       description: 'Test only: protected work that reports its trusted context.',
@@ -46,5 +47,6 @@ export class RequestContextProbe {
       const report: ProbeReport = { context, claims: toolContext.http?.authInfo?.extra, arguments: args };
       return { content: [{ type: 'text', text: JSON.stringify(report) }] };
     });
+    return server;
   };
 }

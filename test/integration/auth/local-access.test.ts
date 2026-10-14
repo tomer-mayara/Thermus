@@ -88,7 +88,7 @@ function mcpServer(t: TestContext, provider: BetterAuthProvider, requiredScopes?
   const reporter = new FailureReporterMock();
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl, expectedResource: new URL(mcpResourceUrl), requiredScopes },
-    registerTools: probe.register,
+    buildServer: probe.buildServer,
     reportFailure: reporter.report,
   });
   t.after(() => server.close());

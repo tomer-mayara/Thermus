@@ -1,13 +1,13 @@
 import { CATEGORY, sanitize } from 'agent-input-sanitizer';
 import { describeRemoved, describeWarned } from 'agent-input-sanitizer/output';
 import type { Ctx } from '../html-to-markdown-pipeline.ts';
+import { assertHtmlInputSize } from '../html-input-limit.ts';
 import { HiddenHtmlRemovalSession } from './hidden-html-removal-session.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
 import { sanitizeHtmlControls } from './sanitize-html-controls.ts';
 import { SmallTextPolicy, type SmallTextOptions } from './small-text-policy.ts';
 
 export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
-  private static readonly maxHtmlBytes = 10 * 1024 * 1024;
   private readonly smallText: SmallTextPolicy;
 
   public constructor(options: SmallTextOptions = {}) {
@@ -15,9 +15,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
   }
 
   public async invoke(ctx: Ctx): Promise<Ctx> {
-    if (Buffer.byteLength(ctx.html, 'utf8') > PromptInjectionRemoverSanitizer.maxHtmlBytes) {
-      throw new RangeError('HTML input exceeds the 10 MiB limit');
-    }
+    assertHtmlInputSize(ctx.html);
 
     const sanitized = await sanitizeHtmlControls(ctx.html, this.smallText);
     const result = new HiddenHtmlRemovalSession(sanitized.cleaned, this.smallText).run();

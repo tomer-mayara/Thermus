@@ -12,6 +12,7 @@ runtime guides stay current after implementation.
 
 ## Current reference
 
+- [MCP HTTP fetch tool](reference/mcp-fetch-tool.md): input, result, safe records, and per-call cancellation.
 - [User portal](user-portal.md): browser build, environment, and WorkOS application setup.
 - [Website fetcher](reference/website-fetcher.md): rendering, readiness, and error behavior.
 - [Fetch result URL metadata](reference/fetch-result-url-metadata.md): requested and final URLs.
@@ -23,6 +24,7 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
+- [MCP-P01 implementation record](implementation/mcp-p01.md): delivered HTTP fetch scope and historical verification before rebase.
 - [MCP server implementation plan](implementation/mcp-server-plan.md): the GET-to-Markdown tool, test-only authentication, call records, verification gates, and board tickets.
 - [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, the hosted placeholder, hosted scope, and implementation gates.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.

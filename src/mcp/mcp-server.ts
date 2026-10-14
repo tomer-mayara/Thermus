@@ -7,6 +7,7 @@ import {
   requireBearerAuth,
   type AuthInfo,
   type Transport,
+  type Server,
 } from '@modelcontextprotocol/server';
 import { serveStdio, type StdioServerHandle } from '@modelcontextprotocol/server/stdio';
 
@@ -14,7 +15,7 @@ import type { AccessResolver, RequestContext } from '../auth/access-context.ts';
 import type { IdentityVerifier } from '../auth/identity-verifier.ts';
 import { IdentityVerifierSdkAdapter, verifiedUserOf } from './identity-verifier-sdk-adapter.ts';
 
-export type RequestToolRegistration = (server: McpServer, context: RequestContext) => void;
+export type RequestServerBuilder = (context: RequestContext) => Server | McpServer;
 
 export interface FailureReport {
   readonly step: 'token-verification' | 'access-resolution';
@@ -39,11 +40,11 @@ export class MCPServer {
   private readonly contextsByRequestAuth = new WeakMap<AuthInfo, RequestContext>();
   private readonly httpHandler = createMcpHandler(({ authInfo }) => this.serverForRequest(authInfo));
   private readonly http?: { authenticate: BearerGate; resolveAccess: AccessGate };
-  private readonly registerTools?: RequestToolRegistration;
+  private readonly buildServer?: RequestServerBuilder;
 
   constructor(options?: {
     auth: McpHttpAuthOptions;
-    registerTools?: RequestToolRegistration;
+    buildServer?: RequestServerBuilder;
     reportFailure: FailureReporter;
   }) {
     if (options !== undefined) {
@@ -52,7 +53,7 @@ export class MCPServer {
         authenticate: bearerGate(auth, reportFailure),
         resolveAccess: accessGate(auth.accessResolver, reportFailure),
       };
-      this.registerTools = options.registerTools;
+      this.buildServer = options.buildServer;
     }
   }
 
@@ -81,12 +82,10 @@ export class MCPServer {
     return requestAuth;
   }
 
-  private serverForRequest(authInfo: AuthInfo | undefined): McpServer {
+  private serverForRequest(authInfo: AuthInfo | undefined): Server | McpServer {
     const context = authInfo === undefined ? undefined : this.contextsByRequestAuth.get(authInfo);
     if (context === undefined) throw new Error('The MCP request has no trusted access context');
-    const server = serverWithoutTools();
-    this.registerTools?.(server, context);
-    return server;
+    return this.buildServer?.(context) ?? serverWithoutTools();
   }
 }
 

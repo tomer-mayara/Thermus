@@ -6,7 +6,7 @@ export interface WebsiteFetchResult {
 
 export interface WebsiteFetcher {
   /** @throws {WebsiteFetchHttpError} If the HTTP response fails. */
-  fetchURL(url: string): Promise<WebsiteFetchResult>;
+  fetchURL(url: string, signal?: AbortSignal): Promise<WebsiteFetchResult>;
 }
 
 export class WebsiteFetchHttpError extends Error {
