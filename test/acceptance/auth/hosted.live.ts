@@ -1,24 +1,24 @@
 import assert from 'node:assert/strict';
-import { describe, test, type TestContext } from 'node:test';
-import { WorkOS } from '@workos-inc/node';
+import { after, describe, test, type TestContext } from 'node:test';
 import { createLocalJWKSet, type JSONWebKeySet } from 'jose';
+import { LiveRun } from '../../support/hosted-live/live-run.ts';
+import { authkitKeySetUrl, requestTimeout, workosClient, type HostedLiveSettings } from '../../support/hosted-live/settings.ts';
+import { describeBrowserSignInProofs } from './hosted-live/browser-sign-in.ts';
+import { describeConfigurationProofs } from './hosted-live/configuration.ts';
+import { describeConnectAuthorizationProofs } from './hosted-live/connect-authorization.ts';
+import { describeConnectTokenProofs } from './hosted-live/connect-tokens.ts';
+import { describeMembershipProofs } from './hosted-live/memberships.ts';
+import { describeSessionEndingProofs } from './hosted-live/session-ending.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 type JsonObject = Readonly<Record<string, unknown>>;
 // A refusal gives the reason why the gate does not accept a value. The reason must not contain the value.
 type Refusal = (value: string) => string | undefined;
 
-interface HostedLiveSettings {
-  readonly apiKey: string;
-  readonly clientId: string;
-  readonly authkitIssuer: string;
-}
-
 type HostedLiveSetup = { readonly settings: HostedLiveSettings } | { readonly problems: readonly string[] };
 
 const stagingKeyPrefix = 'sk_test_';
 const issuerRefusedCharacters = /[\s\p{Cc}?#]/u;
-const requestTimeout = 15_000;
 const proofOptions = { timeout: 30_000 };
 const recordedMetadataFields = [
   'scopes_supported',
@@ -77,15 +77,6 @@ function registerSetupFailure(problems: readonly string[]): void {
   test('Given the hosted live gate, when it starts, then the WorkOS staging settings are present', () => {
     throw setupError(problems);
   });
-}
-
-function workosClient({ apiKey, clientId }: HostedLiveSettings): WorkOS {
-  // No retry and a short timeout: a live failure shows at once, in the proof that caused it.
-  return new WorkOS({ apiKey, clientId, maxRetries: 0, timeout: requestTimeout });
-}
-
-function authkitKeySetUrl(issuer: string): string {
-  return `${issuer}/oauth2/jwks`;
 }
 
 async function readJson(url: string): Promise<unknown> {
@@ -164,4 +155,12 @@ if ('problems' in setup) {
 } else {
   describeAuthKitAuthorizationServer(setup.settings);
   describeWorkOSApi(setup.settings);
+  const run = new LiveRun(setup.settings);
+  after(() => run.end());
+  describeConfigurationProofs(run);
+  describeBrowserSignInProofs(run);
+  describeSessionEndingProofs(run);
+  describeConnectAuthorizationProofs(run);
+  describeConnectTokenProofs(run);
+  describeMembershipProofs(run);
 }
