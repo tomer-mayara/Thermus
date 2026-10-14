@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { fetchProtocolEras, openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
 
-for (const era of fetchProtocolEras) {
+for (const era of mcpProtocolEras) {
   for (const stage of ['fetch-rejection', 'after-fetch', 'after-pipeline'] as const) {
     test(`Given cancellation at ${stage} in ${era}, when ${era === '2026-07-28' ? 'the client aborts the call' : 'the client disconnects its HTTP stream'}, then work observes cancellation and no success is recorded`, { timeout: 5_000 }, async (t) => {
       const started = Promise.withResolvers<void>();
@@ -52,7 +53,7 @@ for (const era of fetchProtocolEras) {
   });
 }
 
-for (const era of fetchProtocolEras) {
+for (const era of mcpProtocolEras) {
   test(`Given two active HTTP calls in ${era}, when one stream is cancelled, then the other call keeps its signal and completes`, { timeout: 5_000 }, async (t) => {
     const firstStarted = Promise.withResolvers<void>();
     const secondStarted = Promise.withResolvers<void>();
@@ -73,7 +74,7 @@ for (const era of fetchProtocolEras) {
         return { requestedUrl: url, finalUrl: url, html: '<p>Source</p>' };
       } },
     });
-    const otherClient = new Client({ name: 'independent-call', version: '0.0.0' }, { versionNegotiation: { mode: era === '2026-07-28' ? { pin: era } : 'legacy' } });
+    const otherClient = new Client({ name: 'independent-call', version: '0.0.0' }, { versionNegotiation: eraNegotiation(era) });
     t.after(() => otherClient.close());
     await otherClient.connect(new StreamableHTTPClientTransport(site.url, { authProvider: { token: async () => 'another-token' } }), { signal: t.signal, timeout: 5_000 });
     const first = site.client.callTool({ name: 'getURLAsMarkdown', arguments: { ...validFetchArguments, url: 'https://example.com/cancel' } }, { signal: cancelled.signal });

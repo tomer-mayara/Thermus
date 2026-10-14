@@ -50,6 +50,12 @@ function adBlockerSelectors(): string[] {
   return new adblock.Engine(filterSet).urlCosmeticResources('https://example.com/').hide_selectors;
 }
 
+// The image names the rules path in AD_RULES_FILE, but the operator supplies the file.
+function adRulesFile(): string | null {
+  const file = process.env.AD_RULES_FILE ?? '';
+  return file !== '' && existsSync(file) ? readFileSync(file, 'utf8') : null;
+}
+
 function imageFacts(): unknown {
   const data = statSync(DATA_DIR);
   return {
@@ -60,6 +66,7 @@ function imageFacts(): unknown {
     developmentPackages: developmentPackages(),
     pinnedPackages: Object.fromEntries(PINNED_PACKAGES.map((name) => [name, packageVersion(name)])),
     adBlockerSelectors: adBlockerSelectors(),
+    adRulesFile: adRulesFile(),
     userId: process.getuid?.(),
     dataDirectory: { path: DATA_DIR, ownerId: data.uid, mode: (data.mode & 0o777).toString(8), entries: readdirSync(DATA_DIR) },
   };

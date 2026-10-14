@@ -13,7 +13,6 @@ function output(status: number, error: string): string {
 }
 
 function stubProcess(context: TestContext, error: ExecFileException, stdout: string): void {
-  context.mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
   context.mock.method(childProcess, 'execFile', (...args: Parameters<typeof childProcess.execFile>) => {
     const callback = args.at(-1);
     assert.ok(typeof callback === 'function');

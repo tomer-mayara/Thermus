@@ -9,6 +9,7 @@ import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } fr
 import { assertExit, assertRevealsNone, type CommandResult } from '../../support/command-process.ts';
 import {
   buildGateImages,
+  containerAdRulesFile,
   containerDataDirectory,
   probeImage,
   removeGateResources,
@@ -19,7 +20,7 @@ import { ContainerSite } from '../../support/container-site.ts';
 import { dockerOutput } from '../../support/docker-cli.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
-import { LocalMcpUser } from '../../support/local-mcp-user.ts';
+import { LocalMcpUser, type McpConnection } from '../../support/local-mcp-user.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };
@@ -52,6 +53,8 @@ const hostedAndPaidPaths = [
 ] as const;
 
 let images: GateImages;
+// The server lists the fetch tool. The image has no renderer, so a call gets the fixed fetch failure.
+const fetchToolNames = ['getURLAsMarkdown'];
 
 interface Installation {
   readonly site: ContainerSite;
@@ -70,6 +73,8 @@ interface ImageFacts {
   readonly developmentPackages: readonly string[];
   readonly pinnedPackages: Readonly<Record<string, string>>;
   readonly adBlockerSelectors: readonly string[];
+  // The contents of AD_RULES_FILE, or null when the image has no file there.
+  readonly adRulesFile: string | null;
   readonly userId: number;
   readonly dataDirectory: { readonly path: string; readonly ownerId: number; readonly mode: string; readonly entries: readonly string[] };
 }
@@ -87,7 +92,7 @@ interface ComposeService {
   readonly init?: boolean;
   readonly environment: Readonly<Record<string, string>>;
   readonly ports: readonly { readonly host_ip?: string; readonly target: number; readonly published: string }[];
-  readonly volumes: readonly { readonly type: string; readonly source: string; readonly target: string }[];
+  readonly volumes: readonly { readonly type: string; readonly source: string; readonly target: string; readonly read_only?: boolean; readonly bind?: unknown }[];
 }
 
 interface ComposeConfig {
@@ -187,13 +192,16 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
   after(() => removeGateResources());
 
-  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call gets the fixed fetch failure, because the image has no renderer; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t);
     const server = await setup.site.startServer(setup.volume);
     const users = mcpUsers(setup);
 
     const connections = [];
     for (const user of users) connections.push(await user.connect(t));
+    const [{ client }] = connections as [McpConnection];
+    // An address literal needs no DNS lookup, so the call reaches the missing renderer without an outbound query.
+    const fetchCall = await client.callTool({ name: 'getURLAsMarkdown', arguments: { url: 'https://93.184.216.34/page', reason: 'Show the image limit' } });
     const firstTokens = users.map((user) => user.accessToken);
     const reauthorizations = await reauthorize(t, users);
     const refreshes = [];
@@ -202,6 +210,8 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     const exit = await server.stop();
 
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
+    assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed' }], true]);
+    assert.match(server.output, /"tool":"getURLAsMarkdown","url":"https:\/\/93\.184\.216\.34\/page".*"status":"fetch_failed"/);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);
     assert.notEqual(jwtClaims(firstTokens[0] ?? '').sid, jwtClaims(firstTokens[1] ?? '').sid);
     assert.deepEqual(reauthorizations, [[], []]);
@@ -252,7 +262,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
     for (const { change, ...outcome } of outcomes) {
       assert.equal(outcome.tenant, tenant, change);
-      assert.deepEqual(outcome.tools, [[], []], change);
+      assert.deepEqual(outcome.tools, [fetchToolNames, fetchToolNames], change);
       assert.deepEqual(outcome.pages, [[], []], change);
     }
     assert.deepEqual(outcomes.map(({ container }) => container === first.container), [true, false, false]);
@@ -291,7 +301,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     }
 
     assert.equal(restoredTenant, tenant);
-    assert.deepEqual(returning, { tools: [[], []], pages: [[], []] });
+    assert.deepEqual(returning, { tools: [fetchToolNames, fetchToolNames], pages: [[], []] });
     assert.deepEqual(accountIds(restoredAccounts), setup.userIds);
     assert.match(freshTenant, localTenant);
     assert.notEqual(freshTenant, tenant);
@@ -306,6 +316,25 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(await probeImage(images.current, 'data-files', withoutSecret), ['auth.sqlite', 'data-directory.lock', 'resource-server-client.json']);
     assert.deepEqual(await probeImage(images.current, 'installation-ids', withoutIdentity), []);
     await setup.site.assertNoOutboundRequests();
+  });
+
+  test('Given a fresh volume and a server container without the trusted rules file, when the server starts, then it stops before it listens with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container, which reads no rules, still adds an account', { timeout: 300_000 }, async (t) => {
+    const site = await ContainerSite.open(t, images.current);
+    const volume = await site.volume();
+    const server = await site.createServer(volume, { adRules: false });
+
+    server.launch();
+    const listening = await server.listeningOrExit();
+    const exit = await server.exited();
+    const dataFiles = await probeImage(images.current, 'data-files', volume);
+    const added = await addUser(site.operator(volume), alice);
+
+    assert.equal(listening, false, server.output);
+    assert.notEqual(exit.code, 0, server.output);
+    assert.match(server.output, /FATAL.*AD_RULES_FILE could not be read \(ENOENT\)\./);
+    assert.deepEqual(dataFiles, []);
+    assertExit(added, 0);
+    await site.assertNoOutboundRequests();
   });
 
   test('Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working', { timeout: 300_000 }, async (t) => {
@@ -338,11 +367,11 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.match(oldPassword.body, /email address or password is not correct/i);
     assert.deepEqual(renewed.pages, ['/sign-in']);
     assert.equal(jwtClaims(aliceUser.accessToken).sub, setup.userIds.get(alice.email));
-    assert.deepEqual(bobTools, []);
+    assert.deepEqual(bobTools, fetchToolNames);
     assert.equal(disabledSignIn.status, 403);
     assert.match(disabledSignIn.body, /account is disabled/i);
     assert.equal(bobUser.browser.cookies.size, 0, 'the refused sign-in set no session cookie');
-    assert.deepEqual(aliceTools, []);
+    assert.deepEqual(aliceTools, fetchToolNames);
     assert.deepEqual(accounts, [
       { email: alice.email, state: 'enabled', id: setup.userIds.get(alice.email) },
       { email: bob.email, state: 'disabled', id: setup.userIds.get(bob.email) },
@@ -418,7 +447,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     for (const result of [...danaCommands, added]) assertExit(result, 0);
     assert.equal(disabledSignIn.status, 403);
     assert.deepEqual(recovered.pages, ['/sign-in', '/consent']);
-    assert.deepEqual(tools, []);
+    assert.deepEqual(tools.map(({ name }) => name), fetchToolNames);
     assert.equal(recoveredTenant, tenant);
     assert.deepEqual(accounts.map(({ email, state }) => ({ email, state })), [
       { email: dana.email, state: 'disabled' },
@@ -428,7 +457,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await site.assertNoOutboundRequests();
   });
 
-  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists no tools, and a container with DEPLOYMENT=hosted and WorkOS settings gives that session and its token no access: each account path asks for a sign-in, the forged callback is refused, MCP asks for a token, nothing calls WorkOS, and nothing is written to its volume', { timeout: 300_000 }, async (t) => {
+  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists only the fetch tool, and a container with DEPLOYMENT=hosted and WorkOS settings gives that session and its token no access: each account path asks for a sign-in, the forged callback is refused, MCP asks for a token, nothing calls WorkOS, and nothing is written to its volume', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t, [alice]);
     const server = await setup.site.startServer(setup.volume);
     const user = new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice);
@@ -469,7 +498,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     const hostedExit = await hosted.stop();
 
     assert.ok(cookie !== '', 'the user has a browser session');
-    assert.deepEqual(tools, []);
+    assert.deepEqual(tools.map(({ name }) => name), fetchToolNames);
     assert.deepEqual(statuses, hostedAndPaidPaths.map(([method, path]) => [method, path, 404]));
     assert.deepEqual(accounts.map(({ email }) => email), [alice.email]);
     assert.deepEqual(hostedAnswers, hostedAndPaidPaths.map(([method, path]) => (path.startsWith('/auth/callback')
@@ -486,7 +515,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await setup.site.assertNoOutboundRequests();
   });
 
-  test('Given the image and the compose file, when they are inspected, then the image holds the compiled server and commands of this build, the shipped migrations, and the pinned production packages with the native ad blocker built for its platform, but no TypeScript source, test output, or development package; it runs as a non-root user with production settings, no telemetry setting, and its data directory on the one volume; the compose service mounts only that volume, starts with an init process, and publishes its port on the loopback address', { timeout: 300_000 }, async () => {
+  test('Given the image and the compose file, when they are inspected, then the image holds the compiled server and commands of this build, the shipped migrations, and the pinned production packages with the native ad blocker built for its platform, but no TypeScript source, test output, or development package; it runs as a non-root user with production settings, no telemetry setting, its data directory on the one volume, and the path of the trusted ad rules, but no rules file; the compose service mounts only that volume and the read-only rules file of the operator, which Compose must not make, starts with an init process, and publishes its port on the loopback address', { timeout: 300_000 }, async () => {
     const facts = await probeImage<ImageFacts>(images.current, 'image');
     const config = JSON.parse(await dockerOutput(['image', 'inspect', '--format', '{{json .Config}}', images.current])) as ImageConfig;
     const compose = await composeConfig();
@@ -511,6 +540,8 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.equal(settings.DATA_DIR, containerDataDirectory);
     assert.equal(settings.LISTEN_HOST, '0.0.0.0');
     assert.equal(settings.LISTEN_PORT, '8080');
+    assert.equal(settings.AD_RULES_FILE, containerAdRulesFile);
+    assert.equal(facts.adRulesFile, null);
     assert.equal(settings.PUBLIC_BASE_URL, undefined);
     assert.deepEqual(Object.keys(settings).filter((name) => /TELEMETRY|BETTER_AUTH|^AUTH_/.test(name)), []);
     assert.deepEqual(Object.keys(compose.services), ['thermus']);
@@ -519,7 +550,10 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.equal(service.init, true);
     assert.deepEqual(service.environment, { PUBLIC_BASE_URL: publicBaseUrl });
     assert.deepEqual(service.ports.map(({ host_ip, published, target }) => ({ host_ip, published, target })), [{ host_ip: '127.0.0.1', published: '8080', target: 8080 }]);
-    assert.deepEqual(service.volumes.map(({ type, source, target }) => ({ type, source, target })), [{ type: 'volume', source: 'thermus-data', target: containerDataDirectory }]);
+    assert.deepEqual(service.volumes.map(({ type, source, target, read_only, bind }) => ({ type, source, target, read_only, bind })), [
+      { type: 'volume', source: 'thermus-data', target: containerDataDirectory, read_only: undefined, bind: undefined },
+      { type: 'bind', source: join(repositoryRoot, 'ad-rules.txt'), target: containerAdRulesFile, read_only: true, bind: { create_host_path: false } },
+    ]);
     assert.deepEqual(Object.keys(compose.volumes), ['thermus-data']);
   });
 });

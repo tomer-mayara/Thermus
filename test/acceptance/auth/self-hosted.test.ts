@@ -8,7 +8,7 @@ import { dataDirectory } from '../../support/data-directory.ts';
 import { hiddenField, LocalBrowser } from '../../support/local-browser.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { LocalMcpUser } from '../../support/local-mcp-user.ts';
-import { selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
+import { selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
@@ -48,7 +48,7 @@ class RunningServer {
   };
 
   async start(t: TestContext, directory: string): Promise<ServerProcess> {
-    this.current = await ServerProcess.start(t, selfHostedSettings(directory));
+    this.current = await ServerProcess.start(t, selfHostedServerSettings(directory));
     this.url = await this.current.started();
     return this.current;
   }
@@ -159,7 +159,7 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
     assert.deepEqual(renewed.pages, ['/sign-in']);
     assert.equal(jwtClaims(aliceUser.accessToken).sub, userIds.get(alice.email));
     assert.notEqual(aliceUser.accessToken, oldAliceToken);
-    assert.deepEqual(peerTools, []);
+    assert.deepEqual(peerTools, ['getURLAsMarkdown']);
     assert.deepEqual(peerReauthorization.pages, []);
     await server.stop();
     assertNoOutboundAccess(server, [...commands, reset]);
@@ -187,7 +187,7 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
     assert.match(disabledSignIn.body, /account is disabled/i);
     assert.equal(bobUser.browser.cookies.size, 0, 'the refused sign-in set no session cookie');
     await assertNoRefreshGrant(server, clientId, oldBobToken);
-    assert.deepEqual(peerTools, []);
+    assert.deepEqual(peerTools, ['getURLAsMarkdown']);
     await server.stop();
     assertNoOutboundAccess(server, [...commands, disable]);
   });

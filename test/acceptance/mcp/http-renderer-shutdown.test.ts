@@ -13,11 +13,12 @@ import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts'
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
-import { fetchProtocolEras, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
 
 type ProcessCompletion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 
-for (const era of fetchProtocolEras) {
+for (const era of mcpProtocolEras) {
   test(`Given a running renderer through ${era} HTTP, when shutdown starts, then its child, timer, and abort listener close once before provider release`, { timeout: 5_000 }, async (t) => {
     const resource = new URL('https://thermus.example/mcp');
     const provider = new NoAuthProvider(resource);
@@ -60,7 +61,7 @@ for (const era of fetchProtocolEras) {
     const application = composeApplication((request) => server.fetch(request), server, providers);
     const listener = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href });
     const client = new Client({ name: 'renderer-shutdown-acceptance', version: '0.0.0' }, {
-      versionNegotiation: { mode: era === '2026-07-28' ? { pin: era } : 'legacy' },
+      versionNegotiation: eraNegotiation(era),
     });
     let finish: ProcessCompletion | undefined;
     t.after(async () => {

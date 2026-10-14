@@ -1,8 +1,10 @@
 # MCP HTTP fetch tool
 
 MCP-P01 adds `getURLAsMarkdown(url, reason)` with dependencies supplied by test
-initialization. Production rule loading and application wiring remain in P03.
-Shutdown cancellation remains in P02. There is no POST tool or new stdio tool.
+initialization. MCP-P02 adds shutdown cancellation and request isolation. MCP-P03
+registers the tool in the self-hosted server with trusted rules and the local
+renderer; see [production composition](#production-composition). There is no
+POST tool or new stdio tool.
 
 ## Request and result
 
@@ -52,6 +54,44 @@ create a new failure contract. Existing depth and sanitizer limits still apply.
 The SDK owns negotiation, envelopes, and its 4 MiB request-body limit with HTTP
 413. The HTTP bridge streams the request to it. Tool validation adds no second
 body parser or alternate JSON-RPC implementation.
+
+## Production composition
+
+The self-hosted server registers the tool. Its application branch loads
+[`src/fetch-tool.ts`](../../src/fetch-tool.ts) and calls
+`fetchToolServers(environment, logger)` before it opens the Better Auth runtime.
+That call reads the [ad rules file](ad-rules.md#server-rules-file) one time. Then
+it makes these parts one time:
+
+- one `HtmlToMarkdownPipeline` with `CleanHtmlAdsAdblockRs`,
+  `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in that
+  order;
+- one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
+- one operation, `createGetURLAsMarkdown({ fetcher, pipeline })`.
+
+It returns the `buildServer` function of `MCPServer`. Each MCP request gets its
+own SDK `Server` from `createFetchToolServer(context, { operation, logger },
+lifetime)`. Completion records go to the application logger: one `INFO` line of
+JSON for each dispatched `tools/call`. `requestedUrl` keeps the exact accepted
+spelling. The renderer's `finalUrl` selects the ad rules and resolves relative
+links.
+
+Better Auth verifies each token and checks the current account before the tool
+runs. A forged token, a token that a password reset revoked, and a token of a
+user that `users disable` disabled get HTTP 401. A banned user with a live
+session gets HTTP 403. These refusals happen before any fetch or cleaning and
+write no completion record.
+
+Startup does not run or check the renderer. Without a usable renderer, each page
+fetch fails with `Page fetch failed` and a `fetch_failed` record. The tool does
+not pass on the fetcher error. The container image has no renderer, so a server
+container lists the tool, but each page fetch in it fails in this way. Renderer
+image provisioning is separate future work.
+
+The hosted edition does not register the tool. Since AUTH-06, its MCP resource
+checks WorkOS Connect tokens, and its MCP server has no tool. P03 adds no POST
+tool, stdio tool, cache, OAuth provider, rule subscription, rule updater, or
+exporter setup.
 
 ## Completion records
 
@@ -114,9 +154,13 @@ inject it as both `IdentityVerifier` and `AccessResolver`. It accepts supplied
 token contents and returns a fixed synthetic identity and workspace, only
 `product:access`, a distinct client ID, a synthetic issuer, the configured
 resource, current finite times, and empty scopes. It does not bypass Bearer
-syntax checks. Production retains Better Auth and the hosted HTTP 503 behavior.
+syntax checks. Production retains Better Auth and the hosted WorkOS provider.
 
-The HTTP acceptance cases use the real SDK client and production HTTP bridge
-with fetcher and pipeline doubles. Normal integration and acceptance runs stay
-offline and renderer-free. See the [test inventory](../testing/test-list.md) and
-[test gate policy](../implementation/test-gate-policy.md).
+The P01 and P02 HTTP acceptance cases use the real SDK client and production
+HTTP bridge with fetcher and pipeline doubles. The P03 offline fetch tool
+acceptance cases run the production `serve()` with real Better Auth, the real
+pipeline, and a renderer process double. Normal integration and acceptance runs
+stay offline and renderer-free. Only the explicit renderer gate,
+`npm run test:mcp:renderer`, runs the pinned Lightpanda through the tool. See
+the [test inventory](../testing/test-list.md) and
+[test gate policy](../implementation/test-gate-policy.md#renderer-gate-mcp-p03).

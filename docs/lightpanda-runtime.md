@@ -69,7 +69,7 @@ The command must print `1.0.0`. Keep the export in the shell that starts the app
 
 ## Select the executable
 
-A nonempty `LIGHTPANDA_BIN` value selects the executable. Use an absolute path so it works from any working directory. Paths with spaces work when quoted in shell commands:
+The self-hosted server reads `LIGHTPANDA_BIN` from its environment when it starts. It gives the value to the fetcher constructor. The fetcher itself reads no environment variable. A nonempty value selects the executable. Use an absolute path so it works from any working directory. Paths with spaces work when quoted in shell commands:
 
 ```sh
 export LIGHTPANDA_BIN="/absolute/path with spaces/lightpanda"
@@ -84,7 +84,7 @@ command -v lightpanda
 lightpanda version
 ```
 
-A selected executable that is missing produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. The operator must verify the runtime before use.
+A selected executable that is missing produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Server startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the missing-executable error. The operator must verify the runtime before use with the commands above.
 
 ## Verify rendering
 
@@ -117,10 +117,28 @@ pnpm build
 node --test dist/test/interface/website-fetcher.test.js
 ```
 
-`pnpm test:interface` and `pnpm test` include that public-site smoke test. `npm run check` runs type checking, offline unit tests, and build acceptance tests. It does not run the live renderer interface tests.
+`pnpm test:interface` and `pnpm test` include that public-site smoke test. `npm run check` runs type checking, offline unit tests, and build acceptance tests. It does not run the live renderer interface tests or the renderer gate.
+
+With `LIGHTPANDA_BIN` set to the verified executable, run the explicit renderer gate. It proves the production fetch tool with this renderer:
+
+```sh
+npm run test:mcp:renderer
+```
+
+The command makes a clean build and runs `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select the file. The gate runs the self-hosted server in the test process with real Better Auth, the real cleaning pipeline, trusted test rules, and this renderer. The real MCP SDK HTTP client calls `getURLAsMarkdown` for local HTTP pages on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address in the test scope. The gate needs no public network access and no Axiom credentials.
+
+The six cases prove these behaviors:
+
+- In the modern 2026-07-28 and legacy 2025-11-25 protocol eras, a user signs in and consents on the bundled pages. The client then gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record.
+- After a redirect that changes the host and the path, `requestedUrl` keeps the requested spelling. The final URL selects the ad rules and resolves the relative links.
+- Hidden content is removed. HTML that the sanitizer withholds gives exact empty success. An HTTP error gives `Page fetch failed`. A DOM deeper than 256 levels gives `Page processing failed`.
+- A modern client cancellation stops the renderer child, and the server writes one `cancelled` record.
+- Server shutdown cancels a legacy call. The renderer child stops before the server finishes stopping, and the server writes one `cancelled` record.
+
+Setup fails when `LIGHTPANDA_BIN` is unset or empty, when it is relative, when it does not run, or when it reports a version other than 1.0.0. Then no gate test passes. Each setup message starts with `Renderer gate setup failed:` and points to this document. The [test gate policy](implementation/test-gate-policy.md#renderer-gate-mcp-p03) gives the evidence rules.
 
 ## Upgrade policy
 
 Other releases, nightly builds, and unverified local builds are unsupported. They can reject required flags or change JSON output, HTTP errors, readiness, or network blocking. If a required option fails, keep the failure visible. Do not remove safety flags to make another build run.
 
-To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check` and the local renderer interface tests with that executable. Review its network policy and CLI behavior. Update the fetcher and network policy documents if behavior changes. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.
+To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check`, the local renderer interface tests, and the renderer gate with that executable. The renderer gate accepts only version 1.0.0, so change its version check in the same change. Review its network policy and CLI behavior. Update the fetcher and network policy documents if behavior changes. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.

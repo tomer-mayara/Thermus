@@ -20,7 +20,7 @@
 [V] Cancels owned work and waits for its cleanup; repeated close calls share one result (`test/unit/mcp/lifetime.test.ts`)
 [V] Removes completed tasks from active work, preserves cleanup errors, waits for in-progress authentication, and refuses work after shutdown (`test/unit/mcp/lifetime.test.ts`)
 [V] Keeps request context and cancellation separate between connections (P02 unit and HTTP acceptance cases below)
-[] Supplies production rules and runtime dependencies (P03)
+[V] Supplies production rules and runtime dependencies to the self-hosted server (P03 unit, integration, and acceptance cases below)
 [] Lists `postURLAsMarkdown(url, params, reason)` with its URL input schema (deferred)
 
 Dispatch unit tests double the operation and logger. Real permission checks and
@@ -59,6 +59,21 @@ records are type-only imports; these cases execute no shared-auth behavior.
 [V] Names the setting and the rule in each error, without a setting value or a WorkOS value; returns frozen records
 [V] Uses listen host `127.0.0.1` and port 8080 when `LISTEN_HOST` and `LISTEN_PORT` are missing or empty; returns a frozen address for valid hosts and ports from 0 to 65535
 [V] Rejects a `LISTEN_PORT` that is not a whole number from 0 to 65535 and a `LISTEN_HOST` with spaces or control characters, without the value in the message; reads only `LISTEN_HOST` and `LISTEN_PORT`
+
+**Ad rules file** (`test/unit/config/ad-rules-file.test.ts`)
+
+Only the server reads `AD_RULES_FILE`. A file-read double stands in for `readFileSync` where a test needs a read failure or a read count.
+
+[V] Rejects a missing or empty `AD_RULES_FILE` with the required-setting message, and a relative path (`ad-rules.txt`, `./`, `../`, or `~/`) without its value
+[V] Reports `ENOENT` for a missing file, `EISDIR` for a directory, `EACCES` for a permission failure, and `unknown error` for a read error without a string code; keeps the cause and shows no path
+[V] Rejects invalid UTF-8 without the path or the contents and keeps the decoder error as the cause
+[V] Returns the exact text of an empty file, a comment-only file, CRLF lines with a blank line and a supplementary character, and a line that is not rule syntax; removes a UTF-8 byte order mark at the start
+[V] Reads the path one time for each load; a later load gets the changed text
+[V] Reads only `AD_RULES_FILE` from the supplied record and ignores `process.env`
+
+```sh
+npm run build && node --test dist/test/unit/config/ad-rules-file.test.js
+```
 
 **Local authentication migrations** (`test/unit/auth-better-auth/local-auth-migrations.test.ts`)
 
@@ -771,9 +786,10 @@ A double of the narrow SDK part records each read.
 
 **Lightpanda Website Fetcher**
 
-[V] Uses a nonempty LIGHTPANDA_BIN value as the exact executable path, including spaces, without a shell or version subprocess
-[V] Uses lightpanda from PATH when LIGHTPANDA_BIN is empty or unset
-[V] Keeps the missing executable cause, reports the selected path and runtime setup document, and does not fall back to another executable
+[V] Uses a nonempty constructor argument as the exact executable path, including spaces, without a shell or version subprocess (`test/unit/website-fetcher/website-fetcher-runtime.test.ts`)
+[V] Uses lightpanda from PATH when the constructor gets no executable or an empty one
+[V] Ignores LIGHTPANDA_BIN in `process.env`; only the constructor argument selects the executable
+[V] Keeps the missing executable cause, reports the selected path and runtime setup document without the requested URL, and does not fall back to another executable
 [V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
 [V] Returns HTML with the requested and final URLs on immediate success
 [V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
@@ -796,6 +812,10 @@ A double of the narrow SDK part records each read.
 [V] Shares one child kill across readiness timeout and later cancellation
 [V] Releases the listener and readiness timer at cancellation, awaits child completion, and ignores repeated callbacks
 [V] Cancels one of two concurrent fetches without changing the peer's signal, resources, or result
+
+**Fetcher concurrent calls** (`test/unit/website-fetcher/website-fetcher-concurrent-calls.test.ts`)
+
+[V] One fetcher with a configured executable runs two concurrent calls with the same executable, arguments, and process options, each with its own URL; each call gets its own result
 
 **Local renderer fixture launcher** (`test/unit/website-fetcher/network-fixture.test.ts`)
 
@@ -915,7 +935,7 @@ These tests run MCPServer with the real access contracts through a test-only pro
 
 **Local installation** (`test/integration/auth/local-installation.test.ts`)
 
-These tests run the real application, Better Auth runtime, MCPServer, and provider with SQLite files in temporary data directories.
+These tests run the real application, Better Auth runtime, MCPServer, and provider with SQLite files in temporary data directories. The self-hosted application gets the server settings with the trusted test rules in `AD_RULES_FILE`, so it also makes the real fetch tool composition.
 
 [V] A fresh data directory gives one logged `local:<installation-id>` tenant; the application holds the data-directory lock until it closes; MCP requests without a token or with a forged token get 401 with the Bearer challenge and give no failure report, and other paths get 404
 [V] Two applications that start at the same time on a fresh directory: one starts, the other fails with `DataDirectoryInUseError`, and one installation identity exists
@@ -925,6 +945,17 @@ These tests run the real application, Better Auth runtime, MCPServer, and provid
 [V] A client that an enabled account registers through the provider has the installation ID as `reference_id` and no `user_id`
 [V] Retained data without its installation identity, and retained data with a damaged provider schema, stop startup and release the data-directory lock
 [V] The hosted deployment selects the WorkOS provider instead of the local runtime: without the WorkOS settings it refuses to start with `WorkOSSettingsError`; with them, an account request and an MCP request with a forged token get 401, the log names the WorkOS client and issuer, and two close calls give one result
+
+**Application startup with refused ad rules** (`test/integration/application-ad-rules.test.ts`)
+
+These tests call `createApplication()` with the self-hosted configuration, the real rules reader, and the real ad cleaner on a fresh temporary data directory. A test double makes the native adblock-rs parser fail.
+
+[V] With `AD_RULES_FILE` that names a missing file, the application rejects with `AD_RULES_FILE could not be read (ENOENT).` before it opens the data directory or reports a tenant
+[V] With trusted rules and a native rule parser that fails, the application rejects with `The ad cleaner could not load the rules in AD_RULES_FILE.`, keeps the parser error only as the cause, and opens no data directory
+
+```sh
+npm run build && node --test dist/test/integration/application-ad-rules.test.js
+```
 
 **Hosted account routes with doubles** (`test/integration/auth/hosted-account.test.ts`)
 
@@ -1291,6 +1322,67 @@ listener, and delayed process callback through the real MCP HTTP path.
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"
 ```
 
+**Self-hosted fetch tool with real Better Auth** (`test/acceptance/mcp/self-hosted-fetch-tool.test.ts`)
+
+Each test runs the production `serve()` in the test process with `InProcessServer`: real Better Auth on SQLite files, trusted test rules, and the real cleaning pipeline. `RendererProcessDouble` stands in for the Lightpanda process and DNS at the Node `child_process.execFile` and DNS APIs, so no renderer runs. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
+
+[V] Given a real Better Auth token in each era, the client lists `getURLAsMarkdown` with the shared schema and gets one exact cleaned Markdown entry; the final URL selects the rules and resolves the links, the requested URL keeps its spelling, the server keeps the rules that it read at startup after the file changes, the renderer gets the production arguments and limits, and each call writes one safe completion record
+[V] Given forged credentials (a changed token payload or a malformed token), a token that a password reset revoked, and a token of a user that `users disable` disabled, each call gets 401 in both eras, and a banned user with a live session gets 403; no fetch, cleaning, or completion record happens, and a peer with a current token still gets the cleaned page
+[V] Given an empty rules file, the ad rules do nothing, and the hidden content is still removed
+[V] Given HTML that the sanitizer withholds, HTML deeper than the ad cleaner limit, and a failed render, the client gets exact empty success, `Page processing failed`, or `Page fetch failed` without partial Markdown; no record holds a cause or page text
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/self-hosted-fetch-tool.test.js
+```
+
+**Self-hosted startup with the ad rules file** (`test/acceptance/mcp/self-hosted-rules-startup.test.ts`)
+
+Each test starts the built server, `dist/src/index.js`, as a separate Node process with outbound access denied and a temporary data directory. A preload can make the native rule parser fail with a private message.
+
+[V] Given `AD_RULES_FILE` that is unset, empty, a relative path, a missing file, a directory, or a file that is not UTF-8, the server stops with status 1 before it listens; its only `FATAL` line is the matching rules message, it shows no path or rule text, and it creates no data
+[V] Given an installation with one account and a missing rules file, the server stops with status 1 before it listens and changes no data file; a later `users list` shows the account
+[V] Given a native rule parser that fails with a private message, the server stops with status 1 before it listens; its only `FATAL` line is `The ad cleaner could not load the rules in AD_RULES_FILE.`, it does not show the private message, and it creates no data
+[V] Given an empty file or a file with only a comment, the server listens, an MCP request without a token gets the Bearer challenge, and `SIGTERM` stops it with status 0
+[V] Given `LIGHTPANDA_BIN` that names a missing executable, the server listens, because startup does not run or check the renderer, and `SIGTERM` stops it with status 0
+
+**Server-only modules** (`test/acceptance/mcp/server-only-modules.test.ts`)
+
+The built entry point runs in separate processes with an import hook that blocks the rules reader, the renderer, the cleaning pipeline, and adblock-rs. The rules file and the renderer are missing.
+
+[V] Given the guard, the operator adds two users, lists them, registers a client, resets a password, and disables a user; each command exits with status 0 and loads no server-only module
+[V] Given the guard and the WorkOS settings, the hosted edition listens, asks for a sign-in on the account page, and answers an MCP tool call with a Bearer token and a session cookie with 401 and a Bearer challenge; it loads no server-only module, uses no network, stops with status 0 after `SIGTERM`, and creates no data
+[V] Given the guard and trusted rules, the self-hosted server stops with status 1 before it listens, and its `FATAL` line shows the guard message, so the guard sees the modules that the server loads
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/self-hosted-rules-startup.test.js dist/test/acceptance/mcp/server-only-modules.test.js
+```
+
+**Renderer gate setup** (`test/acceptance/mcp/renderer-gate-setup.test.ts`)
+
+The test runs the built renderer gate file in a separate `node --test` process with bad prerequisites. It needs no renderer.
+
+[V] Given `LIGHTPANDA_BIN` that is unset, relative, a missing file, or an unsupported Lightpanda version, the explicit renderer gate fails with its setup error, and no gate test passes, is skipped, or is left as todo
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/renderer-gate-setup.test.js
+```
+
+**Renderer gate** (`test/acceptance/mcp/get-url-as-markdown.runtime.ts`)
+
+The production `serve()` runs in the test process with real Better Auth, the real cleaning pipeline, trusted test rules, and the pinned Lightpanda 1.0.0 from `LIGHTPANDA_BIN`. The pages are local HTTP fixtures on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address. The gate needs no public network access and no Axiom credentials.
+
+[V] Given the pinned renderer and a real Better Auth token in each protocol era, after the user signs in and consents on the bundled pages, the client gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record
+[V] Given a redirect that changes the host and the path, `requestedUrl` keeps the accepted spelling, and the final URL selects the ad rules and resolves the relative links
+[V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed` and `Page processing failed` without partial Markdown
+[V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
+[V] Given a legacy call that keeps the renderer waiting, server shutdown cancels it; the renderer child stops before the server finishes stopping, and the server writes one `cancelled` record
+
+Run the renderer gate with the pinned runtime. The `.runtime.ts` name keeps the file out of `npm test` and `npm run test:acceptance`:
+
+```sh
+npm run test:mcp:renderer
+```
+
 **Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)
 
 The tests use the existing ESLint configuration against source snippets at the
@@ -1552,16 +1644,17 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.j
 
 **Self-hosted evaluation container** (`test/acceptance/auth/self-hosted-container.test.ts`)
 
-The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge.
+The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image has no renderer, so the suite does not prove renderer behavior.
 
-[V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
+[V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed` and a `fetch_failed` record, because the image has no renderer; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
 [V] Given two users with tokens and consents, a restart, a new container, and a container of the rebuilt image on the same volume each keep the tenant, the user IDs, the clients, the signing keys, the sessions, the consents, and the tokens of both users usable
 [V] Given a tar backup of the complete stopped volume, a restore into a new volume keeps the tenant, the user IDs, the tokens, the sessions, and the consents; a fresh volume gets a new tenant; a restore without the installation identity or without `auth.secret` stops the server before it listens, asks for a restore, and gets no new identity
+[V] Given a fresh volume and a server container without the trusted rules file, the server stops before it listens with the `FATAL` line `AD_RULES_FILE could not be read (ENOENT).` and writes nothing to the volume; a command container, which reads no rules, still adds an account
 [V] Given two users with tokens, a stopped-server password reset of one user ends only its token and old password, and the user signs in again without a new consent; a later disable of the other user ends only its token and sign-in; the peer keeps working each time
 [V] Given a live server container, one-off command containers on the same volume and a command in the server container fail with the lock error, ask for no password, and change no account
 [V] Given an installation that starts with zero accounts and later has only a disabled account, a command container that adds an account while the server is stopped gives MCP access through the installation client, and the tenant stays the same
-[ ] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, and the MCP session lists no tools; a container with `DEPLOYMENT=hosted` and placeholder WorkOS settings then gives that session and its token no access: each account path gets 401, the forged callback gets 400 with a cleared sign-in cookie, MCP gets 401 with a Bearer challenge, nothing calls WorkOS, no tenant is reported, the container stops with status 0, and nothing is written to its volume
-[V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, and the pinned production packages with a working native ad blocker, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting, and a `0700` data directory; the compose service mounts only that volume, starts with an init process, and publishes port 8080 on `127.0.0.1`
+[V] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, and the MCP session lists only `getURLAsMarkdown`; a container with `DEPLOYMENT=hosted` and placeholder WorkOS settings then gives that session and its token no access: each account path gets 401, the forged callback gets 400 with a cleared sign-in cookie, MCP gets 401 with a Bearer challenge, nothing calls WorkOS, no tenant is reported, the container stops with status 0, and nothing is written to its volume
+[V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, and the pinned production packages with a working native ad blocker, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting, a `0700` data directory, and `AD_RULES_FILE=/etc/thermus/ad-rules.txt`, but no rules file; the compose service mounts only that volume and the operator's `ad-rules.txt` read-only, which Compose must not make, starts with an init process, and publishes port 8080 on `127.0.0.1`
 
 Run the container gate. It needs Docker Engine with Buildx and Compose:
 

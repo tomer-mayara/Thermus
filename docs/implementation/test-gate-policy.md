@@ -25,18 +25,23 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
-| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. |
+| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
+| Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
 `npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
-It does not run the full integration, acceptance, interface, or container suites. `npm test` does not run the build test, because `tsconfig.build.json`
+It does not run the full integration, acceptance, interface, or container suites, or the renderer gate. `npm test` does not run the build test, because `tsconfig.build.json`
 excludes it from `dist/`. No suite command except `npm run test:hosted-live`
 runs the hosted live file.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
 Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
 `npm run test:container` sets the setting.
+
+The renderer gate file uses the `.runtime.ts` name, so `npm test` and
+`npm run test:acceptance` do not select it. Only `npm run test:mcp:renderer`
+runs it. The [renderer gate](#renderer-gate-mcp-p03) section gives the rules.
 
 The interface suite needs the pinned Lightpanda executable. It also contains a
 public-site smoke test that needs public network access.
@@ -118,6 +123,10 @@ contains every change of the pull request.
    - `npm run test:acceptance` for a change in `test/acceptance/`.
    - The interface tests that cover a changed renderer runtime, network policy,
      or patched dependency.
+   - `npm run test:mcp:renderer` for a change to the fetch tool composition
+     (`src/fetch-tool.ts`), the renderer runtime (`src/website-fetcher/`), the
+     cleaning pipeline (`src/html-cleaner-pipeline/`), or the rules loading
+     (`src/config/ad-rules-file.ts`).
    - The Better Auth interface proofs, `test/interface/auth/better-auth.test.ts`,
      for a change to the Better Auth packages, their settings, or the local
      authentication flow. They run offline with a focused command.
@@ -126,8 +135,8 @@ contains every change of the pull request.
      `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.npmrc`,
      `.habit-hooks/package.json`, `patches/`, `tsconfig.json`, or
      `tsconfig.build.json`), `migrations/`, the code of the self-hosted server
-     and its commands (`src/index.ts`, `src/application.ts`, `src/auth/`,
-     `src/config/`,
+     and its commands (`src/index.ts`, `src/application.ts`, `src/fetch-tool.ts`,
+     `src/auth/`, `src/config/`,
      `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
      `src/organizations/`, or `src/terminal/`), or the container tests and
      their support files. The image holds all of `dist/src`, so other changes
@@ -171,6 +180,10 @@ AUTH-09 added the container acceptance suite
   content, for the image replacement case;
 - runs the server and the bundled commands in containers of that image, with the
   real provider and SQLite on Docker volumes;
+- copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt`
+  with `docker container cp` to `/etc/thermus/ad-rules.txt` in each server
+  container before it starts. Command containers get no rules file. The gate
+  does not use the operator's `ad-rules.txt` next to `compose.yaml`;
 - gives the containers only the settings of the image and `PUBLIC_BASE_URL`, so
   the normal production telemetry settings apply;
 - puts each container that runs Thermus on an internal Docker network without a
@@ -180,6 +193,12 @@ AUTH-09 added the container acceptance suite
   address fails without a record. Before each case, a lookup of a control name
   must appear in the record, so the record works on this engine. Each case
   fails when the record has another query;
+- checks that a server container without the rules file stops before it listens
+  with a `FATAL` line that names `AD_RULES_FILE` and writes nothing to its
+  volume, and that a command container still adds an account;
+- calls the fetch tool with an address-literal URL, so the call needs no DNS
+  lookup. The image has no renderer, so the call gets `Page fetch failed` and a
+  `fetch_failed` record;
 - removes its containers, networks, volumes, and images when it ends.
 
 Only a run of `npm run test:container` that exits with status 0 and shows each
@@ -188,7 +207,9 @@ access allowed is not a container gate pass. A container run with changed
 telemetry settings is not a container gate pass. `npm test` and
 `npm run test:acceptance` select the file but skip its suite, so a run through
 them is never a container gate pass. Without the docker CLI, a running engine,
-Buildx, or Compose, the suite fails with a setup error.
+Buildx, or Compose, the suite fails with a setup error. A container gate pass
+gives no evidence of renderer behavior. Only the
+[renderer gate](#renderer-gate-mcp-p03) gives that evidence.
 
 An interrupted run can leave resources. Each one has the label
 `thermus.container-gate`, so these commands remove them:
@@ -199,6 +220,54 @@ docker network rm $(docker network ls --quiet --filter label=thermus.container-g
 docker volume rm $(docker volume ls --quiet --filter label=thermus.container-gate)
 docker image rm --force $(docker image ls --quiet --filter label=thermus.container-gate)
 ```
+
+## Renderer gate (MCP-P03)
+
+MCP-P03 added the explicit renderer gate,
+`test/acceptance/mcp/get-url-as-markdown.runtime.ts`, and its own command,
+`npm run test:mcp:renderer`. The command makes a clean build and runs
+`node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The
+`.runtime.ts` name does not match the `*.test.js` globs on purpose, so
+`npm test` and `npm run test:acceptance` do not select it. The command is also
+the focused command of the file.
+
+The gate needs `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda
+1.0.0 executable. [Lightpanda runtime](../lightpanda-runtime.md) gives the
+setup. The gate needs no public network access and no Axiom credentials. The
+pages are local HTTP fixtures on `127.0.0.1`. The test-only `permitIPv4Fixture`
+seam in `test/support/network-fixture.ts` lets the renderer reach only that
+address in the test scope. Production has no private-network bypass.
+
+The gate runs the production `serve()` in the test process with real Better
+Auth, the real cleaning pipeline, trusted test rules, and the pinned renderer.
+The real MCP SDK HTTP client calls `getURLAsMarkdown`. The six cases cover:
+
+- exact cleaned Markdown from a local JavaScript page and one safe completion
+  record, in the modern 2026-07-28 and the legacy 2025-11-25 era, after the
+  user signs in and consents on the bundled pages;
+- a redirect that changes the host and the path: `requestedUrl` keeps the
+  requested spelling, and the final URL selects the rules and resolves links;
+- hidden content, sanitizer-withheld HTML with exact empty success, an HTTP
+  error with `Page fetch failed`, and a DOM deeper than 256 levels with
+  `Page processing failed`;
+- a modern client cancellation that stops the renderer child and writes one
+  `cancelled` record;
+- a legacy call that server shutdown cancels: the renderer child stops before
+  the server finishes stopping, and one `cancelled` record is written.
+
+Setup fails when `LIGHTPANDA_BIN` is unset or empty, is relative, does not run,
+or reports a version other than 1.0.0. Each setup message starts with
+`Renderer gate setup failed:` and points to the runtime guide. The normal
+acceptance suite has `test/acceptance/mcp/renderer-gate-setup.test.ts`. It runs
+the gate four times with bad prerequisites. It checks that each run fails with
+its setup error and that no gate test passes, is skipped, or is left as todo.
+
+Only a run of `npm run test:mcp:renderer` that exits with status 0 and shows
+each of the six cases as passed is a renderer gate pass. A run that selects zero
+tests, skips a test, leaves a test as todo, or stops with a setup error is not a
+pass. A passing default acceptance suite never counts as rendered end-to-end
+proof, and a container gate pass does not count either. Claim rendered tool
+behavior only after a renderer gate pass.
 
 ## Hosted offline checks
 
@@ -457,4 +526,4 @@ policy. Update them in the same pull request as a gate change.
 - [Paid billing design](../design/billing-design.md#auth-11-implementation-specification):
   planned paid billing suites and the paid gates.
 - [Lightpanda runtime](../lightpanda-runtime.md#verify-rendering): renderer
-  setup and interface test commands.
+  setup, interface test commands, and the renderer gate.

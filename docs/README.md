@@ -7,17 +7,17 @@ runtime guides stay current after implementation.
 
 - [Coding principles](coding-principles.md): design and verification guidance.
 - [Lightpanda runtime](lightpanda-runtime.md): runtime installation and renderer checks.
-- [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the hosted placeholder checks, the self-hosted release checks, and later release gates.
+- [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the renderer gate, the hosted offline checks, the self-hosted release checks, and later release gates.
 - [Container installation](../README.md#container-installation): the self-hosted evaluation image, its data volume, the stopped-server commands, backup and restore, and recovery.
 
 ## Current reference
 
-- [MCP HTTP fetch tool](reference/mcp-fetch-tool.md): input, result, safe records, and per-call cancellation.
+- [MCP HTTP fetch tool](reference/mcp-fetch-tool.md): input, result, safe records, cancellation, and the self-hosted production composition.
 - [User portal](user-portal.md): browser build, environment, and WorkOS application setup.
 - [Website fetcher](reference/website-fetcher.md): rendering, readiness, and error behavior.
 - [Fetch result URL metadata](reference/fetch-result-url-metadata.md): requested and final URLs.
 - [Renderer network policy](reference/renderer-network-policy.md): destination checks and network restrictions.
-- [Ad rules](reference/ad-rules.md): trusted rule input and cleaner behavior.
+- [Ad rules](reference/ad-rules.md): trusted rule input, cleaner behavior, and the server rules file (`AD_RULES_FILE`).
 - [Hidden-text sanitizer](reference/hidden-text-sanitizer.md): hidden content and control sanitation.
 - [HTML processing limits](reference/html-processing-limits.md): parsed element depth and failure behavior.
 - [Pipeline metrics](reference/pipeline-metrics.md): removal counts, skipped work, and findings.
@@ -25,6 +25,8 @@ runtime guides stay current after implementation.
 ## Design and testing
 
 - [MCP-P01 implementation record](implementation/mcp-p01.md): delivered HTTP fetch scope and historical verification before rebase.
+- [MCP-P02 implementation record](implementation/mcp-p02.md): shutdown ownership, request isolation, and its candidate verification.
+- [MCP-P03 implementation record](implementation/mcp-p03.md): the self-hosted fetch tool composition, the ad rules file, the local renderer runtime, image limits, and the renderer gate.
 - [MCP server implementation plan](implementation/mcp-server-plan.md): the GET-to-Markdown tool, test-only authentication, call records, verification gates, and board tickets.
 - [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, the hosted placeholder, hosted scope, and implementation gates.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.
