@@ -3,14 +3,16 @@ import { describe, test } from 'node:test';
 import { setTimeout as sleep } from 'node:timers/promises';
 import type { RefreshSessionResponse } from '@workos-inc/node';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
-import type { Page, Route } from 'playwright';
+import type { Page } from 'playwright';
 import { refreshedAccessToken, refreshedToken } from '../../../support/hosted-live/browser-session.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
-import { browserIssuer, initiateLoginUri, localOrigin, signOutUri } from '../../../support/hosted-live/settings.ts';
+import { nextNavigation, originAndPath, recordNavigations } from '../../../support/hosted-live/navigations.ts';
+import { browserIssuer, initiateLoginUri, signOutUri } from '../../../support/hosted-live/settings.ts';
 import { errorCode, readToken, secondsLeft } from '../../../support/hosted-live/tokens.ts';
 
 const signInOptions = { timeout: 180_000 };
 const graceWait = 31_000;
+const redirectTimeout = 15_000;
 const endedSession = { authenticated: false, reason: 'invalid_grant', retryable: false };
 
 function outcome(result: RefreshSessionResponse): Readonly<Record<string, unknown>> {
@@ -18,31 +20,29 @@ function outcome(result: RefreshSessionResponse): Readonly<Record<string, unknow
   return { authenticated: false, reason: result.reason, retryable: result.retryable };
 }
 
-function originAndPath(url: string | URL): string {
-  const { origin, pathname } = new URL(url);
-  return `${origin}${pathname}`;
+interface LogoutVisit {
+  readonly landing: string;
+  readonly navigations: readonly string[];
 }
 
-async function stubLocalSite(page: Page): Promise<void> {
-  await page.route(`${localOrigin}/**`, (route: Route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Thermus local test site</p>' }));
-}
-
-async function openLogoutUrl(page: Page, logoutUrl: string): Promise<string> {
-  await stubLocalSite(page);
-  await page.goto(logoutUrl, { waitUntil: 'load' });
-  await page.waitForURL((url) => url.host !== 'api.workos.com', { timeout: 15_000 });
-  await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => undefined);
-  return originAndPath(page.url());
+// WorkOS sends the browser through the logout of the AuthKit domain to the Sign-out URI. No server listens at the
+// local origin during the provider proofs, so the browser stops at the request of the landing, which is enough here.
+async function openLogoutUrl(page: Page, logoutUrl: string, workosHosts: ReadonlySet<string>): Promise<LogoutVisit> {
+  const navigations = recordNavigations(page);
+  const landing = nextNavigation(page, ({ host }) => !workosHosts.has(host), redirectTimeout);
+  await page.goto(logoutUrl, { waitUntil: 'commit' }).catch(() => undefined);
+  return { landing: await landing ?? 'no page after WorkOS', navigations };
 }
 
 export function describeSessionEndingProofs(run: LiveRun): void {
   const { settings, workos } = run;
   const browserKeys = createRemoteJWKSet(new URL(workos.userManagement.getJwksUrl(settings.clientId)));
+  const workosHosts = new Set(['api.workos.com', new URL(settings.authkitIssuer).host]);
   const logout = once(async () => {
     const { session, page } = await run.organizationSignIn();
     refreshedToken(await session.refresh());
-    const landing = await openLogoutUrl(page, workos.userManagement.getLogoutUrl({ sessionId: session.sessionId }));
-    return { session, landing };
+    const visit = await openLogoutUrl(page, workos.userManagement.getLogoutUrl({ sessionId: session.sessionId }), workosHosts);
+    return { session, ...visit };
   });
 
   describe('Hosted live proofs: the end of browser sessions', () => {
@@ -89,8 +89,8 @@ export function describeSessionEndingProofs(run: LiveRun): void {
     });
 
     test('Given that logout, when WorkOS ends the session, then the browser lands on the default Sign-out URI https://localhost:46443/', signInOptions, async (t) => {
-      const { landing } = await logout();
-      t.diagnostic(`the browser landed on ${landing}`);
+      const { landing, navigations } = await logout();
+      t.diagnostic(`navigations: ${navigations.join(' > ')}`);
 
       assert.equal(landing, signOutUri, [
         `After the logout, the browser landed on ${landing}, not on the default Sign-out URI ${signOutUri}.`,
@@ -101,15 +101,14 @@ export function describeSessionEndingProofs(run: LiveRun): void {
     test('Given no sign-in request, when a browser opens the AuthKit domain directly, then AuthKit sends it to the Initiate login URI https://localhost:46443/login before any sign-in page', signInOptions, async (t) => {
       const page = await run.browser.newPage();
       try {
-        const navigations: string[] = [];
-        page.on('framenavigated', (frame) => {
-          if (frame === page.mainFrame()) navigations.push(originAndPath(frame.url()));
-        });
-        await stubLocalSite(page);
-        await page.goto(`${settings.authkitIssuer}/`, { waitUntil: 'commit' });
+        const navigations = recordNavigations(page);
+        const initiated = nextNavigation(page, (url) => originAndPath(url) === initiateLoginUri, redirectTimeout);
+        const signInPage = page.locator('input[name=email]').waitFor({ timeout: redirectTimeout }).then(() => true, () => false);
+        // No server listens at the local origin during the provider proofs, so the browser stops at the request to /login.
+        await page.goto(`${settings.authkitIssuer}/`, { waitUntil: 'commit' }).catch(() => undefined);
         const first = await Promise.race([
-          page.waitForURL((url) => originAndPath(url) === initiateLoginUri, { waitUntil: 'commit' }).then(() => 'the Initiate login URI'),
-          page.locator('input[name=email]').waitFor().then(() => 'the AuthKit sign-in page'),
+          initiated.then((reached) => (reached === undefined ? 'no page' : 'the Initiate login URI')),
+          signInPage.then((shown) => (shown ? 'the AuthKit sign-in page' : 'no page')),
         ]);
         t.diagnostic(`navigations: ${navigations.join(' > ')}`);
 

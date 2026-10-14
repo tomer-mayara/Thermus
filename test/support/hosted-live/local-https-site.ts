@@ -19,17 +19,27 @@ interface PortalFile {
   readonly type: string;
 }
 
+interface PortalSite {
+  readonly files: Map<string, PortalFile>;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly thermus: URL;
+}
+
 const portalBuild = fileURLToPath(new URL('../../../../src/user-portal/dist/', import.meta.url));
 const listenAddresses = ['127.0.0.1', '::1'];
 const contentTypes: Readonly<Record<string, string>> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 const hopHeaders = new Set(['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'host', 'content-length', 'proxy-connection']);
-// The portal posts its sign-out form to the server, which sends the browser on to the WorkOS logout URL.
-const portalHeaders = {
-  'Cache-Control': 'no-store',
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'Content-Security-Policy': "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com",
-};
+// The portal posts its sign-out form to the server. Chrome applies form-action also to each redirect after the post:
+// the server sends the browser to the WorkOS logout URL, WorkOS sends it to the logout of the AuthKit domain, and
+// AuthKit sends it to the Sign-out URI of the portal.
+function portalHeaders(authkitIssuer: string): Readonly<Record<string, string>> {
+  return {
+    'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Content-Security-Policy': `default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com ${new URL(authkitIssuer).origin}`,
+  };
+}
 
 class LogLines {
   readonly lines: string[] = [];
@@ -99,10 +109,10 @@ export class LocalHttpsSite {
     const config = loadDeploymentConfig(environment, 'http');
     const application = await createApplication(config, log, environment);
     const thermus = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-    const files = await portalFiles();
+    const site: PortalSite = { files: await portalFiles(), headers: portalHeaders(settings.authkitIssuer), thermus: thermus.url };
     const tls = await selfSignedCertificate(directory);
     const fronts = await Promise.all(listenAddresses.map(async (host) => {
-      const front = createServer(tls, (request, response) => void answer(request, response, { files, thermus: thermus.url }));
+      const front = createServer(tls, (request, response) => void answer(request, response, site));
       front.listen({ host, port: Number(new URL(localOrigin).port) });
       await once(front, 'listening');
       return front;
@@ -121,12 +131,12 @@ export class LocalHttpsSite {
   }
 }
 
-async function answer(request: IncomingMessage, response: ServerResponse, site: { files: Map<string, PortalFile>; thermus: URL }): Promise<void> {
+async function answer(request: IncomingMessage, response: ServerResponse, site: PortalSite): Promise<void> {
   const path = request.url ?? '/';
   const file = request.method === 'GET' || request.method === 'HEAD' ? site.files.get(path) : undefined;
   try {
     if (file) {
-      response.writeHead(200, { ...portalHeaders, 'Content-Type': file.type }).end(request.method === 'HEAD' ? undefined : file.body);
+      response.writeHead(200, { ...site.headers, 'Content-Type': file.type }).end(request.method === 'HEAD' ? undefined : file.body);
       return;
     }
     await forward(request, response, new URL(path, site.thermus));

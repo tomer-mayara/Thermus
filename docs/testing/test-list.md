@@ -1588,7 +1588,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
 
 **Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
 
-These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r4 ran them on 2026-10-14 through the staging launcher. `[V]` marks a test that passed in that run; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran them on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each test passed. `[V]` marks a test that passed in that run; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
 
 Provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
 
@@ -1598,7 +1598,7 @@ Provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of
 [V] The saved redirect URI is exactly `https://localhost:46443/callback`, the default; no CORS origin is saved; the MCP resource indicator `https://localhost:46443/mcp` is saved
 [V] The environment roles have exactly the permissions of the hosted role mapping, and no other role has an application permission
 [V] The authentication settings require MFA, allow password sign-in, and refuse passkeys
-[ ] The hosted sign-in page offers only email sign-in and no social provider: Google, Microsoft, GitHub, and Apple are still on
+[V] The hosted sign-in page offers only email sign-in and no social provider
 [V] A new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
 [V] The browser access token is an RS256 token of the environment client with a `session_` sid, no audience, no organization, and a 300-second lifetime; the sealed session is shorter than 3,800 characters
 [V] A later sign-in asks for the TOTP code, not a new enrollment
@@ -1607,8 +1607,8 @@ Provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of
 [V] The browser refresh token is not rotated in staging; a replay works at once and after 31 seconds
 [V] An operator revocation gives `invalid_grant` without retry, removes the session from the list, and the issued access token verifies until it expires
 [V] The WorkOS logout URL ends the session
-[ ] After the logout, the browser lands on the default Sign-out URI `https://localhost:46443/`: no Sign-out URI is set
-[ ] A visit to the AuthKit domain goes to the Initiate login URI `https://localhost:46443/login`: no Initiate login URI is set
+[V] After the logout, the browser goes through the logout of the AuthKit domain to the default Sign-out URI `https://localhost:46443/`
+[V] A visit to the AuthKit domain goes through `initiate_login` of WorkOS to the Initiate login URI `https://localhost:46443/login` before any sign-in page
 [V] A public PKCE client authorizes through AuthKit with the password, the MFA step, and the consent; the callback has the code and the state
 [V] The code exchange gives a bearer access token, a refresh token, and an ID token
 [V] The Connect access token is RS256 without `typ`, from the AuthKit issuer for the MCP resource, with the user, the MCP client, an `app_consent_` sid, the organization, the scope, `auth_time`, and a 300-second lifetime, and no role or permission claim
@@ -1628,8 +1628,8 @@ AUTH-06 cases of the hosted server (`test/acceptance/auth/hosted-live/hosted-ser
 [V] A browser access token and an M2M token get 401 at the MCP endpoint
 [V] A browser session in one organization and an MCP grant in another keep their own organizations
 [V] An Admin-only member gets 403 `access_denied` at the MCP endpoint
-[ ] An external sign-in through the Initiate login URI `/login` signs the user in: no Initiate login URI is set
-[ ] The sign-out clears the cookie, ends the WorkOS session, and lands on the Sign-out URI with the signed-out portal: no Sign-out URI is set
+[V] An external sign-in through the Initiate login URI `/login` signs the user in
+[V] The sign-out clears the cookie, ends the WorkOS session, and lands on the Sign-out URI with the signed-out portal; the `form-action` of the portal allows the AuthKit domain
 [V] After the 300-second lifetime, a session refreshes with one new cookie and the same form token; a revoked session gives 401 with a cleared cookie; an MCP grant whose consent was revoked works until its token expires and then gives 401
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)

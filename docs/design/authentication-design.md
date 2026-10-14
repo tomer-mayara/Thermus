@@ -982,20 +982,21 @@ staging environment already has:
 - Onboarding: a signed-in user without an active membership gets no tenant
   access.
 
-The provider proofs ran on 2026-10-14 (run r4) through `npm run test:hosted-live`
-and the staging launcher. Playwright 1.64.0 with headless Chromium completes the
-hosted AuthKit pages: the email, the password, the TOTP enrollment or
-verification, the organization choice, and the Connect consent. Each run makes
-its own staging users, organizations, memberships, and Connect applications,
-and deletes them at the end. The callbacks go to `https://localhost:46443/callback`
-and, for the MCP client, to `http://127.0.0.1:46480/callback`; the proofs catch
-them in the browser. These proofs show the provider contracts only. The hosted
-live gate cases of the Thermus server are separate.
+The provider proofs ran on 2026-10-14 (runs r4 and r5) through
+`npm run test:hosted-live` and the staging launcher. Playwright 1.64.0 with
+headless Chromium completes the hosted AuthKit pages: the email, the password,
+the TOTP enrollment or verification, the organization choice, and the Connect
+consent. Each run makes its own staging users, organizations, memberships, and
+Connect applications, and deletes them at the end. The callbacks go to
+`https://localhost:46443/callback` and, for the MCP client, to
+`http://127.0.0.1:46480/callback`; the proofs catch them in the browser. These
+proofs show the provider contracts only. The hosted live gate cases of the
+Thermus server are separate.
 
 | Contract | Live result | Consequence for the hosted implementation |
 | --- | --- | --- |
 | Saved configuration | Redirect URI `https://localhost:46443/callback` (the default), MCP resource indicator `https://localhost:46443/mcp`, no CORS origin, roles `user`, `admin`, `super-admin`, and `member` exactly as in the [hosted role mapping](#hosted-role-mapping), MFA required, password sign-in on, passkeys off. The run r3 saved the redirect URI and the resource indicator through the WorkOS API. | The local HTTPS test server at `https://localhost:46443/` is the documented deployment of the live gate. |
-| Pending configuration | The sign-in page still offers Google, Microsoft, GitHub, and Apple. No default Sign-out URI: the logout lands on `error.workos.com/user_management/app-homepage-url-not-found`. No Initiate login URI: a visit to the AuthKit domain shows the AuthKit sign-in page. The WorkOS API has no endpoint for these three settings. | The owner must change them in the WorkOS dashboard. Until then, these three proofs fail, and the gate does not pass. |
+| Dashboard configuration | Run r5, after the owner saved the three dashboard settings: the sign-in page offers only "Continue with email" and no social provider; the default Sign-out URI is `https://localhost:46443/`; the Initiate login URI is `https://localhost:46443/login`. Run r4 found Google, Microsoft, GitHub, and Apple on, no Sign-out URI (the logout landed on `error.workos.com/user_management/app-homepage-url-not-found`), and no Initiate login URI. The WorkOS API has no endpoint for these three settings. | The owner keeps them in the WorkOS dashboard. The proofs read them back through the sign-in page and the redirects of the logout and of a direct AuthKit visit. |
 | AuthKit metadata | Exact issuer; `jwks_uri` `<issuer>/oauth2/jwks`; grants `authorization_code`, `refresh_token`, and the device code; client authentication `none`, `client_secret_post`, and `client_secret_basic`; scopes `openid`, `profile`, `email`, and `offline_access`; no `registration_endpoint` and no client ID metadata document support. | Dynamic registration and client ID metadata documents are off. An MCP client must be a Connect application. The live proofs make a third-party OAuth application with PKCE through the API. |
 | Key sets | The AuthKit key set and the browser-session key set each hold the same one RS256 key. | The signature of a browser token verifies with the AuthKit key set. The MCP verifier must refuse it by its issuer and its audience. WorkOS did not rotate a key during the proofs; the [offline proofs](#pinned-workos-sdk-proof) show the jose rotation behavior. |
 | Browser sign-in and MFA | A new user: email, password, `/mfa/enrollment` (a TOTP enrollment with a code), then the callback. A later sign-in: `/mfa/verification` instead. A user with two memberships also gets `/organization-selection`. No callback comes before the TOTP step. The code exchange gives `authenticationMethod` `Password`. | Required MFA completes in the real flow. WorkOS gives no MFA claim, so a session counts as MFA-completed only when its sign-in method is `Password` in this environment, which requires MFA for password sign-ins. Any other method gives no MFA evidence. |
@@ -1003,6 +1004,8 @@ live gate cases of the Thermus server are separate.
 | Organization switch | A refresh with another organization ID gives that `org_id` in the same session (same `sid`). A refresh for an organization without a membership throws `OauthException` 400 `organization_membership_not_found`, and the session still refreshes after it. | `selectOrganization()` is a refresh with the organization. That refusal changes no cookie. |
 | Browser refresh | WorkOS did not rotate the browser refresh token. A replay at once gave the same new refresh token, and the old token still worked after 31 seconds. | Each refresh stores the new seal anyway, so a later rotation also works. |
 | Session revocation and logout | After a revocation or after the browser opened the WorkOS logout URL, the refresh gives `invalid_grant` (not retryable), and the session leaves the session list. The access token issued before still verifies for the rest of its 300 seconds. | A terminal refresh failure clears the cookie. A browser session can stay signed in for at most 300 seconds after a logout elsewhere. Access needs a current membership read in each request, so a membership change takes effect at once. |
+| Logout redirects | The WorkOS logout URL ends the session and gives `302` to `<AuthKit domain>/api/logout` with a signed `logout_context` that names the Sign-out URI. That AuthKit step clears the AuthKit cookies `session` and `access-token` and gives `307` to the default Sign-out URI. | The portal sends its sign-out as a form post, and Chrome applies `form-action` to each redirect after it. The Content Security Policy of the portal must allow `https://api.workos.com` and the AuthKit domain. With only `https://api.workos.com`, run r5 showed that Chrome stops the browser at the AuthKit step and shows no page, although WorkOS has ended the session. [The user portal](../user-portal.md#deployment) gives the policy. |
+| Initiate login | A visit to `<AuthKit domain>/` without a sign-in request gives `307` to `https://api.workos.com/user_management/initiate_login?context=&client_id=<client ID>`, which gives `302` to the Initiate login URI without a query. | `GET <base>login` starts a new sign-in with its own state and PKCE. The browser reaches the Initiate login URI and the Sign-out URI only through redirects, so the live gate watches the navigation requests, which include each redirect. |
 | Connect authorization | Email, password, the MFA step, `/application-authorization` (the consent), `/application-authorization/success`, then the callback with the code and the state. A user with one membership gets no organization choice. For a user with several memberships, the consent page has an "Organization access" choice, and "Allow access" waits for it. | The MCP client flow completes MFA and consent in the real flow. The user chooses the organization of each MCP grant at the consent. |
 | Connect access token | RS256 without a `typ` header; `iss` the AuthKit issuer; `aud` the MCP resource; `sub` the user; `client_id` the MCP client; `sid` `app_consent_…`; `org_id` the organization of the grant; `scope` `email offline_access openid profile`; `auth_time` and `jti`; 300-second lifetime. No role or permission claim. The token answer has a refresh token and an ID token. | The verifier checks the exact issuer, the MCP audience, RS256, the time claims, a `sid`, a `scope`, and a `sub` that is not the `client_id`. It requires no particular scope. The organization of the grant comes from `org_id`; the permissions come from fresh reads. |
 | Connect refresh | The refresh rotates the refresh token. The new access token keeps `sub`, `sid`, `org_id`, `client_id`, `aud`, and `iss`. | The organization of an MCP grant stays fixed until the client authorizes again; a browser organization switch does not change it. |
@@ -1019,9 +1022,19 @@ and its metadata; the refusal of browser and M2M tokens; the organization of
 each credential; MCP denial for Admin alone; and, after the 300-second token
 lifetime, the refresh with a new cookie and the same form token, the end of a
 revoked session, and the end of an MCP grant whose consent was revoked. The
-external sign-in through `/login` and the landing after the sign-out wait for
-the Initiate login URI and the default Sign-out URI of the staging
+external sign-in through `/login` and the landing after the sign-out waited
+for the Initiate login URI and the default Sign-out URI of the staging
 environment.
+
+Run r5 ran the complete command again on 2026-10-14, after the owner saved the
+three dashboard settings: each of its 43 tests passed, the provider proofs and
+the ten AUTH-06 cases. In the external sign-in, a visit to the AuthKit domain
+goes through `initiate_login` of WorkOS to `/login` of the server, which starts
+a sign-in; the user completes it with MFA and ends signed in on the portal.
+The sign-out clears the session cookie, ends the WorkOS session, and goes
+through the logout of the AuthKit domain to the Sign-out URI, which shows the
+signed-out portal. That landing needed the AuthKit domain in the `form-action`
+of the portal; the [logout redirects](#live-provider-proofs) give the reason.
 
 The proofs of the outage of a key set or of the refresh service stay offline:
 the pinned SDK and jose throw or return a retryable result, as the
@@ -1165,8 +1178,10 @@ signed-in session:
   refused code gives `400` and no session.
 - `POST <base>logout` needs the public origin and the CSRF token of the
   session. It clears the session cookie and sends the browser to the WorkOS
-  logout URL of the session. WorkOS ends the session and sends the browser to
-  the default Sign-out URI of the environment.
+  logout URL of the session. WorkOS ends the session and sends the browser
+  through the logout of the AuthKit domain to the default Sign-out URI of the
+  environment. The `form-action` of the portal must allow both WorkOS origins;
+  the [logout redirects](#live-provider-proofs) give the reason.
 - `GET <base>session` gives the portal its JSON: `401` when signed out, or the
   profile, the organization, the MFA evidence, and the CSRF token of the
   session. These values are display data; they give no access.

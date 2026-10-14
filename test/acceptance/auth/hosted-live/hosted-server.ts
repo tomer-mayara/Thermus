@@ -7,6 +7,7 @@ import { refreshedAccessToken } from '../../../support/hosted-live/browser-sessi
 import { authorizeWithConnect, type ConnectGrant } from '../../../support/hosted-live/connect-grant.ts';
 import { issuedTokens, requestMachineTokens } from '../../../support/hosted-live/connect-client.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
+import { nextNavigation, originAndPath, recordNavigations } from '../../../support/hosted-live/navigations.ts';
 import { initiateLoginUri, localOrigin, mcpResource, signOutUri } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 import { readToken, secondsLeft } from '../../../support/hosted-live/tokens.ts';
@@ -15,6 +16,7 @@ import { mcpRequest } from '../../../unit/mcp/fixtures/mcp-http-request.ts';
 
 const signInOptions = { timeout: 240_000 };
 const expiryOptions = { timeout: 600_000 };
+const redirectTimeout = 15_000;
 const sessionCookie = '__Host-thermus-session';
 const signInCookie = '__Host-thermus-sign-in';
 // A browser access token and a Connect access token live for 300 seconds; a little more lets both expire.
@@ -30,10 +32,6 @@ interface ServerAnswer {
   readonly status: number;
   readonly body: string;
   readonly setCookies: readonly string[];
-}
-
-function origin(url: string): string {
-  return new URL(url).origin;
 }
 
 async function serverGet(page: Page, path: string): Promise<ServerAnswer> {
@@ -179,14 +177,12 @@ export function describeHostedServerCases(run: LiveRun): void {
       await run.site();
       const { connectUser } = await run.fixtures();
       const page = await run.browser.newPage();
-      const navigations: string[] = [];
-      page.on('framenavigated', (frame) => {
-        if (frame === page.mainFrame()) navigations.push(`${origin(frame.url())}${new URL(frame.url()).pathname}`);
-      });
+      const navigations = recordNavigations(page);
+      const initiated = nextNavigation(page, (url) => originAndPath(url) === initiateLoginUri, redirectTimeout);
       await page.goto(`${settings.authkitIssuer}/`);
-      await page.waitForURL((url) => `${url.origin}${url.pathname}` === initiateLoginUri, { waitUntil: 'commit', timeout: 15_000 }).catch(() => undefined);
+      const reached = await initiated;
       t.diagnostic(`navigations: ${navigations.join(' > ')}`);
-      assert.ok(navigations.includes(initiateLoginUri), [
+      assert.equal(reached, initiateLoginUri, [
         `A direct visit to ${settings.authkitIssuer}/ did not reach the Initiate login URI ${initiateLoginUri}.`,
         `The owner must set the Initiate login URI of the staging environment to ${initiateLoginUri} in the WorkOS dashboard.`,
       ].join(' '));
@@ -200,6 +196,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       const { organizationB, twoOrganizationUser } = await run.fixtures();
       const { page } = await signInThroughPortal(twoOrganizationUser, organizationB.name);
       const activeBefore = await activeSessionsOf(run, twoOrganizationUser.id);
+      const navigations = recordNavigations(page);
       const logout = page.waitForRequest((request) => request.url().startsWith('https://api.workos.com/user_management/sessions/logout'), { timeout: 15_000 });
       // The sign-out URI is the URL of the portal itself, so only a new navigation shows the landing.
       const landing = page.waitForEvent('framenavigated', { predicate: (frame) => frame === page.mainFrame(), timeout: 15_000 }).then((frame) => frame.url(), () => undefined);
@@ -208,7 +205,8 @@ export function describeHostedServerCases(run: LiveRun): void {
       const landed = await landing;
       const cookies = await page.context().cookies(localOrigin);
       const activeAfter = await activeSessionsOf(run, twoOrganizationUser.id);
-      const landedAt = landed === undefined ? 'no page: the browser stopped after the WorkOS logout URL' : `${origin(landed)}${new URL(landed).pathname}`;
+      const landedAt = landed === undefined ? 'no page: the browser stopped after the WorkOS logout URL' : originAndPath(landed);
+      t.diagnostic(`navigations: ${navigations.join(' > ')}`);
       t.diagnostic(`landing after the sign-out: ${landedAt}; active WorkOS sessions of the user: ${activeBefore} before, ${activeAfter} after`);
 
       assert.equal(cookies.some(({ name }) => name === sessionCookie), false, 'The session cookie stayed after the sign-out.');
@@ -216,7 +214,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       assert.equal(landedAt, signOutUri, [
         `After the sign-out, the browser reached ${landedAt}, not the Sign-out URI ${signOutUri}.`,
         `The owner must set the default Sign-out URI of the staging environment to ${signOutUri} in the WorkOS dashboard.`,
-        'The portal allows a form redirect only to its own origin and to api.workos.com.',
+        'The portal allows a form redirect only to its own origin, to api.workos.com, and to the AuthKit domain.',
       ].join(' '));
       await page.getByRole('button', { name: 'Sign In' }).waitFor();
       await page.context().close();

@@ -50,9 +50,16 @@ other request to the server:
   and the protected-resource metadata at the root.
 
 The Vite build uses absolute asset paths, so the base path must be `/`. Send
-the portal pages with a Content Security Policy that allows the form action of
-the sign-out redirect, for example
-`default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com`.
+the portal pages with a Content Security Policy whose `form-action` allows each
+redirect of the sign-out. Chrome applies `form-action` also to the redirects
+after a form post, and stops the browser at the first redirect that the policy
+does not allow. The sign-out form goes to `logout` of the server. The server
+sends the browser to the WorkOS logout URL at `https://api.workos.com`. WorkOS
+sends it to the logout of the AuthKit domain, `<AuthKit domain>/api/logout`,
+which clears the AuthKit cookies. AuthKit then sends it to the Sign-out URI of
+the portal. For the AuthKit domain of `WORKOS_AUTHKIT_ISSUER`, for example
+`https://auth.example.com`, use
+`default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com https://auth.example.com`.
 
 The hosted live gate uses this layout at `https://localhost:46443/`. Its local
 HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
@@ -62,9 +69,15 @@ environment has these settings for it:
 
 - Redirect URI (the default): `https://localhost:46443/callback`.
 - Default Sign-out URI: `https://localhost:46443/`.
-- Initiate login URI: `https://localhost:46443/login`.
+- Initiate login URI: `https://localhost:46443/login`. A visit to the AuthKit
+  domain without a sign-in request goes through
+  `https://api.workos.com/user_management/initiate_login` to this route, which
+  starts the sign-in.
 - MCP resource indicator: `https://localhost:46443/mcp`.
 - CORS origins: none. The portal makes no request to WorkOS.
+
+The test server sends the portal pages with the Content Security Policy above,
+with the AuthKit domain of the staging environment.
 
 For another deployment, replace the origin in each of these settings and in
 `PUBLIC_BASE_URL` and `WORKOS_REDIRECT_URI`.

@@ -354,7 +354,10 @@ Configure the staging environment as the hosted edition needs it:
 The WorkOS API can save the redirect URI and the resource indicator. The
 social providers, the Sign-out URI, and the Initiate login URI are dashboard
 settings. The configuration proofs of the gate read back each setting that the
-API or the hosted pages show.
+API or the hosted pages show. The session-end proofs follow the redirects of
+the WorkOS logout to the Sign-out URI and of a direct AuthKit visit to the
+Initiate login URI. A redirect is not a page, so these proofs watch the
+navigation requests of the browser.
 
 The gate also needs:
 
