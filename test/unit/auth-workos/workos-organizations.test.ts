@@ -1,0 +1,239 @@
+import assert from 'node:assert/strict';
+import { describe, test } from 'node:test';
+import type { ListOrganizationMembershipsOptions, OrganizationMembershipStatus } from '@workos-inc/node';
+import { HostedRoleConfigurationError, WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
+
+interface MembershipRecord {
+  readonly userId: string;
+  readonly organizationId: string;
+  readonly status: OrganizationMembershipStatus;
+  readonly roles?: readonly { readonly slug: string }[];
+}
+
+interface RoleRecord {
+  readonly slug: string;
+  readonly permissions: readonly string[];
+}
+
+interface ReadAnswers {
+  readonly memberships?: readonly MembershipRecord[];
+  readonly after?: string | null;
+  readonly roles?: readonly RoleRecord[];
+  readonly membershipFailure?: Error;
+  readonly roleFailure?: Error;
+}
+
+const alice = 'user_01ALICE';
+const acme = 'org_01ACME';
+
+// The roles of the WorkOS staging environment, which follow the hosted role mapping.
+function stagingRoles(): RoleRecord[] {
+  return [
+    { slug: 'member', permissions: [] },
+    { slug: 'user', permissions: ['product:access'] },
+    { slug: 'admin', permissions: ['user-grants:manage'] },
+    { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] },
+  ];
+}
+
+function rolesWith(slug: string, permissions: readonly string[]): RoleRecord[] {
+  return [...stagingRoles().filter((role) => role.slug !== slug), { slug, permissions }];
+}
+
+function activeMembership(roleSlugs: readonly string[] | undefined, changes: Partial<MembershipRecord> = {}): MembershipRecord {
+  return {
+    userId: alice,
+    organizationId: acme,
+    status: 'active',
+    ...(roleSlugs === undefined ? {} : { roles: roleSlugs.map((slug) => ({ slug })) }),
+    ...changes,
+  };
+}
+
+// Records each SDK read, so that a test can check the exact query.
+class WorkOSReadsDouble {
+  readonly membershipReads: ListOrganizationMembershipsOptions[] = [];
+  readonly roleReads: string[] = [];
+  private readonly answers: ReadAnswers;
+
+  constructor(answers: ReadAnswers) {
+    this.answers = answers;
+  }
+
+  readonly userManagement = {
+    listOrganizationMemberships: async (options: ListOrganizationMembershipsOptions) => {
+      this.membershipReads.push(options);
+      if (this.answers.membershipFailure !== undefined) throw this.answers.membershipFailure;
+      return { data: this.answers.memberships ?? [], listMetadata: { before: null, after: this.answers.after ?? null } };
+    },
+  };
+
+  readonly authorization = {
+    listOrganizationRoles: async (organizationId: string) => {
+      this.roleReads.push(organizationId);
+      if (this.answers.roleFailure !== undefined) throw this.answers.roleFailure;
+      return { object: 'list' as const, data: this.answers.roles ?? stagingRoles() };
+    },
+  };
+}
+
+function grantsWith(answers: ReadAnswers) {
+  const reads = new WorkOSReadsDouble(answers);
+  return { reads, grants: () => new WorkOSOrganizations(reads).activeGrants(alice, acme) };
+}
+
+async function assertConfigurationError(read: Promise<unknown>, ...parts: RegExp[]): Promise<void> {
+  await assert.rejects(read, (error: unknown) => {
+    assert.ok(error instanceof HostedRoleConfigurationError, String(error));
+    assert.equal(error.name, 'HostedRoleConfigurationError');
+    for (const part of parts) assert.match(error.message, part);
+    return true;
+  });
+}
+
+describe('WorkOSOrganizations active grants', () => {
+  test('Given an active membership with the roles user and admin, when its grants are read, then each role gives one frozen grant with its application permissions in the order of the membership, after one exact membership read and one role read', async () => {
+    const { reads, grants } = grantsWith({ memberships: [activeMembership(['user', 'admin'])] });
+
+    const result = await grants();
+
+    assert.deepEqual(result, [
+      { role: 'user', permissions: ['product:access'] },
+      { role: 'admin', permissions: ['user-grants:manage'] },
+    ]);
+    assert.ok(result !== undefined && Object.isFrozen(result));
+    assert.ok(result.every((grant) => Object.isFrozen(grant) && Object.isFrozen(grant.permissions)));
+    assert.deepEqual(reads.membershipReads, [{ userId: alice, organizationId: acme, statuses: ['active'], limit: 10 }]);
+    assert.deepEqual(reads.roleReads, [acme]);
+  });
+
+  test('Given the roles super-admin, member, and user, when the grants are read, then each role stays an independent grant and no highest role replaces the others', async () => {
+    const { grants } = grantsWith({ memberships: [activeMembership(['super-admin', 'member', 'user'])] });
+
+    assert.deepEqual(await grants(), [
+      { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] },
+      { role: 'member', permissions: [] },
+      { role: 'user', permissions: ['product:access'] },
+    ]);
+  });
+
+  test('Given only the default role, when the grants are read, then the one grant gives no permission', async () => {
+    const { grants } = grantsWith({ memberships: [activeMembership(['member'])] });
+
+    assert.deepEqual(await grants(), [{ role: 'member', permissions: [] }]);
+  });
+
+  test('Given no active membership, when the grants are read, then the answer is undefined and the roles are not read', async () => {
+    const { reads, grants } = grantsWith({ memberships: [] });
+
+    assert.equal(await grants(), undefined);
+    assert.equal(reads.membershipReads.length, 1);
+    assert.deepEqual(reads.roleReads, []);
+  });
+
+  test('Given two reads of the same membership, when the grants are read, then each read asks WorkOS again, because no grant is kept', async () => {
+    const reads = new WorkOSReadsDouble({ memberships: [activeMembership(['user'])] });
+    const organizations = new WorkOSOrganizations(reads);
+
+    await organizations.activeGrants(alice, acme);
+    await organizations.activeGrants(alice, acme);
+
+    assert.equal(reads.membershipReads.length, 2);
+    assert.deepEqual(reads.roleReads, [acme, acme]);
+  });
+
+  test('Given roles with permissions that only WorkOS knows, when the grants are read, then the grants keep only application permissions and the mapping stays valid', async () => {
+    const roles = [
+      { slug: 'member', permissions: ['widgets:read'] },
+      { slug: 'user', permissions: ['widgets:read', 'product:access'] },
+      { slug: 'admin', permissions: ['user-grants:manage'] },
+      { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage', 'widgets:write'] },
+    ];
+    const { grants } = grantsWith({ memberships: [activeMembership(['user', 'member'])], roles });
+
+    assert.deepEqual(await grants(), [
+      { role: 'user', permissions: ['product:access'] },
+      { role: 'member', permissions: [] },
+    ]);
+  });
+
+  test('Given the permissions of super-admin in another order, when the grants are read, then the mapping is valid', async () => {
+    const roles = rolesWith('super-admin', ['billing:manage', 'admin-grants:manage']);
+    const { grants } = grantsWith({ memberships: [activeMembership(['super-admin'])], roles });
+
+    assert.deepEqual(await grants(), [{ role: 'super-admin', permissions: ['billing:manage', 'admin-grants:manage'] }]);
+  });
+
+  for (const { label, answers, parts } of [
+    {
+      label: 'a default role that gives product:access',
+      answers: { memberships: [activeMembership(['member'])], roles: rolesWith('member', ['product:access']) },
+      parts: [/\bmember\b/, /no application permission/],
+    },
+    {
+      label: 'another role with an application permission',
+      answers: { memberships: [activeMembership(['user'])], roles: [...stagingRoles(), { slug: 'auditor', permissions: ['billing:manage'] }] },
+      parts: [/\bauditor\b/, /no application permission/],
+    },
+    {
+      label: 'no admin role',
+      answers: { memberships: [activeMembership(['user'])], roles: stagingRoles().filter((role) => role.slug !== 'admin') },
+      parts: [/\badmin\b/, /does not exist/],
+    },
+    {
+      label: 'a user role without product:access',
+      answers: { memberships: [activeMembership(['user'])], roles: rolesWith('user', []) },
+      parts: [/\buser\b/, /exactly the application permissions product:access/],
+    },
+    {
+      label: 'an admin role that also gives admin-grants:manage',
+      answers: { memberships: [activeMembership(['admin'])], roles: rolesWith('admin', ['user-grants:manage', 'admin-grants:manage']) },
+      parts: [/\badmin\b/, /exactly the application permissions user-grants:manage/],
+    },
+    {
+      label: 'a membership role that the organization does not have',
+      answers: { memberships: [activeMembership(['user', 'ghost'])] },
+      parts: [/\bghost\b/, /no role with this slug/],
+    },
+    {
+      label: 'a membership without a role list',
+      answers: { memberships: [activeMembership(undefined)] },
+      parts: [/no role list/, /multiple roles/],
+    },
+  ] satisfies { label: string; answers: ReadAnswers; parts: RegExp[] }[]) {
+    test(`Given ${label}, when the grants are read, then a HostedRoleConfigurationError names the role and the rule, and no grant is given`, async () => {
+      const { grants } = grantsWith(answers);
+
+      await assertConfigurationError(grants(), ...parts, new RegExp(acme));
+    });
+  }
+
+  for (const { label, answers } of [
+    { label: 'two active memberships', answers: { memberships: [activeMembership(['user']), activeMembership(['admin'])] } },
+    { label: 'a cursor of a next page', answers: { memberships: [activeMembership(['user'])], after: 'om_02' } },
+    { label: 'the membership of another user', answers: { memberships: [activeMembership(['user'], { userId: 'user_02BOB' })] } },
+    { label: 'the membership of another organization', answers: { memberships: [activeMembership(['user'], { organizationId: 'org_02GLOBEX' })] } },
+    { label: 'an inactive membership', answers: { memberships: [activeMembership(['user'], { status: 'inactive' })] } },
+  ] satisfies { label: string; answers: ReadAnswers }[]) {
+    test(`Given a membership read that answers ${label}, when the grants are read, then the read fails and gives no grant`, async () => {
+      const { reads, grants } = grantsWith(answers);
+
+      await assert.rejects(grants(), (error: unknown) => {
+        assert.ok(error instanceof Error && !(error instanceof HostedRoleConfigurationError), String(error));
+        assert.match(error.message, /WorkOS/);
+        assert.doesNotMatch(error.message, /user_01ALICE|user_02BOB/);
+        return true;
+      });
+      assert.deepEqual(reads.roleReads, []);
+    });
+  }
+
+  for (const step of ['membershipFailure', 'roleFailure'] as const) {
+    test(`Given a WorkOS read that fails (${step}), when the grants are read, then the same error reaches the caller, so access fails closed`, async () => {
+      const failure = new Error('WorkOS answered HTTP 503');
+      const { grants } = grantsWith({ memberships: [activeMembership(['user'])], [step]: failure });
+
+      await assert.rejects(grants(), (error) => error === failure);
+    });
+  }
+});

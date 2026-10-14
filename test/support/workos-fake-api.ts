@@ -24,7 +24,7 @@ export interface FakeResponse {
 }
 
 export type FakeAnswer = FakeResponse | 'hang' | 'close';
-type Responder = FakeAnswer | ((request: RecordedRequest) => FakeAnswer);
+type Responder = FakeAnswer | ((request: RecordedRequest) => FakeAnswer | Promise<FakeAnswer>);
 
 export class KeySetEndpoint {
   #keys: readonly SigningKey[] = [];
@@ -101,7 +101,7 @@ export class WorkOSFakeApi {
     this.#requests.push(recorded);
     const route = `${recorded.method} ${recorded.path.split('?')[0]}`;
     const responder = this.#responders.get(route) ?? { status: 501, body: { message: `No answer is scripted for ${route}` } };
-    send(typeof responder === 'function' ? responder(recorded) : responder, request, response);
+    send(typeof responder === 'function' ? await responder(recorded) : responder, request, response);
   }
 }
 
