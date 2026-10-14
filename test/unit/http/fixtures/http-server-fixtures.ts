@@ -60,6 +60,11 @@ export class RawConnection {
     return this;
   }
 
+  sendMore(body: string): this {
+    this.socket.write(body);
+    return this;
+  }
+
   async received(part: string): Promise<string> {
     while (!this.text.includes(part)) await once(this.socket, 'data');
     return this.text;

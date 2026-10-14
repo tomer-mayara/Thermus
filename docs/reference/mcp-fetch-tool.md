@@ -197,6 +197,19 @@ client cancellation does not delay the server stop that follows. The connection
 of the cancelled call closes when the client aborts it. A connection with a
 request in progress keeps the drain and the grace period, 5 seconds by default.
 
+When shutdown starts while a request is still in authentication, MCPServer
+refuses the request after that step, and the client gets a generic `500`. The
+SDK has not read the request body. Node counts a connection as idle only after
+it has read the complete request, and the response can finish before that:
+Node stops reading an unread body at its buffer limit and discards the rest
+after the response, and a handler can answer while Node still reads the body.
+Thus `listener.close()` ends the connection of a finished response when Node
+has read the complete request, not when the response finishes. The refusal
+does not delay the server stop. A client that has not sent all of the body
+keeps its connection until it sends the rest, up to the grace period. To end
+the connection earlier can reset it, and the client can then lose the
+response.
+
 The first application close call supplies the listener drain promise. Repeated
 and concurrent close calls share cleanup. Owned transports and request servers
 close once, and cleanup failures remain visible even when the SDK catches them.

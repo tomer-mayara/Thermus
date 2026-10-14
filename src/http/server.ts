@@ -1,5 +1,5 @@
 import { once } from 'node:events';
-import { createServer, type Server } from 'node:http';
+import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo, Socket } from 'node:net';
 import type { ListenAddress } from '../config/deployment-config.ts';
 import { serve, type Bridge, type FetchHandler } from './fetch-exchange.ts';
@@ -25,9 +25,9 @@ export async function startHttpServer(handler: FetchHandler, options: HttpServer
   const bridge: Bridge = { handler, publicOrigin: new URL(options.publicBaseUrl).origin, logger: options.logger };
   const server = createServer((incoming, outgoing) => {
     // After close(), Node keeps a finished keep-alive connection open until its timeout.
-    outgoing.once('finish', () => {
+    outgoing.once('finish', () => afterRequestEnds(incoming, () => {
       if (!server.listening) server.closeIdleConnections();
-    });
+    }));
     void serve(bridge, incoming, outgoing);
   });
   const connections = trackConnections(server);
@@ -47,6 +47,14 @@ function listenUrl(server: Server): URL {
   const { address, port } = server.address() as AddressInfo;
   const host = address.includes(':') ? `[${address}]` : address;
   return new URL(`http://${host}:${port}/`);
+}
+
+// Node counts a connection as idle only after it has read the complete request. A response can end before that: Node
+// stops reading an unread body at its buffer limit and discards the rest after the response, a handler can answer
+// while Node still reads the body, and a client can still send it.
+function afterRequestEnds(incoming: IncomingMessage, action: () => void): void {
+  if (incoming.complete) action();
+  else incoming.once('end', action);
 }
 
 function trackConnections(server: Server): ReadonlySet<Socket> {
