@@ -12,6 +12,8 @@ Purpose: start the fetch tool with the mock provider of the acceptance tests,
 connect an LLM client to the tool, and monitor each fetch in Axiom.
 
 - Entry point: `basic-mcp-url-fetch.ts`. Acceptance test: `basic-mcp-url-fetch.test.ts`.
+  The entry point also exports the composition for the tests and runs only
+  when it is executed directly.
 - Command, from the repository root: `pnpm work-slice:basic-mcp-url-fetch`.
 - Before you start the script, make sure that you have these items. The script
   reads the settings of the server:

@@ -926,7 +926,7 @@ The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` doubl
 npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
 ```
 
-**Work slice: basic MCP URL fetch** (`test/unit/work-slice/work-slice-application.test.ts`)
+**Work slice: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch.test.ts`)
 
 A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
 
@@ -936,7 +936,7 @@ A double stands in for the fetch operation, and a recording logger stands in for
 [V] Gives the operation the same URL, request context, and signal
 
 ```sh
-npm run build && node --test dist/test/unit/work-slice/work-slice-application.test.js
+npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch.test.js
 ```
 
 ### Planned Cache Key Tests
@@ -1590,7 +1590,7 @@ npm run test:mcp:renderer
 
 **Work slice: basic MCP URL fetch** (`test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`)
 
-`createWorkSliceApplication()` composes the production parts with the mock provider and the trusted rules fixture, `test/support/fixtures/trusted-ad-rules.txt`. The test starts the production HTTP bridge itself. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
+`createWorkSliceApplication()` composes the production parts with the mock provider and the trusted rules fixture, `test/support/fixtures/trusted-ad-rules.txt`. The entry point `basic-mcp-url-fetch.ts` exports `createWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
 
 [V] Given the work-slice application with the mock provider, the trusted rules fixture, and a renderer double that serves `https://news.example/story`, when an MCP client in each protocol era with the token `any-token` lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the fixture rule for `news.example` removes, the log has the started line, the completed line, and one completion record, and `close()` stops the application
 [V] Given the work-slice application, when a request has no `Authorization` header, then it gets 401 with a Bearer challenge, a request to another path gets 404, no renderer starts, and the log has no fetch line

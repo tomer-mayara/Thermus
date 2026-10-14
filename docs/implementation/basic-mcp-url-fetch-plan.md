@@ -63,8 +63,9 @@ of the server: `PUBLIC_BASE_URL=http://127.0.0.1:8080`, an empty
 empty. Claude Code connected with the static header, and a non-interactive
 session read `https://www.iana.org/help/example-domains` through the tool and
 summarized it. Axiom held the four events of the run, now with the production
-call sites: `index.ts` for the listening line, `work-slice-application.ts` for
-the started and completed lines, and `fetch-tool-server.ts` for the record.
+call sites: `index.ts` for the listening line, `work-slice-application.ts`
+(now in the entry point) for the started and completed lines, and
+`fetch-tool-server.ts` for the record.
 `SIGINT` gave exit status 0, so every export was accepted.
 
 ## Goal
@@ -106,7 +107,7 @@ Each decision has a default. Confirm or change it before step 1.
 
 | ID | Decision | Default | Alternative |
 | --- | --- | --- | --- |
-| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. The composition module is `test/support/work-slice/work-slice-application.ts`. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
+| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. The composition in the entry point, which the tests import; it runs only when executed directly. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
 | D2 | Page text in the logs | The slice logs the full requested URL before the fetch and the Markdown after it, cut at 65,536 code points. These two lines come from the slice only. The production completion record stays as it is. | Log only the Markdown length. |
 | D3 | Axiom dataset and settings | Reuse `axiomTestSettings()`: `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL`, and the dataset `system-log-test`, from the environment or from `.env.local`. | A new reader for a dedicated dataset. |
 | D4 | LLM client | Claude Code with a static `Authorization` header. | Codex with `http_headers` in `~/.codex/config.toml`. |
@@ -126,11 +127,10 @@ src/fetch-tool.ts                                     createFetchOperation(envir
 src/mcp/get-url-as-markdown.ts                        the FetchOperation type, now exported
 src/index.ts                                          serveApplication(open, options), ProcessSignals, and ServeOptions, now exported
 test/acceptance/work-slice/README.md                  A short description of each work slice
-test/acceptance/work-slice/basic-mcp-url-fetch.ts     The entry point: settings, renderer check, Axiom logging, serveApplication()
+test/acceptance/work-slice/basic-mcp-url-fetch.ts     The entry point and the composition: createWorkSliceApplication(), observeFetches(), MARKDOWN_LOG_LIMIT; it runs only when executed directly
 test/acceptance/work-slice/basic-mcp-url-fetch.test.ts   The acceptance test
-test/support/work-slice/work-slice-application.ts     observeFetches(), MARKDOWN_LOG_LIMIT, and createWorkSliceApplication(environment, logger)
 test/support/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
-test/unit/work-slice/work-slice-application.test.ts   observeFetches()
+test/unit/work-slice/basic-mcp-url-fetch.test.ts      observeFetches()
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
 
@@ -146,7 +146,9 @@ not expose the operation, so `createFetchOperation()` now makes the operation.
 `src/application.ts`, `src/auth/local-auth/local-auth-command.ts`, and
 `src/mcp/fetch-tool-server.ts` use the new exports. No production behavior
 changes. `tsconfig.json` does not change, because `test/` is already in its
-`include` list. The entry point imports from `src/` and from `test/support/`.
+`include` list. The entry point is also the composition module. It runs only
+when it is executed directly, with the guard of `src/index.ts`, so the tests
+import it.
 
 ### Settings
 
@@ -296,9 +298,9 @@ for both protocol eras of `mcpProtocolEras`.
 
 ### Unit
 
-- `work-slice-application.test.ts`: `observeFetches()` with an operation
-  double: the started and completed lines, the cut at the limit, the failed
-  line, and the error that passes through.
+- `test/unit/work-slice/basic-mcp-url-fetch.test.ts`: `observeFetches()` with
+  an operation double: the started and completed lines, the cut at the limit,
+  the failed line, and the error that passes through.
 - The production seams have their own cases: the failure cases of
   `console-logger.test.ts` for `BaseLogger.messageOf()`, a `loadPublicUrls()`
   case in `deployment-config.test.ts`, and a `serveApplication()` case in
@@ -322,10 +324,12 @@ npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/
 ## Steps
 
 Steps 0 to 6 record the first delivery, before the refactoring of 2026-10-14.
-For a new run, the slice also needs `PUBLIC_BASE_URL` and `AD_RULES_FILE`, as
-the server does. The log lines go to Axiom only, so the script terminal shows
-no log line. The [work slice guide](../../test/acceptance/work-slice/README.md)
-lists the settings.
+The folder `test/support/work-slice/` of steps 1 to 3 does not exist now; the
+composition is in the entry point. For a new run, the slice also needs
+`PUBLIC_BASE_URL` and `AD_RULES_FILE`, as the server does. The log lines go to
+Axiom only, so the script terminal shows no log line. The
+[work slice guide](../../test/acceptance/work-slice/README.md) lists the
+settings.
 
 ### Step 0: prerequisites on this Mac
 
