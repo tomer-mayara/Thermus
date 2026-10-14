@@ -38,8 +38,10 @@ organizations from WorkOS, and the
 [operator runbook](../implementation/hosted-organization-setup.md) gives the
 operator setup and recovery. Its live cases and the proofs of the runbook steps
 passed in run r2 of AUTH-07W, with the complete command. The completed MFA of
-the operator, which the runbook requires, has no proof yet: the WorkOS API
-cannot show it, and the owner decides how it is proven. AUTH-08W, the
+the operator, which the runbook requires, is a manual precondition without a
+proof, because the WorkOS API cannot show it. The owner removed this proof from
+AUTH-07W, and a separate decision ticket decides how it is enforced and proven
+(see [live provider proofs](#live-provider-proofs)). AUTH-08W, the
 member and invitation reads and changes in WorkOS, and the paid billing of
 slice 6 are pending. Until AUTH-08W, the member and invitation pages and their
 changes are not available in production. The first hosted release also
@@ -1090,9 +1092,12 @@ The AUTH-07W proofs are in `test/acceptance/auth/hosted-live/operator-setup.ts`.
 They run the steps of the
 [operator runbook](../implementation/hosted-organization-setup.md) through the
 test-support driver `test/support/hosted-live/operator-runbook.ts`. The AUTH-07W
-cases of the hosted server are in `hosted-live/organization-server.ts`. No proof can show the completed operator
-MFA that the runbook requires, because the WorkOS API does not show it. How it
-is proven waits for a decision of the owner.
+cases of the hosted server are in `hosted-live/organization-server.ts`. No
+proof can show the completed operator MFA that the runbook requires, because
+the WorkOS API does not show it, so the runbook makes it a manual precondition.
+On 2026-10-14, the owner removed this proof from AUTH-07W. The decision ticket
+`ae984833-e115-4da9-bebe-7c4b1fb1a025` decides how the operator MFA is enforced
+and proven.
 
 AUTH-07W run r1 ran the complete command on 2026-10-14: 56 of its 57 tests
 passed, so it is not a pass. The failed proof found that WorkOS does not replay
@@ -1639,7 +1644,10 @@ billing changes: actor, organization, target, changed grants or action, time,
 and outcome. Exclude credentials. Full audit-log features and step-up policy
 remain later work. AUTH-08 requires MFA and keeps these records for the role
 and invitation changes. An `AccountOperation` gets no MFA evidence yet, so the
-billing change operation of AUTH-11 must add it before it can require MFA.
+billing change operation of AUTH-11 must add it before it can require MFA. For
+the operator, the [operator runbook](../implementation/hosted-organization-setup.md#before-you-start)
+makes completed MFA a manual precondition; a separate decision of the owner
+decides how it is enforced and proven.
 
 Use WorkOS membership and role APIs with explicit status filters. Prove
 multi-role read/write behavior, effective permissions, safe grant removal, and

@@ -551,10 +551,12 @@ changes that they prove stay unavailable until those cases pass.
 
 Record the results of the AUTH-07W proofs and cases separately in the same
 way. Run r2 of AUTH-07W on 2026-10-14 passed them with the complete command:
-57 of 57 tests. The runbook also requires a completed operator
-MFA before each write ([before you start](hosted-organization-setup.md#before-you-start)).
-The WorkOS API cannot show a completed operator MFA, so the gate cannot prove
-it. How it is proven waits for a decision of the owner.
+57 of 57 tests. The runbook also requires a completed operator MFA before each
+write ([before you start](hosted-organization-setup.md#before-you-start)). This
+precondition is a manual check of the operator, not a part of this gate: the
+WorkOS API cannot show a completed operator MFA. On 2026-10-14, the owner
+removed its proof from AUTH-07W. The decision ticket
+`ae984833-e115-4da9-bebe-7c4b1fb1a025` decides how it is enforced and proven.
 
 Until the AUTH-06 cases pass, the hosted edition is not released. The
 [hosted offline checks](#hosted-offline-checks) never count as this gate.

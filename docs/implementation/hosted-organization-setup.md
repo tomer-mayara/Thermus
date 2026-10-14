@@ -37,9 +37,11 @@ runs these steps against the WorkOS staging environment. The section
    that signed-in work: in the dashboard, or with the API key of the environment
    in a command that you start for one step. Keep the API key only in a secret
    store that needs your MFA. Never put it in a file, a log, a ticket, a record,
-   or a shell history. The WorkOS API cannot show a completed operator MFA, so
-   the hosted live gate cannot check this precondition. The owner decides how
-   it is proven; until then, it is a manual check.
+   or a shell history. This precondition is a manual check: you make sure of
+   it yourself before each write. No test checks it, also not the hosted live
+   gate, because the WorkOS API cannot show a completed operator MFA. The owner
+   decides in the decision ticket `ae984833-e115-4da9-bebe-7c4b1fb1a025` how
+   the operator MFA is enforced and proven.
 2. **The request.** Get, in writing, from the person who asks for the change:
    the organization name, the external ID of the organization, the email of the
    intended Super Admin, and the reason. The external ID is the customer
@@ -243,6 +245,10 @@ found:
 - WorkOS accepted a create for an existing active membership and changed
   nothing: no second membership, and the roles stayed. The runbook still never
   sends a create for an existing membership.
+
+The proofs use the API key of the staging environment. They do not prove the
+completed operator MFA of [Before you start](#before-you-start): it stays a
+manual check.
 
 ## Limits
 
