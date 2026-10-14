@@ -14,6 +14,7 @@ import type {
   OrganizationMembership,
   Page,
 } from '../../../organizations/organization-directory.ts';
+import { grantsOfRoles, HostedRoleConfigurationError, type RoleRecord } from './hosted-role-mapping.ts';
 
 interface MembershipRecord {
   readonly userId: string;
@@ -21,11 +22,6 @@ interface MembershipRecord {
   readonly organizationName: string;
   readonly status: OrganizationMembershipStatus;
   readonly roles?: readonly { readonly slug: string }[];
-}
-
-interface RoleRecord {
-  readonly slug: string;
-  readonly permissions: readonly string[];
 }
 
 interface MembershipPage {
@@ -45,21 +41,6 @@ export interface WorkOSOrganizationsOptions {
   };
 }
 
-// The WorkOS role configuration breaks the hosted role mapping, so no grant of the organization is given.
-export class HostedRoleConfigurationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'HostedRoleConfigurationError';
-  }
-}
-
-const APPLICATION_PERMISSIONS: ReadonlySet<string> = new Set(['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage']);
-// The hosted role mapping. Each other role, also the default role, must give no application permission.
-const MAPPED_ROLE_PERMISSIONS: ReadonlyMap<string, readonly string[]> = new Map([
-  ['user', ['product:access']],
-  ['admin', ['user-grants:manage']],
-  ['super-admin', ['admin-grants:manage', 'billing:manage']],
-]);
 // A user has at most one membership in an organization. The limit only bounds the read.
 const MEMBERSHIP_READ_LIMIT = 10;
 // The largest page that WorkOS gives. The page limit bounds the read of the memberships of one user.
@@ -175,8 +156,7 @@ export class WorkOSOrganizations implements OrganizationDirectory {
         + 'The WorkOS environment must allow multiple roles for each membership.');
     }
     const { data: roles } = await this.authorization.listOrganizationRoles(organizationId);
-    const permissionsByRole = checkedRoleMapping(roles, organizationId);
-    return Object.freeze(membershipRoles.map(({ slug }) => grantOf(slug, permissionsByRole, organizationId)));
+    return grantsOfRoles(membershipRoles, roles, organizationId);
   }
 }
 
@@ -196,46 +176,4 @@ function eachOrganizationOnce(records: readonly MembershipRecord[]): readonly Me
   const organizations = new Set(records.map(({ organizationId }) => organizationId));
   if (organizations.size !== records.length) throw new Error('WorkOS answered more than one active membership for one user in one organization');
   return records;
-}
-
-// Each role of the organization must follow the mapping, also a role that this membership does not have.
-function checkedRoleMapping(roles: readonly RoleRecord[], organizationId: string): ReadonlyMap<string, readonly string[]> {
-  const permissionsByRole = new Map<string, readonly string[]>();
-  for (const role of roles) {
-    const permissions = applicationPermissionsOf(role);
-    const expected = MAPPED_ROLE_PERMISSIONS.get(role.slug) ?? [];
-    if (!haveSameMembers(permissions, expected)) throw new HostedRoleConfigurationError(mappingRule(role.slug, expected, organizationId));
-    permissionsByRole.set(role.slug, permissions);
-  }
-  for (const slug of MAPPED_ROLE_PERMISSIONS.keys()) {
-    if (!permissionsByRole.has(slug)) {
-      throw new HostedRoleConfigurationError(`The WorkOS role ${slug} does not exist in the organization ${organizationId}. `
-        + 'The hosted role mapping needs the roles user, admin, and super-admin.');
-    }
-  }
-  return permissionsByRole;
-}
-
-function grantOf(slug: string, permissionsByRole: ReadonlyMap<string, readonly string[]>, organizationId: string): RoleGrant {
-  const permissions = permissionsByRole.get(slug);
-  if (permissions === undefined) {
-    throw new HostedRoleConfigurationError(`A membership has the role ${slug}, but the organization ${organizationId} has no role with this slug.`);
-  }
-  return Object.freeze({ role: slug, permissions: Object.freeze([...permissions]) });
-}
-
-// A permission that only WorkOS knows gives no application access, so the mapping ignores it.
-function applicationPermissionsOf(role: RoleRecord): readonly string[] {
-  return [...new Set(role.permissions.filter((permission) => APPLICATION_PERMISSIONS.has(permission)))];
-}
-
-function haveSameMembers(actual: readonly string[], expected: readonly string[]): boolean {
-  return actual.length === expected.length && expected.every((permission) => actual.includes(permission));
-}
-
-function mappingRule(slug: string, expected: readonly string[], organizationId: string): string {
-  const rule = expected.length === 0
-    ? 'must give no application permission. Only user, admin, and super-admin give application permissions'
-    : `must give exactly the application permissions ${expected.join(', ')}`;
-  return `The WorkOS role ${slug} of the organization ${organizationId} ${rule}.`;
 }

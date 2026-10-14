@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { ListOrganizationMembershipsOptions, OrganizationMembershipStatus } from '@workos-inc/node';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
-import { HostedRoleConfigurationError, WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
+import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
+import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
 
 interface MembershipRecord {
   readonly userId: string;
