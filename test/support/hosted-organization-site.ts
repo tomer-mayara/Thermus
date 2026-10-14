@@ -127,7 +127,7 @@ function composeSite(setup: SiteSetup) {
   const tokens = new Map(tokenUsers.map(([token, user]) => [token, identityOf(user)]));
   const mcp = new MCPServer({
     auth: { verifier: new IdentityVerifierMock(tokens), accessResolver: directory, resourceMetadataUrl: hostedConfig.resourceMetadataUrl, expectedResource: new URL(hostedConfig.mcpResourceUrl) },
-    registerTools: tools.register,
+    buildServer: tools.buildServer,
     reportFailure: () => {},
   });
   const application = composeHostedApplication(

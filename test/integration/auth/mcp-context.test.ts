@@ -58,7 +58,7 @@ function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>,
       expectedResource: new URL(resourceUrl),
       requiredScopes: ['openid'],
     },
-    registerTools: probe.register,
+    buildServer: probe.buildServer,
     reportFailure: reporter.report,
   });
   t.after(() => server.close());

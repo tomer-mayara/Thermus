@@ -68,7 +68,7 @@ describe('Trusted access context for MCP HTTP requests', () => {
     probe = new RequestContextProbe();
     server = new MCPServer({
       auth: { verifier, accessResolver: resolver, resourceMetadataUrl, expectedResource: new URL(resourceUrl) },
-      registerTools: probe.register,
+      buildServer: probe.buildServer,
       reportFailure: () => {},
     });
   });

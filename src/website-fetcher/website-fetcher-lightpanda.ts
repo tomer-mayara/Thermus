@@ -1,4 +1,4 @@
-import { execFile, type ExecFileException } from 'node:child_process';
+import { execFile, type ChildProcess, type ExecFileException } from 'node:child_process';
 import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
 import { WebsiteFetchHttpError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
@@ -7,6 +7,16 @@ const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
 const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
 const LIGHTPANDA_HTTP_ERROR_EXIT_CODE = 22;
+
+function rendererArguments(url: string): string[] {
+  return [
+    'fetch', '--json', '--dump', 'html', '--fail-on-http-error',
+    '--wait-until', 'networkidle', '--wait-ms', String(LIGHTPANDA_TIMEOUT_MS),
+    '--block-private-networks', '--block-cidrs', LIGHTPANDA_BLOCKED_CIDRS,
+    '--http-proxy', '',
+    url,
+  ];
+}
 
 function readFetchOutput(stdout: string, cause: ExecFileException | null): Record<string, unknown> {
   try {
@@ -50,55 +60,80 @@ function assertRendererExit(cause: ExecFileException | null, executable: string)
 }
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
-  public async fetchURL(url: string): Promise<WebsiteFetchResult> {
+  public async fetchURL(url: string, signal?: AbortSignal): Promise<WebsiteFetchResult> {
+    signal?.throwIfAborted();
     const parsed = new URL(url);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       throw new Error(`Fetch URL must use http or https: ${url}`);
     }
-    await assertPublicDestination(parsed);
+    try {
+      await assertPublicDestination(parsed);
+    } catch (error) {
+      signal?.throwIfAborted();
+      throw error;
+    }
+    signal?.throwIfAborted();
+    return WebsiteFetcherLightpanda.render(parsed.href, url, signal);
+  }
+
+  private static render(url: string, requestedUrl: string, signal?: AbortSignal): Promise<WebsiteFetchResult> {
     const executable = process.env.LIGHTPANDA_BIN || LIGHTPANDA_DEFAULT_BIN;
 
     return new Promise((resolve, reject) => {
       let readinessTimer: ReturnType<typeof setTimeout> | undefined;
       let readinessLimitReached = false;
       let completed = false;
-      const child = execFile(
-        executable,
-        [
-          'fetch', '--json', '--dump', 'html', '--fail-on-http-error',
-          '--wait-until', 'networkidle', '--wait-ms', String(LIGHTPANDA_TIMEOUT_MS),
-          '--block-private-networks', '--block-cidrs', LIGHTPANDA_BLOCKED_CIDRS,
-          '--http-proxy', '',
-          parsed.href,
-        ],
-        {
-          encoding: 'utf8',
-          maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
-          timeout: LIGHTPANDA_TIMEOUT_MS,
-        },
-        (error, stdout) => {
-          completed = true;
-          clearTimeout(readinessTimer);
-          if (readinessLimitReached) {
-            reject(new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
-              cause: error ?? undefined,
-            }));
-            return;
-          }
-          try {
-            assertRendererExit(error, executable);
-            resolve(WebsiteFetcherLightpanda.parseResult(url, stdout, error));
-          } catch (error) {
-            reject(error);
-          }
-        },
-      );
-      if (!completed) {
-        readinessTimer = setTimeout(() => {
-          if (completed || child.exitCode !== null || child.signalCode !== null) return;
-          readinessLimitReached = true;
+      let child: ChildProcess | undefined;
+      const cancel = () => {
+        clearTimeout(readinessTimer);
+        if (!completed && child?.exitCode === null && child.signalCode === null) {
           child.kill('SIGKILL');
-        }, LIGHTPANDA_READINESS_DEADLINE_MS);
+        }
+      };
+      const cleanup = () => {
+        completed = true;
+        clearTimeout(readinessTimer);
+        signal?.removeEventListener('abort', cancel);
+      };
+      signal?.addEventListener('abort', cancel, { once: true });
+      try {
+        child = execFile(
+          executable,
+          rendererArguments(url),
+          {
+            encoding: 'utf8',
+            maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
+            timeout: LIGHTPANDA_TIMEOUT_MS,
+          },
+          (error, stdout) => {
+            cleanup();
+            try {
+              signal?.throwIfAborted();
+              if (readinessLimitReached) {
+                throw new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
+                  cause: error ?? undefined,
+                });
+              }
+              assertRendererExit(error, executable);
+              const result = WebsiteFetcherLightpanda.parseResult(requestedUrl, stdout, error);
+              signal?.throwIfAborted();
+              resolve(result);
+            } catch (error) {
+              reject(signal?.aborted ? signal.reason : error);
+            }
+          },
+        );
+        if (signal?.aborted) cancel();
+        if (!completed && !signal?.aborted) {
+          readinessTimer = setTimeout(() => {
+            if (completed || child?.exitCode !== null || child.signalCode !== null) return;
+            readinessLimitReached = true;
+            child.kill('SIGKILL');
+          }, LIGHTPANDA_READINESS_DEADLINE_MS);
+        }
+      } catch (error) {
+        cleanup();
+        reject(signal?.aborted ? signal.reason : error);
       }
     });
   }
