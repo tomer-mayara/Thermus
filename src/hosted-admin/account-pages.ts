@@ -17,11 +17,6 @@ export interface OrganizationSelectionForm {
 
 // Each notice shows only this fixed text, so no request value reaches it and it needs no escaping.
 const NOTICES = {
-  unavailable: {
-    status: 503,
-    title: 'Hosted authentication is not available',
-    paragraphs: ['Hosted authentication is not available yet. No one can sign in, and no account, organization, billing, or MCP operation is available.'],
-  },
   signedOut: { status: 401, title: 'Sign-in required', paragraphs: ['Sign in to use this page.'] },
   denied: { status: 403, title: 'Access denied', paragraphs: ['Your account has no access to this page in the selected organization.'] },
   notFound: { status: 404, title: 'Page not found', paragraphs: ['This page does not exist.'] },

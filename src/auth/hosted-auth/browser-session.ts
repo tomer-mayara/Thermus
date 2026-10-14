@@ -24,11 +24,9 @@ export interface SignedInBrowserSession {
   selectOrganization(organizationId: string): Promise<OrganizationSwitch>;
 }
 
-// "unavailable" means that hosted authentication cannot sign anyone in, so no sign-in can be offered.
 export type BrowserSessionState =
   | SignedInBrowserSession
-  | { readonly status: 'signed-out'; readonly cookies: CookieEffects }
-  | { readonly status: 'unavailable' };
+  | { readonly status: 'signed-out'; readonly cookies: CookieEffects };
 
 // The provider gets only the Cookie header, so no form field, query, or other header can choose the user or the
 // organization of the session. A lookup failure, such as an outage, throws, so it cannot erase a session.
