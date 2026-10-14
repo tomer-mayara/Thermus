@@ -16,6 +16,17 @@ export interface RendererLaunch {
   readonly options: unknown;
 }
 
+// A ChildProcess that did not start has no process ID, so its kill sends the signal to the whole process group and
+// stops the test runner. A failed test can leave a fetch open, and its readiness deadline can kill the child later.
+export class RendererChildDouble extends ChildProcess {
+  readonly signals: Array<NodeJS.Signals | number> = [];
+
+  override kill(signal: NodeJS.Signals | number = 'SIGTERM'): boolean {
+    this.signals.push(signal);
+    return true;
+  }
+}
+
 // Stands in for the Lightpanda process and DNS at their Node APIs, so the production fetcher and pipeline run offline.
 // Each public host resolves to a public address. A URL without a page gives the renderer's HTTP 404 failure.
 export class RendererProcessDouble {
