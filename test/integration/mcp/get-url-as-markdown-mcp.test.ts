@@ -8,8 +8,8 @@ import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/
 import { HtmlToMarkdownPipeline, type Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { createGetURLAsMarkdown, type RendererSetupFailure } from '../../../src/mcp/get-url-as-markdown.ts';
+import { WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { elementHidingRules } from '../../support/ad-rules.ts';
 
 const context = createRequestContext({
@@ -118,6 +118,31 @@ test('Given a real sanitizer stage in progress, when the MCP client cancels, the
   assert.equal(site.error.mock.callCount(), 0);
 });
 
+test('Given a renderer that cannot start and then a page with an HTTP error, when the client calls the fetch tool for each, then both calls get the same fixed fetch failure and the same fetch_failed record, and only the launch failure gives one safe operator report', { timeout: 5_000 }, async (t) => {
+  const reports: RendererSetupFailure[] = [];
+  const site = await connect(t, { requestedUrl, finalUrl, html: '<p>Unused</p>' }, realPipeline().pipeline, (failure) => reports.push(failure));
+  const failures = [
+    new WebsiteFetchLaunchError('ENOENT', 'Lightpanda executable "/private/lightpanda" was not found.', { cause: new Error(`spawn /private/lightpanda ENOENT ${requestedUrl}`) }),
+    new WebsiteFetchHttpError(404),
+  ];
+  site.fetchURL.mock.mockImplementation(async () => { throw failures.shift(); });
+
+  const results = [];
+  for (let call = 0; call < 2; call += 1) results.push(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: { url: requestedUrl, reason } }));
+
+  assert.deepEqual(results, [1, 2].map(() => ({ content: [{ type: 'text', text: 'Page fetch failed' }], isError: true })));
+  const records = site.records.map((line) => {
+    const { durationMs: _durationMs, ...record } = JSON.parse(line);
+    return record;
+  });
+  assert.equal(records.length, 2);
+  assert.deepEqual(records[0], records[1]);
+  assert.equal(records[0].status, 'fetch_failed');
+  assert.doesNotMatch(site.records.join('\n'), /private|Lightpanda|ENOENT|HTTP/);
+  assert.deepEqual(reports, [{ failure: 'missing', code: 'ENOENT' }]);
+  assert.equal(site.error.mock.callCount(), 0);
+});
+
 function realPipeline() {
   const ads = new CleanHtmlAdsAdblockRs(elementHidingRules);
   const sanitizer = new PromptInjectionRemoverSanitizer();
@@ -125,13 +150,13 @@ function realPipeline() {
   return { ads, sanitizer, markdown, pipeline: new HtmlToMarkdownPipeline([ads, sanitizer, markdown]) };
 }
 
-async function connect(t: TestContext, page: WebsiteFetchResult, pipeline: HtmlToMarkdownPipeline) {
+async function connect(t: TestContext, page: WebsiteFetchResult, pipeline: HtmlToMarkdownPipeline, reportRendererSetupFailure?: (failure: RendererSetupFailure) => void) {
   const records: string[] = [];
   const events = new EventEmitter();
   const fetchURL = t.mock.fn(async (_url: string, _signal?: AbortSignal) => page);
   const error = t.mock.fn((_entry: string) => {});
   const server = createFetchToolServer(context, {
-    operation: createGetURLAsMarkdown({ fetcher: { fetchURL }, pipeline }),
+    operation: createGetURLAsMarkdown({ fetcher: { fetchURL }, pipeline, reportRendererSetupFailure }),
     logger: { info(entry) { records.push(entry); events.emit('completed'); }, error },
   });
   const client = new Client({ name: 'real-pipeline-integration', version: '0.0.0' });

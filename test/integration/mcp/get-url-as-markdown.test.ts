@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { createGetURLAsMarkdown, type RendererSetupFailure } from '../../../src/mcp/get-url-as-markdown.ts';
 import type { Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 
 const url = 'https://source.example/article';
 const page: WebsiteFetchResult = { requestedUrl: url, finalUrl: 'https://destination.example/final', html: '<p>Source</p>' };
@@ -89,6 +89,55 @@ describe('getURLAsMarkdown operation and access contract', () => {
     });
     assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 1);
     assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+  });
+
+  for (const [code, failure] of [['ENOENT', 'missing'], ['EACCES', 'cannot-start']] as const) {
+    test(`Given a renderer that cannot start with ${code}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets one report with only the failure class and code`, async (t) => {
+      const dependencies = operationDoubles(t);
+      const launchFailure = new WebsiteFetchLaunchError(code, 'Lightpanda executable "/private/lightpanda" could not start.', {
+        cause: new Error(`spawn /private/lightpanda ${code} fetch ${url}`),
+      });
+      dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw launchFailure; });
+
+      await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
+        assert.ok(error instanceof Error);
+        assert.equal(error.message, 'Page fetch failed');
+        assert.equal(error.cause, undefined);
+        return true;
+      });
+      assert.deepEqual(dependencies.reportRendererSetupFailure.mock.calls.map((call) => call.arguments), [[{ failure, code }]]);
+      assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+    });
+  }
+
+  const otherFetchFailures = [
+    ['an HTTP 404 error', new WebsiteFetchHttpError(404)],
+    ['the readiness limit', new Error('Lightpanda readiness limit exceeded after 5000 ms')],
+    ['the process timeout', Object.assign(new Error('Command failed'), { code: null, killed: true, signal: 'SIGTERM' })],
+    ['a blocked destination', new Error('Fetch destination is not a public network address: 127.0.0.1')],
+  ] as const;
+  for (const [name, fetchFailure] of otherFetchFailures) {
+    test(`Given ${name}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets no report`, async (t) => {
+      const dependencies = operationDoubles(t);
+      dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw fetchFailure; });
+
+      await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), { message: 'Page fetch failed' });
+      assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
+    });
+  }
+
+  test('Given a renderer that cannot start and an operator reporter that throws, when the operation fetches, then the safe fetch error is still returned', async (t) => {
+    const dependencies = operationDoubles(t);
+    dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw new WebsiteFetchLaunchError('ENOENT', 'Lightpanda executable was not found.'); });
+    dependencies.reportRendererSetupFailure.mock.mockImplementation(() => { throw new Error('secret log failure'); });
+
+    await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal(error.message, 'Page fetch failed');
+      assert.equal(error.cause, undefined);
+      return true;
+    });
+    assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 1);
   });
 
   test('Given a thrown pipeline failure, when it rejects, then only the safe processing error is returned', async (t) => {
@@ -204,5 +253,6 @@ function operationDoubles(t: TestContext) {
         ...source, removed: 0, skipped: 0, markdown: 'Exact Markdown',
       })),
     },
+    reportRendererSetupFailure: t.mock.fn((_failure: RendererSetupFailure) => {}),
   };
 }
