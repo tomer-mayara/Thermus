@@ -175,7 +175,8 @@ neither rules nor renderer. The app initializer owns server-specific loading.
 Deliver a local Node process with pinned Lightpanda 1.0.0 [setup](../lightpanda-runtime.md).
 The image has no renderer; do not claim container rendering. If rules affect image
 startup, P03 adds fixture/config mounts and Compose guidance. Renderer image
-provisioning is separate future work.
+provisioning is separate work after P03; the
+[runtime guide](../lightpanda-runtime.md#container-image) describes the result.
 
 ## Tests and gates
 

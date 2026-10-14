@@ -25,7 +25,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
-| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images and packages. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
+| Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
@@ -131,7 +131,7 @@ contains every change of the pull request.
      for a change to the Better Auth packages, their settings, or the local
      authentication flow. They run offline with a focused command.
    - `npm run test:container` for a change to `Dockerfile`, `.dockerignore`,
-     `compose.yaml`, a build input of the image (`package.json`,
+     `compose.yaml`, a build input of the image (`docker/`, `package.json`,
      `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.npmrc`,
      `.habit-hooks/package.json`, `patches/`, `tsconfig.json`, or
      `tsconfig.build.json`), `migrations/`, the code of the self-hosted server
@@ -178,6 +178,10 @@ AUTH-09 added the container acceptance suite
 - builds the image of the current candidate from `Dockerfile` two times. The
   second build has another revision label, so it is another image with the same
   content, for the image replacement case;
+- builds the image a third time with another file in place of the Lightpanda
+  download: a build context with the name `lightpanda-asset` replaces that
+  stage. The build must stop with `Lightpanda SHA256 check failed` and make no
+  image. This build needs no network access for the asset;
 - runs the server and the bundled commands in containers of that image, with the
   real provider and SQLite on Docker volumes;
 - copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt`
@@ -185,7 +189,10 @@ AUTH-09 added the container acceptance suite
   container before it starts. Command containers get no rules file. The gate
   does not use the operator's `ad-rules.txt` next to `compose.yaml`;
 - gives the containers only the settings of the image and `PUBLIC_BASE_URL`, so
-  the normal production telemetry settings apply;
+  the normal production telemetry settings apply, also
+  `LIGHTPANDA_DISABLE_TELEMETRY=true`. The server containers of the two renderer
+  cases also get `NODE_OPTIONS` and `CONTAINER_GATE_PAGE` for the test-only page
+  seam below;
 - puts each container that runs Thermus on an internal Docker network without a
   route out, so each outbound connection fails. An edge container forwards the
   test connections to the server and is the DNS server of the containers, so it
@@ -197,9 +204,30 @@ AUTH-09 added the container acceptance suite
   with a `FATAL` line that names `AD_RULES_FILE` and writes nothing to its
   volume, and that a command container still adds an account;
 - calls the fetch tool with an address-literal URL, so the call needs no DNS
-  lookup. The image has no renderer, so the call gets `Page fetch failed` and a
-  `fetch_failed` record, and the server log gets one renderer setup report with
-  `ENOENT`;
+  lookup. The container has no route out, so the renderer cannot connect, and
+  the call gets `Page fetch failed` and a `fetch_failed` record. The renderer
+  starts, so the server log gets no renderer setup report;
+- loads the test-only page seam `test/support/container-page.ts` into the server
+  container of the two renderer cases, with `--import` in `NODE_OPTIONS`. The
+  seam serves a JavaScript page on port 8090 of the container and gives the
+  lookup of `localhost` a public address, as `resolveAsPublic` does. With
+  `CONTAINER_GATE_PAGE=permitted`, it also lets the renderer reach `127.0.0.1`
+  for that page, as `permitIPv4Fixture` does. With `blocked`, the renderer starts
+  with the production options. The seam does not change the renderer
+  environment, so the telemetry setting of the image applies. Production has no
+  such seam;
+- checks in the permitted case that `LIGHTPANDA_BIN` in the server container
+  names the pinned executable, which reports 1.0.0, that the client gets the
+  exact cleaned Markdown, and that the server writes one safe completion record;
+- checks in the blocked case that the fetcher blocks the loopback address and
+  the private address of the server container before a renderer starts, and
+  that the renderer blocks the loopback socket of `localhost`. Each call gets
+  `Page fetch failed` and a `fetch_failed` record, and the page gets no
+  connection;
+- checks in the image that `LIGHTPANDA_BIN` names the pinned executable, which
+  root owns and the `node` user cannot change, that the executable reports
+  1.0.0 and loads the CA certificates of the image, and that the image sets
+  `LIGHTPANDA_DISABLE_TELEMETRY=true`;
 - removes its containers, networks, volumes, and images when it ends.
 
 Only a run of `npm run test:container` that exits with status 0 and shows each
@@ -209,8 +237,11 @@ telemetry settings is not a container gate pass. `npm test` and
 `npm run test:acceptance` select the file but skip its suite, so a run through
 them is never a container gate pass. Without the docker CLI, a running engine,
 Buildx, or Compose, the suite fails with a setup error. A container gate pass
-gives no evidence of renderer behavior. Only the
-[renderer gate](#renderer-gate-mcp-p03) gives that evidence.
+gives evidence of the renderer of the image only for the cases above: one local
+page, and the blocks of private and loopback addresses. It cannot reach a
+public HTTPS page. It is not a pass of the
+[renderer gate](#renderer-gate-mcp-p03), which alone proves the rendered tool
+behavior with redirects, hidden content, failures, and cancellation.
 
 An interrupted run can leave resources. Each one has the label
 `thermus.container-gate`, so these commands remove them:
