@@ -253,13 +253,15 @@ manual check.
 ## Limits
 
 - The steps of this runbook change the roles of a membership with a complete
-  replacement, without a precondition. Of two changes that start from the same
-  read, only the last one stays, also a customer change of User or Admin at the
-  same time. Step 5 finds such a change; it cannot prevent it. AUTH-08W showed
-  that WorkOS also has single-role writes (role assignments on the
-  organization), which keep a concurrent change of another role; the customer
-  grant changes of Thermus use only these. The follow-up ticket
-  `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changes these steps to them.
+  replacement, without a precondition. Of two replacements that start from the
+  same read, only the last one stays. A replacement also undoes each customer
+  change of User or Admin that WorkOS made after the read of step 3. Step 5
+  finds such a change; it cannot prevent it. AUTH-08W showed that WorkOS also
+  has single-role writes (role assignments on the organization), which keep
+  each other role. The customer grant changes of Thermus use only these, so a
+  customer change never undoes a Super Admin grant or revocation. The
+  follow-up ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changes these steps
+  to them.
 - Separate WorkOS requests are not one transaction. Work that a person started
   with an earlier grant can finish after a revocation.
 - Thermus reads the memberships for each request, so a revocation takes effect

@@ -41,12 +41,15 @@ passed in run r2 of AUTH-07W, with the complete command. The completed MFA of
 the operator, which the runbook requires, is a manual precondition without a
 proof, because the WorkOS API cannot show it. The owner removed this proof from
 AUTH-07W, and a separate decision ticket decides how it is enforced and proven
-(see [live provider proofs](#live-provider-proofs)). AUTH-08W, the
-member and invitation reads and changes in WorkOS, and the paid billing of
-slice 6 are pending. Until AUTH-08W, the member and invitation pages and their
-changes are not available in production. The first hosted release also
-needs the live cases of AUTH-07W and AUTH-08W. The pinned Better Auth packages are proven
-against the local contracts. The owner resolved the two
+(see [live provider proofs](#live-provider-proofs)). AUTH-08W
+implemented the WorkOS side of the member and invitation pages: the pages read
+WorkOS, and their changes change WorkOS, as
+[WorkOS organization administration](#workos-organization-administration-of-auth-08w)
+gives. Its live proofs and cases passed in run r3 of AUTH-08W, with the
+complete command: each of the 74 tests of the hosted live gate passed, also
+the proofs and cases of AUTH-06 and AUTH-07W. The paid billing of slice 6 is
+pending. The pinned Better Auth packages are proven against the local
+contracts. The owner resolved the two
 [provider blockers](#resolved-provider-blockers) that the proofs found. The role
 refinement below records intended rules only; it adds no implementation work
 now.
@@ -270,7 +273,7 @@ and the WorkOS provider implements them.
 | `src/auth/hosted-auth/browser-session.ts` | `BrowserSession.authenticate(cookieHeader)` gives a `BrowserSessionState`: `signed-in`, or `signed-out` with `cookies`. A `SignedInBrowserSession` has the `user`, an `AuthenticatedUser` that carries the organization that the session selected; the `csrfToken`, a secret of the session that each form of the account pages sends back, which stays the same for the whole session, also after a refresh or an organization switch, so that a form shown before still posts; `mfaCompleted`, which is true only when the provider proved that the sign-in of the session completed a multi-factor challenge, because an enrollment alone is no proof; the `cookies`; and `selectOrganization(organizationId)`. `CookieEffects` are `Set-Cookie` values that must reach the browser with the answer, also with a redirect or an error page, so that the browser does not lose a session that the provider refreshed or ended during the request. `selectOrganization()` gives an `OrganizationSwitch`: `switched`, `refused`, or `signed-out`, each with cookies. Only this call changes the organization of a session, and only for that browser. The account routes call it only after `OrganizationAdministration` found an authorized active membership. The provider gets only the `Cookie` header of the request, so no form field, query, or other header can select the user or the organization. A lookup or switch failure, such as an outage, throws. |
 | `src/hosted-admin/account-routes.ts` | `HostedAccountRoutes` gets each browser path under the public URL and checks the browser session first. The routes treat the public base URL as a directory: a URL without a final slash works the same, so `/teamevil` is never under `/team`. The deployment configuration always gives the final slash. `signed-out` gives `401` with the cookie effects of the session. For a signed-in session, `<base>/organizations` and `<base>/organizations/select` need the identity only: they run no access resolution (see [organization administration](#organization-administration)). For each other path, the routes call `AccessResolver.resolve(user)` and then require a trusted tenant. Only then do the routes give a member or invitation path to `AdministrationRoutes`, with the session and a frozen copy of the decided context, and each other path to an `AccountOperation(request, context)`, with a frozen copy of the decided context, as MCPServer does. A denial gives `403` without the reason, with a second paragraph that links to `<base>/organizations`: "To select another organization, or to see how to get access, open the organization page." A request without a route or an operation gives `404`. The hosted edition gives one account operation, the protected portal request `<base>portal/access` of AUTH-06. Each operation checks its own permission before work starts. An `AccountOperation` gets no MFA evidence yet, so the billing change operation of AUTH-11 must add it before it can require MFA. Each answer after a sign-in carries the cookie effects of the session, in their order, before the cookies of the answer itself, so that a later cookie, such as the cookie of a switch, replaces an earlier one in the browser. This includes operation answers, also a redirect whose headers cannot change, the `303` of a selection or a change, and each refusal and failure page (`400`, `401`, `403`, `404`, `405`, `409`, `413`, `415`, `500`, and `503`). The routes add the cookie effects inside the failure guard. A failure after a sign-in, in the access resolution, an organization read or change, the organization switch, or the account operation, an allowed decision without a tenant, or an operation answer that cannot carry the cookie effects, such as an error response (`Response.error()`) or an answer whose body was already read, gives a `500` page, "The request failed. Try again later.", with the cookie effects of the session. `reportFailure` gives its path and cause to the operator. AUTH-12 gave the caller an exception for an access lookup failure and for an allowed decision without a tenant ID; AUTH-07 changed both on purpose. A session lookup failure still reaches the caller, so the HTTP server answers a generic `500` without a cookie. This stays distinct from a missing session (`401`) and never erases the session. A request that the client aborted gets no page and no report. `account-form.ts` checks the form input. |
 | `src/hosted-admin/administration-routes.ts` | `AdministrationRoutes` gets the member and invitation paths after the session check and the current access resolution with a trusted tenant. The actor is the user of the decided context with the MFA evidence of the session, and the organization is the organization of the decided context. A context without an organization gives the `403` access denial. The [organization administration](#organization-administration) section gives the routes and their checks. |
-| `src/hosted-admin/account-pages.ts`, `administration-pages.ts`, and `page-html.ts` | `account-pages.ts` gives the notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. AUTH-08 added the notices of the administration routes: `mfaRequired` (`403`), `changeDenied` (`403`), `changeStale` (`409`, "Page out of date"), `invitationNotPending` (`409`), and `changeUnsupported` (`503`). `administration-pages.ts` gives the members and invitations pages, with the policy of the selection page; they escape each value that the provider gives. `page-html.ts` has the shared HTML parts, the page headers, and the escaping. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
+| `src/hosted-admin/account-pages.ts`, `administration-pages.ts`, and `page-html.ts` | `account-pages.ts` gives the notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. AUTH-08 added the notices of the administration routes: `mfaRequired` (`403`), `changeDenied` (`403`), `changeStale` (`409`, "Page out of date"), `invitationNotPending` (`409`), and `changeUnsupported` (`503`). AUTH-08W added `invitationAddressInUse` (`409`). `administration-pages.ts` gives the members and invitations pages, with the policy of the selection page; they escape each value that the provider gives. `page-html.ts` has the shared HTML parts, the page headers, and the escaping. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
 | `src/organizations/organization-directory.ts` | `OrganizationDirectory`, the provider contract of the organization reads and changes, with its records, requests, and results. `membershipsOf(user)` gives `OrganizationMembership` records: `organizationId`, `organizationName`, `active`, and `grants`, with every current grant. A grant holds only application permissions, so that a default role, which gives none, authorizes nothing. AUTH-08 added the member, grant, and invitation methods. The [organization administration](#organization-administration) section gives the contract. |
 | `src/organizations/organization-administration.ts`, `customer-roles.ts`, `change-records.ts`, `administration-overviews.ts`, and `directory-reads.ts` | `OrganizationAdministration` lists and authorizes the organizations of the session user, and it does the administration work of AUTH-08 for an `Actor`. `customer-roles.ts` gives the customer roles that an actor manages, `change-records.ts` runs each change and keeps its record, `administration-overviews.ts` builds the member and invitation overviews, and `directory-reads.ts` reads every page of a paged directory read. The [organization administration](#organization-administration) section gives the rules. |
 | `src/application.ts` | `composeHostedApplication(config, { session, accessResolver, organizations, mcp, browserRoutes }, { reportFailure, changeRecords, billing, operation })` composes the hosted edition from its provider parts. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. The optional `browserRoutes` are the browser routes of the provider that need no signed-in session; they answer before the account routes. AUTH-06 removed the placeholder MCP endpoint, `UnavailableMcpEndpoint`, which answered each MCP request with `503`. The third argument, `HostedAccountParts`, gives `reportFailure`, the required `changeRecords`, and an optional account operation. The composition gives the routes `OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords })`. `accountFailureReporter(logger)` writes each report as one error line: `An account request failed unexpectedly for <path>: <cause>`. `accountChangeRecorder(logger)` writes each change record as one info line, `Account change record: <JSON>`, in the operator log, until hosted storage exists. Other paths give `404`. The shell creates no `Billing`. |
@@ -983,7 +986,12 @@ how it reports failures. They do not show what the WorkOS service does; the
 | Logout | `getLogoutUrl({ returnTo })` gives `<api>/user_management/sessions/logout?session_id=<sid>&return_to=<url>`. It throws when the access token has expired. `revokeSession({ sessionId })` posts the `session_id`. | Logout reads the `sid` from the authentic seal, so it also works after the access token expires. |
 | Membership reads | `listOrganizationMemberships({ userId, organizationId, statuses, limit })` sends each filter; several statuses become one comma-separated value. Answers keep `role` and the `roles` array; an answer without `roles` gives no `roles` field. Pages use the `after` cursor. `autoPagination()` returns only the first page when the call has a `limit`; without a limit, it reads the first page two times and waits 350 ms between pages. | Read with explicit status filters, page with `after`, and limit the number of pages. A membership without `roles` is a configuration error, and access stays closed. |
 | Role reads | `authorization.listOrganizationRoles(orgId)` reads `/authorization/organizations/<orgId>/roles` without pagination. Each role has `slug`, `permissions`, and `type`. | Effective permissions come from the roles of the current membership. |
-| Grant writes | `updateOrganizationMembership(id, { roleSlugs })` replaces the complete role set with `PUT`. Update, create, deactivate, and reactivate send no `If-Match` and no version. With `maxRetries: 0`, they send no `Idempotency-Key`. With retries, the SDK gives each POST one generated `Idempotency-Key` for all of its attempts, and a PUT gets none; the caller cannot give its own key. Of two updates that start from the same read, only the last one stays. `sendInvitation` takes one `roleSlug`. | The SDK has no conditional grant write. The [hosted provider findings](#hosted-provider-findings) give the effect. |
+| Grant writes | `updateOrganizationMembership(id, { roleSlugs })` replaces the complete role set with `PUT`. Update, create, deactivate, and reactivate send no `If-Match` and no version. With `maxRetries: 0`, they send no `Idempotency-Key`. With retries, the SDK gives each POST one generated `Idempotency-Key` for all of its attempts, and a PUT gets none; the caller cannot give its own key. Of two updates that start from the same read, only the last one stays. `sendInvitation` takes one `roleSlug`. | The SDK has no conditional grant write. The customer grant changes never use the replacement: they use the single-role writes below. The [hosted provider findings](#hosted-provider-findings) give the effect. |
+| Member reads by ID | `getOrganizationMembership(id)` sends one `GET /user_management/organization_memberships/<id>`, and `getUser(id)` sends one `GET /user_management/users/<id>`. The membership gives `id`, `organizationId`, `status`, `updatedAt`, `directoryManaged`, and `roles`; the user gives the `email`. A `404` answer with `entity_not_found` throws `NotFoundException` with `status` 404 and `code` `entity_not_found`. | The email of a member comes from a user read. The revision comes from `updatedAt`, the status, and the roles. Only a `404` of the membership read means that the membership does not exist. |
+| Single-role writes | With `maxRetries: 0`, `authorization.assignRole()` posts and `removeRole()` deletes the same JSON body, `role_slug`, `resource_type_slug` `organization`, and `resource_external_id`, at `/authorization/organization_memberships/<id>/role_assignments`, without `If-Match` or `Idempotency-Key`. `assignRole()` returns the role assignment. `removeRole()` reads no answer body and gives `undefined` for a `204` without a body and for a `200`. | A grant change makes one of these writes for one role, with the organization of the membership as the resource. They take no precondition either, so the directory reads the revision again just before the write. The directory does not use the answer of a write. |
+| Invitation reads | `listInvitations({ organizationId, limit, after })` sends `organization_id`, `limit`, `after`, and `order=desc`. The SDK has no state filter for invitations. `getInvitation(id)` sends one `GET /user_management/invitations/<id>`. Each invitation that the SDK gives keeps `token` and `acceptInvitationUrl`. | The directory keeps only the states that a read names. It copies only the ID, the organization, the address, the role, and the state, so the token and the link stay out of each record. |
+| Invitation sends | `sendInvitation({ email, organizationId, roleSlug })` posts exactly `email`, `organization_id`, and `role_slug` to `/user_management/invitations`. The `400` refusals `email_already_invited_to_organization`, `user_already_organization_member`, and `invalid_role` have a `code` and a `message` but no `errors` list. Thus each throws `GenericServerException` with `status` 400 and that `code`, not `BadRequestException`. | The directory reads the `status` and the `code` of an SDK error by shape, not by class. Only `400` with one of the two address codes gives `address-in-use`; each other refusal throws. |
+| Invitation resends and revokes | `resendInvitation(id)` posts `{}` to `/user_management/invitations/<id>/resend`, and `revokeInvitation(id)` posts an empty body to `/user_management/invitations/<id>/revoke`. Each gives the invitation of the answer. A `400` `invite_not_pending` answer to a revoke throws `GenericServerException` with `status` 400 and that `code`. | The answer must be the invitation in the state after the change. After a `400`, a read of the invitation decides between `not-pending` and a failure. |
 | Connect tokens | `jwtVerify()` with `createRemoteJWKSet(<issuer>/oauth2/jwks)` checks the exact issuer, the MCP resource in the audience, the time claims, and RS256. It accepts a token with the shape of an M2M token, without `sid` and with `sub` equal to `client_id`, when the issuer and the audience match. | The verifier must require `sid` and refuse a `sub` equal to `client_id`, in addition to the jose checks. |
 | Key rotation | A token with a new `kid` verifies after the key set adds the key and the cooldown has passed. A removed key verifies from the cache until the cache age has passed. Within the cache age, a key-set outage changes no result. After the cache age, or without keys in the cache, a key-set outage throws a key-set error, not a token rejection. The defaults are a 5-second timeout, a 30-second cooldown, and a 10-minute cache age. | A new WorkOS key is accepted within one cooldown, and a removed key stops within one cache age. A key-set outage gives `500`, not `401`. |
 
@@ -1083,11 +1091,13 @@ live cases pass:
 
 - AUTH-07W: operator organization setup, and Super Admin grant, revocation,
   replacement, and recovery.
-- AUTH-08W: multi-role writes, reactivation through create, reactivate, and the
-  result of the removal of the final grant; safe grant updates under retries
-  and concurrent changes, and recovery from an unknown outcome without the
-  return of a grant that someone revoked later; invitations, with the role of an
-  invitation, its states, the identity policy, and their pagination.
+- AUTH-08W: the single-role grant writes of WorkOS, and the grant changes,
+  member reads, User seat count, and invitation changes of
+  `WorkOSOrganizations`, in `hosted-live/administration-proofs.ts`; and the
+  forms, checks, and change records of AUTH-08 with WorkOS and the acceptance
+  of an invitation through AuthKit, in the cases of
+  `hosted-live/administration-server.ts`. They passed in run r3 of AUTH-08W,
+  with the complete command. The results follow below.
 
 The AUTH-07W proofs are in `test/acceptance/auth/hosted-live/operator-setup.ts`.
 They run the steps of the
@@ -1120,6 +1130,52 @@ portal and for a customer grant of Super Admin, and lost its access at the next
 request after the revocation by the operator; and a refused selection after the
 expiry of the access token carried the refreshed session cookie.
 
+The AUTH-08W proofs run in organization D: the single-role writes with the
+pinned SDK, and the directory methods of the real `WorkOSOrganizations`,
+against the staging environment. The AUTH-08W cases of the hosted server run in
+organization C, with the same local HTTPS test server as the AUTH-06 cases. In
+two cases, Playwright opens an invitation link and completes the AuthKit pages,
+so that AuthKit accepts the invitation (`acceptInvitationThroughPortal()` in
+`test/support/hosted-live/portal-visit.ts`). The run makes organizations C and
+D and 25 new users, each with a password and a verified email
+(`test/support/hosted-live/administration-fixtures.ts`), and deletes them at
+the end. The invitations go only to these users, because an invitation to a
+new address needs an email verification code at the acceptance.
+
+Before AUTH-08W run r3, a run of only the AUTH-08W tests, with the name
+pattern `AUTH-08W`, passed the 16 proofs and cases that existed then: 16
+tests, 16 passed, 0 failed, and 0 skipped. The ninth provider proof, the
+write on the resource of another organization, came after that run. A run
+with a name pattern is a record of its tests, not a pass of the hosted live
+gate.
+
+AUTH-08W run r3 ran the complete command on 2026-10-14 with the staging
+launcher. It exited with status 0: 74 tests in 17 suites, 74 passed, 0 failed,
+0 cancelled, 0 skipped, and 0 todo. The tests ran in 710 seconds after the
+builds. The 74 tests are the 57 provider proofs and cases of AUTH-06 and
+AUTH-07W and the 17 AUTH-08W tests: 9 provider proofs and 8 cases of the hosted
+server. Thus the hosted live gate passed as a whole in AUTH-08W run r3. The
+completed operator MFA stays a manual precondition without a proof; the
+decision ticket above decides how it is enforced and proven.
+
+The values in the table below come from the diagnostics and the checks of the
+pattern run before AUTH-08W run r3, and run r3 passed the same checks. The
+result of the ninth proof comes from run r3.
+
+| Contract | Live result | Consequence for the hosted implementation |
+| --- | --- | --- |
+| Repeated single-role write | `assignRole()` of Admin on the organization resource of D added only Admin, `user` > `admin`, `user`, with a new update time. The same assignment again gave the same role assignment, with the same ID, and changed neither the roles nor the update time. | A retried single-role write is safe in WorkOS. Thermus still never repeats a write. Each real role change gives a new revision. |
+| Concurrent single-role writes | Assignments of Admin and of Super Admin at the same time on a membership with User gave `admin`, `super-admin`, and `user`. | Changes of two roles of one membership at the same time both stay. |
+| Removal of a missing role | `removeRole()` of Admin on a membership with only User succeeded and changed neither the roles nor the update time. | A repeated revoke is safe in WorkOS too. |
+| Resource of another organization | An assignment on a membership of D that names the organization resource of B got `404` `entity_not_found`. The roles and the update time did not change. | A single-role write cannot change a membership through another organization. The directory names the organization of the current membership. |
+| Directory retries | The directory granted Admin on the revision of a page, got the same request again, revoked Admin on the current revision, and got the old request again: `applied`, `stale`, `applied`, `stale`. The roles went `admin`, `user` > `user`. The last revision differed from the first one, because the update time differed. | A retry or an old form after a change is `stale` and never returns a revoked grant. |
+| Removal of the last role | After a revoke of User, the only application role in D, the membership stayed active with only `member`, whose grant gives no permission. The membership in B kept `user`. | The organization gives no access. The membership, the identity, and the other memberships stay. |
+| Inactive and pending memberships | A grant of Admin and a revoke of User on an inactive membership and on a pending membership from an invitation gave `unsupported` four times. The status, the roles, and the update time did not change. | The directory refuses these changes before any write. |
+| Member reads and User seats | Reads in pages of 2 in D gave 10 active memberships on 5 pages, 2 inactive, 2 pending, and 14 of all statuses on 7 pages, each the same set as a direct WorkOS read with the same filter. The User seat count was 6 from 7 pages, and the direct WorkOS read also gave 6. | The status filters and the cursor give each membership once. The seat count reads every page. |
+| Invitations | An Admin invitation to an identity without a membership gave `applied`, a pending invitation, and a pending membership with only `admin`. A User invitation to the same address in capital letters and an Admin invitation to an active member gave `address-in-use`, and WorkOS had one invitation to the address. The resend and the revoke gave `applied`; the revoked invitation was listed only as revoked, and its membership stayed pending without access. A second resend and revoke gave `not-pending`. No result held the token or the link. | Points 4 and 5 of the [hosted provider findings](#hosted-provider-findings). |
+| Grant cases in C | A forged Admin grant of an Admin-only member got `403` and a `denied` record. A Super Admin signed in through `/`, `/password`, `/mfa/enrollment`, and `/success` and granted Admin and then User to itself: User seats 3 > 4, the roles `super-admin`, `admin`, and `user`, and two `applied` records. Its revoke and regrant of Admin: `super-admin`, `user` > `admin`, `super-admin`, `user`. A selective revocation, the members page and MCP: `[200, 200]` > `[403, 200]` > `[200, 403]`. The removal of the last grant: the portal `200` > `403`, the organization page offered only B, C was active with `member`, and B with `user`. Forged posts got `403` six times, and a post on an old revision `409`. | The forms, the checks, and the change records of AUTH-08 work with the WorkOS directory. Each change takes effect at the next request. |
+| Invitation cases in C | Two sends and a repeated send got `303`, the two refused sends `409`, and the resend, a third send, and its revoke `303`. Each invitee opened its invitation link and went through `/invite`, `/password`, `/mfa/enrollment`, and `/success`. The User invitee was then active with only `user`, and its portal access worked. The Admin invitee, whose inactive membership had User and Admin, was active with only `admin`: the earlier User grant did not return, its portal access was refused, and its members page opened. The invitations page showed both as accepted. | An acceptance activates only the role of its invitation, also for a membership that becomes active again. The acceptance needs no route of the server (point 10 of the findings). |
+
 #### Hosted provider findings
 
 The offline proofs found the first three points. Each needed a live proof or an
@@ -1134,9 +1190,10 @@ proofs of AUTH-08W resolved them and found the other points.
    role set can return a grant that someone revoked later. AUTH-08W found the
    safe alternative in WorkOS: the organization roles of a membership are role
    assignments on the authorization resource of the organization (resource
-   type `organization`, with the organization ID as its external ID).
-   `authorization.assignRole()` and `removeRole()` with that resource add or
-   remove exactly one role and keep each other role, also when other
+   type `organization`). Organizations C and D of the AUTH-08W live proofs have
+   no external ID, and the external ID of their resource is the organization
+   ID. `authorization.assignRole()` and `removeRole()` with that resource add
+   or remove exactly one role and keep each other role, also when other
    single-role changes of the same membership run at the same time. Thus
    customer grant changes use only these single-role writes, and never the
    replacement. WorkOS has no precondition for them either, so the directory
@@ -1161,17 +1218,22 @@ proofs of AUTH-08W resolved them and found the other points.
    invitation of the organization, for any role and in any letter case, with
    `400` `email_already_invited_to_organization`, and a send to the address of
    an active member with `400` `user_already_organization_member`. The
-   directory answers `address-in-use` for both. A resend of a revoked or an
-   accepted invitation gives `400` `invite_revoked` or `invite_accepted`, and a
-   revoke of an invitation that is not pending gives `400`
-   `invite_not_pending`.
-5. **Invitations make pending memberships.** A send to a new address makes an
-   unverified WorkOS user and a pending membership with only the invited role.
+   directory answers `address-in-use` for both. A send with an unknown role
+   gets `400` `invalid_role`. A resend of a revoked or an accepted invitation
+   gives `400` `invite_revoked` or `invite_accepted`, and a revoke of an
+   invitation that is not pending gives `400` `invite_not_pending`. An unknown
+   ID gives `404` `entity_not_found`. These `400` answers have no `errors`
+   list, so the SDK throws `GenericServerException` with the `status` and the
+   `code`, not `BadRequestException`.
+5. **Invitations make pending memberships.** A send to the address of an
+   existing user without a membership makes a pending membership with only the
+   invited role. A send to a new address also makes an unverified WorkOS user.
    A send to the address of a user with an inactive membership turns that
-   membership into a pending membership with only the invited role; its earlier
-   roles go. The acceptance makes the pending membership active with only that
-   role. A revoke leaves the pending membership pending, without access; a
-   later invitation to the same address uses it again with the new role.
+   membership, with the same ID, into a pending membership with only the
+   invited role; its earlier roles go. The acceptance makes the pending
+   membership active with only that role. A revoke leaves the pending
+   membership pending, without access; a later invitation to the same address
+   uses it again with the new role.
 6. **The role of an invitation follows its membership.** WorkOS gives the
    `role_slug` of an invitation from the current role of its membership, not
    from the send. After an acceptance and a later role change of the
@@ -1180,6 +1242,37 @@ proofs of AUTH-08W resolved them and found the other points.
 7. **No email on a membership.** A WorkOS membership has the user ID but no
    email, and the user list of an organization gives only the users with an
    active membership. The member reads thus read each user.
+8. **Repeated single-role writes are safe.** A repeated `assignRole()` of a
+   role that the membership has gives the same role assignment, with the same
+   ID, and changes neither the roles nor the update time. A `removeRole()` of
+   a role that the membership does not have succeeds and changes nothing. Each
+   real role change gives the membership a new update time. A single-role
+   write that names the resource of another organization gets `404`
+   `entity_not_found` and changes nothing. Thus a retried single-role write
+   can neither add a second role nor change another organization. Thermus
+   still never repeats a write: the SDK client has no retry, and the directory
+   makes at most one write for each change.
+9. **The default role stays next to later roles.** When the last role of a
+   membership goes, the membership stays active with the default role
+   `member`. A later assignment keeps `member` next to the new role, for
+   example `member` and `user`. `member` gives no application permission, so
+   it changes no access, and the members page shows only the roles that give
+   an application permission.
+10. **Invitation links go through the Initiate login URI.** The invitation
+    link of WorkOS (`acceptInvitationUrl`) goes to the AuthKit page `/invite`,
+    then to `https://api.workos.com/user_management/initiate_login`, and then
+    to the Initiate login URI of the application, `<base>login`, without a
+    query. AuthKit keeps the invitation in its own authorization session. The
+    sign-in that `GET <base>login` of the server starts shows the AuthKit page
+    `/invite` ("Accept invitation", the email field, and "Continue with
+    email"), then the password, the MFA step, `/success`, and the callback of
+    the server. AuthKit accepts the invitation before the callback. Thus the
+    server needs no invitation parameter at `/login` and no change for the
+    acceptance. A sign-in that does not start from the invitation link does not
+    accept the invitation. In the probes, an authorization URL with
+    `invitation_token` alone did not accept it either. The live gate invites
+    only existing users with a password and a verified email, because an
+    invitation to a new address needs an email verification code.
 
 ## Hosted browser sessions
 
@@ -1271,7 +1364,9 @@ signed-in session:
   `__Host-thermus-sign-in`, with the state, the verifier, the return path, and
   a 10-minute life. An optional `return_to` must be a path inside the public
   base path. AuthKit's Initiate login URI opens this route for a sign-in that
-  starts at AuthKit.
+  starts at AuthKit. An invitation link also leads here: AuthKit then accepts
+  the invitation in this sign-in, before the callback (point 10 of the
+  [hosted provider findings](#hosted-provider-findings)).
 - `GET` of the path of `WORKOS_REDIRECT_URI` is the callback. It needs the
   sign-in cookie and the same state in a constant-time comparison, and it
   exchanges the code with the verifier. Then it sets the session cookie,
@@ -1571,11 +1666,16 @@ context without an organization gives the `403` access denial.
   such as "Grant User to <email>" or "Revoke Admin from <email>". Each form has
   the hidden fields `csrf_token`, `organization_id`, `membership_id`,
   `revision`, `role`, and `action`.
-- The invitations page shows the identity policy, the one-role rule, and a
-  link to the members page. `invited-address` gives "Only a sign-in with the
-  invited email address can accept the invitation." Each other policy gives
-  "The sign-in service decides who can accept the invitation. It can accept a
-  sign-in with another address, for example an address of the same domain."
+- The invitations page shows the identity policy, the one-role rule, the role
+  of an invitation, and a link to the members page. `invited-address` gives
+  "Only a sign-in with the invited email address can accept the invitation."
+  Each other policy gives "The sign-in service decides who can accept the
+  invitation. It can accept a sign-in with another address, for example an
+  address of the same domain." AUTH-08W added the role text, because WorkOS
+  gives the role of an invitation from its membership: "The acceptance of a
+  pending invitation gives the role that the page shows. For an accepted,
+  revoked, or expired invitation, the sign-in service can show the current
+  role of the member instead."
   Each invitable role has one send form with an email field, "Invite as User"
   or "Invite as Admin". Each invitation shows as
   "<email>: <Role> invitation, <state>.", and a pending invitation of a role
@@ -1652,7 +1752,8 @@ later work. Organization rename and other organization settings stay deferred
 until the product owner decides their authority. The rules below stay the
 design of the whole slice. AUTH-08 implements their application part and tests
 it with doubles. AUTH-07W and AUTH-08W must prove the provider parts against
-WorkOS. The AUTH-07W proofs and cases passed in run r2 of AUTH-07W.
+WorkOS. The AUTH-07W proofs and cases passed in run r2 of AUTH-07W, and the
+AUTH-08W proofs and cases in run r3 of AUTH-08W.
 
 Before each mutation, load current actor and target state for the requested
 organization. The actor needs authority there. Existing target memberships and
@@ -1730,9 +1831,10 @@ Billing authority belongs to Super Admin in that organization.
 AUTH-08W implemented the member, grant, and invitation methods of
 `OrganizationDirectory` in `WorkOSOrganizations`. Each call reads or changes
 WorkOS again; nothing is kept. Each unexpected answer and each WorkOS failure
-throws, so that no partial page, count, or result shows. The
-[live provider proofs](#live-provider-proofs) show the WorkOS behavior that
-each rule needs.
+throws, so that no partial page, count, or result shows. A change makes at
+most one WorkOS write, and nothing repeats it. Each page, record, and result is
+frozen. The [live provider proofs](#live-provider-proofs) show the WorkOS
+behavior that each rule needs.
 
 - **Member reads.** `memberPage({ organizationId, statuses, cursor })` reads
   one page of the memberships of the organization with
@@ -1740,68 +1842,114 @@ each rule needs.
   with exactly the statuses that the read names. A read without a status fails
   before WorkOS gets a request, because WorkOS would then give only active
   memberships. A membership of another organization or of a status that the
-  read did not name fails the read. The email of each member comes from a user
-  read (`getUser`): a WorkOS membership has no email, and the user list of an
-  organization gives only the users with an active membership. The grants come
-  from the [hosted role mapping](#hosted-role-mapping), with one role read of
-  the organization for each page. `member(membershipId)` reads one membership
-  (`getOrganizationMembership`) in any organization; a WorkOS `404` gives
-  `undefined`.
-- **Revision.** The revision of a member is a digest of its WorkOS update
-  time, its status, and its sorted role slugs. WorkOS changes the update time
-  with each change of the roles or the status; the status and the roles make
-  sure that two states with the same time still differ.
+  read did not name fails the read before any other WorkOS read. A page with a
+  membership gets one role read of the organization, and the grants come from
+  the [hosted role mapping](#hosted-role-mapping); a membership without a role
+  list fails the read with a `HostedRoleConfigurationError`. The email of each
+  member comes from a user read (`getUser`): a WorkOS membership has no email,
+  and the user list of an organization gives only the users with an active
+  membership. The user reads of a page run one after the other, in page order,
+  so that the WorkOS calls of a page are bounded. An empty page makes no role
+  or user read. The page gives the WorkOS cursor as `next`; the last page,
+  without a cursor or with an empty one, has no `next`.
+  `member(membershipId)` reads one membership (`getOrganizationMembership`) in
+  any organization, then the roles of its organization and its user. A WorkOS
+  `404` of the membership gives `undefined`. An answer with another ID fails
+  the read, and each other failure, also a `404` of the user read, reaches the
+  caller.
+- **Revision.** The revision of a member is a SHA-256 digest of its WorkOS
+  update time, its status, and its sorted role slugs. WorkOS changes the
+  update time with each change of the roles or the status; the status and the
+  roles make sure that two states with the same time still differ.
 - **Grant changes.** WorkOS keeps the organization roles of a membership as
   role assignments on the authorization resource of the organization.
   `changeGrant()` reads the membership again just before its write. It
-  answers `stale` without a write when the membership is gone or has another
-  revision, and `unsupported` without a write when the membership is not
-  active, because a later reactivation or acceptance would give the changed
-  roles, or when a directory connection manages it. Then it makes one
+  answers `stale` without a write when WorkOS answers `404` for the membership
+  or when the membership has another revision. It answers `unsupported`
+  without a write when the membership is not active, because a later
+  reactivation or acceptance would give the changed roles, or when a directory
+  connection manages it. A failed read, an answer with another ID, and a
+  membership without a role list fail before any write. Then it makes one
   single-role write: `assignRole()` for a grant and `removeRole()` for a
-  revoke, each with the role and the organization of the membership as the
-  resource (`resourceTypeSlug: 'organization'` and
-  `resourceExternalId: <organization ID>`). It never replaces the role set
-  with `updateOrganizationMembership()`, and it never creates, deactivates,
-  reactivates, or deletes a membership. A failed write throws, so that the
-  service records `unknown`. Nothing repeats a write: the SDK client has no
-  retry.
+  revoke, each with the role and the organization of the current membership
+  as the resource (`resourceTypeSlug: 'organization'` and
+  `resourceExternalId: <organization ID>`). When the write answers, the result
+  is `applied`; the directory does not use the answer. It never replaces the
+  role set with `updateOrganizationMembership()`, and it never creates,
+  deactivates, reactivates, or deletes a membership. A failed write throws as
+  it is, so that the service records `unknown`. Nothing repeats a write: the
+  SDK client has no retry.
 - **Why the grant changes are safe.** A single-role write keeps each other
   role, also when another administrator changes another role at the same
-  time. WorkOS refuses a role assignment on the resource of another
-  organization. When the last role goes, WorkOS gives the default role
-  `member`, which gives no application permission; the membership, the
-  identity, and the other memberships stay. WorkOS takes no precondition for a
-  write. Thus a change of the same role by another administrator between the
-  read and the write is not found, and the later write decides; separate
-  provider calls are not one transaction. A second post of a form after an
-  unknown outcome gets `stale` when the first write took effect, so it never
-  returns a grant that someone removed after that write.
+  time. WorkOS refuses a role assignment that names the resource of another
+  organization with `404` `entity_not_found` and changes nothing. When the last
+  role goes, WorkOS gives the default role `member`, which gives no
+  application permission; the membership, the identity, and the other
+  memberships stay. A later grant keeps `member` next to the new role. WorkOS
+  takes no precondition for a write. Thus a change of the same role by another
+  administrator between the read and the write is not found, and the later
+  write decides; separate provider calls are not one transaction. A repeated
+  single-role write changes nothing in WorkOS, so a retry is safe there; the
+  directory still makes no retry. A second post of a form after an unknown
+  outcome gets `stale` when the first write took effect, because each real
+  role change gives a new update time. Thus it never returns a grant that
+  someone removed after that write.
 - **Invitation reads.** `invitationPage({ organizationId, states, cursor })`
   reads one page with `listInvitations({ organizationId, limit: 100, after })`
   and keeps only the states that the read names, because WorkOS has no state
-  filter. A pending invitation whose expiry time has passed counts as
-  `expired`. Each record copies only the ID, the organization, the address,
-  the role, and the state; the token and the link of WorkOS stay out.
-  `invitation(invitationId)` reads one invitation; a WorkOS `404` and an
-  invitation without an organization give `undefined`.
+  filter. A read without a state fails before WorkOS gets a request. An
+  invitation of another organization, also one without an organization, fails
+  the read, also in a state that the read does not keep. A pending invitation
+  whose expiry time is at or before the time of the clock counts as
+  `expired`, because WorkOS can still give `pending` then; each read asks the
+  clock again. A pending invitation with an expiry that is not a valid time
+  fails the read, also when the read does not name `pending`, because its
+  state is not known. A record without a role fails the read only in a state
+  that the read keeps. Each record copies only the ID, the organization, the
+  address, the role, and the state; the token and the link of WorkOS stay out.
+  The cursor and the last page are as for the members.
+  `invitation(invitationId)` reads one invitation in any organization. A
+  WorkOS `404` and an invitation without an organization give `undefined`. An
+  answer with another ID, an organization invitation without a role, and a
+  pending invitation without a valid expiry time fail the read, and each other
+  failure reaches the caller.
 - **Invitation changes.** `sendInvitation()` sends one invitation with the one
-  role of the request (`roleSlug`). The answer must be a pending invitation of
-  that organization, address, and role. WorkOS refuses an address that has a
+  role of the request (`roleSlug`). When WorkOS answers, the send happened.
+  Thus the answer must be a pending invitation of that organization and role
+  to the same address, compared without letter case; else the send fails,
+  because its effect is not known. WorkOS refuses an address that has a
   pending invitation of the organization, for any role, and the address of an
-  active member: the result is `address-in-use`. `resendInvitation()` and
-  `revokeInvitation()` change one invitation. When WorkOS refuses one with
-  `400`, a read of the invitation decides: an invitation that is no longer
-  pending gives `not-pending`, else the refusal fails.
-- **Acceptance.** AuthKit owns the acceptance. An invitation to the address of
-  a user with an inactive membership turns that membership into a pending
-  membership with only the invited role, and the acceptance makes it active
-  with only that role: no earlier grant returns. A revoke leaves the pending
-  membership without access.
+  active member. Only `400` with `email_already_invited_to_organization` or
+  `user_already_organization_member` gives `address-in-use`; each other
+  refusal, such as `400` `invalid_role`, throws. The SDK throws these refusals
+  as `GenericServerException`, so the directory reads their `status` and
+  `code` by shape, not by class. `resendInvitation()` and
+  `revokeInvitation()` change one invitation. The answer must be that
+  invitation in the state after the change, `pending` after a resend and
+  `revoked` after a revoke; else the change fails, because its effect is not
+  known. When WorkOS refuses a change with `400`, a read of the invitation
+  decides: an invitation that exists and is no longer pending, also a pending
+  one whose expiry time has passed, gives `not-pending`. An invitation that is
+  still pending and a `404` of the read give the refusal as it is. Each other
+  failure, also a `404` of the change, throws without a read. The directory gives no
+  `unsupported` for an invitation change.
+- **Acceptance.** AuthKit owns the acceptance. The invitation link goes
+  through the AuthKit page `/invite` and the Initiate login URI to
+  `GET <base>login`, which starts a sign-in of the server. AuthKit shows the
+  invitation again in that sign-in and accepts it before the callback, so the
+  server has no invitation route or parameter (point 10 of the
+  [hosted provider findings](#hosted-provider-findings)). An invitation to the
+  address of a user with an inactive membership turns that membership into a
+  pending membership with only the invited role, and the acceptance makes it
+  active with only that role: no earlier grant returns. A revoke leaves the
+  pending membership without access.
 - **The role of an invitation.** WorkOS gives the role of an invitation from
   the current role of its membership. Thus only the role of a pending
-  invitation is the role that its acceptance gives. For an accepted or a
-  revoked invitation, WorkOS can give a later role of the membership.
+  invitation is the role that its acceptance gives. For an invitation that is
+  not pending, WorkOS can give a later role of the membership. The invitations
+  page says so: "The acceptance of a pending invitation gives the role that
+  the page shows. For an accepted, revoked, or expired invitation, the sign-in
+  service can show the current role of the member instead."
 - **Identity policy.** `provider-rules`: WorkOS documents that a sign-in with
   another address of the same domain can accept an organization invitation of
   a corporate domain, so the invitations page claims no strict address match.
@@ -1843,19 +1991,19 @@ shows a separate role, invariant, or lifecycle.
 | `src/auth/hosted-auth/workos/workos-session-routes.ts`, `workos-session-pages.ts`, and `sign-out-form.ts` | Implemented in AUTH-06: `WorkOSSessionRoutes`, the sign-in, callback, logout, and session routes of the browser; their notice pages and JSON answers; and the reader of the sign-out form. The form reader is a third copy of the readers of `account-form.ts` and `local-auth-page-form.ts`; it stays a copy, because the three readers are in three logical packages. | 3 |
 | `src/hosted-admin/portal-access.ts` | Implemented in AUTH-06: `portalAccessOperation()`, the protected portal request that needs `product:access`. | 3 |
 | `src/user-portal/` | AUTH-06 connected the portal to the server-owned session: it reads `session` and `portal/access`, starts the sign-in at `login`, and posts the sign-out to `logout`. It no longer uses the AuthKit JavaScript SDK. | 3 |
-| `src/organizations/organization-directory.ts` | Implemented: the `OrganizationDirectory` contract with its records, requests, and results. AUTH-07: `membershipsOf(user)`. AUTH-08: the member, grant, and invitation methods and the invitation identity policy. | 4 |
+| `src/organizations/organization-directory.ts` | Implemented: the `OrganizationDirectory` contract with its records, requests, and results. AUTH-07: `membershipsOf(user)`. AUTH-08: the member, grant, and invitation methods and the invitation identity policy. AUTH-08W: the send result `address-in-use`. | 4 |
 | `src/organizations/organization-administration.ts` | Add `OrganizationAdministration`, with explicit grant rules and current actor/target checks. Implemented in AUTH-07: `listOrganizations(user)` and `authorizeSelection(user, organizationId)` for onboarding and organization selection. Implemented in AUTH-08: `memberOverview()`, `changeGrant()`, `invitationOverview()`, `sendInvitation()`, `resendInvitation()`, and `revokeInvitation()` for an `Actor`, with the MFA check and current actor and target reads. | 4 |
 | `src/organizations/customer-roles.ts` | Implemented in AUTH-08: the customer roles that an actor manages, from the permissions of its active membership in the organization of the request (`managedRoles()`), the checks of a requested role and action (`managedChange()` and `managedRole()`), and `hasRole()`. | 4 |
-| `src/organizations/change-records.ts` | Implemented in AUTH-08: `ChangeResult`, `ChangeOutcome`, `ChangeRecord`, `ChangeRecorder`, and `ChangeRecording`, which runs each change as its checks and then one directory change, and keeps one frozen record. | 4 |
+| `src/organizations/change-records.ts` | Implemented in AUTH-08: `ChangeResult`, `ChangeOutcome`, `ChangeRecord`, `ChangeRecorder`, and `ChangeRecording`, which runs each change as its checks and then one directory change, and keeps one frozen record. AUTH-08W added the result `address-in-use`. | 4 |
 | `src/organizations/administration-overviews.ts` | Implemented in AUTH-08: the member overview with the User seat count and the invitation overview, each with the changes that the actor can make. | 4 |
 | `src/organizations/directory-reads.ts` | Implemented in AUTH-08: the paged directory reads, with explicit statuses or states, the cursor and page limits, each record once, and no record of another organization. | 4 |
-| `src/auth/hosted-auth/workos/workos-organizations.ts` | Add `WorkOSOrganizations`, multi-role membership/invitation mapping, safe grant updates, and pagination. Implemented in AUTH-06: `activeGrants(userId, organizationId)`, the current grant read of access resolution, with the check of the hosted role mapping. Implemented in AUTH-07W: `WorkOSOrganizations` implements `OrganizationDirectory`, with `membershipsOf(user)`, the paged read of the active memberships of a WorkOS user with the WorkOS organization names and the grants of the hosted role mapping, which fails closed for each unexpected answer; member and invitation reads that throw and changes that answer `unsupported`, until AUTH-08W; and the `provider-rules` invitation policy. AUTH-08W adds the member, grant, and invitation methods with live seat reads and answers `unsupported` when it cannot make a change safely. | 3–4 |
+| `src/auth/hosted-auth/workos/workos-organizations.ts` | Add `WorkOSOrganizations`, multi-role membership/invitation mapping, safe grant updates, and pagination. Implemented in AUTH-06: `activeGrants(userId, organizationId)`, the current grant read of access resolution, with the check of the hosted role mapping. Implemented in AUTH-07W: `WorkOSOrganizations` implements `OrganizationDirectory`, with `membershipsOf(user)`, the paged read of the active memberships of a WorkOS user with the WorkOS organization names and the grants of the hosted role mapping, which fails closed for each unexpected answer, and the `provider-rules` invitation policy. Implemented in AUTH-08W: the member, grant, and invitation methods, as [WorkOS organization administration](#workos-organization-administration-of-auth-08w) gives: paged member reads with a user read for each member and a revision; one single-role write for each grant change, after a current read of the revision, and `unsupported` for an inactive, pending, or directory-managed membership; invitation reads without the token and the link; and invitation changes with `address-in-use` and `not-pending`. | 3–4 |
 | `src/auth/hosted-auth/workos/hosted-role-mapping.ts` | Moved in AUTH-07W from `workos-organizations.ts`, without a change of behavior: `grantsOfRoles()`, which checks the [hosted role mapping](#hosted-role-mapping) of the roles of an organization and gives one grant for each role of a membership, and `HostedRoleConfigurationError`. `activeGrants()` and `membershipsOf()` share it. | 3–4 |
 | `src/hosted-admin/account-routes.ts` | Add `HostedAccountRoutes`, form validation, CSRF checks, and response adaptation. Implemented in AUTH-12: the session, access, and trusted-tenant checks before each account operation. Implemented in AUTH-07: the organization page and the selection, with origin and CSRF checks; the cookie effects of each answer after a sign-in; and the failure page with the operator report, also for an operation answer that cannot carry the cookie effects. Implemented in AUTH-08: the member and invitation paths go to `AdministrationRoutes` after the access checks. | 3–4 |
-| `src/hosted-admin/administration-routes.ts` | Implemented in AUTH-08: `AdministrationRoutes`, the member and invitation pages and their changes. The actor and the organization come from the decided context and the session. Each change post gets the method, origin, form, and organization checks, and each result gets its answer. | AUTH-08 |
+| `src/hosted-admin/administration-routes.ts` | Implemented in AUTH-08: `AdministrationRoutes`, the member and invitation pages and their changes. The actor and the organization come from the decided context and the session. Each change post gets the method, origin, form, and organization checks, and each result gets its answer. AUTH-08W added the `409` answer of `address-in-use`. | AUTH-08 |
 | `src/hosted-admin/account-form.ts` | Implemented in AUTH-07: the form input boundary of the account routes. It reads a form body of at most 16 KiB, and stops the reading and cancels the body when the client disconnects. It checks the CSRF token first, in a constant-time comparison, then accepts only the named fields of the form, each one time, and checks each return destination. AUTH-08 added the grant change, invitation, and invitation change forms; one field check serves the selection and these forms. An email address has at most 254 characters, one `@` between two parts, and no space or control character; each other value has 1 to 256 visible ASCII characters. | AUTH-07, AUTH-08 |
-| `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. Implemented in AUTH-12: the notice pages. Implemented in AUTH-07: the operator and invitation guidance, the authorized selection forms with escaped provider values, the refusal and failure notices, and the link from the `403` access denial page to the organization page. Implemented in AUTH-08: the notices of the administration routes. | 3–4 |
-| `src/hosted-admin/administration-pages.ts` | Implemented in AUTH-08: the members page, with the User seat count and the grant forms, and the invitations page, with the identity policy and the invitation forms. | AUTH-08 |
+| `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. Implemented in AUTH-12: the notice pages. Implemented in AUTH-07: the operator and invitation guidance, the authorized selection forms with escaped provider values, the refusal and failure notices, and the link from the `403` access denial page to the organization page. Implemented in AUTH-08: the notices of the administration routes. AUTH-08W added the notice of an address in use. | 3–4 |
+| `src/hosted-admin/administration-pages.ts` | Implemented in AUTH-08: the members page, with the User seat count and the grant forms, and the invitations page, with the identity policy and the invitation forms. AUTH-08W added the text about the role of a pending invitation and of the other invitations. | AUTH-08 |
 | `src/hosted-admin/page-html.ts` | Implemented in AUTH-08: the shared HTML parts, the page headers, and the escaping of the account pages. | AUTH-08 |
 | `docs/implementation/hosted-organization-setup.md` | Document external operator setup, Super Admin replacement/recovery, MFA, and change records. Written in AUTH-07W: the [operator runbook](../implementation/hosted-organization-setup.md). The hosted live gate runs its steps through the test-support driver `test/support/hosted-live/operator-runbook.ts`; these proofs passed in run r2 of AUTH-07W. | 4 |
 | `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. Implemented for the hosted edition: `composeHostedApplication()`, `accountFailureReporter()`, `accountChangeRecorder()`, and `routeHostedRequests()`; AUTH-06 replaced the placeholder shell with the WorkOS composition and routes the browser routes of the provider before the account routes. | 2–3 |
@@ -1919,7 +2067,16 @@ posts, and `serveAdministration()` of
 `test/unit/hosted-admin/fixtures/administration-routes-fixtures.ts`. The unit
 tests of `OrganizationAdministration` share the memberships, the actors, and
 the record checks of
-`test/unit/organizations/fixtures/administration-fixtures.ts`.
+`test/unit/organizations/fixtures/administration-fixtures.ts`. The unit tests
+of `WorkOSOrganizations` share `WorkOSOrganizationsDouble`, in
+`test/unit/auth-workos/fixtures/workos-organizations-double.ts`: a double of
+the SDK client of the directory that answers from the records of a test,
+records each call in order, and changes the roles and the update time of a
+membership at a role write, as WorkOS does. The local fake of the WorkOS API in
+`test/support/workos-world.ts` keeps users, the roles of each membership as
+single-role assignments, and invitations, as the probes of WorkOS staging
+showed. A test can repeat a membership on the next page and make the later
+member pages or the invitation reads fail.
 
 ## Implementation slices
 
@@ -1933,8 +2090,8 @@ the record checks of
    account-state checks, per-user revocation, persistence, HTTP composition, and
    cleanup. Complete the offline acceptance flow before starting hosted
    variation.
-3. **Hosted identity and browser sessions.** Implemented in AUTH-06, except for
-   its hosted live gate pass. Replace the
+3. **Hosted identity and browser sessions.** Implemented in AUTH-06. Its cases
+   of the hosted live gate passed in run r5. Replace the
    [hosted placeholder](#hosted-placeholder). Add Connect verification, shared
    identity mapping, current access resolution, browser session lifecycle, and
    MFA. Prove that an authenticated user without an organization can reach
@@ -1989,7 +2146,7 @@ behavior.
 | `test/unit/hosted-admin/account-routes.test.ts` | Form validation, CSRF/origin checks, cookie forwarding, and error responses with session/service doubles. Implemented so far: the order of the session, access, and operation steps, each refusal, and the notice pages. `account-routes-effects.test.ts` adds the failure page with the operator report, also for an operation answer that cannot carry the cookie effects, the cookie effects of each answer, and the link from the `403` page to the organization page. `account-routes-organization-page.test.ts`, `account-routes-selection-input.test.ts`, and `account-routes-selection.test.ts` add the organization page, the input checks of a selection post, and the selection decision with `OrganizationAdministrationDouble`: form validation, origin and CSRF checks, return destinations, body limits, a client that disconnects during the body, the order of the cookies, and failures. `account-routes-administration-pages.test.ts`, `account-routes-administration-changes.test.ts`, and `account-routes-administration-input.test.ts` add the member and invitation pages, the answer for each change result, and the input checks of a change post: the actor and organization from the decided context and the session, the MFA evidence, escaped provider values, origin and CSRF checks, exact fields, address checks, the organization of the session, body limits, and failures. |
 | `test/unit/mcp/unavailable-mcp-endpoint.test.ts` | Removed in AUTH-06 with `UnavailableMcpEndpoint`. `test/unit/mcp/protected-resource-endpoint.test.ts` covers the hosted MCP endpoint and its metadata. |
 | `test/unit/config/deployment-config.test.ts` | One deployment selector, missing settings, URL validation, local limits, and hosted stdio rejection. WorkOS values change no hosted record and appear in no error. |
-| `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. `workos.test.ts` is implemented for the SDK side, offline, with a fake WorkOS API; the [live provider proofs](#live-provider-proofs) show the service side. |
+| `test/interface/auth/better-auth.test.ts`, `workos.test.ts` | Few focused external provider contracts, including claim formats, key rotation, multi-role permissions, default-role denial, final grant removal, and operator setup/recovery. `workos.test.ts` is implemented for the SDK side, offline, with a fake WorkOS API; the [live provider proofs](#live-provider-proofs) show the service side. AUTH-08W added the member reads by ID, the single-role writes, and the invitation reads, sends, resends, and revokes. |
 | `test/integration/auth/better-auth-provider-verification.test.ts`, `better-auth-provider-introspection.test.ts`, and `better-auth-provider-access.test.ts` | Provider doubles with the real shared rejection class and context creation; invalid-token/outage distinction and current user access. |
 | `test/acceptance/architecture/auth-boundaries.test.ts` | Existing ESLint guards refuse direct provider/transport imports and re-exports at protected paths while allowing contracts, provider-internal adapters, and composition roots. |
 | `test/integration/auth/mcp-context.test.ts` | Real MCP context creation and permission checks with verifier and resolver doubles; error mapping and sequential/concurrent isolation. |
@@ -2010,13 +2167,15 @@ behavior.
 | `test/acceptance/auth/hosted-seats.test.ts` | Implemented, with the same site: the User seat count of two organizations across pages with repeated members, without Admin-only, Super-Admin-only, default-role, pending, and inactive memberships and invitations; and a failed member or invitation page without a partial count or list. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/self-hosted.test.ts` | Network-denied two-user add/login/consent/re-authorization in one shared workspace; separate sessions; selected-user reset/disable rejects old credentials and disabled login and issuance while peers retain access; no refresh grant; public signup denial, clients, CSRF/origin/rate limits, and zero-account CLI recovery. |
 | `test/acceptance/auth/self-hosted-container.test.ts` | Implemented with `npm run test:container`: offline bundled CLI with stopped-server volume access; commands reject the live lock, also inside the server container; two-user login, consent, and re-authorization after restart and container/image replacement; installation/user IDs, sessions, consents, and tokens survive backup/restore; fresh and identity-less data; targeted reset/disable with peer access; zero-account recovery; refused hosted and paid paths; a hosted container with placeholder WorkOS settings that gives a local session and its token no access; image contents and the Compose service. |
-| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline; the provider proofs in `test/acceptance/auth/hosted-live/`; and the AUTH-06 cases of the hosted server in `hosted-live/hosted-server.ts`, with the local HTTPS test server of `test/support/hosted-live/`. AUTH-07W added its provider proofs in `hosted-live/operator-setup.ts`, which run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) through `test/support/hosted-live/operator-runbook.ts`, and its cases of the hosted server in `hosted-live/organization-server.ts`; they passed in run r2 of AUTH-07W. AUTH-08W adds its cases. |
-| `test/unit/auth-workos/` | Implemented in AUTH-06: the WorkOS settings, the grant reads with an SDK double, the sealed cookies, the browser session, and the session routes with narrow doubles. AUTH-07W added `workos-organizations-memberships.test.ts`: the paged membership reads of a user with the organization names and grants, each refused answer, and the member and invitation methods before AUTH-08W. |
+| `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline; the provider proofs in `test/acceptance/auth/hosted-live/`; and the AUTH-06 cases of the hosted server in `hosted-live/hosted-server.ts`, with the local HTTPS test server of `test/support/hosted-live/`. AUTH-07W added its provider proofs in `hosted-live/operator-setup.ts`, which run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) through `test/support/hosted-live/operator-runbook.ts`, and its cases of the hosted server in `hosted-live/organization-server.ts`; they passed in run r2 of AUTH-07W. AUTH-08W added its provider proofs in `hosted-live/administration-proofs.ts` and its cases of the hosted server in `hosted-live/administration-server.ts`, with organizations C and D and their users from `test/support/hosted-live/administration-fixtures.ts` and the acceptance of an invitation through AuthKit in `test/support/hosted-live/portal-visit.ts`. Run r3 of AUTH-08W passed each of the 74 tests of the command. |
+| `test/unit/auth-workos/` | Implemented in AUTH-06: the WorkOS settings, the grant reads with an SDK double, the sealed cookies, the browser session, and the session routes with narrow doubles. AUTH-07W added `workos-organizations-memberships.test.ts`: the paged membership reads of a user with the organization names and grants, and each refused answer. AUTH-08W added `workos-organizations-members.test.ts`, `workos-organizations-grants.test.ts`, and `workos-organizations-invitations.test.ts` with `WorkOSOrganizationsDouble`: the member pages and the revision, the single-role grant writes and their refusals, and the invitation reads and changes. |
 | `test/integration/auth/workos-provider-verification.test.ts`, `workos-provider-access.test.ts`, `workos-provider-directory.test.ts`, and `workos-browser-session.test.ts` | Implemented in AUTH-06: the Connect verification with the real rejection class, the access resolution with real context creation, and the provider and the browser session with the pinned SDK against the local fake WorkOS API. |
 | `test/integration/auth/workos-provider-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS session, organization directory, and access resolver with the pinned SDK against the local fake WorkOS API, together with the real `OrganizationAdministration`, account routes, and MCPServer, and `AccountOperationProbe` destinations. Super Admin alone without an inferred Admin or User grant; each destination, also the billing page, in the selected organization only; the exact WorkOS reads of the organization page and a selection; the organization service over the WorkOS reads; and the `500` failure page for a WorkOS answer that the read refuses. These tests prove the application side, not WorkOS behavior. |
+| `test/integration/auth/workos-provider-administration.test.ts` | Implemented in AUTH-08W: the real `WorkOSOrganizations` and `WorkOSAuthProvider` with the pinned SDK against the local fake WorkOS API, which keeps users, single-role assignments, and invitations, together with the real `OrganizationAdministration`, called as a service, and the access resolution of Connect tokens. Self-grants, selective revocation, and the removal of the last grant through single-role writes; forged and foreign targets; actors without MFA or of another authority without any WorkOS request; unknown outcomes, retries, and concurrent and stale changes; an inactive membership, invitations, and an acceptance; the paged member reads and the seat updates of billing; and outages without a partial result. These tests prove the application side, not WorkOS behavior. |
 | `test/integration/mcp/required-permission.test.ts` and `test/integration/auth/portal-access.test.ts` | Implemented in AUTH-06: the MCP access check with a required permission, and the protected portal request with the real permission check. |
 | `test/acceptance/auth/hosted-startup.test.ts` and `hosted-workos.test.ts` | Implemented in AUTH-06. `hosted-startup` replaces the placeholder specification: the built server stops without valid WorkOS settings, and with them it refuses forged credentials without a network call. `hosted-workos` runs the real WorkOS composition behind the real HTTP server with the local fake WorkOS API: sign-in, callback, the session cookie, the portal session, product access of each grant set, refresh, ended sessions, outages, sign-out, Connect tokens at the MCP endpoint, and the organization of each credential. These tests prove the application side, not WorkOS behavior. |
 | `test/acceptance/auth/hosted-workos-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS composition with the WorkOS organization reads behind the real HTTP server with the local fake WorkOS API. Onboarding without an authorized active organization; the selection with the WorkOS names from paged reads; refused and forged selections without a switch; memberships that change after the page was shown; Super Admin alone with the billing page and without a User grant; origin and form token refusals before any organization read; and the refreshed session cookie on the `303`, the `403`, and the `500` failure page of an outage. These tests prove the application side, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-workos-administration.test.ts` | Implemented in AUTH-08W: the real WorkOS composition with the WorkOS organization administration behind the real HTTP server with the local fake WorkOS API. Super Admin self-grants, refused grants, and an Admin regrant through single-role writes; independent grants and revocation at the next request; the removal of the last grant; stale, inactive, foreign, and forged targets; no WorkOS read without MFA evidence; the invitation forms with `address-in-use`, an acceptance that gives only the invited role, and an expired invitation; and the User seat count from every page, also during an outage. These tests prove the application side, not WorkOS behavior. |
 | Existing `test/unit/billing/billing-free.test.ts` and `test/acceptance/billing/free-billing.test.ts` | `BillingFree` through the `Billing` interface: free plan, no billed seat, and refused input. The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists the paid billing tests. |
 
 Include these explicit acceptance specifications:
@@ -2043,8 +2202,11 @@ Include these explicit acceptance specifications:
 
 AUTH-08 implemented these specifications offline with doubles, in
 `hosted-grants.test.ts` and `hosted-grant-refusals.test.ts`, and the direct
-service calls in `hosted-administration.test.ts`. The hosted live gate must
-still prove them with WorkOS.
+service calls in `hosted-administration.test.ts`. AUTH-08W implemented them
+again with the WorkOS directory and a fake of the WorkOS API, in
+`hosted-workos-administration.test.ts` and
+`workos-provider-administration.test.ts`. Its cases of the hosted live gate
+cover them with WorkOS, and they passed in run r3 of AUTH-08W.
 
 Unit tests replace other Delamain packages at public boundaries. Real
 cross-package execution is integration coverage, including provider execution
