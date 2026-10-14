@@ -24,9 +24,10 @@ behind the provider contracts, with offline tests that use doubles:
 [organization onboarding and selection](#organization-administration)
 (AUTH-07), and User and Admin grant management, invitations, basic change
 records, and the User seat summary (AUTH-08). The hosted slice 3 has started:
-the WorkOS SDK is pinned, and its [offline proofs](#pinned-workos-sdk-proof)
-pass. The live provider proofs need a WorkOS staging environment, and they have
-not run. The rest of slice 3, the WorkOS side of slice 4 (AUTH-07W and AUTH-08W)
+the WorkOS SDK is pinned, its [offline proofs](#pinned-workos-sdk-proof)
+pass, and the [live provider proofs](#live-provider-proofs) ran against the
+WorkOS staging environment. Three of them wait for dashboard settings of the
+owner. The rest of slice 3, the WorkOS side of slice 4 (AUTH-07W and AUTH-08W)
 with the operator runbook, and the paid billing of slice 6 are pending. Until
 slice 3 is complete,
 the [hosted placeholder](#hosted-placeholder) holds the place of the WorkOS
@@ -837,8 +838,8 @@ through `npm run test:hosted-live`. The
 [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
 gives its settings and its setup error. The first live proofs only read: the
 AuthKit authorization-server metadata and key set, the browser-session key set,
-and the acceptance of the API key. No WorkOS staging environment was available
-for AUTH-06 so far (runs r1 and r2 on 2026-10-13), so no live proof has run.
+and the acceptance of the API key. They passed on 2026-10-13 against the
+owner's WorkOS staging environment (`environment_01M4VDKATD5PXZT4H01EHCMR2A`).
 
 AUTH-06 owns these identity, session, and read proofs. They must pass before
 the hosted behavior that depends on them. They read only the grants that the
@@ -859,6 +860,39 @@ staging environment already has:
 - Required MFA: completion in the real sign-in flow and for privileged actions.
 - Onboarding: a signed-in user without an active membership gets no tenant
   access.
+
+The provider proofs ran on 2026-10-14 (run r4) through `npm run test:hosted-live`
+and the staging launcher. Playwright 1.64.0 with headless Chromium completes the
+hosted AuthKit pages: the email, the password, the TOTP enrollment or
+verification, the organization choice, and the Connect consent. Each run makes
+its own staging users, organizations, memberships, and Connect applications,
+and deletes them at the end. The callbacks go to `https://localhost:46443/callback`
+and, for the MCP client, to `http://127.0.0.1:46480/callback`; the proofs catch
+them in the browser. These proofs show the provider contracts only. The hosted
+live gate cases of the Thermus server are separate.
+
+| Contract | Live result | Consequence for the hosted implementation |
+| --- | --- | --- |
+| Saved configuration | Redirect URI `https://localhost:46443/callback` (the default), MCP resource indicator `https://localhost:46443/mcp`, no CORS origin, roles `user`, `admin`, `super-admin`, and `member` exactly as in the [hosted role mapping](#hosted-role-mapping), MFA required, password sign-in on, passkeys off. The run r3 saved the redirect URI and the resource indicator through the WorkOS API. | The local HTTPS test server at `https://localhost:46443/` is the documented deployment of the live gate. |
+| Pending configuration | The sign-in page still offers Google, Microsoft, GitHub, and Apple. No default Sign-out URI: the logout lands on `error.workos.com/user_management/app-homepage-url-not-found`. No Initiate login URI: a visit to the AuthKit domain shows the AuthKit sign-in page. The WorkOS API has no endpoint for these three settings. | The owner must change them in the WorkOS dashboard. Until then, these three proofs fail, and the gate does not pass. |
+| AuthKit metadata | Exact issuer; `jwks_uri` `<issuer>/oauth2/jwks`; grants `authorization_code`, `refresh_token`, and the device code; client authentication `none`, `client_secret_post`, and `client_secret_basic`; scopes `openid`, `profile`, `email`, and `offline_access`; no `registration_endpoint` and no client ID metadata document support. | Dynamic registration and client ID metadata documents are off. An MCP client must be a Connect application. The live proofs make a third-party OAuth application with PKCE through the API. |
+| Key sets | The AuthKit key set and the browser-session key set each hold the same one RS256 key. | The signature of a browser token verifies with the AuthKit key set. The MCP verifier must refuse it by its issuer and its audience. WorkOS did not rotate a key during the proofs; the [offline proofs](#pinned-workos-sdk-proof) show the jose rotation behavior. |
+| Browser sign-in and MFA | A new user: email, password, `/mfa/enrollment` (a TOTP enrollment with a code), then the callback. A later sign-in: `/mfa/verification` instead. A user with two memberships also gets `/organization-selection`. No callback comes before the TOTP step. The code exchange gives `authenticationMethod` `Password`. | Required MFA completes in the real flow. WorkOS gives no MFA claim, so a session counts as MFA-completed only when its sign-in method is `Password` in this environment, which requires MFA for password sign-ins. Any other method gives no MFA evidence. |
+| Browser access token | RS256; `iss` `https://api.workos.com/user_management/<client ID>`; `sid` `session_…`; `client_id` the environment client; no `aud`; 300-second lifetime; `org_id`, `role`, `roles`, and `permissions` only with an organization. A user without a membership gets no `org_id`. The sealed session has 1,980 characters. | The session check sets the browser issuer. Access never comes from the token claims; the access resolver reads the memberships for each request. |
+| Organization switch | A refresh with another organization ID gives that `org_id` in the same session (same `sid`). A refresh for an organization without a membership throws `OauthException` 400 `organization_membership_not_found`, and the session still refreshes after it. | `selectOrganization()` is a refresh with the organization. That refusal changes no cookie. |
+| Browser refresh | WorkOS did not rotate the browser refresh token. A replay at once gave the same new refresh token, and the old token still worked after 31 seconds. | Each refresh stores the new seal anyway, so a later rotation also works. |
+| Session revocation and logout | After a revocation or after the browser opened the WorkOS logout URL, the refresh gives `invalid_grant` (not retryable), and the session leaves the session list. The access token issued before still verifies for the rest of its 300 seconds. | A terminal refresh failure clears the cookie. A browser session can stay signed in for at most 300 seconds after a logout elsewhere. Access needs a current membership read in each request, so a membership change takes effect at once. |
+| Connect authorization | Email, password, the MFA step, `/application-authorization` (the consent), `/application-authorization/success`, then the callback with the code and the state. A user with one membership gets no organization page. | The MCP client flow completes MFA and consent in the real flow. |
+| Connect access token | RS256 without a `typ` header; `iss` the AuthKit issuer; `aud` the MCP resource; `sub` the user; `client_id` the MCP client; `sid` `app_consent_…`; `org_id` the organization of the grant; `scope` `email offline_access openid profile`; `auth_time` and `jti`; 300-second lifetime. No role or permission claim. The token answer has a refresh token and an ID token. | The verifier checks the exact issuer, the MCP audience, RS256, the time claims, a `sid`, a `scope`, and a `sub` that is not the `client_id`. It requires no particular scope. The organization of the grant comes from `org_id`; the permissions come from fresh reads. |
+| Connect refresh | The refresh rotates the refresh token. The new access token keeps `sub`, `sid`, `org_id`, `client_id`, `aud`, and `iss`. | The organization of an MCP grant stays fixed until the client authorizes again; a browser organization switch does not change it. |
+| Consent revocation | `DELETE /user_management/users/<user>/authorized_applications/<application>` ends the consent: the next refresh gives `invalid_grant`. The access token issued before still verifies for the rest of its 300 seconds. | An MCP token can stay valid for at most 300 seconds after consent revocation or browser logout. A membership change takes effect at the next request. |
+| Refused token shapes | A browser access token and an M2M `client_credentials` token both fail the audience check of the MCP verifier. The M2M token has `aud` the environment client ID, no `sid`, `sub` equal to `client_id`, and a 3,600-second lifetime. | The verifier refuses both. Its `sid` and `sub` rule also refuses an M2M token that has the MCP audience. |
+| Membership reads | Active memberships with the explicit status `active` give each complete `roles` list: User and Admin in one organization, User in another. An Admin-only membership has `admin`. A membership made without a role has only `member`. A deactivated membership appears only with the status `inactive`. Five memberships with the statuses `active` and `inactive` and a limit of 2 give pages of 2, 2, and 1 through the `after` cursor; the last page has no cursor. The roles of an organization are the four environment roles. | The access resolver reads the active membership of the user in the organization with the explicit status and the roles of the organization, and combines the application permissions of every role. A default role gives no permission. A role configuration that differs from the mapping is a configuration error that closes access. |
+
+The proofs of the outage of a key set or of the refresh service stay offline:
+the pinned SDK and jose throw or return a retryable result, as the
+[offline proofs](#pinned-workos-sdk-proof) show. A live outage cannot be made
+safely.
 
 AUTH-07W and AUTH-08W own the later proofs below. AUTH-06 does not mark them
 passed. The operations that depend on them stay unavailable until their own
