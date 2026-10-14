@@ -190,6 +190,11 @@ interface; they are not test-first evidence.
 - A legacy client can get no answer for a call that the server shutdown
   cancels. Thus the renderer gate closes that client after shutdown. It does not
   wait for the SDK request timeout.
+- While the manager checked the timing of the two waiting cases, a temporary
+  copy of the renderer gate with extra timing output failed one time in the
+  legacy shutdown case. Its assertion output was not kept. Later, 19 runs of
+  that case passed, 3 of them with the unchanged gate file. Each run of the gate
+  on the candidate passed.
 - The Compose mount was checked with Docker Engine 29.5.2 and Compose 5.6.0 on
   colima, with a small probe service and the same bind settings. Without
   `ad-rules.txt`, `docker compose up` and `docker compose run` stop with
@@ -201,7 +206,83 @@ interface; they are not test-first evidence.
 
 ## Candidate verification
 
-The manager records the final command results here.
+The candidate contains commits `4f50763`, `b3965b8`, `7acdea7`, and `acea742`.
+The commands below ran on the clean working tree of `acea742`. The final
+document commit records the results and changes no executable file. Counts are
+tests/pass/fail/cancelled/skipped/todo.
+
+`pnpm exec node --version` reports `v24.20.0`. Renderer tests use
+`LIGHTPANDA_BIN="$PWD/.cache/lightpanda/1.0.0/lightpanda"`; it reports 1.0.0 and
+its SHA256 is `955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d`,
+the macOS ARM64 digest of the runtime guide. The documented Axiom test settings
+came from the local environment. The container gate used Docker Engine 29.5.2
+with Buildx 0.38.0 and Compose 5.6.0.
 
 | Command | Exit | Result |
 | --- | --- | --- |
+| `pnpm install --frozen-lockfile` | 0 | The lockfile is up to date. |
+| `npm run check` | 0 | Unit 2053/2053/0/0/0/0; portal unit 6/6/0/0/0/0; build 10/10/0/0/0/0; portal acceptance 4/4/0/0/0/0. Type checks and the portal build passed. |
+| Focused command below | 0 | 277/277/0/0/0/0 |
+| `npm run test:integration` | 0 | 256/256/0/0/0/0 |
+| `npm run test:acceptance` | 0 | Server 197/197/0/0/0/0; portal 4/4/0/0/0/0. The container suite is skipped and runs no test, as the gate policy states. |
+| `npm run test:interface` | 0 | 83/83/0/0/0/0, including Better Auth, the renderer contracts, the public-site smoke test, and the live Axiom exports |
+| `npm run build && node --test dist/test/interface/auth/better-auth.test.js` | 0 | 23/23/0/0/0/0 |
+| `npm run test:mcp:renderer` | 0 | 6/6/0/0/0/0 with Lightpanda 1.0.0 |
+| `npm run test:container` | 0 | 9/9/0/0/0/0; both images were built and all cases ran without outbound access |
+| `habit-hooks` | 1 | 2 function-length, 93 comment, and 6 file-length findings; the reasons to keep them are below. No test counts apply. |
+
+Each reported test passed. None was cancelled, skipped, or left as todo. The
+focused command ran after a clean build. It selected each new or changed test
+file, with the local renderer interface tests:
+
+```sh
+LIGHTPANDA_BIN="$PWD/.cache/lightpanda/1.0.0/lightpanda" node --test \
+  dist/test/unit/config/ad-rules-file.test.js \
+  "dist/test/unit/website-fetcher/*.test.js" \
+  dist/test/integration/application-ad-rules.test.js \
+  dist/test/integration/auth/local-installation.test.js \
+  dist/test/integration/auth/local-auth-command-lock.test.js \
+  dist/test/integration/auth/hosted-administration.test.js \
+  dist/test/integration/auth/hosted-organizations.test.js \
+  dist/test/integration/server-stop-signals.test.js \
+  "dist/test/acceptance/mcp/*.test.js" \
+  dist/test/acceptance/auth/self-hosted.test.js \
+  dist/test/acceptance/auth/self-hosted-startup.test.js \
+  dist/test/acceptance/auth/self-hosted-routes.test.js \
+  dist/test/acceptance/auth/local-user-commands.test.js \
+  dist/test/acceptance/auth/local-client-registration.test.js \
+  dist/test/interface/website-fetcher-cancellation.test.js \
+  dist/test/interface/website-fetcher-http.test.js \
+  dist/test/interface/website-fetcher-network.test.js \
+  dist/test/interface/website-fetcher-readiness.test.js \
+  dist/test/interface/website-fetcher-redirects.test.js
+```
+
+Habit findings are kept for these reasons:
+
+- Function length: the renderer's render method and its promise callback keep
+  one child's timer, listener, kill request, and completion state in one call
+  scope, as the [P02 record](mcp-p02.md) tells. P03 changed only where the
+  executable comes from.
+- Comments: 59 findings are on new lines. They give reasons, constraints, or
+  the contract of a test double: why the rules load before the data directory,
+  why the messages hide the path and the contents, why one read has no check
+  before it, the byte order mark, why the parser error stays only the cause,
+  why the gate copies the rules file into the container, why the nested gate
+  run removes `NODE_TEST_CONTEXT`, why the gate closes the legacy client, the
+  sign-in limit of one process, the ban without session deletion, and how the
+  fixtures make the sanitizer withhold HTML. The other 34 are earlier comments
+  in changed files; the P02 record gives their reasons.
+- File length: four files were long before this slice. P03 changed only their
+  assertions, settings, or one shared import. Two files are new. The renderer
+  gate must stay one file that its own command selects; its fixtures, setup
+  checks, and site helper serve all six cases. The offline fetch tool file
+  keeps one installation, renderer double, and story fixture for its five
+  cases, and its refusal case compares refused users with a peer on the same
+  server. The rules startup file was split, so the module-load cases have their
+  own file.
+
+This slice also corrected a complexity finding in the first container case. An
+earlier run reported unused files in `dist-manager/`, an ignored local build
+output that is not part of the candidate; it was removed. The snooze file
+remains `[]`.

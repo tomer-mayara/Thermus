@@ -273,5 +273,5 @@ setup, inventory, and this plan. Image renderer delivery remains deferred.
 - [x] Keep No Auth test-only and prove real-provider access/refusals.
 - [x] Prove safe records, exact/empty Markdown, and cancellation in both eras.
 - [x] Supply trusted rules and pinned local renderer; document image limits.
-- [ ] Pass focused tests and all required gates; record actual evidence.
+- [x] Pass focused tests and all required gates; record actual evidence.
 - [ ] Update affected guides and complete owner review and PR gates.
