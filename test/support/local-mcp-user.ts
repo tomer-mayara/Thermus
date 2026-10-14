@@ -1,7 +1,12 @@
+import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { Client, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
+import { PreRegisteredNativeClient } from './better-auth-agents.ts';
 import { mcpResourceUrl, publicBaseUrl, type AccountCredentials } from './better-auth-local.ts';
 import { LocalBrowser, serverFetch, type ServerAddress } from './local-browser.ts';
+import { userGrant, type UserGrant } from './local-commands.ts';
+import { withRuntime } from './local-runtime.ts';
+import { eraNegotiation, type McpProtocolEra } from './mcp-protocol-eras.ts';
 import { PreRegisteredSdkClient } from './mcp-sdk-oauth-client.ts';
 
 export interface McpConnection {
@@ -29,21 +34,21 @@ export class LocalMcpUser {
 
   // Connects as the SDK documents: a refused connection starts the authorization, the user completes it
   // in the browser, finishAuth exchanges the code, and a new connection uses the new token.
-  async connect(t: TestContext, account: AccountCredentials = this.account): Promise<McpConnection> {
+  async connect(t: TestContext, account: AccountCredentials = this.account, era: McpProtocolEra = '2026-07-28'): Promise<McpConnection> {
     const first = this.transport();
     try {
-      return { client: await this.connected(t, first), pages: [] };
+      return { client: await connectedClient(t, first, era), pages: [] };
     } catch (error) {
       if (!(error instanceof UnauthorizedError)) throw error;
     }
     const { callback, pages } = await this.browser.authorize(this.authorizationUrl(), account);
     await first.finishAuth(callback.searchParams);
-    return { client: await this.connected(t, this.transport()), pages };
+    return { client: await connectedClient(t, this.transport(), era), pages };
   }
 
   // Connects with the saved token only. A refused token gives UnauthorizedError and prepares a new authorization URL.
-  async connectWithSavedToken(t: TestContext): Promise<Client> {
-    return this.connected(t, this.transport());
+  async connectWithSavedToken(t: TestContext, era: McpProtocolEra = '2026-07-28'): Promise<Client> {
+    return connectedClient(t, this.transport(), era);
   }
 
   authorizationUrl(): URL {
@@ -53,14 +58,35 @@ export class LocalMcpUser {
   private transport(): StreamableHTTPClientTransport {
     return new StreamableHTTPClientTransport(new URL(mcpResourceUrl), { authProvider: this.oauth, fetch: this.fetch });
   }
+}
 
-  private async connected(t: TestContext, transport: StreamableHTTPClientTransport): Promise<Client> {
-    const client = new Client(
-      { name: 'thermus-acceptance', version: '0.0.0' },
-      { versionNegotiation: { mode: { pin: '2026-07-28' }, probe: { timeoutMs: 5_000, maxRetries: 0 } } },
-    );
-    t.after(() => client.close());
-    await client.connect(transport, { timeout: 10_000, signal: t.signal });
-    return client;
-  }
+// Real tokens from the provider's own sign-in, consent, and token exchange, made while the server is stopped.
+// Each grant uses its own client address, so the sign-in limit of the bundled pages does not apply.
+export async function issuedGrants(directory: string, clientId: string, accounts: readonly AccountCredentials[]): Promise<ReadonlyMap<string, UserGrant>> {
+  return withRuntime(directory, async (runtime) => {
+    const native = new PreRegisteredNativeClient(runtime.auth, clientId);
+    const grants = new Map<string, UserGrant>();
+    for (const account of accounts) grants.set(account.email, await userGrant(runtime.auth, native, account));
+    return grants;
+  });
+}
+
+// An SDK client that sends the current value of token() as its Bearer token, so a test can change the token between calls.
+export async function connectWithToken(t: TestContext, connection: { server: ServerAddress; token: () => string; era?: McpProtocolEra }): Promise<Client> {
+  const transport = new StreamableHTTPClientTransport(new URL(mcpResourceUrl), {
+    authProvider: { token: async () => connection.token() },
+    fetch: serverFetch(connection.server),
+  });
+  return connectedClient(t, transport, connection.era ?? '2026-07-28');
+}
+
+async function connectedClient(t: TestContext, transport: StreamableHTTPClientTransport, era: McpProtocolEra): Promise<Client> {
+  const client = new Client(
+    { name: 'thermus-acceptance', version: '0.0.0' },
+    { versionNegotiation: { ...eraNegotiation(era), probe: { timeoutMs: 5_000, maxRetries: 0 } } },
+  );
+  t.after(() => client.close());
+  await client.connect(transport, { timeout: 10_000, signal: t.signal });
+  assert.equal(client.getNegotiatedProtocolVersion(), era);
+  return client;
 }

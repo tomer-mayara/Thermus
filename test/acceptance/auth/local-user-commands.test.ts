@@ -24,7 +24,7 @@ import {
   type ResourceServerCredentials,
   type UserGrant,
 } from '../../support/local-commands.ts';
-import { selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
+import { selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
@@ -69,7 +69,7 @@ describe('Offline local user and client commands', () => {
   test('Given a stopped server and its data directory, when the operator adds users with hidden passwords and lists them, then a duplicate email is refused, the list shows each enabled state without credentials, the new password signs in, and no command uses the network', { timeout: 120_000 }, async (t) => {
     const directory = dataDirectory(t);
     const operator = operatorOn(t, directory);
-    const server = await ServerProcess.start(t, selfHostedSettings(directory));
+    const server = await ServerProcess.start(t, selfHostedServerSettings(directory));
     const tenant = server.tenant();
     await server.stop();
 
@@ -91,7 +91,7 @@ describe('Offline local user and client commands', () => {
       const other = await signIn(auth, { email: alice.email, password: 'other-password-1' });
       assert.equal(other.status, 401);
     });
-    const restarted = await ServerProcess.start(t, selfHostedSettings(directory));
+    const restarted = await ServerProcess.start(t, selfHostedServerSettings(directory));
     assert.equal(restarted.tenant(), tenant);
     await restarted.stop();
   });
@@ -155,7 +155,7 @@ describe('Offline local user and client commands', () => {
   test('Given a live server, when each operator command runs in another process on its data directory, then each fails with the lock error, asks for no password, and changes nothing; after the server stops, add recovers the zero-account installation', { timeout: 120_000 }, async (t) => {
     const directory = dataDirectory(t);
     const operator = operatorOn(t, directory);
-    const server = await ServerProcess.start(t, selfHostedSettings(directory));
+    const server = await ServerProcess.start(t, selfHostedServerSettings(directory));
     const tenant = server.tenant();
 
     const refused = [
@@ -180,7 +180,7 @@ describe('Offline local user and client commands', () => {
     const [account] = await listedAccounts(operator);
     assert.deepEqual({ email: account?.email, state: account?.state }, { email: alice.email, state: 'enabled' });
     await withRuntime(directory, async ({ auth }) => assert.equal(await signedInUserId(auth, alice), account?.id));
-    const restarted = await ServerProcess.start(t, selfHostedSettings(directory));
+    const restarted = await ServerProcess.start(t, selfHostedServerSettings(directory));
     assert.equal(restarted.tenant(), tenant);
     await restarted.stop();
   });

@@ -36,7 +36,7 @@ const rules = readFileSync('/etc/thermus/ad-rules.txt', 'utf8');
 const ads = new CleanHtmlAdsAdblockRs(rules);
 ```
 
-Choose and validate that path in application configuration. If the file cannot be read, `readFileSync` throws before the cleaner is constructed. The caller owns the failure policy. The cleaner does not download rules or make network requests. This step applies cosmetic rules to supplied HTML. It does not block network requests. Test fixture rule lists are supplied by tests only.
+Choose and validate that path in application configuration. If the file cannot be read, `readFileSync` throws before the cleaner is constructed. The caller owns the failure policy. The cleaner does not download rules or make network requests. This step applies cosmetic rules to supplied HTML. It does not block network requests. Test fixture rule lists are supplied by tests only. The self-hosted server reads its rules from `AD_RULES_FILE`; the [server rules file](#server-rules-file) section gives its policy.
 
 If you used `new CleanHtmlAdsAdblockRs()` before, pass the intended rules string instead. For a deliberate no-op, pass `''`.
 
@@ -53,3 +53,30 @@ npm run build && node --test dist/test/unit/html-cleaner-pipeline/ad-cleaner/cle
 The cleaner scans the source once to record each LF line boundary and the first and last character other than a space or tab on each line. Each matched range uses binary searches in that line index to check the lone-line rule. It does not scan or slice the same long line again for each match. For n source UTF-16 units, m matched ranges, and l source lines, this check takes O(n + m log l) work and uses O(l) line records. Parsing, selector matching, and range sorting have separate costs.
 
 The test uses 32, 128, and 512 matches on short lines, in minified source, and in minified source with long whitespace gaps and supplementary Unicode. Through the public cleaner interface, it checks exact output and counts and records source scans, slice calls, and requested UTF-16 units. Every fixture permits at most three inspected source units and two requested slice units per source UTF-16 unit, and at most three slice calls per match plus one. This is an operation-count regression, not a timing benchmark or a measure of physical string allocation. It does not bound parsing, selector matching, or range sorting.
+
+## Server rules file
+
+The self-hosted server reads its trusted rules from the file that `AD_RULES_FILE` names. [`readAdRulesFile(environment)`](../../src/config/ad-rules-file.ts) reads the setting from the server environment. [`fetchToolServers()`](../../src/fetch-tool.ts) gives the text to one `CleanHtmlAdsAdblockRs` when the server starts.
+
+- The value must be the absolute path of a trusted file.
+- The server reads the file one time, with one `readFileSync` call. There is no check before the read, so the file cannot change between a check and the read.
+- The text must be UTF-8. The decoder is strict. It removes a UTF-8 byte order mark at the start.
+- There is no size limit, because the operator trusts the file.
+- There is no syntax check. The native parser ignores lines that it cannot parse. An empty file, or a file with only comments, makes the cleaner a no-op. The other pipeline steps still run.
+- There is no updater. The server keeps the rules that it read at startup. A changed file takes effect at the next server start.
+
+Only the server reads `AD_RULES_FILE`. `loadDeploymentConfig` does not read it. The local account and client commands share that loader and never read the rules. The commands and the hosted edition load no rules reader, renderer, cleaning pipeline, or adblock-rs module.
+
+A rules failure stops startup before the server opens the data directory and before it listens. The server writes one `FATAL` line and exits with status 1:
+
+| Condition | `FATAL` message |
+| --- | --- |
+| The setting is not set or is empty | `AD_RULES_FILE is required. Set it to the absolute path of a trusted ad rules file.` |
+| The path is relative | `AD_RULES_FILE must be an absolute path.` |
+| The read fails | `AD_RULES_FILE could not be read (<code>).` The code is the error code, for example `ENOENT`, `EISDIR`, or `EACCES`. It is `unknown error` when the error has no string code. |
+| The text is not UTF-8 | `AD_RULES_FILE must contain UTF-8 text.` |
+| The native adblock-rs parser fails | `The ad cleaner could not load the rules in AD_RULES_FILE.` |
+
+No message shows the path or the file contents. A read, decoder, or parser failure keeps the original error as `cause`, but the `FATAL` line shows only the message. The parser message is not shown, because it can repeat rule text.
+
+The container image sets `AD_RULES_FILE=/etc/thermus/ad-rules.txt`, but it has no rules file. The [container installation](../../README.md#container-installation) tells how to supply one.

@@ -4,7 +4,7 @@ import type { AccountCredentials } from '../../support/better-auth-local.ts';
 import { assertExit, assertRevealsNone, CommandProcess } from '../../support/command-process.ts';
 import { dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
 import { listedAccounts, operatorOn } from '../../support/local-commands.ts';
-import { selfHostedSettings } from '../../support/local-runtime.ts';
+import { selfHostedServerSettings, selfHostedSettings } from '../../support/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
@@ -41,7 +41,7 @@ describe('Local auth command and the data-directory lock', () => {
     const command = CommandProcess.launch(t, selfHostedSettings(directory), ['users', 'add', alice.email]);
     assert.ok(await command.stderrMatches(addPrompt), command.stderr);
 
-    const server = ServerProcess.launch(t, selfHostedSettings(directory));
+    const server = ServerProcess.launch(t, selfHostedServerSettings(directory));
     const listening = await server.listeningOrExit();
     command.answer([alice.password, alice.password]);
 

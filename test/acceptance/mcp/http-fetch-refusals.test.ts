@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Client, SdkHttpError, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { fetchProtocolEras, openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
 
-for (const era of fetchProtocolEras) {
+for (const era of mcpProtocolEras) {
   test(`Given missing or malformed Bearer credentials in ${era}, when the fetch HTTP resource is requested, then authentication refuses before fetch or completion`, async (t) => {
     const site = await openFetchSite(t, era);
     for (const authorization of [undefined, 'Basic private-credential', 'Bearer', 'Bearer ', 'Bearer two tokens', 'Bearer token,second', 'Bearer  doubled-space']) {
@@ -44,7 +45,7 @@ for (const era of fetchProtocolEras) {
 
   test(`Given a second supplied token in ${era}, when another HTTP client calls the tool, then test auth keeps the same synthetic authority and subject`, async (t) => {
     const site = await openFetchSite(t, era);
-    const client = new Client({ name: 'second-test-client', version: '0.0.0' }, { versionNegotiation: { mode: era === '2026-07-28' ? { pin: era } : 'legacy' } });
+    const client = new Client({ name: 'second-test-client', version: '0.0.0' }, { versionNegotiation: eraNegotiation(era) });
     t.after(() => client.close());
     await client.connect(new StreamableHTTPClientTransport(site.url, { authProvider: { token: async () => 'different-supplied-token' } }), { signal: t.signal, timeout: 5_000 });
     await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });

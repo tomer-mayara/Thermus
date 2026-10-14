@@ -89,7 +89,7 @@ describe('WebsiteFetcherLightpanda readiness', { concurrency: false }, () => {
       return child;
     }) as typeof childProcess.execFile);
     permitIPv4Fixture(context);
-    fetcher = new WebsiteFetcherLightpanda();
+    fetcher = new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN);
   });
 
   afterEach(async (context) => {

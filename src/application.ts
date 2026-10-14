@@ -10,6 +10,8 @@ import type { ChangeRecorder } from './organizations/change-records.ts';
 import { OrganizationAdministration } from './organizations/organization-administration.ts';
 import type { OrganizationDirectory } from './organizations/organization-directory.ts';
 
+// The settings that only the server reads, such as AD_RULES_FILE and the WorkOS settings. The local commands share
+// DeploymentConfig.
 type Environment = Readonly<Record<string, string | undefined>>;
 
 type SelfHostedConfig = Extract<DeploymentConfig, { deployment: 'self-hosted' }>;
@@ -65,16 +67,19 @@ export interface ApplicationLogger {
 }
 
 // The hosted provider reads its own settings from the environment, so no common setting turns it on.
-export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger, environment: Environment = {}): Promise<Application> {
+export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
   if (config.deployment === 'hosted') return createHostedApplication(config, logger, environment);
-  return createSelfHostedApplication(config, logger);
+  return createSelfHostedApplication(config, logger, environment);
 }
 
 export function operatorFailureReporter(logger: ApplicationLogger): FailureReporter {
   return ({ step, cause }) => logger.error(`An MCP request failed unexpectedly in ${step}: ${String(cause)}`);
 }
 
-async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger): Promise<Application> {
+async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+  // The rules load before the data directory opens, so a rules failure holds no resource and changes no data.
+  const { fetchToolServers } = await import('./fetch-tool.ts');
+  const buildServer = fetchToolServers(environment, logger);
   const { openBetterAuthRuntime } = await import('./auth/local-auth/better-auth/better-auth-runtime.ts');
   const { BetterAuthProvider } = await import('./auth/local-auth/better-auth/better-auth-provider.ts');
   const { LocalAuthPages, localPagePaths } = await import('./auth/local-auth/better-auth/local-auth-pages.ts');
@@ -96,6 +101,7 @@ async function createSelfHostedApplication(config: SelfHostedConfig, logger: App
       resourceMetadataUrl: config.resourceMetadataUrl,
       expectedResource: new URL(config.mcpResourceUrl),
     },
+    buildServer,
     reportFailure: operatorFailureReporter(logger),
   }), (server) => server.close());
   logger.info(`The self-hosted installation uses tenant ${runtime.tenantId}.`);

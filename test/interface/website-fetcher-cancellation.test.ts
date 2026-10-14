@@ -14,7 +14,7 @@ test('fetchURL accepts a pre-aborted signal and makes no request', async (t) => 
   syncBuiltinESMExports();
   const controller = new AbortController();
   controller.abort();
-  const fetcher: WebsiteFetcher = new WebsiteFetcherLightpanda();
+  const fetcher: WebsiteFetcher = new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN);
 
   await assert.rejects(fetcher.fetchURL(`${fixture.hostnameOrigin}/`, controller.signal), (error) => error === controller.signal.reason);
   assert.equal(fixture.connections, 0);
@@ -42,7 +42,7 @@ test('fetchURL rejects cancellation after the real renderer exits and releases i
     }
   });
   const controller = new AbortController();
-  const fetcher: WebsiteFetcher = new WebsiteFetcherLightpanda();
+  const fetcher: WebsiteFetcher = new WebsiteFetcherLightpanda(process.env.LIGHTPANDA_BIN);
   const result = fetcher.fetchURL(`${fixture.hostnameOrigin}/pending`, controller.signal);
   const rejection = assert.rejects(result, (error) => error === controller.signal.reason);
   await receivedRequest;

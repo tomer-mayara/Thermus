@@ -36,9 +36,12 @@ FROM ${NODE_IMAGE}
 LABEL org.opencontainers.image.title="Thermus" \
       org.opencontainers.image.description="Thermus self-hosted evaluation edition with local accounts and one data volume" \
       org.opencontainers.image.source="https://github.com/3-headed-monkey/Thermus"
+# The server reads its trusted ad rules from AD_RULES_FILE when it starts. The image has no rules file:
+# the operator mounts one there, as compose.yaml does. The commands and the hosted edition do not read it.
 ENV NODE_ENV=production \
     DEPLOYMENT=self-hosted \
     DATA_DIR=/var/lib/thermus \
+    AD_RULES_FILE=/etc/thermus/ad-rules.txt \
     LISTEN_HOST=0.0.0.0 \
     LISTEN_PORT=8080
 WORKDIR /app
@@ -47,7 +50,8 @@ COPY --from=dependencies /app/node_modules node_modules
 COPY --from=build /app/dist/src dist/src
 COPY migrations migrations
 # The data directory holds the database and the secrets, so only the node user can open it.
-RUN install -d -m 0700 -o node -g node /var/lib/thermus
+RUN install -d -m 0700 -o node -g node /var/lib/thermus \
+ && install -d -m 0755 /etc/thermus
 USER node
 EXPOSE 8080
 ENTRYPOINT ["node", "/app/dist/src/index.js"]

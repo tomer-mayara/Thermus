@@ -5,7 +5,7 @@ import { describe, test } from 'node:test';
 import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
-import { accountsOf, addAccount, selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
+import { accountsOf, addAccount, selfHostedServerSettings, selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
 import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
 
 const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -52,10 +52,10 @@ describe('Self-hosted server startup with one persistent installation', () => {
   test('Given a fresh data directory, when the server starts, stops, and starts again, then one installation identity persists and both runs report the same local tenant', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
-    const first = await ServerProcess.start(t, selfHostedSettings(directory));
+    const first = await ServerProcess.start(t, selfHostedServerSettings(directory));
     const firstTenant = first.tenant();
     const firstExit = await first.stop();
-    const second = await ServerProcess.start(t, selfHostedSettings(directory));
+    const second = await ServerProcess.start(t, selfHostedServerSettings(directory));
     const secondTenant = second.tenant();
     const secondExit = await second.stop();
 
@@ -68,7 +68,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
   for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     test(`Given several servers that start at the same time, when each gets ${signal} in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after ${signal}" and exits with status 0, not by the signal`, { timeout: 60_000 }, async (t) => {
       // The servers start at the same time, because the load makes a gap between the line and the stop handlers easier to hit.
-      const servers = Array.from({ length: 8 }, () => ServerProcess.launch(t, selfHostedSettings(dataDirectory(t))));
+      const servers = Array.from({ length: 8 }, () => ServerProcess.launch(t, selfHostedServerSettings(dataDirectory(t))));
 
       const exits = await Promise.all(servers.map((server) => server.stopWhenListening(signal)));
 
@@ -83,7 +83,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
     const directory = dataDirectory(t);
     const account = { email: 'eve@example.com', password: 'eve-password-1', name: 'Eve' };
 
-    const server = await ServerProcess.start(t, selfHostedSettings(directory));
+    const server = await ServerProcess.start(t, selfHostedServerSettings(directory));
     const withoutToken = await server.request('/mcp', mcpPost());
     const withForgedToken = await server.request('/mcp', mcpPost('forged-token'));
     const signUp = await server.request('/api/auth/sign-up/email', jsonPost(account));
@@ -103,7 +103,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
     const directory = dataDirectory(t);
     const disabledId = await withRuntime(directory, (runtime) => addAccount(runtime, 'dana@example.com', true));
 
-    const server = await ServerProcess.start(t, selfHostedSettings(directory));
+    const server = await ServerProcess.start(t, selfHostedServerSettings(directory));
     const response = await server.request('/mcp', mcpPost());
     await server.stop();
 
@@ -114,7 +114,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
   test('Given a fresh data directory, when two servers start at the same time, then one serves, the other stops with a lock error before it listens, and one installation identity exists', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
-    const servers = [ServerProcess.launch(t, selfHostedSettings(directory)), ServerProcess.launch(t, selfHostedSettings(directory))];
+    const servers = [ServerProcess.launch(t, selfHostedServerSettings(directory)), ServerProcess.launch(t, selfHostedServerSettings(directory))];
     const outcomes = await Promise.all(servers.map((server) => server.listeningOrExit()));
     const running = servers.filter((_, index) => outcomes[index] !== undefined);
     const refused = servers.filter((_, index) => outcomes[index] === undefined);
@@ -131,11 +131,11 @@ describe('Self-hosted server startup with one persistent installation', () => {
 
   test('Given a running server, when another server starts with the same data directory, then it stops with a lock error before it listens, within five seconds, and changes no data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
-    const server = await ServerProcess.start(t, selfHostedSettings(directory));
+    const server = await ServerProcess.start(t, selfHostedServerSettings(directory));
     const before = dataFiles(directory);
     const launched = performance.now();
 
-    await assertStopsBeforeListening(ServerProcess.launch(t, selfHostedSettings(directory)), /in use by another/i);
+    await assertStopsBeforeListening(ServerProcess.launch(t, selfHostedServerSettings(directory)), /in use by another/i);
     const refusedAfter = performance.now() - launched;
 
     assert.ok(refusedAfter < 5_000, `The second server stopped after ${refusedAfter} ms`);
@@ -146,10 +146,10 @@ describe('Self-hosted server startup with one persistent installation', () => {
 
   test('Given retained authentication data without its installation identity, when the server starts, then it stops before it listens, asks for operator recovery, and creates no new identity', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
-    await (await ServerProcess.start(t, selfHostedSettings(directory))).stop();
+    await (await ServerProcess.start(t, selfHostedServerSettings(directory))).stop();
     changeDatabase(directory, 'DELETE FROM "thermus_installation"');
 
-    const server = ServerProcess.launch(t, selfHostedSettings(directory));
+    const server = ServerProcess.launch(t, selfHostedServerSettings(directory));
 
     await assertStopsBeforeListening(server, /installation identity/i);
     assert.match(server.output, /restore/i);
@@ -160,17 +160,17 @@ describe('Self-hosted server startup with one persistent installation', () => {
     const original = dataDirectory(t);
     const restored = dataDirectory(t);
     const withoutSecret = dataDirectory(t);
-    const source = await ServerProcess.start(t, selfHostedSettings(original));
+    const source = await ServerProcess.start(t, selfHostedServerSettings(original));
     const tenant = source.tenant();
     await source.stop();
     cpSync(original, restored, { recursive: true });
     cpSync(original, withoutSecret, { recursive: true });
     rmSync(join(withoutSecret, 'auth.secret'));
 
-    const server = await ServerProcess.start(t, selfHostedSettings(restored));
+    const server = await ServerProcess.start(t, selfHostedServerSettings(restored));
     const restoredTenant = server.tenant();
     await server.stop();
-    const partial = ServerProcess.launch(t, selfHostedSettings(withoutSecret));
+    const partial = ServerProcess.launch(t, selfHostedServerSettings(withoutSecret));
 
     assert.equal(restoredTenant, tenant);
     await assertStopsBeforeListening(partial, /secret/i);
@@ -178,7 +178,7 @@ describe('Self-hosted server startup with one persistent installation', () => {
 
   test('Given a Better Auth variable that the self-hosted runtime refuses, when the server starts, then it stops before it listens with an error that names the variable but not its value', { timeout: 60_000 }, async (t) => {
     for (const [variable, value] of Object.entries(refusedProviderVariables)) {
-      const server = ServerProcess.launch(t, { ...selfHostedSettings(dataDirectory(t)), [variable]: value });
+      const server = ServerProcess.launch(t, { ...selfHostedServerSettings(dataDirectory(t)), [variable]: value });
 
       await assertStopsBeforeListening(server, new RegExp(`FATAL.*${variable}`));
       assert.ok(!server.output.includes(value), `The output shows the value of ${variable}:\n${server.output}`);

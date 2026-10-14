@@ -154,3 +154,6 @@ vite.config.ts.timestamp-*
 
 .env.local
 .env.local.bak
+
+# The trusted ad rules of a local container installation. compose.yaml mounts this file.
+/ad-rules.txt

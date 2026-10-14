@@ -11,7 +11,7 @@ import { publicBaseUrl } from '../../support/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
 import { hostedStartupLine, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { WorkOSSettingsError } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { accountsOf, addAccount, passwordOf, selfHostedConfig, withRuntime } from '../../support/local-runtime.ts';
+import { accountsOf, addAccount, passwordOf, selfHostedConfig, selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
 
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -23,7 +23,7 @@ class RecordingLogger {
 }
 
 async function startApplication(t: TestContext, directory: string, logger = new RecordingLogger()): Promise<Application> {
-  const application = await createApplication(selfHostedConfig(directory), logger);
+  const application = await createApplication(selfHostedConfig(directory), logger, selfHostedServerSettings(directory));
   t.after(() => application.close());
   return application;
 }
@@ -75,7 +75,8 @@ describe('Local installation with the real application and provider', () => {
     const directory = dataDirectory(t);
     const config = selfHostedConfig(directory);
 
-    const results = await Promise.allSettled([createApplication(config, new RecordingLogger()), createApplication(config, new RecordingLogger())]);
+    const settings = selfHostedServerSettings(directory);
+    const results = await Promise.allSettled([createApplication(config, new RecordingLogger(), settings), createApplication(config, new RecordingLogger(), settings)]);
     const started = results.filter((result) => result.status === 'fulfilled');
     const refused = results.filter((result) => result.status === 'rejected');
     for (const { value } of started) t.after(() => value.close());
@@ -95,7 +96,7 @@ describe('Local installation with the real application and provider', () => {
     });
 
     const first = new RecordingLogger();
-    await (await createApplication(selfHostedConfig(directory), first)).close();
+    await (await createApplication(selfHostedConfig(directory), first, selfHostedServerSettings(directory))).close();
     const second = new RecordingLogger();
     await (await startApplication(t, directory, second)).close();
     const after = await withRuntime(directory, async (runtime) => ({ tenantId: runtime.tenantId, accounts: await accountsOf(runtime) }));
@@ -176,7 +177,7 @@ describe('Local installation with the real application and provider', () => {
       await withRuntime(directory, async () => undefined);
       changeDatabase(directory, damage);
 
-      await assert.rejects(createApplication(selfHostedConfig(directory), new RecordingLogger()), failure);
+      await assert.rejects(createApplication(selfHostedConfig(directory), new RecordingLogger(), selfHostedServerSettings(directory)), failure);
 
       assertLockIsFree(directory);
     });
@@ -184,7 +185,7 @@ describe('Local installation with the real application and provider', () => {
 
   test('Given the hosted deployment, when the application starts, then it selects the WorkOS provider instead of the local runtime: without the WorkOS settings it refuses to start, and with them account and MCP requests without credentials get 401, and repeated closes give one result', async () => {
     const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http');
-    await assert.rejects(createApplication(config, new RecordingLogger()), WorkOSSettingsError);
+    await assert.rejects(createApplication(config, new RecordingLogger(), {}), WorkOSSettingsError);
     const logger = new RecordingLogger();
     const application = await createApplication(config, logger, workOSSettings);
 

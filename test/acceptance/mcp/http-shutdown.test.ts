@@ -8,9 +8,10 @@ import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
-import { fetchProtocolEras, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
 
-for (const era of fetchProtocolEras) {
+for (const era of mcpProtocolEras) {
   test(`Given active ${era} HTTP fetch work, when shutdown starts, then cancellation precedes listener drain and provider close waits for cleanup`, { timeout: 5_000 }, async (t) => {
     const resource = new URL('https://thermus.example/mcp');
     const provider = new NoAuthProvider(resource);
@@ -50,7 +51,7 @@ for (const era of fetchProtocolEras) {
       listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href, shutdownGraceMs: 1_000,
     });
     const client = new Client({ name: 'shutdown-acceptance', version: '0.0.0' }, {
-      versionNegotiation: { mode: era === '2026-07-28' ? { pin: era } : 'legacy' },
+      versionNegotiation: eraNegotiation(era),
     });
     t.after(async () => {
       emergencyStop.abort();

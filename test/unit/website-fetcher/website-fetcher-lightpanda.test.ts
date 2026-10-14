@@ -28,7 +28,6 @@ describe('WebsiteFetcherLightpanda', () => {
   let signalRendererLaunch!: () => void;
 
   beforeEach(() => {
-    mock.property(process, 'env', { ...process.env, LIGHTPANDA_BIN: '' });
     launchCount = 0;
     child = new ChildProcess();
     rendererLaunched = new Promise((resolve) => { signalRendererLaunch = resolve; });
