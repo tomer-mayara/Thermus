@@ -53,8 +53,7 @@ const hostedAndPaidPaths = [
 ] as const;
 
 let images: GateImages;
-// The server lists the fetch tool. The image has no renderer, so a call gets the fixed fetch failure, and the server
-// log gets one report that names the missing renderer.
+// The server lists the fetch tool. The image has no renderer, so a call gets the fixed fetch failure.
 const fetchToolNames = ['getURLAsMarkdown'];
 const missingRendererReport = 'Renderer setup failure: the Lightpanda executable is missing (ENOENT). '
   + 'Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.';

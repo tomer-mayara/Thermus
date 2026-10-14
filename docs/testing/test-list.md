@@ -856,8 +856,6 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Rejects HTML above the shared 10 MiB UTF-8 limit before all pipeline work and accepts the exact byte boundary
 [V] Preserves completed empty Markdown even with withholding warnings, and rejects absent or nonstring Markdown
 [V] Classifies cancellation before generic errors and checks again after each asynchronous stage
-[V] Gives a renderer launch failure (`ENOENT` or `EACCES`) to the operator reporter one time with only the failure class and the code; the client still gets only `Page fetch failed` without a cause, and no processing starts
-[V] Gives no operator report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination; a reporter that throws does not change the safe fetch error
 
 **MCP operation and real pipeline** (`test/integration/mcp/get-url-as-markdown-pipeline.test.ts`)
 
@@ -870,12 +868,26 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Returns exact redirected Markdown through an SDK client with one safe completion record
 [V] Preserves empty success after real sanitizer scan failure or exhaustion
 [V] Observes SDK cancellation during a real sanitizer stage, prevents Markdown conversion, and records cancellation once
-[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure and an HTTP error; only the launch failure gives one operator report with only the failure class and the code
+
+**Renderer setup reports of the operation** (`test/integration/mcp/renderer-setup-report.test.ts`)
+
+The operation runs with the real permission helper and with fetcher, pipeline, and reporter doubles. The last case adds the real tool server and an SDK client.
+
+[V] Gives a renderer launch failure (`ENOENT` or `EACCES`) to the operator reporter one time with only the failure class and the code; the client still gets only `Page fetch failed` without a cause, and no processing starts
+[V] Gives no operator report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination
+[V] Keeps the safe fetch error when the reporter throws, and gives only the cancellation and no report for a call that is cancelled when the renderer cannot start
+[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure and an HTTP error; only the launch failure gives one operator report
+
+**Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
+
+`fetchToolServers` runs with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. No renderer runs.
+
+[V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets exactly one line for each code, in order, with the exact report text
 
 Focused commands:
 
 ```sh
-npm run build && node --test dist/test/integration/mcp/sdk-http.test.js dist/test/integration/mcp/get-url-as-markdown.test.js dist/test/integration/mcp/get-url-as-markdown-pipeline.test.js dist/test/integration/mcp/get-url-as-markdown-mcp.test.js
+npm run build && node --test dist/test/integration/mcp/sdk-http.test.js dist/test/integration/mcp/get-url-as-markdown.test.js dist/test/integration/mcp/get-url-as-markdown-pipeline.test.js dist/test/integration/mcp/get-url-as-markdown-mcp.test.js dist/test/integration/mcp/renderer-setup-report.test.js dist/test/integration/fetch-tool-renderer-setup-report.test.js
 ```
 
 **MCP Authentication**

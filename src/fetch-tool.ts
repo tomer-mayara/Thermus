@@ -27,8 +27,7 @@ export function fetchToolServers(environment: Environment, logger: ApplicationLo
   return (context, lifetime) => createFetchToolServer(context, { operation, logger }, lifetime);
 }
 
-// One error line for each system error code in the life of the server: a renderer that stays missing adds one line,
-// not one line for each call. The line has no request data.
+// One line for each code in the life of the server keeps the log short when the renderer stays missing.
 function rendererSetupReporter(logger: ApplicationLogger): (failure: RendererSetupFailure) => void {
   const reported = new Set<string>();
   return ({ failure, code }) => {

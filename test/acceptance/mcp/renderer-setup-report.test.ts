@@ -58,7 +58,7 @@ function assertFetchFailed(results: readonly CallToolResult[]): void {
   }
 }
 
-// A report must not show the request, the token, the executable path, the renderer arguments, or the process error.
+// The process error starts with "spawn", and --json is one of the renderer arguments.
 function assertNoRequestData(lines: readonly string[], setup: Installation, executable: string): void {
   const text = lines.join('\n');
   for (const value of ['93.184.216.34', 'private-', setup.token, executable, '--json', 'spawn']) {

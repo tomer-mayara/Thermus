@@ -4,7 +4,6 @@ import type { HtmlToMarkdownPipeline } from '../html-cleaner-pipeline/html-to-ma
 import { WebsiteFetchLaunchError, type WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
 import { isValidFetchUrl } from './fetch-tool-schema.ts';
 
-// The operator report of a renderer that cannot start gets only the failure class and the system error code.
 export type RendererSetupFailure = Pick<WebsiteFetchLaunchError, 'failure' | 'code'>;
 
 export function createGetURLAsMarkdown({ fetcher, pipeline, reportRendererSetupFailure }: {

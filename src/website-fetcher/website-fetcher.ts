@@ -21,8 +21,7 @@ export class WebsiteFetchHttpError extends Error {
   }
 }
 
-// The renderer did not start. The code is the system error code, such as ENOENT for a missing executable or EACCES
-// for one that cannot start. The message shows no requested URL, but the cause can.
+// The message shows no requested URL, but the cause can: the process error repeats the renderer arguments.
 export class WebsiteFetchLaunchError extends Error {
   public readonly kind = 'launch';
   public readonly failure: 'missing' | 'cannot-start';

@@ -121,33 +121,24 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       };
       signal?.addEventListener('abort', cancel, { once: true });
       try {
-        child = execFile(
-          this.executable,
-          rendererArguments(url),
-          {
-            encoding: 'utf8',
-            maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
-            timeout: LIGHTPANDA_TIMEOUT_MS,
-          },
-          (error, stdout) => {
-            if (completed) return;
-            cleanup();
-            try {
-              signal?.throwIfAborted();
-              if (readinessLimitReached) {
-                throw new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
-                  cause: error ?? undefined,
-                });
-              }
-              assertRendererExit(error, this.executable);
-              const result = WebsiteFetcherLightpanda.parseResult(requestedUrl, stdout, error);
-              signal?.throwIfAborted();
-              resolve(result);
-            } catch (error) {
-              reject(signal?.aborted ? signal.reason : error);
+        child = this.startRenderer(url, (error, stdout) => {
+          if (completed) return;
+          cleanup();
+          try {
+            signal?.throwIfAborted();
+            if (readinessLimitReached) {
+              throw new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
+                cause: error ?? undefined,
+              });
             }
-          },
-        );
+            assertRendererExit(error, this.executable);
+            const result = WebsiteFetcherLightpanda.parseResult(requestedUrl, stdout, error);
+            signal?.throwIfAborted();
+            resolve(result);
+          } catch (error) {
+            reject(signal?.aborted ? signal.reason : error);
+          }
+        });
         if (signal?.aborted) cancel();
         if (!completed && !signal?.aborted) {
           readinessTimer = setTimeout(() => {
@@ -158,9 +149,22 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
         }
       } catch (error) {
         cleanup();
-        reject(signal?.aborted ? signal.reason : launchError(error, this.executable) ?? error);
+        reject(signal?.aborted ? signal.reason : error);
       }
     });
+  }
+
+  // Node refuses some starts at once, for example with ENOEXEC. They become launch errors, as the later ones do.
+  private startRenderer(url: string, complete: (error: ExecFileException | null, stdout: string) => void): ChildProcess {
+    try {
+      return execFile(this.executable, rendererArguments(url), {
+        encoding: 'utf8',
+        maxBuffer: LIGHTPANDA_MAX_BUFFER_BYTES,
+        timeout: LIGHTPANDA_TIMEOUT_MS,
+      }, complete);
+    } catch (error) {
+      throw launchError(error, this.executable) ?? error;
+    }
   }
 
   private static parseResult(requestedUrl: string, stdout: string, cause: ExecFileException | null): WebsiteFetchResult {
