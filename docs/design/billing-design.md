@@ -123,7 +123,7 @@ In these examples, `org-a` and `org-b` are hosted organizations.
 
 | Case | Example | Result |
 | --- | --- | --- |
-| First purchase | An operator creates `org-a`. Its Super Admin grants Admin and then User to itself. The account page reads the billing state. | `stateOf("org-a")` gives `{ organizationId: "org-a", plan: "free", billedSeats: 0 }`. There is nothing to buy. MCP access depends only on the User grant. |
+| First purchase | An operator creates `org-a`. Its Super Admin grants Admin and then User to itself. The billing page reads the billing state. | `stateOf("org-a")` gives `{ organizationId: "org-a", plan: "free", billedSeats: 0 }`. There is nothing to buy. MCP access depends only on the User grant. |
 | Added seat | `org-a` has 4 active Users. An Admin grants User to a fifth person, and the app gives the count 5. | `updateSeats("org-a", 5)` gives the free state with 0 billed seats. There is no charge. |
 | Removed seats | The count goes from 5 to 4, and then to 0. | Each update gives the free state. There is no credit. The last removal ends nothing. |
 | Proration and cancellation | Seats change during a month, or a Super Admin wants to stop paying. | There is nothing to prorate or cancel. |
@@ -435,12 +435,14 @@ ticket. Do not create another one.
 - The hosted work of AUTH-06 to AUTH-08 is complete. AUTH-11 uses its hosted
   composition, account pages, change records, and complete count of active
   User seats.
-- The AUTH-12 hosted placeholder does not meet the AUTH-06 condition. AUTH-06
-  must replace the placeholder with the WorkOS provider and pass the
-  [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06).
-  AUTH-07 and AUTH-08 can build their rules on the placeholder boundary with
-  test doubles, but a pass of the offline placeholder tests is not a hosted
-  gate pass.
+- AUTH-08W is complete. It reads the members of each organization from
+  WorkOS, so it gives the complete count of active User seats. Until
+  AUTH-08W, `WorkOSOrganizations.memberPage()` fails, so the hosted edition
+  cannot count the seats. A pass of the
+  [hosted offline checks](../implementation/test-gate-policy.md#hosted-offline-checks)
+  is not enough: the AUTH-08W proofs and cases of the
+  [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+  must pass.
 
 ### Steps
 
@@ -490,7 +492,7 @@ recommended options.
 | `src/billing/billing-events.ts` | The event route. It checks the signature and the time on the raw body, and it records the IDs of processed events. |
 | `src/billing/seat-reconciliation.ts` | Gives the complete count to `updateSeats` after each membership change and on a schedule. |
 | `src/billing/billing-store.ts`, `migrations/billing/0001-billing.sql` | For D11 (a): SQLite through `node:sqlite` on the hosted persistent volume. The store keeps the provider customer and subscription IDs, the last confirmed status, quantity, and period end of each organization, the IDs of processed events, and the billing change records. For D11 (b), a PostgreSQL store replaces these files. |
-| `src/hosted-admin/account-routes.ts`, `src/hosted-admin/account-pages.ts` | The Super Admin billing page and actions, with CSRF and origin checks. |
+| `src/hosted-admin/administration-routes.ts`, `src/hosted-admin/administration-pages.ts` | The Super Admin billing page and actions. `AdministrationRoutes` serves the billing page, `GET <base>billing`, and `billingPage()` makes it. Each billing action gets the checks that `AdministrationRoutes.changeOnPost()` makes for each member and invitation change: the origin, the form, the form token, and the organization of the session. |
 | `src/hosted-workos-application.ts` | `composeWorkOSApplication()` creates the provider implementation instead of `BillingFree` and gives it as `billing` to `composeHostedApplication()`. |
 | `src/config/deployment-config.ts`, `.env.example` | The provider settings of the hosted edition. The self-hosted edition reads none. |
 | `package.json`, `pnpm-lock.yaml` | An exact pin of the provider SDK, if AUTH-11 uses one. |
