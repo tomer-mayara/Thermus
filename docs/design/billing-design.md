@@ -84,12 +84,28 @@ Each implementation obeys these rules:
 6. **Hosted only.** The hosted composition creates one `Billing` when it serves
    a billing operation. The self-hosted composition creates none.
 
-No production code calls `Billing` yet, because the membership changes and the
-account pages do not exist yet. The hosted composition exists only as the
-AUTH-12 [hosted placeholder](authentication-design.md#hosted-placeholder): it
-serves no billing operation, gives each billing request the
-authentication-unavailable answer, and creates no `Billing`. AUTH-11 connects
-each caller that does not use `Billing` at that time.
+The hosted composition has one `Billing`. `composeWorkOSApplication()` in
+`src/hosted-workos-application.ts` creates a `BillingFree` and gives it to
+`composeHostedApplication()`, which gives it to `OrganizationAdministration`.
+The self-hosted composition creates no `Billing`. `OrganizationAdministration`
+is the only caller of `Billing`:
+
+- The billing page, `GET <base>billing`, calls `billingState()`.
+  `billingState()` calls `stateOf` only for a sign-in that completed MFA and
+  a current membership read that gives the actor `billing:manage` (Super
+  Admin) in the selected organization. Else the page gets `403`, and
+  `Billing` gets no call.
+- `changeGrant()` calls `updateSeats` after each applied change of a User
+  grant. It gives the complete count of active User seats from all member
+  pages. A failed member page or a failed update reaches the caller, and the
+  applied change keeps its record.
+
+No route changes billing: the free plan has no billing change, so a post to
+the billing page gets `405`. The
+[hosted billing tests](../../test/acceptance/billing/hosted-billing.test.ts)
+check these calls through the public routes with doubles. AUTH-11 replaces
+`BillingFree` in `composeWorkOSApplication()` with the provider
+implementation, and it adds the billing changes that the approved rules need.
 
 ## Free billing
 
