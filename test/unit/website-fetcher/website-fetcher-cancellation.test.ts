@@ -82,6 +82,7 @@ for (const completion of ['success', 'process failure', 'HTTP failure'] as const
     controller.abort(reason);
     assert.equal(renderer.kill.mock.callCount(), 1);
     assert.deepEqual(renderer.kill.mock.calls[0].arguments, ['SIGKILL']);
+    assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
     await new Promise<void>((resolve) => { setImmediate(resolve); });
     assert.equal(settled, false);
     t.mock.timers.tick(60_000);
@@ -147,4 +148,80 @@ test('Given cancellation happens while reading renderer output, when the result 
   await assert.rejects(result, (error) => error === controller.signal.reason);
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
   assert.equal(renderer.kill.mock.callCount(), 0);
+});
+
+test('Given the readiness timer killed a renderer, when cancellation follows, then the child is killed once', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const renderer = mockRenderer(t);
+  const controller = new AbortController();
+  const result = new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal);
+  const rejected = assert.rejects(result, (error) => error === controller.signal.reason);
+  await renderer.launched;
+
+  t.mock.timers.tick(5_000);
+  controller.abort();
+  controller.abort();
+  renderer.finish(null, success, '');
+  await rejected;
+
+  assert.equal(renderer.kill.mock.callCount(), 1);
+  assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+  t.mock.timers.tick(60_000);
+  assert.equal(renderer.kill.mock.callCount(), 1);
+});
+
+test('Given a cancelled renderer completed, when its callback runs again, then cleanup runs once and no output is parsed', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const renderer = mockRenderer(t);
+  const controller = new AbortController();
+  const removeListener = t.mock.method(controller.signal, 'removeEventListener');
+  const parse = t.mock.method(JSON, 'parse');
+  const result = new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal);
+  const rejected = assert.rejects(result, (error) => error === controller.signal.reason);
+  await renderer.launched;
+
+  controller.abort();
+  renderer.finish(null, success, '');
+  await rejected;
+  renderer.finish(null, success, '');
+  t.mock.timers.tick(60_000);
+
+  assert.equal(renderer.kill.mock.callCount(), 1);
+  assert.equal(removeListener.mock.callCount(), 1);
+  assert.equal(parse.mock.callCount(), 0);
+  assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+});
+
+test('Given concurrent fetches share a fetcher, when one is cancelled, then the other keeps its result and resources', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const renderer = mockRenderer(t);
+  const otherChild = new ChildProcess();
+  const otherKill = t.mock.method(otherChild, 'kill', () => true);
+  const completions: Completion[] = [];
+  t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => {
+    completions.push(args[3] as Completion);
+    return completions.length === 1 ? renderer.child : otherChild;
+  }) as typeof childProcess.execFile);
+  syncBuiltinESMExports();
+  const cancelled = new AbortController();
+  const other = new AbortController();
+  const fetcher = new WebsiteFetcherLightpanda();
+  const first = fetcher.fetchURL(requestedUrl, cancelled.signal);
+  const second = fetcher.fetchURL('https://example.com/other', other.signal);
+  const rejected = assert.rejects(first, (error) => error === cancelled.signal.reason);
+  await new Promise<void>((resolve) => { setImmediate(resolve); });
+  assert.equal(completions.length, 2);
+
+  cancelled.abort();
+  assert.equal(renderer.kill.mock.callCount(), 1);
+  assert.equal(otherKill.mock.callCount(), 0);
+  assert.equal(getEventListeners(other.signal, 'abort').length, 1);
+  completions[1]!(null, success, '');
+  completions[0]!(null, success, '');
+  await rejected;
+
+  assert.deepEqual(await second, { requestedUrl: 'https://example.com/other', finalUrl: 'https://example.com/final', html: '<html>Ready</html>' });
+  assert.equal(getEventListeners(other.signal, 'abort').length, 0);
+  t.mock.timers.tick(60_000);
+  assert.equal(otherKill.mock.callCount(), 0);
 });
