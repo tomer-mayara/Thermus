@@ -1,7 +1,6 @@
 import { once } from 'node:events';
 import { createServer, STATUS_CODES, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { Readable } from 'node:stream';
 import type { ListenAddress } from '../config/deployment-config.ts';
 import { CLIENT_ADDRESS_HEADER } from './client-address.ts';
 
@@ -102,9 +101,31 @@ function requestHeaders(incoming: IncomingMessage): Headers {
   return headers;
 }
 
-// With no high-water mark, Node can discard a body that the handler does not read, so the connection stays usable.
-function requestBody(incoming: IncomingMessage): ReadableStream {
-  return Readable.toWeb(incoming, { strategy: { highWaterMark: 0 } });
+function requestBody(incoming: IncomingMessage): ReadableStream<Uint8Array> {
+  let controller: ReadableStreamDefaultController<Uint8Array>;
+  const data = (chunk: Uint8Array): void => {
+    incoming.pause();
+    controller.enqueue(chunk);
+  };
+  const end = (): void => { detach(); controller.close(); };
+  const error = (cause: Error): void => { detach(); controller.error(cause); };
+  const close = (): void => error(new DOMException('The request body disconnected', 'AbortError'));
+  const detach = (): void => {
+    incoming.off('data', data).off('end', end).off('error', error).off('close', close);
+  };
+  return new ReadableStream<Uint8Array>({
+    start(body) {
+      controller = body;
+      incoming.pause();
+      incoming.on('data', data).once('end', end).once('error', error).once('close', close);
+    },
+    pull() { incoming.resume(); },
+    cancel() {
+      detach();
+      // Discard unread bytes without destroying the socket that carries the refusal response.
+      incoming.resume();
+    },
+  }, { highWaterMark: 0 });
 }
 
 // A flat header list keeps each Set-Cookie header separate.

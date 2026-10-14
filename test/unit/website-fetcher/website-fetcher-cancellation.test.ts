@@ -216,8 +216,11 @@ test('Given concurrent fetches share a fetcher, when one is cancelled, then the 
   assert.equal(renderer.kill.mock.callCount(), 1);
   assert.equal(otherKill.mock.callCount(), 0);
   assert.equal(getEventListeners(other.signal, 'abort').length, 1);
-  completions[1]!(null, success, '');
-  completions[0]!(null, success, '');
+  const [firstCompletion, secondCompletion] = completions;
+  assert.ok(firstCompletion);
+  assert.ok(secondCompletion);
+  secondCompletion(null, success, '');
+  firstCompletion(null, success, '');
   await rejected;
 
   assert.deepEqual(await second, { requestedUrl: 'https://example.com/other', finalUrl: 'https://example.com/final', html: '<html>Ready</html>' });
