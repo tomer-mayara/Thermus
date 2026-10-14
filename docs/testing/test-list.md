@@ -19,6 +19,7 @@
 [V] Formats canonical authority, subject, and tenant fields; removes URL userinfo, query, and fragment; includes only a valid bounded reason or field-status codes; escapes line breaks and omits unknown tool names, raw arguments, credentials, and causes (`test/unit/mcp/tool-completion-record.test.ts`)
 [V] Cancels owned work and waits for its cleanup; repeated close calls share one result (`test/unit/mcp/lifetime.test.ts`)
 [V] Removes completed tasks from active work, preserves cleanup errors, waits for in-progress authentication, and refuses work after shutdown (`test/unit/mcp/lifetime.test.ts`)
+[V] Returns the HTTP response of a cancelled modern call before its owned cleanup ends; close still waits for that cleanup (`test/unit/mcp/request-lifetime-isolation.test.ts`)
 [V] Keeps request context and cancellation separate between connections (P02 unit and HTTP acceptance cases below)
 [V] Supplies production rules and runtime dependencies to the self-hosted server (P03 unit, integration, and acceptance cases below)
 [] Lists `postURLAsMarkdown(url, params, reason)` with its URL input schema (deferred)
@@ -83,7 +84,7 @@ These tests run the pinned Better Auth packages with an in-memory `node:sqlite` 
 [V] After the shipped migrations, Better Auth plans no table, column, or index change, and its schema check passes
 [V] The installation table holds one identity: a second row or another singleton value fails; three accounts can still be added
 
-**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`)
+**HTTP bridge** (`test/unit/http/server-requests.test.ts`, `server-responses.test.ts`, `server-lifecycle.test.ts`, `server-close.test.ts`)
 
 These tests run `startHttpServer()` on a loopback port with test handlers. Raw socket requests check request targets that `fetch` would change.
 
@@ -97,6 +98,7 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Answers a handler that throws or rejects with a generic 500 and a log line without request data; ends the connection when a streamed body fails
 [V] Aborts the request signal and cancels the response body when the client disconnects
 [V] `close()` ends idle connections at once, refuses new connections, lets running responses finish, ends a response that never ends after the grace period, and gives the same result for repeated calls
+[V] `close()` ends a connection that has sent no bytes at once, also the unused connection that a fetch client opens after it aborts a streamed response that the handler leaves open
 [V] Creates and clears the close deadline once; repeated failed closes retain the same error
 [V] Startup failure after listen closes the listener once and preserves both startup and cleanup errors
 
@@ -1323,7 +1325,7 @@ Modern client cancellation aborts its call stream. Legacy cancellation coverage
 aborts that stream through the public SDK fetch option. A legacy cancel
 notification alone cannot reach a call on a different stateless request server.
 
-**MCP HTTP shutdown and request isolation** (`test/acceptance/mcp/http-shutdown.test.ts`, `http-renderer-shutdown.test.ts`, `http-request-isolation.test.ts`)
+**MCP HTTP shutdown and request isolation** (`test/acceptance/mcp/http-shutdown.test.ts`, `http-renderer-shutdown.test.ts`, `http-request-isolation.test.ts`, `http-cancelled-shutdown.test.ts`)
 
 These cases use the real SDK client and HTTP bridge in both eras. Shutdown uses
 the application lifetime with a provider cleanup probe. Fetcher, pipeline, and
@@ -1341,6 +1343,7 @@ listener, and delayed process callback through the real MCP HTTP path.
 [V] Cancels one client call without cancelling a peer; shutdown cancels all active calls, including legacy work
 [V] Waits for both independent cleanup tasks even when one finishes first
 [V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
+[V] After a client cancels a call while the fetcher waits, the server stop that follows the `cancelled` record does not wait for the client connections
 
 ```sh
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"

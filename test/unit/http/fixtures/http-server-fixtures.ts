@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import diagnostics from 'node:diagnostics_channel';
 import { once } from 'node:events';
 import { connect, type Socket } from 'node:net';
 import type { TestContext } from 'node:test';
@@ -15,6 +16,19 @@ export async function serve(t: TestContext, handler: FetchHandler, options: Part
 
 export function serverHandles(): number {
   return process.getActiveResourcesInfo().filter((resource) => resource === 'TCPServerWrap').length;
+}
+
+// The server accepts a connection after the client connects. Before that, close() only drops it from the backlog.
+export function nextAcceptedConnection(server: HttpServer): Promise<Socket> {
+  const accepted = Promise.withResolvers<Socket>();
+  const onSocket = (message: unknown): void => {
+    const { socket } = message as { socket: Socket };
+    if (socket.localPort !== Number(server.url.port)) return;
+    diagnostics.unsubscribe('net.server.socket', onSocket);
+    accepted.resolve(socket);
+  };
+  diagnostics.subscribe('net.server.socket', onSocket);
+  return accepted.promise;
 }
 
 // fetch normalizes the request target and sets its own Host header, so these

@@ -3,7 +3,7 @@ import { Server } from 'node:net';
 import { describe, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startHttpServer } from '../../../src/http/server.ts';
-import { bodyReader, connectionError, encoded, loopback, publicBaseUrl, RawConnection, serve, serverHandles } from './fixtures/http-server-fixtures.ts';
+import { encoded, loopback, publicBaseUrl, RawConnection, serve, serverHandles } from './fixtures/http-server-fixtures.ts';
 
 describe('HTTP server listening', () => {
   test('Given a free loopback port, when the server starts, then it serves requests and its URL reports the real host and port', { timeout: 5_000 }, async (t) => {
@@ -108,96 +108,5 @@ describe('HTTP server cancellation', () => {
     await cancelled.promise;
 
     assert.deepEqual(signals.map((signal) => signal.aborted), [true]);
-  });
-});
-
-describe('HTTP server close', () => {
-  test('Given an idle keep-alive connection, when close is called, then the connection ends at once and close resolves before the grace period', { timeout: 5_000 }, async (t) => {
-    const server = await serve(t, async () => new Response('ok'), { shutdownGraceMs: 10_000 });
-    const connection = RawConnection.open(t, server).send(['GET /idle HTTP/1.1', 'Host: localhost:8080']);
-    await connection.received('0\r\n\r\n');
-    const started = performance.now();
-
-    await server.close();
-    const elapsed = performance.now() - started;
-
-    assert.ok(elapsed < 1_000, `close took ${elapsed} ms`);
-    assert.match(await connection.ended, /\r\nok\r\n0\r\n\r\n$/);
-  });
-
-  test('Given an in-flight response, when close is called, then new connections are refused, the response finishes, and close resolves when it ends', { timeout: 5_000 }, async (t) => {
-    const started = Promise.withResolvers<void>();
-    const release = Promise.withResolvers<void>();
-    const server = await serve(t, async () => {
-      started.resolve();
-      await release.promise;
-      return new Response('finished');
-    }, { shutdownGraceMs: 10_000 });
-    const connection = RawConnection.open(t, server).send(['GET /slow HTTP/1.1', 'Host: localhost:8080']);
-    await started.promise;
-
-    const closing = server.close();
-    const refused = await connectionError(server);
-    release.resolve();
-    const released = performance.now();
-    await closing;
-    const elapsed = performance.now() - released;
-
-    assert.equal(refused.code, 'ECONNREFUSED');
-    assert.ok(elapsed < 1_000, `close took ${elapsed} ms after the response`);
-    assert.match(await connection.ended, /\r\nfinished\r\n0\r\n\r\n$/);
-  });
-
-  test('Given a streamed response that never ends, when close is called, then close waits for the grace period, ends the connection, and resolves', { timeout: 5_000 }, async (t) => {
-    const cancelled = Promise.withResolvers<void>();
-    const server = await serve(t, async () => new Response(new ReadableStream<Uint8Array>({
-      start: (controller) => controller.enqueue(encoded('data: one\n\n')),
-      cancel: () => cancelled.resolve(),
-    })), { shutdownGraceMs: 100 });
-    const reader = bodyReader(await fetch(server.url));
-    await reader.read();
-    const started = performance.now();
-
-    await server.close();
-    const elapsed = performance.now() - started;
-
-    assert.ok(elapsed >= 90 && elapsed < 2_000, `close took ${elapsed} ms`);
-    await assert.rejects(reader.read());
-    await cancelled.promise;
-  });
-
-  test('Given close is called two times, when both calls finish, then both resolve, the server is closed, and a later call also resolves', { timeout: 5_000 }, async (t) => {
-    const server = await serve(t, async () => new Response('ok'));
-    const close = t.mock.method(Server.prototype, 'close');
-    const schedule = t.mock.method(globalThis, 'setTimeout');
-    const clear = t.mock.method(globalThis, 'clearTimeout');
-
-    const first = server.close();
-    const second = server.close();
-    assert.equal(first, second);
-    await Promise.all([first, second]);
-
-    assert.equal((await connectionError(server)).code, 'ECONNREFUSED');
-    await server.close();
-    assert.equal(close.mock.callCount(), 1);
-    assert.equal(schedule.mock.callCount(), 1);
-    assert.deepEqual(clear.mock.calls.map(({ arguments: args }) => args[0]), [schedule.mock.calls[0]?.result]);
-  });
-
-  test('Given a listener cleanup failure, when concurrent and later close calls finish, then every call observes the same failure and the deadline is cleared once', { timeout: 5_000 }, async (t) => {
-    const server = await startHttpServer(async () => new Response('ok'), { listen: loopback, publicBaseUrl });
-    const failure = new Error('Listener cleanup failed');
-    const originalClose = Server.prototype.close;
-    const close = t.mock.method(Server.prototype, 'close', function (this: Server, callback?: (error?: Error) => void) {
-      return originalClose.call(this, () => callback?.(failure));
-    });
-    const clear = t.mock.method(globalThis, 'clearTimeout');
-    const first = server.close();
-    assert.equal(server.close(), first);
-    await assert.rejects(first, (error) => error === failure);
-    await assert.rejects(server.close(), (error) => error === failure);
-
-    assert.equal(close.mock.callCount(), 1);
-    assert.equal(clear.mock.callCount(), 1);
   });
 });

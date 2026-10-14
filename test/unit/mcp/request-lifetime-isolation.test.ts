@@ -94,3 +94,41 @@ for (const abortAlice of [false, true]) {
     assert.equal(bobBound.context.tenantId, 'tenant-b');
   });
 }
+
+test('Given a modern tool call that waits for cancellation, when its request signal aborts, then MCPServer.fetch returns the HTTP response before the owned cleanup ends and close waits for that cleanup', { timeout: 2_000 }, async (t) => {
+  const started = Promise.withResolvers<void>();
+  const cleanup = Promise.withResolvers<void>();
+  const cancelled = new AbortController();
+  const server = new MCPServer({
+    auth: {
+      verifier: { verifyAccessToken: async () => identityFor(alice) },
+      accessResolver: { resolve: async () => ({ allowed: true, context: contextFor(alice, 'tenant-a') }) },
+      expectedResource: new URL(resourceUrl), resourceMetadataUrl: 'https://thermus.example/metadata',
+    },
+    buildServer: (_context, lifetime) => {
+      const requestServer = new Server({ name: 'cancelled-call-double', version: '0.0.0' }, { capabilities: { tools: {} } });
+      requestServer.setRequestHandler('tools/call', () => lifetime.track((async () => {
+        started.resolve();
+        await new Promise((resolve) => lifetime.signal.addEventListener('abort', resolve, { once: true }));
+        await cleanup.promise;
+        return { content: [] };
+      })()));
+      return requestServer;
+    },
+    reportFailure: () => {},
+  });
+  t.after(async () => { cleanup.resolve(); await server.close(); });
+  const response = server.fetch(mcpRequest({ url: resourceUrl, token: 'token', method: 'tools/call', params: { name: 'wait', arguments: {} }, signal: cancelled.signal }));
+  await started.promise;
+
+  cancelled.abort();
+  const released = await response;
+  let finished = false;
+  const closing = server.close().then(() => { finished = true; });
+  await setImmediate();
+
+  assert.equal(released.body, null);
+  assert.equal(finished, false);
+  cleanup.resolve();
+  await closing;
+});
