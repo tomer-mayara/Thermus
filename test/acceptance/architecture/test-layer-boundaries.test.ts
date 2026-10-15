@@ -173,7 +173,7 @@ describe('Given rule D6: a container script imports only node: modules', () => {
 
 describe('Given the literal guards of the test layer boundaries', () => {
   it('when a dynamic import is computed, then it is outside the literal guard scope', async () => {
-    for (const filePath of ['test/support/container-page.ts', 'test/unit/mcp/x.test.ts', 'test/acceptance/auth/x.test.ts']) {
+    for (const filePath of ['test/support/container/container-page.ts', 'test/unit/mcp/x.test.ts', 'test/acceptance/auth/x.test.ts']) {
       const [result] = await eslint.lintText('export const load = (path: string) => import(path);', { filePath });
       assert.equal(result.errorCount, 0, filePath);
     }

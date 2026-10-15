@@ -3,6 +3,8 @@ import { existsSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
+import { probeScript } from '../support/container/container-gate.ts';
+import { edgeScript, pageScript } from '../support/container/container-site.ts';
 import { foreignOriginProbe, networkBlocker, programEntry, repositoryRoot, sqlTracer } from '../support/processes/module-paths.ts';
 import { failingAdCleaner } from '../support/processes/server-preloads.ts';
 
@@ -15,6 +17,9 @@ const files = {
   foreignOriginProbe,
   failingAdCleaner: fileURLToPath(failingAdCleaner),
   trustedAdRulesFile,
+  edgeScript,
+  pageScript,
+  probeScript,
 };
 
 describe('Run-time paths of the test support code', () => {

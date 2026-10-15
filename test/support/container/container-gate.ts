@@ -2,17 +2,19 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { repositoryRoot as repositoryRootUrl } from '../processes/module-paths.ts';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 export const containerDataDirectory = '/var/lib/thermus';
 // The AD_RULES_FILE of the image, where compose.yaml mounts the trusted rules of the operator.
 export const containerAdRulesFile = '/etc/thermus/ad-rules.txt';
-export const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
+export const repositoryRoot = fileURLToPath(repositoryRootUrl);
 export const gateRun = randomBytes(4).toString('hex');
 // Each resource of this test run has this label, so the cleanup finds it also after a failed step.
 export const gateLabel = `thermus.container-gate=${gateRun}`;
 
-const probeScript = fileURLToPath(new URL('./container-probe.js', import.meta.url));
+// The three container scripts are siblings of this module. The path test proves that each one exists after a build.
+export const probeScript = fileURLToPath(new URL('./container-probe.js', import.meta.url));
 const engineChecks = [['version', '--format', '{{.Server.Version}}'], ['buildx', 'version'], ['compose', 'version']];
 
 export interface GateImages {
