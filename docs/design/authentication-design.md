@@ -970,7 +970,7 @@ already had jose 6.2.12 through Better Auth.
 
 `test/interface/auth/workos.test.ts` proves the SDK side of each hosted
 contract offline. A local fake of the WorkOS API,
-`test/support/workos-fake-api.ts`, records each request and gives scripted
+`test/support/doubles/workos/workos-fake-api.ts`, records each request and gives scripted
 answers and key sets. A replaced `fetch` records no request that leaves the
 machine. These proofs show what the pinned SDK sends, how it reads answers, and
 how it reports failures. They do not show what the WorkOS service does; the
@@ -2137,7 +2137,7 @@ the SDK client of the directory that answers from the records of a test,
 records each call in order, and changes the roles and the update time of a
 membership at a role write, as WorkOS does. Its organization reads give Acme
 an external ID and Globex none. The local fake of the WorkOS API in
-`test/support/workos-world.ts` keeps organizations with their external IDs,
+`test/support/doubles/workos/workos-fake.ts` keeps organizations with their external IDs,
 users, the roles of each membership as single-role assignments, and
 invitations, as the probes of WorkOS staging showed. It accepts a role write
 only on the resource of the organization of the membership, named by the

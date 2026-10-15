@@ -15,8 +15,8 @@ import {
   type InvitationSendRequest,
 } from '../../../src/organizations/organization-administration.ts';
 import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
-import { fakeClientId, type FakeAnswer } from '../../support/workos-fake-api.ts';
-import { WorkOSWorld, type WorldInvitation, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
+import { fakeClientId, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
+import { WorkOSWorld, type WorldInvitation, type WorldMembership, type WorldUser } from '../../support/doubles/workos/workos-fake.ts';
 
 // The real WorkOSOrganizations and WorkOSAuthProvider with the pinned SDK against a local fake of the WorkOS API,
 // together with the real OrganizationAdministration, called directly as a service, and the real access resolution of

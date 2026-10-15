@@ -5,8 +5,8 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
-import { nowInSeconds } from '../../support/jwt-signing-key.ts';
-import { WorkOSWorld, type WorldUser } from '../../support/workos-world.ts';
+import { nowInSeconds } from '../../support/doubles/workos/jwt-signing-key.ts';
+import { WorkOSWorld, type WorldUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 // The real hosted composition with the WorkOS provider behind the real HTTP server on a loopback port. A local fake
