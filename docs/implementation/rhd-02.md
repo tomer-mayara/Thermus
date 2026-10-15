@@ -1,7 +1,7 @@
 # RHD-02: hosted portal and local health
 
-Status: implementation and verification in progress. Date: 2026-10-15.
-[Draft PR #116](https://github.com/3-headed-monkey/Thermus/pull/116).
+Status: implementation and verification complete; PR #116 awaits owner review.
+Date: 2026-10-15. [PR #116](https://github.com/3-headed-monkey/Thermus/pull/116).
 Branch: `codex/rhd-02-hosted-portal`, stacked on
 [PR #115](https://github.com/3-headed-monkey/Thermus/pull/115), branch
 `codex/rhd-01-hosted-fetch`. Both await owner review. PR #115 is open,
@@ -69,9 +69,10 @@ The default hosted-live TLS front now forwards all requests to the production
 application, including portal assets. Its browser proofs exercise the production
 CSP. It needs the real pinned renderer for startup. A custom development
 application retains the front-served portal. The manager reported the results
-below. The complete check and acceptance reruns passed after the self-hosted
-container test correction. The dedicated container gate also passed.
-Hosted-live remains pending.
+below. The complete check, acceptance, container, and hosted-live gates passed
+after the test corrections. Verification used implementation commit
+`575bd6f7f693f47dee8da82f5bb91f927a733e8e`. The final evidence update changes
+documents only; code remains unchanged.
 
 | Required evidence | Status |
 | --- | --- |
@@ -85,9 +86,9 @@ Hosted-live remains pending.
 | Full interface suite | Manager-confirmed exit 0: 131/131 in 18 suites; zero failures, cancellations, skips, or todo cases |
 | `npm run test:mcp:renderer` | Manager-confirmed exit 0: 9/9 in one suite; zero failures, cancellations, skips, or todo cases |
 | `npm run test:container` | Corrected dedicated run exited 0: 13/13 in one suite; zero failures, cancellations, skips, or todo cases |
-| Hosted-live gate | Pending |
-| Manager review and sign-off | All three implementation workers reviewed and signed off; documentation review pending |
-| Ready and Actions for PR #116 | Pending |
+| `npm run test:hosted-live`, Optional MFA profile | Exit 0: 77/77 in 16 suites; zero failures, cancellations, skips, or todo cases; 584,168 ms |
+| Manager review and sign-off | All three implementation workers and affected documentation reviewed and signed off by the manager |
+| Ready and Actions for PR #116 | See the current status of [PR #116](https://github.com/3-headed-monkey/Thermus/pull/116) |
 | Owner review and merge | Pending |
 
 The final complete check is in `/tmp/thermus-rhd02/check-complete.log`.
@@ -96,7 +97,8 @@ Integration is in
 `/tmp/thermus-rhd02/acceptance-complete.log`; interface is in
 `/tmp/thermus-rhd02/interface.log`; renderer is in
 `/tmp/thermus-rhd02/renderer.log`; container is in
-`/tmp/thermus-rhd02/container-complete.log`. The latest habit-hooks report is in
+`/tmp/thermus-rhd02/container-complete.log`; hosted-live is in
+`/tmp/thermus-rhd02/hosted-live.log`. The latest habit-hooks report is in
 `/tmp/thermus-rhd02/habit-hooks-complete.log`. The earlier focused run used all 19 then-changed emitted
 files in `/tmp/thermus-rhd02/focused-files.txt` after the final check's fresh
 build. The manager independently matched this list to every changed and new
@@ -105,7 +107,15 @@ test file at that point; none was missing. Its log is
 20th changed file.
 
 The manager checked 392 relative Markdown file links and anchors; all exist.
-Documentation sign-off remains pending the remaining gates.
+The WorkOS staging run used the real pinned `LIGHTPANDA_BIN` and the staging
+launcher. It passed production portal serving and CSP sign-out, plus the real
+300-second token expiry, refusal, and refresh cases. This is an Optional MFA
+profile result only; it does not claim a new Required-profile run.
+
+The container gate ran the existing self-hosted image on local Linux ARM64.
+It does not prove an AMD64 hosted image or Render deployment. Those proofs
+remain in RHD-03 and the later rollout slices. Owner review and merge remain
+pending.
 
 After the prior build, the full interface command was:
 

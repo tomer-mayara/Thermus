@@ -1787,9 +1787,11 @@ rules, and a version-command fixture or child-process double. They need no
 WorkOS network call. The manager-confirmed focused run passed all 151 cases
 across 19 new or changed emitted test files, and the complete acceptance
 rerun passed 333 backend and four portal cases. The dedicated container gate
-passed all 13 cases and covers the 20th changed test file. Hosted-live remains
-pending in the
-[RHD-02 record](../implementation/rhd-02.md#verification).
+passed all 13 cases and covers the 20th changed test file on local Linux
+ARM64. Implementation and verification are complete: the Optional MFA
+hosted-live profile passed 77/77 in 16 suites, including the production portal
+CSP and sign-out. The [RHD-02 record](../implementation/rhd-02.md#verification)
+gives the results. PR #116 is stacked on PR #115; both await owner review.
 
 [V] `test/acceptance/auth/hosted-portal.test.ts`: the public root and built JavaScript load with the production CSP; health is constant; account and MCP still require sign-in
 [V] `test/unit/hosted-portal/hosted-portal.test.ts`: startup refuses missing, invalid, symlinked, or empty assets and absent build references; GET/HEAD use the preloaded files, safe missing paths give 404, and other requests retain body, signal, and cleanup

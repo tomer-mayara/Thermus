@@ -1,10 +1,11 @@
 # Hosted Docker on Render: implementation plan
 
-Status: RHD-01 implementation and verification complete; PR #115 awaits owner
-review. RHD-02 is in progress in draft PR #116, stacked on PR #115.
+Status: RHD-01 and RHD-02 implementation and verification complete.
+PR #116 is stacked on PR #115; both await owner review.
 RHD-03 through RHD-05 are planned. Date: 2026-10-15.
 The [RHD-01 record](rhd-01.md) gives its results. The
-[RHD-02 record](rhd-02.md) tracks the portal, local health, and request boundary work.
+[RHD-02 record](rhd-02.md) gives the portal, local health, request boundary,
+and verification results.
 Owner review and merge remain pending; no deployment is recorded.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.
@@ -290,9 +291,10 @@ required checks pass, and the operator can deploy and recover the service.
 
 RHD-01 implementation and verification are complete in
 [PR #115](https://github.com/3-headed-monkey/Thermus/pull/115), which awaits owner
-review; its [record](rhd-01.md) gives the scope and results. RHD-02 is in progress
-in [draft PR #116](https://github.com/3-headed-monkey/Thermus/pull/116), stacked on
-PR #115; its [record](rhd-02.md) tracks the work. RHD-03 through RHD-05 remain planned. Each code ticket writes its failing
+review; its [record](rhd-01.md) gives the scope and results. RHD-02 implementation
+and verification are complete in [PR #116](https://github.com/3-headed-monkey/Thermus/pull/116),
+stacked on PR #115 and awaiting owner review; its [record](rhd-02.md) gives the
+results. RHD-03 through RHD-05 remain planned. Each code ticket writes its failing
 Given-When-Then specification first, updates affected documents and fixtures, and
 runs its focused tests plus every applicable existing gate. The boundaries below
 identify each ticket's proof; they do not waive repository checks.
