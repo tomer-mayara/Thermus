@@ -1722,18 +1722,36 @@ Run only these tests:
 npm run build && node --test dist/test/acceptance/architecture/auth-boundaries.test.js
 ```
 
-**Test layer boundaries** (`test/acceptance/architecture/test-layer-boundaries.test.ts`)
+**Test type boundaries** (`test/acceptance/architecture/test-type-boundaries.test.ts`)
 
 The tests use the same ESLint configuration against source snippets at example
-paths under `test/`. They check the rules D1 to D7 of the
-[test code layout](test-code-layout.md#dependency-rules). The cases of the
-import rules D1 to D6 use the same import forms as the auth boundaries. Computed
+paths under `test/`. They check the rules D2 and D3 of the
+[test code layout](test-code-layout.md#dependency-rules): the rules of the test
+type axis. The three architecture specifications share the import forms and the
+assertions of `test/acceptance/architecture/fixtures/import-guards.ts`. Computed
 imports and transitive dependencies are outside this check.
 
-[V] D1: refuses an import of a test type folder from `test/support/`, also through `test/`; allows `src`, packages, and support code
 [V] D2: refuses an import of another test type from each of the four test types; allows support code, own fixtures, the same type, `src`, and packages
 [V] D2 exception: from another test type, `test/unit/work-slice/basic-mcp-url-fetch.test.ts` imports only the entry point `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts`; D3 still applies to it
 [V] D3: refuses the fixtures of another unit package, also from a fixture file; allows own fixtures, shared support fixtures and doubles, and the package fixtures from a nested folder
+[V] Checks exact path segments without refusing names that only resemble a test type folder
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/architecture/test-type-boundaries.test.js
+```
+
+**Test support boundaries** (`test/acceptance/architecture/test-support-boundaries.test.ts`)
+
+The tests use the same ESLint configuration and the same import forms against
+source snippets at example paths under `test/`, most of them under
+`test/support/`. They check the rules D1 and D4 to D7 of the
+[test code layout](test-code-layout.md#dependency-rules): the rules of the
+support layer axis. Computed imports and transitive dependencies are outside
+this check.
+
+[V] D1: refuses an import of a test type folder from `test/support/`, also through `test/`; allows `src`, packages, and support code
 [V] D4: refuses an import of `test/support/dsl/` from `test/support/drivers/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
 [V] D5: refuses an import of `test/support/dsl/` or `test/support/drivers/` from `test/support/doubles/` and `test/support/fixtures/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
 [V] D6: refuses each import that is not a `node:` module in the three container scripts in `test/support/container/`
@@ -1743,7 +1761,7 @@ imports and transitive dependencies are outside this check.
 Run only these tests:
 
 ```sh
-npm run build && node --test dist/test/acceptance/architecture/test-layer-boundaries.test.js
+npm run build && node --test dist/test/acceptance/architecture/test-support-boundaries.test.js
 ```
 
 **MCP access context** (`test/acceptance/auth/mcp-access.test.ts`)

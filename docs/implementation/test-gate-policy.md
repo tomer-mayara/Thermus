@@ -74,9 +74,10 @@ run through the existing ESLint configuration in `habit-hooks`. Their fixture
 specification, `test/acceptance/architecture/auth-boundaries.test.ts`, also needs
 a focused run and the acceptance suite. The rules D1 to D7 of the
 [test code layout](../testing/test-code-layout.md#dependency-rules) run through
-the same ESLint configuration. Their specification,
-`test/acceptance/architecture/test-layer-boundaries.test.ts`, also needs a
-focused run and the acceptance suite.
+the same ESLint configuration. Two specifications prove them:
+`test/acceptance/architecture/test-type-boundaries.test.ts` for D2 and D3, and
+`test/acceptance/architecture/test-support-boundaries.test.ts` for D1 and D4 to
+D7. Each also needs a focused run and the acceptance suite.
 
 ## Focused commands
 
