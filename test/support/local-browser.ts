@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { request as httpRequest, type IncomingHttpHeaders } from 'node:http';
 import { publicBaseUrl, type AccountCredentials } from './better-auth-local.ts';
+import { cookieHeaderOf, keepCookies } from './cookie-jar.ts';
 import { decodeHtml } from './html-entities.ts';
 
 export type FetchSite = 'none' | 'same-origin' | 'cross-site';
@@ -99,7 +100,8 @@ export class LocalBrowser {
   }
 
   private send({ method, url, headers, body }: BrowserRequest): Promise<PageResponse> {
-    if (this.cookies.size > 0) headers.Cookie = [...this.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+    const cookieHeader = cookieHeaderOf(this.cookies);
+    if (cookieHeader !== undefined) headers.Cookie = cookieHeader;
     if (body !== undefined) headers['Content-Length'] = String(Buffer.byteLength(body));
     const server = this.server();
     return new Promise((resolve, reject) => {
@@ -112,7 +114,7 @@ export class LocalBrowser {
       }, (incoming) => {
         let text = '';
         incoming.setEncoding('utf8').on('data', (chunk: string) => { text += chunk; }).on('error', reject).on('end', () => {
-          this.keepCookies(incoming.headers['set-cookie'] ?? []);
+          keepCookies(this.cookies, incoming.headers['set-cookie'] ?? []);
           const location = incoming.headers.location;
           resolve({
             status: incoming.statusCode ?? 0,
@@ -125,17 +127,6 @@ export class LocalBrowser {
       outgoing.on('error', reject);
       outgoing.end(body);
     });
-  }
-
-  private keepCookies(lines: readonly string[]): void {
-    for (const line of lines) {
-      const [pair = ''] = line.split(';');
-      const separator = pair.indexOf('=');
-      const name = pair.slice(0, separator).trim();
-      const value = pair.slice(separator + 1).trim();
-      if (value === '' || /max-age=0/i.test(line)) this.cookies.delete(name);
-      else this.cookies.set(name, value);
-    }
   }
 }
 

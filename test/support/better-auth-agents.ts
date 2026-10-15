@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
 import { clientAddressHeader, mcpResourceUrl, publicBaseUrl, type LocalAuth } from './better-auth-local.ts';
+import { cookieHeaderOf, keepCookies } from './cookie-jar.ts';
 
 export const loopbackRedirectUri = 'http://127.0.0.1:33418/callback';
 
@@ -41,22 +42,19 @@ export class HttpAgent {
     this.cookies = new Map(cookies);
   }
 
-  cookieHeader(): string {
-    return [...this.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
-  }
-
   async request(method: 'GET' | 'POST', path: string, options: RequestOptions = {}): Promise<Response> {
     const headers = new Headers(options.headers);
     headers.set(clientAddressHeader, this.address);
     if (options.origin !== null) headers.set('Origin', options.origin ?? publicBaseUrl);
-    if (this.cookies.size > 0) headers.set('Cookie', this.cookieHeader());
+    const cookieHeader = cookieHeaderOf(this.cookies);
+    if (cookieHeader !== undefined) headers.set('Cookie', cookieHeader);
     const response = await this.auth.handler(new Request(new URL(path, publicBaseUrl), {
       method,
       headers,
       body: requestBody(headers, options),
       redirect: 'manual',
     }));
-    this.keepCookies(response);
+    keepCookies(this.cookies, response.headers.getSetCookie());
     return response;
   }
 
@@ -68,17 +66,6 @@ export class HttpAgent {
     const response = await this.request('GET', '/api/auth/get-session', { origin: null });
     const body = await response.json() as { session?: { id: string } } | null;
     return body?.session?.id;
-  }
-
-  private keepCookies(response: Response): void {
-    for (const line of response.headers.getSetCookie()) {
-      const [pair = ''] = line.split(';');
-      const separator = pair.indexOf('=');
-      const name = pair.slice(0, separator).trim();
-      const value = pair.slice(separator + 1).trim();
-      if (value === '' || /max-age=0/i.test(line)) this.cookies.delete(name);
-      else this.cookies.set(name, value);
-    }
   }
 }
 
