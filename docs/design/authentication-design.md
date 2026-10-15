@@ -2084,7 +2084,7 @@ Keep `IdentityVerifierSpy` at
 and failures. Add `access-resolver-spy.ts` beside it with configured decisions,
 errors, and call records. Each test creates fresh instances. No production
 module imports either spy. Organization and browser unit tests add their own
-narrow directory and session doubles under `test/support/doubles/`, importing shared
+narrow directory and session doubles under `test/unit/`, importing shared
 contracts as types only. `BrowserSessionDouble`, in
 `test/support/doubles/auth/browser-session-double.ts`, gives configured
 session states. `SignedInSessionDouble`, in the same file, gives a signed-in

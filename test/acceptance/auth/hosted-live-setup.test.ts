@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { matchesGlob } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { networkBlocker, repositoryRoot } from '../../support/processes/module-paths.ts';
 
 type GateSettings = Readonly<Record<string, string>>;
 type PackageScripts = Readonly<Record<string, string>>;
@@ -18,9 +19,6 @@ interface GateRun {
 }
 
 const liveFile = fileURLToPath(new URL('./hosted.live.js', import.meta.url));
-// With --import before --test, the blocker loads in the process that runs the test file. There, each outbound attempt fails and writes a line to the report.
-const networkBlocker = new URL('../../support/deny-network.js', import.meta.url).href;
-const repositoryRoot = new URL('../../../../', import.meta.url);
 const liveCommand = 'npm run build && npm run build:user-portal && node --test dist/test/acceptance/auth/hosted.live.js';
 const liveSource = 'test/acceptance/auth/hosted.live.ts';
 const liveOutput = 'dist/test/acceptance/auth/hosted.live.js';
@@ -60,6 +58,7 @@ function gateEnvironment(settings: GateSettings): NodeJS.ProcessEnv {
 }
 
 async function runGate(t: TestContext, settings: GateSettings): Promise<GateRun> {
+  // With --import before --test, the blocker loads in the process that runs the test file. There, each outbound attempt fails and writes a line to the report.
   const args = ['--import', networkBlocker, '--test', '--test-reporter=tap', liveFile];
   const child = spawn(process.execPath, args, { env: gateEnvironment(settings), stdio: ['ignore', 'pipe', 'pipe'], timeout: gateTimeout });
   t.after(() => {
