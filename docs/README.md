@@ -35,6 +35,7 @@ runtime guides stay current after implementation.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.
 - [Planned cache key design](design/cache-design.md): pending cache requirements.
 - [Test inventory](testing/test-list.md): executed cases and pending cache tests.
+- [Test code refactoring plan](implementation/test-code-refactoring-plan.md): the terms for auxiliary test files, the four-layer target layout of `test/**`, and the ordered steps that move, merge, and split them with no `src` change.
 
 ## Archive
 
