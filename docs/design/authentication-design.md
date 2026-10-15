@@ -1210,7 +1210,7 @@ failed account request now names the status, the code, and the request ID of
 the WorkOS answer (point 12 of the findings below). Two probes with the SDK
 settings of the hosted composition repeated the page reads and grant changes of
 the cases in an organization like C: 892 page reads and 7,300 WorkOS calls
-without a failure, and no call slower than 2,367 ms. Two runs of only the
+without a failure, and no call slower than 2,367 ms. Three runs of only the
 AUTH-08W tests could not start their cases, because the email quota of the
 staging environment was used up (point 11). The
 [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
