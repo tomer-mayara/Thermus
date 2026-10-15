@@ -27,7 +27,7 @@ export class RendererChildDouble extends ChildProcess {
   }
 }
 
-export function mockRenderer(t: TestContext) {
+export function controlledRenderer(t: TestContext) {
   const child = new RendererChildDouble();
   let finish!: ProcessCompletion;
   let signalLaunch!: () => void;
