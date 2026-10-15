@@ -8,7 +8,8 @@ import {
   type Ctx,
   type Step,
 } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { elementHidingRules, readAdFixture } from '../../../support/fixtures/ad-rules.ts';
+import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
+import { readAdFixture } from '../fixtures/ad-pages.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
 const elementHidingHtml = readAdFixture('element-hiding.html');
