@@ -153,8 +153,9 @@ home.
 
 - D1. `S/**` imports only `src/**`, packages, and `S/**`.
 - D2. A file in `test/<type>/` imports no other test type. One exception:
-  `U/work-slice/basic-mcp-url-fetch.test.ts` → `A/work-slice/basic-mcp-url-fetch.ts`,
-  because the work-slice README makes the entry point export its composition.
+  `U/work-slice/basic-mcp-url-fetch.test.ts` →
+  `A/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts`, because the
+  work-slice README makes the entry point export its composition.
 - D3. A unit test imports `fixtures/` only from its own package.
 - D4. `S/drivers/**` imports no `S/dsl/**`.
 - D5. `S/doubles/**` and `S/fixtures/**` import no `S/dsl/**` and no
@@ -172,6 +173,6 @@ The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 of the plan move the 13 borrowed
 files); unit → support stays, because `S/` is the shared base of all test
 types; unit → work slice stays as the one documented exception. ESLint enforces
-D1 to D6 (Steps 4 and 5i of the plan), and an architecture specification proves
-each rule, as `test/acceptance/architecture/auth-boundaries.test.ts` does for
-`src`.
+D1 to D3 and D6 in `.habit-hooks/eslint.config.mjs`, through `habit-hooks`. The
+specification `test/acceptance/architecture/test-layer-boundaries.test.ts`
+proves each of these rules. Step 5i of the plan adds D4, D5, and D7.

@@ -39,6 +39,27 @@ function directImportRules(paths, message) {
   };
 }
 
+const testLayout = 'docs/testing/test-code-layout.md';
+const testTypes = ['unit', 'integration', 'interface', 'acceptance'];
+const otherUnitPackageFixtures = '(?:\\.\\./)+(?:test/unit/)?(?!support/)[a-z-]+/fixtures/';
+const workSliceEntry = 'work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch(?:\\.[jt]s)?$';
+const containerScripts = [
+  'test/support/container-edge.ts',
+  'test/support/container-page.ts',
+  'test/support/container-probe.ts',
+  'test/support/container/container-edge.ts',
+  'test/support/container/container-page.ts',
+  'test/support/container/container-probe.ts',
+];
+
+function testTypeImports(types) {
+  return `(?:\\.\\./)+(?:test/)?(?:${types.join('|')})/`;
+}
+
+function otherTestTypeImports(type) {
+  return testTypeImports(testTypes.filter((other) => other !== type));
+}
+
 export default [
   {
     files: sourceFiles,
@@ -94,5 +115,50 @@ export default [
   {
     files: ['src/mcp/**/*.ts', 'src/hosted-admin/**/*.ts'],
     rules: directImportRules(consumerImports, 'Auth consumers use role contracts. Composition roots select implementations.'),
+  },
+  // For the same rule, a block replaces the options of each block before it.
+  // Thus each glob has one block with all of its patterns. The work-slice block
+  // replaces the unit block for its file. The container block replaces the
+  // support block for its files, and its pattern also refuses each import that
+  // D1 refuses.
+  {
+    files: ['test/support/**/*.ts'],
+    rules: directImportRules(
+      [testTypeImports(testTypes)],
+      `Rule D1 of ${testLayout}: support code imports only src, packages, and test/support.`,
+    ),
+  },
+  {
+    files: ['test/unit/**/*.ts'],
+    rules: directImportRules(
+      [otherTestTypeImports('unit'), otherUnitPackageFixtures],
+      `Rules D2 and D3 of ${testLayout}: a unit test imports no other test type, and fixtures only from its own package.`,
+    ),
+  },
+  {
+    files: ['test/unit/work-slice/basic-mcp-url-fetch.test.ts'],
+    rules: directImportRules(
+      [
+        testTypeImports(['integration', 'interface']),
+        `${testTypeImports(['acceptance'])}(?!${workSliceEntry})`,
+        otherUnitPackageFixtures,
+      ],
+      `Rules D2 and D3 of ${testLayout}: from another test type, this unit test imports only the work-slice entry point. `
+        + 'It imports fixtures only from its own package.',
+    ),
+  },
+  ...['integration', 'interface', 'acceptance'].map((type) => ({
+    files: [`test/${type}/**/*.ts`],
+    rules: directImportRules(
+      [otherTestTypeImports(type)],
+      `Rule D2 of ${testLayout}: a file in test/${type}/ imports no other test type.`,
+    ),
+  })),
+  {
+    files: containerScripts,
+    rules: directImportRules(
+      ['(?!node:).'],
+      `Rule D6 of ${testLayout}: a container script imports only node: modules, because it runs alone in a container.`,
+    ),
   },
 ];

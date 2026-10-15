@@ -72,7 +72,11 @@ rejection class run in `test/integration/auth/`. MCP rejection and access tests
 run in `test/integration/mcp/` for the same reason. The direct auth import guards
 run through the existing ESLint configuration in `habit-hooks`. Their fixture
 specification, `test/acceptance/architecture/auth-boundaries.test.ts`, also needs
-a focused run and the acceptance suite.
+a focused run and the acceptance suite. The rules D1 to D3 and D6 of the
+[test code layout](../testing/test-code-layout.md#dependency-rules) run through
+the same ESLint configuration. Their specification,
+`test/acceptance/architecture/test-layer-boundaries.test.ts`, also needs a
+focused run and the acceptance suite.
 
 ## Focused commands
 
