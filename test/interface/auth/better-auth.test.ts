@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { after, before, describe, test, type TestContext } from 'node:test';
+import { describe, test, type TestContext } from 'node:test';
 import { promisify } from 'node:util';
 import { auth as runMcpAuthorization } from '@modelcontextprotocol/client';
 import { ProviderEnvironmentError } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
@@ -23,6 +23,7 @@ import {
   type LocalAuth,
 } from '../../support/in-process/better-auth-local.ts';
 import { PreRegisteredSdkClient, sdkFetch } from '../../support/drivers/mcp/mcp-sdk-oauth-client.ts';
+import { guardOutboundFetch } from '../../support/isolation/outbound-fetch-guard.ts';
 import { setProcessEnvironment } from '../../support/isolation/process-environment.ts';
 import { foreignOriginProbe } from '../../support/processes/module-paths.ts';
 
@@ -122,19 +123,9 @@ async function foreignOriginSignInInNewProcess(environment: Readonly<Record<stri
 }
 
 describe('Pinned Better Auth local provider contracts', () => {
-  const realFetch = globalThis.fetch;
-  const outboundRequests: string[] = [];
-
-  before(() => {
-    globalThis.fetch = async (input) => {
-      outboundRequests.push(input instanceof Request ? input.url : String(input));
-      throw new Error('Outbound network access is not allowed in the local provider');
-    };
-  });
-
-  after(() => {
-    globalThis.fetch = realFetch;
-    assert.deepEqual(outboundRequests, [], 'the local provider made no outbound request');
+  const outboundRequests = guardOutboundFetch({
+    refusal: 'Outbound network access is not allowed in the local provider',
+    finding: 'the local provider made no outbound request',
   });
 
   describe('Private account operations', () => {

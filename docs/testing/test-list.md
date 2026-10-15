@@ -1462,7 +1462,7 @@ npm run build && node --test dist/test/integration/auth/hosted-administration.te
 
 **WorkOS browser session with the pinned SDK** (`test/integration/auth/workos-browser-session.test.ts` and `workos-browser-session-switch.test.ts`)
 
-The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-world.ts`).
+The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-world.ts`). `allowOnlyLoopbackRequests()` of that file calls `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`. Thus a replaced `fetch` lets only requests to `127.0.0.1` through and records no request that leaves the machine.
 
 [V] A completed AuthKit sign-in exchanges the code with the verifier of the AuthKit URL, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in
 [V] A valid access token is checked against the browser key set without a refresh or a cookie change
@@ -1585,7 +1585,7 @@ npm run build && node --test dist/test/integration/auth/local-auth-command*.test
 
 **Local MCP access** (`test/integration/auth/local-access.test.ts`)
 
-These tests run `BetterAuthProvider` as the verifier and the access resolver of a real MCPServer with the real Better Auth provider and SQLite files in temporary data directories. A test-only protected tool records its trusted context and its fetch and clean steps. Sign-in, consent, and the code exchange run through the provider handler. The test process refuses outbound `fetch` calls and records each attempt.
+These tests run `BetterAuthProvider` as the verifier and the access resolver of a real MCPServer with the real Better Auth provider and SQLite files in temporary data directories. A test-only protected tool records its trusted context and its fetch and clean steps. Sign-in, consent, and the code exchange run through the provider handler. With `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`, the test process refuses outbound `fetch` calls and records each attempt.
 
 [V] Two local users each call the protected tool with their own session-bound token: each request has its own user subject in the one `local:<installation-id>` tenant with the same `user` grant and `product:access` permission, and the verified claims name the local issuer, the approved client, and the MCP resource
 [V] A user disabled while its session and token stay valid gets 403 `access_denied` after token verification, a deleted user gets 401, no tool runs for them, and the peer still works
@@ -1676,7 +1676,7 @@ Run the integration suite with `npm run test:integration`. `npm run check` does 
 
 **Better Auth local provider** (`test/interface/auth/better-auth.test.ts`)
 
-These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts. The `NODE_ENV` and `TEST` proofs run `dist/test/support/processes/foreign-origin-probe.js` in a new Node process with only that variable. The `NODE_ENV` proof needs the new process, because the provider reads `NODE_ENV` when its modules load. That process also blocks `fetch` and reports its outbound requests.
+These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; with `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`, a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts. The `NODE_ENV` and `TEST` proofs run `dist/test/support/processes/foreign-origin-probe.js` in a new Node process with only that variable. The `NODE_ENV` proof needs the new process, because the provider reads `NODE_ENV` when its modules load. That process also blocks `fetch` and reports its outbound requests.
 
 [V] Rejects public signup over HTTP and from the server API, and rejects email password reset; no account exists
 [V] Rejects a duplicate email in another letter case through the private create operation and keeps the original account
@@ -1707,7 +1707,7 @@ npm run build && node --test dist/test/interface/auth/better-auth.test.js
 
 **WorkOS SDK** (`test/interface/auth/workos.test.ts`)
 
-The 38 source and compiled cases passed on 2026-10-15 after the explicit User-create proof was added; the final complete-candidate gates also passed. These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
+The 38 source and compiled cases passed on 2026-10-15 after the explicit User-create proof was added; the final complete-candidate gates also passed. These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; with `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`, a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
 
 [V] Gives an AuthKit sign-in URL with the client ID, the exact redirect URI, `response_type=code`, `provider=authkit`, an S256 challenge, and a fresh state and verifier for each call; an organization ID adds `organization_id`
 [V] Exchanges a code with the verifier and the API key as `client_secret`, and returns the user, both tokens, and an iron seal that hides the tokens; a refused code throws `OauthException` with `invalid_grant`

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { after, before, describe, test, type TestContext } from 'node:test';
+import { describe, test, type TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import {
   BadRequestException,
@@ -27,6 +27,7 @@ import {
   type FakeAnswer,
   type FakeClientSettings,
 } from '../../support/doubles/workos/workos-fake-api.ts';
+import { guardOutboundFetch } from '../../support/isolation/outbound-fetch-guard.ts';
 
 // These proofs show the pinned SDK side of each contract: what it sends, how it reads answers, and how it
 // classifies failures. The answers come from a local fake, so they do not show what the real WorkOS API sends.
@@ -292,21 +293,10 @@ function connectToken(world: ConnectWorld, key = world.authkitKey, settings: Par
 }
 
 describe('Pinned WorkOS SDK and jose contracts against a local fake WorkOS API', () => {
-  const realFetch = globalThis.fetch;
-  const outboundRequests: string[] = [];
-
-  before(() => {
-    globalThis.fetch = async (input, init) => {
-      const url = new URL(input instanceof Request ? input.url : String(input));
-      if (url.hostname === '127.0.0.1') return realFetch(input, init);
-      outboundRequests.push(url.href);
-      throw new Error('Outbound network access is not allowed in the WorkOS proofs');
-    };
-  });
-
-  after(() => {
-    globalThis.fetch = realFetch;
-    assert.deepEqual(outboundRequests, [], 'no request left the machine');
+  guardOutboundFetch({
+    allowLoopback: true,
+    refusal: 'Outbound network access is not allowed in the WorkOS proofs',
+    finding: 'no request left the machine',
   });
 
   describe('Browser sign-in with AuthKit', () => {
