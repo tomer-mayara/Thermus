@@ -40,9 +40,10 @@ Step 0 of the plan did this setup on 2026-10-14 in the Staging environment
   Google consent screen shows the WorkOS name.
 - Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD)
   are on, so that Claude Code registers itself at AuthKit.
-- The organization "Thermus work slice" has the external ID
-  `thermus-work-slice`. A new user gets access only through the operator step
-  of the walk.
+- The organization "Thermus work slice" is
+  `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, with the external ID `thermus-work-slice`.
+  The operator step of the walk adds the user to this organization with the
+  role `user`. A new user gets access only through that step.
 
 The registered URIs of Staging serve the slice without a change: the redirect
 URI `https://localhost:46443/callback`, the sign-out URI
@@ -81,11 +82,21 @@ port.
 
 When `key.pem` or `cert.pem` is missing, the launcher makes a new self-signed
 certificate with OpenSSL for `localhost`, `127.0.0.1`, and `::1`. It is valid
-for 365 days and has the serverAuth key usage, which macOS requires. Only the
-owner can read the key, because the browser trusts the certificate as a root.
-When both files exist, the launcher keeps them, so that the trust of the walk
-stays. For a new certificate, delete the two files and trust the new
-certificate again.
+for 365 days and has the serverAuth key usage, which macOS requires. The
+certificate is its own authority: `CA:TRUE`, the default of
+`openssl req -x509`. The browser trusts it as a root, so a person with
+`key.pem` can make certificates that the browser trusts for each site. Thus
+only the owner must read `key.pem`. The launcher writes it under `umask 077`,
+with the mode 0600. When both files exist, the launcher keeps them, so that the
+trust of the walk stays. For a new certificate, delete the two files and trust
+the new certificate again. This command removes the trust again:
+
+```sh
+security remove-trusted-cert "<repository root>/.cache/thermus-local-tls/cert.pem"
+```
+
+The certificate itself stays in the login keychain. Keychain Access can delete
+it.
 
 ## The walk
 
@@ -104,8 +115,8 @@ certificate again.
    the selected organization." The organization page gives the onboarding
    guidance.
 4. The operator step: the owner adds the user to the organization "Thermus
-   work slice" with the role User. The owner uses the WorkOS dashboard or the
-   WorkOS connector. Reload the portal. It shows "You have product access in
+   work slice", `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, with the role User (`user`).
+   The owner uses the WorkOS dashboard or the WorkOS connector. Reload the portal. It shows "You have product access in
    organization <ID>. Roles: user."
 5. Connect Claude Code. Claude Code reads `NODE_EXTRA_CA_CERTS` for the OAuth
    and MCP requests. Run `claude mcp add-json` in the directory where you
