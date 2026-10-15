@@ -280,7 +280,7 @@ The gate needs `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda
 1.0.0 executable. [Lightpanda runtime](../lightpanda-runtime.md) gives the
 setup. The gate needs no public network access and no Axiom credentials. The
 pages are local HTTP fixtures on `127.0.0.1`. The test-only `permitIPv4Fixture`
-seam in `test/support/network-fixture.ts` lets the renderer reach only that
+seam in `test/support/doubles/website-fetcher/network-fixture.ts` lets the renderer reach only that
 address in the test scope. It keeps the other launch options of the fetcher,
 also the renderer environment, so the gate checks the telemetry setting of the
 fetcher. Production has no private-network bypass.

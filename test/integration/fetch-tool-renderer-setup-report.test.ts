@@ -6,8 +6,8 @@ import { createRequestContext } from '../../src/auth/access-context.ts';
 import { createFetchOperation, fetchToolServers } from '../../src/fetch-tool.ts';
 import type { RequestServerBuilder } from '../../src/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
-import { syncBuiltinMocks } from '../support/builtin-mocks.ts';
-import { RendererChildDouble } from '../support/renderer-process-double.ts';
+import { syncBuiltinMocks } from '../support/doubles/website-fetcher/builtin-mocks.ts';
+import { RendererChildDouble } from '../support/doubles/website-fetcher/renderer-process-double.ts';
 
 const executable = '/opt/thermus-test/lightpanda';
 // An address literal needs no DNS lookup.

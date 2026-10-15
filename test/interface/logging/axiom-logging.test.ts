@@ -5,7 +5,7 @@ import type { AddressInfo } from 'node:net';
 import { Writable } from 'node:stream';
 import { test } from 'node:test';
 import { openAxiomLogging, type AxiomLogging } from '../../support/in-process/axiom-test-export.ts';
-import { logRecordsOf, startLogReceiver } from '../../support/otel-log-receiver.ts';
+import { logRecordsOf, startLogReceiver } from '../../support/doubles/logging/otel-log-receiver.ts';
 
 const message = 'work-slice fetch started: https://news.example/story';
 const callSite = String.raw`\[axiom-logging\.test\.(?:ts|js):\d+\]`;

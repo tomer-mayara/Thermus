@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import { test } from 'node:test';
-import { permitIPv4Fixture } from '../../support/network-fixture.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { permitIPv4Fixture } from '../../support/doubles/website-fetcher/network-fixture.ts';
+import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 const fixtureUrl = 'http://localhost:8123/page';
 const fetchArgs = [

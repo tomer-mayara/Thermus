@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import childProcess, { execFile } from 'node:child_process';
 import dns, { lookup } from 'node:dns/promises';
 import { test } from 'node:test';
-import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
+import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 
 const originalLookup = dns.lookup;
 const originalExecFile = childProcess.execFile;

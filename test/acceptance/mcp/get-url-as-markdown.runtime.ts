@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 import type { CallToolResult, Client } from '@modelcontextprotocol/client';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
-import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
+import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 import { assertExit } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { InProcessServer } from '../../support/in-process/in-process-server.ts';
@@ -17,7 +17,7 @@ import { addUser, operatorOn, registerArgs, registeredClientId } from '../../sup
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';
 import { selfHostedServerSettings } from '../../support/in-process/local-runtime.ts';
 import { mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
-import { permitIPv4Fixture, startFixture } from '../../support/network-fixture.ts';
+import { permitIPv4Fixture, startFixture } from '../../support/doubles/website-fetcher/network-fixture.ts';
 import { setProcessEnvironment } from '../../support/process-environment.ts';
 
 const runCommand = promisify(execFile);

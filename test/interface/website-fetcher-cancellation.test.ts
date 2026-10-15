@@ -5,7 +5,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import type { WebsiteFetcher } from '../../src/website-fetcher/website-fetcher.ts';
-import { permitIPv4Fixture, startFixture } from '../support/network-fixture.ts';
+import { permitIPv4Fixture, startFixture } from '../support/doubles/website-fetcher/network-fixture.ts';
 
 test('fetchURL accepts a pre-aborted signal and makes no request', async (t) => {
   const fixture = await startFixture(t, (_request, response) => response.end('<html>Ready</html>'));

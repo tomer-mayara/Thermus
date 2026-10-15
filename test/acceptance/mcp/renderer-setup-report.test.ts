@@ -10,7 +10,7 @@ import { InProcessServer } from '../../support/in-process/in-process-server.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/dsl/local-commands.ts';
 import { connectWithToken, issuedGrants } from '../../support/dsl/local-mcp-user.ts';
 import { selfHostedServerSettings } from '../../support/in-process/local-runtime.ts';
-import { RendererProcessDouble } from '../../support/renderer-process-double.ts';
+import { RendererProcessDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const reason = 'Read the private-reason page for the task';
