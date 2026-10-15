@@ -536,6 +536,7 @@ const unavoidableAnswers: readonly { readonly label: string; readonly answer: Fa
     cause: /^RateLimitExceededException: Too many requests \(status 429, request ID request-429\)$/,
   },
   { label: 'no WorkOS answer within the client timeout', answer: 'hang', cause: /^OauthException: Error: Request timeout \(status 408\)$/ },
+  { label: 'a closed WorkOS connection', answer: 'close', cause: /^Error: Unexpected error: TypeError: fetch failed \(code UND_ERR_SOCKET\)$/ },
 ];
 
 function failureReportsIn(site: Site, path: string): string[] {

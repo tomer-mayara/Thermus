@@ -493,15 +493,15 @@ The gate also needs:
   Connect applications that an earlier run left, by their name prefix.
 - Invitation emails that the email quota of the staging environment still
   allows. WorkOS sends an email through its default email provider for each
-  send and each resend of an invitation. A complete run sends eight invitation
-  emails, and so does a run of only the AUTH-08W tests: two in the AUTH-08W
-  fixtures, two in the AUTH-08W proofs, and four in the AUTH-08W cases. A
-  refused send sends no email. When the quota is used up, WorkOS refuses each
-  send with `429` and the message "Sandbox environment email quota reached for
-  invitation emails.". Then the AUTH-08W fixtures cannot be made, and each of
-  the 17 AUTH-08W tests fails with that message. Such a run is not a pass.
-  WorkOS gives no `Retry-After` and documents no fixed quota. The quota was
-  used up at 23:17 UTC on 2026-10-14, and it was not back at 00:00 UTC.
+  send and each resend of an invitation. A complete run, and a run of only the
+  AUTH-08W tests, makes eight sends and resends that WorkOS accepts: two in the
+  AUTH-08W fixtures, two in the AUTH-08W proofs, and four in the AUTH-08W cases.
+  When the quota is used up, WorkOS refuses each send with `429` and the
+  message "Sandbox environment email quota reached for invitation emails.".
+  Then the AUTH-08W fixtures cannot be made, and each of the 17 AUTH-08W tests
+  fails with that message. Such a run is not a pass. WorkOS gives no
+  `Retry-After` and documents no fixed quota. A run at 23:17 UTC on 2026-10-14
+  found the quota used up, and so did a run at 00:00 UTC.
 
 A complete run takes about 12 minutes: the third complete run of AUTH-08W
 run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
@@ -683,7 +683,7 @@ Run r2 of the ticket did these runs on 2026-10-14 and 2026-10-15:
 
 1. Two runs of only the AUTH-08W tests, at 23:17 and at 00:00 UTC, through the
    staging launcher: status 1, 17 tests, 0 passed, 17 failed. In each run,
-   WorkOS refused the first invitation send of the fixtures with `429`, "Sandbox
+   WorkOS refused the invitation sends of the fixtures with `429`, "Sandbox
    environment email quota reached for invitation emails.". No test reached a
    page read.
 2. Two probes outside the repository, for 20 and 15 minutes, which repeated the
