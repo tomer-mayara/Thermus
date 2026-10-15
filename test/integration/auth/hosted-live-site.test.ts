@@ -1,13 +1,18 @@
 import assert from 'node:assert/strict';
+import { X509Certificate } from 'node:crypto';
+import { once } from 'node:events';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { request as httpsRequest } from 'node:https';
 import { tmpdir } from 'node:os';
 import { Server } from 'node:net';
 import { join } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
+import { connect as tlsConnect } from 'node:tls';
+import type { Application, ApplicationLogger } from '../../../src/application.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { LocalHttpsSite } from '../../support/hosted-live/local-https-site.ts';
-import type { HostedLiveSettings } from '../../support/hosted-live/settings.ts';
+import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
+import { localOrigin, type HostedLiveSettings } from '../../support/hosted-live/settings.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
 
 // The placeholder settings reach no WorkOS environment. The hosted composition makes no WorkOS call when it starts.
@@ -17,6 +22,31 @@ const settings: HostedLiveSettings = {
   authkitIssuer: workOSSettings.WORKOS_AUTHKIT_ISSUER,
 };
 const caseOptions = { timeout: 10_000 };
+const front = new URL(localOrigin);
+const portalPage = '<!doctype html><title>Portal</title>';
+const knownPath = '/known';
+const knownBody = 'The answer of the small application';
+
+interface FrontAnswer {
+  readonly status: number;
+  readonly body: string;
+}
+
+class SmallApplication {
+  readonly loggers: ApplicationLogger[] = [];
+  closes = 0;
+
+  readonly open = async (logger: ApplicationLogger): Promise<Application> => {
+    this.loggers.push(logger);
+    return {
+      handle: async (request) => {
+        if (new URL(request.url).pathname !== knownPath) throw new Error('The small application fails');
+        return new Response(knownBody);
+      },
+      close: async () => { this.closes += 1; },
+    };
+  };
+}
 
 async function temporaryDirectory(t: TestContext): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), 'thermus-hosted-live-site-'));
@@ -27,7 +57,7 @@ async function temporaryDirectory(t: TestContext): Promise<string> {
 async function writePortalBuild(t: TestContext): Promise<string> {
   const directory = await temporaryDirectory(t);
   await mkdir(join(directory, 'assets'));
-  await writeFile(join(directory, 'index.html'), '<!doctype html><title>Portal</title>');
+  await writeFile(join(directory, 'index.html'), portalPage);
   await writeFile(join(directory, 'assets', 'app.js'), 'document.body.dataset.portal = "ready";\n');
   return directory;
 }
@@ -76,7 +106,31 @@ async function serverHandlesAfterClose(before: number): Promise<number> {
   return serverHandles();
 }
 
-describe('Local HTTPS site of the hosted live gate (test support) with the real hosted composition and HTTP server', () => {
+// The connection accepts each certificate, so that the test can read the certificate of the front.
+async function frontFingerprint(): Promise<string> {
+  const socket = tlsConnect({ host: front.hostname, port: Number(front.port), servername: front.hostname, rejectUnauthorized: false });
+  try {
+    await once(socket, 'secureConnect');
+    return socket.getPeerCertificate().fingerprint256;
+  } finally {
+    socket.destroy();
+  }
+}
+
+// The request trusts only the given certificate. Without an agent, each request has its own connection, which closes
+// after the answer.
+function frontGet(path: string, ca: Buffer): Promise<FrontAnswer> {
+  const answer = Promise.withResolvers<FrontAnswer>();
+  const request = httpsRequest({ host: front.hostname, port: front.port, path, ca, agent: false }, (response) => {
+    const chunks: Buffer[] = [];
+    response.on('data', (chunk: Buffer) => chunks.push(chunk)).on('error', answer.reject)
+      .on('end', () => answer.resolve({ status: response.statusCode ?? 0, body: Buffer.concat(chunks).toString('utf8') }));
+  });
+  request.on('error', answer.reject).end();
+  return answer.promise;
+}
+
+describe('Local HTTPS site of the hosted live gate (test support) with the real HTTP server', () => {
   test('Given a portal build directory that does not exist, when the site starts, then it rejects with the message that names the directory and npm run build:user-portal, keeps the file system error as the cause, and leaves no server listening', caseOptions, async (t) => {
     closeLeakedServersAfter(t);
     const missing = join(await temporaryDirectory(t), 'dist');
@@ -106,6 +160,37 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
     await assert.rejects(started, { code: 'ENOENT', syscall: 'spawn openssl' });
     assert.deepEqual(
       { applicationCloses: mcpServerClose.mock.callCount(), serverHandles: await serverHandlesAfterClose(before) },
+      { applicationCloses: 1, serverHandles: before },
+    );
+  });
+
+  // This case listens on port 46443, the port of the hosted live gate and the work slice. It fails while one of them runs.
+  test('Given a portal build, certificate files from the OpenSSL command of the site, a logger, and an application function, when the site starts, then the front at https://localhost:46443/ gives that certificate, serves the portal, and forwards each other request to the application of that function, which gets that logger; a request that the application fails gives 500 and a report to that logger; close() closes the application one time and leaves no server listening', caseOptions, async (t) => {
+    closeLeakedServersAfter(t);
+    const portal = await writePortalBuild(t);
+    const certificate = await selfSignedCertificate(await temporaryDirectory(t));
+    const logger = { info: t.mock.fn<(message: string) => void>(), error: t.mock.fn<(message: string) => void>() };
+    const application = new SmallApplication();
+    const before = serverHandles();
+
+    const site = await LocalHttpsSite.start(settings, { portalBuild: portal, certificate, logger, application: application.open });
+    t.after(() => site.close());
+    const fingerprint = await frontFingerprint();
+    const answers = [await frontGet('/', certificate.cert), await frontGet(knownPath, certificate.cert), await frontGet('/fails', certificate.cert)];
+    await site.close();
+
+    assert.equal(fingerprint, new X509Certificate(certificate.cert).fingerprint256);
+    assert.deepEqual(answers, [
+      { status: 200, body: portalPage },
+      { status: 200, body: knownBody },
+      { status: 500, body: 'Internal Server Error' },
+    ]);
+    assert.equal(application.loggers.length, 1);
+    assert.equal(application.loggers[0], logger);
+    assert.deepEqual(logger.error.mock.calls.map(({ arguments: [message] }) => message), ['The HTTP handler failed for GET /fails: Error']);
+    assert.deepEqual(site.log.lines, []);
+    assert.deepEqual(
+      { applicationCloses: application.closes, serverHandles: await serverHandlesAfterClose(before) },
       { applicationCloses: 1, serverHandles: before },
     );
   });

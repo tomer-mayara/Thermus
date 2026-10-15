@@ -9,7 +9,7 @@ import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { createApplication } from '../../../src/application.ts';
+import { createApplication, type Application, type ApplicationLogger } from '../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
 import { browserRedirectUri, localOrigin, type HostedLiveSettings } from './settings.ts';
@@ -25,7 +25,13 @@ interface PortalSite {
   readonly thermus: URL;
 }
 
+interface TlsCertificate {
+  readonly key: Buffer | string;
+  readonly cert: Buffer | string;
+}
+
 const portalBuild = fileURLToPath(new URL('../../../../src/user-portal/dist/', import.meta.url));
+const publicBaseUrl = `${localOrigin}/`;
 const listenAddresses = ['127.0.0.1', '::1'];
 const contentTypes: Readonly<Record<string, string>> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 const hopHeaders = new Set(['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'host', 'content-length', 'proxy-connection']);
@@ -47,7 +53,8 @@ class LogLines {
   readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
 }
 
-async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
+// Writes key.pem and cert.pem into the directory and gives their PEM contents.
+export async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
   const key = join(directory, 'key.pem');
   const cert = join(directory, 'cert.pem');
   await promisify(execFile)('openssl', [
@@ -79,12 +86,21 @@ function closeFront(front: Server): Promise<void> {
 export interface LocalHttpsSiteOptions {
   // The directory of the portal build. The default is src/user-portal/dist/ of this repository.
   readonly portalBuild?: string;
+  // The TLS key and certificate in PEM. The default is a new self-signed certificate for this run.
+  readonly certificate?: TlsCertificate;
+  // The logger of the Thermus listener and of the default application. With this option, the log of the site stays
+  // empty.
+  readonly logger?: ApplicationLogger;
+  // Opens the application behind the front. It gets the logger option, or else the log of the site. The default is the
+  // hosted composition with the staging settings and a random cookie password.
+  readonly application?: (logger: ApplicationLogger) => Promise<Application>;
 }
 
 // The local HTTPS test server of the hosted live gate, at https://localhost:46443/. It is the documented deployment
-// of the gate: it serves the built portal at / and /assets/, and it sends each other request to the real hosted
-// composition of Thermus with the WorkOS staging settings. The certificate is a new self-signed one for each run.
-// A start that fails closes what it started, so that the gate process can exit.
+// of the gate: it serves the built portal at / and /assets/, and it sends each other request to Thermus. For the gate,
+// Thermus is the real hosted composition with the WorkOS staging settings, and the certificate is a new self-signed
+// one for each run. A work slice gives its own application and a certificate that stays. A start that fails closes
+// what it started, so that the gate process can exit.
 export class LocalHttpsSite {
   readonly log: LogLines;
   readonly #thermus: HttpServer;
@@ -106,25 +122,17 @@ export class LocalHttpsSite {
     // The portal files come first. Without a portal build, the start fails before it opens a resource.
     const files = await portalFiles(options.portalBuild ?? portalBuild);
     await using owned = new AsyncDisposableStack();
-    const directory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
+    const certificateDirectory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
     const log = new LogLines();
-    const environment = {
-      DEPLOYMENT: 'hosted',
-      PUBLIC_BASE_URL: `${localOrigin}/`,
-      WORKOS_API_KEY: settings.apiKey,
-      WORKOS_CLIENT_ID: settings.clientId,
-      WORKOS_AUTHKIT_ISSUER: settings.authkitIssuer,
-      WORKOS_REDIRECT_URI: browserRedirectUri,
-      WORKOS_COOKIE_PASSWORD: randomBytes(32).toString('base64url'),
-    };
-    const config = loadDeploymentConfig(environment, 'http');
-    const application = owned.adopt(await createApplication(config, log, environment), (opened) => opened.close());
+    const logger = options.logger ?? log;
+    const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger));
+    const application = owned.adopt(await openApplication(logger), (opened) => opened.close());
     const thermus = owned.adopt(
-      await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log }),
+      await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl, logger }),
       (server) => server.close(),
     );
     const site: PortalSite = { files, headers: portalHeaders(settings.authkitIssuer), thermus: thermus.url };
-    const tls = await selfSignedCertificate(directory);
+    const tls = options.certificate ?? await selfSignedCertificate(certificateDirectory);
     // One front after the other: when a listen fails, the stack already owns each front that listens.
     for (const host of listenAddresses) {
       const front = createServer(tls, (request, response) => void answer(request, response, site));
@@ -138,6 +146,19 @@ export class LocalHttpsSite {
   async close(): Promise<void> {
     await this.#resources.disposeAsync();
   }
+}
+
+async function stagingApplication(settings: HostedLiveSettings, logger: ApplicationLogger): Promise<Application> {
+  const environment = {
+    DEPLOYMENT: 'hosted',
+    PUBLIC_BASE_URL: publicBaseUrl,
+    WORKOS_API_KEY: settings.apiKey,
+    WORKOS_CLIENT_ID: settings.clientId,
+    WORKOS_AUTHKIT_ISSUER: settings.authkitIssuer,
+    WORKOS_REDIRECT_URI: browserRedirectUri,
+    WORKOS_COOKIE_PASSWORD: randomBytes(32).toString('base64url'),
+  };
+  return createApplication(loadDeploymentConfig(environment, 'http'), logger, environment);
 }
 
 async function answer(request: IncomingMessage, response: ServerResponse, site: PortalSite): Promise<void> {
