@@ -9,7 +9,7 @@ import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { createApplication, type Application } from '../../../src/application.ts';
+import { createApplication } from '../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
 import { browserRedirectUri, localOrigin, type HostedLiveSettings } from './settings.ts';
@@ -57,35 +57,43 @@ async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; 
   return { key: await readFile(key), cert: await readFile(cert) };
 }
 
-async function portalFiles(): Promise<Map<string, PortalFile>> {
+async function portalFiles(directory: string): Promise<Map<string, PortalFile>> {
   const files = new Map<string, PortalFile>();
   const read = async (path: string, file: string): Promise<void> => {
-    files.set(path, { body: await readFile(join(portalBuild, file)), type: contentTypes[extname(file)] ?? 'application/octet-stream' });
+    files.set(path, { body: await readFile(join(directory, file)), type: contentTypes[extname(file)] ?? 'application/octet-stream' });
   };
   try {
     await read('/', 'index.html');
-    for (const name of await readdir(join(portalBuild, 'assets'))) await read(`/assets/${name}`, join('assets', name));
-  } catch {
-    throw new Error('The local HTTPS site has no portal build. Run npm run build:user-portal first; npm run test:hosted-live does it.');
+    for (const name of await readdir(join(directory, 'assets'))) await read(`/assets/${name}`, join('assets', name));
+  } catch (cause) {
+    throw new Error(`The local HTTPS site has no portal build in ${directory}. Run npm run build:user-portal first; npm run test:hosted-live does it.`, { cause });
   }
   return files;
+}
+
+function closeFront(front: Server): Promise<void> {
+  front.closeAllConnections();
+  return new Promise<void>((resolve) => front.close(() => resolve()));
+}
+
+export interface LocalHttpsSiteOptions {
+  // The directory of the portal build. The default is src/user-portal/dist/ of this repository.
+  readonly portalBuild?: string;
 }
 
 // The local HTTPS test server of the hosted live gate, at https://localhost:46443/. It is the documented deployment
 // of the gate: it serves the built portal at / and /assets/, and it sends each other request to the real hosted
 // composition of Thermus with the WorkOS staging settings. The certificate is a new self-signed one for each run.
+// A start that fails closes what it started, so that the gate process can exit.
 export class LocalHttpsSite {
   readonly log: LogLines;
-  readonly #application: Application;
   readonly #thermus: HttpServer;
-  readonly #fronts: readonly Server[];
-  readonly #directory: string;
+  // The fronts, the Thermus server, the application, and the temporary directory. They close in this order.
+  readonly #resources: AsyncDisposableStack;
 
-  private constructor(parts: { application: Application; thermus: HttpServer; fronts: readonly Server[]; directory: string; log: LogLines }) {
-    this.#application = parts.application;
+  private constructor(parts: { thermus: HttpServer; resources: AsyncDisposableStack; log: LogLines }) {
     this.#thermus = parts.thermus;
-    this.#fronts = parts.fronts;
-    this.#directory = parts.directory;
+    this.#resources = parts.resources;
     this.log = parts.log;
   }
 
@@ -94,8 +102,11 @@ export class LocalHttpsSite {
     return this.#thermus.url;
   }
 
-  static async start(settings: HostedLiveSettings): Promise<LocalHttpsSite> {
-    const directory = await mkdtemp(join(tmpdir(), 'thermus-hosted-live-'));
+  static async start(settings: HostedLiveSettings, options: LocalHttpsSiteOptions = {}): Promise<LocalHttpsSite> {
+    // The portal files come first. Without a portal build, the start fails before it opens a resource.
+    const files = await portalFiles(options.portalBuild ?? portalBuild);
+    await using owned = new AsyncDisposableStack();
+    const directory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
     const log = new LogLines();
     const environment = {
       DEPLOYMENT: 'hosted',
@@ -107,27 +118,25 @@ export class LocalHttpsSite {
       WORKOS_COOKIE_PASSWORD: randomBytes(32).toString('base64url'),
     };
     const config = loadDeploymentConfig(environment, 'http');
-    const application = await createApplication(config, log, environment);
-    const thermus = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-    const site: PortalSite = { files: await portalFiles(), headers: portalHeaders(settings.authkitIssuer), thermus: thermus.url };
+    const application = owned.adopt(await createApplication(config, log, environment), (opened) => opened.close());
+    const thermus = owned.adopt(
+      await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log }),
+      (server) => server.close(),
+    );
+    const site: PortalSite = { files, headers: portalHeaders(settings.authkitIssuer), thermus: thermus.url };
     const tls = await selfSignedCertificate(directory);
-    const fronts = await Promise.all(listenAddresses.map(async (host) => {
+    // One front after the other: when a listen fails, the stack already owns each front that listens.
+    for (const host of listenAddresses) {
       const front = createServer(tls, (request, response) => void answer(request, response, site));
       front.listen({ host, port: Number(new URL(localOrigin).port) });
       await once(front, 'listening');
-      return front;
-    }));
-    return new LocalHttpsSite({ application, thermus, fronts, directory, log });
+      owned.adopt(front, closeFront);
+    }
+    return new LocalHttpsSite({ thermus, resources: owned.move(), log });
   }
 
   async close(): Promise<void> {
-    for (const front of this.#fronts) {
-      front.closeAllConnections();
-      await new Promise<void>((resolve) => front.close(() => resolve()));
-    }
-    await this.#thermus.close();
-    await this.#application.close();
-    await rm(this.#directory, { recursive: true, force: true });
+    await this.#resources.disposeAsync();
   }
 }
 

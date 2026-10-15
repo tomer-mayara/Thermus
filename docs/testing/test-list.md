@@ -1393,6 +1393,19 @@ Run only these tests:
 npm run build && node --test dist/test/integration/server-stop-signals.test.js
 ```
 
+**Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
+
+These tests start `LocalHttpsSite` of `test/support/hosted-live/local-https-site.ts` with the real hosted composition and the real HTTP server. The WorkOS provider gets placeholder settings that reach no WorkOS environment. They cover a failed start: a start that fails must close what it started, so that the gate process exits. The hosted live gate has the only complete start, with the portal build and the staging settings.
+
+[V] Given a portal build directory that does not exist, when the site starts, then it rejects with the message that names the directory and `npm run build:user-portal`, keeps the file system error as the cause, and leaves no server listening
+[V] Given a portal build and a `PATH` without OpenSSL, when the site starts, then it rejects with the spawn error, closes the application that it started, and leaves no server listening
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-live-site.test.js
+```
+
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
 
 ## Interface
@@ -2007,7 +2020,7 @@ npm run test:container
 
 **Hosted live gate setup** (`test/acceptance/auth/hosted-live-setup.test.ts`)
 
-These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied.
+These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied. They need no portal build. Without it, the local HTTPS test server of the gate starts nothing and rejects at once with the message that names `npm run build:user-portal`. The gate process then exits.
 
 [V] Without WorkOS settings, the gate exits 1 with one failed test, no passed, skipped, or todo test, a setup error that names each missing setting, and no outbound network attempt
 [V] Refuses a production API key and requires a staging key; the output shows no setting value
