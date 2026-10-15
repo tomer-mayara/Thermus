@@ -1072,6 +1072,14 @@ The fixture registry, the operator runbook driver, and the operator setup proofs
 
 [V] Builds exactly the `Authorization` header with the API key as a bearer token and the `X-Axiom-Dataset` header with the dataset
 
+**Operator log spy** (`test/unit/test-support/operator-log-spy.test.ts`)
+
+The three hosted WorkOS acceptance specifications, `LocalHttpsSite` of the hosted live gate, and the hosted organization and administration integration tests each had the same class that recorded the operator log lines with the prefix `INFO` or `ERROR`. `OperatorLogSpy` in `test/support/doubles/application/operator-log-spy.ts` is the one copy. The operator log lines unit test and the local installation integration test keep their own logger, because it records each message without a prefix.
+
+[V] Records `info` and `error` calls in turn as `INFO <message>` and `ERROR <message>` lines, in the order of the calls
+[V] Records the lines in the same spy when `info` and `error` are taken off the spy and called without it
+[V] Keeps the lines of each spy apart: each of two spies has only its own line
+
 **Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
 
 `test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, and the local HTTPS site read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts`, `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`, and the three container scripts `edgeScript`, `pageScript`, and `probeScript` of `test/support/container/`.
