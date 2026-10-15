@@ -1,4 +1,5 @@
 import { WorkOS } from '@workos-inc/node';
+import { browserSessionIssuer } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 
 export interface HostedLiveSettings {
   readonly apiKey: string;
@@ -30,7 +31,7 @@ export function workosClient({ apiKey, clientId }: HostedLiveSettings): WorkOS {
 }
 
 export function browserIssuer({ clientId }: HostedLiveSettings): string {
-  return `https://api.workos.com/user_management/${clientId}`;
+  return browserSessionIssuer(clientId);
 }
 
 export function authkitKeySetUrl(issuer: string): string {
