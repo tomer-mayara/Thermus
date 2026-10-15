@@ -129,6 +129,26 @@ The server writes the line one time for each code in the life of its process, so
 
 On Linux, the system gives a file that it cannot execute to `/bin/sh`. The process then starts and fails, so each page fetch fails without a renderer setup report. Another code shows another reason why the system cannot start the process; a code without a system error name shows as `UNKNOWN`. A system limit, `EAGAIN`, `EMFILE`, `ENFILE`, or `ENOMEM`, is temporary and gives no report. In each case, verify the executable with `"$LIGHTPANDA_BIN" version`. The server reads `LIGHTPANDA_BIN` when it starts, so restart it after you change the setting. If you correct the file at the same path, the next page fetch uses it without a restart. After a correction, a recurrence of a reported code writes no new line until the next server start.
 
+## Renderer readiness report
+
+A page has a fixed 20-second readiness allowance, including navigation. If the
+renderer is still active at the deadline, the fetcher sends `SIGKILL` and waits
+for the process to finish. The client gets `Page fetch failed` without partial
+Markdown. The completion record has `fetch_failed`, and the application logger
+writes this safe `ERROR` record for each readiness timeout:
+
+```json
+{"event":"renderer.fetch.failed","category":"readiness_timeout","budgetMs":20000}
+```
+
+This record contains no URL, request credentials, renderer arguments, stderr,
+or raw cause. It identifies the readiness deadline. A page that keeps network requests
+active can reach this deadline. Verify the pinned executable first. Then check whether
+the page completes its loading and permits automated access. Do not remove the
+network safety options to make a page load. The allowance is fixed; no request
+argument or environment setting changes it. The separate process timeout stays
+60000 ms, and the output limit stays 32 MiB.
+
 ## Verify rendering
 
 Use Node 24.20.0 and pnpm 12.10.1, then install project dependencies with `pnpm install`.
@@ -170,12 +190,14 @@ npm run test:mcp:renderer
 
 The command makes a clean build and runs `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select the file. The gate runs the self-hosted server in the test process with real Better Auth, the real cleaning pipeline, trusted test rules, and this renderer. The real MCP SDK HTTP client calls `getURLAsMarkdown` for local HTTP pages on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address in the test scope. It keeps the other launch options of the fetcher, also the renderer environment. The gate needs no public network access and no Axiom credentials.
 
-The seven cases prove these behaviors:
+The nine cases prove these behaviors:
 
 - In the modern 2026-07-28 and legacy 2025-11-25 protocol eras, a user signs in and consents on the bundled pages. The client then gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record.
 - A local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY` gets a local JavaScript page, and the renderer run has telemetry off. The case gives the server a new `HOME` and an `XDG_DATA_HOME` under it. Lightpanda 1.0.0 makes its data directory there at each start: on macOS under `HOME`, on Linux under `XDG_DATA_HOME`. With telemetry on, it writes its telemetry install ID, the file `iid`, there and starts the telemetry sender, which alone connects to `telemetry.lightpanda.io`. The case checks that the directory holds no file.
 - After a redirect that changes the host and the path, `requestedUrl` keeps the requested spelling. The final URL selects the ad rules and resolves the relative links.
 - Hidden content is removed. HTML that the sanitizer withholds gives exact empty success. An HTTP error gives `Page fetch failed` and no renderer setup report. A DOM deeper than 256 levels gives `Page processing failed`.
+- A page whose script completes after 6.5 seconds returns its rendered content within the 20-second readiness allowance.
+- A page that never reaches network idle gets `Page fetch failed` and no partial Markdown. The renderer child stops before the call completes. The server writes one safe readiness report and one `fetch_failed` completion record.
 - A modern client cancellation stops the renderer child, and the server writes one `cancelled` record.
 - Server shutdown cancels a legacy call. The renderer child stops before the server finishes stopping, and the server writes one `cancelled` record.
 

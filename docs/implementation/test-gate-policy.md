@@ -288,7 +288,7 @@ fetcher. Production has no private-network bypass.
 
 The gate runs the production `serve()` in the test process with real Better
 Auth, the real cleaning pipeline, trusted test rules, and the pinned renderer.
-The real MCP SDK HTTP client calls `getURLAsMarkdown`. The seven cases cover:
+The real MCP SDK HTTP client calls `getURLAsMarkdown`. The nine cases cover:
 
 - exact cleaned Markdown from a local JavaScript page and one safe completion
   record, in the modern 2026-07-28 and the legacy 2025-11-25 era, after the
@@ -303,6 +303,11 @@ The real MCP SDK HTTP client calls `getURLAsMarkdown`. The seven cases cover:
 - hidden content, sanitizer-withheld HTML with exact empty success, an HTTP
   error with `Page fetch failed` and no renderer setup report, and a DOM deeper
   than 256 levels with `Page processing failed`;
+- a page whose script completes after 6.5 seconds and returns rendered content
+  within the fixed 20-second readiness allowance;
+- a page that never reaches network idle: the child stops before the call
+  completes, no partial Markdown returns, and the server writes one safe
+  `readiness_timeout` report and one `fetch_failed` completion record;
 - a modern client cancellation that stops the renderer child and writes one
   `cancelled` record;
 - a legacy call that server shutdown cancels: the renderer child stops before
@@ -316,7 +321,7 @@ the gate four times with bad prerequisites. It checks that each run fails with
 its setup error and that no gate test passes, is skipped, or is left as todo.
 
 Only a run of `npm run test:mcp:renderer` that exits with status 0 and shows
-each of the seven cases as passed is a renderer gate pass. A run that selects zero
+each of the nine cases as passed is a renderer gate pass. A run that selects zero
 tests, skips a test, leaves a test as todo, or stops with a setup error is not a
 pass. A passing default acceptance suite never counts as rendered end-to-end
 proof, and a container gate pass does not count either. Claim rendered tool

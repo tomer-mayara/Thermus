@@ -28,6 +28,9 @@ const setupGuide = 'See docs/lightpanda-runtime.md.';
 const page = (body: string, script?: string): string => '<!DOCTYPE html><html><head><title>Runtime fixture</title></head><body>'
   + `<main>${body}</main>${script === undefined ? '' : `<script src="${script}"></script>`}</body></html>`;
 const scripts: Readonly<Record<string, string>> = {
+  '/busy.js': `const request = () => fetch('/ongoing').catch(() => {});
+for (let index = 0; index < 6; index += 1) request();
+setInterval(request, 100);`,
   '/story.js': `document.getElementById('status').textContent = 'The script rendered this paragraph with enough words to keep it.';
 document.getElementById('slot').innerHTML = '<p class="requested-host-target">Requested host target</p><p class="final-host-target">Final host target</p>'
   + '<p>Related <a href="related">article</a> and <a href="/root">root</a>.</p><div hidden>Hidden instruction from the script</div>';`,
@@ -50,6 +53,7 @@ const pages: Readonly<Record<string, string>> = {
   '/deep': page('<h1>Deep story</h1><div id="slot"></div>', '/deep.js'),
   '/slow': page('<h1>Slow story</h1><p>This page waits for a script that does not arrive.</p>', '/slow.js'),
   '/late': page('<h1>Late story</h1><p id="status">Private unfinished content</p>', '/late.js'),
+  '/busy': page('<h1>Private busy story</h1><p>This unfinished page keeps making asynchronous requests.</p>', '/busy.js'),
 };
 const redirectedPage = page('<h1>Redirected story</h1><p>The final page has a first paragraph with enough words to keep it.</p>'
   + '<p class="final-host-target">Final host target</p><p class="requested-host-target">Requested host target</p>'
@@ -112,6 +116,14 @@ async function openPageFixture(t: TestContext) {
         timers.delete(timer);
         response.end("document.getElementById('status').textContent = 'The asynchronous page is ready with the complete paragraph after the old deadline.';");
       }, 6_500);
+      timers.add(timer);
+      return;
+    }
+    if (path === '/ongoing') {
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        response.end('still active');
+      }, 900);
       timers.add(timer);
       return;
     }
@@ -314,14 +326,14 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     const renderers = watchRendererChildren(t, executable);
     const started = performance.now();
 
-    const result = await callFetchTool(client, `${fixture.hostnameOrigin}/slow?private-query=secret-token#private-fragment`);
+    const result = await callFetchTool(client, `${fixture.hostnameOrigin}/busy?private-query=secret-token#private-fragment`);
     const elapsed = performance.now() - started;
-    await fixture.held.closed.promise;
     await site.server.stop();
 
     assertText(result, 'Page fetch failed', true);
     assert.ok(elapsed >= 19_500 && elapsed < 23_000, `Fetch took ${elapsed} ms`);
     assert.equal(site.pipelineRuns.mock.calls.length, 0);
+    assert.ok(fixture.requests.filter((path) => path === '/ongoing').length >= 10);
     assert.deepEqual(renderers.map(({ exitCode, signalCode }) => ({ exitCode, signalCode })), [{ exitCode: null, signalCode: 'SIGKILL' }]);
     const pid = renderers[0]?.pid;
     assert.ok(pid !== undefined);

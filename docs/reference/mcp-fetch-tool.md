@@ -68,8 +68,9 @@ time. Then it makes these parts one time:
   order;
 - one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
 - one operation, `createGetURLAsMarkdown({ fetcher, pipeline,
-  reportRendererSetupFailure })`, with the
-  [renderer setup report](#renderer-setup-report) of the application logger.
+  reportRendererSetupFailure, reportRendererReadinessTimeout })`, with the
+  [renderer setup report](#renderer-setup-report) and
+  [readiness report](#renderer-readiness-report) of the application logger.
 
 `createFetchOperation` returns the operation. Then the branch calls
 `fetchToolServers(operation, logger)`, which returns the `buildServer` function
@@ -131,8 +132,31 @@ it at startup. After a correction, a recurrence of a reported code writes no new
 line until the next server start. The client result stays `Page fetch failed`,
 and the completion record stays `fetch_failed`. Other fetch failures, such as
 HTTP errors, timeouts, signals, DNS failures, blocked destinations, and system
-limits such as `EMFILE`, write no report. The local commands and the hosted
+limits such as `EMFILE`, write no renderer setup report. The local commands and the hosted
 edition load no renderer and write no report.
+
+## Renderer readiness report
+
+The renderer has a fixed 20-second readiness allowance, including navigation.
+When it stays active at the deadline, the fetcher stops the child and waits for
+its completion. The client gets `Page fetch failed`, no partial Markdown, and
+one completion record with `fetch_failed`.
+
+The operation gives the optional `reportRendererReadinessTimeout` dependency
+only `{ category: 'readiness_timeout', budgetMs: 20000 }`. The application
+logger writes this safe `ERROR` record for each readiness timeout:
+
+```json
+{"event":"renderer.fetch.failed","category":"readiness_timeout","budgetMs":20000}
+```
+
+The report contains only these fixed fields. It contains no URL, reason,
+credentials, renderer arguments, stderr, or raw error cause. A logging failure
+does not change the client result. Cancellation takes priority and writes no
+readiness report. HTTP errors, process timeouts, output limits, and renderer
+launch failures keep their separate behavior. See the
+[runtime guide](../lightpanda-runtime.md#renderer-readiness-report) for operator
+steps.
 
 ## Completion records
 

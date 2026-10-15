@@ -5,6 +5,8 @@ import { Client, InMemoryTransport, type CallToolResult } from '@modelcontextpro
 import { createRequestContext } from '../../src/auth/access-context.ts';
 import { createFetchOperation, fetchToolServers } from '../../src/fetch-tool.ts';
 import type { RequestServerBuilder } from '../../src/mcp/mcp-server.ts';
+import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchReadinessTimeoutError } from '../../src/website-fetcher/website-fetcher.ts';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import { syncBuiltinMocks } from '../support/doubles/website-fetcher/builtin-mocks.ts';
 import { RendererChildDouble } from '../support/doubles/website-fetcher/renderer-process-double.ts';
@@ -66,3 +68,31 @@ test('Given the server composition and renderer starts that fail with ENOENT and
     'Renderer setup failure: the Lightpanda executable cannot start (ENOEXEC). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.',
   ]);
 });
+
+for (const loggerFails of [false, true]) {
+  test(`Given the server composition and two readiness timeouts with private causes, when the operator logger ${loggerFails ? 'throws' : 'works'}, then each call gets the safe fetch failure and each timeout sends one report with only the fixed category and budget`, async (t) => {
+    const failure = new WebsiteFetchReadinessTimeoutError({ cause: new Error(`${executable} fetch ${url} Bearer private-token private-stderr`) });
+    t.mock.method(WebsiteFetcherLightpanda.prototype, 'fetchURL', async () => { throw failure; });
+    const errors: string[] = [];
+    const logger = {
+      info: (_line: string) => {},
+      error: (line: string) => {
+        errors.push(line);
+        if (loggerFails) throw new Error('private log failure');
+      },
+    };
+    const operation = createFetchOperation({ AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: executable }, logger);
+
+    for (let call = 0; call < 2; call += 1) {
+      await assert.rejects(operation(url, context, new AbortController().signal), (error: unknown) => {
+        assert.ok(error instanceof Error);
+        assert.equal(error.message, 'Page fetch failed');
+        assert.equal(error.cause, undefined);
+        return true;
+      });
+    }
+
+    assert.deepEqual(errors.map((line) => JSON.parse(line)), Array(2).fill({ event: 'renderer.fetch.failed', category: 'readiness_timeout', budgetMs: 20_000 }));
+    assert.doesNotMatch(errors.join('\n'), /private|Bearer|https?:|lightpanda|stderr|SIGKILL/);
+  });
+}

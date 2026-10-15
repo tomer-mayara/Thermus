@@ -138,7 +138,7 @@ test('Given the readiness timer killed a renderer, when cancellation follows, th
   const rejected = assert.rejects(result, (error) => error === controller.signal.reason);
   await renderer.launched;
 
-  t.mock.timers.tick(5_000);
+  t.mock.timers.tick(20_000);
   controller.abort();
   controller.abort();
   renderer.finish(null, success, '');

@@ -9,14 +9,15 @@ import { createServer, type Server } from 'node:http';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchReadinessTimeoutError } from '../../src/website-fetcher/website-fetcher.ts';
 import { permitIPv4Fixture } from '../support/doubles/website-fetcher/network-fixture.ts';
 
 const originalExecFile = childProcess.execFile;
-const READINESS_WAIT_MS = 5_000;
+const READINESS_WAIT_MS = 20_000;
 const TIMING_TOLERANCE_MS = 500;
 const READINESS_FINISH_ALLOWANCE_MS = 1_000;
-const CHILD_GUARD_MS = 10_000;
-const TEST_TIMEOUT_MS = 12_000;
+const CHILD_GUARD_MS = 30_000;
+const TEST_TIMEOUT_MS = 35_000;
 type FetchInvocation = [
   executable: string,
   args: readonly string[],
@@ -128,8 +129,10 @@ describe('WebsiteFetcherLightpanda readiness', { concurrency: false }, () => {
   test('rejects at the wait budget when overlapping requests prevent network idle', { timeout: TEST_TIMEOUT_MS }, async (context) => {
     const started = performance.now();
     await assert.rejects(fetcher.fetchURL(`${origin}/busy-page`), (error: unknown) => {
-      assert.ok(error instanceof Error);
-      assert.equal(error.message, 'Lightpanda readiness limit exceeded after 5000 ms');
+      assert.ok(error instanceof WebsiteFetchReadinessTimeoutError);
+      assert.equal(error.category, 'readiness_timeout');
+      assert.equal(error.budgetMs, 20_000);
+      assert.equal(error.message, 'Lightpanda readiness limit exceeded after 20000 ms');
       assert.ok(error.cause instanceof Error);
       const cause = error.cause as ExecFileException;
       assert.equal(cause.code, null);

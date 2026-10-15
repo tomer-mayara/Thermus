@@ -6,7 +6,7 @@ import { createRequestContext } from '../../../src/auth/access-context.ts';
 import type { Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown, type RendererSetupFailure } from '../../../src/mcp/get-url-as-markdown.ts';
-import { WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 
 const url = 'https://source.example/article?private-query=secret#private-fragment';
 const reason = 'Read the article for the task';
@@ -27,6 +27,7 @@ function operationDoubles(t: TestContext, fetchFailure: unknown) {
     fetcher: { fetchURL: t.mock.fn(async (_url: string, _signal?: AbortSignal): Promise<WebsiteFetchResult> => { throw fetchFailure; }) },
     pipeline: { process: t.mock.fn(async (source: WebsiteFetchResult): Promise<Ctx> => ({ ...source, removed: 0, skipped: 0, markdown: 'Unused' })) },
     reportRendererSetupFailure: t.mock.fn((_failure: RendererSetupFailure) => {}),
+    reportRendererReadinessTimeout: t.mock.fn((_failure: { category: 'readiness_timeout'; budgetMs: 20_000 }) => {}),
   };
 }
 
@@ -50,12 +51,47 @@ async function connectedClient(t: TestContext, server: Server): Promise<Client> 
 
 const otherFetchFailures = [
   ['an HTTP 404 error', new WebsiteFetchHttpError(404)],
-  ['the readiness limit', new Error('Lightpanda readiness limit exceeded after 5000 ms')],
+  ['the readiness limit', new WebsiteFetchReadinessTimeoutError()],
   ['the process timeout', Object.assign(new Error('Command failed'), { code: null, killed: true, signal: 'SIGTERM' })],
+  ['an untyped readiness message', new Error('Lightpanda readiness limit exceeded after 20000 ms')],
   ['a blocked destination', new Error('Fetch destination is not a public network address: 127.0.0.1')],
 ] as const;
 
 describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
+  test('Given a readiness timeout whose cause holds request data and stderr, when the operation fetches, then it reports only the fixed category and budget and returns the safe fetch failure without processing partial HTML', async (t) => {
+    const failure = new WebsiteFetchReadinessTimeoutError({ cause: Object.assign(new Error(`spawn /private/lightpanda fetch ${url}`), { stderr: 'Bearer private-token password=private-password' }) });
+    const dependencies = operationDoubles(t, failure);
+
+    await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
+
+    assert.deepEqual(dependencies.reportRendererReadinessTimeout.mock.calls.map(({ arguments: args }) => args), [[{ category: 'readiness_timeout', budgetMs: 20_000 }]]);
+    assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
+    assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+  });
+
+  test('Given a readiness timeout and a reporter that throws, when the operation fetches, then the caller still gets only the safe fetch failure', async (t) => {
+    const dependencies = operationDoubles(t, new WebsiteFetchReadinessTimeoutError());
+    dependencies.reportRendererReadinessTimeout.mock.mockImplementation(() => { throw new Error('private logging failure'); });
+
+    await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
+
+    assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 1);
+  });
+
+  test('Given a call that is cancelled when the readiness timeout rejects, when the operation handles the failure, then cancellation takes precedence and no timeout report is sent', async (t) => {
+    const controller = new AbortController();
+    const dependencies = operationDoubles(t, undefined);
+    dependencies.fetcher.fetchURL.mock.mockImplementation(async () => {
+      controller.abort();
+      throw new WebsiteFetchReadinessTimeoutError();
+    });
+
+    await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+
+    assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
+    assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
+  });
+
   for (const [code, failure] of [['ENOENT', 'missing'], ['EACCES', 'cannot-start']] as const) {
     test(`Given a renderer that cannot start with ${code}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets one report with only the failure class and code`, async (t) => {
       const dependencies = operationDoubles(t, launchFailure(code));
@@ -74,6 +110,7 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
       await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
 
       assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
+      if (!(fetchFailure instanceof WebsiteFetchReadinessTimeoutError)) assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
     });
   }
 
@@ -99,8 +136,8 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
   });
 
-  test('Given a renderer that cannot start and then a page with an HTTP error, when an SDK client calls the fetch tool for each, then both calls get the same fixed fetch failure and the same fetch_failed record, and only the launch failure gives one report', async (t) => {
-    const failures = [launchFailure('ENOENT'), new WebsiteFetchHttpError(404)];
+  test('Given a renderer that cannot start, a page with an HTTP error, and a readiness timeout, when an SDK client calls the fetch tool for each, then each call gets the same fixed fetch failure and fetch_failed record, with separate safe launch and timeout reports', async (t) => {
+    const failures = [launchFailure('ENOENT'), new WebsiteFetchHttpError(404), new WebsiteFetchReadinessTimeoutError()];
     const dependencies = operationDoubles(t, undefined);
     dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw failures.shift(); });
     const lines = { info: [] as string[], error: [] as string[] };
@@ -111,18 +148,20 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
     const client = await connectedClient(t, server);
 
     const results: CallToolResult[] = [];
-    for (let call = 0; call < 2; call += 1) results.push(await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } }) as CallToolResult);
+    for (let call = 0; call < 3; call += 1) results.push(await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } }) as CallToolResult);
 
-    assert.deepEqual(results, [1, 2].map(() => ({ content: [{ type: 'text', text: 'Page fetch failed' }], isError: true })));
+    assert.deepEqual(results, [1, 2, 3].map(() => ({ content: [{ type: 'text', text: 'Page fetch failed' }], isError: true })));
     const records = lines.info.map((line) => {
       const { durationMs: _durationMs, ...record } = JSON.parse(line) as Record<string, unknown>;
       return record;
     });
-    assert.equal(records.length, 2);
+    assert.equal(records.length, 3);
     assert.deepEqual(records[0], records[1]);
+    assert.deepEqual(records[1], records[2]);
     assert.equal(records[0]?.status, 'fetch_failed');
     assert.doesNotMatch(lines.info.join('\n'), /private|Lightpanda|ENOENT|HTTP/);
     assert.deepEqual(dependencies.reportRendererSetupFailure.mock.calls.map((call) => call.arguments), [[{ failure: 'missing', code: 'ENOENT' }]]);
+    assert.deepEqual(dependencies.reportRendererReadinessTimeout.mock.calls.map((call) => call.arguments), [[{ category: 'readiness_timeout', budgetMs: 20_000 }]]);
     assert.deepEqual(lines.error, []);
   });
 });

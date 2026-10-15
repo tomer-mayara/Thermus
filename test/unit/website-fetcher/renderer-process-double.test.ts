@@ -14,7 +14,7 @@ for (const requester of ['the readiness deadline', 'a cancellation'] as const) {
     const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/', controller.signal);
     await renderer.launched;
 
-    if (requester === 'the readiness deadline') t.mock.timers.tick(5_000);
+    if (requester === 'the readiness deadline') t.mock.timers.tick(20_000);
     else controller.abort();
 
     assert.deepEqual(renderer.child.signals, ['SIGKILL']);
