@@ -47,7 +47,6 @@ const sameTypeImports = [
   'node:test',
   '@modelcontextprotocol/server',
 ];
-const workSliceEntry = '../../acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch';
 const containerScripts = ['container-edge', 'container-page', 'container-probe'].flatMap((name) => [
   `test/support/${name}.ts`,
   `test/support/container/${name}.ts`,
@@ -97,34 +96,19 @@ describe('Given rule D2: a file in test/<type>/ imports no other test type', () 
     });
   }
 
+  it('when the unit test of the work-slice fetch lines names a work-slice entry point, then the import is refused: the former exception is gone', async () => {
+    await assertForbidden('test/unit/work-slice/observe-fetches.test.ts', [
+      '../../acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts',
+      '../../acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts',
+    ]);
+    await assertAllowed('test/unit/work-slice/observe-fetches.test.ts', ['../../support/work-slice/observe-fetches.ts']);
+  });
+
   it('when names only resemble a test type folder, then the exact path segments do not refuse them', async () => {
     const resemblingPaths = testTypes.flatMap((other) => [`../${other}-notes/x.ts`, `./${other}/x.ts`]);
     for (const type of testTypes) {
       await assertAllowed(`test/${type}/area/x.test.ts`, [...resemblingPaths, '../support-unit/x.ts']);
     }
-  });
-});
-
-describe('Given the one D2 exception: the work-slice unit test imports the work-slice entry point', () => {
-  const filePath = 'test/unit/work-slice/basic-mcp-url-fetch.test.ts';
-
-  it('when the test names the entry point, then the import is allowed', async () => {
-    await assertAllowed(filePath, [`${workSliceEntry}.ts`, `${workSliceEntry}.js`, ...sameTypeImports]);
-  });
-
-  it('when the test names another file of another test type, then the import is refused', async () => {
-    await assertForbidden(filePath, [
-      '../../acceptance/work-slice/basic-mcp-url-fetch.ts',
-      '../../acceptance/work-slice/basic-mcp-url-fetch/other.ts',
-      '../../acceptance/work-slice/other.ts',
-      '../../acceptance/auth/x.ts',
-      '../../integration/auth/x.ts',
-      '../../interface/x.ts',
-    ]);
-  });
-
-  it('when the test names the fixtures of another unit package, then rule D3 still refuses them', async () => {
-    await assertForbidden(filePath, ['../hosted-admin/fixtures/a.ts']);
   });
 });
 

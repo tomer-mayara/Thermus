@@ -42,7 +42,6 @@ function directImportRules(paths, message) {
 const testLayout = 'docs/testing/test-code-layout.md';
 const testTypes = ['unit', 'integration', 'interface', 'acceptance'];
 const otherUnitPackageFixtures = '(?:\\.\\./)+(?:test/unit/)?(?!support/)[a-z-]+/fixtures/';
-const workSliceEntry = 'work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch(?:\\.[jt]s)?$';
 const containerScripts = [
   'test/support/container-edge.ts',
   'test/support/container-page.ts',
@@ -117,10 +116,9 @@ export default [
     rules: directImportRules(consumerImports, 'Auth consumers use role contracts. Composition roots select implementations.'),
   },
   // For the same rule, a block replaces the options of each block before it.
-  // Thus each glob has one block with all of its patterns. The work-slice block
-  // replaces the unit block for its file. The container block replaces the
-  // support block for its files, and its pattern also refuses each import that
-  // D1 refuses.
+  // Thus each glob has one block with all of its patterns. The container block
+  // replaces the support block for its files, and its pattern also refuses each
+  // import that D1 refuses.
   {
     files: ['test/support/**/*.ts'],
     rules: directImportRules(
@@ -133,18 +131,6 @@ export default [
     rules: directImportRules(
       [otherTestTypeImports('unit'), otherUnitPackageFixtures],
       `Rules D2 and D3 of ${testLayout}: a unit test imports no other test type, and fixtures only from its own package.`,
-    ),
-  },
-  {
-    files: ['test/unit/work-slice/basic-mcp-url-fetch.test.ts'],
-    rules: directImportRules(
-      [
-        testTypeImports(['integration', 'interface']),
-        `${testTypeImports(['acceptance'])}(?!${workSliceEntry})`,
-        otherUnitPackageFixtures,
-      ],
-      `Rules D2 and D3 of ${testLayout}: from another test type, this unit test imports only the work-slice entry point. `
-        + 'It imports fixtures only from its own package.',
     ),
   },
   ...['integration', 'interface', 'acceptance'].map((type) => ({

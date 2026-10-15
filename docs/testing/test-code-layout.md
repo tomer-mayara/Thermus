@@ -152,9 +152,11 @@ home.
 ### Dependency rules
 
 - D1. `S/**` imports only `src/**`, packages, and `S/**`.
-- D2. A file in `test/<type>/` imports no other test type. One exception:
-  `U/work-slice/basic-mcp-url-fetch.test.ts` → `A/work-slice/basic-mcp-url-fetch.ts`,
-  because the work-slice README makes the entry point export its composition.
+- D2. A file in `test/<type>/` imports no other test type. The one exception
+  of the first version, the unit test of the work-slice fetch lines that
+  imported the entry point of the basic slice, is gone: those fetch lines live
+  in `S/work-slice/observe-fetches.ts` since the auth WorkOS MCP URL fetch
+  slice, and the unit test imports them from there.
 - D3. A unit test imports `fixtures/` only from its own package.
 - D4. `S/drivers/**` imports no `S/dsl/**`.
 - D5. `S/doubles/**` and `S/fixtures/**` import no `S/dsl/**` and no
@@ -171,7 +173,7 @@ home.
 The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 of the plan move the 13 borrowed
 files); unit → support stays, because `S/` is the shared base of all test
-types; unit → work slice stays as the one documented exception. ESLint enforces
+types. ESLint enforces
 D1 to D6 (Steps 4 and 5i of the plan), and an architecture specification proves
 each rule, as `test/acceptance/architecture/auth-boundaries.test.ts` does for
 `src`.
