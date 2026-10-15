@@ -935,7 +935,8 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Gives a `WebsiteFetchLaunchError` for a missing executable that keeps the cause, reports the selected path and runtime setup document without the requested URL, and does not fall back to another executable
 [V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
 [V] Returns HTML with the requested and final URLs on immediate success
-[V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
+[V] Returns complete HTML after 6.5 seconds without killing a renderer that completes before the 20-second deadline (`test/unit/website-fetcher/website-fetcher-lightpanda-deadline.test.ts`)
+[V] Stops the child at the 20-second readiness deadline, waits for its callback, then rejects with `WebsiteFetchReadinessTimeoutError`, budget `20000`, message `Lightpanda readiness limit exceeded after 20000 ms`, and no partial HTML
 [V] Preserves a child result or error when the child has already exited at the deadline, and rejects a late success when the child was still running at the deadline
 [V] Cancels the readiness timer after success or a process error
 [V] Preserves process timeout and output limit errors, reports a missing executable (ENOENT) and a permission error (EACCES) with their launch error messages, and keeps a synchronous launch failure without a system error code
@@ -1165,16 +1166,22 @@ npm run build && node --test dist/test/integration/work-slice/shutdown-signals.t
 
 The operation runs with the real permission helper and with fetcher, pipeline, and reporter doubles. The last case adds the real tool server and an SDK client.
 
+[V] Gives only the fixed `readiness_timeout` category and `20000` budget to the readiness reporter, without the private cause or stderr; the client gets only `Page fetch failed`, and no pipeline work starts
+[V] Keeps the safe client failure if the readiness reporter throws
+[V] Gives no readiness report for an untyped error whose message copies the readiness timeout text
+[V] Gives cancellation priority over a readiness timeout and writes no readiness report
 [V] Gives a renderer launch failure (`ENOENT` or `EACCES`) to the operator reporter one time with only the failure class and the code; the client still gets only `Page fetch failed` without a cause, and no processing starts
-[V] Gives no operator report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination
+[V] Gives no renderer setup report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination
 [V] Keeps the safe fetch error when the reporter throws, and gives only the cancellation and no report for a call that is cancelled when the renderer cannot start
-[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure and an HTTP error; only the launch failure gives one operator report
+[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure, an HTTP error, and a readiness timeout; only the launch failure gives a setup report, and only the readiness timeout gives a readiness report
 
 **Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
 
 `createFetchOperation` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
 
 [V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets exactly one line for each code, in order, with the exact report text
+
+[V] Given two readiness timeouts with private causes, each call gets the safe fetch failure and each timeout sends one fixed JSON readiness report; this remains true when the application logger throws
 
 Focused commands:
 
@@ -1676,7 +1683,7 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 **Website Fetcher Readiness** (`test/interface/website-fetcher-readiness.test.ts`)
 
 [V] Returns the completed asynchronous DOM after its 500 ms request delay, before the full wait budget
-[V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
+[V] Rejects when overlapping requests prevent network idle, kills the child at 20 seconds, waits for child completion, and returns no partial HTML
 
 **Website fetcher cancellation** (`test/interface/website-fetcher-cancellation.test.ts`)
 
@@ -1815,6 +1822,8 @@ The production `serve()` runs in the test process with real Better Auth, the rea
 [V] Given a local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY`, with a new `HOME`, the client gets exact cleaned Markdown from a local JavaScript page, and the renderer run has telemetry off: it writes no telemetry install ID (`iid`) in its data directory, so it starts no telemetry sender and tries no connection to `telemetry.lightpanda.io`
 [V] Given a redirect that changes the host and the path, `requestedUrl` keeps the accepted spelling, and the final URL selects the ad rules and resolves the relative links
 [V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed` and `Page processing failed` without partial Markdown; the server writes no renderer setup report
+[V] Given a page whose script completes after 6.5 seconds, the client gets the rendered Markdown within the fixed 20-second readiness allowance
+[V] Given a page that never reaches network idle, the child stops before the fetch completes, the client gets `Page fetch failed` without partial Markdown, and the server writes one safe `readiness_timeout` report and one `fetch_failed` completion record
 [V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
 [V] Given a legacy call that keeps the renderer waiting, server shutdown cancels it; the renderer child stops before the server finishes stopping, and the server writes one `cancelled` record
 

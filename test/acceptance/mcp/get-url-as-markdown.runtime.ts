@@ -28,6 +28,9 @@ const setupGuide = 'See docs/lightpanda-runtime.md.';
 const page = (body: string, script?: string): string => '<!DOCTYPE html><html><head><title>Runtime fixture</title></head><body>'
   + `<main>${body}</main>${script === undefined ? '' : `<script src="${script}"></script>`}</body></html>`;
 const scripts: Readonly<Record<string, string>> = {
+  '/busy.js': `const request = () => fetch('/ongoing').catch(() => {});
+for (let index = 0; index < 6; index += 1) request();
+setInterval(request, 100);`,
   '/story.js': `document.getElementById('status').textContent = 'The script rendered this paragraph with enough words to keep it.';
 document.getElementById('slot').innerHTML = '<p class="requested-host-target">Requested host target</p><p class="final-host-target">Final host target</p>'
   + '<p>Related <a href="related">article</a> and <a href="/root">root</a>.</p><div hidden>Hidden instruction from the script</div>';`,
@@ -49,6 +52,8 @@ const pages: Readonly<Record<string, string>> = {
   '/withheld': page('<h1>Withheld story</h1><p>The visible paragraph has enough words to stay in the article body.</p><div id="slot"></div>', '/withheld.js'),
   '/deep': page('<h1>Deep story</h1><div id="slot"></div>', '/deep.js'),
   '/slow': page('<h1>Slow story</h1><p>This page waits for a script that does not arrive.</p>', '/slow.js'),
+  '/late': page('<h1>Late story</h1><p id="status">Private unfinished content</p>', '/late.js'),
+  '/busy': page('<h1>Private busy story</h1><p>This unfinished page keeps making asynchronous requests.</p>', '/busy.js'),
 };
 const redirectedPage = page('<h1>Redirected story</h1><p>The final page has a first paragraph with enough words to keep it.</p>'
   + '<p class="final-host-target">Final host target</p><p class="requested-host-target">Requested host target</p>'
@@ -96,11 +101,30 @@ async function openRuntimeSite(t: TestContext, executable: string): Promise<Runt
 
 async function openPageFixture(t: TestContext) {
   const held = { requested: Promise.withResolvers<void>(), closed: Promise.withResolvers<void>() };
+  const timers = new Set<ReturnType<typeof setTimeout>>();
+  t.after(() => { for (const timer of timers) clearTimeout(timer); });
   const fixture = await startFixture(t, (request, response) => {
-    const path = request.url ?? '/';
+    const path = new URL(request.url ?? '/', 'http://localhost').pathname;
     if (path === '/slow.js') {
       held.requested.resolve();
       response.on('close', () => held.closed.resolve());
+      return;
+    }
+    if (path === '/late.js') {
+      response.setHeader('Content-Type', 'text/javascript');
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        response.end("document.getElementById('status').textContent = 'The asynchronous page is ready with the complete paragraph after the old deadline.';");
+      }, 6_500);
+      timers.add(timer);
+      return;
+    }
+    if (path === '/ongoing') {
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        response.end('still active');
+      }, 900);
+      timers.add(timer);
       return;
     }
     const script = scripts[path];
@@ -276,6 +300,47 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     assert.equal(outcome, undefined);
     assert.equal(site.pipelineRuns.mock.calls.length, 0);
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['cancelled']);
+  });
+
+  test('Given an asynchronous page that needs more than five seconds to become ready, when the authorized MCP client gets it, then the complete page gives Markdown within the twenty-second readiness budget', { timeout: 120_000 }, async (t) => {
+    const site = await openRuntimeSite(t, executable);
+    const fixture = await openPageFixture(t);
+    const client = await connect(t, site);
+    const started = performance.now();
+
+    const result = await callFetchTool(client, `${fixture.hostnameOrigin}/late`);
+    const elapsed = performance.now() - started;
+    await site.server.stop();
+
+    assertText(result, '## Late story\n\nThe asynchronous page is ready with the complete paragraph after the old deadline.');
+    assert.ok(elapsed > 5_000 && elapsed < 20_000, `Fetch took ${elapsed} ms`);
+    assert.equal(site.pipelineRuns.mock.calls.length, 1);
+    assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['success']);
+    assert.deepEqual(site.server.errorLines(), []);
+  });
+
+  test('Given a page that never becomes ready, when the twenty-second readiness budget ends, then the MCP call fails without partial Markdown, the renderer child stops, and the operator gets one safe timeout report', { timeout: 120_000 }, async (t) => {
+    const site = await openRuntimeSite(t, executable);
+    const fixture = await openPageFixture(t);
+    const client = await connect(t, site);
+    const renderers = watchRendererChildren(t, executable);
+    const started = performance.now();
+
+    const result = await callFetchTool(client, `${fixture.hostnameOrigin}/busy?private-query=secret-token#private-fragment`);
+    const elapsed = performance.now() - started;
+    await site.server.stop();
+
+    assertText(result, 'Page fetch failed', true);
+    assert.ok(elapsed >= 19_500 && elapsed < 23_000, `Fetch took ${elapsed} ms`);
+    assert.equal(site.pipelineRuns.mock.calls.length, 0);
+    assert.ok(fixture.requests.filter((path) => path === '/ongoing').length >= 10);
+    assert.deepEqual(renderers.map(({ exitCode, signalCode }) => ({ exitCode, signalCode })), [{ exitCode: null, signalCode: 'SIGKILL' }]);
+    const pid = renderers[0]?.pid;
+    assert.ok(pid !== undefined);
+    assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
+    assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['fetch_failed']);
+    assert.deepEqual(site.server.errorLines().map((line) => JSON.parse(line)), [{ event: 'renderer.fetch.failed', category: 'readiness_timeout', budgetMs: 20_000 }]);
+    assert.doesNotMatch(site.server.errorLines().join('\n'), /https?:|localhost|private-|secret|token|Slow story|SIGKILL|lightpanda\//);
   });
 
   test('Given a legacy client call that keeps the renderer waiting, when the server shuts down, then the call is cancelled, the renderer child stops before the server finishes stopping, and the server writes one cancelled record', { timeout: 120_000 }, async (t) => {

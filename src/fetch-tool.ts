@@ -24,6 +24,9 @@ export function createFetchOperation(environment: Environment, logger: Applicati
     fetcher: new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN),
     pipeline,
     reportRendererSetupFailure: rendererSetupReporter(logger),
+    reportRendererReadinessTimeout: ({ category, budgetMs }) => {
+      logger.error(JSON.stringify({ event: 'renderer.fetch.failed', category, budgetMs }));
+    },
   });
 }
 

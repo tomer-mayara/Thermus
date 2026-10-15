@@ -8,8 +8,21 @@ export interface WebsiteFetcher {
   /**
    * @throws {WebsiteFetchHttpError} If the HTTP response fails.
    * @throws {WebsiteFetchLaunchError} If the renderer cannot start.
+   * @throws {WebsiteFetchReadinessTimeoutError} If the renderer is not ready in twenty seconds.
    */
   fetchURL(url: string, signal?: AbortSignal): Promise<WebsiteFetchResult>;
+}
+
+export const WEBSITE_FETCH_READINESS_BUDGET_MS = 20_000;
+
+export class WebsiteFetchReadinessTimeoutError extends Error {
+  public readonly category = 'readiness_timeout';
+  public readonly budgetMs = WEBSITE_FETCH_READINESS_BUDGET_MS;
+
+  public constructor(options?: ErrorOptions) {
+    super(`Lightpanda readiness limit exceeded after ${WEBSITE_FETCH_READINESS_BUDGET_MS} ms`, options);
+    this.name = 'WebsiteFetchReadinessTimeoutError';
+  }
 }
 
 export class WebsiteFetchHttpError extends Error {

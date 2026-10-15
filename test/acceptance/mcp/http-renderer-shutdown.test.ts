@@ -69,7 +69,7 @@ for (const era of mcpProtocolEras) {
     assert.ok(signal);
     assert.equal(getEventListeners(signal, 'abort').length, 1);
     const removeListener = t.mock.method(signal, 'removeEventListener');
-    const readinessTimers = scheduled.mock.calls.filter(({ arguments: args }) => args[1] === 5_000);
+    const readinessTimers = scheduled.mock.calls.filter(({ arguments: args }) => args[1] === 20_000);
     assert.equal(readinessTimers.length, 1);
     const readinessTimer = readinessTimers[0]?.result;
     assert.ok(readinessTimer);
