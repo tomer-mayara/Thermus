@@ -12,10 +12,10 @@ import {
 } from '../../../src/organizations/organization-administration.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
-import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
-import { formFor, openOrganizationSite, userOf, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
+import { openOrganizationSite, userOf, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 function open(t: TestContext, logger = new OperatorLogSpy()) {
   const site = openOrganizationSite(t, {
@@ -64,8 +64,8 @@ describe('Hosted grant management with the real composition, routes, service, an
     const site = open(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const sam = site.browserOf(userOf('user-sam', 'org-a'));
-    const eveForm = formFor((await shownPage(eve, 'members')).forms, 'Revoke User from cy@example.com');
-    const samForm = formFor((await shownPage(sam, 'members')).forms, 'Revoke Admin from cy@example.com');
+    const eveForm = formLabelled((await shownPage(eve, 'members')).forms, 'Revoke User from cy@example.com');
+    const samForm = formLabelled((await shownPage(sam, 'members')).forms, 'Revoke Admin from cy@example.com');
 
     const release = site.directory.holdChanges();
     const answers = Promise.all([eve.submit(eveForm), sam.submit(samForm)]);
@@ -85,7 +85,7 @@ describe('Hosted grant management with the real composition, routes, service, an
   test('Given a directory change that fails after its effect, when an Admin posts a grant after the provider refreshed the session, then the browser gets the failure page with the refreshed cookie, the operator log names the path and the cause, the record says unknown, and a retry of the same form is out of date and changes nothing again', async (t) => {
     const site = open(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const form = formFor((await shownPage(eve, 'members')).forms, 'Grant User to dora@example.com');
+    const form = formLabelled((await shownPage(eve, 'members')).forms, 'Grant User to dora@example.com');
     site.directory.queue('changeGrant', { error: new Error('directory change timed out'), afterChange: true });
 
     site.sessions.expireAccessToken(eve.cookieHeader);

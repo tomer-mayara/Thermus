@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { formsIn, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
 import { superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
-import { formFor, serveOrganizationSite, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { serveOrganizationSite, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const nora = userOf('user-nora');
 const ivy = userOf('user-ivy', 'org-a');
@@ -49,7 +49,7 @@ describe('Hosted organization onboarding and selection through the public routes
     const list = await browser.open('organizations?return_to=/team/administration/users');
     const forms = formsIn(list.body);
     const before = browser.cookieHeader;
-    const selected = await browser.submit(formFor(forms, 'Globex'));
+    const selected = await browser.submit(formLabelled(forms, 'Globex'));
     const destination = await browser.follow(selected);
     const statuses = await statusesOf(browser, ['portal', 'administration/users']);
     const relisted = formsIn((await browser.open('organizations')).body);
@@ -76,7 +76,7 @@ describe('Hosted organization onboarding and selection through the public routes
   test('Given the same user, when a selection form names an inactive membership, an organization of another user, or an unknown organization, also with forged organization values in the query and headers, then each selection is refused, the session keeps its organization, and the session gets no switch', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const browser = site.browserOf(mia);
-    const acme = formFor(formsIn((await browser.open('organizations?organizationId=org-d', { 'X-Organization-Id': 'org-d' })).body), 'Acme (selected)');
+    const acme = formLabelled(formsIn((await browser.open('organizations?organizationId=org-d', { 'X-Organization-Id': 'org-d' })).body), 'Acme (selected)');
 
     const refusals = [];
     for (const organizationId of ['org-c', 'org-d', 'org-unknown']) {
@@ -100,7 +100,7 @@ describe('Hosted organization onboarding and selection through the public routes
     const browser = site.browserOf(sam);
 
     const forms = formsIn((await browser.open('organizations?return_to=/team/billing')).body);
-    const selected = await browser.submit(formFor(forms, 'Acme'));
+    const selected = await browser.submit(formLabelled(forms, 'Acme'));
     const billing = await browser.follow(selected);
     const administration = await browser.open('administration/admins');
     const statuses = await statusesOf(browser, ['portal', 'administration/users']);

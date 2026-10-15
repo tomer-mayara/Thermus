@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
-import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
-import { formFor, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const invitationsPage = 'https://thermus.example/team/invitations';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
@@ -22,8 +22,8 @@ describe('Hosted invitations through the public routes, with session and directo
 
     const userInvitation = await submitOnPage(eve, 'invitations', { label: 'Invite as User', filled: { email: 'new.user@example.com' } });
     const adminInvitation = await submitOnPage(sam, 'invitations', { label: 'Invite as Admin', filled: { email: 'new.admin@example.com' } });
-    const inviteUser = formFor(evePage.forms, 'Invite as User');
-    const inviteAdmin = formFor(samPage.forms, 'Invite as Admin');
+    const inviteUser = formLabelled(evePage.forms, 'Invite as User');
+    const inviteAdmin = formLabelled(samPage.forms, 'Invite as Admin');
     const forged = [
       await eve.submit({ ...inviteUser, fields: { ...inviteUser.fields, email: 'forged@example.com', role: 'admin' } }),
       await eve.submit({ ...inviteUser, fields: { ...inviteUser.fields, email: 'forged@example.com', role: 'super-admin' } }),
@@ -65,10 +65,10 @@ describe('Hosted invitations through the public routes, with session and directo
     );
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const page = await shownPage(eve, 'invitations');
-    const resend = formFor(page.forms, 'Resend the invitation to pending.user@example.com');
+    const resend = formLabelled(page.forms, 'Resend the invitation to pending.user@example.com');
 
     const resent = await eve.submit(resend);
-    const revoked = await eve.submit(formFor(page.forms, 'Revoke the invitation to pending.user@example.com'));
+    const revoked = await eve.submit(formLabelled(page.forms, 'Revoke the invitation to pending.user@example.com'));
     const resentAgain = await eve.submit(resend);
     const forged = [
       await eve.post('invitations/revoke', { ...resend.fields, invitation_id: 'invitation-5' }),

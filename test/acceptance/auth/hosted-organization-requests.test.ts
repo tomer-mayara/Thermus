@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import type { AccountFailureReport } from '../../../src/hosted-admin/account-routes.ts';
 import { CLEARED_SESSION_COOKIE } from '../../support/doubles/auth/browser-session-store.ts';
-import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
-import { formFor, serveOrganizationSite, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { serveOrganizationSite, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const mia = userOf('user-mia', 'org-a');
 
@@ -18,7 +18,7 @@ describe('Hosted organization requests through the public routes: browser checks
   test('Given a signed-in user whose session the provider refreshes at each request, when selection posts come from another site or without an origin, lack the form token or have a wrong one, or name an invalid return destination or an extra field, then each is refused without a switch, and the refreshed session cookie still reaches the browser', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const browser = site.browserOf(mia);
-    const { csrf_token: token = '', ...withoutToken } = formFor(formsIn((await browser.open('organizations')).body), 'Globex').fields;
+    const { csrf_token: token = '', ...withoutToken } = formLabelled(formsIn((await browser.open('organizations')).body), 'Globex').fields;
     const fields = { ...withoutToken, csrf_token: token };
     const posts: ReadonlyArray<[string, Readonly<Record<string, string>>, { origin?: string | null }, number]> = [
       ['a foreign origin', fields, { origin: 'https://evil.example' }, 403],
@@ -55,7 +55,7 @@ describe('Hosted organization requests through the public routes: browser checks
     const site = await serve(t);
     const ended = new HostedBrowser(site.transport, hostedConfig.publicBaseUrl, 'session=ended-session');
     const browser = site.browserOf(mia);
-    const acme = formFor(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
+    const acme = formLabelled(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
     const readsBefore = site.directory.membershipReads.length;
 
     const signedOut = await ended.open('organizations');
@@ -80,7 +80,7 @@ describe('Hosted organization requests through the public routes: browser checks
   test('Given a Super Admin with a selected organization, when it requests to create, resume, rename, or change the settings of an organization, then no route does it: the organization page accepts only reads, the selection accepts no other field, other organization paths do not exist, and the session gets no further switch', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const browser = site.browserOf(userOf('user-sam'));
-    const acme = formFor(formsIn((await browser.open('organizations')).body), 'Acme');
+    const acme = formLabelled(formsIn((await browser.open('organizations')).body), 'Acme');
     assert.equal((await browser.submit(acme)).status, 303);
 
     const create = await browser.post('organizations', { name: 'New organization' });

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
-import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
-import { formFor, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const membersPage = 'https://thermus.example/team/members';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
@@ -12,9 +12,9 @@ describe('Hosted grant change refusals through the public routes: forged forms, 
     const site = await serve(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const forms = (await shownPage(eve, 'members')).forms;
-    const forDora = formFor(forms, 'Grant User to dora@example.com');
-    const forFay = formFor(forms, 'Revoke User from fay@example.com');
-    const forOtto = formFor(forms, 'Revoke User from otto@example.com');
+    const forDora = formLabelled(forms, 'Grant User to dora@example.com');
+    const forFay = formLabelled(forms, 'Revoke User from fay@example.com');
+    const forOtto = formLabelled(forms, 'Revoke User from otto@example.com');
     const forged = [
       { ...forDora.fields, role: 'admin' },
       { ...forDora.fields, role: 'super-admin' },
@@ -52,7 +52,7 @@ describe('Hosted grant change refusals through the public routes: forged forms, 
     const site = await serve(t);
     const ben = site.browserOf(userOf('user-ben', 'org-b'));
     const forms = (await shownPage(ben, 'members')).forms;
-    const forUna = formFor(forms, 'Revoke User from una@example.com');
+    const forUna = formLabelled(forms, 'Revoke User from una@example.com');
     const cyInAcme = site.directory.membershipIn('user-cy', 'org-a');
 
     const revoked = await ben.submit(forUna);
@@ -92,7 +92,7 @@ describe('Hosted grant change refusals through the public routes: forged forms, 
   test('Given a session that the provider refreshes at each request, when grant posts come from another site or without an origin, lack the form token or have a wrong one, or name another organization than the session, then each is refused before any change, and the refreshed session cookie reaches each answer, also the redirect of a valid post', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const { csrf_token: token = '', ...withoutToken } = formFor((await shownPage(eve, 'members')).forms, 'Grant User to dora@example.com').fields;
+    const { csrf_token: token = '', ...withoutToken } = formLabelled((await shownPage(eve, 'members')).forms, 'Grant User to dora@example.com').fields;
     const fields = { ...withoutToken, csrf_token: token };
     const posts: ReadonlyArray<[string, Readonly<Record<string, string>>, { origin?: string | null }, number]> = [
       ['a foreign origin', fields, { origin: 'https://evil.example' }, 403],

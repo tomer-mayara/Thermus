@@ -13,8 +13,7 @@ import { PRODUCT_ACCESS } from '../../../src/hosted-admin/portal-access.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
 import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
-import { formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
-import { formFor } from '../../support/in-process/hosted-organization-site.ts';
+import { formLabelled, formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { ProtectedToolSpy } from '../../support/doubles/mcp/protected-tool-spy.ts';
 import { fakeClientId } from '../../support/doubles/workos/workos-fake-api.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
@@ -96,7 +95,7 @@ async function signIn(site: Site, user: FakeUser, organizationId?: string): Prom
 
 async function select(browser: HostedBrowser, label: string, returnTo: string) {
   const forms = formsIn((await browser.open(`organizations?return_to=${returnTo}`)).body);
-  return browser.submit(formFor(forms, label));
+  return browser.submit(formLabelled(forms, label));
 }
 
 async function contextAt(browser: HostedBrowser, path: string): Promise<RequestContext> {
@@ -164,7 +163,7 @@ describe('WorkOS organization reads with the real session, organization service,
 
     const forms = formsIn((await browser.open('organizations')).body);
     const pageRequests = workosRequests(site);
-    await browser.submit(formFor(forms, 'Globex'));
+    await browser.submit(formLabelled(forms, 'Globex'));
     const selectionRequests = workosRequests(site);
 
     assert.deepEqual(pageRequests, reads);
@@ -199,7 +198,7 @@ describe('WorkOS organization reads with the real session, organization service,
     test(`Given WorkOS answers ${label}, when the organization page opens and a selection is posted, then each fails with 500 and an operator report, shows neither an organization nor the onboarding guidance, and switches nothing`, async (t) => {
       const site = await openSite(t);
       const browser = await signIn(site, mia, acme);
-      const acmeForm = formFor(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
+      const acmeForm = formLabelled(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
       change(site.world);
       workosRequests(site);
 

@@ -4,14 +4,13 @@ import { describe, test, type TestContext } from 'node:test';
 import { accountFailureReporter, createApplication } from '../../../src/application.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
-import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { superAdminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import {
   contextAt,
   destinationPaths,
-  formFor,
   member,
   members,
   openOrganizationSite,
@@ -28,7 +27,7 @@ function open(t: TestContext) {
 
 async function select(browser: HostedBrowser, label: string, returnTo = '/team/organizations') {
   const forms = formsIn((await browser.open(`organizations?return_to=${returnTo}`)).body);
-  return browser.submit(formFor(forms, label));
+  return browser.submit(formLabelled(forms, label));
 }
 
 describe('Hosted organization onboarding and selection with the real routes and service, and provider doubles', () => {
@@ -57,7 +56,7 @@ describe('Hosted organization onboarding and selection with the real routes and 
 
     directory.replaceMemberships(members.map((record) => (record.organizationId === 'org-b' ? { ...record, active: false } : record))
       .concat(member('user-mia', 'org-e', [userGrant])));
-    const refused = await browser.submit(formFor(shown, 'Globex'));
+    const refused = await browser.submit(formLabelled(shown, 'Globex'));
     const selected = await select(browser, 'Hooli', '/team/portal');
     const portal = await contextAt(browser, 'portal');
 
@@ -94,7 +93,7 @@ describe('Hosted organization onboarding and selection with the real routes and 
     const mia = userOf('user-mia', 'org-a');
     const browser = browserOf(mia);
     const otto = browserOf(userOf('user-otto', 'org-d'));
-    const acme = formFor(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
+    const acme = formLabelled(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
     const forged = new URLSearchParams({ ...acme.fields, organization_id: 'org-d' });
     const doubled = new URLSearchParams(acme.fields);
     doubled.append('organization_id', 'org-d');
@@ -131,7 +130,7 @@ describe('Hosted organization onboarding and selection with the real routes and 
   test('Given an outage of the organization reads after the provider refreshed the session, when the organization page and a selection are requested, then each gets the failure page with the refreshed session cookie, the operator log names the path and the cause, no session switches, and the browser keeps its session', async (t) => {
     const { sessions, directory, logger, browserOf } = open(t);
     const browser = browserOf(userOf('user-mia', 'org-a'));
-    const acme = formFor(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
+    const acme = formLabelled(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
 
     directory.failMembershipReads(new Error('organization directory timed out'));
     const answers = [];

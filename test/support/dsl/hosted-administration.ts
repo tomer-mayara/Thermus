@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import type { AccountFailureReport } from '../../../src/hosted-admin/account-routes.ts';
 import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
-import { formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../drivers/browser/hosted-browser.ts';
 import { adminGrant, memberRole, superAdminGrant, userGrant } from '../fixtures/hosted-roles.ts';
-import { formFor, member, serveOrganizationSite, userOf, type OrganizationSite, type SiteSetup } from '../in-process/hosted-organization-site.ts';
+import { member, serveOrganizationSite, userOf, type OrganizationSite, type SiteSetup } from '../in-process/hosted-organization-site.ts';
 import type { MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
 
 const isoTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
@@ -62,7 +62,7 @@ export async function submitOnPage(browser: HostedBrowser, path: string, choice:
   const { label, filled } = typeof choice === 'string' ? { label: choice, filled: {} } : choice;
   const { answer, forms } = await shownPage(browser, path);
   assert.equal(answer.status, 200, answer.body);
-  const form = formFor(forms, label);
+  const form = formLabelled(forms, label);
   return browser.submit({ ...form, fields: { ...form.fields, ...filled } });
 }
 
