@@ -5,7 +5,7 @@ import { describe, test } from 'node:test';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, assertRevealsNone, runCommand, type CommandResult } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
-import { addUser, listedAccounts, operatorOn, registerArgs, signedInUserId, signIn } from '../../support/local-commands.ts';
+import { addUser, listedAccounts, operatorOn, registerArgs, signedInUserId, signIn } from '../../support/dsl/local-commands.ts';
 import { selfHostedSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };

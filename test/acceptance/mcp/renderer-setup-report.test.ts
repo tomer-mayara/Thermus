@@ -7,8 +7,8 @@ import type { AccountCredentials } from '../../support/in-process/better-auth-lo
 import { assertExit } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { InProcessServer } from '../../support/in-process/in-process-server.ts';
-import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/local-commands.ts';
-import { connectWithToken, issuedGrants } from '../../support/local-mcp-user.ts';
+import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/dsl/local-commands.ts';
+import { connectWithToken, issuedGrants } from '../../support/dsl/local-mcp-user.ts';
 import { selfHostedServerSettings } from '../../support/in-process/local-runtime.ts';
 import { RendererProcessDouble } from '../../support/renderer-process-double.ts';
 

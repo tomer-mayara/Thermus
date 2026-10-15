@@ -1,5 +1,5 @@
-import { HostedBrowser, type BrowserAnswer, type BrowserTransport } from './drivers/browser/hosted-browser.ts';
-import type { WorkOSWorld, WorldUser } from './workos-world.ts';
+import { HostedBrowser, type BrowserAnswer, type BrowserTransport } from '../drivers/browser/hosted-browser.ts';
+import type { WorkOSWorld, WorldUser } from '../workos-world.ts';
 
 // A hosted server that uses the WorkOS provider with the fake WorkOS API of the world.
 export interface WorkOSServerSite {

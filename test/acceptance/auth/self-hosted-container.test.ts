@@ -21,8 +21,8 @@ import {
 import { ContainerSite } from '../../support/container-site.ts';
 import { dockerOutput } from '../../support/docker-cli.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
-import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
-import { LocalMcpUser, type McpConnection } from '../../support/local-mcp-user.ts';
+import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
+import { LocalMcpUser, type McpConnection } from '../../support/dsl/local-mcp-user.ts';
 import type { ServerContainer } from '../../support/server-container.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };

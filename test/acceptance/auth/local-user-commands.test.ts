@@ -23,7 +23,7 @@ import {
   type Operator,
   type ResourceServerCredentials,
   type UserGrant,
-} from '../../support/local-commands.ts';
+} from '../../support/dsl/local-commands.ts';
 import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
