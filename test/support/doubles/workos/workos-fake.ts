@@ -5,7 +5,7 @@ import type { WorkOSSettings } from '../../../../src/auth/hosted-auth/workos/wor
 import { nowInSeconds, SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type RecordedRequest } from './workos-fake-api.ts';
 
-export interface WorldUser {
+export interface FakeUser {
   readonly id: string;
   readonly email: string;
   readonly firstName: string;
@@ -13,7 +13,7 @@ export interface WorldUser {
   readonly emailVerified?: boolean;
 }
 
-export interface WorldMembership {
+export interface FakeMembership {
   readonly userId: string;
   readonly organizationId: string;
   // WorkOS shows a membership without a role with the default role member.
@@ -22,7 +22,7 @@ export interface WorldMembership {
   readonly directoryManaged?: boolean;
 }
 
-export interface WorldInvitation {
+export interface FakeInvitation {
   readonly id: string;
   readonly email: string;
   readonly organizationId: string;
@@ -32,10 +32,10 @@ export interface WorldInvitation {
   readonly expiresAt: string;
 }
 
-type MembershipStatus = NonNullable<WorldMembership['status']>;
+type MembershipStatus = NonNullable<FakeMembership['status']>;
 
-interface WorldSession {
-  readonly user: WorldUser;
+interface FakeSession {
+  readonly user: FakeUser;
   organizationId: string | undefined;
   ended: boolean;
 }
@@ -71,7 +71,7 @@ const invitationLifetimeMs = 7 * 24 * 60 * 60 * 1_000;
 const membershipNotFound = notFound('UserOrganizationMembership not found');
 const invitationNotFound = notFound('Invite not found');
 const organizationNotFound = notFound('Organization not found');
-const resendRefusals: Readonly<Record<WorldInvitation['state'], FakeAnswer | undefined>> = {
+const resendRefusals: Readonly<Record<FakeInvitation['state'], FakeAnswer | undefined>> = {
   pending: undefined,
   accepted: refusal('invite_accepted', 'Invite has already been accepted.'),
   revoked: refusal('invite_revoked', 'Invite has been revoked.'),
@@ -79,7 +79,7 @@ const resendRefusals: Readonly<Record<WorldInvitation['state'], FakeAnswer | und
 };
 const mcpClientId = 'client_01MCPCLIENT';
 
-function userJson(user: WorldUser) {
+function userJson(user: FakeUser) {
   return {
     object: 'user', id: user.id, email: user.email, email_verified: user.emailVerified ?? true, first_name: user.firstName, last_name: 'Example',
     profile_picture_url: null, last_sign_in_at: null, locale: null, external_id: null, metadata: {},
@@ -108,21 +108,21 @@ function membershipIdAt(index: number): string {
   return `om_${index}`;
 }
 
-function effectiveRoles(membership: WorldMembership): readonly string[] {
+function effectiveRoles(membership: FakeMembership): readonly string[] {
   return membership.roles.length === 0 ? defaultRoles : membership.roles;
 }
 
-function currentStatus(membership: WorldMembership): MembershipStatus {
+function currentStatus(membership: FakeMembership): MembershipStatus {
   return membership.status ?? 'active';
 }
 
 // The status and the roles of a membership as one value, so that a change of either shows.
-function grantState(membership: WorldMembership): string {
+function grantState(membership: FakeMembership): string {
   return `${currentStatus(membership)}:${effectiveRoles(membership).toSorted().join(',')}`;
 }
 
 // A pending invitation whose expiry time has passed is expired, also when WorkOS still gives the state pending.
-function currentState(invitation: WorldInvitation): WorldInvitation['state'] {
+function currentState(invitation: FakeInvitation): FakeInvitation['state'] {
   return invitation.state === 'pending' && Date.parse(invitation.expiresAt) <= Date.now() ? 'expired' : invitation.state;
 }
 
@@ -160,20 +160,20 @@ function refusal(code: string, message: string): FakeAnswer {
 
 // A local WorkOS environment for the offline tests of the hosted WorkOS composition: a fake WorkOS API with
 // organizations, users, memberships, the hosted roles, role assignments, invitations, browser sign-ins and refreshes,
-// and AuthKit-signed Connect tokens. The membership at index i of memberships has the ID om_i. The world knows the
+// and AuthKit-signed Connect tokens. The membership at index i of memberships has the ID om_i. The fake knows the
 // organizations of start() and of organizationNames. The answers follow what WorkOS staging showed; the design document
 // gives these findings.
-export class WorkOSWorld {
+export class WorkOSFake {
   readonly fake: WorkOSFakeApi;
   readonly browserKey: SigningKey;
   readonly authkitKey: SigningKey;
   readonly settings: WorkOSSettings;
   readonly mcpResourceUrl: string;
   // The users that the user reads give. A send to an unknown address adds an unverified user.
-  users: readonly WorldUser[] = [];
+  users: readonly FakeUser[] = [];
   // The invitations of all organizations, in the order of the invitation pages. The JSON of each has a fake token
   // "invitation-token-<ID>" and a link on authkit.fake.example, so that a test can check that they never show.
-  invitations: readonly WorldInvitation[] = [];
+  invitations: readonly FakeInvitation[] = [];
   // The name of each organization in the membership answers. An organization without a name here has its ID as name.
   organizationNames: Readonly<Record<string, string>> = {};
   // The external ID of each organization. An organization without an entry here has none. WorkOS names the
@@ -195,13 +195,13 @@ export class WorkOSWorld {
   refreshOutage: FakeAnswer | undefined;
   // The organizations of start().
   readonly #organizations: ReadonlySet<string>;
-  #memberships: readonly WorldMembership[] = [];
+  #memberships: readonly FakeMembership[] = [];
   // The number of changes of the roles or the status of each membership, by index, and of each invitation, by ID.
   // The update times come from them.
   readonly #membershipChanges: number[] = [];
   readonly #invitationChanges = new Map<string, number>();
-  readonly #sessions = new Map<string, WorldSession>();
-  readonly #codes = new Map<string, WorldSession>();
+  readonly #sessions = new Map<string, FakeSession>();
+  readonly #codes = new Map<string, FakeSession>();
   #accessTokenLifetime = 300;
   #counter = 0;
 
@@ -223,25 +223,25 @@ export class WorkOSWorld {
     this.answerAdministration();
   }
 
-  static async start(t: TestContext, publicBaseUrl: string, organizations: readonly string[]): Promise<WorkOSWorld> {
+  static async start(t: TestContext, publicBaseUrl: string, organizations: readonly string[]): Promise<WorkOSFake> {
     const fake = await WorkOSFakeApi.start(t);
     const [browserKey, authkitKey] = await Promise.all([SigningKey.generate('browser-key-1'), SigningKey.generate('authkit-key-1')]);
     fake.browserKeySet.publish(browserKey);
     fake.authkitKeySet.publish(authkitKey);
-    const world = new WorkOSWorld({ fake, browserKey, authkitKey, publicBaseUrl, organizations });
+    const world = new WorkOSFake({ fake, browserKey, authkitKey, publicBaseUrl, organizations });
     for (const organization of organizations) {
       fake.answer(`GET /authorization/organizations/${organization}/roles`, { status: 200, body: { object: 'list', data: Object.keys(environmentRoles).map(roleJson) } });
     }
     return world;
   }
 
-  get memberships(): readonly WorldMembership[] {
+  get memberships(): readonly FakeMembership[] {
     return this.#memberships;
   }
 
   // A replacement keeps the ID of each index. A membership whose roles or status change gets a later update time, as
   // after a change in WorkOS.
-  set memberships(memberships: readonly WorldMembership[]) {
+  set memberships(memberships: readonly FakeMembership[]) {
     memberships.forEach((membership, index) => {
       const before = this.#memberships[index];
       if (before !== undefined && grantState(before) !== grantState(membership)) this.#membershipChanges[index] = this.changesOf(index) + 1;
@@ -254,7 +254,7 @@ export class WorkOSWorld {
   }
 
   // Makes an authorization code as AuthKit gives it after the sign-in, the MFA step, and the organization choice.
-  codeFor(user: WorldUser, organizationId?: string): string {
+  codeFor(user: FakeUser, organizationId?: string): string {
     const code = `code_${(this.#counter += 1)}`;
     this.#codes.set(code, { user, organizationId, ended: false });
     return code;
@@ -265,11 +265,11 @@ export class WorkOSWorld {
     this.#accessTokenLifetime = -60;
   }
 
-  endSessionsOf(user: WorldUser): void {
+  endSessionsOf(user: FakeUser): void {
     for (const session of this.#sessions.values()) if (session.user.id === user.id) session.ended = true;
   }
 
-  connectToken(user: WorldUser, claims: Readonly<Record<string, unknown>> = {}): Promise<string> {
+  connectToken(user: FakeUser, claims: Readonly<Record<string, unknown>> = {}): Promise<string> {
     return this.authkitKey.sign({ sub: user.id, client_id: mcpClientId, sid: `app_consent_${user.id}`, scope: 'email offline_access openid profile', jti: `jti_${(this.#counter += 1)}`, ...claims }, {
       issuer: this.fake.authkitIssuer,
       audience: this.mcpResourceUrl,
@@ -277,7 +277,7 @@ export class WorkOSWorld {
     });
   }
 
-  browserToken(user: WorldUser, organizationId?: string): Promise<string> {
+  browserToken(user: FakeUser, organizationId?: string): Promise<string> {
     return this.browserKey.sign({ sub: user.id, sid: `session_${user.id}`, client_id: fakeClientId, ...(organizationId === undefined ? {} : { org_id: organizationId }) }, {
       issuer: this.fake.browserIssuer,
       expiresAtUnixSeconds: nowInSeconds() + this.#accessTokenLifetime,
@@ -285,24 +285,24 @@ export class WorkOSWorld {
   }
 
   // The ID, the roles, and the status of the membership of the user in the organization. Each fails without it.
-  membershipId(user: WorldUser, organizationId: string): string {
+  membershipId(user: FakeUser, organizationId: string): string {
     return membershipIdAt(this.requiredIndex(user, organizationId));
   }
 
-  rolesOf(user: WorldUser, organizationId: string): readonly string[] {
+  rolesOf(user: FakeUser, organizationId: string): readonly string[] {
     return effectiveRoles(this.#memberships[this.requiredIndex(user, organizationId)]);
   }
 
-  statusOf(user: WorldUser, organizationId: string): MembershipStatus {
+  statusOf(user: FakeUser, organizationId: string): MembershipStatus {
     return currentStatus(this.#memberships[this.requiredIndex(user, organizationId)]);
   }
 
   // Changes a membership as someone else does in WorkOS. A change gives a later update time.
-  setRoles(user: WorldUser, organizationId: string, roles: readonly string[]): void {
+  setRoles(user: FakeUser, organizationId: string, roles: readonly string[]): void {
     this.changeMembership(this.requiredIndex(user, organizationId), { roles });
   }
 
-  setStatus(user: WorldUser, organizationId: string, status: MembershipStatus): void {
+  setStatus(user: FakeUser, organizationId: string, status: MembershipStatus): void {
     this.changeMembership(this.requiredIndex(user, organizationId), { status });
   }
 
@@ -432,7 +432,7 @@ export class WorkOSWorld {
   private sendAnswer(request: RecordedRequest): FakeAnswer {
     const { email = '', organization_id: organizationId = '', role_slug: roleSlug = 'member' } = (request.body ?? {}) as InvitationBody;
     const expiresAt = new Date(Date.now() + invitationLifetimeMs).toISOString();
-    const invitation: WorldInvitation = { id: `invitation_${(this.#counter += 1)}`, email, organizationId, roleSlug, state: 'pending', expiresAt };
+    const invitation: FakeInvitation = { id: `invitation_${(this.#counter += 1)}`, email, organizationId, roleSlug, state: 'pending', expiresAt };
     const refused = this.sendRefusal(invitation);
     if (refused) return refused;
     this.putMembershipOf(invitation, { roles: [roleSlug], status: 'pending' });
@@ -442,7 +442,7 @@ export class WorkOSWorld {
 
   // WorkOS refuses an unknown role, an address with a pending invitation of the organization in any letter case and
   // for any role, and the address of an active member.
-  private sendRefusal(invitation: WorldInvitation): FakeAnswer | undefined {
+  private sendRefusal(invitation: FakeInvitation): FakeAnswer | undefined {
     if (!isKnownRole(invitation.roleSlug)) return refusal('invalid_role', 'The role is invalid.');
     const invited = this.invitations.some((other) => other.organizationId === invitation.organizationId && sameAddress(other.email, invitation.email) && currentState(other) === 'pending');
     if (invited) return refusal('email_already_invited_to_organization', 'Email already invited to organization.');
@@ -499,7 +499,7 @@ export class WorkOSWorld {
     };
   }
 
-  private invitationJson(invitation: WorldInvitation) {
+  private invitationJson(invitation: FakeInvitation) {
     const changedAt = updateTime(this.#invitationChanges.get(invitation.id) ?? 0);
     const token = `invitation-token-${invitation.id}`;
     return {
@@ -514,7 +514,7 @@ export class WorkOSWorld {
 
   // WorkOS gives the role of an invitation from the current role of its membership. Thus only the role of a pending
   // invitation is the role that its acceptance gives.
-  private roleSlugOf(invitation: WorldInvitation): string {
+  private roleSlugOf(invitation: FakeInvitation): string {
     const index = this.indexOfAddress(invitation);
     return index === -1 ? invitation.roleSlug : effectiveRoles(this.#memberships[index])[0];
   }
@@ -523,34 +523,34 @@ export class WorkOSWorld {
     return this.#membershipChanges[index] ?? 0;
   }
 
-  private changeMembership(index: number, change: Partial<WorldMembership>): void {
+  private changeMembership(index: number, change: Partial<FakeMembership>): void {
     this.memberships = this.#memberships.with(index, { ...this.#memberships[index], ...change });
   }
 
   // Gives the membership of the address of an invitation in its organization these roles and this status. A new
   // address gets a new unverified user, and a user without a membership there gets a new membership.
-  private putMembershipOf(invitation: WorldInvitation, grant: Pick<WorldMembership, 'roles' | 'status'>): void {
+  private putMembershipOf(invitation: FakeInvitation, grant: Pick<FakeMembership, 'roles' | 'status'>): void {
     const user = this.userWithAddress(invitation.email) ?? this.addInvitedUser(invitation.email);
     const index = this.indexOfUser(user.id, invitation.organizationId);
     if (index === -1) this.memberships = [...this.#memberships, { userId: user.id, organizationId: invitation.organizationId, ...grant }];
     else this.changeMembership(index, grant);
   }
 
-  private addInvitedUser(email: string): WorldUser {
-    const user: WorldUser = { id: `user_invited_${(this.#counter += 1)}`, email, firstName: '', emailVerified: false };
+  private addInvitedUser(email: string): FakeUser {
+    const user: FakeUser = { id: `user_invited_${(this.#counter += 1)}`, email, firstName: '', emailVerified: false };
     this.users = [...this.users, user];
     return user;
   }
 
   // Replaces an invitation after a change in WorkOS, which gives it a later update time.
-  private changeInvitation(invitation: WorldInvitation, change: Partial<WorldInvitation>): WorldInvitation {
+  private changeInvitation(invitation: FakeInvitation, change: Partial<FakeInvitation>): FakeInvitation {
     const changed = { ...invitation, ...change };
     this.invitations = this.invitations.map((each) => (each === invitation ? changed : each));
     this.#invitationChanges.set(invitation.id, (this.#invitationChanges.get(invitation.id) ?? 0) + 1);
     return changed;
   }
 
-  private userWithAddress(email: string): WorldUser | undefined {
+  private userWithAddress(email: string): FakeUser | undefined {
     return this.users.find((user) => sameAddress(user.email, email));
   }
 
@@ -562,22 +562,22 @@ export class WorkOSWorld {
     return this.#memberships.findIndex((membership) => membership.userId === userId && membership.organizationId === organizationId);
   }
 
-  private indexOfAddress(invitation: WorldInvitation): number {
+  private indexOfAddress(invitation: FakeInvitation): number {
     const user = this.userWithAddress(invitation.email);
     return user === undefined ? -1 : this.indexOfUser(user.id, invitation.organizationId);
   }
 
-  private requiredIndex(user: WorldUser, organizationId: string): number {
+  private requiredIndex(user: FakeUser, organizationId: string): number {
     const index = this.indexOfUser(user.id, organizationId);
     if (index === -1) throw new Error(`The world has no membership of ${user.id} in ${organizationId}`);
     return index;
   }
 
-  private invitationWithId(invitationId: string): WorldInvitation | undefined {
+  private invitationWithId(invitationId: string): FakeInvitation | undefined {
     return this.invitations.find(({ id }) => id === invitationId);
   }
 
-  private requiredInvitation(invitationId: string): WorldInvitation {
+  private requiredInvitation(invitationId: string): FakeInvitation {
     const invitation = this.invitationWithId(invitationId);
     if (invitation === undefined) throw new Error(`The world has no invitation ${invitationId}`);
     return invitation;
@@ -607,11 +607,11 @@ export class WorkOSWorld {
     return this.sessionAnswer(session);
   }
 
-  private hasActiveMembership(user: WorldUser, organizationId: string): boolean {
+  private hasActiveMembership(user: FakeUser, organizationId: string): boolean {
     return this.memberships.some((m) => m.userId === user.id && m.organizationId === organizationId && (m.status ?? 'active') === 'active');
   }
 
-  private async sessionAnswer(session: WorldSession): Promise<FakeAnswer> {
+  private async sessionAnswer(session: FakeSession): Promise<FakeAnswer> {
     const refreshToken = `refresh_${(this.#counter += 1)}`;
     this.#sessions.set(refreshToken, session);
     const accessToken = await this.browserToken(session.user, session.organizationId);
