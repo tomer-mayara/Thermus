@@ -11,6 +11,6 @@ export function readAdFixture(name: string): string {
   return readFileSync(new URL(name, unitFixtures), 'utf8');
 }
 
-export const elementHidingRules = readAdFixture('element-hiding.filters.txt');
+export const elementHidingRules = readFileSync(new URL('element-hiding.filters.txt', supportFixtures), 'utf8');
 
 export const trustedAdRulesFile = fileURLToPath(new URL('trusted-ad-rules.txt', supportFixtures));
