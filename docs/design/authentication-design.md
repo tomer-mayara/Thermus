@@ -2080,8 +2080,8 @@ shows a separate role, invariant, or lifecycle.
 | `Dockerfile`, `compose.yaml`, `.dockerignore` | Implemented: the offline evaluation image, its Compose service with one persistent data volume, and the allowlist of the build context. | 5 |
 
 Keep `IdentityVerifierMock` at
-`test/unit/mcp/fixtures/identity-verifier-mock.ts`; extend its configurable claims
-and failures. Add `access-resolver-mock.ts` beside it with configured decisions,
+`test/support/doubles/auth/identity-verifier-spy.ts`; extend its configurable claims
+and failures. Add `access-resolver-spy.ts` beside it with configured decisions,
 errors, and call records. Each test creates fresh instances. No production
 module imports either mock. Organization and browser unit tests add their own
 narrow directory and session doubles under `test/unit/`, importing shared

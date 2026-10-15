@@ -5,10 +5,10 @@ import { PerRequestHTTPServerTransport, SERVER_INFO_META_KEY } from '@modelconte
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
-import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+import { AccessResolverMock } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { IdentityVerifierMock } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 describe('MCPServer HTTP authentication', () => {
   const resourceUrl = 'https://thermus.example/mcp';

@@ -11,9 +11,9 @@ import {
 import type { AccessDecision } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
+import { AccessResolverMock } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierMock } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';

@@ -3,12 +3,12 @@ import { describe, test, type TestContext } from 'node:test';
 import { PerRequestHTTPServerTransport } from '@modelcontextprotocol/server';
 import type { RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { alice, allowed, callReport, contextFor, identityFor, resourceUrl } from '../../unit/mcp/fixtures/access-test-server.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
-import { toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
-import { RequestContextTools, type ContextReport } from '../../unit/mcp/fixtures/request-context-tools.ts';
+import { AccessResolverMock } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierMock } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { RequestContextTools, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';
+import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { alice, allowed, callReport, contextFor, identityFor, resourceUrl } from '../../support/in-process/access-test-server.ts';
 
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };

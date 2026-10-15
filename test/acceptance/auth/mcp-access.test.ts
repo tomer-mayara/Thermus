@@ -8,9 +8,9 @@ import {
 } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { AccessResolverMock } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierMock } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';

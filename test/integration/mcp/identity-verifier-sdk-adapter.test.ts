@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import { OAuthError, OAuthErrorCode, type AuthInfo } from '@modelcontextprotocol/server';
 import { IdentityVerifierSdkAdapter, verifiedUserOf } from '../../../src/mcp/identity-verifier-sdk-adapter.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
-import { IdentityVerifierMock, type ConfiguredClaims } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
+import { IdentityVerifierMock, type ConfiguredClaims } from '../../support/doubles/auth/identity-verifier-spy.ts';
 
 function verifiedIdentity(): VerifiedIdentity {
   return {

@@ -20,11 +20,11 @@ import {
 } from '../../support/better-auth-agents.ts';
 import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/better-auth-local.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
+import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { resourceServerClient, userGrant, type UserGrant } from '../../support/local-commands.ts';
 import { addAccount, passwordOf, selfHostedConfig } from '../../support/local-runtime.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { mcpRequest, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
 const resourceMetadataUrl = 'http://localhost:8080/.well-known/oauth-protected-resource/mcp';
 const productAccess = RequestContextProbe.requiredPermission;

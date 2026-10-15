@@ -7,10 +7,10 @@ import {
   callReport,
   contextFor,
   serveAccess,
-} from './fixtures/access-test-server.ts';
-import type { ConfiguredAccess } from './fixtures/access-resolver-mock.ts';
-import { toolJson } from './fixtures/mcp-http-request.ts';
-import { RequestContextTools, type ContextReport } from './fixtures/request-context-tools.ts';
+} from '../../support/in-process/access-test-server.ts';
+import type { ConfiguredAccess } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { RequestContextTools, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';
 
 describe('MCPServer request context binding', () => {
   test('Given forged tenant, organization, and user values in headers and tool arguments, when a client calls a tool, then only the verified user reaches the resolver and the tool keeps the trusted context', { timeout: 5_000 }, async (t) => {

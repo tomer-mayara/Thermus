@@ -8,11 +8,11 @@ import {
 } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { AccessResolverMock, type ConfiguredAccess } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierMock } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { mcpRequest, rpcResult, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
-import { AccessResolverMock, type ConfiguredAccess } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
-import { mcpRequest, rpcResult, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';

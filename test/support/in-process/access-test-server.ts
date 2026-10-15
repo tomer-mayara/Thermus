@@ -1,12 +1,12 @@
 import type { TestContext } from 'node:test';
-import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../../src/auth/identity-verifier.ts';
-import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
-import { AccessResolverMock, type ConfiguredAccess } from './access-resolver-mock.ts';
-import { FailureReporterMock } from './failure-reporter-mock.ts';
-import { IdentityVerifierMock, type ConfiguredClaims } from './identity-verifier-mock.ts';
-import { mcpRequest, type McpRequestOptions } from './mcp-http-request.ts';
-import { RequestContextTools } from './request-context-tools.ts';
+import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../../src/auth/access-context.ts';
+import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
+import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { AccessResolverMock, type ConfiguredAccess } from '../doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierMock, type ConfiguredClaims } from '../doubles/auth/identity-verifier-spy.ts';
+import { RequestContextTools } from '../doubles/mcp/context-report-tool-spy.ts';
+import { FailureReporterMock } from '../doubles/mcp/failure-reporter-spy.ts';
+import { mcpRequest, type McpRequestOptions } from '../drivers/mcp/mcp-http-request.ts';
 
 export const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';

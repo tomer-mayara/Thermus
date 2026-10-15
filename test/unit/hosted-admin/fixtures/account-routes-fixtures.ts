@@ -3,7 +3,7 @@ import type { AccessDecision, AuthenticatedUser, RequestContext, RoleGrant } fro
 import { HostedAccountRoutes, type AccountFailureReport } from '../../../../src/hosted-admin/account-routes.ts';
 import type { BrowserSessionState } from '../../../../src/auth/hosted-auth/browser-session.ts';
 import type { AuthorizedOrganization } from '../../../../src/organizations/organization-administration.ts';
-import { AccessResolverMock, type ConfiguredAccess } from '../../mcp/fixtures/access-resolver-mock.ts';
+import { AccessResolverMock, type ConfiguredAccess } from '../../../support/doubles/auth/access-resolver-spy.ts';
 import { AccountOperationDouble, type OperationAnswer } from './account-operation-double.ts';
 import { BrowserSessionDouble, SignedInSessionDouble, type ConfiguredSession, type SignedInSetup } from './browser-session-double.ts';
 import { OrganizationAdministrationDouble, type AdministrationSetup, type ConfiguredOrganizations } from './organization-administration-double.ts';
