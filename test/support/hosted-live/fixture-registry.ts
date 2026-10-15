@@ -1,4 +1,5 @@
 import type { WorkOS } from '@workos-inc/node';
+import { statusOf } from './sdk-errors.ts';
 
 export type FixtureKind = 'application' | 'user' | 'organization';
 
@@ -7,10 +8,6 @@ export const fixtureNamePrefix = 'Thermus live ';
 
 // An application belongs to an organization, and a membership joins a user to an organization: delete in this order.
 const deletionOrder: readonly FixtureKind[] = ['application', 'user', 'organization'];
-
-function statusOf(error: unknown): unknown {
-  return typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined;
-}
 
 function failureText(error: unknown): string {
   const status = statusOf(error);

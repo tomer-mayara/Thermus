@@ -9,6 +9,7 @@ import type {
   RemoveRoleOptions,
   User,
 } from '@workos-inc/node';
+import { statusOf } from './sdk-errors.ts';
 
 // The steps of the operator runbook, docs/implementation/hosted-organization-setup.md, with the pinned SDK. The live
 // proofs run these steps against the staging environment, so that each rule of the runbook rests on WorkOS behavior.
@@ -83,10 +84,6 @@ export const superAdminRole = 'super-admin';
 export function rolesOf(membership: OrganizationMembership | undefined): string[] {
   if (membership === undefined) return [];
   return (membership.roles ?? [membership.role]).map(({ slug }) => slug).toSorted();
-}
-
-function statusOf(error: unknown): unknown {
-  return typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined;
 }
 
 function withSuperAdmin(roles: readonly string[]): boolean {

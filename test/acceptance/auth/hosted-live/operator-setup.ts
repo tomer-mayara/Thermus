@@ -9,6 +9,7 @@ import { OrganizationAdministration } from '../../../../src/organizations/organi
 import type { LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { OperatorRunbook, rolesOf, superAdminRole, type OperatorRecord } from '../../../support/hosted-live/operator-runbook.ts';
 import { operatorActor, type OrganizationFixtures } from '../../../support/hosted-live/organization-fixtures.ts';
+import { statusOf } from '../../../support/hosted-live/sdk-errors.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
 const proofOptions = { timeout: 120_000 };
@@ -38,10 +39,6 @@ class RunbookWithChangeAfterInspection extends OperatorRunbook {
 // writes it. The resource has the external ID of the organization.
 function organizationRole(fixtures: OrganizationFixtures, membership: OrganizationMembership, roleSlug: string) {
   return { organizationMembershipId: membership.id, roleSlug, resourceTypeSlug: 'organization', resourceExternalId: fixtures.organizationRequest.externalId };
-}
-
-function statusOf(error: unknown): unknown {
-  return typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined;
 }
 
 function codeOf(error: unknown): unknown {
