@@ -10,12 +10,12 @@ import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
+import { ProtectedToolSpy, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
 const authority = 'https://auth.thermus.example';
-const productAccess = RequestContextProbe.requiredPermission;
+const productAccess = ProtectedToolSpy.requiredPermission;
 const nowSeconds = Math.floor(Date.now() / 1_000);
 
 function member(subject: string, organizationId: string): AuthenticatedUser {
@@ -50,7 +50,7 @@ describe('Trusted access context for MCP HTTP requests', () => {
   const owen = member('user-owen', 'org-a');
   const uma = member('user-uma', 'org-a');
   let resolver: AccessResolverSpy;
-  let probe: RequestContextProbe;
+  let probe: ProtectedToolSpy;
   let server: MCPServer;
 
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe('Trusted access context for MCP HTTP requests', () => {
       [owen.subject, allowed(owen, 'tenant-org-a', { 'super-admin': ['admin-grants:manage', 'billing:manage'], user: [productAccess] })],
       [uma.subject, new Error('private membership lookup failure for user-uma')],
     ]));
-    probe = new RequestContextProbe();
+    probe = new ProtectedToolSpy();
     server = new MCPServer({
       auth: { verifier, accessResolver: resolver, resourceMetadataUrl, expectedResource: new URL(resourceUrl) },
       buildServer: probe.buildServer,
@@ -93,7 +93,7 @@ describe('Trusted access context for MCP HTTP requests', () => {
   }
 
   async function callProbe(client: Client, args: Record<string, string>) {
-    const result = await client.callTool({ name: RequestContextProbe.toolName, arguments: args });
+    const result = await client.callTool({ name: ProtectedToolSpy.toolName, arguments: args });
     const [content] = result.content;
     assert.equal(content?.type, 'text');
     return { isError: result.isError === true, text: content.text };

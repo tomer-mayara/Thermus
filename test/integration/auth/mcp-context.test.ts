@@ -12,11 +12,11 @@ import { AccessResolverSpy, type ConfiguredAccess } from '../../support/doubles/
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 import { mcpRequest, rpcResult, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
+import { ProtectedToolSpy, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';
-const productAccess = RequestContextProbe.requiredPermission;
+const productAccess = ProtectedToolSpy.requiredPermission;
 const userGrant: RoleGrant = { role: 'user', permissions: [productAccess] };
 const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
 const nowSeconds = Math.floor(Date.now() / 1_000);
@@ -43,7 +43,7 @@ function memberAccess(user: AuthenticatedUser, grants: readonly RoleGrant[]): Ac
   return { allowed: true, context: createRequestContext({ user, tenantId: `tenant-${organizationId}`, organizationId, grants }) };
 }
 
-function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>, probe = new RequestContextProbe()) {
+function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>, probe = new ProtectedToolSpy()) {
   const verifier = new IdentityVerifierSpy(new Map([
     ...members.map((user) => [`${user.subject}-token`, identityFor(user)] as const),
     ['scopeless-token', identityFor(members[0] as AuthenticatedUser, [])],
@@ -70,7 +70,7 @@ function callProbe(t: TestContext, token: string | undefined, url = 'https://exa
     url: resourceUrl,
     method: 'tools/call',
     token,
-    params: { name: RequestContextProbe.toolName, arguments: { url, tenantId: 'tenant-org-b' } },
+    params: { name: ProtectedToolSpy.toolName, arguments: { url, tenantId: 'tenant-org-b' } },
     headers: { 'X-Tenant-Id': 'tenant-org-b' },
     signal: t.signal,
   });
@@ -81,7 +81,7 @@ describe('MCP access context with the real access contracts', () => {
     const gates = members.map(() => Promise.withResolvers<void>());
     const allStarted = Promise.withResolvers<void>();
     let started = 0;
-    const probe = new RequestContextProbe(async () => {
+    const probe = new ProtectedToolSpy(async () => {
       started += 1;
       if (started === members.length) allStarted.resolve();
       await allStarted.promise;

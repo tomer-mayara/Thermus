@@ -16,7 +16,7 @@ export interface ProbeReport {
   readonly arguments: ProbeArguments;
 }
 
-export class RequestContextProbe {
+export class ProtectedToolSpy {
   static readonly toolName = 'protected_fetch_probe';
   static readonly requiredPermission = 'product:access';
   readonly contexts: RequestContext[] = [];
@@ -30,7 +30,7 @@ export class RequestContextProbe {
   readonly buildServer = (context: RequestContext): McpServer => {
     const server = new McpServer({ name: 'thermus', version: '0.0.0' });
     this.contexts.push(context);
-    server.registerTool(RequestContextProbe.toolName, {
+    server.registerTool(ProtectedToolSpy.toolName, {
       description: 'Test only: protected work that reports its trusted context.',
       inputSchema: fromJsonSchema<ProbeArguments>({
         type: 'object',
@@ -39,7 +39,7 @@ export class RequestContextProbe {
         additionalProperties: { type: 'string' },
       }),
     }, async (args, toolContext) => {
-      requirePermission(context, RequestContextProbe.requiredPermission);
+      requirePermission(context, ProtectedToolSpy.requiredPermission);
       await this.beforeWork?.(context);
       for (const step of ['fetch', 'clean'] as const) {
         this.work.push({ step, subject: context.user.subject, tenantId: context.tenantId, url: args.url });

@@ -8,7 +8,7 @@ export interface AccountWork {
   readonly organizationId?: string;
 }
 
-export class AccountOperationProbe {
+export class AccountOperationSpy {
   readonly work: AccountWork[] = [];
   private readonly permissions: ReadonlyMap<string, string>;
 

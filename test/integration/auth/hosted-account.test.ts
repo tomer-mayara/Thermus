@@ -5,7 +5,7 @@ import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/
 import { BillingFree } from '../../../src/billing/billing-free.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import type { BrowserSessionState } from '../../../src/auth/hosted-auth/browser-session.ts';
-import { AccountOperationProbe } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
+import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/doubles/organizations/membership-directory-double.ts';
 import { BrowserSessionDouble, SignedInSessionDouble } from '../../support/doubles/auth/browser-session-double.ts';
 
@@ -66,7 +66,7 @@ function serve() {
   ]));
   const session = new BrowserSessionDouble(sessionStates);
   const directory = new MembershipDirectoryDouble(authority, memberships);
-  const probe = new AccountOperationProbe(operationPermissions);
+  const probe = new AccountOperationSpy(operationPermissions);
   const mcp = new McpEndpointDouble();
   const account = { reportFailure: () => {}, changeRecords: { record: () => {} }, billing: new BillingFree(), operation: probe.operation };
   const application = composeHostedApplication(config, { session, accessResolver: directory, organizations: directory, mcp }, account);

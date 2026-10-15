@@ -12,11 +12,11 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import type { ChangeRecord, ChangeRecorder } from '../../../src/organizations/change-records.ts';
 import { IdentityVerifierSpy } from '../doubles/auth/identity-verifier-spy.ts';
 import { mcpRequest, rpcResult } from '../drivers/mcp/mcp-http-request.ts';
-import { AccountOperationProbe } from '../doubles/hosted-admin/account-operation-spy.ts';
+import { AccountOperationSpy } from '../doubles/hosted-admin/account-operation-spy.ts';
 import { BrowserSessionStore, type SignInOptions } from '../doubles/auth/browser-session-store.ts';
 import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from '../drivers/browser/hosted-browser.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
-import { RequestContextProbe } from '../doubles/mcp/protected-tool-spy.ts';
+import { ProtectedToolSpy } from '../doubles/mcp/protected-tool-spy.ts';
 
 export const hostedConfig = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
@@ -72,8 +72,8 @@ export interface OrganizationSite {
   readonly application: Application;
   readonly sessions: BrowserSessionStore;
   readonly directory: MembershipDirectoryDouble;
-  readonly pages: AccountOperationProbe;
-  readonly tools: RequestContextProbe;
+  readonly pages: AccountOperationSpy;
+  readonly tools: ProtectedToolSpy;
   readonly records: readonly ChangeRecord[];
   readonly transport: BrowserTransport;
   browserOf(user: AuthenticatedUser, options?: SignInOptions): HostedBrowser;
@@ -82,8 +82,8 @@ export interface OrganizationSite {
 
 // The real hosted composition, account routes, OrganizationAdministration, access contracts, and MCPServer, in this
 // process. Doubles stand at the provider boundaries: the browser session, the membership directory, and the MCP token
-// verifier. Two test-only probes stand in for the product: AccountOperationProbe gives the destinations, each with
-// the permission that it checks, and RequestContextProbe gives the MCP tool, which records its request context. No
+// verifier. Two test-only spies stand in for the product: AccountOperationSpy gives the destinations, each with
+// the permission that it checks, and ProtectedToolSpy gives the MCP tool, which records its request context. No
 // WorkOS setting, SDK, or credential exists.
 export function openOrganizationSite(t: TestContext, setup: SiteSetup): OrganizationSite {
   const parts = composeSite(setup);
@@ -122,8 +122,8 @@ export async function contextAt(browser: HostedBrowser, path: string): Promise<R
 function composeSite(setup: SiteSetup) {
   const sessions = new BrowserSessionStore();
   const directory = new MembershipDirectoryDouble(authority, setup.memberships ?? members);
-  const pages = new AccountOperationProbe(destinations);
-  const tools = new RequestContextProbe();
+  const pages = new AccountOperationSpy(destinations);
+  const tools = new ProtectedToolSpy();
   const records: ChangeRecord[] = [];
   const tokenUsers = [...(setup.mcpUsers ?? []).map((user): [string, AuthenticatedUser] => [`${user.subject}-token`, user]), ...(setup.mcpTokens ?? [])];
   const tokens = new Map(tokenUsers.map(([token, user]) => [token, identityOf(user)]));
@@ -154,7 +154,7 @@ function siteWith(parts: ReturnType<typeof composeSite>, transport: BrowserTrans
       url: hostedConfig.mcpResourceUrl,
       method: 'tools/call',
       token,
-      params: { name: RequestContextProbe.toolName, arguments: { url: 'https://example.com/', organizationId: 'org-b' } },
+      params: { name: ProtectedToolSpy.toolName, arguments: { url: 'https://example.com/', organizationId: 'org-b' } },
       headers: { 'X-Organization-Id': 'org-b' },
     }))),
   };
