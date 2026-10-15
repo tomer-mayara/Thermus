@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchLaunchError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
 import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 const url = 'https://example.com/';
@@ -17,11 +17,7 @@ function stubRuntime(t: TestContext, cause: ExecFileException | null = null) {
     args[3]?.(cause, JSON.stringify({ url, http_status: 200, content: html, error: null }), '');
     return new RendererChildDouble();
   });
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
   return execute;
 }
 

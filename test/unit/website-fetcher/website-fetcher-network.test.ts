@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import { type LookupAddress } from 'node:dns';
 import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
 import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null) {
@@ -17,11 +17,7 @@ function stubRenderer(t: TestContext, error: NodeJS.ErrnoException | null = null
     args[3]?.(error, JSON.stringify({ url, http_status: 200, content: '<html><body>Public page</body></html>', error: null }), '');
     return new RendererChildDouble();
   });
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
   return { calls, lookup };
 }
 

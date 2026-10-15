@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError, WebsiteFetchLaunchError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
 import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 const executable = '/opt/Lightpanda runtime/lightpanda';
@@ -26,11 +26,7 @@ function stubProcess(t: TestContext, complete: (callback: (error: ExecFileExcept
     complete(callback);
     return new RendererChildDouble();
   });
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
   return { lookup, execute };
 }
 
