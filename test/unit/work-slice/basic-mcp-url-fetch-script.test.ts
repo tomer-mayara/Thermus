@@ -6,9 +6,9 @@ import { test, type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { dataDirectory } from '../../support/data-directory.ts';
 
-const script = fileURLToPath(new URL(import.meta.url.endsWith('.ts') ? '../../../test/acceptance/work-slice/basic-mcp-url-fetch.sh' : '../../../../test/acceptance/work-slice/basic-mcp-url-fetch.sh', import.meta.url));
+const script = fileURLToPath(new URL(import.meta.url.endsWith('.ts') ? '../../../test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh' : '../../../../test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh', import.meta.url));
 const physicalRoot = realpathSync(fileURLToPath(new URL(import.meta.url.endsWith('.ts') ? '../../../' : '../../../../', import.meta.url)));
-const entryArguments = ['exec', 'node', '--import', 'tsx', 'test/acceptance/work-slice/basic-mcp-url-fetch.ts'];
+const entryArguments = ['exec', 'node', '--import', 'tsx', 'test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts'];
 const settingNames = ['PUBLIC_BASE_URL', 'AD_RULES_FILE', 'LIGHTPANDA_BIN', 'AXOIM_ENDPOINT_URL', 'AXIOM_SYSTEM_LOG_TEST_DATA_SET'] as const;
 type Settings = Record<(typeof settingNames)[number], string>;
 

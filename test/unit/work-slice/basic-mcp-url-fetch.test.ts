@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import type { ApplicationLogger } from '../../../src/application.ts';
 import type { RequestContext } from '../../../src/auth/access-context.ts';
 import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
-import { MARKDOWN_LOG_LIMIT, observeFetches } from '../../acceptance/work-slice/basic-mcp-url-fetch.ts';
+import { MARKDOWN_LOG_LIMIT, observeFetches } from '../../acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts';
 
 const url = 'https://news.example/story?page=2';
 const context: RequestContext = {
