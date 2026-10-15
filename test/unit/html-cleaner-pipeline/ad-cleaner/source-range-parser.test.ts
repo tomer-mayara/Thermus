@@ -1,11 +1,8 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { once } from 'node:events';
-import { extname } from 'node:path';
-import { createInterface } from 'node:readline';
 import { test } from 'node:test';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { SourceRangeParser } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser.ts';
+import { assertWorkPassesInChild } from './fixtures/parser-child.ts';
 
 type ParentNode = Htmlparser2TreeAdapterMap['parentNode'];
 
@@ -133,58 +130,7 @@ test('recovers nested templates with bounded EOF stack depth', () => {
   assert.equal(text.data, 'text');
 });
 
-const loadedLine = 'parser loaded';
-// The bound is high, so that a slow start does not fail the case. Only a child that does not load at all reaches it.
-const loadTimeLimitMs = 60_000;
 const parseWorkTimeLimitMs = 3000;
-
-// The time limit starts after the child has loaded the parser, so that a slow process start or
-// module load on a busy host does not count. The work runs in a child process, because this
-// process cannot stop an EOF loop that blocks its own event loop.
-async function assertWorkPassesInChild(work: string, timeLimitMs: number): Promise<void> {
-  const extension = extname(import.meta.filename);
-  const parserUrl = new URL(`../../../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser${extension}`, import.meta.url);
-  const childArguments = extension === '.ts' ? ['--import=tsx', '--input-type=module'] : ['--input-type=module'];
-  const child = spawn(process.execPath, [...childArguments, '--eval', `
-    import assert from 'node:assert/strict';
-    import { adapter } from 'parse5-htmlparser2-tree-adapter';
-    import { SourceRangeParser } from ${JSON.stringify(parserUrl.href)};
-    // The work can block this process. Thus, the write of the line must end before the work starts.
-    await new Promise((resolve) => process.stdout.write(${JSON.stringify(`${loadedLine}\n`)}, resolve));
-    ${work}
-  `], { stdio: ['ignore', 'pipe', 'pipe'] });
-  const closed = once(child, 'close');
-  const loaded = new Promise<void>((resolve) => {
-    createInterface({ input: child.stdout }).on('line', (line) => {
-      if (line === loadedLine) resolve();
-    });
-  });
-  let stderr = '';
-  child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
-    stderr += chunk;
-  });
-  try {
-    assert.ok(await resolvesWithin(Promise.race([loaded, closed]), loadTimeLimitMs),
-      `The child did not load the parser within ${loadTimeLimitMs} ms\n${stderr}`);
-    assert.ok(await resolvesWithin(closed, timeLimitMs),
-      `The parse work did not end within ${timeLimitMs} ms\n${stderr}`);
-  } finally {
-    child.kill('SIGKILL');
-  }
-  assert.equal(child.exitCode, 0, stderr);
-}
-
-async function resolvesWithin(promise: Promise<unknown>, ms: number): Promise<boolean> {
-  let timer: NodeJS.Timeout | undefined;
-  const late = new Promise<false>((resolve) => {
-    timer = setTimeout(resolve, ms, false);
-  });
-  try {
-    return await Promise.race([promise.then(() => true), late]);
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 test('stops EOF processing when parse5 has no next pass to request', async () => {
   await assertWorkPassesInChild(`
