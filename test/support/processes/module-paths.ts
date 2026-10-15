@@ -14,6 +14,10 @@ function supportModule(name: string): URL {
 // The folder of package.json.
 export const repositoryRoot = new URL(fromSource ? '../../../' : '../../../../', import.meta.url);
 
+// The portal build that the local HTTPS site serves. It exists only after npm run build:user-portal, so the paths
+// test checks only its parent folder.
+export const portalBuild = fileURLToPath(new URL('src/user-portal/dist/', repositoryRoot));
+
 // The program that the child-process sites and the command tests run: dist/src/index.js after a build.
 export const programEntry = fileURLToPath(new URL(`../../../src/index.${extension}`, import.meta.url));
 

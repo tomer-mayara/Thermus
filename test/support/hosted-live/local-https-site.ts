@@ -7,11 +7,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { tmpdir } from 'node:os';
 import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
-import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { createApplication, type Application, type ApplicationLogger } from '../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
+import { portalBuild } from '../processes/module-paths.ts';
 import { browserRedirectUri, localOrigin, type HostedLiveSettings } from './settings.ts';
 
 interface PortalFile {
@@ -30,7 +30,6 @@ interface TlsCertificate {
   readonly cert: Buffer | string;
 }
 
-const portalBuild = fileURLToPath(new URL('../../../../src/user-portal/dist/', import.meta.url));
 const publicBaseUrl = `${localOrigin}/`;
 const listenAddresses = ['127.0.0.1', '::1'];
 const contentTypes: Readonly<Record<string, string>> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
@@ -84,7 +83,7 @@ function closeFront(front: Server): Promise<void> {
 }
 
 export interface LocalHttpsSiteOptions {
-  // The directory of the portal build. The default is src/user-portal/dist/ of this repository.
+  // The directory of the portal build. The default is src/user-portal/dist/ of this repository, from the module paths.
   readonly portalBuild?: string;
   // The TLS key and certificate in PEM. The default is a new self-signed certificate for this run.
   readonly certificate?: TlsCertificate;

@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
-import { foreignOriginProbe, networkBlocker, programEntry, repositoryRoot, sqlTracer } from '../support/processes/module-paths.ts';
+import { foreignOriginProbe, networkBlocker, portalBuild, programEntry, repositoryRoot, sqlTracer } from '../support/processes/module-paths.ts';
 import { failingAdCleaner } from '../support/server-preloads.ts';
 
 // The support code computes these paths at run time, so the compiler cannot check them. A moved module, preload,
@@ -23,6 +24,12 @@ describe('Run-time paths of the test support code', () => {
       assert.ok(existsSync(path), `${name} names ${path}, which does not exist.`);
     });
   }
+
+  // The portal build exists only after npm run build:user-portal, which npm run check runs after the unit tests.
+  test('Given the repository, when the portal build is resolved, then it is the dist folder of the portal source', () => {
+    assert.ok(existsSync(dirname(portalBuild)), `${portalBuild} is not under the portal source.`);
+    assert.ok(portalBuild.endsWith('/src/user-portal/dist/'), portalBuild);
+  });
 
   test('Given a build, when the repository root is resolved, then it is the folder of package.json', () => {
     assert.ok(existsSync(new URL('package.json', repositoryRoot)), `${repositoryRoot.href} holds no package.json.`);
