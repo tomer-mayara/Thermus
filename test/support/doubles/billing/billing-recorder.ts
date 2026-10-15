@@ -1,5 +1,5 @@
-import type { Billing, BillingState } from '../../src/billing/billing.ts';
-import { BillingFree } from '../../src/billing/billing-free.ts';
+import type { Billing, BillingState } from '../../../../src/billing/billing.ts';
+import { BillingFree } from '../../../../src/billing/billing-free.ts';
 
 // Stands at the payment boundary of the hosted composition. It keeps each call that reaches billing and gives it to
 // the real BillingFree, so that a test sees the counts that billing gets and the states that BillingFree confirms.

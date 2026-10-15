@@ -108,7 +108,7 @@ provider.
 
 | Part | State | Where |
 | --- | --- | --- |
-| Mock provider | Exists. Tests only. | `test/support/auth/no-auth-provider.ts` |
+| Mock provider | Exists. Tests only. | `test/support/doubles/auth/no-auth-provider.ts` |
 | MCP server with the Bearer checks | Exists. | `src/mcp/mcp-server.ts` |
 | Fetch tool, operation, and completion record | Exists. | `src/mcp/fetch-tool-server.ts`, `src/mcp/get-url-as-markdown.ts` |
 | Production fetch composition | Exists, but only behind Better Auth. It does not expose the fetcher or the pipeline. | `src/fetch-tool.ts`, `src/application.ts` |

@@ -3,9 +3,9 @@ import {
   type AccessDecision,
   type AccessResolver,
   type AuthenticatedUser,
-} from '../../src/auth/access-context.ts';
-import type { MemberSeed } from './doubles/organizations/directory-double-records.ts';
-import { OrganizationDirectoryDouble } from './doubles/organizations/organization-directory-double.ts';
+} from '../../../../src/auth/access-context.ts';
+import type { MemberSeed } from './directory-double-records.ts';
+import { OrganizationDirectoryDouble } from './organization-directory-double.ts';
 
 export interface MembershipRecord extends MemberSeed {
   readonly organizationName: string;

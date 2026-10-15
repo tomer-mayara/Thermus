@@ -12,7 +12,7 @@ import { AccessResolverSpy, type ConfiguredAccess } from '../../support/doubles/
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 import { mcpRequest, rpcResult, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
+import { RequestContextProbe, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';

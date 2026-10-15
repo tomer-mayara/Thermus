@@ -24,7 +24,7 @@ import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-s
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { resourceServerClient, userGrant, type UserGrant } from '../../support/dsl/local-commands.ts';
 import { addAccount, passwordOf, selfHostedConfig } from '../../support/in-process/local-runtime.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
+import { RequestContextProbe, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 const resourceMetadataUrl = 'http://localhost:8080/.well-known/oauth-protected-resource/mcp';
 const productAccess = RequestContextProbe.requiredPermission;

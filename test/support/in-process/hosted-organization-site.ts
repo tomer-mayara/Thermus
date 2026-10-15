@@ -12,11 +12,11 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import type { ChangeRecord, ChangeRecorder } from '../../../src/organizations/change-records.ts';
 import { IdentityVerifierSpy } from '../doubles/auth/identity-verifier-spy.ts';
 import { mcpRequest, rpcResult } from '../drivers/mcp/mcp-http-request.ts';
-import { AccountOperationProbe } from '../account-operation-probe.ts';
-import { BrowserSessionStore, type SignInOptions } from '../browser-session-store.ts';
+import { AccountOperationProbe } from '../doubles/hosted-admin/account-operation-spy.ts';
+import { BrowserSessionStore, type SignInOptions } from '../doubles/auth/browser-session-store.ts';
 import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from '../drivers/browser/hosted-browser.ts';
-import { MembershipDirectoryDouble, type MembershipRecord } from '../membership-directory-double.ts';
-import { RequestContextProbe } from '../request-context-probe.ts';
+import { MembershipDirectoryDouble, type MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
+import { RequestContextProbe } from '../doubles/mcp/protected-tool-spy.ts';
 
 export const hostedConfig = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };

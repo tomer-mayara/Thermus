@@ -1,5 +1,5 @@
-import { AccessDeniedError, requirePermission } from '../../src/auth/access-context.ts';
-import type { AccountOperation } from '../../src/hosted-admin/account-routes.ts';
+import { AccessDeniedError, requirePermission } from '../../../../src/auth/access-context.ts';
+import type { AccountOperation } from '../../../../src/hosted-admin/account-routes.ts';
 
 export interface AccountWork {
   readonly path: string;

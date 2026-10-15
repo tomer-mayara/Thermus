@@ -8,7 +8,7 @@ import {
   type Actor,
   type GrantChangeRequest,
 } from '../../../src/organizations/organization-administration.ts';
-import { BrowserSessionStore } from '../../support/browser-session-store.ts';
+import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';

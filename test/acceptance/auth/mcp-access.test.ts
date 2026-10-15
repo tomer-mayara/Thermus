@@ -10,7 +10,7 @@ import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
+import { RequestContextProbe, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
