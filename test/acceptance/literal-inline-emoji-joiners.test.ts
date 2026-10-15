@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { processHtml } from '../helpers/process-html.ts';
+import { processHtml } from '../support/process-html.ts';
 
 for (const [name, body] of [
   ['a joiner-only span', '👩<span>JOINER</span>💻'],

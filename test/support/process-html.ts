@@ -2,7 +2,7 @@ import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleane
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline, type Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { elementHidingRules } from '../support/ad-rules.ts';
+import { elementHidingRules } from './ad-rules.ts';
 
 export async function processHtml(
   html: string,
