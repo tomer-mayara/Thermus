@@ -5,8 +5,8 @@ import { decodeBasicCredentials } from 'better-auth/oauth2';
 import { BetterAuthProvider, type BetterAuthProviderSettings } from '../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
 import { CLIENT_ADDRESS_HEADER } from '../../../src/http/client-address.ts';
 import { InvalidAccessTokenError } from '../../../src/auth/identity-verifier.ts';
-import { AccessTokenSigner, localIssuer, localUserClaims } from '../../unit/auth-better-auth/fixtures/local-access-tokens.ts';
-import { localSettings, TokenProviderDouble } from '../../unit/auth-better-auth/fixtures/token-provider-double.ts';
+import { AccessTokenSigner, localIssuer, localUserClaims } from './fixtures/local-access-tokens.ts';
+import { localSettings, TokenProviderDouble } from './fixtures/token-provider-double.ts';
 
 const resourceServerSecret = 'resource-server-secret';
 

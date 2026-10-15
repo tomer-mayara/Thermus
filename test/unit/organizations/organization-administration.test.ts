@@ -4,7 +4,7 @@ import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-cont
 import type { Billing } from '../../../src/billing/billing.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
 import type { OrganizationMembership } from '../../../src/organizations/organization-directory.ts';
-import { OrganizationDirectoryDouble } from './fixtures/organization-directory-double.ts';
+import { OrganizationDirectoryDouble } from '../../support/doubles/organizations/organization-directory-double.ts';
 
 const authority = 'hosted-provider-double';
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };

@@ -7,7 +7,7 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import type { BrowserSessionState } from '../../../src/auth/hosted-auth/browser-session.ts';
 import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/membership-directory-double.ts';
-import { BrowserSessionDouble, SignedInSessionDouble } from '../../unit/hosted-admin/fixtures/browser-session-double.ts';
+import { BrowserSessionDouble, SignedInSessionDouble } from '../../support/doubles/auth/browser-session-double.ts';
 
 const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const authority = 'hosted-provider-double';

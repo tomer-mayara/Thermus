@@ -2086,11 +2086,11 @@ errors, and call records. Each test creates fresh instances. No production
 module imports either spy. Organization and browser unit tests add their own
 narrow directory and session doubles under `test/unit/`, importing shared
 contracts as types only. `BrowserSessionDouble`, in
-`test/unit/hosted-admin/fixtures/browser-session-double.ts`, gives configured
+`test/support/doubles/auth/browser-session-double.ts`, gives configured
 session states. `SignedInSessionDouble`, in the same file, gives a signed-in
 session with its MFA evidence and a configured switch answer, and records each
 switch. `OrganizationDirectoryDouble`, in
-`test/unit/organizations/fixtures/organization-directory-double.ts`, is a
+`test/support/doubles/organizations/organization-directory-double.ts`, is a
 stateful double of the whole `OrganizationDirectory` contract: a change takes
 effect in the later reads, each grant change needs the current revision of the
 membership, and an acceptance activates only the role of the invitation. A

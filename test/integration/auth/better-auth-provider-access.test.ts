@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { BetterAuthProvider, LOCAL_USER_GRANT } from '../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
-import { installationId, localSettings, TokenProviderDouble } from '../../unit/auth-better-auth/fixtures/token-provider-double.ts';
+import { installationId, localSettings, TokenProviderDouble } from './fixtures/token-provider-double.ts';
 
 const authority = `better-auth:${installationId}`;
 const tenantId = `local:${installationId}`;
