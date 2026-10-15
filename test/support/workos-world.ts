@@ -77,7 +77,7 @@ const resendRefusals: Readonly<Record<WorldInvitation['state'], FakeAnswer | und
   revoked: refusal('invite_revoked', 'Invite has been revoked.'),
   expired: refusal('invite_expired', 'Invite has expired.'),
 };
-export const mcpClientId = 'client_01MCPCLIENT';
+const mcpClientId = 'client_01MCPCLIENT';
 
 function userJson(user: WorldUser) {
   return {

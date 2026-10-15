@@ -5,12 +5,12 @@ import { syncBuiltinMocks } from './builtin-mocks.ts';
 
 type ProcessCompletion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 
-export interface RenderedPage {
+interface RenderedPage {
   readonly finalUrl: string;
   readonly html: string;
 }
 
-export interface RendererLaunch {
+interface RendererLaunch {
   readonly executable: string;
   readonly args: readonly string[];
   readonly options: unknown;

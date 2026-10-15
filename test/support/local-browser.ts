@@ -4,19 +4,19 @@ import { publicBaseUrl, type AccountCredentials } from './better-auth-local.ts';
 import { cookieHeaderOf, keepCookies } from './cookie-jar.ts';
 import { decodeHtml } from './html-entities.ts';
 
-export type FetchSite = 'none' | 'same-origin' | 'cross-site';
+type FetchSite = 'none' | 'same-origin' | 'cross-site';
 
 // The listen address of the running server. A restarted server can listen on another port.
 export type ServerAddress = () => URL;
 
-export interface PageResponse {
+interface PageResponse {
   readonly status: number;
   readonly headers: IncomingHttpHeaders;
   readonly body: string;
   readonly location?: URL;
 }
 
-export interface FormPost {
+interface FormPost {
   readonly origin?: string | null;
   readonly site?: FetchSite;
 }
@@ -28,12 +28,12 @@ interface BrowserRequest {
   readonly body?: string;
 }
 
-export interface SignInPage {
+interface SignInPage {
   readonly url: URL;
   readonly oauthQuery: string;
 }
 
-export interface BrowserAuthorization {
+interface BrowserAuthorization {
   readonly callback: URL;
   readonly pages: readonly string[];
 }

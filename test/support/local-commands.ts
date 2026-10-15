@@ -10,7 +10,7 @@ import { selfHostedSettings } from './local-runtime.ts';
 
 export type Operator = (args: readonly string[], input?: readonly string[]) => Promise<CommandResult>;
 
-export interface ListedAccount {
+interface ListedAccount {
   readonly email: string;
   readonly state: string;
   readonly id: string;

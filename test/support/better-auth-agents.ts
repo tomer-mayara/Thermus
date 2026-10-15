@@ -13,12 +13,12 @@ export interface TokenResponse {
   readonly scope: string;
 }
 
-export interface Introspection {
+interface Introspection {
   readonly active: boolean;
   readonly [claim: string]: unknown;
 }
 
-export interface RequestOptions {
+interface RequestOptions {
   readonly json?: unknown;
   readonly form?: Readonly<Record<string, string>>;
   readonly origin?: string | null;
@@ -109,7 +109,7 @@ export async function followAuthorizationWithConsent(browser: HttpAgent, authori
   return new URL(url);
 }
 
-export interface AuthorizationRequest {
+interface AuthorizationRequest {
   readonly path: string;
   readonly verifier: string;
 }

@@ -6,14 +6,14 @@ import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
 import { axiomExportHeaders, axiomTestSettings, trackTestExports } from './axiom-test-export.ts';
 
-export interface ReceivedLogExport {
+interface ReceivedLogExport {
   readonly method: string | undefined;
   readonly path: string | undefined;
   readonly headers: IncomingHttpHeaders;
   readonly body: string;
 }
 
-export interface ExportedLogRecord {
+interface ExportedLogRecord {
   readonly severityNumber: number;
   readonly severityText: string;
   readonly timeUnixNano: string;

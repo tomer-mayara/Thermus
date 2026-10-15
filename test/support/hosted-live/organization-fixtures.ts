@@ -11,7 +11,7 @@ const userLabels = [
   'outgoing', 'incoming', 'lost', 'recovering', 'unknown-outcome', 'inactive-retry', 'hosted-super-admin',
 ] as const;
 
-export type OrganizationUserLabel = (typeof userLabels)[number];
+type OrganizationUserLabel = (typeof userLabels)[number];
 
 export interface OrganizationFixtures {
   readonly runbook: OperatorRunbook;

@@ -23,7 +23,7 @@ export const hostedRolePermissions: Readonly<Record<string, readonly string[]>> 
   'super-admin': ['admin-grants:manage', 'billing:manage'],
   member: [],
 };
-export const applicationPermissions: readonly string[] = Object.values(hostedRolePermissions).flat();
+const applicationPermissions: readonly string[] = Object.values(hostedRolePermissions).flat();
 
 export function workosClient({ apiKey, clientId }: HostedLiveSettings): WorkOS {
   // No retry and a short timeout: a live failure shows at once, in the proof that caused it.

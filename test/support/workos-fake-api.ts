@@ -35,7 +35,7 @@ interface PatternRoute {
 
 const idSegment = ':id';
 
-export class KeySetEndpoint {
+class KeySetEndpoint {
   #keys: readonly SigningKey[] = [];
   #outage: FakeAnswer | undefined;
 

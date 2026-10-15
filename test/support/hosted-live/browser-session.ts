@@ -8,7 +8,7 @@ import { browserRedirectUri, type HostedLiveSettings } from './settings.ts';
 import type { LiveUser } from './staging-fixtures.ts';
 import { readToken, type TokenView } from './tokens.ts';
 
-export interface SignInRequest {
+interface SignInRequest {
   readonly user: LiveUser;
   readonly organizationName?: string;
 }
