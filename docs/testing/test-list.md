@@ -950,7 +950,7 @@ The fixture registry, the operator runbook driver, and the operator setup proofs
 
 **Built-in mock sync** (`test/unit/test-support/builtin-mocks.test.ts`)
 
-`mockRenderer()`, `RendererProcessDouble.install()`, and `permitIPv4Fixture()` had the same sequence after their mocks of Node built-in modules. `syncBuiltinMocks()` in `test/support/builtin-mocks.ts` is the one copy: it syncs the ESM exports, and at the end of the test it restores all mocks of the test and syncs again.
+`mockRenderer()`, `RendererProcessDouble.install()`, and `permitIPv4Fixture()` had the same sequence after their mocks of Node built-in modules. `syncBuiltinMocks()` in `test/support/builtin-mocks.ts` is the one copy: it syncs the ESM exports, and at the end of the test it restores all mocks of the test and syncs again. Nine test files outside `test/support` call it too, after their mocks of `execFile`, `lookup`, or `readFileSync`.
 
 [V] After a mock of `lookup` of `node:dns/promises`, the named ESM export `lookup` is the mock in the test; at the end of the test the named export and the module property are the original function again
 [V] Mocks of two built-in modules, `node:dns/promises` and `node:child_process`, made before one sync, are both restored at the same end of the test, in the named exports and in the module properties

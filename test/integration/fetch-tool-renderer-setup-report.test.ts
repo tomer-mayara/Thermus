@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import childProcess, { type ChildProcess, type ExecFileException } from 'node:child_process';
-import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { Client, InMemoryTransport, type CallToolResult } from '@modelcontextprotocol/client';
 import { createRequestContext } from '../../src/auth/access-context.ts';
 import { createFetchOperation, fetchToolServers } from '../../src/fetch-tool.ts';
 import type { RequestServerBuilder } from '../../src/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
+import { syncBuiltinMocks } from '../support/builtin-mocks.ts';
 import { RendererChildDouble } from '../support/renderer-process-double.ts';
 
 const executable = '/opt/thermus-test/lightpanda';
@@ -31,11 +31,7 @@ function failedStarts(t: TestContext, codes: readonly string[]): void {
     setImmediate(() => complete(error, '', ''));
     return new RendererChildDouble();
   }) as typeof childProcess.execFile);
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
 }
 
 async function connectedClient(t: TestContext, server: ReturnType<RequestServerBuilder>): Promise<Client> {

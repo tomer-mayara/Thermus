@@ -3,13 +3,13 @@
 import assert from 'node:assert/strict';
 import childProcess, { execFile, type ChildProcess } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
-import { syncBuiltinESMExports } from 'node:module';
 import { isAbsolute, join } from 'node:path';
 import { before, describe, test, type TestContext } from 'node:test';
 import { promisify } from 'node:util';
 import type { CallToolResult, Client } from '@modelcontextprotocol/client';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import type { AccountCredentials } from '../../support/better-auth-local.ts';
+import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
 import { assertExit } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { InProcessServer } from '../../support/in-process-server.ts';
@@ -121,11 +121,7 @@ function watchRendererChildren(t: TestContext, executable: string): ChildProcess
     if (args[0] === executable) children.push(child);
     return child;
   }) as typeof childProcess.execFile);
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
   return children;
 }
 
