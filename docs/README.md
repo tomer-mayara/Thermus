@@ -32,6 +32,7 @@ runtime guides stay current after implementation.
 - [MCP-P03 implementation record](implementation/mcp-p03.md): the self-hosted fetch tool composition, the ad rules file, the local renderer runtime, image limits, and the renderer gate.
 - [MCP server implementation plan](implementation/mcp-server-plan.md): the GET-to-Markdown tool, test-only authentication, call records, verification gates, and board tickets.
 - [Basic MCP URL fetch work slice](implementation/basic-mcp-url-fetch-plan.md): the development script that serves the fetch tool with the test-only mock provider, the LLM client setup, the Axiom log check, and the record of the run.
+- [Auth WorkOS MCP URL fetch work slice](implementation/auth-workos-mcp-url-fetch-plan.md): the proposed slice that serves the fetch tool behind the hosted WorkOS edition, with Google sign-in, a Connect token for Claude Code, and the Axiom log check; its gaps, decisions, and steps.
 - [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, the hosted placeholder, hosted scope, and implementation gates.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.
 - [Planned cache key design](design/cache-design.md): pending cache requirements.
