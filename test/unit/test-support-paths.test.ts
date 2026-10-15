@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { trustedAdRulesFile } from '../support/ad-rules.ts';
+import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import { probeScript } from '../support/container/container-gate.ts';
 import { edgeScript, pageScript } from '../support/container/container-site.ts';
 import { foreignOriginProbe, networkBlocker, programEntry, repositoryRoot, sqlTracer } from '../support/processes/module-paths.ts';

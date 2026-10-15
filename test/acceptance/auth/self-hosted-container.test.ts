@@ -20,7 +20,7 @@ import {
 } from '../../support/container/container-gate.ts';
 import { ContainerSite } from '../../support/container/container-site.ts';
 import { dockerOutput } from '../../support/container/docker-cli.ts';
-import { workOSSettings } from '../../support/hosted-placeholder.ts';
+import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
 import { LocalMcpUser, type McpConnection } from '../../support/dsl/local-mcp-user.ts';
 import type { ServerContainer } from '../../support/container/server-container.ts';

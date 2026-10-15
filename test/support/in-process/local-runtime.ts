@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { openBetterAuthRuntime, type BetterAuthRuntime } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
 import type { LocalAccount } from '../../../src/auth/local-auth/local-user-administration.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { trustedAdRulesFile } from '../ad-rules.ts';
+import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
 import { publicBaseUrl } from './better-auth-local.ts';
 
 type AccountWithStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };

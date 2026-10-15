@@ -4,7 +4,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 
 const rendererGate = fileURLToPath(new URL('./get-url-as-markdown.runtime.js', import.meta.url));
 

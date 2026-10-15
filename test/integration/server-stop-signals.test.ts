@@ -6,9 +6,9 @@ import type { Application } from '../../src/application.ts';
 import { DataDirectoryInUseError, lockDataDirectory } from '../../src/auth/local-auth/better-auth/data-directory-lock.ts';
 import { serve, serveApplication } from '../../src/index.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
-import { trustedAdRulesFile } from '../support/ad-rules.ts';
-import { dataDirectory } from '../support/data-directory.ts';
-import { hostedStartupLine, workOSSettings } from '../support/hosted-placeholder.ts';
+import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
+import { dataDirectory } from '../support/isolation/data-directory.ts';
+import { hostedStartupLine, workOSSettings } from '../support/fixtures/hosted-placeholder.ts';
 
 const stopSignals = ['SIGINT', 'SIGTERM'] as const;
 const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0', ...workOSSettings };

@@ -23,7 +23,7 @@ import {
   type LocalAuth,
 } from '../../support/in-process/better-auth-local.ts';
 import { PreRegisteredSdkClient, sdkFetch } from '../../support/drivers/mcp/mcp-sdk-oauth-client.ts';
-import { setProcessEnvironment } from '../../support/process-environment.ts';
+import { setProcessEnvironment } from '../../support/isolation/process-environment.ts';
 import { foreignOriginProbe } from '../../support/processes/module-paths.ts';
 
 type UserWithAccountStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };

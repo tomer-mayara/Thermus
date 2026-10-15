@@ -3,7 +3,7 @@ import { describe, test, type TestContext } from 'node:test';
 import { accountFailureReporter, createApplication } from '../../../src/application.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
-import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';
+import { hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import {
   contextAt,
   destinationPaths,

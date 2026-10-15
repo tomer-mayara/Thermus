@@ -4,7 +4,7 @@ import { SERVER_INFO_META_KEY, UnauthorizedError } from '@modelcontextprotocol/c
 import { HttpAgent, loopbackRedirectUri, PreRegisteredNativeClient, ResourceServerClient } from '../../support/drivers/browser/better-auth-agents.ts';
 import { mcpResourceUrl, withRegistrationSession, type AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, assertRevealsNone } from '../../support/processes/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId, storedResourceServerClient } from '../../support/dsl/local-commands.ts';
 import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess } from '../../support/processes/server-process.ts';

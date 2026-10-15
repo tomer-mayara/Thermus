@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { elementHidingRules } from '../../../support/ad-rules.ts';
+import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 
 const url = 'https://abptestpages.org/en/filters/element-hiding';
 

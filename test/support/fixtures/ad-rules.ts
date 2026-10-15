@@ -2,11 +2,11 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const fixturesDirectory = new URL(
-  import.meta.url.endsWith('.ts') ? '../unit/fixtures/' : '../../../test/unit/fixtures/',
+  import.meta.url.endsWith('.ts') ? '../../unit/fixtures/' : '../../../../test/unit/fixtures/',
   import.meta.url,
 );
 const supportFixturesDirectory = new URL(
-  import.meta.url.endsWith('.ts') ? './fixtures/' : '../../../test/support/fixtures/',
+  import.meta.url.endsWith('.ts') ? './' : '../../../../test/support/fixtures/',
   import.meta.url,
 );
 

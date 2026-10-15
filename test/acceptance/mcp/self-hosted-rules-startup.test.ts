@@ -5,7 +5,7 @@ import { describe, test } from 'node:test';
 import { stripVTControlCharacters } from 'node:util';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit } from '../../support/processes/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { addUser, listedAccounts, operatorOn } from '../../support/dsl/local-commands.ts';
 import { selfHostedServerSettings, selfHostedSettings } from '../../support/in-process/local-runtime.ts';
 import { failingAdCleaner, nativeFailureMarker, withPreload } from '../../support/processes/server-preloads.ts';

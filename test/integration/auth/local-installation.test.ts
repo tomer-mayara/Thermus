@@ -8,8 +8,8 @@ import { DataDirectoryInUseError, lockDataDirectory } from '../../../src/auth/lo
 import { LocalInstallationError } from '../../../src/auth/local-auth/better-auth/local-installation.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { publicBaseUrl } from '../../support/in-process/better-auth-local.ts';
-import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
-import { hostedStartupLine, workOSSettings } from '../../support/hosted-placeholder.ts';
+import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/isolation/data-directory.ts';
+import { hostedStartupLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { WorkOSSettingsError } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { accountsOf, addAccount, passwordOf, selfHostedConfig, selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 
