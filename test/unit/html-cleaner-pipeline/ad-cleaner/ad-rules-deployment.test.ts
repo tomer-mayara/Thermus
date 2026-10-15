@@ -5,12 +5,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { repositoryRoot } from '../../../support/processes/module-paths.ts';
 
 test('a deployment without test fixtures applies supplied rules across working directories', (t) => {
-  const packageRoot = new URL(
-    import.meta.url.endsWith('.ts') ? '../../../../' : '../../../../../', import.meta.url,
-  );
-  const compiledSource = new URL('dist/src/', packageRoot);
+  const compiledSource = new URL('dist/src/', repositoryRoot);
   assert.ok(existsSync(compiledSource), 'Run pnpm build before this deployment test.');
   const directory = mkdtempSync(join(tmpdir(), 'thermus-ad-rules-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
@@ -21,7 +19,7 @@ test('a deployment without test fixtures applies supplied rules across working d
   mkdirSync(secondCwd);
   cpSync(compiledSource, join(deployment, 'src'), { recursive: true });
   writeFileSync(join(deployment, 'package.json'), '{"type":"module"}');
-  symlinkSync(fileURLToPath(new URL('node_modules/', packageRoot)),
+  symlinkSync(fileURLToPath(new URL('node_modules/', repositoryRoot)),
     join(deployment, 'node_modules'), 'dir');
   assert.equal(existsSync(join(deployment, 'test')), false);
 

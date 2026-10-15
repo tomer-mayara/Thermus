@@ -5,8 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
-const root = fileURLToPath(new URL(import.meta.url.endsWith('.ts') ? '../../../' : '../../../../', import.meta.url));
+const root = fileURLToPath(repositoryRoot);
 const script = join(root, 'docker/check-lightpanda-digest.sh');
 const runtimeGuide = readFileSync(join(root, 'docs/lightpanda-runtime.md'), 'utf8');
 const platforms = [{ architecture: 'amd64', asset: 'x86_64-linux' }, { architecture: 'arm64', asset: 'aarch64-linux' }] as const;
