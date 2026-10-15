@@ -201,8 +201,11 @@ appears in no common error. The WorkOS provider reads its own settings:
 `loadWorkOSSettings(environment, publicBaseUrl)` in
 `src/auth/hosted-auth/workos/workos-settings.ts` reads `WORKOS_API_KEY` (it
 starts with `sk_`), `WORKOS_CLIENT_ID` (it starts with `client_`),
-`WORKOS_AUTHKIT_ISSUER`, `WORKOS_REDIRECT_URI`, and `WORKOS_COOKIE_PASSWORD`.
-It keeps the issuer exactly as written for the exact token issuer check, and
+`WORKOS_AUTHKIT_ISSUER`, `WORKOS_REDIRECT_URI`, `WORKOS_COOKIE_PASSWORD`, and
+`WORKOS_MFA_POLICY`. The MFA policy defaults to `optional` when omitted. Only
+the exact values `optional` and `required` are valid; empty, case-changed, or
+whitespace-padded values are refused. It is a provider-specific contract, not
+a common deployment setting. It keeps the issuer exactly as written for the exact token issuer check, and
 it requires the issuer to be an https origin without a path or a final slash.
 It requires the redirect URI to be an https URL on the public origin, inside
 the public base path, without a query or a fragment, and written as the URL
@@ -349,7 +352,10 @@ and one AuthKit key set, and writes the operator line below:
   start makes no network call.
 
 `composeWorkOSApplication(config, connection, parts)` makes the parts. Since
-2026-10-15, its third argument is the parts record `{ logger, buildServer? }`
+2026-10-15, its third argument is the parts record with `logger`, optional
+`buildServer`, optional slice `onboarding`, and an optional
+`mfaEvidence: "unproven"` override. The override can discard evidence; only
+`connection.settings.mfaPolicy` can select the explicit Required contract
 (decision D6 of the
 [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)).
 `openWorkOSApplication()` composes with no `buildServer`, so the hosted edition
@@ -897,8 +903,17 @@ timeouts. A failed lookup fails closed. This keeps revocation of membership
 separate from token expiration. The resulting hosted availability depends on
 WorkOS, which is acceptable for this initial design.
 
-Enable only the intended hosted password/social login methods, configure
-required AuthKit MFA, and verify the completed challenge in the real flow.
+Enable only the intended hosted password/social login methods. The default
+`WORKOS_MFA_POLICY=optional` gives no MFA evidence for any sign-in method.
+Product and MCP access remain available with the current User grant;
+administration pages and changes remain refused without evidence. Optional
+does not add a step-up UI and does not establish actual MFA completion.
+
+Use `WORKOS_MFA_POLICY=required` only as an explicit contract with a WorkOS
+environment that requires MFA for password sign-ins. Confirm the configuration
+and completed challenge through the Required live profile before depending
+on Password as evidence. Enum validation does not read or change provider MFA
+settings at runtime. A Password method alone is not MFA evidence in Optional.
 Do not enable future SSO methods accidentally. AuthKit's MFA requirement does
 not apply to SSO users; that milestone must define its own assurance policy.
 Enrollment alone does not prove that authentication completed MFA.
@@ -909,6 +924,13 @@ consent revocation immediately invalidate every issued token. Record and test
 the actual maximum token lifetime, refresh behavior, and revocation behavior
 before production release. The accepted delay is bounded by verified expiration.
 Do not use Connect `sid` to query an unrelated browser session.
+
+The work slice always selects unproven MFA evidence, even if its WorkOS
+settings say Required. Normal hosted composition selects the Required
+inference only from the explicit provider policy. Optional and the slice mask
+prior cookie evidence before reads, refreshes, or organization switches and
+write replacement cookies without it. This change does not weaken the
+administration checks.
 
 ### Hosted role mapping
 
@@ -1051,7 +1073,7 @@ staging environment already has:
 - Onboarding: a signed-in user without an active membership gets no tenant
   access.
 
-The provider proofs ran on 2026-10-14 (runs r4 and r5) through
+The historical Required-profile provider proofs ran on 2026-10-14 (runs r4 and r5) through
 `npm run test:hosted-live` and the staging launcher. Playwright 1.64.0 with
 headless Chromium completes the hosted AuthKit pages: the email, the password,
 the TOTP enrollment or verification, the organization choice, and the Connect
@@ -1068,7 +1090,7 @@ Thermus server are separate.
 | Dashboard configuration | Run r5, after the owner saved the three dashboard settings: the sign-in page offers only "Continue with email" and no social provider; the default Sign-out URI is `https://localhost:46443/`; the Initiate login URI is `https://localhost:46443/login`. Run r4 found Google, Microsoft, GitHub, and Apple on, no Sign-out URI (the logout landed on `error.workos.com/user_management/app-homepage-url-not-found`), and no Initiate login URI. The WorkOS API has no endpoint for these three settings. On 2026-10-14, the owner turned Google sign-in on in Staging for the auth WorkOS MCP URL fetch work slice (decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The sign-in uses the built-in Google credentials of WorkOS. The WorkOS connector made the change with `updateAuthkitSettings`. The sign-in page now offers "Continue with email" and "Continue with Google". The configuration proof now requires exactly Google as the only social provider. | The owner keeps them in the WorkOS dashboard. The WorkOS connector can also change the social providers. The proofs read them back through the sign-in page and the redirects of the logout and of a direct AuthKit visit. The hosted role of the MFA evidence does not change: a Google sign-in gives none, as the row "Browser sign-in and MFA" gives, so its session cannot open the administration pages. |
 | AuthKit metadata | Exact issuer; `jwks_uri` `<issuer>/oauth2/jwks`; grants `authorization_code`, `refresh_token`, and the device code; client authentication `none`, `client_secret_post`, and `client_secret_basic`; scopes `openid`, `profile`, `email`, and `offline_access`. Until 2026-10-14, the metadata had no `registration_endpoint` and no client ID metadata document support. Since 2026-10-14, Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD) are on in Staging, for the auth WorkOS MCP URL fetch work slice (decision D1): the metadata has the `registration_endpoint` `<issuer>/oauth2/register` and `client_id_metadata_document_supported: true`, and the proof asserts both. | An MCP client such as Claude Code registers itself at AuthKit, with DCR or a client ID metadata document. A Connect application also works: the live proofs make a third-party OAuth application with PKCE through the API. |
 | Key sets | The AuthKit key set and the browser-session key set each hold the same one RS256 key. | The signature of a browser token verifies with the AuthKit key set. The MCP verifier must refuse it by its issuer and its audience. WorkOS did not rotate a key during the proofs; the [offline proofs](#pinned-workos-sdk-proof) show the jose rotation behavior. |
-| Browser sign-in and MFA | A new user: email, password, `/mfa/enrollment` (a TOTP enrollment with a code), then the callback. A later sign-in: `/mfa/verification` instead. A user with two memberships also gets `/organization-selection`. No callback comes before the TOTP step. The code exchange gives `authenticationMethod` `Password`. | Required MFA completes in the real flow. WorkOS gives no MFA claim, so a session counts as MFA-completed only when its sign-in method is `Password` in this environment, which requires MFA for password sign-ins. Any other method gives no MFA evidence. |
+| Browser sign-in and MFA | A new user: email, password, `/mfa/enrollment` (a TOTP enrollment with a code), then the callback. A later sign-in: `/mfa/verification` instead. A user with two memberships also gets `/organization-selection`. No callback comes before the TOTP step. The code exchange gives `authenticationMethod` `Password`. | This Required-profile flow supports Password inference only with explicit `WORKOS_MFA_POLICY=required` and a matching provider requirement. The default Optional profile treats every method as unproven, even if a user enrolled a factor. Any other method gives no MFA evidence. |
 | Browser access token | RS256; `iss` `https://api.workos.com/user_management/<client ID>`; `sid` `session_…`; `client_id` the environment client; no `aud`; 300-second lifetime; `org_id`, `role`, `roles`, and `permissions` only with an organization. A user without a membership gets no `org_id`. The sealed session has 1,980 characters. | The session check sets the browser issuer. Access never comes from the token claims; the access resolver reads the memberships for each request. |
 | Organization switch | A refresh with another organization ID gives that `org_id` in the same session (same `sid`). A refresh for an organization without a membership throws `OauthException` 400 `organization_membership_not_found`, and the session still refreshes after it. | `selectOrganization()` is a refresh with the organization. That refusal changes no cookie. |
 | Browser refresh | WorkOS did not rotate the browser refresh token. A replay at once gave the same new refresh token, and the old token still worked after 31 seconds. | Each refresh stores the new seal anyway, so a later rotation also works. |
@@ -1349,6 +1371,20 @@ proofs of AUTH-08W resolved them and found the other points.
     only existing users with a password and a verified email, because an
     invitation to a new address needs an email verification code.
 
+The hosted live command now has two explicit MFA profiles. With
+`WORKOS_MFA_POLICY=optional` (or omitted), its provider preflight requires MFA
+enabled but not required, verifies normal browser/Connect behavior, and proves
+administration refusal. With `WORKOS_MFA_POLICY=required`, preflight requires
+provider MFA Required and the profile retains the positive administration
+proofs. Operator/API administration contract proofs run in both profiles and
+are separate from browser-session authority. Both profiles register 77 cases
+and use the same complete command. A mismatched provider setting
+fails before login; a pass of one profile is not a pass of the other. The
+[test gate policy](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+gives the commands, and the
+[slice validation record](../implementation/auth-workos-mcp-url-fetch-validation.md)
+separates historical results from the pending revised candidate checks.
+
 ## Hosted browser sessions
 
 `WorkOSBrowserSession` owns sign-in redirects, callback verification, session
@@ -1407,18 +1443,26 @@ callback. The cookie value is a sealed envelope of the server, in
 additional data. The envelope holds the sealed WorkOS session, the CSRF token
 of the session, and the MFA evidence of the sign-in. A refresh replaces only
 the WorkOS session, so the CSRF token and the MFA evidence stay the same for
-the whole session, also after a refresh or an organization switch. A value
-that does not open, for example after a change of the cookie password, is no
+the whole session in the Required profile, also after a refresh or an
+organization switch. Optional and the slice mask any prior true value and
+write replacement cookies with false. A value that does not open, for example after a change of the cookie password, is no
 session.
 
 - The CSRF token is a random secret of 32 bytes that the sign-in makes. The
   account forms and the sign-out form send it back.
-- The MFA evidence is true only when the code exchange of the sign-in reported
-  the method `Password`. The live proofs show that the WorkOS environment
-  requires MFA for each password sign-in before the callback. WorkOS gives no
-  MFA claim, so each other method, such as social sign-in, SSO, a passkey, or
-  impersonation, gives no MFA evidence. The environment must keep MFA
-  required; the live gate checks it.
+- `WORKOS_MFA_POLICY=optional` is the default. Every method has false MFA
+  evidence, including Password. Prior cookie evidence is ignored on session
+  reads and stays false in replacement cookies after refresh or selection.
+  The application adds no step-up UI and does not claim actual MFA completion.
+- With the explicit `required` policy, the code exchange method `Password`
+  can supply evidence only under the provider contract that WorkOS requires
+  MFA before that callback. The Required live profile checks the provider
+  setting and the completed password challenge. Google, SSO, passkeys, and
+  other methods give no such evidence. Runtime enum validation does not
+  verify provider configuration by itself.
+- The work slice always uses unproven evidence, even with Required settings.
+  Product access and MCP still need User, while members, invitations, billing,
+  and administration writes remain refused without MFA evidence.
 - `authenticate(cookieHeader)` checks the WorkOS session with the browser key
   set and the browser issuer. An expired access token, or a token with a new
   key, gives one refresh. A successful refresh sends one new session cookie.

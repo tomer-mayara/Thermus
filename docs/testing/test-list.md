@@ -132,13 +132,28 @@ controlled promise. Real listener/provider order is integration coverage below.
 
 **Stop-signal wait** (`test/unit/stop-signal.test.ts`)
 
-Since 2026-10-15, `src/index.ts` exports `stopSignal()`. A composition with more than one listener, such as the auth WorkOS MCP URL fetch work slice, cannot use `serveApplication()`. With `stopSignal()`, it waits for `SIGINT` or `SIGTERM` in the same way. An `EventEmitter` is the double for the process signals. The integration test of the stop signals, `test/integration/server-stop-signals.test.ts`, does not change.
+Since 2026-10-15, `src/index.ts` exports `stopSignal()`. An `EventEmitter` is the double for process signals. This helper removes its handlers on the first signal. The auth WorkOS MCP URL fetch slice now uses its own stop wait below so repeated forwarded signals cannot interrupt its later cleanup. The production entry and `test/integration/server-stop-signals.test.ts` keep their existing contract.
 
 [V] Given a double for the process signals, the wait registers `SIGINT` and `SIGTERM`; when it gets `SIGTERM`, it gives `SIGTERM` and removes both listeners
 [V] Given a wait that is disposed before any signal, a later signal finds no listener, and the wait gives nothing
 
 ```sh
 npm run build && node --test dist/test/unit/stop-signal.test.js
+```
+
+**Work slice stop wait** (`test/unit/work-slice/stop-signal.test.ts`)
+
+Three source cases passed in the reviewed 20-case shutdown focus. An
+`EventEmitter` replaces process signals at the public helper interface. The
+slice installs `test/support/work-slice/stop-signal.ts` before asynchronous
+startup and keeps its signal handlers until the site closes and logging flushes.
+
+[V] Captures a startup signal and retains both handlers until disposal
+[V] Keeps the first signal when repeated SIGINT and SIGTERM arrive during cleanup
+[V] Disposes twice after failed startup without removing another owner's handler or resolving a stop result
+
+```sh
+npm run build && node --test dist/test/unit/work-slice/stop-signal.test.js
 ```
 
 **Better Auth runtime lifecycle** (`test/unit/auth-better-auth/better-auth-runtime.test.ts`)
@@ -522,13 +537,26 @@ A narrow double of the SDK part (`test/unit/auth-workos/fixtures/workos-session-
 [V] A terminal refresh refusal signs out with the cleared cookie; a retryable refresh failure or a thrown SDK error rejects, so a recoverable session is not erased
 [V] An organization switch refreshes the newest seal into the organization and sends one new cookie; a 4xx refusal changes no cookie; a refresh into another organization is refused but keeps the new seal; an ended session signs out; an outage rejects
 [V] A sign-in start makes the AuthKit URL with PKCE for the redirect URI and the client ID, and a sign-in cookie with the state, the verifier, the return path, and a 10-minute expiry
-[V] A callback with the same state exchanges the code with the verifier, clears the sign-in cookie, and sets a session cookie with a new CSRF token; only a `Password` sign-in gives MFA evidence; two sign-ins get two CSRF tokens
+[V] A callback with the same state exchanges the code with the verifier, clears the sign-in cookie, and sets a session cookie with a new CSRF token; only a `Password` sign-in under explicit Required policy gives MFA evidence; two sign-ins get two CSRF tokens
 [V] A missing, unopenable, or expired sign-in cookie, an AuthKit error, a missing, empty, or repeated code or state, and another state refuse the sign-in with the cleared sign-in cookie and no exchange; a 4xx refusal of the code is `code-refused`; another exchange failure rejects
 [V] The end of a session gives the WorkOS logout URL of the `sid` in the seal, also after the access token expired, and the cleared cookie; without a usable seal, it gives only the cleared cookie; the logout route reads the CSRF token without a WorkOS call
 
+**WorkOS session MFA evidence policy** (`test/unit/auth-workos/workos-browser-session-mfa.test.ts`)
+
+These six unit cases use the session-client double to isolate the WorkOS session package. All six passed in the final candidate check.
+
+[V] The default unproven mode gives a new Password session no MFA evidence
+[V] Explicit unproven mode gives Password and Google callback cookies false evidence
+[V] Reading a prior true cookie masks its evidence and preserves identity and CSRF
+[V] Refresh and organization selection keep both session and replacement-cookie evidence false
+
+```sh
+npm run build && node --test dist/test/unit/auth-workos/workos-browser-session-mfa.test.js
+```
+
 **WorkOS callback onboarding seam** (`test/unit/auth-workos/workos-sign-in-onboarding.test.ts`)
 
-The two source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These unit specifications use the session-client double and an onboarding policy double. They keep the policy call after the trusted code exchange and before the browser cookie. They do not use real WorkOS.
+The two source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These unit specifications use the session-client double and an onboarding policy double. They keep the policy call after the trusted code exchange and before the browser cookie. They do not use real WorkOS.
 
 [V] Given an opt-in policy and a trusted Google exchange, the policy receives the exchange before its returned seal enters the cookie, and the cookie has no MFA evidence
 [V] Given an exchange without a sealed session, sign-in fails before onboarding can create a grant
@@ -1002,11 +1030,18 @@ The fixture registry, the operator runbook driver, and the operator setup proofs
 
 **Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
 
-`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, and the local HTTPS site read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts`, `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`, and the three container scripts `edgeScript`, `pageScript`, and `probeScript` of `test/support/container/`.
+`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, and the local HTTPS site read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts`, `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`, and the three container scripts `edgeScript`, `pageScript`, and `probeScript` of `test/support/container/`.
 
-[V] Given a build, each of the program entry, the network blocker, the SQL tracer, the foreign origin probe, the failing ad cleaner preload, the trusted ad rules file, and the three container scripts names a file that exists
+[V] Given a build, each of the program entry, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the failing ad cleaner preload, the trusted ad rules file, and the three container scripts names a file that exists
 [V] Given the repository, the portal build is the `dist/` folder of the portal source `src/user-portal/`, and that source folder exists; the build itself exists only after `npm run build:user-portal`, which `npm run check` runs after the unit tests
 [V] Given a build, the repository root is the folder of `package.json`
+
+The shutdown probe adds one generated file-existence case. The matrix now
+has ten file paths and two structural cases, or twelve tests. The new path
+case and both real launcher-chain cases passed from source: 3/3 in 1 suite,
+with zero failures, cancellations, skips, or todo cases. Log:
+`/tmp/thermus-pr108-path-refactor-focused.log`. The final complete check, integration, acceptance, and container commands
+also passed after this test-only path correction.
 
 ```sh
 npm run build && node --test dist/test/unit/test-support-paths.test.js
@@ -1082,6 +1117,22 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Registers stop handlers before the listening log and removes them after SIGINT or SIGTERM
 [V] Starts MCP cleanup before real listener drain, refuses new connections, and keeps the real provider lock until both finish
 [V] Releases the provider lock and listener after startup logging fails, removes signal listeners, and retains a simultaneous MCP cleanup failure
+
+**Work slice signals through the real launcher chain** (`test/integration/work-slice/shutdown-signals.test.ts`)
+
+Two source cases passed in the reviewed 20-case shutdown focus. The child
+script `test/support/processes/work-slice-shutdown-probe.ts` runs real `pnpm`
+and `tsx` with an outer signal forwarder and the slice stop helper. It uses
+no WorkOS, renderer, or Axiom connection. This collaboration across the real
+child-process/launcher boundary is integration coverage. The source pass does
+not prove real Axiom delivery.
+
+[V] SIGINT sent to the process group and forwarded again during asynchronous cleanup preserves the first signal, reaches the flush marker, and exits the whole chain with 0
+[V] The same process-chain behavior holds for SIGTERM
+
+```sh
+npm run build && node --test dist/test/integration/work-slice/shutdown-signals.test.js
+```
 
 **MCP SDK HTTP contract** (`test/integration/mcp/sdk-http.test.ts`)
 
@@ -1447,9 +1498,20 @@ Run only these tests:
 npm run build && node --test dist/test/integration/server-stop-signals.test.js
 ```
 
+**WorkOS MFA evidence with the pinned SDK** (`test/integration/auth/workos-browser-session-mfa.test.ts`)
+
+These two integration cases connect the real browser session to the pinned SDK and a local WorkOS API fake. They establish the downgrade of existing cookie evidence, not actual MFA completion. Both cases passed in the final complete integration command.
+
+[V] Reading a real SDK session cookie with prior MFA evidence masks it in unproven mode, for both a current and an expired access token
+[V] Organization selection preserves identity and emits only replacement cookies without MFA evidence
+
+```sh
+npm run build && node --test dist/test/integration/auth/workos-browser-session-mfa.test.js
+```
+
 **Slice Google onboarding with WorkOS and organization services** (`test/integration/auth/workos-google-onboarding.test.ts`)
 
-The 34 source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These integration specifications connect the opt-in policy to the real organization directory, change recording, and pinned WorkOS SDK against a local API fake. They establish application collaboration, not real Google or WorkOS service behavior. The policy remains absent from normal hosted composition.
+The 34 source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These integration specifications connect the opt-in policy to the real organization directory, change recording, and pinned WorkOS SDK against a local API fake. They establish application collaboration, not real Google or WorkOS service behavior. The policy remains absent from normal hosted composition.
 
 [V] Concurrent eligible callbacks create one explicit User membership, select its organization in each session, and update seats once; repeated callbacks do not rewrite roles
 [V] Existing active non-User, pending, and inactive memberships retain roles and status without a new organization session
@@ -1467,7 +1529,7 @@ npm run build && node --test dist/test/integration/auth/workos-google-onboarding
 
 **Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
 
-The eleven source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These eleven integration cases start `LocalHttpsSite` with the real HTTP server. The failed-start and certificate cases stay in the entry file. The sibling test-case modules `hosted-live-site/mcp.ts` and `hosted-live-site/cancellation.ts` add the MCP and lifecycle cases. Their fixture data is in `test/integration/auth/fixtures/https-site-fixtures.ts`; `test/support/hosted-live/https-client.ts` is the HTTPS protocol driver. The MCP cases connect the real hosted composition and fetch server to the pinned SDK against a local WorkOS fake, with a fetch-operation double. They prove HTTP and application collaboration, not real Google or renderer behavior. The complete-site cases listen on port 46443, so the hosted live gate and the manual slice must be stopped first.
+The eleven source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These eleven integration cases start `LocalHttpsSite` with the real HTTP server. The failed-start and certificate cases stay in the entry file. The sibling test-case modules `hosted-live-site/mcp.ts` and `hosted-live-site/cancellation.ts` add the MCP and lifecycle cases. Their fixture data is in `test/integration/auth/fixtures/https-site-fixtures.ts`; `test/support/hosted-live/https-client.ts` is the HTTPS protocol driver. The MCP cases connect the real hosted composition and fetch server to the pinned SDK against a local WorkOS fake, with a fetch-operation double. They prove HTTP and application collaboration, not real Google or renderer behavior. The complete-site cases listen on port 46443, so the hosted live gate and the manual slice must be stopped first.
 
 [V] Given a missing portal build, start rejects with a setup message and file-system cause and leaves no listener
 [V] Given no OpenSSL, start rejects with the spawn error, closes the default application, and leaves no listener
@@ -1525,7 +1587,7 @@ npm run build && node --test dist/test/interface/auth/better-auth.test.js
 
 **WorkOS SDK** (`test/interface/auth/workos.test.ts`)
 
-The 38 source and compiled cases passed on 2026-10-15 after the explicit User-create proof was added; the complete-candidate gates remain required. These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
+The 38 source and compiled cases passed on 2026-10-15 after the explicit User-create proof was added; the final complete-candidate gates also passed. These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
 
 [V] Gives an AuthKit sign-in URL with the client ID, the exact redirect URI, `response_type=code`, `provider=authkit`, an S256 challenge, and a fresh state and verifier for each call; an organization ID adds `organization_id`
 [V] Exchanges a code with the verifier and the API key as `client_secret`, and returns the user, both tokens, and an iron seal that hides the tokens; a refused code throws `OauthException` with `invalid_grant`
@@ -1777,7 +1839,7 @@ npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch
 
 **Work slice: auth WorkOS MCP URL fetch** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts`)
 
-`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `observeFetches()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSFake` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run must separately show Google sign-in, Claude Code registration and browser consent, the real renderer, and Axiom delivery. That live proof remains pending. The file has five cases: the first case runs in each protocol era.
+`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `observeFetches()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSFake` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run must separately show Google sign-in, Claude Code registration and browser consent, the real renderer, and Axiom delivery. The separate real Google/client/Axiom manual walk passed; the validation record states its evidence limits. The file has five cases: the first case runs in each protocol era.
 
 [V] Given the slice application, Ada with the role `user` in Acme, and a renderer double that serves `https://news.example/story`, when Ada signs in with Google through the server, then her session is signed in to Acme with `mfaCompleted: false`, and her portal access names Acme and the role `user`; when an MCP client in each protocol era with her Connect token for Acme lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the rules remove, the log has the started line, the completed line, and one completion record with the authority `workos:client_test`, the subject `user_01ADA`, the tenant `workos:client_test:org_01ACME`, and the status `success`, and `close()` stops the application
 [V] Given Dee with a non-`thermus.ai` Google address and no membership, sign-in creates no automatic membership, portal access is refused, and the organization page gives onboarding guidance; her Connect token for Acme gets 403 `access_denied` without a renderer or fetch line; after an external change gives her a User membership, the next MCP request returns Markdown and records her WorkOS identity
@@ -1790,9 +1852,31 @@ The manual entry point `auth-workos-mcp-url-fetch.ts` next to this file is not a
 npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.js
 ```
 
+**Slice sessions always have unproven MFA** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mfa.test.ts`)
+
+These two offline acceptance cases exercise the slice composition with the real HTTP-facing application and a WorkOS API fake. The slice remains unproven even when provider settings explicitly select Required. These cases passed in the final complete acceptance command.
+
+[V] Password and Google sign-ins with User, Admin, and Super Admin keep product access and false session MFA evidence
+[V] Members, invitations, billing, and a grant POST are refused without changing memberships
+
+```sh
+npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mfa.test.js
+```
+
+**Hosted WorkOS Optional and Required MFA contracts** (`test/acceptance/auth/hosted-workos-mfa-policy.test.ts`)
+
+These three offline acceptance cases verify the provider setting through normal hosted composition. The Optional behavior is the default; only explicit Required settings can use the password-MFA contract. These cases passed in the final complete acceptance command.
+
+[V] Omitted and explicit Optional policy give Password sessions no MFA evidence and refuse the members page
+[V] Explicit Required policy preserves positive administration behavior for the password-MFA contract
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-workos-mfa-policy.test.js
+```
+
 **Automatic slice Google onboarding** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts`)
 
-The three source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These three offline acceptance specifications use the real hosted composition; the slice case starts its HTTP server with a WorkOS API fake and renderer double. A trusted Google result enters through the browser callback before a separately minted Connect token calls MCP. It does not complete the real client OAuth flow.
+The three source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These three offline acceptance specifications use the real hosted composition; the slice case starts its HTTP server with a WorkOS API fake and renderer double. A trusted Google result enters through the browser callback before a separately minted Connect token calls MCP. It does not complete the real client OAuth flow.
 
 [V] Given a new verified `thermus.ai` Google user without a membership, the callback grants explicit User access and selects the slice organization; `/session` has that organization without MFA evidence, portal access succeeds, and a separate organization Connect token returns Markdown; a Connect token without an organization is refused
 [V] Normal hosted composition without a policy signs in the same eligible user without creating a membership or granting portal access
@@ -2196,7 +2280,20 @@ npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
 
 **Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
 
-These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. On 2026-10-15, the auth WorkOS MCP URL fetch work slice changed two AUTH-06 provider proofs for decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md). Now the sign-in page must offer Google as its only social provider. The AuthKit metadata must name the registration endpoint and support client ID metadata documents. The complete candidate gate passed both changed proofs on 2026-10-15: exit 0, 77/77 tests in 17 suites, with zero failures, cancellations, skips, and todo cases. The [slice validation record](../implementation/auth-workos-mcp-url-fetch-validation.md) gives the result; the fresh-account Google/client/Axiom manual walk remains pending. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. On 2026-10-15, the auth WorkOS MCP URL fetch work slice changed two AUTH-06 provider proofs for decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md). Now the sign-in page must offer Google as its only social provider. The AuthKit metadata must name the registration endpoint and support client ID metadata documents. The historical Required-profile candidate passed both changed proofs on 2026-10-15: exit 0, 77/77 tests in 17 suites, with zero failures, cancellations, skips, and todo cases. The [slice validation record](../implementation/auth-workos-mcp-url-fetch-validation.md) gives the result; the resumed fresh-account Google/client/Axiom manual walk also passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+
+The MFA-policy revision has two 77-case profiles under the same complete command. Optional is selected by omitted or `optional` `WORKOS_MFA_POLICY`; explicit `required` selects Required. The entries marked `[V]` above preserve historical Required-profile evidence. Both revised profiles passed on 2026-10-15: Optional 77/77 in 16 suites and Required 77/77 in 17 suites, each exit 0 with zero failures, cancellations, skips, or todo cases. Shared Staging Optional was restored and verified.
+
+[V] Provider preflight requires `mfaEnabled: true` and `mfaRequired` matching the selected profile before live tests or login; a mismatch fails the run
+[V] Optional keeps normal browser, Connect, refresh, revocation, and organization flows with no application MFA evidence, including refreshed and switched sessions
+[V] Optional replaces eight positive administration cases with refusal and invitation-acceptance counterparts; administration GETs and writes get 403 without effects
+[V] Required retains the eight positive administration cases under explicit runtime Required and provider Required settings
+[V] Both profiles retain operator/API administration contract proofs, which do not authorize Optional browser sessions
+
+```sh
+node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+WORKOS_MFA_POLICY=required node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+```
 
 AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
 
@@ -2205,11 +2302,11 @@ AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only c
 [V] WorkOS accepts the staging API key for a read of organizations
 [V] The saved redirect URI is exactly `https://localhost:46443/callback`, the default; no CORS origin is saved; the MCP resource indicator `https://localhost:46443/mcp` is saved
 [V] The environment roles have exactly the permissions of the hosted role mapping, and no other role has an application permission
-[V] The authentication settings require MFA, allow password sign-in, and refuse passkeys
+[V] Provider preflight checks MFA against the selected Optional or Required profile, allows password sign-in, and refuses passkeys
 [V] The hosted sign-in page offers email sign-in and Google as its only social provider (changed for decision D1 and passed in the complete gate on 2026-10-15)
-[V] A new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
+[V] In the Required profile, a new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
 [V] The browser access token is an RS256 token of the environment client with a `session_` sid, no audience, no organization, and a 300-second lifetime; the sealed session is shorter than 3,800 characters
-[V] A later sign-in asks for the TOTP code, not a new enrollment
+[V] In the Required profile, a later sign-in asks for the TOTP code, not a new enrollment
 [V] A user with two memberships chooses the organization at AuthKit; the token has its `org_id`, both roles, and their combined permissions
 [V] A refresh switches the organization in the same session; an organization without a membership gives `organization_membership_not_found`, and the session still refreshes
 [V] The browser refresh token is not rotated in staging; a replay works at once and after 31 seconds

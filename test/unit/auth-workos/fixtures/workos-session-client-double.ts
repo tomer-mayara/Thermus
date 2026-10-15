@@ -119,7 +119,7 @@ export const cookieHeader = sessionCookieHeader(envelope);
 export const sealOptions = { sessionData: 'seal-1', cookiePassword: settings.cookiePassword };
 
 export function browserSession(client: WorkOSSessionClientDouble, clock?: () => number): WorkOSBrowserSession {
-  return new WorkOSBrowserSession({ workos: client, settings, authority, ...(clock === undefined ? {} : { clock }) });
+  return new WorkOSBrowserSession({ workos: client, settings, authority, mfaEvidence: 'password-mfa-required', ...(clock === undefined ? {} : { clock }) });
 }
 
 export function signedIn(state: WorkOSSessionState): WorkOSSignedInSession {

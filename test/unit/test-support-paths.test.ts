@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import { probeScript } from '../support/container/container-gate.ts';
 import { edgeScript, pageScript } from '../support/container/container-site.ts';
-import { foreignOriginProbe, networkBlocker, portalBuild, programEntry, repositoryRoot, sqlTracer } from '../support/processes/module-paths.ts';
+import { foreignOriginProbe, networkBlocker, portalBuild, programEntry, repositoryRoot, sqlTracer, workSliceShutdownProbe } from '../support/processes/module-paths.ts';
 import { failingAdCleaner } from '../support/processes/server-preloads.ts';
 
 // The support code computes these paths at run time, so the compiler cannot check them. A moved module, preload,
@@ -16,6 +16,7 @@ const files = {
   networkBlocker: fileURLToPath(networkBlocker),
   sqlTracer: fileURLToPath(sqlTracer),
   foreignOriginProbe,
+  workSliceShutdownProbe,
   failingAdCleaner: fileURLToPath(failingAdCleaner),
   trustedAdRulesFile,
   edgeScript,

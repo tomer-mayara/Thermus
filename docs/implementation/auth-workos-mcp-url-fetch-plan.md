@@ -1,10 +1,11 @@
 # Auth WorkOS MCP URL fetch: work slice plan
 
-Status: implementation and the offline candidate checks are complete on
-2026-10-15. The complete hosted live gate passed 77/77. The fresh Google account
-and client browser-first proof remains pending, and PR #108 stays in Draft.
-This plan supersedes the manual User-grant step of the first version. The
-owner approved automatic access for eligible Google users.
+Status: validation complete; prepared for owner review. The manual
+Google/Connect/fetch/Axiom walk, corrected shutdown delivery, both complete
+MFA profiles, and all requested final local gates passed. Shared Staging
+Optional was restored and verified. The
+[validation record](auth-workos-mcp-url-fetch-validation.md) gives the exact
+scope and results. This is not merge approval.
 
 Slice folder: `test/acceptance/work-slice/auth-workos-mcp-url-fetch/`.
 Entry point: `auth-workos-mcp-url-fetch.ts` in that folder.
@@ -35,8 +36,11 @@ enrolls eligible users.
 The slice is an opt-in development composition. The normal hosted application
 uses no enrollment policy, grants no automatic User role, and keeps the
 WorkOS `member` default role without product access. Production onboarding is
-not enabled. The slice sets neither an organization domain nor a default User
-role in WorkOS.
+not enabled. The slice makes no change to existing organization names,
+domains, SAML connections, or default roles in WorkOS. It requires no verified
+organization domain or SAML connection. Google OAuth must be enabled; if
+domain routing or JIT is configured, disable it for this slice so that the
+callback policy governs access.
 
 Eligibility comes only from the trusted result of the WorkOS code exchange:
 
@@ -67,25 +71,32 @@ new authorized browser session; the membership may already exist. A read-back
 of an active User can reconcile a lost response. Inspect unresolved WorkOS
 state before another attempt.
 
-A Google sign-in gives no MFA evidence. Portal product access and MCP need no
-MFA evidence; the members and invitations pages still refuse that session.
-Every protected MCP call reads the current grant from WorkOS. Enrollment does
-not replace token verification or access resolution.
+`WORKOS_MFA_POLICY` accepts `optional` (the default) or `required`. Optional
+returns `mfaCompleted: false` for every method and masks prior cookie evidence
+on reads, refreshes, and organization changes. Product and MCP access still
+use the current User grant. Administration pages and writes stay refused; no
+step-up UI or new MFA proof is supplied.
+
+Required is an explicit provider contract: use it only when the WorkOS
+environment requires MFA for password sign-in and the Required live profile
+confirms that flow. A Password method alone is never evidence in Optional.
+The slice always uses unproven evidence, even when Required is configured.
+Every protected MCP call still reads the current grant from WorkOS.
 
 ## Decisions
 
 | ID | Decision |
 | --- | --- |
-| D1 | Reuse WorkOS Staging, `environment_01M4VDKATD5PXZT4H01EHCMR2A`. Google, DCR, and CIMD are on. Keep password MFA required. Update the two live configuration proofs and rerun the complete live gate. |
+| D1 | Use shared Staging with provider MFA Optional, Google OAuth, DCR, and CIMD enabled, and domain SSO enforcement, capture, and JIT disabled for this slice. Runtime Optional is the default. |
 | D2 | Use `https://localhost:46443/` with the registered callback, sign-out, login, and MCP resource URIs. Keep a local TLS certificate so the browser and client trust it once. |
-| D3 | Keep the organization "Thermus work slice", external ID `thermus-work-slice`, with no domain. Require its ID as explicit slice configuration. |
+| D3 | Require the target organization ID. The staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, external ID `thermus-work-slice`, currently named "Thermus AI". A domain or SAML connection is not required; preserve existing resources and disable routing/JIT for the slice. |
 | D4 | Connect Claude Code through browser OAuth with the scopes `openid profile email offline_access`. Verify the resulting Connect token at the MCP boundary. Never print the token or keys. |
 | D5 | Automatically enroll only eligible verified Google users of `thermus.ai` whose target membership is absent, with the explicit role `user`. Select the target in their browser session. Preserve existing roles and status. This replaces the original manual User grant. |
 | D6 | Reuse `openWorkOSConnection()` and `composeWorkOSApplication()` and an optional onboarding seam. The normal hosted composition supplies no policy. The slice supplies the policy and fetch server. |
 | D7 | Reuse `LocalHttpsSite` with the slice application, certificate, and logger. Prove forwarding, disconnect cancellation, and shutdown with active work. |
 | D8 | Use the existing Axiom test logging and fetch lines. A completion record carries the authority, subject, and tenant; no credential appears in logs. |
 | D9 | Use offline BDD acceptance scenarios for application behavior and focused tests for the enrollment boundary. Complete the real browser-first walk separately and record safe results. |
-| D10 | Keep Google sessions without MFA evidence. Do not weaken administration requirements. |
+| D10 | Keep every slice session without MFA evidence, including Password sign-ins and previously issued cookie evidence. Product/MCP access remains available with User; administration pages and writes stay refused. No step-up UI is added. |
 
 ## Launch and settings
 
@@ -134,13 +145,13 @@ integration test. Do not stop an unrelated listener to make a test pass.
 
 ## Live proof
 
-Keep the PR in Draft until all of these checks have recorded results on the
-final candidate. A configuration read-back is a prerequisite, not proof of the
+The completed results for these checks are in the validation record. A configuration read-back is a prerequisite, not proof of the
 flow.
 
 1. Start the slice and trust its TLS certificate. Open the portal first and
-   authenticate a verified `@thermus.ai` Google user through AuthKit. Observe
-   any Google/MFA challenge without inferring MFA evidence from it.
+   authenticate a verified `@thermus.ai` Google user through AuthKit with
+   provider MFA Optional. Complete the callback and check that the session
+   has no MFA evidence.
 2. Check the configured organization's User membership and selected browser
    session. Check `/session`, the visible portal, product access, and the
    organization page. No manual User grant is part of this walk. An existing
@@ -156,12 +167,22 @@ flow.
    for the same call.
 5. Verify a wrong Bearer token gets `401` with the protected-resource metadata
    challenge and no fetch. Remove only User from the current membership; the
-   same Connect token must get `403 access_denied` with no fetch. Sign in with
+   next client operation must get `access_denied` with no fetch, including
+   when that client refreshes before the operation. Sign in with
    Google again and verify the removed role is not restored. Restore the
-   intended grant after the proof.
-6. Verify Connect renewal, then revoke the user's authorized application.
-   Observe refusal after token expiry and failed refresh. Record safe results
-   without keys, tokens, cookies, codes, or complete authentication URLs.
+   intended grant after the proof. Separately require the automated
+   [Required-profile selective-revocation case](../../test/acceptance/auth/hosted-live/administration-server.ts)
+   to reuse the exact issued JWT across role changes. Record that proof only
+   after its full profile passes; both complete MFA profiles remain required.
+6. Verify Connect renewal and a successful fetch after User is restored,
+   then revoke only that user's authorized application. Claude proactively
+   refreshes before each operation in this walk, so revoked consent can fail
+   before an issued JWT expires. The automated live proofs establish the JWT
+   lifetime of up to 300 seconds; an immediate client refresh refusal does
+   not prove immediate JWT invalidation. Wait past the last known expiry,
+   retry the client, and record the renewal refusal. Do not claim identical
+   token bytes in the earlier role-removal check. Keep keys, tokens, cookies,
+   codes, and complete authentication URLs out of the record.
 7. Stop with Ctrl+C. Check clean shutdown and log flush. Remove the client
    entry. Record any live blocker explicitly; never call an incomplete walk
    a pass.
@@ -193,10 +214,11 @@ Record exit status, tests, passes, failures, cancellations, skips, and todo
 counts. A skipped or unrun test is not a pass. After Ready, every Actions job
 started for the final head must pass. A fix returns the PR to Draft first.
 
-## Recorded evidence and remaining work
+## Recorded evidence
 
 The [validation record](auth-workos-mcp-url-fetch-validation.md) gives the
-completed commands, exact counts, retained habit-hooks findings, and remaining
-live evidence. Earlier startup smoke checks and configuration reads do not
-replace the real Google, Connect, HTTPS fetch, and Axiom proof. PR #108 stays
-in Draft until that walk and the complete required gates pass.
+completed commands, exact counts, retained habit-hooks findings, the provider
+configuration read-backs, and completed manual live evidence. The real Google,
+Connect, HTTPS fetch, Axiom, negative access, and shutdown checks passed, as
+did all requested complete-candidate gates. The candidate is prepared for
+owner review; this is not merge approval.

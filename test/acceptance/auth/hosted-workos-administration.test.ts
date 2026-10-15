@@ -73,7 +73,7 @@ async function openSite(t: TestContext): Promise<Site> {
   world.organizationExternalIds = { [acme]: acmeExternalId };
   world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
   const log = new LogLines();
-  const application = await composeWorkOSApplication(config, world.connection(), { logger: log });
+  const application = await composeWorkOSApplication(config, world.connection('required'), { logger: log });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   t.after(async () => {
     await server.close();
@@ -394,7 +394,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const after = await pageOf(browser, 'invitations');
     const invitation = site.world.invitations.find(({ email }) => email === 'new@example.com');
     assert.ok(invitation, 'WorkOS has no invitation for new@example.com.');
-    const { token, acceptInvitationUrl } = await site.world.connection().workos.userManagement.getInvitation(invitation.id);
+    const { token, acceptInvitationUrl } = await site.world.connection('required').workos.userManagement.getInvitation(invitation.id);
 
     assert.deepEqual(labelsOf(first.forms), ['Invite as User', 'Invite as Admin']);
     assert.match(first.body, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);

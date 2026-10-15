@@ -1,7 +1,7 @@
 import type { TestContext } from 'node:test';
 import { createRemoteJWKSet } from 'jose';
 import type { WorkOSConnection } from '../../../../src/hosted-workos-application.ts';
-import type { WorkOSSettings } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import type { WorkOSSettings, WorkOSMfaPolicy } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type RecordedRequest } from './workos-fake-api.ts';
 
@@ -185,7 +185,7 @@ export class WorkOSFake {
   // Each next membership page starts with this many records from the end of the page before, as WorkOS can give
   // during concurrent changes.
   membershipPageOverlap = 0;
-  // The authentication method of each new sign-in. In the staging environment, only 'Password' is MFA evidence.
+  // The authentication method of each new sign-in. Only the explicit Required profile treats Password as MFA evidence.
   authenticationMethod = 'Password';
   // Set to an answer, such as a 500, to make reads fail: each membership read, only the membership pages after the
   // first, each invitation read, or the refreshes.
@@ -212,6 +212,7 @@ export class WorkOSFake {
     this.#organizations = new Set(parts.organizations);
     this.mcpResourceUrl = new URL('mcp', parts.publicBaseUrl).href;
     this.settings = Object.freeze({
+      mfaPolicy: 'optional',
       apiKey: fakeApiKey,
       clientId: fakeClientId,
       authkitIssuer: parts.fake.authkitIssuer,
@@ -250,11 +251,11 @@ export class WorkOSFake {
     this.#memberships = memberships;
   }
 
-  connection(): WorkOSConnection {
-    return { settings: this.settings, workos: workosClientFor(this.fake), authkitKeySet: createRemoteJWKSet(this.fake.authkitKeySetUrl) };
+  connection(mfaPolicy: WorkOSMfaPolicy = this.settings.mfaPolicy): WorkOSConnection {
+    return { settings: { ...this.settings, mfaPolicy }, workos: workosClientFor(this.fake), authkitKeySet: createRemoteJWKSet(this.fake.authkitKeySetUrl) };
   }
 
-  // Makes an authorization code as AuthKit gives it after the sign-in, the MFA step, and the organization choice.
+  // Makes an authorization code as AuthKit gives it after sign-in, any required MFA step, and the organization choice.
   codeFor(user: FakeUser, organizationId?: string): string {
     const code = `code_${(this.#counter += 1)}`;
     this.#codes.set(code, { user, organizationId, ended: false });

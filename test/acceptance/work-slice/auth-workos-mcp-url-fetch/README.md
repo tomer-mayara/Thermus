@@ -33,17 +33,31 @@ its own Connect token, and monitors each fetch in Axiom.
 
 ## One-time setup in WorkOS Staging
 
-The initial setup ran on 2026-10-14 in the Staging environment
-`environment_01M4VDKATD5PXZT4H01EHCMR2A`, with the WorkOS connector:
+Configure the WorkOS environment for this browser-first Google OAuth slice:
 
-- Google sign-in is on, with the built-in Google credentials of WorkOS. The
-  Google consent screen shows the WorkOS name.
-- Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD)
-  are on, so that Claude Code registers itself at AuthKit.
-- The organization "Thermus work slice" is
-  `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, with the external ID `thermus-work-slice`.
-  The launcher sets this organization as the slice onboarding target. It needs
-  no verified WorkOS organization domain and no change to the default role.
+- Enable Google OAuth. Staging can use the built-in Google credentials of
+  WorkOS; its Google consent screen then shows the WorkOS name.
+- Enable Dynamic Client Registration (DCR) and Client ID Metadata Documents
+  (CIMD), so that Claude Code can register itself at AuthKit.
+- Set provider MFA to Optional. The default runtime setting is
+  `WORKOS_MFA_POLICY=optional`. Password and Google sign-ins give no MFA
+  evidence to the application, and administration stays refused. The slice
+  always uses unproven MFA evidence, even with a `required` runtime setting.
+- Configure `THERMUS_SLICE_ORGANIZATION_ID` for an existing organization in
+  that environment. The staging launcher default is
+  `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, external ID `thermus-work-slice`, currently
+  named "Thermus AI". The organization name does not select access.
+- A verified organization domain or SAML connection is not required. If
+  either is already configured, preserve it and disable domain SSO
+  enforcement (`domainSsoRequired: false`), domain capture
+  (`setDomainCaptureEnabledDomains: []`), and domain JIT provisioning
+  (`isDomainJitProvisioningEnabled: false`) for this slice. These settings
+  let Google OAuth reach the callback and let the slice policy govern User
+  enrollment. Do not replace existing resources or change the default role.
+
+The shared Staging environment is `environment_01M4VDKATD5PXZT4H01EHCMR2A`.
+The [validation record](../../../../docs/implementation/auth-workos-mcp-url-fetch-validation.md)
+keeps the provider read-backs, historical gates, and completed live proof.
 
 The registered URIs of Staging serve the slice without a change: the redirect
 URI `https://localhost:46443/callback`, the sign-out URI
@@ -63,6 +77,7 @@ each value, and an exported value comes before the value in `.env.local`.
 | `PUBLIC_BASE_URL` | `https://localhost:46443` | The slice refuses another origin or a path: the HTTPS front listens at this origin, and WorkOS Staging has its URIs. |
 | `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `WORKOS_AUTHKIT_ISSUER` | None | Required. The staging launcher gives them. |
 | `WORKOS_REDIRECT_URI` | `<PUBLIC_BASE_URL>/callback` | The registered callback. |
+| `WORKOS_MFA_POLICY` | `optional` | Valid values are `optional` and `required`. Required is an explicit contract that the provider requires MFA for password sign-in. The slice always treats MFA as unproven, regardless of this value. |
 | `WORKOS_COOKIE_PASSWORD` | A new value of `openssl rand -base64 32` for each start | At least 32 characters. A new value ends the browser sessions of the start before. |
 | `AD_RULES_FILE` | `ad-rules.txt` at the repository root | It must be a file. An empty file gives no ad rules. |
 | `LIGHTPANDA_BIN` | `.cache/lightpanda/1.0.0/lightpanda` at the repository root | The pinned Lightpanda 1.0.0 of the [Lightpanda runtime guide](../../../../docs/lightpanda-runtime.md#install-the-pinned-release). The slice stops before the start if the version is different. |
@@ -112,7 +127,8 @@ it.
 
 3. Open `https://localhost:46443/`, click Sign In, click "Continue with
    Google", and sign in with a verified `@thermus.ai` Google account. Complete
-   any AuthKit challenge. The server uses the trusted WorkOS result to enroll
+   any AuthKit steps that the confirmed configuration requires. When AuthKit
+   returns its code, the server uses the trusted WorkOS result to enroll
    an eligible user without a membership, with the explicit role `user`.
 4. Check the portal after the callback. The session selects the configured
    slice organization and the portal shows product access with the role
@@ -133,7 +149,8 @@ it.
    This is a separate browser OAuth flow for Connect. AuthKit can reuse the
    Google sign-in, but the portal cookie is not an MCP credential. Select the
    slice organization if AuthKit asks, and click "Allow access". Claude Code
-   keeps its own token for the MCP resource. The pinned scopes give the token the `scope` claim,
+   keeps its own token for the MCP resource. The pinned scopes give the token
+   the `scope` claim,
    which the server requires. `offline_access` gives a refresh token, so the
    access token of 300 seconds renews without a new sign-in.
 6. Start a new Claude Code session with the same `NODE_EXTRA_CA_CERTS`, and
@@ -143,26 +160,40 @@ it.
    page, the client receives Markdown, and Axiom shows the three lines of the
    same call, as below. Do not copy keys, tokens, cookies, or authorization
    codes into output or pull request notes.
-7. Check the validation. A request with a wrong Bearer token gets `401` with
-   the metadata challenge. After the owner removes the role `user`, the next
-   tool call gets `403 access_denied` and writes no fetch line. Sign in with
-   Google again and verify that the role stays removed. Then the owner gives
-   the role back and deletes the authorized application of the
-   user in WorkOS. The token works until it expires, after at most 300
-   seconds. Then the refresh fails.
+7. Check the validation. A wrong Bearer token gets `401` with the metadata
+   challenge. Remove the role `user`; the next client operation must get
+   `access_denied` and write no fetch line. The client can refresh before that
+   operation, so this check does not require identical token bytes. Sign in
+   with Google again and verify that the role stays removed. Restore User
+   and check that the client can fetch again. If Claude reports that it needs
+   authentication, run `claude mcp login thermus-hosted` under the existing
+   approved grant.
+
+   Then delete only that user's authorized application in WorkOS. Revocation
+   stops renewal. The automated live proofs check the JWT lifetime of up to
+   300 seconds and show that an issued JWT can still verify until its expiry.
+   The Claude client used in this walk refreshes proactively for each
+   operation, so revoked consent can fail on the very next operation, before
+   that JWT expires. An immediate refresh failure does not show that the
+   unexpired JWT was rejected. For the manual expiry check, wait beyond the
+   last known token expiry and retry; record the renewal refusal without
+   printing the token.
 8. Stop with Ctrl+C. Remove the client entry with
    `claude mcp remove thermus-hosted`.
 
-A Google sign-in gives no MFA evidence. Thus the members and invitations pages
-of the portal refuse that session. The portal access and MCP need no MFA
-evidence.
+The slice gives no MFA evidence for any sign-in method. Product access and
+MCP remain available with a current User grant. Members, invitations, billing,
+and administration writes remain refused, even for an Admin or Super Admin.
+The slice also ignores prior cookie evidence and keeps replacement cookies
+without it. It has no step-up UI and does not prove that a user completed MFA.
 
 ## Slice onboarding policy
 
 Only this opt-in slice enables onboarding. The normal hosted application has
 no enrollment policy and keeps the `member` default role without product
-access. This change enables no production onboarding and sets no WorkOS
-organization domain or default User role.
+access. This change enables no production onboarding and changes no existing
+organization name, domain, SAML connection, or default role. Google OAuth is
+required; existing domain routing and JIT must not bypass the callback policy.
 
 The callback accepts eligibility only from the trusted WorkOS authentication
 result: `authenticationMethod` is `GoogleOAuth`, `emailVerified` is true, and
@@ -187,25 +218,35 @@ process. A failed callback issues no new authorized browser session; inspect
 WorkOS state before another attempt. A successful read-back of an active User
 membership can reconcile a lost write response without repeating the write.
 
-## Proof still required
+## Recorded validation
 
-Keep PR #108 in Draft until the browser-first live walk and the complete
-required gates pass on the final candidate. The [validation record](../../../../docs/implementation/auth-workos-mcp-url-fetch-validation.md)
-gives the completed checks, retained findings, and open proof. Offline tests use a WorkOS fake,
-a renderer double, and a recording logger. They prove application behavior.
-The real walk must separately prove Google authentication, Connect browser
-consent and its token, the authenticated HTTPS MCP fetch, real renderer output,
-Axiom delivery, wrong-token refusal, and refusal after a current User-role
-removal. Record safe observations and test counts without secrets. A WorkOS
-configuration read-back or an offline pass is not this live proof.
+Validation is complete and the candidate is prepared for owner review. The
+[validation record](../../../../docs/implementation/auth-workos-mcp-url-fetch-validation.md)
+gives the final checks, retained findings, provider read-backs, and manual
+proof. Offline tests use a WorkOS fake, a renderer double, and a recording
+logger to prove application behavior.
+
+The real walk passed the Google callback, selected organization, automatic
+User membership, separate Connect flow, authenticated HTTPS MCP fetch, Axiom
+delivery, current-role refusal, renewal, and post-expiry consent refusal. The
+corrected launcher shutdown and its Axiom delivery passed. Both complete
+hosted-live MFA profiles and all requested final local gates passed. Shared
+Staging Optional was restored and verified. The record states the resumed
+fresh-account timeline and distinguishes client refresh from the separate
+automated exact-JWT proof. Record observations without secrets. This is not
+merge approval.
 
 ## Log lines
 
 The connection to WorkOS writes one line at the start:
 `Hosted authentication uses WorkOS: the client <client ID> and the AuthKit issuer <issuer>.`
 The start writes `Listening on https://localhost:46443/` when the HTTPS front
-listens, and the stop writes `Stopping after <signal>`. One tool call writes three log
-lines in this sequence:
+listens, and the stop writes `Stopping after <signal>`. The slice records
+the first startup or stop signal and keeps both signal handlers through site
+cleanup and logging flush. Repeated forwarded signals do not replace the
+first signal or interrupt that cleanup. The validation record includes the
+passing real launcher shutdown and Axiom stopping record. One tool call writes three log lines in
+this sequence:
 
 1. `work-slice fetch started: <requested URL>`
 2. `work-slice fetch completed: <requested URL> gave <n> characters of Markdown:`,
@@ -226,9 +267,9 @@ behind the hosted MCP endpoint, and two lines with the full URL and the
 Markdown are slice-only. The acceptance tests show the application path
 offline, with a fake WorkOS API and a renderer double, in both MCP protocol
 eras. The onboarding acceptance cases also check the first callback, the
-normal hosted default, and required slice configuration. The manual run must
-also show Google sign-in, client registration and consent, the renderer, and
-the export to Axiom; it remains pending until recorded.
+normal hosted default, and required slice configuration. The validation
+record separates the completed manual behavior, including corrected shutdown
+delivery, from the offline application and provider-contract results.
 
 The decisions and the steps are in the [Auth WorkOS MCP URL fetch work slice plan](../../../../docs/implementation/auth-workos-mcp-url-fetch-plan.md).
 The [work slice guide](../README.md) lists the slices.

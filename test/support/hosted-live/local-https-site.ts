@@ -124,6 +124,7 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: publicBaseUrl,
     WORKOS_API_KEY: settings.apiKey,
+    WORKOS_MFA_POLICY: settings.mfaPolicy ?? 'optional',
     WORKOS_CLIENT_ID: settings.clientId,
     WORKOS_AUTHKIT_ISSUER: settings.authkitIssuer,
     WORKOS_REDIRECT_URI: browserRedirectUri,

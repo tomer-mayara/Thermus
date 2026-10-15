@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { assertProviderMfaProfile } from '../../../support/hosted-live/mfa-profile.ts';
 import type { LiveRun } from '../../../support/hosted-live/live-run.ts';
 import {
   applicationPermissionsOf,
@@ -15,6 +16,14 @@ const browserOptions = { timeout: 90_000 };
 const authenticationSettingsQuery = 'query { authenticationSettings { mfaEnabled mfaRequired passkeyAuthEnabled passwordAuthEnabled } authkitSettings { origin } }';
 const choiceNames = /^\s*- (?:button|link) "([^"]+)"/gm;
 const socialChoice = /^(?:continue|sign in|log in) with (?!email$)/i;
+
+export async function assertMfaProfileBeforeLiveProofs(run: LiveRun): Promise<void> {
+  const { twoOrganizationUser, organizationA } = await run.fixtures();
+  const { token } = await run.workos.widgets.createToken({ organizationId: organizationA.id, userId: twoOrganizationUser.id, scopes: ['widgets:users-table:manage'] });
+  const data = await queryWidgetGraph(token, authenticationSettingsQuery);
+  const authentication = field(data, 'authenticationSettings');
+  assertProviderMfaProfile(run.settings.mfaPolicy ?? 'optional', authentication);
+}
 
 export function describeConfigurationProofs(run: LiveRun): void {
   const { settings, workos } = run;
@@ -53,7 +62,7 @@ export function describeConfigurationProofs(run: LiveRun): void {
       assert.deepEqual(others.map(({ slug }) => slug), [], 'Another environment role has an application permission.');
     });
 
-    test('Given a member of a staging organization, when a widget token of that member reads the authentication settings, then MFA is required, password sign-in is on, and passkey sign-in is off', fixtureOptions, async (t) => {
+    test(`Given the ${settings.mfaPolicy ?? 'optional'} profile and a member of a staging organization, when a widget token reads authentication settings, then MFA is enabled with the selected requirement, password sign-in is on, and passkey sign-in is off`, fixtureOptions, async (t) => {
       const { twoOrganizationUser, organizationA } = await run.fixtures();
       const { token } = await workos.widgets.createToken({ organizationId: organizationA.id, userId: twoOrganizationUser.id, scopes: ['widgets:users-table:manage'] });
 
@@ -62,7 +71,7 @@ export function describeConfigurationProofs(run: LiveRun): void {
       const authentication = field(data, 'authenticationSettings');
       t.diagnostic(`authenticationSettings: ${JSON.stringify(authentication)}`);
       t.diagnostic(`authkitSettings: ${JSON.stringify(data.authkitSettings)}`);
-      assert.equal(authentication.mfaRequired, true);
+      assertProviderMfaProfile(settings.mfaPolicy ?? 'optional', authentication);
       assert.equal(authentication.passwordAuthEnabled, true);
       assert.equal(authentication.passkeyAuthEnabled, false);
     });

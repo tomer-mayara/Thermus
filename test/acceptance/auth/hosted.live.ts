@@ -1,17 +1,19 @@
 import assert from 'node:assert/strict';
-import { after, describe, test, type TestContext } from 'node:test';
+import { after, before, describe, test, type TestContext } from 'node:test';
 import { createLocalJWKSet, type JSONWebKeySet } from 'jose';
+import { hostedMfaPolicy } from '../../support/hosted-live/mfa-profile.ts';
 import { LiveRun } from '../../support/hosted-live/live-run.ts';
 import { authkitKeySetUrl, requestTimeout, workosClient, type HostedLiveSettings } from '../../support/hosted-live/settings.ts';
 import { describeAdministrationProofs } from './hosted-live/administration-proofs.ts';
 import { describeAdministrationServerCases } from './hosted-live/administration-server.ts';
 import { describeBrowserSignInProofs } from './hosted-live/browser-sign-in.ts';
-import { describeConfigurationProofs } from './hosted-live/configuration.ts';
+import { assertMfaProfileBeforeLiveProofs, describeConfigurationProofs } from './hosted-live/configuration.ts';
 import { describeConnectAuthorizationProofs } from './hosted-live/connect-authorization.ts';
 import { describeConnectTokenProofs } from './hosted-live/connect-tokens.ts';
 import { describeHostedServerCases } from './hosted-live/hosted-server.ts';
 import { describeMembershipProofs } from './hosted-live/memberships.ts';
 import { describeOperatorSetupProofs } from './hosted-live/operator-setup.ts';
+import { describeOptionalAdministrationServerCases } from './hosted-live/optional-administration-server.ts';
 import { describeOrganizationServerCases } from './hosted-live/organization-server.ts';
 import { describeSessionEndingProofs } from './hosted-live/session-ending.ts';
 
@@ -63,8 +65,15 @@ function hostedLiveSetup(environment: Environment): HostedLiveSetup {
     apiKey: read('WORKOS_API_KEY', stagingKeyRefusal),
     clientId: read('WORKOS_CLIENT_ID'),
     authkitIssuer: read('WORKOS_AUTHKIT_ISSUER', issuerRefusal),
+    mfaPolicy: 'optional',
   };
-  return problems.length === 0 ? { settings } : { problems };
+  try {
+    const mfaPolicy = hostedMfaPolicy(environment.WORKOS_MFA_POLICY);
+    return problems.length === 0 ? { settings: { ...settings, mfaPolicy } } : { problems };
+  } catch (error) {
+    problems.push(error instanceof Error ? error.message : 'WORKOS_MFA_POLICY is refused.');
+    return { problems };
+  }
 }
 
 function setupError(problems: readonly string[]): Error {
@@ -164,6 +173,10 @@ if ('problems' in setup) {
   describeWorkOSApi(setup.settings);
   const run = new LiveRun(setup.settings);
   after(() => run.end());
+  before(async (t) => {
+    t.diagnostic(`Hosted live MFA profile: ${setup.settings.mfaPolicy}.`);
+    await assertMfaProfileBeforeLiveProofs(run);
+  });
   describeConfigurationProofs(run);
   describeBrowserSignInProofs(run);
   describeSessionEndingProofs(run);
@@ -175,7 +188,8 @@ if ('problems' in setup) {
   // The AUTH-07W cases come before the AUTH-06 cases, so that the 300-second wait of the AUTH-06 cases also lets the
   // access token of the AUTH-07W selection session expire before its expiry case. The AUTH-08W cases come between them.
   const describeExpiredSelectionCase = describeOrganizationServerCases(run);
-  describeAdministrationServerCases(run);
+  if (setup.settings.mfaPolicy === 'required') describeAdministrationServerCases(run);
+  else describeOptionalAdministrationServerCases(run);
   describeHostedServerCases(run);
   describeExpiredSelectionCase();
 }

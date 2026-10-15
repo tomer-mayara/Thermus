@@ -465,6 +465,7 @@ environment of the command:
 | `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, memberships, and invitations. |
 | `WORKOS_CLIENT_ID` | The client ID of the staging environment. |
 | `WORKOS_AUTHKIT_ISSUER` | The AuthKit domain of the staging environment, exactly as WorkOS shows it: an absolute `https` URL without spaces, a username, a password, a query, or a fragment. |
+| `WORKOS_MFA_POLICY` | Omitted or `optional` selects the Optional profile; `required` selects the Required profile. These are the only accepted exact values. The provider must match the selected profile. |
 
 On the owner's Mac, the staging launcher reads the API key from the macOS
 Keychain and gives the three settings only to the command that it starts:
@@ -476,12 +477,36 @@ node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 The launcher is outside the repository. Never print its key or copy it into a
 file, a ticket, or a log.
 
-Configure the staging environment as the hosted edition needs it:
+The command uses one MFA profile for the complete run:
 
-- Email and password sign-in with MFA required, and Google sign-in with the
-  built-in Google credentials of WorkOS. No other social sign-in provider, no
-  passkey, and no magic sign-in: only a password sign-in proves MFA, so a
-  Google sign-in gives no MFA evidence. Google sign-in is on since
+```sh
+# Default profile: WorkOS MFA must be Optional.
+node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+# Required profile: use only after WorkOS MFA is set to Required.
+WORKOS_MFA_POLICY=required node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+```
+
+The provider preflight checks `mfaEnabled: true` and requires `mfaRequired` to
+be false for Optional or true for Required before any live test or login. A
+mismatch fails the run. The command does not change provider MFA settings.
+The Optional profile proves normal browser/Connect flows with no application
+MFA evidence and explicit administration refusal. The Required profile keeps
+the positive administration proofs under the matched password-MFA contract.
+Each profile registers 77 cases. Required keeps the eight positive
+application administration cases; Optional replaces them with refusal and
+invitation-acceptance cases that preserve the MFA boundary. Operator/API
+administration contract proofs run in both profiles: those service-credential
+proofs do not give an Optional browser session administration authority.
+A pass of one profile does not prove the other. Restore shared Staging to
+Optional after an authorized Required-profile run.
+
+Configure the other staging settings as the hosted edition needs them:
+
+- Email and password sign-in and Google OAuth with the built-in Google
+  credentials of WorkOS. No other social sign-in provider, no passkey, and no
+  magic sign-in. Optional gives no MFA evidence for any method. Only the
+  explicit Required profile can use Password under its verified provider
+  requirement; Google gives no MFA evidence. Google sign-in is on since
   2026-10-14, for the
   [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
   (decision D1 of its [plan](auth-workos-mcp-url-fetch-plan.md)).
@@ -510,7 +535,7 @@ watch the navigation requests of the browser.
 The auth WorkOS MCP URL fetch work slice uses the same staging environment,
 the same origin `https://localhost:46443/`, and the same registered URIs. Thus
 the slice and the gate cannot run at the same time. The gate does not delete
-the organization "Thermus work slice" or the users of the slice: a run deletes
+the configured slice organization or its users: a run deletes
 only the data with its own name or email prefix. The normal hosted
 composition of the gate enables no automatic Google onboarding. Only the manual slice opts
 in to that policy for its configured organization. Its real browser-first
@@ -532,8 +557,8 @@ The gate also needs:
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 
-A complete run takes about 12 minutes: the third complete run of AUTH-08W
-run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
+The historical Required-profile run took about 12 minutes: the third
+complete run of AUTH-08W run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
 tokens to expire, and the AUTH-07W expiry case after it uses the same wait.
 
 If a setting is missing, empty, or refused, the command fails with one setup
@@ -547,7 +572,14 @@ settings and every live test passes. Missing hosted credentials, a setup error,
 and skipped live tests can never count as a successful hosted gate. Do not put
 credentials in the repository, in logs, or in pull request notes.
 
-The command has six parts:
+The Required profile has the six parts below. The Optional profile keeps
+the common browser, session, Connect, access, organization, and revocation
+proofs and replaces positive MFA/administration expectations with no-evidence
+and administration-refusal cases. Neither profile silently changes the
+provider setting. Counts and final candidate results belong in the
+[validation record](auth-workos-mcp-url-fetch-validation.md).
+
+The Required profile has these parts:
 
 - The provider proofs of AUTH-06: the AuthKit metadata and key sets, the saved
   configuration, the browser sign-in with required MFA, sessions and their

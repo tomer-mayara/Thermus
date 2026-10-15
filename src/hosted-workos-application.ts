@@ -33,6 +33,8 @@ export interface WorkOSApplicationParts {
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
+  // A composition can discard MFA evidence, but only the configured Required policy can supply it.
+  readonly mfaEvidence?: 'unproven';
 }
 
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
@@ -91,7 +93,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const onboarding = parts.onboarding === undefined ? undefined : new WorkOSGoogleOnboarding({
     ...parts.onboarding, authority, workos, settings, records: accountChangeRecorder(logger), billing: parts.billing, directory: organizations,
   });
-  const session = new WorkOSBrowserSession({ workos, settings, authority, ...(onboarding === undefined ? {} : { onboarding }) });
+  const session = new WorkOSBrowserSession({ workos, settings, authority, mfaEvidence: parts.mfaEvidence ?? (settings.mfaPolicy === 'required' ? 'password-mfa-required' : 'unproven'), ...(onboarding === undefined ? {} : { onboarding }) });
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
     buildServer,

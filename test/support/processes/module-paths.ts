@@ -25,3 +25,4 @@ export const programEntry = fileURLToPath(new URL(`../../../src/index.${extensio
 export const networkBlocker = siblingModule('deny-network').href;
 export const sqlTracer = siblingModule('trace-sqlite').href;
 export const foreignOriginProbe = fileURLToPath(siblingModule('foreign-origin-probe'));
+export const workSliceShutdownProbe = fileURLToPath(siblingModule('work-slice-shutdown-probe'));

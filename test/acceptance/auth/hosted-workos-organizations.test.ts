@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
+import type { WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
@@ -53,12 +54,12 @@ interface Site extends WorkOSServerSite {
   readonly log: LogLines;
 }
 
-async function openSite(t: TestContext): Promise<Site> {
+async function openSite(t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional'): Promise<Site> {
   const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
   const log = new LogLines();
-  const application = await composeWorkOSApplication(config, world.connection(), { logger: log });
+  const application = await composeWorkOSApplication(config, world.connection(mfaPolicy), { logger: log });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   t.after(async () => {
     await server.close();
@@ -196,8 +197,8 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.deepEqual(switchesIn(site), [hooli]);
   });
 
-  test('Given a member with only Super Admin in Acme, when it opens the organization page and selects Acme for the billing page, then Acme is offered and selected, and its billing page, an administration page of Super Admin, opens; but the protected portal request and the MCP endpoint refuse it, because no User grant is inferred', async (t) => {
-    const site = await openSite(t);
+  test('Given a member with only Super Admin in Acme and an explicit Required MFA profile, when it opens the organization page and selects Acme for the billing page, then Acme is offered and selected, and its billing page, an administration page of Super Admin, opens; but the protected portal request and the MCP endpoint refuse it, because no User grant is inferred', async (t) => {
+    const site = await openSite(t, 'required');
     const browser = await signIn(site, sam);
 
     const forms = formsIn((await browser.open('organizations?return_to=/team/billing')).body);

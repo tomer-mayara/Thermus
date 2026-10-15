@@ -61,6 +61,13 @@ the portal. For the AuthKit domain of `WORKOS_AUTHKIT_ISSUER`, for example
 `https://auth.example.com`, use
 `default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com https://auth.example.com`.
 
+Hosted MFA evidence follows `WORKOS_MFA_POLICY`. The default `optional`
+policy gives false evidence for every method and ignores older cookie
+evidence. Product access still needs User; members, invitations, billing, and
+administration changes stay refused without MFA evidence. No step-up UI is
+added. Required can infer evidence from Password only under its explicit,
+live-verified provider requirement. The work slice always keeps evidence false.
+
 The hosted live gate uses this layout at `https://localhost:46443/`. Its local
 HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
 self-signed certificate for each run, serves the portal build, and forwards

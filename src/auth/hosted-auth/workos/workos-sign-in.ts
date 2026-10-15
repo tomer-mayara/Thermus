@@ -24,7 +24,11 @@ export interface SignInOnboarding {
   complete(exchange: CodeExchange): Promise<CodeExchange>;
 }
 
+// Password proves MFA only in an environment that requires its second step before the callback.
+export type MfaEvidencePolicy = 'password-mfa-required' | 'unproven';
+
 export interface AuthKitSignInOptions {
+  readonly mfaEvidence?: MfaEvidencePolicy;
   readonly onboarding?: SignInOnboarding;
   readonly userManagement: Pick<WorkOSSessionClient['userManagement'], 'getAuthorizationUrlWithPKCE' | 'authenticateWithCode'>;
   readonly settings: Pick<WorkOSSettings, 'clientId' | 'redirectUri' | 'cookiePassword'>;
@@ -49,10 +53,12 @@ export class AuthKitSignIn {
   private readonly sessionCookie: SealedCookie<SessionEnvelope>;
   private readonly signInCookie: SealedCookie<SignInEnvelope>;
   private readonly onboarding: SignInOnboarding | undefined;
+  private readonly mfaEvidence: MfaEvidencePolicy;
 
   constructor(options: AuthKitSignInOptions) {
     this.userManagement = options.userManagement;
     this.onboarding = options.onboarding;
+    this.mfaEvidence = options.mfaEvidence ?? 'unproven';
     this.settings = options.settings;
     this.clock = options.clock;
     this.sessionCookie = options.sessionCookie;
@@ -80,8 +86,8 @@ export class AuthKitSignIn {
     const session: SessionEnvelope = {
       seal: sealedSessionOf(completed),
       csrf: randomBytes(CSRF_TOKEN_BYTES).toString('base64url'),
-      // WorkOS gives no MFA claim. The environment requires MFA for each password sign-in, so only that method proves it.
-      mfa: exchange.authenticationMethod === 'Password',
+      // WorkOS gives no MFA claim. Optional MFA cannot prove that this sign-in completed its second step.
+      mfa: this.mfaEvidence === 'password-mfa-required' && exchange.authenticationMethod === 'Password',
     };
     return { status: 'signed-in', returnTo: pending.returnTo, cookies: [this.signInCookie.clearCookie(), this.sessionCookie.setCookie(session)] };
   }

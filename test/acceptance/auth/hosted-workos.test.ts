@@ -51,7 +51,7 @@ async function openSite(t: TestContext, buildServer?: RequestServerBuilder): Pro
     { userId: eve.id, organizationId: organizationB, roles: ['user'] },
   ];
   const log = new LogLines();
-  const application = await composeWorkOSApplication(config, world.connection(), { logger: log, buildServer });
+  const application = await composeWorkOSApplication(config, world.connection('required'), { logger: log, buildServer });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   t.after(async () => {
     await server.close();
@@ -75,7 +75,7 @@ function mcp(site: Site, token?: string): Promise<Response> {
 }
 
 describe('Hosted WorkOS edition: browser sign-in, the portal session, and current access', () => {
-  test('Given the hosted WorkOS edition, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, the MFA evidence of the password sign-in, and a form token', async (t) => {
+  test('Given the hosted WorkOS edition with an explicit Required MFA policy, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, the MFA evidence of the password sign-in, and a form token', async (t) => {
     const site = await openSite(t);
     const { browser, start, callback } = await signInThroughServer(site, ada, organizationA);
     const session = await json(browser, 'session');
