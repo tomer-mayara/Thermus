@@ -3,7 +3,7 @@ import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import type { StoredResourceServerClient } from '../../src/auth/local-auth/better-auth/local-installation.ts';
-import { HttpAgent, loopbackRedirectUri, type PreRegisteredNativeClient } from './better-auth-agents.ts';
+import { HttpAgent, loopbackRedirectUri, type PreRegisteredNativeClient } from './drivers/browser/better-auth-agents.ts';
 import { withRegistrationSession, type AccountCredentials, type LocalAuth } from './better-auth-local.ts';
 import { assertExit, runCommand, type CommandResult } from './command-process.ts';
 import { selfHostedSettings } from './local-runtime.ts';

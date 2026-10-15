@@ -14,7 +14,7 @@ import { IdentityVerifierSpy } from './doubles/auth/identity-verifier-spy.ts';
 import { mcpRequest, rpcResult } from './drivers/mcp/mcp-http-request.ts';
 import { AccountOperationProbe } from './account-operation-probe.ts';
 import { BrowserSessionStore, type SignInOptions } from './browser-session-store.ts';
-import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from './hosted-browser.ts';
+import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from './drivers/browser/hosted-browser.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from './membership-directory-double.ts';
 import { RequestContextProbe } from './request-context-probe.ts';
 

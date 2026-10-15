@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
-import { clientAddressHeader, mcpResourceUrl, publicBaseUrl, type LocalAuth } from './better-auth-local.ts';
+import { clientAddressHeader, mcpResourceUrl, publicBaseUrl, type LocalAuth } from '../../better-auth-local.ts';
 import { cookieHeaderOf, keepCookies } from './cookie-jar.ts';
 
 export const loopbackRedirectUri = 'http://127.0.0.1:33418/callback';

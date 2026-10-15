@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { cookieHeaderOf, keepCookies } from '../../support/cookie-jar.ts';
+import { cookieHeaderOf, keepCookies } from '../../support/drivers/browser/cookie-jar.ts';
 
 describe('Cookie jar of the test browsers', () => {
   test('Given an empty jar, when a Set-Cookie line with attributes is kept, then the jar has the cookie by name without its attributes', () => {

@@ -11,7 +11,7 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
 import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
+import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { mockRenderer } from '../../support/renderer-process-double.ts';
 
 for (const era of mcpProtocolEras) {

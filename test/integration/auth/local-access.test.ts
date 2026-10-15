@@ -17,7 +17,7 @@ import {
   loopbackRedirectUri,
   PreRegisteredNativeClient,
   type TokenResponse,
-} from '../../support/better-auth-agents.ts';
+} from '../../support/drivers/browser/better-auth-agents.ts';
 import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/better-auth-local.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';

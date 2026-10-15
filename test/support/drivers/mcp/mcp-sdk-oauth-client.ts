@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { OAuthClientProvider, OAuthDiscoveryState, StoredOAuthTokens } from '@modelcontextprotocol/client';
-import { HttpAgent, loopbackRedirectUri } from './better-auth-agents.ts';
-import { clientAddressHeader, publicBaseUrl, type LocalAuth } from './better-auth-local.ts';
+import { HttpAgent, loopbackRedirectUri } from '../browser/better-auth-agents.ts';
+import { clientAddressHeader, publicBaseUrl, type LocalAuth } from '../../better-auth-local.ts';
 
 export function sdkFetch(auth: LocalAuth) {
   const address = new HttpAgent(auth).address;

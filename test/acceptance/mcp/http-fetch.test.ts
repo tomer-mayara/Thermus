@@ -5,7 +5,7 @@ import type { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { exactMarkdown, openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given test-injected auth in ${era}, when an MCP HTTP client discovers and calls the fetch tool, then it gets exact Markdown and one completion record`, async (t) => {

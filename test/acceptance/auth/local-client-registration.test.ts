@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { SERVER_INFO_META_KEY, UnauthorizedError } from '@modelcontextprotocol/client';
-import { HttpAgent, loopbackRedirectUri, PreRegisteredNativeClient, ResourceServerClient } from '../../support/better-auth-agents.ts';
+import { HttpAgent, loopbackRedirectUri, PreRegisteredNativeClient, ResourceServerClient } from '../../support/drivers/browser/better-auth-agents.ts';
 import { mcpResourceUrl, withRegistrationSession, type AccountCredentials } from '../../support/better-auth-local.ts';
 import { assertExit, assertRevealsNone } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';

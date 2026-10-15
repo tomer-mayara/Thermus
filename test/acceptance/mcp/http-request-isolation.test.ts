@@ -8,7 +8,7 @@ import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../support/mcp-protocol-eras.ts';
+import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 
 const authority = 'https://identity.example';
 const resource = new URL('https://thermus.example/mcp');
