@@ -68,6 +68,19 @@ call sites: `index.ts` for the listening line, `work-slice-application.ts`
 `fetch-tool-server.ts` for the record.
 `SIGINT` gave exit status 0, so every export was accepted.
 
+On 2026-10-14, the owner merged pull request 80 as `1ed55aa`. The owner
+decided to keep `openAxiomLogging()` in test support until the audit-trail work
+makes the Axiom export a production feature. The launcher script
+`test/acceptance/work-slice/basic-mcp-url-fetch.sh` came in a second pull
+request. It runs the entry point through `pnpm exec node --import tsx`, the
+pinned Node runtime of pnpm, and not through the package script: pnpm passes a
+signal to that child, but the package script puts a shell wrapper and the
+`tsx` CLI between them, and a signal to the wrapper stops nothing. A smoke run
+on 2026-10-14, scope `thermus-work-slice-6b704cb0-c370-4daf-af43-875d1cd20cfe`,
+started the slice from another directory; `SIGINT` to the process of the
+launcher gave exit status 0, a free port, and the listening and stop lines in
+Axiom.
+
 ## Goal
 
 One script starts the MCP fetch tool for a local LLM and shows each fetch in
@@ -129,8 +142,10 @@ src/index.ts                                          serveApplication(open, opt
 test/acceptance/work-slice/README.md                  A short description of each work slice
 test/acceptance/work-slice/basic-mcp-url-fetch.ts     The entry point and the composition: createWorkSliceApplication(), observeFetches(), MARKDOWN_LOG_LIMIT; it runs only when executed directly
 test/acceptance/work-slice/basic-mcp-url-fetch.test.ts   The acceptance test
+test/acceptance/work-slice/basic-mcp-url-fetch.sh     The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
 test/support/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
 test/unit/work-slice/basic-mcp-url-fetch.test.ts      observeFetches()
+test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
 
@@ -162,6 +177,11 @@ one shell setup serves the server and the script.
 | `LIGHTPANDA_BIN` | Required. An absolute path. `createFetchOperation()` gives the path to the fetcher. The entry point runs `version` and requires `1.0.0` before it listens. | None |
 | `AD_RULES_FILE` | Required. `createFetchOperation()` loads the file with `readAdRulesFile()`, as for the server. An empty file gives no rules. | None |
 | `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL` | Read by `axiomTestSettings()`, also from `.env.local` in the current directory. | None |
+
+The launcher script `test/acceptance/work-slice/basic-mcp-url-fetch.sh` gives
+defaults to `PUBLIC_BASE_URL`, `AD_RULES_FILE`, `LIGHTPANDA_BIN`,
+`AXOIM_ENDPOINT_URL`, and `AXIOM_SYSTEM_LOG_TEST_DATA_SET`. The
+[work slice guide](../../test/acceptance/work-slice/README.md) lists them.
 
 ### Composition
 
@@ -420,14 +440,17 @@ stops cleanly without a client. The last check needs step 0.
 
 This is the goal. Record the output of each checkpoint.
 
-1. Start the script from the worktree root:
+1. Start the launcher script from the worktree root. From another directory,
+   give its full path. It sets the settings to their defaults and runs the entry point with
+   the pinned Node runtime of pnpm:
 
 ```bash
-pnpm work-slice:basic-mcp-url-fetch
+test/acceptance/work-slice/basic-mcp-url-fetch.sh
 ```
 
-Checkpoint: stderr shows `Listening on http://127.0.0.1:8080`. stdout shows
+Checkpoint: stderr shows the five settings that the script sets. stdout shows
 the client command, the Axiom dataset link, and the scope name of this run.
+The `Listening on` line goes to Axiom only.
 
 2. In another terminal, add the server to Claude Code and check the
    connection:
