@@ -1066,6 +1066,15 @@ The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page f
 [V] Keeps plain text, an unknown named entity such as `&eacute;`, and a numeric entity other than `&#39;` such as `&#40;` unchanged
 [V] Gives the empty string for the empty string
 
+**Operator log reader of the server sites** (`test/unit/test-support/operator-log.test.ts`)
+
+`ServerProcess`, `ServerContainer`, and `InProcessServer` each parsed the listening line and the tenant line of the operator log. `ServerContainer` and `InProcessServer` also parsed the completion records. `listeningUrlIn()`, `tenantIn()`, `completionLinesIn()`, and `completionRecordsIn()` in `test/support/drivers/operator-log.ts` are the one copy; each site keeps the log in its own form: the text of the child process, the text of `docker start --attach`, or the messages of its logger.
+
+[V] Gives no listening URL before the `Listening on` line arrives, and the URL of that line when other lines are around it
+[V] Gives the local tenant of the tenant line; gives none without that line or before the full stop of that line arrives, so it gives only a complete ID
+[V] Gives the completion records of an output in their order, also when other lines and a JSON line of another event are between them and when the console logger writes the time, the level, and the call site before each record; an output without a record gives none
+[V] Gives the same URL, tenant, and records for the messages of the in-process logger, joined with line breaks, as for the console text of the same messages
+
 **Cookie jar of the test browsers** (`test/unit/test-support/cookie-jar.test.ts`)
 
 `HttpAgent`, `LocalBrowser`, and `HostedBrowser` each parsed the Set-Cookie lines of an answer and made the Cookie header. `keepCookies()` and `cookieHeaderOf()` in `test/support/drivers/browser/cookie-jar.ts` are the one copy; each browser keeps its own `Map` and its own transport.
