@@ -5,7 +5,7 @@ import type { BrowserSessionState } from '../../../../src/auth/hosted-auth/brows
 import type { AuthorizedOrganization } from '../../../../src/organizations/organization-administration.ts';
 import { AccessResolverSpy, type ConfiguredAccess } from '../../../support/doubles/auth/access-resolver-spy.ts';
 import { AccountOperationDouble, type OperationAnswer } from './account-operation-double.ts';
-import { BrowserSessionDouble, SignedInSessionDouble, type ConfiguredSession, type SignedInSetup } from './browser-session-double.ts';
+import { BrowserSessionDouble, SignedInSessionDouble, type ConfiguredSession, type SignedInSetup } from '../../../support/doubles/auth/browser-session-double.ts';
 import { OrganizationAdministrationDouble, type AdministrationSetup, type ConfiguredOrganizations } from './organization-administration-double.ts';
 
 export const publicBaseUrl = 'https://thermus.example/';

@@ -1,6 +1,6 @@
 import type { InvitationOverview, MemberOverview } from '../../../../src/organizations/administration-overviews.ts';
+import type { SignedInSetup } from '../../../support/doubles/auth/browser-session-double.ts';
 import { adminGrant, allowedFor, ann, contextOf, postForm, serve, signedIn, userGrant, type Setup } from './account-routes-fixtures.ts';
-import type { SignedInSetup } from './browser-session-double.ts';
 import type { AdministrationSetup } from './organization-administration-double.ts';
 
 export const sessionCookies = ['session=refreshed; Path=/; Secure; HttpOnly; SameSite=Lax'];

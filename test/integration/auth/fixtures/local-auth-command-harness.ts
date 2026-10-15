@@ -3,7 +3,7 @@ import type { LocalAuthSettings } from '../../../../src/auth/local-auth/local-us
 import { runLocalAuthCommand, type HiddenInput, type OpenedLocalAdministration } from '../../../../src/auth/local-auth/local-auth-command.ts';
 import { BetterAuthUserAdministration } from '../../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
 import { BaseLogger } from '../../../../src/logging/base-logger.ts';
-import { LocalProviderDouble } from '../../../unit/auth-better-auth/fixtures/local-provider-double.ts';
+import { LocalProviderDouble } from '../../../support/doubles/auth/local-provider-double.ts';
 
 export const environment = {
   DEPLOYMENT: 'self-hosted',
