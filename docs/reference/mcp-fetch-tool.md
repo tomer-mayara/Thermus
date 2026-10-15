@@ -59,9 +59,9 @@ body parser or alternate JSON-RPC implementation.
 
 The self-hosted server registers the tool. Its application branch loads
 [`src/fetch-tool.ts`](../../src/fetch-tool.ts) and calls
-`fetchToolServers(environment, logger)` before it opens the Better Auth runtime.
-That call reads the [ad rules file](ad-rules.md#server-rules-file) one time. Then
-it makes these parts one time:
+`createFetchOperation(environment, logger)` before it opens the Better Auth
+runtime. That call reads the [ad rules file](ad-rules.md#server-rules-file) one
+time. Then it makes these parts one time:
 
 - one `HtmlToMarkdownPipeline` with `CleanHtmlAdsAdblockRs`,
   `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in that
@@ -71,12 +71,13 @@ it makes these parts one time:
   reportRendererSetupFailure })`, with the
   [renderer setup report](#renderer-setup-report) of the application logger.
 
-It returns the `buildServer` function of `MCPServer`. Each MCP request gets its
-own SDK `Server` from `createFetchToolServer(context, { operation, logger },
-lifetime)`. Completion records go to the application logger: one `INFO` line of
-JSON for each dispatched `tools/call`. `requestedUrl` keeps the exact accepted
-spelling. The renderer's `finalUrl` selects the ad rules and resolves relative
-links.
+`createFetchOperation` returns the operation. Then the branch calls
+`fetchToolServers(operation, logger)`, which returns the `buildServer` function
+of `MCPServer`. Each MCP request gets its own SDK `Server` from
+`createFetchToolServer(context, { operation, logger }, lifetime)`. Completion
+records go to the application logger: one `INFO` line of JSON for each
+dispatched `tools/call`. `requestedUrl` keeps the exact accepted spelling. The
+renderer's `finalUrl` selects the ad rules and resolves relative links.
 
 Better Auth verifies each token and checks the current account before the tool
 runs. A forged token, a token that a password reset revoked, and a token of a
@@ -217,12 +218,15 @@ Startup failure releases resources that already opened and preserves the
 startup error. A cancelled call records `cancelled`, not a fetch failure, and
 cannot publish success. A disconnected client might receive no response.
 
-`NoAuthProvider` exists only in `test/support/auth/no-auth-provider.ts`. Tests
+`NoAuthProvider` exists only in `test/support/auth/no-auth-provider.ts`. The
+tests and the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
 inject it as both `IdentityVerifier` and `AccessResolver`. It accepts supplied
 token contents and returns a fixed synthetic identity and workspace, only
 `product:access`, a distinct client ID, a synthetic issuer, the configured
 resource, current finite times, and empty scopes. It does not bypass Bearer
 syntax checks. Production retains Better Auth and the hosted WorkOS provider.
+The work slice is a development script outside `src/`; no server setting
+selects the provider.
 
 The P01 and P02 HTTP acceptance cases use the real SDK client and production
 HTTP bridge with fetcher and pipeline doubles. The P03 offline fetch tool

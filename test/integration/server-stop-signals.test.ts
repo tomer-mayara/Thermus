@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { EventEmitter, once } from 'node:events';
 import { connect, createServer, type AddressInfo } from 'node:net';
 import { test } from 'node:test';
+import type { Application } from '../../src/application.ts';
 import { DataDirectoryInUseError, lockDataDirectory } from '../../src/auth/local-auth/better-auth/data-directory-lock.ts';
-import { serve } from '../../src/index.ts';
+import { serve, serveApplication } from '../../src/index.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
 import { dataDirectory } from '../support/data-directory.ts';
@@ -61,6 +62,39 @@ for (const signal of stopSignals) {
     assert.deepEqual(record.signalsWithHandler(), []);
   });
 }
+
+test('Given an application double and a double for the process signal registration, when serveApplication starts, a request comes, and SIGTERM arrives, then the "Listening on" line comes first, the request gets the answer of the application, the stop closes the application one time with the listener drain, and the port is free', { timeout: 5_000 }, async () => {
+  const record = new ServeRecord();
+  const drains: unknown[] = [];
+  const application: Application = {
+    handle: async () => new Response('answer of the application double'),
+    close: async (listenerDrain) => { drains.push(listenerDrain); },
+  };
+
+  const served = serveApplication(() => application, {
+    listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: 'http://127.0.0.1:8080/', logger: record.logger, signals: record.processSignals,
+  });
+  await Promise.race([record.listening.promise, served]);
+  const address = new URL(record.lines[0].message.slice('Listening on '.length));
+  const response = await fetch(address);
+  const answer = await response.text();
+  record.sendSignal('SIGTERM');
+  await served;
+
+  assert.deepEqual(record.lines.map(withoutPort), [
+    { message: 'Listening on http://127.0.0.1:<port>', signalsWithHandler: ['SIGINT', 'SIGTERM'] },
+    { message: 'Stopping after SIGTERM', signalsWithHandler: [] },
+  ]);
+  assert.deepEqual([response.status, answer], [200, 'answer of the application double']);
+  assert.equal(drains.length, 1);
+  const [drain] = drains;
+  assert.ok(drain instanceof Promise, 'The application must get the listener drain.');
+  await drain;
+  const refused = connect(Number(address.port), address.hostname);
+  const [error] = await once(refused, 'error');
+  assert.equal((error as NodeJS.ErrnoException).code, 'ECONNREFUSED');
+  assert.deepEqual(record.signalsWithHandler(), []);
+});
 
 test('Given a listen port that another server uses, when the serve sequence starts, then it rejects before the "Listening on" line, and no stop handler stays registered', { timeout: 5_000 }, async (t) => {
   const blocker = createServer().listen(0, '127.0.0.1');

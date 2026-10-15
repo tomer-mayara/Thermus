@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
+import type { Writable } from 'node:stream';
 import { parseEnv } from 'node:util';
-import type { LogRecordExporter } from '@opentelemetry/sdk-logs';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { BatchLogRecordProcessor, LoggerProvider, type LogRecordExporter } from '@opentelemetry/sdk-logs';
+import { OtelLogger } from '../../src/logging/otel-logger.ts';
+import { systemErrorName } from '../../src/website-fetcher/website-fetcher.ts';
 
 function loadLocalSettings(): NodeJS.ProcessEnv {
   try {
@@ -58,4 +62,59 @@ export function trackTestExports(output: LogRecordExporter): {
       if (codes.some((code) => code !== 0)) throw new Error('Axiom rejected the test log export.');
     },
   };
+}
+
+export interface AxiomLogging {
+  readonly logger: OtelLogger;
+  // Sends the records that wait in the batch, then stops the export. It rejects when an export failed.
+  close(): Promise<void>;
+}
+
+export function openAxiomLogging(settings: { apiKey: string; endpoint: string; dataset: string }, scopeName: string, console: Writable = process.stderr): AxiomLogging {
+  const reported = reportFailedExports(new OTLPLogExporter({
+    url: settings.endpoint,
+    headers: { Authorization: `Bearer ${settings.apiKey}`, 'X-Axiom-Dataset': settings.dataset },
+    timeoutMillis: 10_000,
+  }), console);
+  const processor = new BatchLogRecordProcessor({ exporter: reported.exporter, scheduledDelayMillis: 1_000, exportTimeoutMillis: 10_000 });
+  const provider = new LoggerProvider({ processors: [processor] });
+  return {
+    logger: new OtelLogger(provider.getLogger(scopeName)),
+    close: async () => {
+      await provider.shutdown();
+      const failed = reported.failures();
+      if (failed > 0) throw new Error(`Axiom refused or did not accept ${failed === 1 ? '1 log export' : `${failed} log exports`}. See the lines above.`);
+    },
+  };
+}
+
+// OTel 0.223 gives an export error only to its diagnostic logger, which is off. This line does not go through the
+// OtelLogger, so it cannot loop back into OTel. It omits the error message and the body: they can repeat the request.
+function reportFailedExports(output: LogRecordExporter, console: Writable): { exporter: LogRecordExporter; failures(): number } {
+  let failures = 0;
+  return {
+    exporter: {
+      export(records, complete) {
+        output.export(records, (result) => {
+          if (result.code !== 0) {
+            failures += 1;
+            console.write(`Axiom log export failed: ${failureOf(result.error)}.\n`);
+          }
+          complete(result);
+        });
+      },
+      forceFlush: () => output.forceFlush(),
+      shutdown: () => output.shutdown(),
+    },
+    failures: () => failures,
+  };
+}
+
+// The OTLP exporter error holds the HTTP status in its numeric code. A connection error holds a system error name there.
+function failureOf(error: unknown): string {
+  if (!(error instanceof Error)) return 'unknown error';
+  const code = 'code' in error ? error.code : undefined;
+  if (typeof code === 'number') return `${error.name} with HTTP ${code}`;
+  const name = systemErrorName(code);
+  return name === 'UNKNOWN' ? error.name : `${error.name} (${name})`;
 }

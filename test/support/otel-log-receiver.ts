@@ -29,7 +29,7 @@ export function logRecordsOf(request: ReceivedLogExport): ExportedLogRecord[] {
   });
 }
 
-async function startLogReceiver(): Promise<{
+export async function startLogReceiver(status = 200, body = '{}'): Promise<{
   readonly endpoint: string;
   readonly requests: ReceivedLogExport[];
   close(): Promise<void>;
@@ -44,8 +44,8 @@ async function startLogReceiver(): Promise<{
       headers: request.headers,
       body: Buffer.concat(chunks).toString('utf8'),
     });
-    response.writeHead(200, { 'Content-Type': 'application/json' });
-    response.end('{}');
+    response.writeHead(status, { 'Content-Type': 'application/json' });
+    response.end(body);
   });
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runLocalAuthCommand, type LocalAuthCommandContext } from '../../../src/auth/local-auth/local-auth-command.ts';
 import type { LocalUserAdministration } from '../../../src/auth/local-auth/local-user-administration.ts';
+import { BaseLogger } from '../../../src/logging/base-logger.ts';
 
 const environment = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/thermus' };
 const account = { id: 'account-id', email: 'alice@example.com', disabled: false };
@@ -29,7 +30,7 @@ function harness(failures: { operation?: Error; output?: Error; close?: Error; o
   const context: LocalAuthCommandContext = {
     environment,
     input: { readHiddenLine: async () => { events.push('password'); return password; } },
-    logger: { error: (message) => { errors.push(message); } },
+    logger: { error: (failure) => { errors.push(BaseLogger.messageOf(failure)); } },
     output: { write: (text) => { events.push('output'); if (failures.output) throw failures.output; output += text; } },
     openAdministration: async (settings) => {
       events.push('open');

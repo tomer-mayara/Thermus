@@ -4,7 +4,7 @@ import { getOAuthProtectedResourceMetadataUrl } from '@modelcontextprotocol/serv
 type Environment = Readonly<Record<string, string | undefined>>;
 type Deployment = DeploymentConfig['deployment'];
 
-interface PublicUrls {
+export interface PublicUrls {
   readonly publicBaseUrl: string;
   readonly mcpResourceUrl: string;
   readonly resourceMetadataUrl: string;
@@ -80,26 +80,27 @@ function readDeployment(environment: Environment): Deployment {
 function loadSelfHostedConfig(environment: Environment): SelfHostedConfig {
   const config: SelfHostedConfig = {
     deployment: 'self-hosted',
-    ...readPublicUrls(environment, 'self-hosted'),
+    ...loadPublicUrls(environment, 'self-hosted'),
     dataDirectory: readDataDirectory(environment),
   };
   return Object.freeze(config);
 }
 
 function loadHostedConfig(environment: Environment): HostedConfig {
-  const config: HostedConfig = { deployment: 'hosted', ...readPublicUrls(environment, 'hosted') };
+  const config: HostedConfig = { deployment: 'hosted', ...loadPublicUrls(environment, 'hosted') };
   return Object.freeze(config);
 }
 
-function readPublicUrls(environment: Environment, deployment: Deployment): PublicUrls {
+export function loadPublicUrls(environment: Environment, deployment: Deployment): PublicUrls {
   const base = readPublicBaseUrl(environment, deployment);
   if (!base.pathname.endsWith('/')) base.pathname = `${base.pathname}/`;
   const mcpResource = new URL('mcp', base);
-  return {
+  const urls: PublicUrls = {
     publicBaseUrl: base.href,
     mcpResourceUrl: mcpResource.href,
     resourceMetadataUrl: getOAuthProtectedResourceMetadataUrl(mcpResource),
   };
+  return Object.freeze(urls);
 }
 
 function readPublicBaseUrl(environment: Environment, deployment: Deployment): URL {

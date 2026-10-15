@@ -13,10 +13,14 @@ const logger = new OtelLogger(provider.getLogger('thermus'), LogLevel.INFO);
 logger.info('The server started.');
 ```
 
-It keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. Each accepted
-call emits one plain log body with the caller file, line, and original message.
-The caller owns the SDK provider, exporter, flush, and shutdown. The adapter does
-not read Axiom settings or install a global provider.
+It keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. `error`
+and `fatal` accept a message or a failure. `BaseLogger` renders an `Error` as
+its message, a `SuppressedError` as both messages, and another value as its
+text; `BaseLogger.messageOf()` gives the same text to a caller that composes a
+longer line. Each accepted call emits one plain log body with the caller file,
+line, and original message. The caller owns the SDK provider, exporter, flush,
+and shutdown. The adapter does not read Axiom settings or install a global
+provider.
 
 | Method | Severity number | Severity text |
 | --- | --- | --- |
@@ -66,6 +70,14 @@ ingest access to `system-log-test` in the `thermus-ai-spao` organization.
 The tests read `.env.local` without shell evaluation. Exported environment
 values take precedence. Keep the file and its credentials out of version
 control and test reports.
+
+The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
+uses the production `OtelLogger` through `openAxiomLogging()` in
+`test/support/axiom-test-export.ts`. It reads the same settings with the same
+reader and exports to the same test dataset. The log lines go to Axiom only.
+The console gets only the export failure lines: one line for each refused or
+failed export. After such a failure, the script writes one `FATAL` line and
+exits with status 1 when it stops.
 
 The test dataset setting defaults to `system-log-test`. The tests reject another
 value and never use the production `AXIOM_SYSTEM_LOG_DATA_SET` setting. Missing

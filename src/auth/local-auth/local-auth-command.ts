@@ -20,7 +20,7 @@ export interface LocalAuthCommandContext {
   readonly environment: Environment;
   readonly input: HiddenInput;
   readonly output: { write(text: string): void };
-  readonly logger: { error(message: string): void };
+  readonly logger: { error(failure: unknown): void };
   readonly openAdministration: OpenAdministration;
 }
 
@@ -52,7 +52,7 @@ export async function runLocalAuthCommand(args: readonly string[], context: Loca
     await runWithAdministration(command, context);
     return EXIT_SUCCESS;
   } catch (error) {
-    context.logger.error(failureMessage(error));
+    context.logger.error(error);
     return EXIT_FAILURE;
   }
 }
@@ -125,11 +125,4 @@ function accountTable(accounts: readonly LocalAccount[]): string {
   const emailWidth = Math.max(...rows.map(([email = '']) => email.length));
   const stateWidth = Math.max(...rows.map(([, state = '']) => state.length));
   return rows.map(([email = '', state = '', id = '']) => `${email.padEnd(emailWidth)}  ${state.padEnd(stateWidth)}  ${id}\n`).join('');
-}
-
-function failureMessage(error: unknown): string {
-  if (error instanceof SuppressedError) {
-    return `${failureMessage(error.suppressed)} The cleanup after this failure also failed: ${failureMessage(error.error)}`;
-  }
-  return error instanceof Error ? error.message : String(error);
 }

@@ -34,20 +34,29 @@ export abstract class BaseLogger {
     this.emit(LogLevel.WARNING, message);
   }
 
-  error(message: string): void {
-    this.emit(LogLevel.ERROR, message);
+  error(failure: unknown): void {
+    this.emit(LogLevel.ERROR, failure);
   }
 
-  fatal(message: string): void {
-    this.emit(LogLevel.FATAL, message);
+  fatal(failure: unknown): void {
+    this.emit(LogLevel.FATAL, failure);
   }
 
-  private emit(level: LogLevel, message: string): void {
+  // This rule is here so that each logger writes a failure in the same way.
+  // A caller that makes a longer line uses the same rule.
+  public static messageOf(failure: unknown): string {
+    if (failure instanceof SuppressedError) {
+      return `${BaseLogger.messageOf(failure.suppressed)} The cleanup after this failure also failed: ${BaseLogger.messageOf(failure.error)}`;
+    }
+    return failure instanceof Error ? failure.message : String(failure);
+  }
+
+  private emit(level: LogLevel, message: unknown): void {
     if (level < this.level) return;
     this.write(
       level,
       this.formatTimestamp(new Date()),
-      this.withCallSite(message),
+      this.withCallSite(BaseLogger.messageOf(message)),
     );
   }
 
