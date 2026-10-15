@@ -5,9 +5,9 @@ import { PerRequestHTTPServerTransport, SERVER_INFO_META_KEY } from '@modelconte
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
-import { AccessResolverMock } from '../../support/doubles/auth/access-resolver-spy.ts';
-import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
-import { IdentityVerifierMock } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 describe('MCPServer HTTP authentication', () => {
@@ -16,12 +16,12 @@ describe('MCPServer HTTP authentication', () => {
   const user: AuthenticatedUser = { authority: 'https://auth.thermus.example', subject: 'test-user' };
   const identityOutage = new Error('identity provider unavailable');
   let server: MCPServer;
-  let verifier: IdentityVerifierMock;
-  let resolver: AccessResolverMock;
-  let reporter: FailureReporterMock;
+  let verifier: IdentityVerifierSpy;
+  let resolver: AccessResolverSpy;
+  let reporter: FailureReporterSpy;
 
   beforeEach(() => {
-    verifier = new IdentityVerifierMock(new Map<string, VerifiedIdentity | Error>([
+    verifier = new IdentityVerifierSpy(new Map<string, VerifiedIdentity | Error>([
       ['accepted-token', {
         user,
         issuer: 'https://auth.thermus.example',
@@ -35,11 +35,11 @@ describe('MCPServer HTTP authentication', () => {
       ['error-token', new Error('private verifier failure for error-token')],
       ['secret-outage-token', identityOutage],
     ]));
-    resolver = new AccessResolverMock(new Map([[user.subject, {
+    resolver = new AccessResolverSpy(new Map([[user.subject, {
       allowed: true,
       context: { user, tenantId: 'local:test-installation', grants: [], permissions: [] },
     }]]));
-    reporter = new FailureReporterMock();
+    reporter = new FailureReporterSpy();
     server = new MCPServer({
       auth: { verifier, accessResolver: resolver, resourceMetadataUrl, expectedResource: new URL(resourceUrl) },
       reportFailure: reporter.report,

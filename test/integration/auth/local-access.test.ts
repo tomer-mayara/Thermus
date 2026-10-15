@@ -20,7 +20,7 @@ import {
 } from '../../support/better-auth-agents.ts';
 import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/better-auth-local.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
-import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { resourceServerClient, userGrant, type UserGrant } from '../../support/local-commands.ts';
 import { addAccount, passwordOf, selfHostedConfig } from '../../support/local-runtime.ts';
@@ -42,7 +42,7 @@ interface LocalInstallationUnderTest {
 interface McpServerUnderTest {
   readonly server: MCPServer;
   readonly probe: RequestContextProbe;
-  readonly reporter: FailureReporterMock;
+  readonly reporter: FailureReporterSpy;
 }
 
 async function openRuntime(t: TestContext, directory: string): Promise<BetterAuthRuntime> {
@@ -85,7 +85,7 @@ function providerFor(runtime: BetterAuthRuntime, resourceServer: ResourceServerC
 
 function mcpServer(t: TestContext, provider: BetterAuthProvider, requiredScopes?: readonly string[]): McpServerUnderTest {
   const probe = new RequestContextProbe();
-  const reporter = new FailureReporterMock();
+  const reporter = new FailureReporterSpy();
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl, expectedResource: new URL(mcpResourceUrl), requiredScopes },
     buildServer: probe.buildServer,

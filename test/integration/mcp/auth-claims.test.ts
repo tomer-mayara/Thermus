@@ -8,9 +8,9 @@ import {
 } from '@modelcontextprotocol/server';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
-import { AccessResolverMock } from '../../support/doubles/auth/access-resolver-spy.ts';
-import { FailureReporterMock } from '../../support/doubles/mcp/failure-reporter-spy.ts';
-import { IdentityVerifierMock } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 
 describe('MCPServer verified claim validation', () => {
   const resourceUrl = 'https://thermus.example/mcp';
@@ -87,15 +87,15 @@ describe('MCPServer verified claim validation', () => {
       error: 'insufficient_scope',
     },
   ];
-  let verifier: IdentityVerifierMock;
-  let resolver: AccessResolverMock;
-  let reporter: FailureReporterMock;
+  let verifier: IdentityVerifierSpy;
+  let resolver: AccessResolverSpy;
+  let reporter: FailureReporterSpy;
   let server: MCPServer;
 
   beforeEach(() => {
-    verifier = new IdentityVerifierMock(new Map(scenarios.map(({ token, identity }) => [token, identity])));
-    resolver = new AccessResolverMock();
-    reporter = new FailureReporterMock();
+    verifier = new IdentityVerifierSpy(new Map(scenarios.map(({ token, identity }) => [token, identity])));
+    resolver = new AccessResolverSpy();
+    reporter = new FailureReporterSpy();
     const options = {
       auth: {
         verifier,

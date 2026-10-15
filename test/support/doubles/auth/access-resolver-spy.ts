@@ -2,7 +2,7 @@ import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../../..
 
 export type ConfiguredAccess = AccessDecision | Error | ((user: AuthenticatedUser) => Promise<AccessDecision>);
 
-export class AccessResolverMock implements AccessResolver {
+export class AccessResolverSpy implements AccessResolver {
   readonly calls: AuthenticatedUser[] = [];
   private readonly decisions: ReadonlyMap<string, ConfiguredAccess>;
 
