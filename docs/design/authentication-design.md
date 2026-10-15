@@ -336,8 +336,10 @@ AUTH-06 composes the hosted edition with the WorkOS provider.
 `createApplication(config, logger, environment)` loads
 `src/hosted-workos-application.ts` only for the hosted edition, as it loads the
 Better Auth runtime only for the self-hosted edition. `openWorkOSApplication()`
-there loads the [WorkOS settings](#configuration-and-composition) and makes one
-WorkOS SDK client and one AuthKit key set:
+there calls `openWorkOSConnection(config, logger, environment)`. That call
+makes the connection: it loads the
+[WorkOS settings](#configuration-and-composition), makes one WorkOS SDK client
+and one AuthKit key set, and writes the operator line below:
 
 - The SDK client has the API key, the client ID, the browser-session issuer
   `https://api.workos.com/user_management/<client ID>`, no retry, and a
@@ -346,8 +348,13 @@ WorkOS SDK client and one AuthKit key set:
   with a 5-second timeout. jose reads it at the first Connect token, so the
   start makes no network call.
 
-`composeWorkOSApplication(config, connection, logger)` makes the parts. A test
-can give it a connection to a local fake of the WorkOS API:
+`composeWorkOSApplication(config, connection, parts)` makes the parts. Since
+2026-10-15, its third argument is the parts record `{ logger, buildServer? }`
+(decision D6 of the
+[auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)).
+`openWorkOSApplication()` composes with no `buildServer`, so the hosted edition
+in production serves no tool. A test can give the composition a connection to
+a local fake of the WorkOS API:
 
 - `WorkOSAuthProvider` is the MCP verifier and the access resolver of both
   transports. It reads the grants for each request through
@@ -362,7 +369,10 @@ can give it a connection to a local fake of the WorkOS API:
   in front of it. The endpoint answers `GET` and `HEAD` of both
   protected-resource metadata paths with the MCP resource and the AuthKit
   issuer as its only authorization server, and gives each other request to
-  the `MCPServer`.
+  the `MCPServer`. The `MCPServer` gets the `buildServer` of the parts:
+  production gives none, so the endpoint serves no tool, and the
+  [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+  gives the fetch tool for a local run.
 - The account operation is `portalAccessOperation()`, the protected portal
   request `<base>portal/access`. It needs `product:access` and gives the
   organization and the roles of the grants that give a permission;
@@ -400,7 +410,7 @@ can give it a connection to a local fake of the WorkOS API:
 
 The routes answer in this order: the MCP resource and both protected-resource
 metadata paths, the browser routes of the provider, the account routes under
-the public base path, and `404` for each other path. The start writes one
+the public base path, and `404` for each other path. The connection writes one
 operator line that names the client ID and the issuer, but no secret:
 `Hosted authentication uses WorkOS: the client <client ID> and the AuthKit issuer <issuer>.`
 
@@ -1043,8 +1053,8 @@ Thermus server are separate.
 | Contract | Live result | Consequence for the hosted implementation |
 | --- | --- | --- |
 | Saved configuration | Redirect URI `https://localhost:46443/callback` (the default), MCP resource indicator `https://localhost:46443/mcp`, no CORS origin, roles `user`, `admin`, `super-admin`, and `member` exactly as in the [hosted role mapping](#hosted-role-mapping), MFA required, password sign-in on, passkeys off. The run r3 saved the redirect URI and the resource indicator through the WorkOS API. | The local HTTPS test server at `https://localhost:46443/` is the documented deployment of the live gate. |
-| Dashboard configuration | Run r5, after the owner saved the three dashboard settings: the sign-in page offers only "Continue with email" and no social provider; the default Sign-out URI is `https://localhost:46443/`; the Initiate login URI is `https://localhost:46443/login`. Run r4 found Google, Microsoft, GitHub, and Apple on, no Sign-out URI (the logout landed on `error.workos.com/user_management/app-homepage-url-not-found`), and no Initiate login URI. The WorkOS API has no endpoint for these three settings. | The owner keeps them in the WorkOS dashboard. The proofs read them back through the sign-in page and the redirects of the logout and of a direct AuthKit visit. |
-| AuthKit metadata | Exact issuer; `jwks_uri` `<issuer>/oauth2/jwks`; grants `authorization_code`, `refresh_token`, and the device code; client authentication `none`, `client_secret_post`, and `client_secret_basic`; scopes `openid`, `profile`, `email`, and `offline_access`; no `registration_endpoint` and no client ID metadata document support. | Dynamic registration and client ID metadata documents are off. An MCP client must be a Connect application. The live proofs make a third-party OAuth application with PKCE through the API. |
+| Dashboard configuration | Run r5, after the owner saved the three dashboard settings: the sign-in page offers only "Continue with email" and no social provider; the default Sign-out URI is `https://localhost:46443/`; the Initiate login URI is `https://localhost:46443/login`. Run r4 found Google, Microsoft, GitHub, and Apple on, no Sign-out URI (the logout landed on `error.workos.com/user_management/app-homepage-url-not-found`), and no Initiate login URI. The WorkOS API has no endpoint for these three settings. On 2026-10-14, the owner turned Google sign-in on in Staging for the auth WorkOS MCP URL fetch work slice (decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The sign-in uses the built-in Google credentials of WorkOS. The WorkOS connector made the change with `updateAuthkitSettings`. The sign-in page now offers "Continue with email" and "Continue with Google". The configuration proof now requires exactly Google as the only social provider. | The owner keeps them in the WorkOS dashboard. The WorkOS connector can also change the social providers. The proofs read them back through the sign-in page and the redirects of the logout and of a direct AuthKit visit. The hosted role of the MFA evidence does not change: a Google sign-in gives none, as the row "Browser sign-in and MFA" gives, so its session cannot open the administration pages. |
+| AuthKit metadata | Exact issuer; `jwks_uri` `<issuer>/oauth2/jwks`; grants `authorization_code`, `refresh_token`, and the device code; client authentication `none`, `client_secret_post`, and `client_secret_basic`; scopes `openid`, `profile`, `email`, and `offline_access`. Until 2026-10-14, the metadata had no `registration_endpoint` and no client ID metadata document support. Since 2026-10-14, Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD) are on in Staging, for the auth WorkOS MCP URL fetch work slice (decision D1): the metadata has the `registration_endpoint` `<issuer>/oauth2/register` and `client_id_metadata_document_supported: true`, and the proof asserts both. | An MCP client such as Claude Code registers itself at AuthKit, with DCR or a client ID metadata document. A Connect application also works: the live proofs make a third-party OAuth application with PKCE through the API. |
 | Key sets | The AuthKit key set and the browser-session key set each hold the same one RS256 key. | The signature of a browser token verifies with the AuthKit key set. The MCP verifier must refuse it by its issuer and its audience. WorkOS did not rotate a key during the proofs; the [offline proofs](#pinned-workos-sdk-proof) show the jose rotation behavior. |
 | Browser sign-in and MFA | A new user: email, password, `/mfa/enrollment` (a TOTP enrollment with a code), then the callback. A later sign-in: `/mfa/verification` instead. A user with two memberships also gets `/organization-selection`. No callback comes before the TOTP step. The code exchange gives `authenticationMethod` `Password`. | Required MFA completes in the real flow. WorkOS gives no MFA claim, so a session counts as MFA-completed only when its sign-in method is `Password` in this environment, which requires MFA for password sign-ins. Any other method gives no MFA evidence. |
 | Browser access token | RS256; `iss` `https://api.workos.com/user_management/<client ID>`; `sid` `session_…`; `client_id` the environment client; no `aud`; 300-second lifetime; `org_id`, `role`, `roles`, and `permissions` only with an organization. A user without a membership gets no `org_id`. The sealed session has 1,980 characters. | The session check sets the browser issuer. Access never comes from the token claims; the access resolver reads the memberships for each request. |

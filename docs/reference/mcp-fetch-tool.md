@@ -228,6 +228,15 @@ syntax checks. Production retains Better Auth and the hosted WorkOS provider.
 The work slice is a development script outside `src/`; no server setting
 selects the provider.
 
+The hosted edition serves no tool in production. The
+[auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+gives the fetch tool to the hosted composition for a local run, through the
+`buildServer` part of `composeWorkOSApplication()`. There the real WorkOS
+provider checks each Connect token and reads the current grant of the person
+before the tool runs. The completion record has the WorkOS identity. The slice
+is also a development script outside `src/`; no server setting gives the
+hosted edition a tool.
+
 The P01 and P02 HTTP acceptance cases use the real SDK client and production
 HTTP bridge with fetcher and pipeline doubles. The P03 offline fetch tool
 acceptance cases run the production `serve()` with real Better Auth, the real

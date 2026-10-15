@@ -130,6 +130,17 @@ controlled promise. Real listener/provider order is integration coverage below.
 [V] Shares cleanup across concurrent and later close calls
 [V] Closes each resource once and preserves MCP, listener, and provider cleanup errors
 
+**Stop-signal wait** (`test/unit/stop-signal.test.ts`)
+
+Since 2026-10-15, `src/index.ts` exports `stopSignal()`. A composition with more than one listener, such as the auth WorkOS MCP URL fetch work slice, cannot use `serveApplication()`. With `stopSignal()`, it waits for `SIGINT` or `SIGTERM` in the same way. An `EventEmitter` is the double for the process signals. The integration test of the stop signals, `test/integration/server-stop-signals.test.ts`, does not change.
+
+[V] Given a double for the process signals, the wait registers `SIGINT` and `SIGTERM`; when it gets `SIGTERM`, it gives `SIGTERM` and removes both listeners
+[V] Given a wait that is disposed before any signal, a later signal finds no listener, and the wait gives nothing
+
+```sh
+npm run build && node --test dist/test/unit/stop-signal.test.js
+```
+
 **Better Auth runtime lifecycle** (`test/unit/auth-better-auth/better-auth-runtime.test.ts`)
 
 Doubles stand in for the data-directory lock, the local installation, and the provider at their public interfaces.
@@ -980,9 +991,10 @@ The fixture registry, the operator runbook driver, and the operator setup proofs
 
 **Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
 
-`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, and the foreign origin probe. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, and the Lightpanda digest check read their paths from it. The test also covers `failingAdCleaner` of `test/support/server-preloads.ts` and `trustedAdRulesFile` of `test/support/ad-rules.ts`.
+`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, and the local HTTPS site read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. The test also covers `failingAdCleaner` of `test/support/server-preloads.ts` and `trustedAdRulesFile` of `test/support/ad-rules.ts`.
 
 [V] Given a build, each of the program entry, the network blocker, the SQL tracer, the foreign origin probe, the failing ad cleaner preload, and the trusted ad rules file names a file that exists
+[V] Given the repository, the portal build is the `dist/` folder of the portal source `src/user-portal/`, and that source folder exists; the build itself exists only after `npm run build:user-portal`, which `npm run check` runs after the unit tests
 [V] Given a build, the repository root is the folder of `package.json`
 
 ```sh
@@ -1001,9 +1013,9 @@ The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` doubl
 npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
 ```
 
-**Work slice: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch.test.ts`)
+**Work slice fetch lines** (`test/unit/work-slice/observe-fetches.test.ts`)
 
-A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
+`observeFetches()` and `MARKDOWN_LOG_LIMIT` write the fetch lines of both work slices. Since 2026-10-15, they are in `test/support/work-slice/observe-fetches.ts`, and the test imports them from there. Before, they were private to the entry point of the basic slice, and the test was `test/unit/work-slice/basic-mcp-url-fetch.test.ts`. The cases did not change. A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
 
 [V] `observeFetches()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
 [V] Counts code points, not UTF-16 units; above the limit, the completed line keeps the first code points without a split surrogate pair and ends with `[cut: <n> more characters]`, and the caller still gets the whole Markdown; the default limit is 65,536 code points
@@ -1011,10 +1023,10 @@ A double stands in for the fetch operation, and a recording logger stands in for
 [V] Gives the operation the same URL, request context, and signal
 
 ```sh
-npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch.test.js
+npm run build && node --test dist/test/unit/work-slice/observe-fetches.test.js
 ```
 
-**Work slice launcher script** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
+**Work slice launcher script: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
 
 The test runs `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the five settings, and whether `AXIOM_API_KEY` is set, but never the value of the key. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no `ad-rules.txt` of the repository, and no renderer.
 
@@ -1026,6 +1038,26 @@ The test runs `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetc
 
 ```sh
 npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch-script.test.js
+```
+
+**Work slice launcher script: auth WorkOS MCP URL fetch** (`test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`)
+
+The fixture `test/unit/work-slice/fixtures/launcher-case.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the ten settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
+
+[V] Given only the three WorkOS settings and `AXIOM_API_KEY`, when the script runs from another directory, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from `openssl rand`, and the keys; stderr lists the ten settings after the certificate line, and no output shows a secret
+[V] Given each setting with a custom value, a cookie password, and a TLS directory with both files, pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the ten values without the secrets
+[V] Given a `PUBLIC_BASE_URL` with a final slash and no `WORKOS_REDIRECT_URI`, the redirect URI is the callback on that base without a double slash
+[V] Given no `WORKOS_API_KEY`, no `WORKOS_CLIENT_ID`, or no `WORKOS_AUTHKIT_ISSUER` (three cases), the script exits with status 1 and a message that names the missing setting and the staging launcher and shows no value, and neither openssl nor pnpm runs
+[V] Given the three WorkOS settings with empty values, the script exits with status 1, and the message names the three settings
+[V] Given no certificate files, the first of two runs makes `key.pem` and `cert.pem` with `openssl req` in the default TLS directory, which only the owner can read (the directory `0700`, the key `0600`), and says so on stderr; the second run calls no `openssl req` and keeps the files
+[V] Given a TLS directory with `cert.pem` only, the script makes a new `key.pem` and `cert.pem`
+[V] Given an `AD_RULES_FILE` that does not exist, the script exits with status 1 and a message that names `AD_RULES_FILE` and the `touch` command; it makes no certificate, and pnpm does not run
+[V] Given a repository root without the portal build, the script exits with status 1 and a message that names the missing `index.html` and `npm run build:user-portal`; it makes no certificate, and pnpm does not run
+[V] Given extra arguments, pnpm exec gets them after the entry point
+[V] Given a pnpm that exits with status 3, the script exits with status 3
+
+```sh
+npm run build && node --test dist/test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.js
 ```
 
 ### Planned Cache Key Tests
@@ -1406,10 +1438,11 @@ npm run build && node --test dist/test/integration/server-stop-signals.test.js
 
 **Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
 
-These tests start `LocalHttpsSite` of `test/support/hosted-live/local-https-site.ts` with the real hosted composition and the real HTTP server. The WorkOS provider gets placeholder settings that reach no WorkOS environment. They cover a failed start: a start that fails must close what it started, so that the gate process exits. The hosted live gate has the only complete start, with the portal build and the staging settings.
+These tests start `LocalHttpsSite` of `test/support/hosted-live/local-https-site.ts` with the real HTTP server. The suite title is "Local HTTPS site of the hosted live gate (test support) with the real HTTP server". The first two cases cover a failed start with the default application, the real hosted composition. Its WorkOS provider gets placeholder settings that reach no WorkOS environment. A start that fails must close what it started, so that the gate process exits. Since 2026-10-15, the site takes the options `certificate`, `logger`, and `application` next to `portalBuild` (decision D7 of the [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The third case starts the site completely with these options and a small application. The hosted live gate also starts the site completely, with the portal build and the staging settings. The auth WorkOS MCP URL fetch work slice starts it with its own application and a certificate that stays. The third case listens on port 46443, the port of the gate and of the work slice. Thus it fails while one of them runs.
 
 [V] Given a portal build directory that does not exist, when the site starts, then it rejects with the message that names the directory and `npm run build:user-portal`, keeps the file system error as the cause, and leaves no server listening
 [V] Given a portal build and a `PATH` without OpenSSL, when the site starts, then it rejects with the spawn error, closes the application that it started, and leaves no server listening
+[V] Given a portal build, certificate files from the OpenSSL command of the site, a logger, and an application function, when the site starts, then the front at `https://localhost:46443/` gives that certificate, serves the portal, and forwards each other request to the application of that function, which gets that logger; a request that the application fails gives 500 and a report to that logger; `close()` closes the application one time and leaves no server listening
 
 Run only these tests:
 
@@ -1703,6 +1736,21 @@ The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test,
 npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.js
 ```
 
+**Work slice: auth WorkOS MCP URL fetch** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts`)
+
+`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `observeFetches()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSWorld` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run of the slice shows the Google sign-in, the client registration of Claude Code, the renderer, and the export to Axiom. The file has five cases: the first case runs in each protocol era.
+
+[V] Given the slice application, Ada with the role `user` in Acme, and a renderer double that serves `https://news.example/story`, when Ada signs in with Google through the server, then her session is signed in to Acme with `mfaCompleted: false`, and her portal access names Acme and the role `user`; when an MCP client in each protocol era with her Connect token for Acme lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the rules remove, the log has the started line, the completed line, and one completion record with the authority `workos:client_test`, the subject `user_01ADA`, the tenant `workos:client_test:org_01ACME`, and the status `success`, and `close()` stops the application
+[V] Given Dee without a membership, as after her first Google sign-in, her portal access gets 403, and the organization page gives the onboarding guidance; her Connect token for Acme gets 403 `access_denied` at the tool, no renderer starts, and the log has no fetch line; after the world gets her membership with the role `user`, as the operator step gives it, the next call gets the cleaned Markdown, and the log has the fetch lines with her WorkOS identity
+[V] Given no token, a browser token of Ada, and a Connect token for another resource, each call of `getURLAsMarkdown` gets 401 with a Bearer challenge that names the protected-resource metadata, no renderer starts, and the log has no fetch line; the metadata names the MCP resource and the AuthKit issuer of the world as its only authorization server
+[V] Given Ben with Admin only in Acme, his Connect token gets 403 `access_denied` at the tool, no renderer starts, and the log has no fetch line
+
+The manual entry point `auth-workos-mcp-url-fetch.ts` next to this file is not a test, and the [README of the slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md) describes it.
+
+```sh
+npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.js
+```
+
 **Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)
 
 The tests use the existing ESLint configuration against source snippets at the
@@ -1730,9 +1778,14 @@ paths under `test/`. They check the rules D1 to D3 and D6 of the
 forms as the auth boundaries. Computed imports and transitive dependencies are
 outside this check.
 
+Since 2026-10-15, rule D2 has no exception. The unit test of the work-slice
+fetch lines imports them from test support. Thus the lint block of the
+exception and its three cases are gone. One case shows that the former
+exception is refused.
+
 [V] D1: refuses an import of a test type folder from `test/support/`, also through `test/`; allows `src`, packages, and support code
 [V] D2: refuses an import of another test type from each of the four test types; allows support code, own fixtures, the same type, `src`, and packages
-[V] D2 exception: from another test type, `test/unit/work-slice/basic-mcp-url-fetch.test.ts` imports only the entry point `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts`; D3 still applies to it
+[V] D2, the former exception: `test/unit/work-slice/observe-fetches.test.ts` may not import the entry point of either work slice; it may import `test/support/work-slice/observe-fetches.ts`
 [V] D3: refuses the fixtures of another unit package, also from a fixture file; allows own fixtures, shared support fixtures and doubles, and the package fixtures from a nested folder
 [V] D6: refuses each import that is not a `node:` module in the three container scripts, at their paths today and after Step 5b of the plan
 [V] Checks exact path segments without refusing names that only resemble a test type folder
@@ -1805,6 +1858,10 @@ The real hosted composition with the WorkOS provider runs behind the real HTTP s
 [V] The protected-resource metadata names the MCP resource and the AuthKit issuer
 [V] A browser session in one organization and an MCP token in another each keep their own organization
 [V] A membership read outage gives 500 without protected work at the MCP endpoint and the portal request, and operator reports without the token
+[V] With a `buildServer` in the parts of `composeWorkOSApplication()` that gives a test-only tool, the Connect token of a User lists that tool; without a `buildServer`, as in production, the endpoint has no tool list: `tools/list` gets HTTP 404 with the JSON-RPC error -32601 "Method not found"
+[V] `openWorkOSConnection()` gives the WorkOS settings of the environment and writes one operator line that names the client and the AuthKit issuer; without WorkOS settings, it rejects with the settings error and writes no line
+
+Since 2026-10-15, `composeWorkOSApplication()` takes the parts record `{ logger, buildServer? }` as its third argument. `openWorkOSConnection()` is its own export (decision D6 of the [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The last two cases cover these seams; the acceptance test of that work slice covers the real fetch tool.
 
 Run only these tests:
 
@@ -2067,17 +2124,17 @@ npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
 
 **Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
 
-These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. On 2026-10-15, the auth WorkOS MCP URL fetch work slice changed two AUTH-06 provider proofs for decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md). Now the sign-in page must offer Google as its only social provider. The AuthKit metadata must name the registration endpoint and support client ID metadata documents. These two proofs are `[ ]` until the next complete run passes them. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
 
 AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
 
-[V] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, and S256 PKCE
+[ ] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, S256 PKCE, the client registration endpoint `<issuer>/oauth2/register`, and `client_id_metadata_document_supported: true` (changed on 2026-10-15; it waits for the next gate run)
 [V] The AuthKit key set and the browser-session key set have signing keys with key IDs, and jose accepts them
 [V] WorkOS accepts the staging API key for a read of organizations
 [V] The saved redirect URI is exactly `https://localhost:46443/callback`, the default; no CORS origin is saved; the MCP resource indicator `https://localhost:46443/mcp` is saved
 [V] The environment roles have exactly the permissions of the hosted role mapping, and no other role has an application permission
 [V] The authentication settings require MFA, allow password sign-in, and refuse passkeys
-[V] The hosted sign-in page offers only email sign-in and no social provider
+[ ] The hosted sign-in page offers email sign-in and Google as its only social provider (changed on 2026-10-15 for decision D1; it waits for the next gate run)
 [V] A new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
 [V] The browser access token is an RS256 token of the environment client with a `session_` sid, no audience, no organization, and a 300-second lifetime; the sealed session is shorter than 3,800 characters
 [V] A later sign-in asks for the TOTP code, not a new enrollment

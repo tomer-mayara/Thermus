@@ -477,8 +477,16 @@ file, a ticket, or a log.
 
 Configure the staging environment as the hosted edition needs it:
 
-- Email and password sign-in with MFA required. No social sign-in provider,
-  no passkey, and no magic sign-in: only a password sign-in proves MFA.
+- Email and password sign-in with MFA required, and Google sign-in with the
+  built-in Google credentials of WorkOS. No other social sign-in provider, no
+  passkey, and no magic sign-in: only a password sign-in proves MFA, so a
+  Google sign-in gives no MFA evidence. Google sign-in is on since
+  2026-10-14, for the
+  [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+  (decision D1 of its [plan](auth-workos-mcp-url-fetch-plan.md)).
+- Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD)
+  on, so that MCP clients such as Claude Code register themselves at AuthKit.
+  They are on since 2026-10-14, for the same work slice.
 - Multiple roles for each membership, and the roles and permissions of the
   [hosted role mapping](../design/authentication-design.md#hosted-role-mapping).
 - The redirect URI `https://localhost:46443/callback` as the default, the
@@ -487,12 +495,22 @@ Configure the staging environment as the hosted edition needs it:
 - The MCP resource indicator `https://localhost:46443/mcp`.
 
 The WorkOS API can save the redirect URI and the resource indicator. The
-social providers, the Sign-out URI, and the Initiate login URI are dashboard
-settings. The configuration proofs of the gate read back each setting that the
-API or the hosted pages show. The session-end proofs follow the redirects of
-the WorkOS logout to the Sign-out URI and of a direct AuthKit visit to the
-Initiate login URI. A redirect is not a page, so these proofs watch the
-navigation requests of the browser.
+Sign-out URI and the Initiate login URI are dashboard settings. The dashboard
+also keeps the sign-in methods and the social providers, under Authentication,
+and DCR and CIMD. The WorkOS connector can change these too, with its
+`updateAuthkitSettings` operation. The configuration proofs of the gate read
+back each setting that the API or the hosted pages show. The proof of the
+AuthKit metadata reads DCR and CIMD back: the `registration_endpoint` and
+`client_id_metadata_document_supported`. The session-end proofs follow the
+redirects of the WorkOS logout to the Sign-out URI and of a direct AuthKit
+visit to the Initiate login URI. A redirect is not a page, so these proofs
+watch the navigation requests of the browser.
+
+The auth WorkOS MCP URL fetch work slice uses the same staging environment,
+the same origin `https://localhost:46443/`, and the same registered URIs. Thus
+the slice and the gate cannot run at the same time. The gate does not delete
+the organization "Thermus work slice" or the users of the slice: a run deletes
+only the data with its own name or email prefix.
 
 The gate also needs:
 
@@ -500,7 +518,11 @@ The gate also needs:
 - OpenSSL in `PATH`: the local HTTPS test server makes a new self-signed
   certificate for `localhost` for each run.
 - Free local ports: 46443 for the local HTTPS test server, and 46480 for the
-  callback of the test MCP client, which the browser catches.
+  callback of the test MCP client, which the browser catches. Nothing else
+  listens on port 46443: not the auth WorkOS MCP URL fetch work slice, and
+  not the integration case of the local HTTPS site in
+  `test/integration/auth/hosted-live-site.test.ts`, which
+  `npm run test:integration` runs.
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 

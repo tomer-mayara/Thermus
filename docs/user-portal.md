@@ -64,8 +64,12 @@ the portal. For the AuthKit domain of `WORKOS_AUTHKIT_ISSUER`, for example
 The hosted live gate uses this layout at `https://localhost:46443/`. Its local
 HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
 self-signed certificate for each run, serves the portal build, and forwards
-each other request to the real hosted composition. The WorkOS staging
-environment has these settings for it:
+each other request to the real hosted composition. The
+[auth WorkOS MCP URL fetch work slice](../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+runs the same local HTTPS site at the same origin, with a certificate that
+stays, so that a person trusts it one time. Its hosted composition also has the
+fetch tool. The gate and the slice cannot run at the same time. The WorkOS
+staging environment has these settings for both:
 
 - Redirect URI (the default): `https://localhost:46443/callback`.
 - Default Sign-out URI: `https://localhost:46443/`.
