@@ -4,7 +4,7 @@ Thermus supports the official Lightpanda **1.0.0** release. The renderer is an e
 
 Use macOS or Linux on x86-64 or ARM64. The Linux binary requires glibc; Alpine Linux with musl is not supported by this recipe. On Windows, run the Linux recipe inside WSL2. See the [official installation guide](https://lightpanda.io/docs/open-source/installation/) for WSL2 setup.
 
-The macOS ARM64 asset download, SHA256 digest, and `version` output were verified. The 29 local renderer interface tests and the renderer gate passed with that executable. The Linux ARM64 executable runs in the container gate. A `linux/amd64` build of the renderer stage, with emulation on an ARM64 host, checked the digest of the Linux x86-64 asset, and that executable reported `1.0.0`. No test rendered a page with it. The macOS x86-64 asset was not exercised.
+The macOS ARM64 asset download, SHA256 digest, and `version` output were verified. The 29 local renderer interface tests and the renderer gate passed with that executable. The Linux ARM64 executable runs in the container gate. A `linux/amd64` build of the renderer stage, with emulation on an ARM64 host, checked the digest of the Linux x86-64 asset, and that executable reported `1.0.0`. That renderer-stage check did not render a page. The final hosted image proof is tracked in [RHD-03](implementation/rhd-03.md); until a successful Linux AMD64 run is recorded there, AMD64 page rendering remains unverified. The macOS x86-64 asset was not exercised.
 
 ## Install the pinned release
 
@@ -83,6 +83,31 @@ A container start downloads nothing. The image sets these settings:
 The renderer reads the CA certificates of the system for HTTPS pages. Node uses its own certificates. The slim Node image has no CA certificates: without them, the renderer logs `No certificates loaded`, and each HTTPS page fails with `PeerFailedVerification`. Thus the image copies `/etc/ssl/certs/ca-certificates.crt`, the bundle of the Debian `ca-certificates` package, from the pinned Rust image of the build, which has the same Debian release. The bundle changes when that image changes.
 
 The fetcher keeps its options in the container: the network block list, the readiness and process limits, and the output limit. The [container gate](implementation/test-gate-policy.md#container-gate) proves the renderer of the image without outbound access. It cannot reach a public HTTPS page. A manual check with network access fetched `https://example.com/` with the production options in a `linux/arm64` container of the image.
+
+### Hosted image
+
+[`Dockerfile.hosted`](../Dockerfile.hosted) uses the same pinned Linux assets,
+digest checks, executable path, CA bundle source, and telemetry setting. It
+adds the built portal and versioned hosted rules. The separate
+[`Dockerfile.hosted.dockerignore`](../Dockerfile.hosted.dockerignore) includes
+the build and test inputs and excludes local environment files and keys.
+The build runs `npm run build:hosted` without external network access,
+including the real local renderer gate with its bundled executable. It then
+checks the assembled outputs with production dependencies as `node`.
+
+Run the final image proof with Docker Engine, Buildx, and a native or emulated
+Linux AMD64 builder and runtime, plus public HTTPS egress to `https://example.com/`:
+
+```sh
+npm run test:container:hosted
+```
+
+The gate uses the final image and its real packaged renderer; its `.runtime.ts`
+file is outside normal suite discovery. The [hosted image gate](implementation/test-gate-policy.md#hosted-image-gate)
+gives the prerequisites and evidence rules. The [RHD-03 record](implementation/rhd-03.md)
+tracks the AMD64 result. Digest or version evidence, a successful build, and
+an ARM64 rendering pass do not establish that result. WorkOS live behavior
+and Render deployment need their separate proofs.
 
 ## Select the executable
 
@@ -219,4 +244,4 @@ Setup fails when `LIGHTPANDA_BIN` is unset or empty, when it is relative, when i
 
 Other releases, nightly builds, and unverified local builds are unsupported. They can reject required flags or change JSON output, HTTP errors, readiness, or network blocking. If a required option fails, keep the failure visible. Do not remove safety flags to make another build run.
 
-To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check`, the local renderer interface tests, and the renderer gate with that executable. The renderer gate accepts only version 1.0.0, so change its version check in the same change. Review its network policy, CLI behavior, and telemetry. The fetcher turns telemetry off with `LIGHTPANDA_DISABLE_TELEMETRY`, and the telemetry case of the renderer gate needs the `iid` file of 1.0.0. Update the fetcher and network policy documents if behavior changes. Change the image in the same change: the asset URLs and the two Linux digests in the `Dockerfile` and in `docker/check-lightpanda-digest.sh`, the version in the `LIGHTPANDA_BIN` path, and the version checks of the container gate. Then run `npm run test:container`. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.
+To change the supported runtime, select an exact official release, record all four asset digests, and update this recipe in the same change. Run `npm run check`, the local renderer interface tests, and the renderer gate with that executable. The renderer gate accepts only version 1.0.0, so change its version check in the same change. Review its network policy, CLI behavior, and telemetry. The fetcher turns telemetry off with `LIGHTPANDA_DISABLE_TELEMETRY`, and the telemetry case of the renderer gate needs the `iid` file of 1.0.0. Update the fetcher and network policy documents if behavior changes. Change the image in the same change: the asset URLs and the two Linux digests in the `Dockerfile` and in `docker/check-lightpanda-digest.sh`, the version in the `LIGHTPANDA_BIN` path, and the version checks of the container gate. Update `Dockerfile.hosted` and its hosted image checks in the same change, then run the dedicated hosted image gate as the [test gate policy](implementation/test-gate-policy.md) requires. Run `npm run test:container` for the self-hosted image. Test each platform before you claim support for it. Keep the previous version directory until the new release passes these checks.

@@ -1,5 +1,6 @@
 {
   "workspaces": {
+    ".": { "entry": ["docker/verify-hosted-runtime.mjs"] },
     ".habit-hooks": { "project": ["*.mjs"] }
   },
   "ignoreDependencies": ["eslint", "ts-morph"],
