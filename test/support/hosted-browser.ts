@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { request as httpRequest } from 'node:http';
+import { decodeHtml } from './html-entities.ts';
 
 export type BrowserTransport = (request: Request) => Promise<Response>;
 
@@ -22,8 +23,6 @@ export interface PostOptions {
   readonly origin?: string | null;
   readonly headers?: Readonly<Record<string, string>>;
 }
-
-const HTML_ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
 
 // A browser that opens the public URLs of a hosted application. It keeps the cookies of each answer, as a browser
 // does, and follows no redirect by itself. The transport sends each request to a listening server or to the
@@ -134,8 +133,4 @@ export function formsIn(html: string): PageForm[] {
       .map(([, name = '', value = '']) => [decodeHtml(name), decodeHtml(value)])),
     label: decodeHtml(/<button type="submit">([^<]*)<\/button>/.exec(content)?.[1] ?? ''),
   }));
-}
-
-export function decodeHtml(text: string): string {
-  return text.replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }

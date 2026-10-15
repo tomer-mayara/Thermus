@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { request as httpRequest, type IncomingHttpHeaders } from 'node:http';
 import { publicBaseUrl, type AccountCredentials } from './better-auth-local.ts';
+import { decodeHtml } from './html-entities.ts';
 
 export type FetchSite = 'none' | 'same-origin' | 'cross-site';
 
@@ -37,7 +38,6 @@ export interface BrowserAuthorization {
 }
 
 const MAX_STEPS = 6;
-const HTML_ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
 
 // A browser on the operator's machine. It reaches the server at its listen address, but each URL and
 // Origin it shows the server uses the public base URL, as a browser behind a reverse proxy does.
@@ -143,10 +143,6 @@ export function hiddenField(html: string, name: string): string {
   const field = new RegExp(`<input type="hidden" name="${name}" value="([^"]*)">`).exec(html);
   assert.ok(field, `the page has no hidden ${name} field:\n${html}`);
   return decodeHtml(field[1] ?? '');
-}
-
-export function decodeHtml(text: string): string {
-  return text.replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }
 
 function publicUrl(url: string | URL): URL {
