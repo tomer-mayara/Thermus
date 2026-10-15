@@ -1725,17 +1725,20 @@ npm run build && node --test dist/test/acceptance/architecture/auth-boundaries.t
 **Test layer boundaries** (`test/acceptance/architecture/test-layer-boundaries.test.ts`)
 
 The tests use the same ESLint configuration against source snippets at example
-paths under `test/`. They check the rules D1 to D3 and D6 of the
-[test code layout](test-code-layout.md#dependency-rules) with the same import
-forms as the auth boundaries. Computed imports and transitive dependencies are
-outside this check.
+paths under `test/`. They check the rules D1 to D7 of the
+[test code layout](test-code-layout.md#dependency-rules). The cases of the
+import rules D1 to D6 use the same import forms as the auth boundaries. Computed
+imports and transitive dependencies are outside this check.
 
 [V] D1: refuses an import of a test type folder from `test/support/`, also through `test/`; allows `src`, packages, and support code
 [V] D2: refuses an import of another test type from each of the four test types; allows support code, own fixtures, the same type, `src`, and packages
 [V] D2 exception: from another test type, `test/unit/work-slice/basic-mcp-url-fetch.test.ts` imports only the entry point `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts`; D3 still applies to it
 [V] D3: refuses the fixtures of another unit package, also from a fixture file; allows own fixtures, shared support fixtures and doubles, and the package fixtures from a nested folder
-[V] D6: refuses each import that is not a `node:` module in the three container scripts, at their paths today and after Step 5b of the plan
-[V] Checks exact path segments without refusing names that only resemble a test type folder
+[V] D4: refuses an import of `test/support/dsl/` from `test/support/drivers/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
+[V] D5: refuses an import of `test/support/dsl/` or `test/support/drivers/` from `test/support/doubles/` and `test/support/fixtures/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
+[V] D6: refuses each import that is not a `node:` module in the three container scripts in `test/support/container/`
+[V] D7: refuses each `*.test.ts` file under `test/support/` as a whole, also in `drivers/` and `doubles/`; allows a test of support code in `test/unit/test-support/`
+[V] Checks exact path segments without refusing names that only resemble a test type folder or a support folder
 
 Run only these tests:
 
