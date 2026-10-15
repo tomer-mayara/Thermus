@@ -1,7 +1,9 @@
+import type { HostedMfaPolicy } from './mfa-profile.ts';
 import { WorkOS } from '@workos-inc/node';
 import { browserSessionIssuer } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 
 export interface HostedLiveSettings {
+  readonly mfaPolicy?: HostedMfaPolicy;
   readonly apiKey: string;
   readonly clientId: string;
   readonly authkitIssuer: string;

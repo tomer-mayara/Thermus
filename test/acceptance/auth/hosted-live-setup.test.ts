@@ -170,7 +170,7 @@ describe('Setup gate of the hosted live command', () => {
     }
   });
 
-  test('Given staging settings and outbound access denied, when the hosted live gate runs, then its live proofs run, try the network, and fail; no test passes or is skipped, and the output never shows the API key', caseOptions, async (t) => {
+  test('Given staging settings and outbound access denied, when the global MFA preflight reaches the network blocker, then the gate exits 1 with all 77 planned proofs cancelled, no pass, skip, or todo, and a visible preflight failure before browser or provider work; the API key stays private', caseOptions, async (t) => {
     const settings = stagingSettings();
 
     const run = await runGate(t, settings);
@@ -178,9 +178,14 @@ describe('Setup gate of the hosted live command', () => {
 
     const output = outputOf(run);
     assertExitOne(run);
-    assert.ok((summary.tests ?? 0) > 1, output);
-    assert.deepEqual(summary, { tests: summary.tests, pass: 0, fail: summary.tests, cancelled: 0, skipped: 0, todo: 0 }, output);
+    assert.deepEqual(summary, { tests: 77, pass: 0, fail: 0, cancelled: 77, skipped: 0, todo: 0 }, output);
+    assert.match(output, /# Hosted live MFA profile: optional\./);
+    assert.match(output, /failureType: 'hookFailed'/);
+    assert.match(output, /failureType: 'cancelledByParent'/);
+    assert.match(output, /assertMfaProfileBeforeLiveProofs/);
     assert.match(output, outboundAttempt);
+    assert.match(output, /Outbound network access is not allowed/);
+    assert.doesNotMatch(output, /AuthKit pages before the callback:|authentication method:|callback:/);
     assert.doesNotMatch(output, /Hosted live setup error/);
     assertShowsNoValue(run, { WORKOS_API_KEY: settings.WORKOS_API_KEY });
   });

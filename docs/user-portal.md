@@ -61,11 +61,29 @@ the portal. For the AuthKit domain of `WORKOS_AUTHKIT_ISSUER`, for example
 `https://auth.example.com`, use
 `default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com https://auth.example.com`.
 
+Hosted MFA evidence follows `WORKOS_MFA_POLICY`. The default `optional`
+policy gives false evidence for every method and ignores older cookie
+evidence. Product access still needs User; members, invitations, billing, and
+administration changes stay refused without MFA evidence. No step-up UI is
+added. Required can infer evidence from Password only under its explicit,
+live-verified provider requirement. The work slice always keeps evidence false.
+
 The hosted live gate uses this layout at `https://localhost:46443/`. Its local
 HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
 self-signed certificate for each run, serves the portal build, and forwards
-each other request to the real hosted composition. The WorkOS staging
-environment has these settings for it:
+each other request to the real hosted composition. The
+[auth WorkOS MCP URL fetch work slice](../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+runs the same local HTTPS site at the same origin, with a certificate that
+stays, so that a person trusts it one time. Its hosted composition also has the
+fetch tool and an opt-in onboarding policy. Only the slice enrolls an absent
+membership as User after a trusted WorkOS `GoogleOAuth` sign-in with a verified
+email whose domain is exactly `thermus.ai`. The callback selects the configured
+`THERMUS_SLICE_ORGANIZATION_ID` in the browser session; existing roles and
+membership status are preserved. Normal hosted startup has no such policy.
+Sign in to the portal first, then open the client's separate Connect browser
+authorization. The portal cookie is not an MCP credential. The gate and the
+slice cannot run at the same time. The WorkOS
+staging environment has these settings for both:
 
 - Redirect URI (the default): `https://localhost:46443/callback`.
 - Default Sign-out URI: `https://localhost:46443/`.

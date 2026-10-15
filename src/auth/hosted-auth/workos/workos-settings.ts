@@ -1,7 +1,10 @@
 type Environment = Readonly<Record<string, string | undefined>>;
 
 // The settings of the WorkOS provider. The provider reads them itself, so no common setting turns WorkOS on.
+export type WorkOSMfaPolicy = 'required' | 'optional';
+
 export interface WorkOSSettings {
+  readonly mfaPolicy: WorkOSMfaPolicy;
   readonly apiKey: string;
   readonly clientId: string;
   // Exactly as written: Connect access tokens must carry this issuer.
@@ -52,6 +55,7 @@ export function loadWorkOSSettings(environment: Environment, publicBaseUrl: stri
     authkitIssuer: read('WORKOS_AUTHKIT_ISSUER', issuerRefusal),
     redirectUri: read('WORKOS_REDIRECT_URI', redirectRefusal(publicBaseUrl)),
     cookiePassword: read('WORKOS_COOKIE_PASSWORD', cookiePasswordRefusal),
+    mfaPolicy: mfaPolicyOf(environment.WORKOS_MFA_POLICY, problems),
   };
   if (problems.length > 0) throw new WorkOSSettingsError(problems);
   return Object.freeze(settings);
@@ -89,4 +93,11 @@ function isPageOf(url: URL, base: URL): boolean {
 function cookiePasswordRefusal(value: string): string | undefined {
   if (value.length >= MIN_COOKIE_PASSWORD_LENGTH) return undefined;
   return `it must have at least ${MIN_COOKIE_PASSWORD_LENGTH} characters.`;
+}
+
+function mfaPolicyOf(value: string | undefined, problems: string[]): WorkOSMfaPolicy {
+  if (value === undefined || value === 'optional') return 'optional';
+  if (value === 'required') return 'required';
+  problems.push('WORKOS_MFA_POLICY is not valid: it must be "required" or "optional".');
+  return 'optional';
 }

@@ -36,6 +36,7 @@ test('Given valid WorkOS settings, when they load, then the provider gets each v
   const settings = loadWorkOSSettings(valid, publicBaseUrl);
 
   assert.deepEqual(settings, {
+    mfaPolicy: 'optional',
     apiKey: valid.WORKOS_API_KEY,
     clientId: valid.WORKOS_CLIENT_ID,
     authkitIssuer: valid.WORKOS_AUTHKIT_ISSUER,
@@ -89,3 +90,15 @@ test('Given the environment client ID, when the authority and the browser issuer
   assert.equal(workosAuthority('client_01SETTINGS'), 'workos:client_01SETTINGS');
   assert.equal(browserSessionIssuer('client_01SETTINGS'), 'https://api.workos.com/user_management/client_01SETTINGS');
 });
+
+for (const [value, expected] of [[undefined, 'optional'], ['optional', 'optional'], ['required', 'required']] as const) {
+  test(`Given WORKOS_MFA_POLICY ${value ?? 'omitted'}, when settings load, then the MFA policy is ${expected}`, () => {
+    assert.equal(loadWorkOSSettings({ ...valid, WORKOS_MFA_POLICY: value }, publicBaseUrl).mfaPolicy, expected);
+  });
+}
+
+for (const value of ['', 'Required', 'OPTIONAL', ' required', 'optional ', 'off', 'true']) {
+  test(`Given invalid WORKOS_MFA_POLICY ${JSON.stringify(value)}, when settings load, then startup refuses the policy without exposing its value`, () => {
+    assert.match(refusal({ WORKOS_MFA_POLICY: value }), /WORKOS_MFA_POLICY is not valid/);
+  });
+}

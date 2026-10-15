@@ -18,7 +18,7 @@ export interface ConnectGrant {
   readonly clientId: string;
 }
 
-// An MCP client authorization through Connect: hosted AuthKit asks for the sign-in, the MFA step, and the consent,
+// An MCP client authorization through Connect: hosted AuthKit applies the selected sign-in policy and asks for consent,
 // and the client exchanges the code with its PKCE verifier and the MCP resource. The callback is intercepted.
 export async function authorizeWithConnect(services: SignInServices, request: ConnectGrantRequest): Promise<ConnectGrant> {
   const { settings, browser } = services;
@@ -26,7 +26,7 @@ export async function authorizeWithConnect(services: SignInServices, request: Co
   const page = await browser.newPage();
   try {
     const authkitHost = new URL(settings.authkitIssuer).host;
-    const visit = await visitAuthKit(page, authorization.url, { user: request.user, organizationName: request.organizationName, authkitHost, callback: connectRedirectUri });
+    const visit = await visitAuthKit(page, authorization.url, { user: request.user, organizationName: request.organizationName, authkitHost, callback: connectRedirectUri, mfaPolicy: settings.mfaPolicy ?? 'optional' });
     const code = visit.callback.searchParams.get('code');
     assert.ok(code, `The Connect callback has no authorization code. It has: ${[...visit.callback.searchParams.keys()].join(', ')}.`);
     const answer = await exchangeConnectCode(settings.authkitIssuer, request.clientId, { code, verifier: authorization.verifier, resource: mcpResource });

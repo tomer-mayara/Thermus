@@ -149,11 +149,11 @@ src/mcp/get-url-as-markdown.ts                        the FetchOperation type, n
 src/index.ts                                          serveApplication(open, options), ProcessSignals, and ServeOptions, now exported
 test/acceptance/work-slice/README.md                  The guide: what a work slice is, and the list of the slices
 test/acceptance/work-slice/basic-mcp-url-fetch/README.md   The README of the slice: the command, the settings, and the log lines
-test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entry point and the composition: createWorkSliceApplication(), observeFetches(), MARKDOWN_LOG_LIMIT; it runs only when executed directly
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entry point and the composition: createWorkSliceApplication(); it runs only when executed directly. Since 2026-10-15, observeFetches() and MARKDOWN_LOG_LIMIT are in test/support/work-slice/observe-fetches.ts, and the renderer check in test/support/work-slice/pinned-renderer.ts
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts   The acceptance test
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh   The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
-test/support/in-process/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
-test/unit/work-slice/basic-mcp-url-fetch.test.ts      observeFetches()
+test/support/in-process/axiom-test-export.ts          axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
+test/unit/work-slice/observe-fetches.test.ts          observeFetches(); until 2026-10-15 basic-mcp-url-fetch.test.ts
 test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
@@ -330,7 +330,8 @@ for both protocol eras of `mcpProtocolEras`.
 
 ### Unit
 
-- `test/unit/work-slice/basic-mcp-url-fetch.test.ts`: `observeFetches()` with
+- `test/unit/work-slice/observe-fetches.test.ts` (until 2026-10-15
+  `basic-mcp-url-fetch.test.ts`): `observeFetches()` with
   an operation double: the started and completed lines, the cut at the limit,
   the failed line, and the error that passes through.
 - The production seams have their own cases: the failure cases of

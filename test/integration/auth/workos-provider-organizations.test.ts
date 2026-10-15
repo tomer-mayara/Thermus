@@ -7,7 +7,7 @@ import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-
 import { WorkOSBrowserSession } from '../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
 import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
 import { WorkOSSessionRoutes } from '../../../src/auth/hosted-auth/workos/workos-session-routes.ts';
-import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { workosAuthority, type WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { PRODUCT_ACCESS } from '../../../src/hosted-admin/portal-access.ts';
@@ -58,16 +58,16 @@ const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
 ];
 
-async function openSite(t: TestContext) {
+async function openSite(t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional') {
   const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
-  const { settings, workos, authkitKeySet } = world.connection();
+  const { settings, workos, authkitKeySet } = world.connection(mfaPolicy);
   const failures: AccountFailureReport[] = [];
   const reportFailure = (report: AccountFailureReport): void => { failures.push(report); };
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
-  const session = new WorkOSBrowserSession({ workos, settings, authority });
+  const session = new WorkOSBrowserSession({ workos, settings, authority, mfaEvidence: settings.mfaPolicy === 'required' ? 'password-mfa-required' : 'unproven' });
   const pages = new AccountOperationSpy(destinations);
   const tools = new ProtectedToolSpy();
   const mcp = new MCPServer({
@@ -111,8 +111,8 @@ function workosRequests(site: Site): string[] {
 }
 
 describe('WorkOS organization reads with the real session, organization service, and account routes', () => {
-  test('Given a member with only Super Admin in Acme, when it selects Acme for the billing page, then the billing page of the organization service and the Admin-grant destination accept it from a current WorkOS read with exactly the super-admin grant, and the product page, the User administration, and the MCP tool refuse it: no Admin or User grant is inferred', async (t) => {
-    const site = await openSite(t);
+  test('Given a member with only Super Admin in Acme and an explicit Required MFA profile, when it selects Acme for the billing page, then the billing page of the organization service and the Admin-grant destination accept it from a current WorkOS read with exactly the super-admin grant, and the product page, the User administration, and the MCP tool refuse it: no Admin or User grant is inferred', async (t) => {
+    const site = await openSite(t, 'required');
     const browser = await signIn(site, sam);
 
     const selected = await select(browser, 'Acme', '/team/billing');

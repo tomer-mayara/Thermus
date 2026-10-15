@@ -47,6 +47,7 @@ function labelOf(user: LiveUser): string {
 // Registers the AUTH-07W cases of the hosted server. It returns the case that needs an expired access token of the
 // selection session: the caller registers it after the AUTH-06 cases, whose 300-second wait lets the token expire.
 export function describeOrganizationServerCases(run: LiveRun): () => void {
+  const requiredMfa = run.settings.mfaPolicy === 'required';
   // The member signs in to A one time and selects B. The later cases use the same session.
   const selection = once(async (): Promise<SelectionVisit> => {
     const { organizationA, organizationB } = await run.fixtures();
@@ -85,7 +86,9 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       assert.equal(sessionCookiesIn(switched).length, 1, 'The switch set no new session cookie.');
       assert.equal(portal.status, 200, portal.body);
       assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationB.id, roles: ['user'] });
-      assert.equal((await sessionJson(page)).organizationId, organizationB.id);
+      const selectedSession = await sessionJson(page);
+      assert.equal(selectedSession.organizationId, organizationB.id);
+      assert.equal(selectedSession.mfaCompleted, requiredMfa);
       assert.deepEqual(relisted.toSorted(), [organizationA.name, `${organizationB.name} (selected)`].toSorted());
     });
 
@@ -104,10 +107,12 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
 
       assert.deepEqual(refusals.map(({ status }) => status), [403, 403, 403, 403]);
       assert.ok(refusals.every((refusal) => refusal.location === undefined && sessionCookiesIn(refusal).length === 0), 'A refused selection switched or changed the session.');
-      assert.equal((await sessionJson(page)).organizationId, organizationB.id);
+      const selectedSession = await sessionJson(page);
+      assert.equal(selectedSession.organizationId, organizationB.id);
+      assert.equal(selectedSession.mfaCompleted, requiredMfa);
     });
 
-    test('Given an identity that the operator made Super Admin of the operator organization, when it signs in, then the organization page offers that organization, the billing page opens, the protected portal request refuses it, and a customer grant of Super Admin is refused with a change record; after the operator revokes Super Admin, the next request of the same session is refused and the organization page gives the onboarding guidance', signInOptions, async (t) => {
+    test(`Given an operator Super Admin in the ${requiredMfa ? 'Required' : 'Optional'} MFA profile, when it signs in, then its organization is offered, billing ${requiredMfa ? 'opens with MFA evidence' : 'is refused without MFA evidence'}, product access and a customer Super Admin grant are refused; after operator revocation the same session loses its organization access`, signInOptions, async (t) => {
       const { runbook, operatorOrganization, users } = await run.organizationFixtures();
       const user = users['hosted-super-admin'];
       const request = { organizationId: operatorOrganization.id, email: user.email };
@@ -123,7 +128,8 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       const customerGrant = await serverPost(page, 'members/grants', { fields: {
         csrf_token: String(session.csrfToken), organization_id: operatorOrganization.id, membership_id: membership.id, revision: 'live', role: superAdminRole, action: 'grant',
       } });
-      const rolesAfterCustomerGrant = rolesOf(await runbook.membership(user.id, operatorOrganization.id));
+      const membershipAfterCustomerGrant = await runbook.membership(user.id, operatorOrganization.id);
+      const rolesAfterCustomerGrant = rolesOf(membershipAfterCustomerGrant);
       await runbook.revokeSuperAdmin(request);
       const billingAfterRevocation = await serverGet(page, 'billing');
       const organizationsAfterRevocation = await serverGet(page, 'organizations');
@@ -131,14 +137,16 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       t.diagnostic(`billing ${billing.status}, portal ${portal.status}, customer Super Admin grant ${customerGrant.status}, billing after the revocation ${billingAfterRevocation.status}`);
 
       assert.equal(session.organizationId, operatorOrganization.id);
+      assert.equal(session.mfaCompleted, requiredMfa);
       assert.deepEqual(offered, [`${operatorOrganization.name} (selected)`]);
-      assert.equal(billing.status, 200, billing.body);
-      assert.match(billing.body, /Plan: Free/);
+      assert.equal(billing.status, requiredMfa ? 200 : 403, billing.body);
+      assert.match(billing.body, requiredMfa ? /Plan: Free/ : /Administration needs a sign-in that completed multi-factor authentication/);
       assert.equal(portal.status, 403);
       assert.equal(customerGrant.status, 403, customerGrant.body);
-      assert.match(customerGrant.body, /Your account cannot make this change in the selected organization\. Nothing changed\./);
+      assert.match(customerGrant.body, requiredMfa ? /Your account cannot make this change in the selected organization\. Nothing changed\./ : /Administration needs a sign-in that completed multi-factor authentication/);
+      assert.deepEqual(membershipAfterCustomerGrant, membership, 'The refused customer grant changed the WorkOS membership.');
       assert.deepEqual(rolesAfterCustomerGrant, [superAdminRole]);
-      assert.ok(records.some((line) => line.includes(`"role":"${superAdminRole}"`) && line.includes('"outcome":"denied"')), 'The refused customer grant has no change record.');
+      assert.ok(records.some((line) => line.includes(`"role":"${superAdminRole}"`) && line.includes(`"outcome":"${requiredMfa ? 'denied' : 'mfa-required'}"`)), 'The refused customer grant has no change record.');
       assert.equal(billingAfterRevocation.status, 403);
       assertOnboarding(organizationsAfterRevocation, labelOf(user));
       await page.context().close();
@@ -164,6 +172,7 @@ function describeExpiredSelectionCase(run: LiveRun, selection: () => Promise<Sel
       assert.equal(refused.status, 403, refused.body);
       assert.equal(sessionCookiesIn(refused).length, 1, 'The refusal did not carry the refreshed session cookie.');
       assert.equal(session.csrfToken, visit.csrfToken);
+      assert.equal(session.mfaCompleted, run.settings.mfaPolicy === 'required');
       assert.equal(session.organizationId, organizationB.id);
       await visit.page.context().close();
     });

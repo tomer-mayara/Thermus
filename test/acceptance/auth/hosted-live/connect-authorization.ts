@@ -10,15 +10,16 @@ const mfaPages = ['/mfa/enrollment', '/mfa/verification'];
 
 export function describeConnectAuthorizationProofs(run: LiveRun): void {
   const { settings } = run;
+  const requiredMfa = settings.mfaPolicy === 'required';
 
   describe('Hosted live proofs: Connect authorization of an MCP client', () => {
-    test('Given a public MCP client that Connect knows with PKCE and a User of organization A, when the user authorizes it for the MCP resource through hosted AuthKit, then AuthKit asks for the password, the MFA step, the organization, and the consent before the callback, and the callback has a code and the state of the request', authorizationOptions, async (t) => {
+    test(`Given a public MCP client with PKCE and a User of organization A in the ${requiredMfa ? 'Required' : 'Optional'} MFA profile, when the user authorizes the MCP resource, then AuthKit asks for the password${requiredMfa ? ', MFA' : ' without an MFA step'}, the organization, and consent before the callback with its code and request state`, authorizationOptions, async (t) => {
       const { visit, stateMatches } = await run.connectGrant();
       t.diagnostic(`AuthKit pages before the callback: ${visit.pages.join(' > ')}`);
       t.diagnostic(`callback: ${visit.callback.origin}${visit.callback.pathname} with ${[...visit.callback.searchParams.keys()].join(', ')}`);
 
       assert.ok(visit.pages.includes('/password'), 'AuthKit did not ask for the password.');
-      assert.ok(visit.pages.some((page) => mfaPages.includes(page)), 'AuthKit did not ask for the MFA step.');
+      assert.equal(visit.pages.some((page) => mfaPages.includes(page)), requiredMfa, 'AuthKit MFA pages do not match the selected profile.');
       assert.ok(visit.pages.includes('/application-authorization'), 'AuthKit did not ask for the consent.');
       assert.equal(`${visit.callback.origin}${visit.callback.pathname}`, connectRedirectUri);
       assert.ok(stateMatches, 'The callback does not have the state of the authorization request.');

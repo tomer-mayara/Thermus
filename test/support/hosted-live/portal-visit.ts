@@ -28,7 +28,7 @@ export async function signInThroughPortal(run: LiveRun, user: LiveUser, organiza
   const page = await run.browser.newPage();
   await page.goto(`${localOrigin}/`);
   await page.getByRole('button', { name: 'Sign In' }).click();
-  const pages = await completeAuthKit(page, { user, authkitHost, ...(organizationName === undefined ? {} : { organizationName }) });
+  const pages = await completeAuthKit(page, { user, authkitHost, mfaPolicy: run.settings.mfaPolicy ?? 'optional', ...(organizationName === undefined ? {} : { organizationName }) });
   await waitForPortal(page);
   return { page, pages, signedInAt: Date.now() };
 }
@@ -41,7 +41,7 @@ export async function acceptInvitationThroughPortal(run: LiveRun, user: LiveUser
   const authkitHost = new URL(run.settings.authkitIssuer).host;
   const page = await run.browser.newPage();
   await openInvitationLink(page, invitationLink, authkitHost);
-  const pages = await completeAuthKit(page, { user, authkitHost });
+  const pages = await completeAuthKit(page, { user, authkitHost, mfaPolicy: run.settings.mfaPolicy ?? 'optional' });
   await waitForPortal(page);
   return { page, pages, signedInAt: Date.now() };
 }

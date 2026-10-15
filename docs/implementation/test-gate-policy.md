@@ -465,6 +465,7 @@ environment of the command:
 | `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, memberships, and invitations. |
 | `WORKOS_CLIENT_ID` | The client ID of the staging environment. |
 | `WORKOS_AUTHKIT_ISSUER` | The AuthKit domain of the staging environment, exactly as WorkOS shows it: an absolute `https` URL without spaces, a username, a password, a query, or a fragment. |
+| `WORKOS_MFA_POLICY` | Omitted or `optional` selects the Optional profile; `required` selects the Required profile. These are the only accepted exact values. The provider must match the selected profile. |
 
 On the owner's Mac, the staging launcher reads the API key from the macOS
 Keychain and gives the three settings only to the command that it starts:
@@ -476,10 +477,42 @@ node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 The launcher is outside the repository. Never print its key or copy it into a
 file, a ticket, or a log.
 
-Configure the staging environment as the hosted edition needs it:
+The command uses one MFA profile for the complete run:
 
-- Email and password sign-in with MFA required. No social sign-in provider,
-  no passkey, and no magic sign-in: only a password sign-in proves MFA.
+```sh
+# Default profile: WorkOS MFA must be Optional.
+node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+# Required profile: use only after WorkOS MFA is set to Required.
+WORKOS_MFA_POLICY=required node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+```
+
+The provider preflight checks `mfaEnabled: true` and requires `mfaRequired` to
+be false for Optional or true for Required before any live test or login. A
+mismatch fails the run. The command does not change provider MFA settings.
+The Optional profile proves normal browser/Connect flows with no application
+MFA evidence and explicit administration refusal. The Required profile keeps
+the positive administration proofs under the matched password-MFA contract.
+Each profile registers 77 cases. Required keeps the eight positive
+application administration cases; Optional replaces them with refusal and
+invitation-acceptance cases that preserve the MFA boundary. Operator/API
+administration contract proofs run in both profiles: those service-credential
+proofs do not give an Optional browser session administration authority.
+A pass of one profile does not prove the other. Restore shared Staging to
+Optional after an authorized Required-profile run.
+
+Configure the other staging settings as the hosted edition needs them:
+
+- Email and password sign-in and Google OAuth with the built-in Google
+  credentials of WorkOS. No other social sign-in provider, no passkey, and no
+  magic sign-in. Optional gives no MFA evidence for any method. Only the
+  explicit Required profile can use Password under its verified provider
+  requirement; Google gives no MFA evidence. Google sign-in is on since
+  2026-10-14, for the
+  [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+  (decision D1 of its [plan](auth-workos-mcp-url-fetch-plan.md)).
+- Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD)
+  on, so that MCP clients such as Claude Code register themselves at AuthKit.
+  They are on since 2026-10-14, for the same work slice.
 - Multiple roles for each membership, and the roles and permissions of the
   [hosted role mapping](../design/authentication-design.md#hosted-role-mapping).
 - The redirect URI `https://localhost:46443/callback` as the default, the
@@ -488,12 +521,27 @@ Configure the staging environment as the hosted edition needs it:
 - The MCP resource indicator `https://localhost:46443/mcp`.
 
 The WorkOS API can save the redirect URI and the resource indicator. The
-social providers, the Sign-out URI, and the Initiate login URI are dashboard
-settings. The configuration proofs of the gate read back each setting that the
-API or the hosted pages show. The session-end proofs follow the redirects of
-the WorkOS logout to the Sign-out URI and of a direct AuthKit visit to the
-Initiate login URI. A redirect is not a page, so these proofs watch the
-navigation requests of the browser.
+Sign-out URI and the Initiate login URI are dashboard settings. The dashboard
+also keeps the sign-in methods and the social providers, under Authentication,
+and DCR and CIMD. The WorkOS connector can change these too, with its
+`updateAuthkitSettings` operation. The configuration proofs of the gate read
+back each setting that the API or the hosted pages show. The proof of the
+AuthKit metadata reads DCR and CIMD back: the `registration_endpoint` and
+`client_id_metadata_document_supported`. The session-end proofs follow the
+redirects of the WorkOS logout to the Sign-out URI and of a direct AuthKit
+visit to the Initiate login URI. A redirect is not a page, so these proofs
+watch the navigation requests of the browser.
+
+The auth WorkOS MCP URL fetch work slice uses the same staging environment,
+the same origin `https://localhost:46443/`, and the same registered URIs. Thus
+the slice and the gate cannot run at the same time. The gate does not delete
+the configured slice organization or its users: a run deletes
+only the data with its own name or email prefix. The normal hosted
+composition of the gate enables no automatic Google onboarding. Only the manual slice opts
+in to that policy for its configured organization. Its real browser-first
+Google, Connect consent, authenticated HTTPS fetch, and Axiom proof is
+separate from the gate. Keep PR #108 in Draft until that proof and the required
+complete-candidate checks pass; configuration read-back alone is not a pass.
 
 The gate also needs:
 
@@ -501,12 +549,16 @@ The gate also needs:
 - OpenSSL in `PATH`: the local HTTPS test server makes a new self-signed
   certificate for `localhost` for each run.
 - Free local ports: 46443 for the local HTTPS test server, and 46480 for the
-  callback of the test MCP client, which the browser catches.
+  callback of the test MCP client, which the browser catches. Nothing else
+  listens on port 46443: not the auth WorkOS MCP URL fetch work slice, and
+  not the integration case of the local HTTPS site in
+  `test/integration/auth/hosted-live-site.test.ts`, which
+  `npm run test:integration` runs.
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 
-A complete run takes about 12 minutes: the third complete run of AUTH-08W
-run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
+The historical Required-profile run took about 12 minutes: the third
+complete run of AUTH-08W run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
 tokens to expire, and the AUTH-07W expiry case after it uses the same wait.
 
 If a setting is missing, empty, or refused, the command fails with one setup
@@ -520,7 +572,14 @@ settings and every live test passes. Missing hosted credentials, a setup error,
 and skipped live tests can never count as a successful hosted gate. Do not put
 credentials in the repository, in logs, or in pull request notes.
 
-The command has six parts:
+The Required profile has the six parts below. The Optional profile keeps
+the common browser, session, Connect, access, organization, and revocation
+proofs and replaces positive MFA/administration expectations with no-evidence
+and administration-refusal cases. Neither profile silently changes the
+provider setting. Counts and final candidate results belong in the
+[validation record](auth-workos-mcp-url-fetch-validation.md).
+
+The Required profile has these parts:
 
 - The provider proofs of AUTH-06: the AuthKit metadata and key sets, the saved
   configuration, the browser sign-in with required MFA, sessions and their

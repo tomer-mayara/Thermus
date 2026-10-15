@@ -9,3 +9,8 @@ script, its acceptance test, and a `README.md`. Its plan is in
 - [Basic MCP URL fetch](basic-mcp-url-fetch/README.md): start the fetch tool
   with the mock provider of the acceptance tests, connect an LLM client to the
   tool, and monitor each fetch in Axiom.
+- [Auth WorkOS MCP URL fetch](auth-workos-mcp-url-fetch/README.md): start the
+  hosted edition with the real WorkOS provider and the fetch tool, sign in to
+  the portal with a verified `thermus.ai` Google account, enroll a new User
+  through the slice policy, connect Claude Code through its own browser OAuth
+  consent and Connect token, and monitor each fetch in Axiom.

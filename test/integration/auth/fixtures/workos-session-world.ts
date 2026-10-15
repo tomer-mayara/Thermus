@@ -62,7 +62,7 @@ export async function startWorld(t: TestContext): Promise<World> {
 }
 
 export function sessionFor(fake: WorkOSFakeApi, client: FakeClientSettings = {}): WorkOSBrowserSession {
-  return new WorkOSBrowserSession({ workos: workosClientFor(fake, client), settings, authority });
+  return new WorkOSBrowserSession({ workos: workosClientFor(fake, client), settings, authority, mfaEvidence: 'password-mfa-required' });
 }
 
 export function accessToken(world: World, organizationId: string, expired = false): Promise<string> {

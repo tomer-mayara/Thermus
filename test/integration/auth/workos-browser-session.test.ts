@@ -25,7 +25,7 @@ import {
 describe('WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session checks, and refresh', () => {
   allowOnlyLoopbackRequests();
 
-  test('Given a sign-in that AuthKit completed, when the callback brings the code and the state, then the SDK exchanges the code with the verifier of the AuthKit URL for a sealed session, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in', async (t) => {
+  test('Given a sign-in that AuthKit completed under an explicit Required MFA policy, when the callback brings the code and the state, then the SDK exchanges the code with the verifier of the AuthKit URL for a sealed session, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in', async (t) => {
     const world = await startWorld(t);
     const start = await world.session.startSignIn({ returnTo: '/team/members' });
     const authKitUrl = new URL(start.url);

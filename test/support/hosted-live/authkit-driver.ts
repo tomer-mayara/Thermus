@@ -1,7 +1,9 @@
 import type { Page, Route } from 'playwright';
+import type { HostedMfaPolicy } from './mfa-profile.ts';
 import type { LiveUser } from './staging-fixtures.ts';
 
 interface AuthKitPlan {
+  readonly mfaPolicy?: HostedMfaPolicy;
   readonly user: LiveUser;
   readonly authkitHost: string;
   readonly callback: string;
@@ -102,6 +104,9 @@ async function walkAuthKit(page: Page, plan: AuthKitPlan, callback: () => URL | 
     if (reached) return { pages, callback: reached };
     const { host, origin, pathname } = new URL(page.url());
     if (host !== plan.authkitHost) throw new Error(`AuthKit sent the browser to ${origin}${pathname}, not to the callback, after ${pages.join(' > ')}.`);
+    if (plan.mfaPolicy === 'optional' && pathname.startsWith('/mfa/')) {
+      throw new Error(`Optional MFA sign-in unexpectedly reached ${pathname}; no authenticator was enrolled by this proof.`);
+    }
     pages.push(pathname);
     await stepFor(pathname)(page, plan).catch((error: unknown) => {
       throw new Error(`The AuthKit page ${pathname} failed after ${pages.join(' > ')}: ${safeMessage(error)}`);
@@ -139,6 +144,9 @@ export async function completeAuthKit(page: Page, plan: Omit<AuthKitPlan, 'callb
     await page.waitForLoadState('domcontentloaded');
     const { host, pathname } = new URL(page.url());
     if (host !== plan.authkitHost) return pages;
+    if (plan.mfaPolicy === 'optional' && pathname.startsWith('/mfa/')) {
+      throw new Error(`Optional MFA sign-in unexpectedly reached ${pathname}; no authenticator was enrolled by this proof.`);
+    }
     pages.push(pathname);
     await stepFor(pathname)(page, { ...plan, callback: '' }).catch((error: unknown) => {
       throw new Error(`The AuthKit page ${pathname} failed after ${pages.join(' > ')}: ${safeMessage(error)}`);

@@ -4,10 +4,12 @@ import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowser
 import { sessionCookie, type SealedCookie, type SessionEnvelope } from './session-cookies.ts';
 import { isDamagedSeal, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
 import type { SealRefresh, SessionFacts, WorkOSSealedSession, WorkOSSessionClient } from './workos-session-client.ts';
-import { AuthKitSignIn, type SignInCallback, type SignInCompletion, type SignInStart } from './workos-sign-in.ts';
+import { AuthKitSignIn, type SignInCallback, type SignInCompletion, type SignInStart, type SignInOnboarding, type MfaEvidencePolicy } from './workos-sign-in.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
 
 export interface WorkOSBrowserSessionOptions {
+  readonly mfaEvidence?: MfaEvidencePolicy;
+  readonly onboarding?: SignInOnboarding;
   readonly workos: WorkOSSessionClient;
   readonly settings: Pick<WorkOSSettings, 'clientId' | 'redirectUri' | 'cookiePassword'>;
   // From workosAuthority(), so that browser sessions and Connect tokens map their users into the same authority.
@@ -47,20 +49,24 @@ export class WorkOSBrowserSession implements BrowserSession {
   private readonly authority: string;
   private readonly sessionCookie: SealedCookie<SessionEnvelope>;
   private readonly signIn: AuthKitSignIn;
+  private readonly mfaEvidence: MfaEvidencePolicy;
 
   constructor(options: WorkOSBrowserSessionOptions) {
     this.userManagement = options.workos.userManagement;
     this.cookiePassword = options.settings.cookiePassword;
     this.authority = options.authority;
+    this.mfaEvidence = options.mfaEvidence ?? 'unproven';
     this.sessionCookie = sessionCookie(options.settings.cookiePassword);
     const clock = options.clock ?? Date.now;
-    this.signIn = new AuthKitSignIn({ userManagement: this.userManagement, settings: options.settings, clock, sessionCookie: this.sessionCookie });
+    this.signIn = new AuthKitSignIn({ userManagement: this.userManagement, settings: options.settings, clock, mfaEvidence: this.mfaEvidence, sessionCookie: this.sessionCookie, ...(options.onboarding === undefined ? {} : { onboarding: options.onboarding }) });
   }
 
   async authenticate(cookieHeader: string | null): Promise<WorkOSSessionState> {
     if (!this.sessionCookie.isSentIn(cookieHeader)) return { status: 'signed-out', cookies: [] };
-    const envelope = this.sessionCookie.contentOf(cookieHeader);
-    if (envelope === undefined) return this.signedOut();
+    const stored = this.sessionCookie.contentOf(cookieHeader);
+    if (stored === undefined) return this.signedOut();
+    // Mask earlier cookie evidence before a read, refresh, or organization switch can use or keep it.
+    const envelope = this.mfaEvidence === 'password-mfa-required' ? stored : { ...stored, mfa: false };
     const check = await this.checkSeal(envelope.seal);
     if (check === 'ended') return this.signedOut();
     if (check === 'refresh') return this.refreshed(envelope);

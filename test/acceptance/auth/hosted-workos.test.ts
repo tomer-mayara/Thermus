@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
+import { composeWorkOSApplication, openWorkOSConnection } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
+import type { RequestServerBuilder } from '../../../src/mcp/mcp-server.ts';
 import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
+import { hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
 import { nowInSeconds } from '../../support/doubles/workos/jwt-signing-key.ts';
 import { WorkOSFake, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
-import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { ContextReportToolSpy } from '../../support/doubles/mcp/context-report-tool-spy.ts';
 
 // The real hosted composition with the WorkOS provider behind the real HTTP server on a loopback port. A local fake
 // of the WorkOS API stands in for WorkOS, so these specifications prove the application side only. The hosted live
@@ -35,7 +38,7 @@ interface Site extends WorkOSServerSite {
   readonly log: LogLines;
 }
 
-async function openSite(t: TestContext): Promise<Site> {
+async function openSite(t: TestContext, buildServer?: RequestServerBuilder): Promise<Site> {
   const world = await WorkOSFake.start(t, config.publicBaseUrl, [organizationA, organizationB]);
   // Ada: User and Admin in A, User in B. Ben: Admin only in A. Cid: the default role only in A. Dee: no membership.
   // Eve: Admin only in A and User in B.
@@ -48,7 +51,7 @@ async function openSite(t: TestContext): Promise<Site> {
     { userId: eve.id, organizationId: organizationB, roles: ['user'] },
   ];
   const log = new LogLines();
-  const application = await composeWorkOSApplication(config, world.connection(), log);
+  const application = await composeWorkOSApplication(config, world.connection('required'), { logger: log, buildServer });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   t.after(async () => {
     await server.close();
@@ -72,7 +75,7 @@ function mcp(site: Site, token?: string): Promise<Response> {
 }
 
 describe('Hosted WorkOS edition: browser sign-in, the portal session, and current access', () => {
-  test('Given the hosted WorkOS edition, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, the MFA evidence of the password sign-in, and a form token', async (t) => {
+  test('Given the hosted WorkOS edition with an explicit Required MFA policy, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, the MFA evidence of the password sign-in, and a form token', async (t) => {
     const site = await openSite(t);
     const { browser, start, callback } = await signInThroughServer(site, ada, organizationA);
     const session = await json(browser, 'session');
@@ -256,5 +259,36 @@ describe('Hosted WorkOS edition: Connect tokens at the MCP endpoint', () => {
     assert.ok(site.log.lines.some((line) => line.startsWith('ERROR An MCP request failed unexpectedly in access-resolution')), site.log.lines.join('\n'));
     assert.ok(site.log.lines.some((line) => line.startsWith('ERROR An account request failed unexpectedly for /team/portal/access')), site.log.lines.join('\n'));
     assert.ok(site.log.lines.every((line) => !line.includes(token)), 'A report holds the token.');
+  });
+
+  test('Given the hosted composition with a buildServer that gives a test-only tool, when a Connect token of a User lists the tools, then the list has that tool; given the composition without a buildServer, then the endpoint has no tool list and answers that the method is not found', async (t) => {
+    const listTools = async (site: Site): Promise<Response> => {
+      const token = await site.world.connectToken(ada, { org_id: organizationA });
+      return site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/list', token }));
+    };
+
+    const withTool = await listTools(await openSite(t, new ContextReportToolSpy().buildServer));
+    const withoutTool = await listTools(await openSite(t));
+
+    assert.equal(withTool.status, 200);
+    const { tools } = await rpcResult(withTool) as { tools: ReadonlyArray<{ name: string }> };
+    assert.deepEqual(tools.map(({ name }) => name), [ContextReportToolSpy.reportTool]);
+    assert.equal(withoutTool.status, 404);
+    assert.deepEqual((await withoutTool.json() as { error: unknown }).error, { code: -32601, message: 'Method not found' });
+  });
+});
+
+describe('Hosted WorkOS edition: the connection to WorkOS', () => {
+  test('Given the WorkOS settings of an environment, when the connection opens, then it gives those settings and writes one operator line that names the client and the AuthKit issuer; given no WorkOS settings, then it rejects and writes no line', async () => {
+    const environment = workOSSettingsFor(config.publicBaseUrl);
+    const opened = new LogLines();
+    const refused = new LogLines();
+
+    const connection = await openWorkOSConnection(config, opened, environment);
+    await assert.rejects(openWorkOSConnection(config, refused, {}), /^WorkOSSettingsError: The hosted edition cannot start: the WorkOS settings are not valid\./);
+
+    assert.deepEqual([connection.settings.clientId, connection.settings.authkitIssuer], [environment.WORKOS_CLIENT_ID, environment.WORKOS_AUTHKIT_ISSUER]);
+    assert.deepEqual(opened.lines, [`INFO ${hostedStartupLine}`]);
+    assert.deepEqual(refused.lines, []);
   });
 });
