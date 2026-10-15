@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
-import { assertExit, assertRevealsNone, runCommand, type CommandResult } from '../../support/command-process.ts';
+import { assertExit, assertRevealsNone, runCommand, type CommandResult } from '../../support/processes/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, signedInUserId, signIn } from '../../support/dsl/local-commands.ts';
 import { selfHostedSettings, withRuntime } from '../../support/in-process/local-runtime.ts';

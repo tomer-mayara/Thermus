@@ -4,12 +4,12 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { stripVTControlCharacters } from 'node:util';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
-import { assertExit } from '../../support/command-process.ts';
+import { assertExit } from '../../support/processes/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { addUser, listedAccounts, operatorOn } from '../../support/dsl/local-commands.ts';
 import { selfHostedServerSettings, selfHostedSettings } from '../../support/in-process/local-runtime.ts';
-import { failingAdCleaner, nativeFailureMarker, withPreload } from '../../support/server-preloads.ts';
-import { ServerProcess } from '../../support/server-process.ts';
+import { failingAdCleaner, nativeFailureMarker, withPreload } from '../../support/processes/server-preloads.ts';
+import { ServerProcess } from '../../support/processes/server-process.ts';
 
 const ada: AccountCredentials = { email: 'ada@example.com', password: 'ada-password-1' };
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;

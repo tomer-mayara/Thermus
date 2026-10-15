@@ -3,11 +3,8 @@ import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import { once } from 'node:events';
 import type { Readable } from 'node:stream';
 import type { TestContext } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { networkBlocker, programEntry } from './module-paths.ts';
 
-const serverEntry = fileURLToPath(new URL('../../src/index.js', import.meta.url));
-// The server runs with outbound access denied: each attempt fails and writes a line that a test can find.
-const networkBlocker = new URL('./deny-network.js', import.meta.url).href;
 const listeningLine = /Listening on (http:\/\/\S+)/;
 const outboundAttempt = /Outbound network access attempted/;
 const tenantLine = /tenant (local:[0-9a-f-]+)/;
@@ -26,7 +23,8 @@ export class ServerProcess {
   private text = '';
 
   private constructor(settings: ServerSettings, args: readonly string[]) {
-    this.child = spawn(process.execPath, ['--import', networkBlocker, serverEntry, ...args], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
+    // The server runs with outbound access denied: each attempt fails and writes a line that a test can find.
+    this.child = spawn(process.execPath, ['--import', networkBlocker, programEntry, ...args], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
     this.exit = once(this.child, 'exit').then(([code, signal]) => ({ code, signal }));
     for (const stream of [this.child.stdout, this.child.stderr]) {
       stream.setEncoding('utf8').on('data', (chunk: string) => this.record(chunk));
