@@ -1046,6 +1046,16 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 
 [V] Records `SIGKILL` and sends no signal to a process when the readiness deadline or a cancellation of a running fetch requests a kill
 
+**Outbound fetch guard** (`test/unit/test-support/outbound-fetch-guard.test.ts`)
+
+The WorkOS SDK proofs, the Better Auth proofs, the local MCP access tests, and the fixtures of the WorkOS browser session had the same guard. Each replaced `globalThis.fetch` in a `before` hook and put the real fetch back in an `after` hook. `guardOutboundFetch()` in `test/support/isolation/outbound-fetch-guard.ts` is the one copy. Its `before` hook installs the guard of `outboundFetchGuard()`, and its `after` hook releases the guard. `guardOutboundFetch()` also gives the record of the refused requests. The Better Auth telemetry proof checks this record before the end of its block. Each caller keeps its own refusal and finding; the two WorkOS callers let requests to `127.0.0.1` through to the local fake. `deny-network.ts` and `foreign-origin-probe.ts` block `fetch` for a whole child process and stay as they are.
+
+[V] Refuses a request to a public URL with an `Error` that has the refusal message, and adds the URL to the record of the guard at once; the release puts the real fetch back and then fails with the finding, which lists the URL
+[V] Records the URL of a refused `Request` object and of a refused `URL` object
+[V] With `allowLoopback`, sends a POST with a body and a `Request` object through the real fetch to a local server on `127.0.0.1`, with their method and body; the answers come back, and the release passes and puts the real fetch back
+[V] With `allowLoopback`, still refuses and records a request to a public URL and a request to `localhost`
+[V] `guardOutboundFetch()` in a describe block replaces the real fetch for the tests of the block and puts it back after them; the record that it gives is empty while no request was refused
+
 **HTML entities of the test browsers** (`test/unit/test-support/html-entities.test.ts`)
 
 The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page fixtures were the same table and the same regex. `decodeHtml()` in `test/support/drivers/browser/html-entities.ts` is the one copy.
