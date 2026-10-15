@@ -8,7 +8,7 @@ import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
 import { trustedAdRulesFile } from '../../support/ad-rules.ts';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
-import { assertExit } from '../../support/command-process.ts';
+import { assertExit } from '../../support/processes/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { InProcessServer } from '../../support/in-process/in-process-server.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';

@@ -1,4 +1,4 @@
-import '../../support/deny-network.ts';
+import '../../support/processes/deny-network.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { ApplicationLogger } from '../../../src/application.ts';

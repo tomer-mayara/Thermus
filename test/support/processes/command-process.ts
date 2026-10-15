@@ -5,7 +5,7 @@ import type { Readable, Writable } from 'node:stream';
 import type { TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const commandEntry = fileURLToPath(new URL('../../src/index.js', import.meta.url));
+const commandEntry = fileURLToPath(new URL('../../../src/index.js', import.meta.url));
 const networkBlocker = new URL('./deny-network.js', import.meta.url).href;
 const sqlTracer = new URL('./trace-sqlite.js', import.meta.url).href;
 

@@ -3,11 +3,11 @@ import { describe, test } from 'node:test';
 import { SERVER_INFO_META_KEY, UnauthorizedError } from '@modelcontextprotocol/client';
 import { HttpAgent, loopbackRedirectUri, PreRegisteredNativeClient, ResourceServerClient } from '../../support/drivers/browser/better-auth-agents.ts';
 import { mcpResourceUrl, withRegistrationSession, type AccountCredentials } from '../../support/in-process/better-auth-local.ts';
-import { assertExit, assertRevealsNone } from '../../support/command-process.ts';
+import { assertExit, assertRevealsNone } from '../../support/processes/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId, storedResourceServerClient } from '../../support/dsl/local-commands.ts';
 import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
-import { ServerProcess } from '../../support/server-process.ts';
+import { ServerProcess } from '../../support/processes/server-process.ts';
 import { LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };

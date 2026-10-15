@@ -5,7 +5,7 @@ import type { Readable } from 'node:stream';
 import type { TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const serverEntry = fileURLToPath(new URL('../../src/index.js', import.meta.url));
+const serverEntry = fileURLToPath(new URL('../../../src/index.js', import.meta.url));
 // The server runs with outbound access denied: each attempt fails and writes a line that a test can find.
 const networkBlocker = new URL('./deny-network.js', import.meta.url).href;
 const listeningLine = /Listening on (http:\/\/\S+)/;

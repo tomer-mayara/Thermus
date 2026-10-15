@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import { once } from 'node:events';
 import type { Readable } from 'node:stream';
-import type { CommandResult } from './command-process.ts';
+import type { CommandResult } from './processes/command-process.ts';
 import { dockerCommand, dockerOutput } from './docker-cli.ts';
-import type { ServerExit } from './server-process.ts';
+import type { ServerExit } from './processes/server-process.ts';
 
 const listeningLine = /Listening on http:\/\/\S+/;
 const tenantLine = /tenant (local:[0-9a-f-]+)/;

@@ -4,7 +4,7 @@ import { loopbackRedirectUri } from '../../support/drivers/browser/better-auth-a
 import { dataDirectory } from '../../support/data-directory.ts';
 import { LocalBrowser } from '../../support/drivers/browser/local-browser.ts';
 import { selfHostedServerSettings } from '../../support/in-process/local-runtime.ts';
-import { ServerProcess } from '../../support/server-process.ts';
+import { ServerProcess } from '../../support/processes/server-process.ts';
 
 test('Given an installation under a public URL path, when clients discover the provider and an unknown client starts authorization, then the provider metadata and bundled error page use that path and the old root routes stay closed', { timeout: 60_000 }, async (t) => {
   const publicBaseUrl = 'http://localhost:8080/team/';
