@@ -14,7 +14,7 @@ import {
   type InvitationChangeRequest,
   type InvitationSendRequest,
 } from '../../../src/organizations/organization-administration.ts';
-import { BillingRecorder } from '../../support/billing-recorder.ts';
+import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
 import { fakeClientId, type FakeAnswer } from '../../support/workos-fake-api.ts';
 import { WorkOSWorld, type WorldInvitation, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
 

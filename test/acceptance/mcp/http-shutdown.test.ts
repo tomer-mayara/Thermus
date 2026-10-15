@@ -7,7 +7,7 @@ import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
+import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
 import { validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 

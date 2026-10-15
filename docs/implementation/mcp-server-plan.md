@@ -21,7 +21,7 @@ Reason states why the agent needs the page. Record it without scoring/content
 comparison. Check `product:access` before fetch.
 
 Keep production Better Auth and hosted `503`. Inject the permissive
-`NoAuthProvider` only from `test/support/auth/no-auth-provider.ts` as an
+`NoAuthProvider` only from `test/support/doubles/auth/no-auth-provider.ts` as an
 `IdentityVerifier` and `AccessResolver`. No auth/development flag, production
 bypass, fake OAuth, username, or profile lookup. Records use canonical user
 `authority` and `subject`.

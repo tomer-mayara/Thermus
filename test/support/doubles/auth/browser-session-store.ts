@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import type { AuthenticatedUser } from '../../src/auth/access-context.ts';
-import type { BrowserSession, BrowserSessionState, CookieEffects, OrganizationSwitch } from '../../src/auth/hosted-auth/browser-session.ts';
+import type { AuthenticatedUser } from '../../../../src/auth/access-context.ts';
+import type { BrowserSession, BrowserSessionState, CookieEffects, OrganizationSwitch } from '../../../../src/auth/hosted-auth/browser-session.ts';
 
 const COOKIE_NAME = 'session';
 const COOKIE_ATTRIBUTES = 'Path=/; Secure; HttpOnly; SameSite=Lax';

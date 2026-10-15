@@ -15,7 +15,7 @@ import { BaseLogger } from '../../../../src/logging/base-logger.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import type { FetchOperation } from '../../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
-import { NoAuthProvider } from '../../../support/auth/no-auth-provider.ts';
+import { NoAuthProvider } from '../../../support/doubles/auth/no-auth-provider.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;

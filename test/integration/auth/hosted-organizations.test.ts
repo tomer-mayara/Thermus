@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { accountFailureReporter, createApplication } from '../../../src/application.ts';
-import { BrowserSessionStore } from '../../support/browser-session-store.ts';
+import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';
 import {
@@ -17,7 +17,7 @@ import {
   userGrant,
   userOf,
 } from '../../support/in-process/hosted-organization-site.ts';
-import type { ProbeReport } from '../../support/request-context-probe.ts';
+import type { ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 class RecordingLogger {
   readonly lines: string[] = [];

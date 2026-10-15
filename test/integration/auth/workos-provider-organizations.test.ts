@@ -13,10 +13,10 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { PRODUCT_ACCESS } from '../../../src/hosted-admin/portal-access.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
-import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
+import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
 import { formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/in-process/hosted-organization-site.ts';
-import { RequestContextProbe } from '../../support/request-context-probe.ts';
+import { ProtectedToolSpy } from '../../support/doubles/mcp/protected-tool-spy.ts';
 import { fakeClientId } from '../../support/workos-fake-api.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
@@ -68,8 +68,8 @@ async function openSite(t: TestContext) {
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const session = new WorkOSBrowserSession({ workos, settings, authority });
-  const pages = new AccountOperationProbe(destinations);
-  const tools = new RequestContextProbe();
+  const pages = new AccountOperationSpy(destinations);
+  const tools = new ProtectedToolSpy();
   const mcp = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
     buildServer: tools.buildServer,
@@ -120,7 +120,7 @@ describe('WorkOS organization reads with the real session, organization service,
     const admins = await contextAt(browser, 'administration/admins');
     const refusals = [(await browser.open('portal')).status, (await browser.open('administration/users')).status];
     const token = await site.world.connectToken(sam, { org_id: acme });
-    const tool = await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params: { name: RequestContextProbe.toolName, arguments: { url: 'https://example.com/' } } }));
+    const tool = await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params: { name: ProtectedToolSpy.toolName, arguments: { url: 'https://example.com/' } } }));
 
     assert.equal(selected.location?.href, 'https://thermus.example/team/billing');
     assert.equal(billing.status, 200, billing.body);
