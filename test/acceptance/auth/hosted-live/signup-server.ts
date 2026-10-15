@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test, type TestContext } from 'node:test';
-import { Client, SdkHttpError, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { eraNegotiation } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { SdkHttpError, StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
 import { formLabelled, formsIn } from '../../../support/drivers/browser/hosted-browser.ts';
+import { connectMcpClient } from '../../../support/drivers/mcp/mcp-sdk-client.ts';
 import { signupDocuments } from '../../../support/fixtures/signup-documents.ts';
 import { authorizeWithConnect } from '../../../support/hosted-live/connect-grant.ts';
 import { LiveRun, once } from '../../../support/hosted-live/live-run.ts';
@@ -15,9 +15,8 @@ const options = { timeout: 300_000 };
 const pageUrl = 'https://example.com/';
 
 async function connectClient(t: TestContext, run: LiveRun, token: string): Promise<Client> {
-  const client = new Client({ name: 'thermus-signup-live', version: '0.0.0' }, { versionNegotiation: eraNegotiation('2026-07-28') });
+  const client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL('mcp', (await run.site()).thermusUrl), { authProvider: { token: async () => token } }), { checkEra: false, timeoutMs: 15_000 });
   t.after(() => client.close());
-  await client.connect(new StreamableHTTPClientTransport(new URL('mcp', (await run.site()).thermusUrl), { authProvider: { token: async () => token } }), { timeout: 15_000, signal: t.signal });
   return client;
 }
 

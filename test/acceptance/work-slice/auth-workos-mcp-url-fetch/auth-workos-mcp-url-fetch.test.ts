@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { Client, StreamableHTTPClientTransport, type CallToolResult } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, type CallToolResult, type Client } from '@modelcontextprotocol/client';
 import type { ApplicationLogger } from '../../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
 import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
 import { listenerTransport, type HostedBrowser } from '../../../support/drivers/browser/hosted-browser.ts';
-import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../../support/drivers/mcp/mcp-sdk-client.ts';
 import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { signInThroughServer } from '../../../support/dsl/workos-sign-in.ts';
 import type { WorkOSServerSite } from '../../../support/in-process/workos-site.ts';
@@ -93,14 +94,10 @@ async function openSlice(t: TestContext): Promise<SliceSite> {
 }
 
 async function connectedClient(t: TestContext, endpoint: McpEndpoint, era: McpProtocolEra): Promise<Client> {
-  const client = new Client({ name: 'work-slice-acceptance', version: '0.0.0' }, {
-    versionNegotiation: { ...eraNegotiation(era), probe: { timeoutMs: 5_000, maxRetries: 0 } },
-  });
-  t.after(() => client.close());
-  await client.connect(new StreamableHTTPClientTransport(new URL('mcp', endpoint.url), {
+  const client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL('mcp', endpoint.url), {
     authProvider: { token: async () => endpoint.token },
-  }), { signal: t.signal, timeout: 5_000 });
-  assert.equal(client.getNegotiatedProtocolVersion(), era);
+  }), { era, probe: true });
+  t.after(() => client.close());
   return client;
 }
 

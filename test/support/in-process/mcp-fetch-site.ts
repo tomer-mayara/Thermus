@@ -1,6 +1,5 @@
-import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
-import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
 import type { AccessResolver } from '../../../src/auth/access-context.ts';
 import type { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
@@ -9,7 +8,8 @@ import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts'
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import type { WebsiteFetcher, WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { NoAuthProvider } from '../doubles/auth/no-auth-provider.ts';
-import { eraNegotiation, type McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
+import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
 
 export const exactMarkdown = '# Exact Markdown\n\nNo extra text.\n';
 export const validFetchArguments = { url: 'HTTPS://Example.COM/Page?private-query=yes#private-fragment', reason: 'Read the page for this task' };
@@ -43,15 +43,12 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
     reportFailure: () => {},
   });
   const listener = await startHttpServer((request) => server.fetch(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resourceUrl });
-  const client = new Client({ name: 'fetch-tool-acceptance', version: '0.0.0' }, {
-    versionNegotiation: { ...eraNegotiation(era), probe: { timeoutMs: 5_000, maxRetries: 0 } },
-  });
-  t.after(async () => { await client.close(); await listener.close(); await server.close(); });
+  let client: Client | undefined = undefined;
+  t.after(async () => { await client?.close(); await listener.close(); await server.close(); });
   const url = new URL('mcp', listener.url);
-  await client.connect(new StreamableHTTPClientTransport(url, {
+  client = await connectMcpClient(t, new StreamableHTTPClientTransport(url, {
     authProvider: { token: async () => 'arbitrary-test-token-contents' }, requestInit: { headers: options.headers },
     fetch: options.httpSignal === undefined ? undefined : (url, init) => fetch(url, { ...init, signal: AbortSignal.any([options.httpSignal as AbortSignal, ...(init?.signal ? [init.signal] : [])]) }),
-  }), { signal: t.signal, timeout: 5_000 });
-  assert.equal(client.getNegotiatedProtocolVersion(), era);
+  }), { era, probe: true });
   return { client, url, records, fetchCalls, pipelineCalls, server, listener, firstCompletion: completed.promise };
 }
