@@ -74,6 +74,10 @@ files over 200 lines: the three hosted WorkOS acceptance tests, which were
 over the limit before, and the acceptance test of the slice, 248 lines with
 its four cases and their shared site; each stays with that reason.
 
+Runs of step 6 on 2026-10-15, before the walk of step 5: `npm run test:container`
+passed 12 of 12 with Docker 29.5.2 on `linux/arm64`. The draft pull request is
+`3-headed-monkey/Thermus#108`.
+
 ## Goal
 
 One script starts the hosted edition with the real WorkOS provider and the
