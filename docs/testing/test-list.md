@@ -978,6 +978,17 @@ The fixture registry, the operator runbook driver, and the operator setup proofs
 
 [V] Builds exactly the `Authorization` header with the API key as a bearer token and the `X-Axiom-Dataset` header with the dataset
 
+**Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
+
+`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, and the foreign origin probe. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, and the Lightpanda digest check read their paths from it. The test also covers `failingAdCleaner` of `test/support/server-preloads.ts` and `trustedAdRulesFile` of `test/support/ad-rules.ts`.
+
+[V] Given a build, each of the program entry, the network blocker, the SQL tracer, the foreign origin probe, the failing ad cleaner preload, and the trusted ad rules file names a file that exists
+[V] Given a build, the repository root is the folder of `package.json`
+
+```sh
+npm run build && node --test dist/test/unit/test-support-paths.test.js
+```
+
 **Image build: Lightpanda digest check** (`test/unit/image/check-lightpanda-digest.test.ts`)
 
 The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` double gives the check the digest of the asset, because the unit suite has no Lightpanda asset. The expected digests come from `docs/lightpanda-runtime.md`.
