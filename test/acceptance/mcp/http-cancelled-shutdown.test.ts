@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
 import { test } from 'node:test';
 import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given a ${era} SDK call cancelled while fetch waits, when the server stops after its cancelled completion, then the stop does not wait for the client connections`, { timeout: 10_000 }, async (t) => {

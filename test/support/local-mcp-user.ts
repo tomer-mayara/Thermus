@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { Client, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
-import { PreRegisteredNativeClient } from './better-auth-agents.ts';
+import { PreRegisteredNativeClient } from './drivers/browser/better-auth-agents.ts';
 import { mcpResourceUrl, publicBaseUrl, type AccountCredentials } from './better-auth-local.ts';
-import { LocalBrowser, serverFetch, type ServerAddress } from './local-browser.ts';
+import { LocalBrowser, serverFetch, type ServerAddress } from './drivers/browser/local-browser.ts';
 import { userGrant, type UserGrant } from './local-commands.ts';
 import { withRuntime } from './local-runtime.ts';
-import { eraNegotiation, type McpProtocolEra } from './mcp-protocol-eras.ts';
-import { PreRegisteredSdkClient } from './mcp-sdk-oauth-client.ts';
+import { eraNegotiation, type McpProtocolEra } from './drivers/mcp/mcp-protocol-eras.ts';
+import { PreRegisteredSdkClient } from './drivers/mcp/mcp-sdk-oauth-client.ts';
 
 export interface McpConnection {
   readonly client: Client;

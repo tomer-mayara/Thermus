@@ -16,7 +16,7 @@ import { InProcessServer } from '../../support/in-process-server.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/local-commands.ts';
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/local-mcp-user.ts';
 import { selfHostedServerSettings } from '../../support/local-runtime.ts';
-import { mcpProtocolEras, type McpProtocolEra } from '../../support/mcp-protocol-eras.ts';
+import { mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { permitIPv4Fixture, startFixture } from '../../support/network-fixture.ts';
 import { setProcessEnvironment } from '../../support/process-environment.ts';
 

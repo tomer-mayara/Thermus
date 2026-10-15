@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { decodeHtml } from '../../support/html-entities.ts';
+import { decodeHtml } from '../../support/drivers/browser/html-entities.ts';
 
 describe('HTML entities that the test browsers decode', () => {
   test('Given each of the five entities that the pages write, when it is decoded, then it gives its character', () => {

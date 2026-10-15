@@ -1,5 +1,5 @@
 // A proof runs this script in a new Node process, because the provider reads NODE_ENV one time, when its modules load.
-import { errorCodeOf, HttpAgent } from './better-auth-agents.ts';
+import { errorCodeOf, HttpAgent } from './drivers/browser/better-auth-agents.ts';
 import { startLocalProvider } from './better-auth-local.ts';
 
 const credentials = { email: 'alice@example.com', password: 'alice-password-1' };

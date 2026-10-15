@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { accountFailureReporter, createApplication } from '../../../src/application.ts';
 import { BrowserSessionStore } from '../../support/browser-session-store.ts';
-import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';
+import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';
 import {
   contextAt,

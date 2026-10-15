@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage, toolOutcome } from '../../support/hosted-administration.ts';
-import { formsIn } from '../../support/hosted-browser.ts';
+import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { formFor, statusesOf, userOf } from '../../support/hosted-organization-site.ts';
 
 const membersPage = 'https://thermus.example/team/members';

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { after, before, describe, test, type TestContext } from 'node:test';
 import { UnauthorizedError, type CallToolResult, type Client } from '@modelcontextprotocol/client';
-import { jwtClaims } from '../../support/better-auth-agents.ts';
+import { jwtClaims } from '../../support/drivers/browser/better-auth-agents.ts';
 import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/better-auth-local.ts';
 import { assertExit, assertRevealsNone, type CommandResult } from '../../support/command-process.ts';
 import {

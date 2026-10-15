@@ -155,7 +155,7 @@ command. The [gate policy](test-gate-policy.md) defines the required runs.
   get `AD_RULES_FILE` from `selfHostedServerSettings(directory)` in
   `test/support/local-runtime.ts`. Commands still use
   `selfHostedSettings(directory)`. Self-hosted tool lists now expect
-  `['getURLAsMarkdown']`. `test/support/mcp-protocol-eras.ts` holds the protocol
+  `['getURLAsMarkdown']`. `test/support/drivers/mcp/mcp-protocol-eras.ts` holds the protocol
   era list and the client negotiation option of the MCP acceptance tests.
 - New test support: `in-process-server.ts` runs the production `serve()` in the
   test process. `renderer-process-double.ts` stands in for the renderer process

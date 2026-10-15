@@ -6,7 +6,7 @@ import {
   HttpAgent,
   PreRegisteredNativeClient,
   ResourceServerClient,
-} from '../../support/better-auth-agents.ts';
+} from '../../support/drivers/browser/better-auth-agents.ts';
 import type { AccountCredentials, LocalAuth } from '../../support/better-auth-local.ts';
 import { assertExit, assertRevealsNone } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';

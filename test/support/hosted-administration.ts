@@ -3,7 +3,7 @@ import type { TestContext } from 'node:test';
 import type { AccountFailureReport } from '../../src/hosted-admin/account-routes.ts';
 import type { ChangeRecord } from '../../src/organizations/change-records.ts';
 import { memberRole } from './doubles/organizations/directory-double-records.ts';
-import { formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from './hosted-browser.ts';
+import { formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from './drivers/browser/hosted-browser.ts';
 import { adminGrant, formFor, member, serveOrganizationSite, superAdminGrant, userGrant, userOf, type OrganizationSite, type SiteSetup } from './hosted-organization-site.ts';
 import type { MembershipRecord } from './membership-directory-double.ts';
 

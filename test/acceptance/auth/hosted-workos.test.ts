@@ -3,7 +3,7 @@ import { describe, test, type TestContext } from 'node:test';
 import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
-import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../support/hosted-browser.ts';
+import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
 import { nowInSeconds } from '../../support/jwt-signing-key.ts';
 import { WorkOSWorld, type WorldUser } from '../../support/workos-world.ts';

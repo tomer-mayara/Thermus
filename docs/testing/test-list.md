@@ -273,7 +273,7 @@ npm run build && node --test dist/test/unit/application-operator-log.test.js
 
 **Hosted organization page** (`test/unit/hosted-admin/account-routes-organization-page.test.ts`)
 
-This file and the two selection files below also use `fixtures/organization-routes-fixtures.ts`: `serveAnn()`, the session and switch cookies, the form token, and the selection post. `OrganizationAdministrationDouble` gives the configured authorized organizations of each user subject, or a configured failure, and records each list and each selection check. `SignedInSessionDouble` records each organization switch and gives a configured switch answer or failure. `formsIn()` from `test/support/hosted-browser.ts` reads the forms of a page.
+This file and the two selection files below also use `fixtures/organization-routes-fixtures.ts`: `serveAnn()`, the session and switch cookies, the form token, and the selection post. `OrganizationAdministrationDouble` gives the configured authorized organizations of each user subject, or a configured failure, and records each list and each selection check. `SignedInSessionDouble` records each organization switch and gives a configured switch answer or failure. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
 
 [V] For a GET and a HEAD request, lists each authorized organization of a signed-in user with a selection form that posts the form token of the session, the organization ID, and the return destination; marks the selected organization; sends the session cookies, `form-action 'self'`, and the other page headers, and no script, style, or other resource; runs no access resolution or operation
 [V] Shows organization names and IDs with HTML characters as text
@@ -305,7 +305,7 @@ Each refusal comes before an organization check and a session switch.
 
 **Member and invitation pages** (`test/unit/hosted-admin/account-routes-administration-pages.test.ts`)
 
-This file and the two files below also use `fixtures/administration-routes-fixtures.ts`. `serveAdministration()` serves the routes for Ann: a signed-in session with a refreshed session cookie, a form token, and MFA evidence, and allowed access to Acme with User and Admin. The fixtures also give member and invitation overviews and one valid post for each change. `OrganizationAdministrationDouble` gives the configured overview, refusal, change result, or failure, and records each call with its actor and its request. A setup can give a session whose sign-in did not complete MFA, a session without a form token, another access decision, or another public URL. `formsIn()` from `test/support/hosted-browser.ts` reads the forms of a page.
+This file and the two files below also use `fixtures/administration-routes-fixtures.ts`. `serveAdministration()` serves the routes for Ann: a signed-in session with a refreshed session cookie, a form token, and MFA evidence, and allowed access to Acme with User and Admin. The fixtures also give member and invitation overviews and one valid post for each change. `OrganizationAdministrationDouble` gives the configured overview, refusal, change result, or failure, and records each call with its actor and its request. A setup can give a session whose sign-in did not complete MFA, a session without a form token, another access decision, or another public URL. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
 
 [V] For a GET and a HEAD request with forged organization values in the query and headers, gives the service the user of the decided context with the MFA evidence of the session and the organization of the context; the members page shows the seat count, each member with its status and roles, a link to the invitations page, and one form for each change with the form token, the organization, the membership, its revision, the role, and the action; sends the session cookies and the page headers with `form-action 'self'`, and no script, style, or other resource
 [V] For each identity policy, the invitations page has a send form with an email field for each role that the actor can invite, a resend and a revoke form for each pending invitation of a role of the actor, each invitation with its role and state, a link to the members page, and the policy text of the directory
@@ -933,7 +933,7 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 
 **HTML entities of the test browsers** (`test/unit/test-support/html-entities.test.ts`)
 
-The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page fixtures were the same table and the same regex. `decodeHtml()` in `test/support/html-entities.ts` is the one copy.
+The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page fixtures were the same table and the same regex. `decodeHtml()` in `test/support/drivers/browser/html-entities.ts` is the one copy.
 
 [V] Decodes each of the five entities that the product pages write: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
 [V] Decodes several entities in one text and keeps the other text
@@ -943,7 +943,7 @@ The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page f
 
 **Cookie jar of the test browsers** (`test/unit/test-support/cookie-jar.test.ts`)
 
-`HttpAgent`, `LocalBrowser`, and `HostedBrowser` each parsed the Set-Cookie lines of an answer and made the Cookie header. `keepCookies()` and `cookieHeaderOf()` in `test/support/cookie-jar.ts` are the one copy; each browser keeps its own `Map` and its own transport.
+`HttpAgent`, `LocalBrowser`, and `HostedBrowser` each parsed the Set-Cookie lines of an answer and made the Cookie header. `keepCookies()` and `cookieHeaderOf()` in `test/support/drivers/browser/cookie-jar.ts` are the one copy; each browser keeps its own `Map` and its own transport.
 
 [V] Keeps a new cookie from a Set-Cookie line by its name, without its attributes
 [V] Replaces the value of a cookie with the same name and keeps its place in the jar

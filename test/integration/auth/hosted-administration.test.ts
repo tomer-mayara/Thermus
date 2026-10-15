@@ -10,7 +10,7 @@ import {
 } from '../../../src/organizations/organization-administration.ts';
 import { BrowserSessionStore } from '../../support/browser-session-store.ts';
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/hosted-administration.ts';
-import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';
+import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';
 import { formFor, hostedConfig, openOrganizationSite, userOf, type OrganizationSite } from '../../support/hosted-organization-site.ts';
 
