@@ -1,6 +1,6 @@
 # Auth WorkOS MCP URL fetch: work slice plan
 
-Status: step 0 done on 2026-10-14; steps 1 to 6 open. No code yet.
+Status: steps 0 to 3 done on 2026-10-14; step 4 in work; steps 5 and 6 open.
 Date: 2026-10-14. Branch: `claude/auth-workos-mcp-work-slice-c97848`.
 Slice folder: `test/acceptance/work-slice/auth-workos-mcp-url-fetch/`.
 Entry point: `auth-workos-mcp-url-fetch.ts` in that folder.
@@ -26,6 +26,27 @@ happens there. The prerequisites are present: the staging launcher, Lightpanda
 1.0.0 under `.cache/lightpanda/1.0.0/`, the portal build, the three Axiom
 lines in `.env.local`, OpenSSL 3.6.3, free ports 46443 and 8080, Claude Code
 2.1.289, and an empty `ad-rules.txt`.
+
+Steps 1 to 3 ran on 2026-10-14 with two subagents in their own worktrees, from
+the plan commit, and landed on the branch after a rebase onto `main`, which
+had moved by five commits (#88 to #95: the test code layout, the moved MCP
+test doubles and the raw MCP driver under `test/support/`, and the lint of
+the test layer boundaries). Subagent B added the two production seams of D6
+and gap 3 with their tests. `tools/list` without a `buildServer` does not give
+an empty list: the default server has no tools capability, so the SDK answers
+HTTP 404 with the JSON-RPC error -32601 "Method not found", and the case says
+so. A second case covers `openWorkOSConnection()`: the settings, the operator
+line, and the refusal of invalid settings without a line. The stop-signal
+case became `test/unit/stop-signal.test.ts` with an `EventEmitter` as the
+signals double, so that the integration test of the stop signals stays under
+200 lines. Subagent A wrote the red acceptance test (five cases: the first in
+both eras), the stub, the two moved helpers, and the three options of the
+local HTTPS site with an integration case that listens on port 46443. The
+acceptance test and the raw MCP requests of B's case import the driver from
+`test/support/drivers/mcp/`, as the layout rule D2 requires since #95. The
+move of the fetch lines ended the one exception of rule D2, so the lint
+block, its architecture case, and the layout document changed with it; a new
+case shows that the former exception is refused.
 
 ## Goal
 
@@ -207,7 +228,7 @@ Each decision has a default. Confirm or change it before step 1.
 | D3 | How Claude Code registers | DCR and CIMD on in the environment. Claude Code registers itself with its own loopback redirect URI, so no fixed port is needed. The consent page shows the client name that Claude Code registers. | A public Connect OAuth application with PKCE, made once by the owner, with the redirect URI `http://localhost:46481/callback`; then `claude mcp add --client-id <id> --callback-port 46481`. |
 | D4 | Token scopes | The printed client command pins the scopes: `claude mcp add-json thermus-hosted '{"type":"http","url":"https://localhost:46443/mcp","oauth":{"scopes":"openid profile email offline_access"}}'`. | `scopes_supported` in the protected-resource metadata, a production change in `ProtectedResourceEndpoint`. Claude Code does not promise to request them, so the default stays the pin. |
 | D5 | First access of the new user | An operator step after the first sign-in: the owner adds the user to the slice organization "Thermus work slice" with the role `user`, in the WorkOS dashboard or with the connector (`addUserToOrganization`), as the operator runbook adds a membership. The slice makes no membership itself. The entry point prints this step, and the portal shows the result after a reload. The owner makes the organization once, with the external ID `thermus-work-slice`. | (a) Automatic membership by the verified domain `thermus.ai` on the slice organization, with `user` as the default role of that organization. WorkOS documents automatic membership for verified domains, but its examples name SSO only. This needs a live probe before the slice can depend on it, and a decision about a default role that gives access. (b) An invitation from the portal by a Super Admin that signed in with a password and MFA: the complete product path, with more steps. (c) A slice-only `--grant-user <email>` command on the test-support `OperatorRunbook`. |
-| D6 | Composition seam | `src/hosted-workos-application.ts` exports `openWorkOSConnection(config, logger, environment)` and `composeWorkOSApplication(config, connection, parts)`, with `parts: { logger, buildServer? }`. `openWorkOSApplication()` stays for `createApplication()` and passes no `buildServer`. The three offline tests that call `composeWorkOSApplication(config, connection, log)` change their third argument. The eslint rule of habit-hooks allows at most three parameters, so the record is the fourth value. | A copy of `workosProviderParts()` in the slice. The owner's rule refuses a copy of a production composition. |
+| D6 | Composition seam | `src/hosted-workos-application.ts` exports `openWorkOSConnection(config, logger, environment)` and `composeWorkOSApplication(config, connection, parts)`, with `parts: { logger, buildServer? }`. `openWorkOSApplication()` stays for `createApplication()` and passes no `buildServer`. The three offline tests that call `composeWorkOSApplication(config, connection, log)` change their third argument. The eslint rule of habit-hooks allows at most three parameters, so the record is the third parameter. | A copy of `workosProviderParts()` in the slice. The owner's rule refuses a copy of a production composition. |
 | D7 | HTTPS front | `LocalHttpsSite.start(settings, options)` gets two options: `certificate` (the key and certificate files to use; the default is a new self-signed certificate) and `application` (a function that opens the application; the default is the hosted composition with the staging settings). The gate keeps its behavior. The slice gives its own application and the certificate of D2. | A new class in `test/support/` that takes the files, the portal build, and the forward target, and `LocalHttpsSite` as its user. |
 | D8 | Logging | `openAxiomLogging()` and the three lines of the basic slice: the started line, the completed line with the Markdown, and the production completion record. The record shows the WorkOS identity: the authority `workos:<client ID>`, the user ID as subject, and the tenant `workos:<client ID>:<organization ID>`. The start line of the hosted composition and each failure report go to the same log. No new log line. | One slice-only line for each token check. The completion record already shows the identity, so it is not needed. |
 | D9 | Proof | An offline acceptance test with `WorkOSWorld`, the renderer double, and a recording logger, in both protocol eras. The manual run proves Google sign-in, DCR, Claude Code, and the Axiom export, and the pull request records it. The complete hosted live gate runs after the gate proof changes (D1). | Also a `.live.ts` case of the slice in the gate. Not now: the gate drives AuthKit with a password user, and a Google sign-in needs a real Google account. |
@@ -232,6 +253,7 @@ test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   Imports 
 test/acceptance/auth/hosted-live/configuration.ts     The social-provider proof: Google only (D1)
 test/acceptance/auth/hosted-workos.test.ts            One case of the seam: with a buildServer the endpoint lists the tool; without it, no tool
 test/unit/work-slice/observe-fetches.test.ts          Moved from basic-mcp-url-fetch.test.ts
+test/unit/stop-signal.test.ts                         stopSignal() with an EventEmitter as the signals double
 test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts   The launcher with a pnpm double
 package.json                                          The script work-slice:auth-workos-mcp-url-fetch
 ```
@@ -447,9 +469,8 @@ Done when: the focused command fails for that reason.
    `composeWorkOSApplication()` (D6), with the case of
    `hosted-workos.test.ts`. The three offline tests change their third
    argument.
-2. `stopSignal()` exported from `src/index.ts`, with a case in
-   `test/integration/server-stop-signals.test.ts` if the existing cases do not
-   cover the export.
+2. `stopSignal()` exported from `src/index.ts`, with a unit test,
+   `test/unit/stop-signal.test.ts`.
 3. `server-only-modules.test.ts` passes without a change.
 
 Done when: `npm run check` passes.
