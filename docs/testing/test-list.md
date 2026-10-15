@@ -104,6 +104,23 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Creates and clears the close deadline once; repeated failed closes retain the same error
 [V] Startup failure after listen closes the listener once and preserves both startup and cleanup errors
 
+**HTML escape of the product pages** (`test/unit/html/html-escape.test.ts`)
+
+The three escapes of the WorkOS notice pages, the bundled local pages, and the account pages were the same table and the same regex. `escapeHtml()` in `src/html/html-escape.ts` is the one copy. The test browsers decode the same five entities.
+
+[V] Escapes each of the five characters `&`, `<`, `>`, `"`, and `'` to its entity: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
+[V] Escapes several characters in one text and keeps the other text
+[V] Escapes an entity again: `&lt;` gives `&amp;lt;`. The escape does not look for entities, so each caller escapes a value one time only
+[V] Keeps plain text unchanged, also text with a slash, a backtick, an equals sign, or a non-ASCII character such as `é` or an emoji
+[V] Gives the empty string for the empty string
+[V] Escapes a text with all five characters so that `decodeHtml()` of the test browsers gives the input again
+
+Run the focused test:
+
+```sh
+npm run build && node --test dist/test/unit/html/html-escape.test.js
+```
+
 **Application lifecycle** (`test/unit/application-lifecycle.test.ts`)
 
 MCP and provider resources are public collaborator doubles; listener drain is a

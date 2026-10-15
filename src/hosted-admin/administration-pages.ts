@@ -1,8 +1,9 @@
 import type { BillingState } from '../billing/billing.ts';
+import { escapeHtml } from '../html/html-escape.ts';
 import type { InvitationEntry, InvitationOverview, MemberEntry, MemberOverview } from '../organizations/administration-overviews.ts';
 import type { RoleChange } from '../organizations/customer-roles.ts';
 import type { InvitationIdentityPolicy } from '../organizations/organization-directory.ts';
-import { escapeHtml, FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
+import { FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
 
 export interface MembersPageForm {
   readonly overview: MemberOverview;
