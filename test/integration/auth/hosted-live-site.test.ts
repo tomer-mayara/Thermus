@@ -9,7 +9,6 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { LocalHttpsSite } from '../../support/hosted-live/local-https-site.ts';
 import type { HostedLiveSettings } from '../../support/hosted-live/settings.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
-import { serverHandles } from '../../unit/http/fixtures/http-server-fixtures.ts';
 
 // The placeholder settings reach no WorkOS environment. The hosted composition makes no WorkOS call when it starts.
 const settings: HostedLiveSettings = {
@@ -64,6 +63,10 @@ function closeLeakedServersAfter(t: TestContext): void {
       if (server.listening) await new Promise((resolve) => server.close(resolve));
     }
   });
+}
+
+function serverHandles(): number {
+  return process.getActiveResourcesInfo().filter((resource) => resource === 'TCPServerWrap').length;
 }
 
 // Node removes the handle of a closed server one event loop turn after the close.
