@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
+import type { StoredResourceServerClient } from '../../src/auth/local-auth/better-auth/local-installation.ts';
 import { HttpAgent, loopbackRedirectUri, type PreRegisteredNativeClient } from './better-auth-agents.ts';
 import { withRegistrationSession, type AccountCredentials, type LocalAuth } from './better-auth-local.ts';
 import { assertExit, runCommand, type CommandResult } from './command-process.ts';
@@ -9,7 +10,7 @@ import { selfHostedSettings } from './local-runtime.ts';
 
 export type Operator = (args: readonly string[], input?: readonly string[]) => Promise<CommandResult>;
 
-export interface ListedAccount {
+interface ListedAccount {
   readonly email: string;
   readonly state: string;
   readonly id: string;
@@ -18,10 +19,6 @@ export interface ListedAccount {
 export interface ResourceServerCredentials {
   readonly clientId: string;
   readonly clientSecret: string;
-}
-
-export interface StoredResourceServerClient extends ResourceServerCredentials {
-  readonly resource: string;
 }
 
 export interface UserGrant {

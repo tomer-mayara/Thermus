@@ -19,12 +19,12 @@ export interface LiveUser {
   readonly authenticator: TotpAuthenticator;
 }
 
-export interface LiveApplication {
+interface LiveApplication {
   readonly id: string;
   readonly clientId: string;
 }
 
-export interface MachineApplication extends LiveApplication {
+interface MachineApplication extends LiveApplication {
   readonly clientSecret: string;
 }
 
@@ -44,7 +44,7 @@ export interface StagingFixtures {
   readonly machineApplication: MachineApplication;
 }
 
-export type MembershipName = 'userAndAdminInA' | 'userInB' | 'connectUserInA' | 'adminOnlyInA' | 'defaultRoleInA' | 'deactivatedUserInA' | 'mixedAdminInA' | 'mixedUserInB';
+type MembershipName = 'userAndAdminInA' | 'userInB' | 'connectUserInA' | 'adminOnlyInA' | 'defaultRoleInA' | 'deactivatedUserInA' | 'mixedAdminInA' | 'mixedUserInB';
 
 export async function settled<T>(work: readonly Promise<T>[]): Promise<T[]> {
   // Wait for each creation, so that the registry knows every fixture before a failure ends the setup.

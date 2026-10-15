@@ -7,7 +7,7 @@ export interface DockerResult {
   readonly stderr: string;
 }
 
-export interface DockerOptions {
+interface DockerOptions {
   readonly input?: string | Buffer;
   readonly environment?: NodeJS.ProcessEnv;
 }

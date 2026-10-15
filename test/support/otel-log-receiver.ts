@@ -4,16 +4,16 @@ import { once } from 'node:events';
 import type { TestContext } from 'node:test';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
-import { axiomTestSettings, trackTestExports } from './axiom-test-export.ts';
+import { axiomExportHeaders, axiomTestSettings, trackTestExports } from './axiom-test-export.ts';
 
-export interface ReceivedLogExport {
+interface ReceivedLogExport {
   readonly method: string | undefined;
   readonly path: string | undefined;
   readonly headers: IncomingHttpHeaders;
   readonly body: string;
 }
 
-export interface ExportedLogRecord {
+interface ExportedLogRecord {
   readonly severityNumber: number;
   readonly severityText: string;
   readonly timeUnixNano: string;
@@ -79,7 +79,7 @@ export async function createOtlpFixture(t: TestContext, headers?: Record<string,
     const processor = new BatchLogRecordProcessor({ exporter, scheduledDelayMillis: 60_000, exportTimeoutMillis: 2_000 });
     liveOutput = new OTLPLogExporter({
       url: settings.endpoint,
-      headers: { Authorization: `Bearer ${settings.apiKey}`, 'X-Axiom-Dataset': settings.dataset },
+      headers: axiomExportHeaders(settings),
       timeoutMillis: 5_000,
     });
     const live = trackTestExports(liveOutput);

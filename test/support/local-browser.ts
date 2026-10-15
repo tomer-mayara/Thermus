@@ -1,20 +1,22 @@
 import assert from 'node:assert/strict';
 import { request as httpRequest, type IncomingHttpHeaders } from 'node:http';
 import { publicBaseUrl, type AccountCredentials } from './better-auth-local.ts';
+import { cookieHeaderOf, keepCookies } from './cookie-jar.ts';
+import { decodeHtml } from './html-entities.ts';
 
-export type FetchSite = 'none' | 'same-origin' | 'cross-site';
+type FetchSite = 'none' | 'same-origin' | 'cross-site';
 
 // The listen address of the running server. A restarted server can listen on another port.
 export type ServerAddress = () => URL;
 
-export interface PageResponse {
+interface PageResponse {
   readonly status: number;
   readonly headers: IncomingHttpHeaders;
   readonly body: string;
   readonly location?: URL;
 }
 
-export interface FormPost {
+interface FormPost {
   readonly origin?: string | null;
   readonly site?: FetchSite;
 }
@@ -26,18 +28,17 @@ interface BrowserRequest {
   readonly body?: string;
 }
 
-export interface SignInPage {
+interface SignInPage {
   readonly url: URL;
   readonly oauthQuery: string;
 }
 
-export interface BrowserAuthorization {
+interface BrowserAuthorization {
   readonly callback: URL;
   readonly pages: readonly string[];
 }
 
 const MAX_STEPS = 6;
-const HTML_ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
 
 // A browser on the operator's machine. It reaches the server at its listen address, but each URL and
 // Origin it shows the server uses the public base URL, as a browser behind a reverse proxy does.
@@ -99,7 +100,8 @@ export class LocalBrowser {
   }
 
   private send({ method, url, headers, body }: BrowserRequest): Promise<PageResponse> {
-    if (this.cookies.size > 0) headers.Cookie = [...this.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+    const cookieHeader = cookieHeaderOf(this.cookies);
+    if (cookieHeader !== undefined) headers.Cookie = cookieHeader;
     if (body !== undefined) headers['Content-Length'] = String(Buffer.byteLength(body));
     const server = this.server();
     return new Promise((resolve, reject) => {
@@ -112,7 +114,7 @@ export class LocalBrowser {
       }, (incoming) => {
         let text = '';
         incoming.setEncoding('utf8').on('data', (chunk: string) => { text += chunk; }).on('error', reject).on('end', () => {
-          this.keepCookies(incoming.headers['set-cookie'] ?? []);
+          keepCookies(this.cookies, incoming.headers['set-cookie'] ?? []);
           const location = incoming.headers.location;
           resolve({
             status: incoming.statusCode ?? 0,
@@ -126,27 +128,12 @@ export class LocalBrowser {
       outgoing.end(body);
     });
   }
-
-  private keepCookies(lines: readonly string[]): void {
-    for (const line of lines) {
-      const [pair = ''] = line.split(';');
-      const separator = pair.indexOf('=');
-      const name = pair.slice(0, separator).trim();
-      const value = pair.slice(separator + 1).trim();
-      if (value === '' || /max-age=0/i.test(line)) this.cookies.delete(name);
-      else this.cookies.set(name, value);
-    }
-  }
 }
 
 export function hiddenField(html: string, name: string): string {
   const field = new RegExp(`<input type="hidden" name="${name}" value="([^"]*)">`).exec(html);
   assert.ok(field, `the page has no hidden ${name} field:\n${html}`);
   return decodeHtml(field[1] ?? '');
-}
-
-export function decodeHtml(text: string): string {
-  return text.replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }
 
 function publicUrl(url: string | URL): URL {

@@ -9,15 +9,16 @@ import type {
   RemoveRoleOptions,
   User,
 } from '@workos-inc/node';
+import { statusOf } from './sdk-errors.ts';
 
 // The steps of the operator runbook, docs/implementation/hosted-organization-setup.md, with the pinned SDK. The live
 // proofs run these steps against the staging environment, so that each rule of the runbook rests on WorkOS behavior.
 // They are test support only: the product has no operator method or route.
 
-export type OperatorAction = 'locate-or-create-organization' | 'grant-super-admin' | 'revoke-super-admin' | 'inspect-after-unknown-outcome';
+type OperatorAction = 'locate-or-create-organization' | 'grant-super-admin' | 'revoke-super-admin' | 'inspect-after-unknown-outcome';
 // applied: the change is in WorkOS now. unchanged: no change was necessary. stopped: the runbook needs a decision of
 // a person before any write. unknown: the effect of the write is not known, so the next step is an inspection.
-export type OperatorOutcome = 'applied' | 'unchanged' | 'stopped' | 'unknown';
+type OperatorOutcome = 'applied' | 'unchanged' | 'stopped' | 'unknown';
 
 // One basic record of an operator step. It holds no credential: no API key, token, password, code, or link.
 export interface OperatorRecord {
@@ -39,7 +40,7 @@ export interface OrganizationRequest {
   readonly name: string;
 }
 
-export interface SuperAdminRequest {
+interface SuperAdminRequest {
   readonly organizationId: string;
   readonly email: string;
 }
@@ -83,10 +84,6 @@ export const superAdminRole = 'super-admin';
 export function rolesOf(membership: OrganizationMembership | undefined): string[] {
   if (membership === undefined) return [];
   return (membership.roles ?? [membership.role]).map(({ slug }) => slug).toSorted();
-}
-
-function statusOf(error: unknown): unknown {
-  return typeof error === 'object' && error !== null && 'status' in error ? error.status : undefined;
 }
 
 function withSuperAdmin(roles: readonly string[]): boolean {

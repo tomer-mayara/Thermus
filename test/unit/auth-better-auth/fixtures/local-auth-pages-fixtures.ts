@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { LocalAuthPages, localPagePaths, type ProviderHandler } from '../../../../src/auth/local-auth/better-auth/local-auth-pages.ts';
 import { CLIENT_ADDRESS_HEADER } from '../../../../src/http/client-address.ts';
+import { decodeHtml } from '../../../support/html-entities.ts';
 
 export const publicBaseUrl = 'http://localhost:8080/';
 export const publicOrigin = 'http://localhost:8080';
@@ -82,13 +83,11 @@ export function formPost(target: string, fields: Readonly<Record<string, string>
   return browserRequest(target, { method: 'POST', headers: sent, body: new URLSearchParams(fields).toString() });
 }
 
-const HTML_ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
-
 // The acceptance browser reads the field with this exact pattern.
 export function hiddenOauthQuery(html: string): string {
   const field = /<input type="hidden" name="oauth_query" value="([^"]*)">/.exec(html);
   assert.ok(field, `the page has no hidden oauth_query field:\n${html}`);
-  return (field[1] ?? '').replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
+  return decodeHtml(field[1] ?? '');
 }
 
 export function tagWith(html: string, element: string, attribute: string): string {

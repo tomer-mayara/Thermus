@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { sanitizeHtml } from '../../../../helpers/sanitize-html.ts';
+import { sanitizeHtml } from '../../../../support/sanitize-html.ts';
 
 describe('Matrix visibility', () => {
   for (const transform of [

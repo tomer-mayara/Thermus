@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { requestTimeout, type HostedLiveSettings } from './settings.ts';
 
-export type JsonObject = Readonly<Record<string, unknown>>;
+type JsonObject = Readonly<Record<string, unknown>>;
 
 const apiOrigin = 'https://api.workos.com';
 

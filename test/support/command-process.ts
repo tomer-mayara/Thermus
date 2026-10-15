@@ -9,9 +9,9 @@ const commandEntry = fileURLToPath(new URL('../../src/index.js', import.meta.url
 const networkBlocker = new URL('./deny-network.js', import.meta.url).href;
 const sqlTracer = new URL('./trace-sqlite.js', import.meta.url).href;
 
-export type CommandSettings = Readonly<Record<string, string>>;
+type CommandSettings = Readonly<Record<string, string>>;
 
-export interface CommandLine {
+interface CommandLine {
   readonly args: readonly string[];
   readonly input?: readonly string[];
 }

@@ -1,16 +1,16 @@
 import childProcess, { ChildProcess, type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
 import type { TestContext } from 'node:test';
+import { syncBuiltinMocks } from './builtin-mocks.ts';
 
 type ProcessCompletion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 
-export interface RenderedPage {
+interface RenderedPage {
   readonly finalUrl: string;
   readonly html: string;
 }
 
-export interface RendererLaunch {
+interface RendererLaunch {
   readonly executable: string;
   readonly args: readonly string[];
   readonly options: unknown;
@@ -38,11 +38,7 @@ export function mockRenderer(t: TestContext) {
     signalLaunch();
     return child;
   }) as typeof childProcess.execFile);
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
   return { child, lookup, execute, launched, finish: (...args: Parameters<ProcessCompletion>) => finish(...args) };
 }
 
@@ -60,11 +56,7 @@ export class RendererProcessDouble {
       return [{ address: '93.184.216.34', family: 4 }];
     });
     t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>) => renderer.launch(args)) as typeof childProcess.execFile);
-    syncBuiltinESMExports();
-    t.after(() => {
-      t.mock.restoreAll();
-      syncBuiltinESMExports();
-    });
+    syncBuiltinMocks(t);
     return renderer;
   }
 

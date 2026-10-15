@@ -1,7 +1,7 @@
 import type { Page, Route } from 'playwright';
 import type { LiveUser } from './staging-fixtures.ts';
 
-export interface AuthKitPlan {
+interface AuthKitPlan {
   readonly user: LiveUser;
   readonly authkitHost: string;
   readonly callback: string;

@@ -1,4 +1,5 @@
 import { WorkOS } from '@workos-inc/node';
+import { browserSessionIssuer } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 
 export interface HostedLiveSettings {
   readonly apiKey: string;
@@ -22,7 +23,7 @@ export const hostedRolePermissions: Readonly<Record<string, readonly string[]>> 
   'super-admin': ['admin-grants:manage', 'billing:manage'],
   member: [],
 };
-export const applicationPermissions: readonly string[] = Object.values(hostedRolePermissions).flat();
+const applicationPermissions: readonly string[] = Object.values(hostedRolePermissions).flat();
 
 export function workosClient({ apiKey, clientId }: HostedLiveSettings): WorkOS {
   // No retry and a short timeout: a live failure shows at once, in the proof that caused it.
@@ -30,7 +31,7 @@ export function workosClient({ apiKey, clientId }: HostedLiveSettings): WorkOS {
 }
 
 export function browserIssuer({ clientId }: HostedLiveSettings): string {
-  return `https://api.workos.com/user_management/${clientId}`;
+  return browserSessionIssuer(clientId);
 }
 
 export function authkitKeySetUrl(issuer: string): string {

@@ -21,7 +21,7 @@ export interface GateImages {
   readonly rebuilt: string;
 }
 
-export async function requireContainerEngine(): Promise<void> {
+async function requireContainerEngine(): Promise<void> {
   for (const args of engineChecks) {
     const result = await docker(args).catch((error: unknown): DockerResult => ({ code: null, stdout: Buffer.alloc(0), stderr: String(error) }));
     if (result.code !== 0) {
@@ -43,7 +43,7 @@ async function buildImage(revision: string): Promise<string> {
   return tag;
 }
 
-export interface AssetBuild extends DockerResult {
+interface AssetBuild extends DockerResult {
   readonly tag: string;
 }
 

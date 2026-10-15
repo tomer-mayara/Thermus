@@ -5,7 +5,7 @@ import type { SignInServices } from './browser-session.ts';
 import { connectRedirectUri, mcpResource } from './settings.ts';
 import type { LiveUser } from './staging-fixtures.ts';
 
-export interface ConnectGrantRequest {
+interface ConnectGrantRequest {
   readonly user: LiveUser;
   readonly organizationName?: string;
   readonly clientId: string;

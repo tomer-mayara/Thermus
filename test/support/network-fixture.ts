@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import dns from 'node:dns/promises';
 import { createServer, type RequestListener } from 'node:http';
-import { syncBuiltinESMExports } from 'node:module';
 import { type TestContext } from 'node:test';
+import { syncBuiltinMocks } from './builtin-mocks.ts';
 
 export async function startFixture(t: TestContext, handler: RequestListener, host = '127.0.0.1') {
   const requests: string[] = [];
@@ -50,9 +50,5 @@ export function permitIPv4Fixture(t: TestContext) {
     command.push('--block-cidrs', '-127.0.0.1/32', url);
     return execute(args[0], command, args[2], args[3]);
   });
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
 }

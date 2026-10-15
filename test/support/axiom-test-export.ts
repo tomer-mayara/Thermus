@@ -28,9 +28,13 @@ function axiomLogEndpoint(value: string | undefined): string {
   return endpoint.href;
 }
 
-export function axiomTestSettings(environment: NodeJS.ProcessEnv = process.env): {
-  apiKey: string; endpoint: string; dataset: string;
-} {
+export interface AxiomTestSettings {
+  readonly apiKey: string;
+  readonly endpoint: string;
+  readonly dataset: string;
+}
+
+export function axiomTestSettings(environment: NodeJS.ProcessEnv = process.env): AxiomTestSettings {
   if (environment === process.env) environment = { ...loadLocalSettings(), ...environment };
   const apiKey = environment.AXIOM_API_KEY?.trim();
   if (!apiKey) throw new Error('Set AXIOM_API_KEY before running the Axiom logger tests.');
@@ -38,6 +42,11 @@ export function axiomTestSettings(environment: NodeJS.ProcessEnv = process.env):
   const dataset = environment.AXIOM_SYSTEM_LOG_TEST_DATA_SET?.trim() || 'system-log-test';
   if (dataset !== 'system-log-test') throw new Error('AXIOM_SYSTEM_LOG_TEST_DATA_SET must be system-log-test.');
   return { apiKey, endpoint, dataset };
+}
+
+// Axiom reads the ingest token from the bearer header and the dataset from a different header.
+export function axiomExportHeaders({ apiKey, dataset }: AxiomTestSettings): Record<string, string> {
+  return { Authorization: `Bearer ${apiKey}`, 'X-Axiom-Dataset': dataset };
 }
 
 export function trackTestExports(output: LogRecordExporter): {
@@ -70,10 +79,10 @@ export interface AxiomLogging {
   close(): Promise<void>;
 }
 
-export function openAxiomLogging(settings: { apiKey: string; endpoint: string; dataset: string }, scopeName: string, console: Writable = process.stderr): AxiomLogging {
+export function openAxiomLogging(settings: AxiomTestSettings, scopeName: string, console: Writable = process.stderr): AxiomLogging {
   const reported = reportFailedExports(new OTLPLogExporter({
     url: settings.endpoint,
-    headers: { Authorization: `Bearer ${settings.apiKey}`, 'X-Axiom-Dataset': settings.dataset },
+    headers: axiomExportHeaders(settings),
     timeoutMillis: 10_000,
   }), console);
   const processor = new BatchLogRecordProcessor({ exporter: reported.exporter, scheduledDelayMillis: 1_000, exportTimeoutMillis: 10_000 });

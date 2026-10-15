@@ -17,7 +17,7 @@ const containerPageScript = '/tmp/container-page.mjs';
 const outboundQuery = /^Outbound DNS query.*$/gm;
 let sites = 0;
 
-export interface ServerContainerOptions {
+interface ServerContainerOptions {
   readonly image?: string;
   readonly environment?: Readonly<Record<string, string>>;
   // false starts the server without the trusted rules file.

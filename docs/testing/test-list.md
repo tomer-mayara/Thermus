@@ -914,6 +914,53 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 
 [V] Records `SIGKILL` and sends no signal to a process when the readiness deadline or a cancellation of a running fetch requests a kill
 
+**HTML entities of the test browsers** (`test/unit/test-support/html-entities.test.ts`)
+
+The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page fixtures were the same table and the same regex. `decodeHtml()` in `test/support/html-entities.ts` is the one copy.
+
+[V] Decodes each of the five entities that the product pages write: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
+[V] Decodes several entities in one text and keeps the other text
+[V] Decodes one time only: `&amp;lt;` gives `&lt;`
+[V] Keeps plain text, an unknown named entity such as `&eacute;`, and a numeric entity other than `&#39;` such as `&#40;` unchanged
+[V] Gives the empty string for the empty string
+
+**Cookie jar of the test browsers** (`test/unit/test-support/cookie-jar.test.ts`)
+
+`HttpAgent`, `LocalBrowser`, and `HostedBrowser` each parsed the Set-Cookie lines of an answer and made the Cookie header. `keepCookies()` and `cookieHeaderOf()` in `test/support/cookie-jar.ts` are the one copy; each browser keeps its own `Map` and its own transport.
+
+[V] Keeps a new cookie from a Set-Cookie line by its name, without its attributes
+[V] Replaces the value of a cookie with the same name and keeps its place in the jar
+[V] Applies several lines for one cookie in their order, so the last line wins
+[V] Drops a cookie on `Max-Age=0` in any letter case and at any position in the line; the other cookies stay
+[V] Drops a cookie whose value is empty (`name=; Path=/`)
+[V] Skips a line without a cookie name; the jar does not change
+[V] Removes the spaces around the name and the value
+[V] Gives no Cookie header for an empty jar
+[V] Gives the `name=value` pairs in the order that the jar got them, joined by `; `
+[V] Seeds a jar from the pairs of a Cookie header, and the jar gives the same header
+
+**Hosted live SDK errors** (`test/unit/test-support/sdk-errors.test.ts`)
+
+The fixture registry, the operator runbook driver, and the operator setup proofs had the same `statusOf()` helper. `test/support/hosted-live/sdk-errors.ts` is the one copy.
+
+[V] Gives the numeric status of an object, also of an error of a refused SDK call
+[V] Gives a status of another type (a string, null, or an object) unchanged
+[V] Gives undefined for an Error without a status
+[V] Gives undefined for null, undefined, and a string
+
+**Built-in mock sync** (`test/unit/test-support/builtin-mocks.test.ts`)
+
+`mockRenderer()`, `RendererProcessDouble.install()`, and `permitIPv4Fixture()` had the same sequence after their mocks of Node built-in modules. `syncBuiltinMocks()` in `test/support/builtin-mocks.ts` is the one copy: it syncs the ESM exports, and at the end of the test it restores all mocks of the test and syncs again.
+
+[V] After a mock of `lookup` of `node:dns/promises`, the named ESM export `lookup` is the mock in the test; at the end of the test the named export and the module property are the original function again
+[V] Mocks of two built-in modules, `node:dns/promises` and `node:child_process`, made before one sync, are both restored at the same end of the test, in the named exports and in the module properties
+
+**Axiom export headers** (`test/unit/test-support/axiom-test-export.test.ts`)
+
+`openAxiomLogging()`, `createOtlpFixture()`, and the live Axiom interface test each wrote the two headers of their OTLP exporter. `axiomExportHeaders()` in `test/support/axiom-test-export.ts` is the one copy; each exporter keeps its own timeout.
+
+[V] Builds exactly the `Authorization` header with the API key as a bearer token and the `X-Axiom-Dataset` header with the dataset
+
 **Image build: Lightpanda digest check** (`test/unit/image/check-lightpanda-digest.test.ts`)
 
 The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` double gives the check the digest of the asset, because the unit suite has no Lightpanda asset. The expected digests come from `docs/lightpanda-runtime.md`.

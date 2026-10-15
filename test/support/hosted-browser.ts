@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { request as httpRequest } from 'node:http';
+import { cookieHeaderOf, keepCookies } from './cookie-jar.ts';
+import { decodeHtml } from './html-entities.ts';
 
 export type BrowserTransport = (request: Request) => Promise<Response>;
 
@@ -23,8 +25,6 @@ export interface PostOptions {
   readonly headers?: Readonly<Record<string, string>>;
 }
 
-const HTML_ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
-
 // A browser that opens the public URLs of a hosted application. It keeps the cookies of each answer, as a browser
 // does, and follows no redirect by itself. The transport sends each request to a listening server or to the
 // application in the same process.
@@ -36,12 +36,11 @@ export class HostedBrowser {
   constructor(transport: BrowserTransport, publicBaseUrl: string, cookieHeader?: string) {
     this.transport = transport;
     this.publicBaseUrl = new URL(publicBaseUrl);
-    for (const pair of cookieHeader?.split(';') ?? []) this.keepCookie(pair);
+    keepCookies(this.cookies, cookieHeader?.split(';') ?? []);
   }
 
   get cookieHeader(): string | undefined {
-    if (this.cookies.size === 0) return undefined;
-    return [...this.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+    return cookieHeaderOf(this.cookies);
   }
 
   open(path: string, headers: Readonly<Record<string, string>> = {}): Promise<BrowserAnswer> {
@@ -81,7 +80,7 @@ export class HostedBrowser {
   private async send(request: Request): Promise<BrowserAnswer> {
     const response = await this.transport(request);
     const cookies = response.headers.getSetCookie();
-    for (const cookie of cookies) this.keepCookie(cookie.split(';')[0] ?? '', /max-age=0/i.test(cookie));
+    keepCookies(this.cookies, cookies);
     const location = response.headers.get('Location');
     return {
       status: response.status,
@@ -90,15 +89,6 @@ export class HostedBrowser {
       body: await response.text(),
       ...(location === null ? {} : { location: new URL(location, this.publicBaseUrl) }),
     };
-  }
-
-  private keepCookie(pair: string, expired = false): void {
-    const separator = pair.indexOf('=');
-    const name = pair.slice(0, separator).trim();
-    const value = pair.slice(separator + 1).trim();
-    if (name === '') return;
-    if (expired || value === '') this.cookies.delete(name);
-    else this.cookies.set(name, value);
   }
 }
 
@@ -134,8 +124,4 @@ export function formsIn(html: string): PageForm[] {
       .map(([, name = '', value = '']) => [decodeHtml(name), decodeHtml(value)])),
     label: decodeHtml(/<button type="submit">([^<]*)<\/button>/.exec(content)?.[1] ?? ''),
   }));
-}
-
-export function decodeHtml(text: string): string {
-  return text.replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => HTML_ENTITIES[entity] ?? entity);
 }
