@@ -220,7 +220,7 @@ AUTH-09 added the container acceptance suite
   lookup. The container has no route out, so the renderer cannot connect, and
   the call gets `Page fetch failed` and a `fetch_failed` record. The renderer
   starts, so the server log gets no renderer setup report;
-- loads the test-only page seam `test/support/container-page.ts` into the server
+- loads the test-only page seam `test/support/container/container-page.ts` into the server
   container of the two renderer cases, with `--import` in `NODE_OPTIONS`. The
   seam serves a JavaScript page on port 8090 of the container and gives the
   lookup of `localhost` a public address, as `resolveAsPublic` does. With

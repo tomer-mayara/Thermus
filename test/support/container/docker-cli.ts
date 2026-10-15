@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import type { CommandResult } from './processes/command-process.ts';
+import type { CommandResult } from '../processes/command-process.ts';
 
 export interface DockerResult {
   readonly code: number | null;

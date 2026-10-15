@@ -17,13 +17,13 @@ import {
   removeGateResources,
   repositoryRoot,
   type GateImages,
-} from '../../support/container-gate.ts';
-import { ContainerSite } from '../../support/container-site.ts';
-import { dockerOutput } from '../../support/docker-cli.ts';
+} from '../../support/container/container-gate.ts';
+import { ContainerSite } from '../../support/container/container-site.ts';
+import { dockerOutput } from '../../support/container/docker-cli.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
 import { LocalMcpUser, type McpConnection } from '../../support/dsl/local-mcp-user.ts';
-import type { ServerContainer } from '../../support/server-container.ts';
+import type { ServerContainer } from '../../support/container/server-container.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };

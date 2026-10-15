@@ -3,12 +3,12 @@ import { connect } from 'node:net';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
-import { trustedAdRulesFile } from './ad-rules.ts';
-import { publicBaseUrl } from './in-process/better-auth-local.ts';
+import { trustedAdRulesFile } from '../ad-rules.ts';
+import { publicBaseUrl } from '../in-process/better-auth-local.ts';
 import { containerAdRulesFile, containerDataDirectory, gateLabel, gateRun, removeLabelled } from './container-gate.ts';
 import { docker, dockerCommand, dockerOutput } from './docker-cli.ts';
-import type { ServerAddress } from './drivers/browser/local-browser.ts';
-import type { Operator } from './dsl/local-commands.ts';
+import type { ServerAddress } from '../drivers/browser/local-browser.ts';
+import type { Operator } from '../dsl/local-commands.ts';
 import { ServerContainer } from './server-container.ts';
 
 const edgeScript = fileURLToPath(new URL('./container-edge.js', import.meta.url));
