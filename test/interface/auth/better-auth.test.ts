@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { after, before, describe, test, type TestContext } from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { auth as runMcpAuthorization } from '@modelcontextprotocol/client';
 import { ProviderEnvironmentError } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
@@ -25,12 +24,12 @@ import {
 } from '../../support/better-auth-local.ts';
 import { PreRegisteredSdkClient, sdkFetch } from '../../support/mcp-sdk-oauth-client.ts';
 import { setProcessEnvironment } from '../../support/process-environment.ts';
+import { foreignOriginProbe } from '../../support/processes/module-paths.ts';
 
 type UserWithAccountStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };
 
 const alicesAccount: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const execFileAsync = promisify(execFile);
-const foreignOriginProbe = fileURLToPath(new URL('../../support/foreign-origin-probe.js', import.meta.url));
 
 function nativeClientMetadata() {
   return {

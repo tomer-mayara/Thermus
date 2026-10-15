@@ -143,9 +143,10 @@ contains every change of the pull request.
      and it computes no run-time path. The acceptance suite loads the moved
      module, and the test-support path test
      (`test/unit/test-support-paths.test.ts`, from Step 1 of the
-     [test code refactoring plan](test-code-refactoring-plan.md)) proves each
-     run-time path; until that test exists, the module load alone covers the
-     move. The owner decided this on 2026-10-14. The image holds all of
+     [test code refactoring plan](test-code-refactoring-plan.md)) proves the
+     run-time paths of `test/support/processes/module-paths.ts`, the failing
+     ad cleaner preload, and the trusted rules fixture. The owner decided
+     this on 2026-10-14. The image holds all of
      `dist/src`, so other changes
      in `src/` change the image too; the [self-hosted release](#self-hosted-release)
      checks run the container gate for each release.
