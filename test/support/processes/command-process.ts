@@ -3,11 +3,7 @@ import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import { once } from 'node:events';
 import type { Readable, Writable } from 'node:stream';
 import type { TestContext } from 'node:test';
-import { fileURLToPath } from 'node:url';
-
-const commandEntry = fileURLToPath(new URL('../../../src/index.js', import.meta.url));
-const networkBlocker = new URL('./deny-network.js', import.meta.url).href;
-const sqlTracer = new URL('./trace-sqlite.js', import.meta.url).href;
+import { networkBlocker, programEntry, sqlTracer } from './module-paths.ts';
 
 type CommandSettings = Readonly<Record<string, string>>;
 
@@ -32,7 +28,7 @@ export class CommandProcess {
 
   private constructor(settings: CommandSettings, args: readonly string[]) {
     const preloads = ['--import', networkBlocker, '--import', sqlTracer];
-    this.child = spawn(process.execPath, [...preloads, commandEntry, ...args], { env: { ...settings }, stdio: ['pipe', 'pipe', 'pipe'] });
+    this.child = spawn(process.execPath, [...preloads, programEntry, ...args], { env: { ...settings }, stdio: ['pipe', 'pipe', 'pipe'] });
     // A command that stops before it reads its input closes the pipe; that is not a test failure.
     this.child.stdin.on('error', () => undefined);
     this.child.stdout.setEncoding('utf8').on('data', (chunk: string) => { this.stdoutText += chunk; });
