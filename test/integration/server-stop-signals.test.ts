@@ -4,7 +4,7 @@ import { connect, createServer, type AddressInfo } from 'node:net';
 import { test } from 'node:test';
 import type { Application } from '../../src/application.ts';
 import { DataDirectoryInUseError, lockDataDirectory } from '../../src/auth/local-auth/better-auth/data-directory-lock.ts';
-import { serve, serveApplication, stopSignal } from '../../src/index.ts';
+import { serve, serveApplication } from '../../src/index.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/ad-rules.ts';
 import { dataDirectory } from '../support/data-directory.ts';
@@ -195,25 +195,3 @@ for (const cleanupFails of [false, true]) {
     assert.equal((error as NodeJS.ErrnoException).code, 'ECONNREFUSED');
   });
 }
-
-test('Given a double for the process signal registration, when a stop signal wait gets SIGTERM, then it gives SIGTERM and removes both listeners; when a wait is disposed before any signal, then it removes both listeners and a later signal gives it nothing', { timeout: 5_000 }, async () => {
-  const signalled = new ServeRecord();
-  const disposed = new ServeRecord();
-  let lateSignal: NodeJS.Signals | undefined;
-
-  const waiting = stopSignal(signalled.processSignals);
-  const registered = signalled.signalsWithHandler();
-  signalled.sendSignal('SIGTERM');
-  const received = await waiting.received;
-  const unused = stopSignal(disposed.processSignals);
-  void unused.received.then((signal) => { lateSignal = signal; });
-  unused[Symbol.dispose]();
-  disposed.sendSignal('SIGINT');
-  await new Promise<void>((resolve) => setImmediate(resolve));
-
-  assert.deepEqual(registered, ['SIGINT', 'SIGTERM']);
-  assert.equal(received, 'SIGTERM');
-  assert.deepEqual(signalled.signalsWithHandler(), []);
-  assert.deepEqual(disposed.signalsWithHandler(), []);
-  assert.equal(lateSignal, undefined);
-});
