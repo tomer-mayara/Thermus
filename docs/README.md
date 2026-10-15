@@ -27,6 +27,7 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
+- [Hosted Docker on Render plan](implementation/render-hosted-docker-plan.md): the proposed GitHub auto-deploy service, production identity setup, checks, recovery, and five delivery tickets.
 - [MCP-P01 implementation record](implementation/mcp-p01.md): delivered HTTP fetch scope and historical verification before rebase.
 - [MCP-P02 implementation record](implementation/mcp-p02.md): shutdown ownership, request isolation, and its candidate verification.
 - [MCP-P03 implementation record](implementation/mcp-p03.md): the self-hosted fetch tool composition, the ad rules file, the local renderer runtime, image limits, and the renderer gate.
