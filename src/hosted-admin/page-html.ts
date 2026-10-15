@@ -1,3 +1,5 @@
+import { escapeHtml } from '../html/html-escape.ts';
+
 // The headers of each account page. A notice posts no form.
 export const NOTICE_HEADERS: Readonly<Record<string, string>> = {
   'Content-Type': 'text/html; charset=utf-8',
@@ -12,8 +14,6 @@ export const FORM_HEADERS: Readonly<Record<string, string>> = {
   ...NOTICE_HEADERS,
   'Content-Security-Policy': "default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
 };
-
-const ESCAPED: Readonly<Record<string, string>> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
 export function htmlDocument(title: string, content: readonly string[]): string {
   return [
@@ -42,8 +42,4 @@ export function postForm(action: string, fields: readonly string[], button: stri
 
 export function hiddenField(name: string, value: string): string {
   return `<input type="hidden" name="${name}" value="${escapeHtml(value)}">`;
-}
-
-export function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (character) => ESCAPED[character] ?? character);
 }

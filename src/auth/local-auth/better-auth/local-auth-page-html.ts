@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { escapeHtml } from '../../../html/html-escape.ts';
 
 export interface SignInForm {
   readonly action: string;
@@ -16,8 +17,6 @@ const STYLE = [
   'button{margin:1.5rem .5rem 0 0;padding:.5rem 1.25rem;font:inherit}',
   '.message{padding:.75rem;border-left:4px solid #c9372c;background:#ffeceb}',
 ].join('');
-
-const ESCAPED: Readonly<Record<string, string>> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
 const PAGE_HEADERS: Readonly<Record<string, string>> = {
   'Content-Type': 'text/html; charset=utf-8',
@@ -90,8 +89,4 @@ function htmlDocument(title: string, content: readonly string[]): string {
 
 function htmlResponse(status: number, html: string, headers: Readonly<Record<string, string>> = {}): Response {
   return new Response(html, { status, headers: { ...PAGE_HEADERS, ...headers } });
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (character) => ESCAPED[character] ?? character);
 }

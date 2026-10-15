@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { escapeHtml } from '../../../html/html-escape.ts';
 import type { CookieEffects } from '../browser-session.ts';
 
 interface Notice {
@@ -43,8 +44,6 @@ const NOTICES = {
 } as const satisfies Readonly<Record<string, Notice>>;
 
 export type NoticeName = keyof typeof NOTICES;
-
-const ESCAPED: Readonly<Record<string, string>> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
 export function noticePage(name: NoticeName, headers: HeaderValues = {}): Response {
   return page(NOTICES[name], [], headers);
@@ -95,8 +94,4 @@ function page(notice: Notice, extraContent: readonly string[], headers: HeaderVa
     '',
   ].join('\n');
   return new Response(html, { status: notice.status, headers: { ...PAGE_HEADERS, ...headers } });
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (character) => ESCAPED[character] ?? character);
 }
