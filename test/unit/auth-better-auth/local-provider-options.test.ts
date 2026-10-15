@@ -6,7 +6,7 @@ import {
   ProviderEnvironmentError,
   type LocalProviderSettings,
 } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
-import { setProcessEnvironment } from '../../support/process-environment.ts';
+import { setProcessEnvironment } from '../../support/isolation/process-environment.ts';
 
 const settings: LocalProviderSettings = {
   publicBaseUrl: 'http://localhost:8080/',

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { workOSSettings } from '../../support/hosted-placeholder.ts';
+import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
 // The built server with the hosted edition and outbound access denied. These specifications show the start of the

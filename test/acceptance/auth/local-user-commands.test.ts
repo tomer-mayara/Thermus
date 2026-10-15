@@ -9,7 +9,7 @@ import {
 } from '../../support/drivers/browser/better-auth-agents.ts';
 import type { AccountCredentials, LocalAuth } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, assertRevealsNone } from '../../support/processes/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import {
   addUser,
   listedAccounts,

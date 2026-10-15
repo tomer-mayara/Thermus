@@ -4,7 +4,7 @@ import { UnauthorizedError } from '@modelcontextprotocol/client';
 import { jwtClaims, loopbackRedirectUri } from '../../support/drivers/browser/better-auth-agents.ts';
 import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, assertRevealsNone, type CommandResult } from '../../support/processes/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { hiddenField, LocalBrowser } from '../../support/drivers/browser/local-browser.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
 import { LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';

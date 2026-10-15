@@ -316,7 +316,7 @@ keeps the behavior of AUTH-06 and of this slice:
   removed the placeholder. The hosted case of `server-only-modules.test.ts` now
   starts the hosted edition with the module-load guard, a missing rules file, a
   missing renderer, and the placeholder WorkOS settings of
-  `test/support/hosted-placeholder.ts`. It expects the AUTH-06 answers: `401`
+  `test/support/fixtures/hosted-placeholder.ts`. It expects the AUTH-06 answers: `401`
   with "Sign-in required" for the account page, and `401` with a Bearer
   challenge for an MCP tool call with a Bearer token and a session cookie. The
   server tries no outbound connection.

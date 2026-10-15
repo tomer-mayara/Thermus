@@ -4,7 +4,7 @@ import { Client, StreamableHTTPClientTransport, type CallToolResult } from '@mod
 import type { ApplicationLogger } from '../../../../src/application.ts';
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
-import { trustedAdRulesFile } from '../../../support/ad-rules.ts';
+import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
 import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { createWorkSliceApplication } from './basic-mcp-url-fetch.ts';

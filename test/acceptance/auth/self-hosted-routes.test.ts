@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { loopbackRedirectUri } from '../../support/drivers/browser/better-auth-agents.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { LocalBrowser } from '../../support/drivers/browser/local-browser.ts';
 import { selfHostedServerSettings } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess } from '../../support/processes/server-process.ts';

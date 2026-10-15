@@ -5,7 +5,7 @@ import { Client, InMemoryTransport, type CallToolResult } from '@modelcontextpro
 import { createRequestContext } from '../../src/auth/access-context.ts';
 import { createFetchOperation, fetchToolServers } from '../../src/fetch-tool.ts';
 import type { RequestServerBuilder } from '../../src/mcp/mcp-server.ts';
-import { trustedAdRulesFile } from '../support/ad-rules.ts';
+import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import { syncBuiltinMocks } from '../support/doubles/website-fetcher/builtin-mocks.ts';
 import { RendererChildDouble } from '../support/doubles/website-fetcher/renderer-process-double.ts';
 

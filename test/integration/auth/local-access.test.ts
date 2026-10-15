@@ -19,7 +19,7 @@ import {
   type TokenResponse,
 } from '../../support/drivers/browser/better-auth-agents.ts';
 import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/in-process/better-auth-local.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { resourceServerClient, userGrant, type UserGrant } from '../../support/dsl/local-commands.ts';

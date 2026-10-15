@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { workOSSettings } from '../../support/hosted-placeholder.ts';
+import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { assertRevealsNone, loopbackRedirectUri, run, AdministrationOpenerDouble, ScriptedInput } from './fixtures/local-auth-command-harness.ts';
 
 describe('runLocalAuthCommand with configuration and administration', () => {

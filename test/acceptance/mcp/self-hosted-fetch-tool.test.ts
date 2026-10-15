@@ -6,10 +6,10 @@ import { SdkHttpError, UnauthorizedError, type CallToolResult, type Client } fro
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
-import { trustedAdRulesFile } from '../../support/ad-rules.ts';
+import { trustedAdRulesFile } from '../../support/fixtures/ad-rules.ts';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit } from '../../support/processes/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { InProcessServer } from '../../support/in-process/in-process-server.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';

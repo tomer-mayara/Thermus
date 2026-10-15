@@ -5,7 +5,7 @@ import { describe, test, type TestContext } from 'node:test';
 import type { CallToolResult, Client } from '@modelcontextprotocol/client';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit } from '../../support/processes/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { InProcessServer } from '../../support/in-process/in-process-server.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/dsl/local-commands.ts';
 import { connectWithToken, issuedGrants } from '../../support/dsl/local-mcp-user.ts';

@@ -11,7 +11,7 @@ import {
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
-import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';
+import { hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { formFor, hostedConfig, openOrganizationSite, userOf, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 class RecordingLogger {

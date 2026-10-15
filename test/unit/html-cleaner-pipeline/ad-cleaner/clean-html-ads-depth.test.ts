@@ -6,7 +6,7 @@ import {
   HtmlDepthLimitError,
   MAX_HTML_ELEMENT_DEPTH,
 } from '../../../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts';
-import { elementHidingRules } from '../../../support/ad-rules.ts';
+import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 import { createContext } from '../fixtures/html-cleaner-context.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import adblockRust from 'adblock-rs';
 import { createApplication } from '../../src/application.ts';
-import { dataDirectory } from '../support/data-directory.ts';
+import { dataDirectory } from '../support/isolation/data-directory.ts';
 import { selfHostedConfig, selfHostedServerSettings } from '../support/in-process/local-runtime.ts';
 
 function recordingLogger() {

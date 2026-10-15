@@ -11,14 +11,14 @@ import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 import { assertExit } from '../../support/processes/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { InProcessServer } from '../../support/in-process/in-process-server.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/dsl/local-commands.ts';
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';
 import { selfHostedServerSettings } from '../../support/in-process/local-runtime.ts';
 import { mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { permitIPv4Fixture, startFixture } from '../../support/doubles/website-fetcher/network-fixture.ts';
-import { setProcessEnvironment } from '../../support/process-environment.ts';
+import { setProcessEnvironment } from '../../support/isolation/process-environment.ts';
 
 const runCommand = promisify(execFile);
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
