@@ -10,6 +10,7 @@ import { createApplication, type Application, type ApplicationLogger } from '../
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
 import { portalBuild } from '../processes/module-paths.ts';
+import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
 import { answer, portalFiles, portalHeaders, type PortalSite } from './portal-front.ts';
 import { browserRedirectUri, localOrigin, type HostedLiveSettings } from './settings.ts';
 
@@ -51,7 +52,7 @@ export interface LocalHttpsSiteOptions {
   // empty.
   readonly logger?: ApplicationLogger;
   // Opens the application behind the front. It gets the logger option, or else the log of the site. The default is the
-  // hosted composition with the staging settings and a random cookie password.
+  // hosted composition with the staging settings, the trusted rules fixture, and a random cookie password.
   readonly application?: (logger: ApplicationLogger) => Promise<Application>;
 }
 
@@ -123,6 +124,7 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
   const environment = {
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: publicBaseUrl,
+    AD_RULES_FILE: trustedAdRulesFile,
     WORKOS_API_KEY: settings.apiKey,
     WORKOS_MFA_POLICY: settings.mfaPolicy ?? 'optional',
     WORKOS_CLIENT_ID: settings.clientId,

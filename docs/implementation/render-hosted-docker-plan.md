@@ -1,6 +1,9 @@
 # Hosted Docker on Render: implementation plan
 
-Status: proposed; implementation has not started. Date: 2026-10-15.
+Status: RHD-01 implementation complete, live verification pending; RHD-02
+through RHD-05 are planned. Date: 2026-10-15.
+The [RHD-01 implementation and verification record](rhd-01.md) gives the results.
+PR completion and deployment remain pending.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.
 
@@ -69,12 +72,14 @@ child-output buffer, 10 MiB HTML input limit, network guards, and sanitation.
 
 Reuse current listener drain, MCP cancellation, and renderer cleanup. Test slow
 authentication, slow DNS, and an active child under client disconnect and SIGTERM.
-The first DNS lookup currently has no finite cancellable wait; authentication
-finishes before MCP lifetime wiring, and browser/account calls are not all owned
-by MCP. Fix demonstrated gaps with small changes at their owners. Make DNS and
-pre-render waiting finite and cancellable, and process exit bounded. The existing
-five-second socket drain alone does not prove this. Set and test a fixed hosted
-shutdown deadline below Render's configured stop window; its default is 30 seconds.
+The RHD-01 starting point had no finite cancellable first DNS wait, connected
+MCP lifetime after authentication, and left browser/account calls outside MCP
+ownership. RHD-01 addresses those gaps at their owners. Its candidate uses a
+five-second DNS wait and a 10-second hosted CLI shutdown deadline. A system
+lookup cannot be cancelled: its fetcher refuses further hostname lookups until
+abandoned native work settles. The existing five-second socket drain alone
+does not prove bounded process exit. Test the hosted deadline below Render's
+configured stop window; its default is 30 seconds.
 Treat Render force-kill as a final fallback, not a passing graceful-stop test.
 Do not promise that arbitrarily long calls complete or add a lifecycle framework.
 
@@ -281,7 +286,9 @@ required checks pass, and the operator can deploy and recover the service.
 
 ## Appendix A: delivery tickets
 
-These are proposed tickets, not created issues. Each code ticket writes its failing
+RHD-01 implementation is complete in draft PR #115, with live verification
+pending; its [record](rhd-01.md) gives the scope and results. The remaining entries
+are planned delivery slices. Each code ticket writes its failing
 Given-When-Then specification first, updates affected documents and fixtures, and
 runs its focused tests plus every applicable existing gate. The boundaries below
 identify each ticket's proof; they do not waive repository checks.

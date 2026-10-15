@@ -26,8 +26,8 @@ export interface WorkOSConnection {
   readonly authkitKeySet: JWTVerifyGetKey;
 }
 
-// The parts of the hosted application that a composition root chooses. Production gives no buildServer, so the hosted
-// MCP endpoint serves no tool and loads no server-only module. A development composition can give one.
+// The parts of the hosted application that a composition root chooses. Production supplies the shared fetch
+// operation; a development composition can supply another request-scoped tool server.
 export interface WorkOSApplicationParts {
   readonly logger: ApplicationLogger;
   readonly buildServer?: RequestServerBuilder;
@@ -41,7 +41,11 @@ export interface WorkOSApplicationParts {
 const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
 export async function openWorkOSApplication(config: RouteConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
-  return composeWorkOSApplication(config, await openWorkOSConnection(config, logger, environment), { logger });
+  const connection = await openWorkOSConnection(config, logger, environment);
+  const { createFetchOperation, fetchToolServers } = await import('./fetch-tool.ts');
+  const { singleFetchOperation } = await import('./mcp/single-fetch-operation.ts');
+  const operation = singleFetchOperation(createFetchOperation(environment, logger));
+  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger) });
 }
 
 // Invalid or missing WorkOS settings stop the start before the server listens. There is no fallback to local or

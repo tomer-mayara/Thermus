@@ -6,7 +6,7 @@ The renderer can open network connections while it loads a page. The fetcher che
 
 `src/website-fetcher/network-policy.ts` holds the blocked CIDR list. The fetcher passes this list to Lightpanda with `--block-cidrs` on every launch. It also passes `--block-private-networks` on every launch.
 
-For a hostname, the fetcher runs a new DNS lookup with all answers before each render. It rejects the request if any answer is in a blocked range. It checks an IP address directly when the URL contains one.
+For a hostname, the fetcher checks all DNS answers before each render. RHD-01 adds a fixed five-second cancellable wait around the existing system lookup. The native lookup cannot be cancelled. After a timeout or abort, that fetcher refuses another hostname lookup until the unfinished lookup settles; repeated requests cannot accumulate abandoned lookups on it. No renderer starts from a late answer. Address literals and separate fetcher instances remain independent. The resolver and address policy do not change. It rejects the request if any answer is in a blocked range. It checks an IP address directly when the URL contains one.
 
 Node's `BlockList.check` applies IPv4 rules to IPv4-mapped IPv6 addresses. This includes hexadecimal forms such as `::ffff:7f00:1`. The preflight does not need a separate parser for these addresses. See the [Node 24.20 `BlockList.check` documentation](https://nodejs.org/download/release/v24.20.0/docs/api/net.html#blocklistcheckaddress-type).
 

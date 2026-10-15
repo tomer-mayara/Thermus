@@ -223,6 +223,15 @@ requests and routes them; it does not know membership policy.
 Shutdown starts listener close to refuse new connections, then passes its drain
 promise to `Application.close()`. MCP cancellation starts before that drain is
 awaited. Provider resources close after MCP work and listener drain finish.
+RHD-01 connects cancellation before token and access waits, so a cancelled or
+closing request cannot dispatch a tool after a late identity result. Hosted
+account and browser waits use the request/shutdown signal before their next
+stage. Calls without a provider cancellation API can finish later; their late
+results stay observed. Tool cleanup remains owned until settlement. The hosted
+CLI has a fixed 10-second shutdown deadline for stalled cleanup or residual
+handles; it reports an error and exits 1. Normal shutdown exits cleanly.
+Self-hosted operation has no new CLI deadline. The
+[RHD-01 record](../implementation/rhd-01.md) gives the verification results.
 Repeated close calls share cleanup; cleanup errors remain visible. See the
 [MCP lifecycle contract](../reference/mcp-fetch-tool.md#cancellation-and-test-composition).
 
@@ -358,9 +367,12 @@ and one AuthKit key set, and writes the operator line below:
 `connection.settings.mfaPolicy` can select the explicit Required contract
 (decision D6 of the
 [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)).
-`openWorkOSApplication()` composes with no `buildServer`, so the hosted edition
-in production serves no tool. A test can give the composition a connection to
-a local fake of the WorkOS API:
+[RHD-01](../implementation/rhd-01.md) makes
+`openWorkOSApplication()` read trusted `AD_RULES_FILE`, create the production
+fetch operation, and supply `fetchToolServers` as `buildServer`. One shared slot
+covers DNS, rendering, cleaning, and cleanup until settlement. Excess calls
+return a safe `busy` result without a queue.
+A test can give the composition a connection to a local fake of the WorkOS API:
 
 - `WorkOSAuthProvider` is the MCP verifier and the access resolver of both
   transports. It reads the grants for each request through
@@ -376,9 +388,9 @@ a local fake of the WorkOS API:
   protected-resource metadata paths with the MCP resource and the AuthKit
   issuer as its only authorization server, and gives each other request to
   the `MCPServer`. The `MCPServer` gets the `buildServer` of the parts:
-  production gives none, so the endpoint serves no tool, and the
+  the RHD-01 production opener supplies the protected fetch tool, while the
   [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
-  gives the fetch tool for a local run. The slice also opts in to a Google
+  supplies its own development composition and logging. The slice also opts in to a Google
   onboarding policy at the browser code exchange. A trusted WorkOS
   `GoogleOAuth` result with `emailVerified: true` and an exact `thermus.ai`
   email domain can create an absent membership with the explicit role `user`

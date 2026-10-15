@@ -156,7 +156,15 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     operation: account.operation,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
-  return composeApplication(handle, parts.mcp);
+  const shutdown = new AbortController();
+  return composeApplication((request) => {
+    const signal = AbortSignal.any([request.signal, shutdown.signal]);
+    signal.throwIfAborted();
+    return handle(new Request(request, { signal }));
+  }, { close: () => {
+    shutdown.abort(new DOMException('The hosted application is shutting down', 'AbortError'));
+    return parts.mcp.close();
+  } });
 }
 
 export function routeHostedRequests(config: RouteConfig, handlers: HostedRequestHandlers): FetchHandler {

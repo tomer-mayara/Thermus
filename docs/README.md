@@ -15,7 +15,7 @@ runtime guides stay current after implementation.
 
 ## Current reference
 
-- [MCP HTTP fetch tool](reference/mcp-fetch-tool.md): input, result, safe records, cancellation, and the self-hosted production composition.
+- [MCP HTTP fetch tool](reference/mcp-fetch-tool.md): input, result, safe records, cancellation, and both production compositions.
 - [User portal](user-portal.md): browser build, environment, and WorkOS application setup.
 - [Website fetcher](reference/website-fetcher.md): rendering, readiness, and error behavior.
 - [Fetch result URL metadata](reference/fetch-result-url-metadata.md): requested and final URLs.
@@ -27,7 +27,8 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
-- [Hosted Docker on Render plan](implementation/render-hosted-docker-plan.md): the proposed GitHub auto-deploy service, production identity setup, checks, recovery, and five delivery tickets.
+- [Hosted Docker on Render plan](implementation/render-hosted-docker-plan.md): the GitHub auto-deploy target, production identity setup, checks, recovery, and delivery slices; RHD-01 implementation is complete, with live verification pending.
+- [RHD-01 implementation record](implementation/rhd-01.md): protected hosted fetch, fixed capacity, cancellation, shutdown deadline, and verification results.
 - [MCP-P01 implementation record](implementation/mcp-p01.md): delivered HTTP fetch scope and historical verification before rebase.
 - [MCP-P02 implementation record](implementation/mcp-p02.md): shutdown ownership, request isolation, and its candidate verification.
 - [MCP-P03 implementation record](implementation/mcp-p03.md): the self-hosted fetch tool composition, the ad rules file, the local renderer runtime, image limits, and the renderer gate.

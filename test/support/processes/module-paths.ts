@@ -26,3 +26,7 @@ export const networkBlocker = siblingModule('deny-network').href;
 export const sqlTracer = siblingModule('trace-sqlite').href;
 export const foreignOriginProbe = fileURLToPath(siblingModule('foreign-origin-probe'));
 export const workSliceShutdownProbe = fileURLToPath(siblingModule('work-slice-shutdown-probe'));
+
+export const lingeringHostedHandle = siblingModule('keep-hosted-handle-open').href;
+export const heldHostedIdentity = siblingModule('hold-hosted-identity').href;
+export const heldHostedCleanup = siblingModule('hold-hosted-cleanup').href;

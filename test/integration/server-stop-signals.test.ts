@@ -8,10 +8,10 @@ import { serve, serveApplication } from '../../src/index.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import { dataDirectory } from '../support/isolation/data-directory.ts';
-import { hostedStartupLine, workOSSettings } from '../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, workOSSettings } from '../support/fixtures/hosted-placeholder.ts';
 
 const stopSignals = ['SIGINT', 'SIGTERM'] as const;
-const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0', ...workOSSettings };
+const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0', ...hostedFetchSettings, ...workOSSettings };
 
 interface LogLine {
   readonly message: string;

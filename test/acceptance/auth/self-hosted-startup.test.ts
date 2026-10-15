@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { publicBaseUrl } from '../../support/in-process/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/isolation/data-directory.ts';
-import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { accountsOf, addAccount, selfHostedServerSettings, selfHostedSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
@@ -18,6 +18,7 @@ const refusedProviderVariables: ServerSettings = {
 
 function hostedSettings(directory: string): ServerSettings {
   return {
+    ...hostedFetchSettings,
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: 'https://thermus.example',
     ...workOSSettings,

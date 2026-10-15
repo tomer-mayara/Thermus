@@ -60,6 +60,7 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
 function safeFailure(error: unknown, signal: AbortSignal): { status: CompletionStatus; message: string } {
   if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) return { status: 'cancelled', message: 'Request cancelled' };
   const failures = {
+    'Server busy. Try again later.': 'busy',
     'Invalid tool arguments': 'invalid_arguments',
     'Access denied': 'access_denied',
     'Page fetch failed': 'fetch_failed',

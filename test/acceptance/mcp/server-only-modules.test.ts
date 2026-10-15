@@ -6,7 +6,7 @@ import { stripVTControlCharacters } from 'node:util';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, runCommand } from '../../support/processes/command-process.ts';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
-import { hostedStartupLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { addUser, registerArgs, type Operator } from '../../support/dsl/local-commands.ts';
 import { selfHostedServerSettings, selfHostedSettings } from '../../support/in-process/local-runtime.ts';
 import { withPreload } from '../../support/processes/server-preloads.ts';
@@ -17,7 +17,7 @@ const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-passw
 // The console logger writes "[time] FATAL [call site]: message" and colors the label.
 const fatalLine = /^\[[^\]]*\] FATAL (?:\[[^\]]*\]: )?(.*)$/gm;
 
-// Only the self-hosted server can load the rules file reader, the renderer, the ad cleaner, and the cleaning pipeline.
+// Only an HTTP or stdio server can load the rules file reader, the renderer, the ad cleaner, and the cleaning pipeline.
 const blocked = 'The test blocked a server-only module';
 const rendererReport = 'Renderer setup failure';
 const serverOnlyModuleGuard = `data:text/javascript,${encodeURIComponent(`import { registerHooks } from 'node:module';
@@ -31,6 +31,7 @@ registerHooks({ resolve(specifier, context, nextResolve) {
 
 function hostedSettings(directory: string): ServerSettings {
   return {
+    ...hostedFetchSettings,
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: 'https://thermus.example',
     ...workOSSettings,
@@ -40,7 +41,7 @@ function hostedSettings(directory: string): ServerSettings {
   };
 }
 
-// The rules file and the renderer are missing, because the commands and the hosted edition must not need them.
+// The operator commands must not need the rules file or the renderer.
 function guardedSettings(settings: ServerSettings, emptyDirectory: string): ServerSettings {
   const missing = { AD_RULES_FILE: join(emptyDirectory, 'missing-ad-rules.txt'), LIGHTPANDA_BIN: join(emptyDirectory, 'missing-lightpanda') };
   return withPreload({ ...settings, ...missing }, serverOnlyModuleGuard);
@@ -59,7 +60,7 @@ function fatalMessages(output: string): string[] {
   return Array.from(stripVTControlCharacters(output).matchAll(fatalLine), ([, message]) => message ?? '');
 }
 
-describe('Modules that only the self-hosted server loads', () => {
+describe('Modules that only servers load', () => {
   test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the operator adds two users, lists them, registers a client, resets a password, and disables a user on a fresh data directory, then each command exits with status 0, loads no server-only module, and writes no renderer setup report', { timeout: 60_000 }, async (t) => {
     const settings = guardedSettings(selfHostedSettings(dataDirectory(t)), dataDirectory(t));
     const operator: Operator = (args, input = []) => runCommand(t, settings, { args, input });
@@ -79,10 +80,10 @@ describe('Modules that only the self-hosted server loads', () => {
     }
   });
 
-  test('Given a guard against server-only modules, a missing rules file, and a missing renderer, when the hosted edition starts with the WorkOS settings, then it listens, asks for a sign-in on the account page, answers an MCP tool call with a Bearer token and a session cookie with a Bearer challenge, loads no server-only module, writes no renderer setup report, uses no network, stops with status 0 after SIGTERM, and creates no data', { timeout: 60_000 }, async (t) => {
+  test('Given trusted rules and a missing renderer, when the hosted edition starts with valid WorkOS settings, then it keeps the protected account and MCP boundaries, uses no network, and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
-
-    const server = await ServerProcess.start(t, guardedSettings(hostedSettings(directory), dataDirectory(t)));
+    const settings = { ...hostedSettings(directory), LIGHTPANDA_BIN: join(directory, 'missing-lightpanda') };
+    const server = await ServerProcess.start(t, settings);
     const page = await server.request('/');
     const pageText = await page.text();
     const mcp = await server.request('/mcp', mcpToolCall({ Authorization: 'Bearer any-token', Cookie: 'wos-session=any-session' }));
@@ -93,10 +94,17 @@ describe('Modules that only the self-hosted server loads', () => {
     assert.match(pageText, /Sign-in required/);
     assert.match(mcp.headers.get('WWW-Authenticate') ?? '', /^Bearer /);
     assert.ok(server.output.includes(hostedStartupLine), server.output);
-    for (const text of [blocked, rendererReport]) assert.ok(!server.output.includes(text), server.output);
+    assert.ok(!server.output.includes(rendererReport), server.output);
     assert.equal(server.attemptedOutboundAccess, false, server.output);
     assert.deepEqual(exit, { code: 0, signal: null });
     assert.deepEqual(readdirSync(directory), []);
+  });
+
+  test('Given a guard against fetch modules, when hosted startup has valid WorkOS settings, then it stops before listening because hosted startup now composes the renderer and native cleaner', { timeout: 60_000 }, async (t) => {
+    const server = ServerProcess.launch(t, withPreload(hostedSettings(dataDirectory(t)), serverOnlyModuleGuard));
+    assert.equal(await server.listeningOrExit(), undefined, server.output);
+    assert.deepEqual(await server.exited(), { code: 1, signal: null }, server.output);
+    assert.ok(fatalMessages(server.output).some((message) => message.includes(blocked)), server.output);
   });
 
   test('Given a guard against server-only modules and trusted rules, when the self-hosted server starts, then it stops with status 1 before it listens and its FATAL line shows the guard message, so the guard sees the modules that the server loads', { timeout: 60_000 }, async (t) => {

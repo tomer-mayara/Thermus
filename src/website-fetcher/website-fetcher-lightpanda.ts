@@ -1,5 +1,5 @@
 import { execFile, type ChildProcess, type ExecFileException } from 'node:child_process';
-import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
+import { PublicDestinationPolicy, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
 import { systemErrorName, WEBSITE_FETCH_READINESS_BUDGET_MS, WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
 const LIGHTPANDA_DEFAULT_BIN = 'lightpanda';
@@ -77,6 +77,7 @@ function launchError(error: unknown, executable: string): WebsiteFetchLaunchErro
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   private readonly executable: string;
+  private readonly destinations = new PublicDestinationPolicy();
 
   // An empty value selects lightpanda on PATH, as an unset LIGHTPANDA_BIN does.
   public constructor(executable?: string) {
@@ -90,7 +91,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       throw new Error(`Fetch URL must use http or https: ${url}`);
     }
     try {
-      await assertPublicDestination(parsed);
+      await this.destinations.assertPublicDestination(parsed, signal);
     } catch (error) {
       signal?.throwIfAborted();
       throw error;

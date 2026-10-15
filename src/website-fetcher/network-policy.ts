@@ -1,5 +1,8 @@
 import dns from 'node:dns/promises';
+import type { LookupAddress } from 'node:dns';
 import { BlockList, isIP } from 'node:net';
+
+const DNS_LOOKUP_WAIT_MS = 5_000;
 
 const blockedNetworks = [
   '0.0.0.0/8', '10.0.0.0/8', '100.64.0.0/10', '127.0.0.0/8',
@@ -19,18 +22,61 @@ for (const cidr of blockedNetworks) {
   blockedAddresses.addSubnet(address, Number(prefix), isIP(address) === 4 ? 'ipv4' : 'ipv6');
 }
 
-export async function assertPublicDestination(url: URL): Promise<void> {
-  const hostname = url.hostname.replace(/^\[|\]$/g, '');
-  const addresses = isIP(hostname)
-    ? [{ address: hostname }]
-    : await dns.lookup(hostname, { all: true });
-  if (addresses.length === 0) {
-    throw new Error('Fetch hostname has no network addresses');
+export class PublicDestinationPolicy {
+  private readonly abandonedLookups = new Set<symbol>();
+
+  // The system lookup cannot be cancelled. Refuse further hostname work until
+  // every abandoned lookup settles. Keep late success and failure handlers.
+  private async lookupAddresses(hostname: string, signal?: AbortSignal): Promise<LookupAddress[]> {
+    signal?.throwIfAborted();
+    if (this.abandonedLookups.size !== 0) throw new Error('A previous DNS lookup is still pending');
+    const lookupId = Symbol();
+    let nativePending = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let cancel: (() => void) | undefined;
+    const nativeSettled = () => {
+      nativePending = false;
+      this.abandonedLookups.delete(lookupId);
+    };
+    try {
+      return await new Promise<LookupAddress[]>((resolve, reject) => {
+        const stopWaiting = (error: unknown) => {
+          if (nativePending) this.abandonedLookups.add(lookupId);
+          reject(error);
+        };
+        cancel = () => stopWaiting(signal?.reason);
+        signal?.addEventListener('abort', cancel, { once: true });
+        timer = setTimeout(() => stopWaiting(new Error(`DNS lookup timed out after ${DNS_LOOKUP_WAIT_MS} ms`)), DNS_LOOKUP_WAIT_MS);
+        const lookup = dns.lookup(hostname, { all: true });
+        nativePending = true;
+        lookup.then((addresses) => {
+          nativeSettled();
+          resolve(addresses);
+        }, (error: unknown) => {
+          nativeSettled();
+          reject(error);
+        });
+        if (signal?.aborted) cancel();
+      });
+    } finally {
+      clearTimeout(timer);
+      if (cancel !== undefined) signal?.removeEventListener('abort', cancel);
+    }
   }
-  for (const { address } of addresses) {
-    const family = isIP(address);
-    if (family === 0 || blockedAddresses.check(address, family === 4 ? 'ipv4' : 'ipv6')) {
-      throw new Error(`Fetch destination is not a public network address: ${address}`);
+
+  public async assertPublicDestination(url: URL, signal?: AbortSignal): Promise<void> {
+    const hostname = url.hostname.replace(/^\[|\]$/g, '');
+    const addresses = isIP(hostname)
+      ? [{ address: hostname }]
+      : await this.lookupAddresses(hostname, signal);
+    if (addresses.length === 0) {
+      throw new Error('Fetch hostname has no network addresses');
+    }
+    for (const { address } of addresses) {
+      const family = isIP(address);
+      if (family === 0 || blockedAddresses.check(address, family === 4 ? 'ipv4' : 'ipv6')) {
+        throw new Error(`Fetch destination is not a public network address: ${address}`);
+      }
     }
   }
 }

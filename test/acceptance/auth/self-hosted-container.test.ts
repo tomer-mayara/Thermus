@@ -408,24 +408,27 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.equal(await dockerOutput(['image', 'ls', '--quiet', build.tag]), '');
   });
 
-  test('Given a fresh volume and a server container without the trusted rules file, when the server starts, then it stops before it listens with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container, which reads no rules, still adds an account', { timeout: 300_000 }, async (t) => {
-    const site = await ContainerSite.open(t, images.current);
-    const volume = await site.volume();
-    const server = await site.createServer(volume, { adRules: false });
+  for (const deployment of ['self-hosted', 'hosted'] as const) {
+    test(`Given a fresh volume and a ${deployment} server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account`, { timeout: 300_000 }, async (t) => {
+      const site = await ContainerSite.open(t, images.current);
+      const volume = await site.volume();
+      const environment = deployment === 'hosted' ? hostedSettings : {};
+      const server = await site.createServer(volume, { adRules: false, environment });
 
-    server.launch();
-    const listening = await server.listeningOrExit();
-    const exit = await server.exited();
-    const dataFiles = await probeImage(images.current, 'data-files', volume);
-    const added = await addUser(site.operator(volume), alice);
+      server.launch();
+      const listening = await server.listeningOrExit();
+      const exit = await server.exited();
+      const dataFiles = await probeImage(images.current, 'data-files', volume);
+      const added = await addUser(site.operator(volume), alice);
 
-    assert.equal(listening, false, server.output);
-    assert.notEqual(exit.code, 0, server.output);
-    assert.match(server.output, /FATAL.*AD_RULES_FILE could not be read \(ENOENT\)\./);
-    assert.deepEqual(dataFiles, []);
-    assertExit(added, 0);
-    await site.assertNoOutboundRequests();
-  });
+      assert.equal(listening, false, server.output);
+      assert.notEqual(exit.code, 0, server.output);
+      assert.match(server.output, /FATAL.*AD_RULES_FILE could not be read \(ENOENT\)\./);
+      assert.deepEqual(dataFiles, []);
+      assertExit(added, 0);
+      await site.assertNoOutboundRequests();
+    });
+  }
 
   test('Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t);
