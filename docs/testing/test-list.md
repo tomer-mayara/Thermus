@@ -939,6 +939,20 @@ A double stands in for the fetch operation, and a recording logger stands in for
 npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch.test.js
 ```
 
+**Work slice launcher script** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
+
+The test runs `test/acceptance/work-slice/basic-mcp-url-fetch.sh` with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the five settings, and whether `AXIOM_API_KEY` is set, but never the value of the key. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no `ad-rules.txt` of the repository, and no renderer.
+
+[V] Given only `AD_RULES_FILE` with an empty file and `AXIOM_API_KEY`, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other four settings and the key; stderr lists the five settings, and no output shows the key
+[V] Given each of the five settings with a custom value, pnpm gets each value unchanged, and stderr lists these values
+[V] Given extra arguments, pnpm exec gets them after the entry point
+[V] Given an `AD_RULES_FILE` that does not exist, the script exits with status 1 and a message that names `AD_RULES_FILE` and the `touch` command, and pnpm does not run
+[V] Given a pnpm that exits with status 3, the script exits with status 3
+
+```sh
+npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch-script.test.js
+```
+
 ### Planned Cache Key Tests
 
 No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
