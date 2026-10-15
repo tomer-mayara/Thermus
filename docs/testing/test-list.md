@@ -104,6 +104,23 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Creates and clears the close deadline once; repeated failed closes retain the same error
 [V] Startup failure after listen closes the listener once and preserves both startup and cleanup errors
 
+**HTML escape of the product pages** (`test/unit/html/html-escape.test.ts`)
+
+The three escapes of the WorkOS notice pages, the bundled local pages, and the account pages were the same table and the same regex. `escapeHtml()` in `src/html/html-escape.ts` is the one copy. The test browsers decode the same five entities.
+
+[V] Escapes each of the five characters `&`, `<`, `>`, `"`, and `'` to its entity: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
+[V] Escapes several characters in one text and keeps the other text
+[V] Escapes an entity again: `&lt;` gives `&amp;lt;`. The escape does not look for entities, so each caller escapes a value one time only
+[V] Keeps plain text unchanged, also text with a slash, a backtick, an equals sign, or a non-ASCII character such as `é` or an emoji
+[V] Gives the empty string for the empty string
+[V] Escapes a text with all five characters so that `decodeHtml()` of the test browsers gives the input again
+
+Run the focused test:
+
+```sh
+npm run build && node --test dist/test/unit/html/html-escape.test.js
+```
+
 **Application lifecycle** (`test/unit/application-lifecycle.test.ts`)
 
 MCP and provider resources are public collaborator doubles; listener drain is a
@@ -950,7 +967,7 @@ The fixture registry, the operator runbook driver, and the operator setup proofs
 
 **Built-in mock sync** (`test/unit/test-support/builtin-mocks.test.ts`)
 
-`mockRenderer()`, `RendererProcessDouble.install()`, and `permitIPv4Fixture()` had the same sequence after their mocks of Node built-in modules. `syncBuiltinMocks()` in `test/support/builtin-mocks.ts` is the one copy: it syncs the ESM exports, and at the end of the test it restores all mocks of the test and syncs again.
+`mockRenderer()`, `RendererProcessDouble.install()`, and `permitIPv4Fixture()` had the same sequence after their mocks of Node built-in modules. `syncBuiltinMocks()` in `test/support/builtin-mocks.ts` is the one copy: it syncs the ESM exports, and at the end of the test it restores all mocks of the test and syncs again. Nine test files outside `test/support` call it too, after their mocks of `execFile`, `lookup`, or `readFileSync`.
 
 [V] After a mock of `lookup` of `node:dns/promises`, the named ESM export `lookup` is the mock in the test; at the end of the test the named export and the module property are the original function again
 [V] Mocks of two built-in modules, `node:dns/promises` and `node:child_process`, made before one sync, are both restored at the same end of the test, in the named exports and in the module properties
@@ -999,7 +1016,7 @@ npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch.test.
 
 **Work slice launcher script** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
 
-The test runs `test/acceptance/work-slice/basic-mcp-url-fetch.sh` with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the five settings, and whether `AXIOM_API_KEY` is set, but never the value of the key. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no `ad-rules.txt` of the repository, and no renderer.
+The test runs `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the five settings, and whether `AXIOM_API_KEY` is set, but never the value of the key. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no `ad-rules.txt` of the repository, and no renderer.
 
 [V] Given only `AD_RULES_FILE` with an empty file and `AXIOM_API_KEY`, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other four settings and the key; stderr lists the five settings, and no output shows the key
 [V] Given each of the five settings with a custom value, pnpm gets each value unchanged, and stderr lists these values
@@ -1387,6 +1404,19 @@ Run only these tests:
 npm run build && node --test dist/test/integration/server-stop-signals.test.js
 ```
 
+**Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
+
+These tests start `LocalHttpsSite` of `test/support/hosted-live/local-https-site.ts` with the real hosted composition and the real HTTP server. The WorkOS provider gets placeholder settings that reach no WorkOS environment. They cover a failed start: a start that fails must close what it started, so that the gate process exits. The hosted live gate has the only complete start, with the portal build and the staging settings.
+
+[V] Given a portal build directory that does not exist, when the site starts, then it rejects with the message that names the directory and `npm run build:user-portal`, keeps the file system error as the cause, and leaves no server listening
+[V] Given a portal build and a `PATH` without OpenSSL, when the site starts, then it rejects with the spawn error, closes the application that it started, and leaves no server listening
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-live-site.test.js
+```
+
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
 
 ## Interface
@@ -1660,17 +1690,17 @@ Run the renderer gate with the pinned runtime. The `.runtime.ts` name keeps the 
 npm run test:mcp:renderer
 ```
 
-**Work slice: basic MCP URL fetch** (`test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`)
+**Work slice: basic MCP URL fetch** (`test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts`)
 
 `createWorkSliceApplication()` composes the production parts with the mock provider and the trusted rules fixture, `test/support/fixtures/trusted-ad-rules.txt`. The entry point `basic-mcp-url-fetch.ts` exports `createWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
 
 [V] Given the work-slice application with the mock provider, the trusted rules fixture, and a renderer double that serves `https://news.example/story`, when an MCP client in each protocol era with the token `any-token` lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the fixture rule for `news.example` removes, the log has the started line, the completed line, and one completion record, and `close()` stops the application
 [V] Given the work-slice application, when a request has no `Authorization` header, then it gets 401 with a Bearer challenge, a request to another path gets 404, no renderer starts, and the log has no fetch line
 
-The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test, and the [work slice guide](../../test/acceptance/work-slice/README.md) describes it.
+The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test, and the [README of the slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md) describes it.
 
 ```sh
-npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch.test.js
+npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.js
 ```
 
 **Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)
@@ -2001,7 +2031,7 @@ npm run test:container
 
 **Hosted live gate setup** (`test/acceptance/auth/hosted-live-setup.test.ts`)
 
-These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied.
+These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied. They need no portal build. Without it, the local HTTPS test server of the gate starts nothing and rejects at once with the message that names `npm run build:user-portal`. The gate process then exits.
 
 [V] Without WorkOS settings, the gate exits 1 with one failed test, no passed, skipped, or todo test, a setup error that names each missing setting, and no outbound network attempt
 [V] Refuses a production API key and requires a staging key; the output shows no setting value

@@ -120,6 +120,7 @@ describe('Given the configured direct auth import boundaries', () => {
         '../auth/hosted-auth/browser-session.js',
         '../organizations/organization-administration.ts',
         '../http/client-address.ts',
+        '../html/html-escape.ts',
         './identity-verifier-sdk-adapter.ts',
         './account-pages.ts',
         '@modelcontextprotocol/server',
@@ -135,6 +136,7 @@ describe('Given the configured direct auth import boundaries', () => {
         './local-auth-page-html.ts',
         '../local-user-administration.ts',
         '../../../http/client-address.ts',
+        '../../../html/html-escape.ts',
         'better-auth',
         'better-auth/cookies',
         '@better-auth/mcp',
@@ -148,6 +150,7 @@ describe('Given the configured direct auth import boundaries', () => {
         '../../access-context.ts',
         '../../identity-verifier.ts',
         '../../../organizations/organization-directory.ts',
+        '../../../html/html-escape.ts',
         '@workos-inc/node',
         'jose',
       ]);

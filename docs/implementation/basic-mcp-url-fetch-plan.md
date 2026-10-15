@@ -2,7 +2,7 @@
 
 Status: done; refactored onto production seams on 2026-10-14.
 Date: 2026-10-14. Branch: `claude/basic-mcp-url-fetch-d00f84`.
-Entry point: `test/acceptance/work-slice/basic-mcp-url-fetch.ts`.
+Entry point: `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts`.
 The owner accepted the defaults of each decision on 2026-10-14, with one
 change: the entry point lives under `test/acceptance/work-slice/`, not under
 `script/`, and that folder has a `README.md` that describes each work slice.
@@ -81,6 +81,14 @@ started the slice from another directory; `SIGINT` to the process of the
 launcher gave exit status 0, a free port, and the listening and stop lines in
 Axiom.
 
+On 2026-10-15, the owner moved the files of the slice into their own folder,
+`test/acceptance/work-slice/basic-mcp-url-fetch/`. Each work slice now has a
+folder with its entry point, launcher script, acceptance test, and `README.md`,
+and `test/acceptance/work-slice/README.md` lists the slices. The launcher goes
+up one more level to the repository root and runs the entry point at its new
+path. The import paths, the package script, the two unit tests, and the
+documents follow the move.
+
 ## Goal
 
 One script starts the MCP fetch tool for a local LLM and shows each fetch in
@@ -120,7 +128,7 @@ Each decision has a default. Confirm or change it before step 1.
 
 | ID | Decision | Default | Alternative |
 | --- | --- | --- | --- |
-| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. The composition in the entry point, which the tests import; it runs only when executed directly. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
+| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. Since 2026-10-15, each slice has its own folder there, `basic-mcp-url-fetch/` for this slice, with its own `README.md`. The `README.md` of the parent folder lists the slices. The composition in the entry point, which the tests import; it runs only when executed directly. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
 | D2 | Page text in the logs | The slice logs the full requested URL before the fetch and the Markdown after it, cut at 65,536 code points. These two lines come from the slice only. The production completion record stays as it is. | Log only the Markdown length. |
 | D3 | Axiom dataset and settings | Reuse `axiomTestSettings()`: `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL`, and the dataset `system-log-test`, from the environment or from `.env.local`. | A new reader for a dedicated dataset. |
 | D4 | LLM client | Claude Code with a static `Authorization` header. | Codex with `http_headers` in `~/.codex/config.toml`. |
@@ -139,10 +147,11 @@ src/config/deployment-config.ts                       loadPublicUrls(environment
 src/fetch-tool.ts                                     createFetchOperation(environment, logger) and fetchToolServers(operation, logger)
 src/mcp/get-url-as-markdown.ts                        the FetchOperation type, now exported
 src/index.ts                                          serveApplication(open, options), ProcessSignals, and ServeOptions, now exported
-test/acceptance/work-slice/README.md                  A short description of each work slice
-test/acceptance/work-slice/basic-mcp-url-fetch.ts     The entry point and the composition: createWorkSliceApplication(), observeFetches(), MARKDOWN_LOG_LIMIT; it runs only when executed directly
-test/acceptance/work-slice/basic-mcp-url-fetch.test.ts   The acceptance test
-test/acceptance/work-slice/basic-mcp-url-fetch.sh     The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
+test/acceptance/work-slice/README.md                  The guide: what a work slice is, and the list of the slices
+test/acceptance/work-slice/basic-mcp-url-fetch/README.md   The README of the slice: the command, the settings, and the log lines
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entry point and the composition: createWorkSliceApplication(), observeFetches(), MARKDOWN_LOG_LIMIT; it runs only when executed directly
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts   The acceptance test
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh   The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
 test/support/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
 test/unit/work-slice/basic-mcp-url-fetch.test.ts      observeFetches()
 test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
@@ -178,10 +187,12 @@ one shell setup serves the server and the script.
 | `AD_RULES_FILE` | Required. `createFetchOperation()` loads the file with `readAdRulesFile()`, as for the server. An empty file gives no rules. | None |
 | `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL` | Read by `axiomTestSettings()`, also from `.env.local` in the current directory. | None |
 
-The launcher script `test/acceptance/work-slice/basic-mcp-url-fetch.sh` gives
+The launcher script
+`test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` gives
 defaults to `PUBLIC_BASE_URL`, `AD_RULES_FILE`, `LIGHTPANDA_BIN`,
 `AXOIM_ENDPOINT_URL`, and `AXIOM_SYSTEM_LOG_TEST_DATA_SET`. The
-[work slice guide](../../test/acceptance/work-slice/README.md) lists them.
+[README of the slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
+lists them.
 
 ### Composition
 
@@ -297,7 +308,8 @@ proxy with the header. The plan does not cover that.
 
 ### Acceptance
 
-File: `test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`. Offline. It
+File: `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts`.
+Offline. It
 uses `RendererProcessDouble` for the renderer and DNS, a recording logger for
 the log, and the real MCP SDK HTTP client through the real HTTP bridge. It runs
 for both protocol eras of `mcpProtocolEras`.
@@ -338,18 +350,20 @@ for both protocol eras of `mcpProtocolEras`.
 ### Commands
 
 ```bash
-npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/*.test.js
+npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/basic-mcp-url-fetch/*.test.js
 ```
 
 ## Steps
 
 Steps 0 to 6 record the first delivery, before the refactoring of 2026-10-14.
 The folder `test/support/work-slice/` of steps 1 to 3 does not exist now; the
-composition is in the entry point. For a new run, the slice also needs
-`PUBLIC_BASE_URL` and `AD_RULES_FILE`, as the server does. The log lines go to
-Axiom only, so the script terminal shows no log line. The
-[work slice guide](../../test/acceptance/work-slice/README.md) lists the
-settings.
+composition is in the entry point. Since 2026-10-15, the files of the slice are
+in `test/acceptance/work-slice/basic-mcp-url-fetch/`. The steps give the paths
+of the first delivery. For a new run, the slice also needs `PUBLIC_BASE_URL`
+and `AD_RULES_FILE`, as the server does. The log lines go to Axiom only, so the
+script terminal shows no log line. The
+[README of the slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
+lists the settings.
 
 ### Step 0: prerequisites on this Mac
 

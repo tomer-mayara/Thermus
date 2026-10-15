@@ -219,7 +219,7 @@ startup error. A cancelled call records `cancelled`, not a fetch failure, and
 cannot publish success. A disconnected client might receive no response.
 
 `NoAuthProvider` exists only in `test/support/auth/no-auth-provider.ts`. The
-tests and the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
+tests and the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
 inject it as both `IdentityVerifier` and `AccessResolver`. It accepts supplied
 token contents and returns a fixed synthetic identity and workspace, only
 `product:access`, a distinct client ID, a synthetic issuer, the configured

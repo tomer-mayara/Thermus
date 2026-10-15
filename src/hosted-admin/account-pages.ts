@@ -1,5 +1,6 @@
+import { escapeHtml } from '../html/html-escape.ts';
 import type { AuthorizedOrganization } from '../organizations/organization-administration.ts';
-import { escapeHtml, FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
+import { FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
 
 interface Notice {
   readonly status: number;

@@ -5,10 +5,10 @@ import childProcess, {
   type ExecFileOptionsWithStringEncoding,
 } from 'node:child_process';
 import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
 import { test } from 'node:test';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
 import { RendererChildDouble } from '../../support/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
@@ -38,11 +38,7 @@ test('Given one fetcher with a configured executable, when two calls run concurr
     launches.push(launch);
     return new RendererChildDouble();
   }) as typeof childProcess.execFile);
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
   const fetcher = new WebsiteFetcherLightpanda(executable);
 
   const results = pages.map(({ url }) => fetcher.fetchURL(url));

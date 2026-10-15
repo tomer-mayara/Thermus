@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs the basic MCP URL fetch work slice: the entry point basic-mcp-url-fetch.ts with the pinned Node runtime of pnpm.
 # See README.md in this folder.
-# Usage: test/acceptance/work-slice/basic-mcp-url-fetch.sh
+# Usage: test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh
 # You can start the script from any directory. The script gives its arguments to the entry point.
 # The script sets the settings of the slice to their defaults. A setting with a value before the call keeps that value.
 # These values come before the values in .env.local, because the slice uses an exported value first.
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 # CDPATH= keeps cd silent, so that root gets only the path.
-root=$(CDPATH= cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)
+root=$(CDPATH= cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd -P)
 # The slice reads .env.local from the current directory, and pnpm runs the package script from the root.
 cd "$root"
 
@@ -36,4 +36,4 @@ printf '%s\n' \
   "AXIOM_SYSTEM_LOG_TEST_DATA_SET=$AXIOM_SYSTEM_LOG_TEST_DATA_SET" >&2
 # pnpm exec gives the pinned Node runtime and passes a signal to its child. Thus a signal to this process stops the
 # server, as Ctrl+C does. The package script would put a shell wrapper and the tsx CLI between them.
-exec pnpm exec node --import tsx test/acceptance/work-slice/basic-mcp-url-fetch.ts "$@"
+exec pnpm exec node --import tsx test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts "$@"
