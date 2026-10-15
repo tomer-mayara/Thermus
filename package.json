@@ -29,6 +29,7 @@
     "test:hosted-live": "npm run build && npm run build:user-portal && node --test dist/test/acceptance/auth/hosted.live.js",
     "test:mcp:renderer": "npm run build && node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js",
     "work-slice:basic-mcp-url-fetch": "tsx test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts",
+    "work-slice:auth-workos-mcp-url-fetch": "tsx test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
     "test:build": "node --test test/unit/build-output.test.ts",
     "dev:user-portal": "vite --config src/user-portal/vite.config.ts",
     "build:user-portal": "npm run typecheck:user-portal && vite build --config src/user-portal/vite.config.ts",
