@@ -8,11 +8,11 @@ import {
 } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { AccessResolverSpy, type ConfiguredAccess } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { mcpRequest, rpcResult, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
-import { AccessResolverMock, type ConfiguredAccess } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
-import { mcpRequest, rpcResult, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';
@@ -44,12 +44,12 @@ function memberAccess(user: AuthenticatedUser, grants: readonly RoleGrant[]): Ac
 }
 
 function serve(t: TestContext, decisions: ReadonlyMap<string, ConfiguredAccess>, probe = new RequestContextProbe()) {
-  const verifier = new IdentityVerifierMock(new Map([
+  const verifier = new IdentityVerifierSpy(new Map([
     ...members.map((user) => [`${user.subject}-token`, identityFor(user)] as const),
     ['scopeless-token', identityFor(members[0] as AuthenticatedUser, [])],
   ]));
-  const resolver = new AccessResolverMock(decisions);
-  const reporter = new FailureReporterMock();
+  const resolver = new AccessResolverSpy(decisions);
+  const reporter = new FailureReporterSpy();
   const server = new MCPServer({
     auth: {
       verifier,

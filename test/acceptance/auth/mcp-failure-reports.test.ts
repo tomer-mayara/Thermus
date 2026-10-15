@@ -11,9 +11,9 @@ import {
 import type { AccessDecision } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
+import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';
@@ -35,21 +35,21 @@ function identityFor(subject: string): VerifiedIdentity {
 describe('Operator reports of unexpected MCP failures', () => {
   const identityOutage = new Error('identity provider unavailable');
   const lookupOutage = new Error('private membership lookup failure for user-uma');
-  let reporter: FailureReporterMock;
+  let reporter: FailureReporterSpy;
   let server: MCPServer;
 
   beforeEach(() => {
-    const verifier = new IdentityVerifierMock(new Map<string, VerifiedIdentity | Error>([
+    const verifier = new IdentityVerifierSpy(new Map<string, VerifiedIdentity | Error>([
       ['secret-outage-token', identityOutage],
       ['secret-uma-token', identityFor('user-uma')],
       ['secret-dana-token', identityFor('user-dana')],
       ['secret-scopeless-token', { ...identityFor('user-uma'), scopes: [] }],
     ]));
-    const resolver = new AccessResolverMock(new Map<string, AccessDecision | Error>([
+    const resolver = new AccessResolverSpy(new Map<string, AccessDecision | Error>([
       ['user-uma', lookupOutage],
       ['user-dana', { allowed: false, reason: 'membership-inactive' }],
     ]));
-    reporter = new FailureReporterMock();
+    reporter = new FailureReporterSpy();
     server = new MCPServer({
       auth: {
         verifier,

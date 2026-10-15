@@ -9,7 +9,7 @@ export interface ContextReport {
   readonly arguments: ContextReportArguments;
 }
 
-export class RequestContextTools {
+export class ContextReportToolSpy {
   static readonly reportTool = 'report_context';
   readonly contexts: RequestContext[] = [];
   private readonly beforeReport?: (context: RequestContext) => Promise<void>;
@@ -21,7 +21,7 @@ export class RequestContextTools {
   readonly buildServer = (context: RequestContext): McpServer => {
     const server = new McpServer({ name: 'thermus', version: '0.0.0' });
     this.contexts.push(context);
-    server.registerTool(RequestContextTools.reportTool, {
+    server.registerTool(ContextReportToolSpy.reportTool, {
       description: 'Test only: report the trusted context of this request.',
       inputSchema: fromJsonSchema<ContextReportArguments>({ type: 'object', additionalProperties: { type: 'string' } }),
     }, async (args, toolContext) => {

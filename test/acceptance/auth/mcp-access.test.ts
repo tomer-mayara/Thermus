@@ -8,9 +8,9 @@ import {
 } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
@@ -49,15 +49,15 @@ describe('Trusted access context for MCP HTTP requests', () => {
   const erin = member('user-erin', 'org-a');
   const owen = member('user-owen', 'org-a');
   const uma = member('user-uma', 'org-a');
-  let resolver: AccessResolverMock;
+  let resolver: AccessResolverSpy;
   let probe: RequestContextProbe;
   let server: MCPServer;
 
   beforeEach(() => {
-    const verifier = new IdentityVerifierMock(new Map(
+    const verifier = new IdentityVerifierSpy(new Map(
       [alice, bob, dana, erin, owen, uma].map((user) => [`${user.subject}-token`, identityFor(user)]),
     ));
-    resolver = new AccessResolverMock(new Map<string, AccessDecision | Error>([
+    resolver = new AccessResolverSpy(new Map<string, AccessDecision | Error>([
       [alice.subject, allowed(alice, 'tenant-org-a', { user: [productAccess] })],
       [bob.subject, allowed(bob, 'tenant-org-b', { user: [productAccess] })],
       [dana.subject, { allowed: false, reason: 'membership-inactive' }],

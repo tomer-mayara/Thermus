@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { AccessDenialReason } from '../../../src/auth/access-context.ts';
-import type { ConfiguredAccess } from '../mcp/fixtures/access-resolver-mock.ts';
+import type { ConfiguredAccess } from '../../support/doubles/auth/access-resolver-spy.ts';
 import {
   accountRequest,
   adminGrant,

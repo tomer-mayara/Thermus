@@ -3,8 +3,8 @@ import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
 import { Server, type Transport } from '@modelcontextprotocol/server';
 import { MCPServer, type McpRequestLifetime } from '../../../src/mcp/mcp-server.ts';
-import { alice, contextFor, identityFor, resourceUrl } from './fixtures/access-test-server.ts';
-import { mcpRequest } from './fixtures/mcp-http-request.ts';
+import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { alice, contextFor, identityFor, resourceUrl } from '../../support/in-process/access-test-server.ts';
 
 function defaultOptions(): NonNullable<ConstructorParameters<typeof MCPServer>[0]> {
   return {

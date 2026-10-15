@@ -3,6 +3,8 @@ import { describe, test } from 'node:test';
 import { inspect } from 'node:util';
 import { PerRequestHTTPServerTransport } from '@modelcontextprotocol/server';
 import type { AccessDenialReason } from '../../../src/auth/access-context.ts';
+import { ContextReportToolSpy, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';
+import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import {
   alice,
   allowed,
@@ -14,9 +16,7 @@ import {
   nowSeconds,
   resourceUrl,
   serveAccess,
-} from '../../unit/mcp/fixtures/access-test-server.ts';
-import { mcpRequest, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
-import { RequestContextTools, type ContextReport } from '../../unit/mcp/fixtures/request-context-tools.ts';
+} from '../../support/in-process/access-test-server.ts';
 
 describe('MCPServer access decisions', () => {
   test('Given an allowed decision, when a client calls a tool, then the request factory binds that context once and the tool receives it with the verified claims', { timeout: 5_000 }, async (t) => {
@@ -57,7 +57,7 @@ describe('MCPServer access decisions', () => {
       test(`Given a ${reason} denial, when a client sends ${method}, then it gets a safe 403 access_denied before the factory or MCP dispatch`, { timeout: 5_000 }, async (t) => {
         const dispatchSpy = t.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
         const { server, verifier, tools, reporter } = serveAccess(t, new Map([[alice.subject, { allowed: false, reason }]]));
-        const params = method === 'tools/call' ? { name: RequestContextTools.reportTool, arguments: {} } : {};
+        const params = method === 'tools/call' ? { name: ContextReportToolSpy.reportTool, arguments: {} } : {};
 
         const response = await server.fetch(mcpRequest({ url: resourceUrl, method, token: 'alice-token', params, signal: t.signal }));
 
@@ -141,7 +141,7 @@ describe('MCPServer access decisions', () => {
     });
 
     const response = await server.fetch(callReport(t, 'secret-alice-token', {
-      params: { name: RequestContextTools.reportTool, arguments: { password: 'secret-password' } },
+      params: { name: ContextReportToolSpy.reportTool, arguments: { password: 'secret-password' } },
       headers: { Cookie: 'session=secret-session-cookie', 'Proxy-Authorization': 'Basic secret-proxy-password' },
     }));
 

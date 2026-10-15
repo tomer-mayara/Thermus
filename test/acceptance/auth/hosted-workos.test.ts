@@ -7,7 +7,7 @@ import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../supp
 import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
 import { nowInSeconds } from '../../support/jwt-signing-key.ts';
 import { WorkOSWorld, type WorldUser } from '../../support/workos-world.ts';
-import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 // The real hosted composition with the WorkOS provider behind the real HTTP server on a loopback port. A local fake
 // of the WorkOS API stands in for WorkOS, so these specifications prove the application side only. The hosted live

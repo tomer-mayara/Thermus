@@ -11,7 +11,7 @@ import { nextNavigation, originAndPath, recordNavigations } from '../../../suppo
 import { initiateLoginUri, localOrigin, mcpResource, signOutUri } from '../../../support/hosted-live/settings.ts';
 import { readToken, secondsLeft } from '../../../support/hosted-live/tokens.ts';
 import { deleteWorkOSResource } from '../../../support/hosted-live/workos-api.ts';
-import { mcpRequest } from '../../../unit/mcp/fixtures/mcp-http-request.ts';
+import { mcpRequest } from '../../../support/drivers/mcp/mcp-http-request.ts';
 
 const signInOptions = { timeout: 240_000 };
 const expiryOptions = { timeout: 600_000 };

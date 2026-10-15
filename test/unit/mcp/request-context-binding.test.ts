@@ -7,10 +7,10 @@ import {
   callReport,
   contextFor,
   serveAccess,
-} from './fixtures/access-test-server.ts';
-import type { ConfiguredAccess } from './fixtures/access-resolver-mock.ts';
-import { toolJson } from './fixtures/mcp-http-request.ts';
-import { RequestContextTools, type ContextReport } from './fixtures/request-context-tools.ts';
+} from '../../support/in-process/access-test-server.ts';
+import type { ConfiguredAccess } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { ContextReportToolSpy, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';
 
 describe('MCPServer request context binding', () => {
   test('Given forged tenant, organization, and user values in headers and tool arguments, when a client calls a tool, then only the verified user reaches the resolver and the tool keeps the trusted context', { timeout: 5_000 }, async (t) => {
@@ -25,7 +25,7 @@ describe('MCPServer request context binding', () => {
         'X-Forwarded-User': forged.subject,
         Forwarded: 'for=192.0.2.1;host=evil.example',
       },
-      params: { name: RequestContextTools.reportTool, arguments: forged },
+      params: { name: ContextReportToolSpy.reportTool, arguments: forged },
     }));
     const report = await toolJson<ContextReport>(response);
 
@@ -52,7 +52,7 @@ describe('MCPServer request context binding', () => {
   test('Given an allowed decision, when the resolver changes its records during the request, then the bound context keeps the decided values and is frozen', { timeout: 5_000 }, async (t) => {
     const grants = [{ role: 'user', permissions: ['product:access'] }];
     const resolverRecord = { user: alice, tenantId: 'tenant-org-a', organizationId: 'org-a', grants, permissions: ['product:access'] };
-    const tools = new RequestContextTools(async () => {
+    const tools = new ContextReportToolSpy(async () => {
       resolverRecord.tenantId = 'tenant-org-b';
       grants.push({ role: 'admin', permissions: ['user-grants:manage'] });
     });
@@ -116,7 +116,7 @@ describe('MCPServer request context binding', () => {
   test('Given a tool handler that is still running, when another user\'s request starts and finishes, then the running handler keeps its own context', { timeout: 5_000 }, async (t) => {
     const aliceInHandler = Promise.withResolvers<void>();
     const bobFinished = Promise.withResolvers<void>();
-    const tools = new RequestContextTools(async (context) => {
+    const tools = new ContextReportToolSpy(async (context) => {
       if (context.user.subject !== alice.subject) return;
       aliceInHandler.resolve();
       await bobFinished.promise;

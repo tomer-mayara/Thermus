@@ -1,12 +1,12 @@
 import type { TestContext } from 'node:test';
-import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../../src/auth/identity-verifier.ts';
-import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
-import { AccessResolverMock, type ConfiguredAccess } from './access-resolver-mock.ts';
-import { FailureReporterMock } from './failure-reporter-mock.ts';
-import { IdentityVerifierMock, type ConfiguredClaims } from './identity-verifier-mock.ts';
-import { mcpRequest, type McpRequestOptions } from './mcp-http-request.ts';
-import { RequestContextTools } from './request-context-tools.ts';
+import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../../src/auth/access-context.ts';
+import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
+import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { AccessResolverSpy, type ConfiguredAccess } from '../doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierSpy, type ConfiguredClaims } from '../doubles/auth/identity-verifier-spy.ts';
+import { ContextReportToolSpy } from '../doubles/mcp/context-report-tool-spy.ts';
+import { FailureReporterSpy } from '../doubles/mcp/failure-reporter-spy.ts';
+import { mcpRequest, type McpRequestOptions } from '../drivers/mcp/mcp-http-request.ts';
 
 export const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
@@ -43,24 +43,24 @@ export function allowed(context: RequestContext): AccessDecision {
 
 export interface AccessTestServer {
   readonly server: MCPServer;
-  readonly verifier: IdentityVerifierMock;
-  readonly resolver: AccessResolverMock;
-  readonly tools: RequestContextTools;
-  readonly reporter: FailureReporterMock;
+  readonly verifier: IdentityVerifierSpy;
+  readonly resolver: AccessResolverSpy;
+  readonly tools: ContextReportToolSpy;
+  readonly reporter: FailureReporterSpy;
 }
 
 export function serveAccess(
   t: TestContext,
   decisions: ReadonlyMap<string, ConfiguredAccess>,
-  options: { tools?: RequestContextTools; tokens?: ReadonlyMap<string, ConfiguredClaims>; requiredScopes?: string[] } = {},
+  options: { tools?: ContextReportToolSpy; tokens?: ReadonlyMap<string, ConfiguredClaims>; requiredScopes?: string[] } = {},
 ): AccessTestServer {
-  const verifier = new IdentityVerifierMock(options.tokens ?? new Map([
+  const verifier = new IdentityVerifierSpy(options.tokens ?? new Map([
     ['alice-token', identityFor(alice)],
     ['bob-token', identityFor(bob)],
   ]));
-  const resolver = new AccessResolverMock(decisions);
-  const tools = options.tools ?? new RequestContextTools();
-  const reporter = new FailureReporterMock();
+  const resolver = new AccessResolverSpy(decisions);
+  const tools = options.tools ?? new ContextReportToolSpy();
+  const reporter = new FailureReporterSpy();
   const server = new MCPServer({
     auth: {
       verifier,
@@ -81,7 +81,7 @@ export function callReport(t: TestContext, token: string | undefined, extra: Par
     url: resourceUrl,
     method: 'tools/call',
     token,
-    params: { name: RequestContextTools.reportTool, arguments: {} },
+    params: { name: ContextReportToolSpy.reportTool, arguments: {} },
     signal: t.signal,
     ...extra,
   });

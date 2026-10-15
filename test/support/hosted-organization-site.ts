@@ -10,8 +10,8 @@ import { startHttpServer } from '../../src/http/server.ts';
 import type { VerifiedIdentity } from '../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../src/mcp/mcp-server.ts';
 import type { ChangeRecord, ChangeRecorder } from '../../src/organizations/change-records.ts';
-import { IdentityVerifierMock } from '../unit/mcp/fixtures/identity-verifier-mock.ts';
-import { mcpRequest, rpcResult } from '../unit/mcp/fixtures/mcp-http-request.ts';
+import { IdentityVerifierSpy } from './doubles/auth/identity-verifier-spy.ts';
+import { mcpRequest, rpcResult } from './drivers/mcp/mcp-http-request.ts';
 import { AccountOperationProbe } from './account-operation-probe.ts';
 import { BrowserSessionStore, type SignInOptions } from './browser-session-store.ts';
 import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from './hosted-browser.ts';
@@ -128,7 +128,7 @@ function composeSite(setup: SiteSetup) {
   const tokenUsers = [...(setup.mcpUsers ?? []).map((user): [string, AuthenticatedUser] => [`${user.subject}-token`, user]), ...(setup.mcpTokens ?? [])];
   const tokens = new Map(tokenUsers.map(([token, user]) => [token, identityOf(user)]));
   const mcp = new MCPServer({
-    auth: { verifier: new IdentityVerifierMock(tokens), accessResolver: directory, resourceMetadataUrl: hostedConfig.resourceMetadataUrl, expectedResource: new URL(hostedConfig.mcpResourceUrl) },
+    auth: { verifier: new IdentityVerifierSpy(tokens), accessResolver: directory, resourceMetadataUrl: hostedConfig.resourceMetadataUrl, expectedResource: new URL(hostedConfig.mcpResourceUrl) },
     buildServer: tools.buildServer,
     reportFailure: () => {},
   });

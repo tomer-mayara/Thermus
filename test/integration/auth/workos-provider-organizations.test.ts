@@ -20,7 +20,7 @@ import { RequestContextProbe } from '../../support/request-context-probe.ts';
 import { fakeClientId } from '../../support/workos-fake-api.ts';
 import { signInThroughServer } from '../../support/workos-sign-in.ts';
 import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
-import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 // The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the
 // WorkOS API, together with the real OrganizationAdministration, account routes, and MCP server. A probe stands in for

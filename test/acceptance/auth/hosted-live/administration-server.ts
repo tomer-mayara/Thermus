@@ -4,6 +4,7 @@ import type { Invitation, OrganizationMembership } from '@workos-inc/node';
 import type { Page } from 'playwright';
 import { workosAuthority } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import type { ChangeRecord } from '../../../../src/organizations/change-records.ts';
+import { mcpRequest } from '../../../support/drivers/mcp/mcp-http-request.ts';
 import { labelsOf, seatsIn } from '../../../support/hosted-administration.ts';
 import { formsIn, type PageForm } from '../../../support/hosted-browser.ts';
 import { authorizeWithConnect } from '../../../support/hosted-live/connect-grant.ts';
@@ -20,7 +21,6 @@ import {
 } from '../../../support/hosted-live/portal-visit.ts';
 import { localOrigin } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
-import { mcpRequest } from '../../../unit/mcp/fixtures/mcp-http-request.ts';
 
 interface ShownPage {
   readonly body: string;

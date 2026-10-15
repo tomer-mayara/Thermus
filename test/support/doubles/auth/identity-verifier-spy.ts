@@ -6,7 +6,7 @@ import {
 
 export type ConfiguredClaims = { readonly [Claim in keyof VerifiedIdentity]?: unknown };
 
-export class IdentityVerifierMock implements IdentityVerifier {
+export class IdentityVerifierSpy implements IdentityVerifier {
   readonly calls: string[] = [];
   private readonly tokens: ReadonlyMap<string, ConfiguredClaims | Error>;
 

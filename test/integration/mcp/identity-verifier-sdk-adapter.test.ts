@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import { OAuthError, OAuthErrorCode, type AuthInfo } from '@modelcontextprotocol/server';
 import { IdentityVerifierSdkAdapter, verifiedUserOf } from '../../../src/mcp/identity-verifier-sdk-adapter.ts';
 import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
-import { IdentityVerifierMock, type ConfiguredClaims } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
+import { IdentityVerifierSpy, type ConfiguredClaims } from '../../support/doubles/auth/identity-verifier-spy.ts';
 
 function verifiedIdentity(): VerifiedIdentity {
   return {
@@ -18,14 +18,14 @@ function verifiedIdentity(): VerifiedIdentity {
 }
 
 async function verify(claims: ConfiguredClaims | Error, token = 'raw-token', failures: unknown[] = []): Promise<AuthInfo> {
-  const verifier = new IdentityVerifierMock(new Map([[token, claims]]));
+  const verifier = new IdentityVerifierSpy(new Map([[token, claims]]));
   return new IdentityVerifierSdkAdapter(verifier, (cause) => failures.push(cause)).verifyAccessToken(token);
 }
 
 describe('IdentityVerifierSdkAdapter', () => {
   test('Given verified claims, when the SDK adapter verifies a token, then it maps those claims and supplies the input token', async () => {
     const identity = verifiedIdentity();
-    const verifier = new IdentityVerifierMock(new Map([['raw-token', identity]]));
+    const verifier = new IdentityVerifierSpy(new Map([['raw-token', identity]]));
     const result = await new IdentityVerifierSdkAdapter(verifier, () => {}).verifyAccessToken('raw-token');
     assert.deepEqual({ ...result, extra: undefined }, {
       token: 'raw-token',
@@ -137,10 +137,10 @@ describe('IdentityVerifierSdkAdapter', () => {
   });
 
   test('Given an unknown token, when the mock verifies it, then it rejects it and records the call', async () => {
-    const verifier = new IdentityVerifierMock();
+    const verifier = new IdentityVerifierSpy();
     await assert.rejects(verifier.verifyAccessToken('unknown'), InvalidAccessTokenError);
     assert.deepEqual(verifier.calls, ['unknown']);
-    assert.deepEqual(new IdentityVerifierMock().calls, []);
+    assert.deepEqual(new IdentityVerifierSpy().calls, []);
   });
 });
 
