@@ -58,7 +58,7 @@ async function openSite(t: TestContext): Promise<Site> {
   world.memberships = memberships;
   world.organizationNames = organizationNames;
   const log = new LogLines();
-  const application = await composeWorkOSApplication(config, world.connection(), log);
+  const application = await composeWorkOSApplication(config, world.connection(), { logger: log });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   t.after(async () => {
     await server.close();
