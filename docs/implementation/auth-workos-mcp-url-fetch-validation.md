@@ -3,11 +3,12 @@
 Date: 2026-10-15. Runtime: Node 24.20.0.
 PR: `3-headed-monkey/Thermus#108`. Status: Draft.
 
-This record covers the working candidate on `codex/pr108-workos-onboarding`
-after the merge of main, commit `6cab980f`. The original PR head was
+This record covers the reviewed source candidate `975b2b10` on
+`codex/pr108-workos-onboarding`, after the merge of main, commit `6cab980f`. The original PR head was
 `b846e1a572c72edd29f15ee3e77bcff90c87759a`. The manager reviewed the final
 source and the findings below. No Ready or merge approval is recorded here.
-The browser-first live proof and the hosted live gate remain open.
+The complete hosted live gate passed. The fresh-account browser-first proof
+remains open.
 
 ## Complete-candidate checks
 
@@ -23,12 +24,14 @@ coverage. `npm run check` also completed type checking and the portal build.
 | `npm run test:container` | 0 | 12/12 tests in 1 suite passed in 105,520 ms; Docker 29.5.2, `linux/arm64`. |
 | `habit-hooks` | 1 | 258 `non-essential-comment` and 6 oversized-file findings. The manager accepts retention for the exact locations and reasons below. The command did not exit 0. |
 | `npm run test:mcp:renderer` with pinned `LIGHTPANDA_BIN` | 0 | Optional renderer gate: 7/7 tests in 1 suite passed in 9,468 ms with pinned Lightpanda 1.0.0. |
-| `npm run test:hosted-live` through the staging launcher | Running | Complete command started; no completed result recorded for this candidate. |
+| `npm run test:hosted-live` through the staging launcher | 0 | 77/77 tests in 17 suites passed in 697,702 ms. This complete run includes the changed Google-only and DCR/CIMD configuration proofs. |
+| Live slice, invalid Bearer request over trusted HTTPS | 0 | The running slice returned `401 invalid_token` and a Bearer challenge with `https://localhost:46443/.well-known/oauth-protected-resource/mcp`. |
 | Manual Google → Connect → HTTPS MCP fetch → Axiom proof | Pending | The user chose a fresh `thermus.ai` Google account. The walk has not completed. |
 
 Full check logs at the time of review:
 `/tmp/thermus-pr108-checks.b4oEa2/check.log`, `integration.log`,
-`acceptance.log`, `container.log`, and `habit-hooks.log` in that directory.
+`acceptance.log`, `container.log`, `habit-hooks.log`, `hosted-live.log`, and
+`slice-final-wording.log` in that directory.
 These are local temporary evidence files; the results and retention decisions
 are preserved in this repository record.
 
@@ -40,7 +43,7 @@ are preserved in this repository record.
 | Final onboarding candidate | Exit 0; 82/82 tests in 9 suites passed. Breakdown: 34 onboarding integration, 2 callback unit, 3 new acceptance, 5 existing slice acceptance, and 38 WorkOS interface tests. | Compiled output from the shared build; local WorkOS API fake and renderer double. |
 | Final HTTPS front | Exit 0; 11/11 passed. | Compiled integration cases; authenticated POST, token/current-role refusal, disconnect, streaming, and application/listener cleanup. |
 | Final launcher | Exit 0; 13/13 passed. | Source and compiled unit cases use `pnpm` and `openssl` doubles; include the slice organization default, override, and secret-output checks. |
-| Dee scenario wording correction after the complete checks | Exit 0; 5/5 source slice acceptance tests passed. | Only the title and comment changed: a non-`thermus.ai` Google identity has no automatic membership; a later external User grant is observed on the next MCP request. |
+| Dee scenario wording correction after the complete checks | Exit 0; 5/5 source and 5/5 final compiled slice acceptance tests passed, with zero failures, cancellations, skips, or todo cases. | Only the title and comment changed: a non-`thermus.ai` Google identity has no automatic membership; a later external User grant is observed on the next MCP request. |
 
 The compiled onboarding command selects these five files with `pnpm exec
 node --test`:
@@ -57,7 +60,8 @@ pnpm exec node --test \
 The HTTPS and launcher focused files are
 `dist/test/integration/auth/hosted-live-site.test.js` and
 `dist/test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.js`.
-The wording-only run selects the existing slice acceptance file from source.
+The wording-only check ran the existing slice acceptance file from source,
+then reran its final compiled output; both passed 5/5.
 `bash -n` for the shell launcher and `git diff --check` also passed.
 
 These passes establish application behavior and the tested contracts. They do
@@ -126,8 +130,8 @@ the behavioral reason in each row is the retention decision.
 
 ## Open release evidence
 
-Keep the PR in Draft. Complete the hosted live gate and the real browser-first
-walk in the [slice guide](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md#the-walk).
+Keep the PR in Draft. The hosted live gate passed; complete the real
+browser-first walk in the [slice guide](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md#the-walk).
 The fresh Google account must pass the trusted verified-domain callback,
 receive explicit User membership and a selected browser organization, then
 complete the client's separate Connect browser consent. Verify the client's

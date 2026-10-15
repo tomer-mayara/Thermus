@@ -1,7 +1,7 @@
 # Auth WorkOS MCP URL fetch: work slice plan
 
 Status: implementation and the offline candidate checks are complete on
-2026-10-15. The complete hosted live gate is running. The fresh Google account
+2026-10-15. The complete hosted live gate passed 77/77. The fresh Google account
 and client browser-first proof remains pending, and PR #108 stays in Draft.
 This plan supersedes the manual User-grant step of the first version. The
 owner approved automatic access for eligible Google users.
