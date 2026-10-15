@@ -10,6 +10,7 @@ import {
   notFound,
   refusal,
   roles,
+  unavoidableFailures,
   WorkOSOrganizationsDouble,
   type MembershipRecord,
 } from './fixtures/workos-organizations-double.ts';
@@ -133,12 +134,29 @@ describe('WorkOSOrganizations member pages', () => {
   });
 
   for (const method of ['listOrganizationMemberships', 'listOrganizationRoles', 'getUser']) {
-    test(`Given a WorkOS read that fails (${method}), when the members are read, then the same error reaches the caller, so that a failure never looks like an organization without members`, async () => {
-      const failure = refusal('server_error', 503);
-      const double = doubleWith([alice, bob]);
-      double.failures.set(method, failure);
+    for (const { label, failure } of unavoidableFailures()) {
+      test(`Given a WorkOS read (${method}) that fails with ${label}, when the members are read, then the same error reaches the caller, so that a failure never looks like an organization without members`, async () => {
+        const double = doubleWith([alice, bob]);
+        double.failures.set(method, failure);
+
+        await assert.rejects(double.directory().memberPage({ organizationId: acme, statuses: everyStatus }), (error) => error === failure);
+      });
+    }
+  }
+
+  for (const { label, failure } of unavoidableFailures()) {
+    test(`Given three members whose second user read fails with ${label}, when the members are read, then the same error reaches the caller after the first user read answered, and no user read follows, so that no partial page reaches the caller`, async () => {
+      const double = doubleWith([alice, bob, carol]);
+      const read = double.userManagement.getUser;
+      const started: string[] = [];
+      double.userManagement.getUser = async (userId: string) => {
+        started.push(userId);
+        if (userId === 'user_02BOB') throw failure;
+        return read(userId);
+      };
 
       await assert.rejects(double.directory().memberPage({ organizationId: acme, statuses: everyStatus }), (error) => error === failure);
+      assert.deepEqual(started, ['user_01ALICE', 'user_02BOB']);
     });
   }
 });

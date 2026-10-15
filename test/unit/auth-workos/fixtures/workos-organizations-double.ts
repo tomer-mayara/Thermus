@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {
   GenericServerException,
   NotFoundException,
+  OauthException,
+  RateLimitExceededException,
   type AssignRoleOptions,
   type ListInvitationsOptions,
   type ListOrganizationMembershipsOptions,
@@ -118,6 +120,16 @@ export function notFound(): NotFoundException {
 // The error of the SDK for a WorkOS refusal with this status and code, such as 400.
 export function refusal(code: string, status = 400): GenericServerException {
   return new GenericServerException(status, `WorkOS refused the request with ${code}.`, { code, message: `WorkOS refused the request with ${code}.` }, 'request_01');
+}
+
+// The errors of the SDK for the WorkOS failures that a read cannot avoid. The SDK gives no answer within its timeout as
+// a 408.
+export function unavoidableFailures(): { readonly label: string; readonly failure: Error }[] {
+  return [
+    { label: 'a 503 answer', failure: refusal('server_error', 503) },
+    { label: 'a 429 answer', failure: new RateLimitExceededException('Too many requests', 'request_01', null) },
+    { label: 'no answer within the client timeout', failure: new OauthException(408, '', 'Request timeout', undefined, { error: 'Request timeout' }) },
+  ];
 }
 
 // A double of the WorkOS SDK client of the organization directory. It answers from the records that a test sets, and

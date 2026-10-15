@@ -9,6 +9,7 @@ import {
   notFound,
   now,
   refusal,
+  unavoidableFailures,
   WorkOSOrganizationsDouble,
   type InvitationRecord,
 } from './fixtures/workos-organizations-double.ts';
@@ -145,13 +146,14 @@ describe('WorkOSOrganizations invitation pages', () => {
     await assertWorkOSFailure(double.directory().invitationPage({ organizationId: acme, states: ['pending', 'expired'] }), /expiry/);
   });
 
-  test('Given an invitation read that fails, when the invitations are read, then the same error reaches the caller, so that a failure never looks like an organization without invitations', async () => {
-    const failure = refusal('server_error', 503);
-    const double = doubleWith([bob]);
-    double.failures.set('listInvitations', failure);
+  for (const { label, failure } of unavoidableFailures()) {
+    test(`Given an invitation read that fails with ${label}, when the invitations are read, then the same error reaches the caller, so that a failure never looks like an organization without invitations`, async () => {
+      const double = doubleWith([bob]);
+      double.failures.set('listInvitations', failure);
 
-    await assert.rejects(double.directory().invitationPage({ organizationId: acme, states: ['pending'] }), (error) => error === failure);
-  });
+      await assert.rejects(double.directory().invitationPage({ organizationId: acme, states: ['pending'] }), (error) => error === failure);
+    });
+  }
 });
 
 describe('WorkOSOrganizations invitation', () => {
