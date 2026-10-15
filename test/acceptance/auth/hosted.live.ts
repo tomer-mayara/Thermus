@@ -123,7 +123,7 @@ function describeAuthKitAuthorizationServer(settings: HostedLiveSettings): void 
   const { authkitIssuer } = settings;
 
   describe('Hosted live proofs: the AuthKit authorization server of Connect', () => {
-    test('Given the AuthKit issuer, when its authorization-server metadata is read, then it names the exact issuer, the AuthKit key set, the authorization code grant, and S256 PKCE', proofOptions, async (t) => {
+    test('Given the AuthKit issuer, when its authorization-server metadata is read, then it names the exact issuer, the AuthKit key set, the authorization code grant, S256 PKCE, the client registration endpoint, and client ID metadata documents', proofOptions, async (t) => {
       const metadata = await readJson(`${authkitIssuer}/.well-known/oauth-authorization-server`);
       assert.ok(isJsonObject(metadata), 'The authorization-server metadata is not a JSON object.');
       recordMetadata(t, metadata);
@@ -132,6 +132,8 @@ function describeAuthKitAuthorizationServer(settings: HostedLiveSettings): void 
       assert.equal(metadata.jwks_uri, authkitKeySetUrl(authkitIssuer));
       assert.ok(includes(metadata.grant_types_supported, 'authorization_code'), 'grant_types_supported does not include authorization_code.');
       assert.ok(includes(metadata.code_challenge_methods_supported, 'S256'), 'code_challenge_methods_supported does not include S256.');
+      assert.equal(metadata.registration_endpoint, `${authkitIssuer}/oauth2/register`, 'registration_endpoint is not <issuer>/oauth2/register. MCP clients such as Claude Code register themselves at AuthKit, so Dynamic Client Registration must be on in the staging environment.');
+      assert.equal(metadata.client_id_metadata_document_supported, true, 'client_id_metadata_document_supported is not true. MCP clients such as Claude Code register themselves at AuthKit, so Client ID Metadata Documents must be on in the staging environment.');
     });
 
     test('Given the AuthKit key set, when it is read, then it has signing keys with key IDs, and jose accepts the set', proofOptions, async (t) => {

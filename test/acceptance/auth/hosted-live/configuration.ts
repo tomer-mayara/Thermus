@@ -67,7 +67,7 @@ export function describeConfigurationProofs(run: LiveRun): void {
       assert.equal(authentication.passkeyAuthEnabled, false);
     });
 
-    test('Given the hosted sign-in page, when a browser opens it, then it offers only email sign-in and no social provider', browserOptions, async (t) => {
+    test('Given the hosted sign-in page, when a browser opens it, then it offers email sign-in and Google as its only social provider', browserOptions, async (t) => {
       const page = await run.browser.newPage();
       try {
         const { url } = await workos.userManagement.getAuthorizationUrlWithPKCE({ provider: 'authkit', redirectUri: browserRedirectUri, clientId: settings.clientId });
@@ -77,9 +77,10 @@ export function describeConfigurationProofs(run: LiveRun): void {
         t.diagnostic(`buttons and links: ${JSON.stringify(choices)}`);
 
         const offered = choices.filter((name) => socialChoice.test(name));
-        assert.deepEqual(offered, [], [
-          `The hosted sign-in page still offers these social providers: ${offered.join(', ')}.`,
-          'The owner must disable the social providers of the staging environment in the WorkOS dashboard, so that the page offers only email sign-in.',
+        assert.deepEqual(offered, ['Continue with Google'], [
+          `The hosted sign-in page offers these social providers: ${JSON.stringify(offered)}. It must offer only "Continue with Google".`,
+          'The owner turned Google sign-in on for the auth WorkOS MCP URL fetch slice, and no other social provider may be on.',
+          'Change the social providers of the staging environment under Authentication in the WorkOS dashboard, or with updateAuthkitSettings of the WorkOS connector.',
         ].join(' '));
       } finally {
         await page.context().close();
