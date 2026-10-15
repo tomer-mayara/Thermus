@@ -48,13 +48,12 @@ const sameTypeImports = [
   '@modelcontextprotocol/server',
 ];
 const workSliceEntry = '../../acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch';
-const containerScripts = ['container-edge', 'container-page', 'container-probe'].flatMap((name) => [
-  `test/support/${name}.ts`,
-  `test/support/container/${name}.ts`,
-]);
+const containerScripts = ['container-edge', 'container-page', 'container-probe'].map(
+  (name) => `test/support/container/${name}.ts`,
+);
 
 describe('Given rule D1: support code imports only src, packages, and support code', () => {
-  for (const filePath of ['test/support/x.ts', 'test/support/doubles/auth/x.ts']) {
+  for (const filePath of ['test/support/x.ts', 'test/support/dsl/x.ts']) {
     it(`when ${filePath} names a test type folder, then every literal import and re-export is refused`, async () => {
       await assertForbidden(filePath, [
         '../unit/mcp/fixtures/a.ts',
@@ -151,6 +150,71 @@ describe('Given rule D3: a unit test imports fixtures only from its own package'
   });
 });
 
+describe('Given rule D4: a protocol driver imports no DSL module', () => {
+  for (const filePath of ['test/support/drivers/browser/x.ts', 'test/support/drivers/mcp/x.ts']) {
+    it(`when ${filePath} names the DSL folder, then every literal import and re-export is refused`, async () => {
+      await assertForbidden(filePath, [
+        '../../dsl/local-commands.ts',
+        '../dsl/x.ts',
+        '../../../support/dsl/x.ts',
+        '../../../../test/support/dsl/x.ts',
+      ]);
+    });
+
+    it(`when ${filePath} names a test type folder, then rule D1 still refuses the import`, async () => {
+      await assertForbidden(filePath, ['../../../unit/mcp/fixtures/a.ts', '../../../../test/acceptance/auth/x.ts']);
+    });
+
+    it(`when ${filePath} names src, a package, or other support code, then the import is allowed`, async () => {
+      await assertAllowed(filePath, [
+        '../../in-process/x.ts',
+        '../mcp/x.ts',
+        './cookie-jar.ts',
+        '../../doubles/auth/x.ts',
+        '../../hosted-live/settings.ts',
+        '../../../../src/x.ts',
+        'node:http',
+        '@modelcontextprotocol/client',
+        '../../dsl-notes/x.ts',
+        './dsl/x.ts',
+      ]);
+    });
+  }
+});
+
+describe('Given rule D5: support doubles and fixtures import no DSL module and no protocol driver', () => {
+  for (const [filePath, up] of [['test/support/doubles/auth/x.ts', '../../'], ['test/support/fixtures/x.ts', '../']]) {
+    it(`when ${filePath} names the DSL or drivers folder, then every literal import and re-export is refused`, async () => {
+      await assertForbidden(filePath, [
+        `${up}dsl/x.ts`,
+        `${up}drivers/browser/hosted-browser.ts`,
+        `${up}drivers/mcp/x.ts`,
+        `${up}../support/dsl/x.ts`,
+        `${up}../../test/support/drivers/mcp/x.ts`,
+      ]);
+    });
+
+    it(`when ${filePath} names a test type folder, then rule D1 still refuses the import`, async () => {
+      await assertForbidden(filePath, [`${up}../unit/mcp/fixtures/a.ts`, `${up}../../test/integration/auth/x.ts`]);
+    });
+
+    it(`when ${filePath} names src, a package, or other support code, then the import is allowed`, async () => {
+      await assertAllowed(filePath, [
+        `${up}in-process/x.ts`,
+        `${up}processes/module-paths.ts`,
+        '../organizations/x.ts',
+        './jwt-signing-key.ts',
+        `${up}../../src/x.ts`,
+        'node:http',
+        'jose',
+        `${up}dsl-notes/x.ts`,
+        `${up}drivers-notes/x.ts`,
+        './drivers/x.ts',
+      ]);
+    });
+  }
+});
+
 describe('Given rule D6: a container script imports only node: modules', () => {
   for (const filePath of containerScripts) {
     it(`when ${filePath} names a module that is not a node: module, then the import is refused`, async () => {
@@ -168,6 +232,27 @@ describe('Given rule D6: a container script imports only node: modules', () => {
     for (const filePath of containerScripts) {
       await assertAllowed(filePath, ['node:http', 'node:dns/promises', 'node:child_process', 'node:fs']);
     }
+  });
+});
+
+describe('Given rule D7: no test file lives under test/support/', () => {
+  const source = 'export const x = 1;';
+
+  for (const filePath of ['test/support/x.test.ts', 'test/support/drivers/mcp/x.test.ts', 'test/support/doubles/auth/x.test.ts']) {
+    it(`when a test file lives at ${filePath}, then the whole file is refused`, async () => {
+      const [result] = await eslint.lintText(source, { filePath });
+      assert.ok(
+        result.messages.some(
+          (message) => message.ruleId === 'no-restricted-syntax' && message.severity === 2 && message.message.includes('Rule D7'),
+        ),
+        `${filePath} must fail rule D7; got ${JSON.stringify(result.messages)}`,
+      );
+    });
+  }
+
+  it('when a test of support code lives in test/unit/test-support/, then the file is allowed', async () => {
+    const [result] = await eslint.lintText(source, { filePath: 'test/unit/test-support/x.test.ts' });
+    assert.equal(result.errorCount, 0, JSON.stringify(result.messages));
   });
 });
 
