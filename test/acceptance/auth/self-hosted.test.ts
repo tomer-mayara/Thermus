@@ -6,8 +6,8 @@ import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } fr
 import { assertExit, assertRevealsNone, type CommandResult } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { hiddenField, LocalBrowser } from '../../support/drivers/browser/local-browser.ts';
-import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
-import { LocalMcpUser } from '../../support/local-mcp-user.ts';
+import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
+import { LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';
 import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 

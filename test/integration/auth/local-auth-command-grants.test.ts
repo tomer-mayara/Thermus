@@ -23,7 +23,7 @@ import {
   signIn,
   storedResourceServerClient,
   userGrant,
-} from '../../support/local-commands.ts';
+} from '../../support/dsl/local-commands.ts';
 import { withRuntime } from '../../support/in-process/local-runtime.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };

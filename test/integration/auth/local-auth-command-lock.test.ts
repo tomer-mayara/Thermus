@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, assertRevealsNone, CommandProcess } from '../../support/command-process.ts';
 import { dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
-import { listedAccounts, operatorOn } from '../../support/local-commands.ts';
+import { listedAccounts, operatorOn } from '../../support/dsl/local-commands.ts';
 import { selfHostedServerSettings, selfHostedSettings } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 

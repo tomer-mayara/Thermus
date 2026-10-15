@@ -18,7 +18,7 @@ import { formsIn, type HostedBrowser } from '../../support/drivers/browser/hoste
 import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/in-process/hosted-organization-site.ts';
 import { RequestContextProbe } from '../../support/request-context-probe.ts';
 import { fakeClientId } from '../../support/workos-fake-api.ts';
-import { signInThroughServer } from '../../support/workos-sign-in.ts';
+import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 

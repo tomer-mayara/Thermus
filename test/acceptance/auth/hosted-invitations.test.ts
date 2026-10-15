@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage } from '../../support/hosted-administration.ts';
+import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { adminGrant, formFor, statusesOf, userGrant, userOf } from '../../support/in-process/hosted-organization-site.ts';
 

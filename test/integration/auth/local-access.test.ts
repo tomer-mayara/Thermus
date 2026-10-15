@@ -22,7 +22,7 @@ import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCreden
 import { dataDirectory } from '../../support/data-directory.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
-import { resourceServerClient, userGrant, type UserGrant } from '../../support/local-commands.ts';
+import { resourceServerClient, userGrant, type UserGrant } from '../../support/dsl/local-commands.ts';
 import { addAccount, passwordOf, selfHostedConfig } from '../../support/in-process/local-runtime.ts';
 import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
 

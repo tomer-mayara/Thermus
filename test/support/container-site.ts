@@ -8,7 +8,7 @@ import { publicBaseUrl } from './in-process/better-auth-local.ts';
 import { containerAdRulesFile, containerDataDirectory, gateLabel, gateRun, removeLabelled } from './container-gate.ts';
 import { docker, dockerCommand, dockerOutput } from './docker-cli.ts';
 import type { ServerAddress } from './drivers/browser/local-browser.ts';
-import type { Operator } from './local-commands.ts';
+import type { Operator } from './dsl/local-commands.ts';
 import { ServerContainer } from './server-container.ts';
 
 const edgeScript = fileURLToPath(new URL('./container-edge.js', import.meta.url));

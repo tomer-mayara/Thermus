@@ -4,7 +4,7 @@ import { composeWorkOSApplication } from '../../../src/hosted-workos-application
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
-import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
+import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
 import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 

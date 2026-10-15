@@ -11,8 +11,8 @@ import type { AccountCredentials } from '../../support/in-process/better-auth-lo
 import { assertExit } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { InProcessServer } from '../../support/in-process/in-process-server.ts';
-import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
-import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/local-mcp-user.ts';
+import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
+import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';
 import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { RendererProcessDouble } from '../../support/renderer-process-double.ts';
