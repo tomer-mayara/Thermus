@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
 import type { PromptInjectionRemover } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { createContext } from '../../../../support/html-cleaner-context.ts';
+import { createContext } from '../../fixtures/html-cleaner-context.ts';
 
 const hiddenTextHtml = readFileSync(
   join(process.cwd(), 'test/unit/fixtures/hidden-text.html'),

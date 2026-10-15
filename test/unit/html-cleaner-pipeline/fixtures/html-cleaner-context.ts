@@ -1,4 +1,4 @@
-import type { Ctx } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import type { Ctx } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 
 export function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
   return {

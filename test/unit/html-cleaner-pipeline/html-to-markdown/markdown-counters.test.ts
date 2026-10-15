@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { createContext } from '../../../support/html-cleaner-context.ts';
+import { createContext } from '../fixtures/html-cleaner-context.ts';
 
 for (const html of ['', ' \t\r\n ']) {
   test(`keeps inherited evidence unique for empty HTML ${JSON.stringify(html)}`, async () => {

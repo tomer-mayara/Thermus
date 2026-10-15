@@ -3,7 +3,7 @@ import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { type CleanHtmlAds } from '../../../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
 import { elementHidingRules } from '../../../support/ad-rules.ts';
-import { createContext } from '../../../support/html-cleaner-context.ts';
+import { createContext } from '../fixtures/html-cleaner-context.ts';
 
 const elementHidingUrl = 'https://abptestpages.org/en/filters/element-hiding';
 
