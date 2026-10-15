@@ -11,8 +11,8 @@ import type { ServerAddress } from '../drivers/browser/local-browser.ts';
 import type { Operator } from '../dsl/local-commands.ts';
 import { ServerContainer } from './server-container.ts';
 
-const edgeScript = fileURLToPath(new URL('./container-edge.js', import.meta.url));
-const pageScript = fileURLToPath(new URL('./container-page.js', import.meta.url));
+export const edgeScript = fileURLToPath(new URL('./container-edge.js', import.meta.url));
+export const pageScript = fileURLToPath(new URL('./container-page.js', import.meta.url));
 const containerPageScript = '/tmp/container-page.mjs';
 const outboundQuery = /^Outbound DNS query.*$/gm;
 let sites = 0;
