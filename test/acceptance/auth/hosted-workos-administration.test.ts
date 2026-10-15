@@ -518,9 +518,7 @@ describe('Hosted WorkOS edition: the User seat summary from every WorkOS page', 
   });
 });
 
-// The answers of a WorkOS read that a page read cannot avoid. The operator report names the status, the code, and the
-// request ID of each, as the pinned SDK gives them, so that a failed page shows which WorkOS answer stopped it. The
-// SDK gives no answer within its timeout as a 408.
+// The pinned SDK gives no answer within its timeout as a 408.
 const unavoidableAnswers: readonly { readonly label: string; readonly answer: FakeAnswer; readonly cause: RegExp }[] = [
   {
     label: 'an HTML 502 page of the WorkOS edge',

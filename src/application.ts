@@ -5,6 +5,7 @@ import type { DeploymentConfig } from './config/deployment-config.ts';
 import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation } from './hosted-admin/account-routes.ts';
 import type { BrowserSession } from './auth/hosted-auth/browser-session.ts';
 import type { FetchHandler } from './http/server.ts';
+import { providerAnswerOf } from './logging/provider-answer.ts';
 import { MCPServer, type FailureReporter } from './mcp/mcp-server.ts';
 import type { ChangeRecorder } from './organizations/change-records.ts';
 import { OrganizationAdministration } from './organizations/organization-administration.ts';
@@ -139,43 +140,6 @@ async function createHostedApplication(config: HostedConfig, logger: Application
 
 export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {
   return ({ path, cause }) => logger.error(`An account request failed unexpectedly for ${path}: ${String(cause)}${providerAnswerOf(cause)}`);
-}
-
-// The pinned WorkOS SDK gives the status, the code, and the request ID of an answer on its error or on a cause of it.
-// They hold no credential, and the request ID lets the provider find the answer. Each value must be a short token, so
-// that it cannot add a line or a long text to the log. For an answer that is not JSON, the SDK keeps the status of the
-// answer in rawStatus and gives 500 as its status.
-const ANSWER_FACTS: readonly { readonly name: string; readonly fields: readonly string[] }[] = [
-  { name: 'status', fields: ['rawStatus', 'status'] },
-  { name: 'code', fields: ['code'] },
-  { name: 'request ID', fields: ['requestID'] },
-];
-const ANSWER_TOKEN = /^[\w.:-]{1,100}$/;
-const CAUSE_DEPTH = 5;
-
-// Each fact comes from the first error of the cause chain that has it.
-function providerAnswerOf(cause: unknown): string {
-  const chain = causeChainOf(cause);
-  const facts = ANSWER_FACTS.flatMap(({ name, fields }) => {
-    const value = chain.flatMap((error) => fields.map((field) => error[field])).find(isAnswerToken);
-    return value === undefined ? [] : [`${name} ${String(value)}`];
-  });
-  return facts.length === 0 ? '' : ` (${facts.join(', ')})`;
-}
-
-function causeChainOf(cause: unknown): readonly Readonly<Record<string, unknown>>[] {
-  const chain: Readonly<Record<string, unknown>>[] = [];
-  let current = cause;
-  while (typeof current === 'object' && current !== null && chain.length < CAUSE_DEPTH) {
-    const error = current as Readonly<Record<string, unknown>>;
-    chain.push(error);
-    current = error.cause;
-  }
-  return chain;
-}
-
-function isAnswerToken(value: unknown): value is string | number {
-  return (typeof value === 'string' || typeof value === 'number') && ANSWER_TOKEN.test(String(value));
 }
 
 // The operator log keeps the change records until hosted storage exists. JSON keeps each record on one line.
