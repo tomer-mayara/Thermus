@@ -5,7 +5,7 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
-import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
+import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 // The real hosted composition with the WorkOS provider and the WorkOS organization administration, behind the real HTTP
@@ -20,7 +20,7 @@ const organizationNames = { [acme]: 'Acme', [globex]: 'Globex' };
 // Acme has an external ID, as each customer organization of the operator runbook has one.
 const acmeExternalId = 'customer-acme';
 
-function person(name: string): WorldUser {
+function person(name: string): FakeUser {
   return { id: `user_01${name.toUpperCase()}`, email: `${name}@example.com`, firstName: `${name.charAt(0).toUpperCase()}${name.slice(1)}` };
 }
 
@@ -37,7 +37,7 @@ const pia = person('pia');
 // Acme: Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only
 // User, Gus only the default role, and Eve an inactive membership that had User and Admin. Globex: Bea and Pia have
 // User. Thus Acme has three active User seats: Ada, Bea, and Hal.
-const memberships: readonly WorldMembership[] = [
+const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
   { userId: dan.id, organizationId: acme, roles: ['super-admin', 'admin'] },
   { userId: cal.id, organizationId: acme, roles: ['admin'] },
@@ -67,7 +67,7 @@ interface WorkOSChange {
 }
 
 async function openSite(t: TestContext): Promise<Site> {
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, Object.keys(organizationNames));
+  const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
   world.organizationExternalIds = { [acme]: acmeExternalId };
@@ -82,7 +82,7 @@ async function openSite(t: TestContext): Promise<Site> {
   return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
 }
 
-async function signIn(site: Site, user: WorldUser, organizationId = acme): Promise<HostedBrowser> {
+async function signIn(site: Site, user: FakeUser, organizationId = acme): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -165,7 +165,7 @@ async function mcpStatusWith(site: Site, token: string): Promise<number> {
   return (await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', token }))).status;
 }
 
-async function mcpStatus(site: Site, user: WorldUser, organizationId: string): Promise<number> {
+async function mcpStatus(site: Site, user: FakeUser, organizationId: string): Promise<number> {
   return mcpStatusWith(site, await site.world.connectToken(user, { org_id: organizationId }));
 }
 

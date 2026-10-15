@@ -5,8 +5,8 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
-import { nowInSeconds } from '../../support/jwt-signing-key.ts';
-import { WorkOSWorld, type WorldUser } from '../../support/workos-world.ts';
+import { nowInSeconds } from '../../support/doubles/workos/jwt-signing-key.ts';
+import { WorkOSFake, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 // The real hosted composition with the WorkOS provider behind the real HTTP server on a loopback port. A local fake
@@ -19,11 +19,11 @@ const signInCookie = '__Host-thermus-sign-in';
 const organizationA = 'org_01ACME';
 const organizationB = 'org_01GLOBEX';
 
-const ada: WorldUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
-const ben: WorldUser = { id: 'user_01BEN', email: 'ben@example.com', firstName: 'Ben' };
-const cid: WorldUser = { id: 'user_01CID', email: 'cid@example.com', firstName: 'Cid' };
-const dee: WorldUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
-const eve: WorldUser = { id: 'user_01EVE', email: 'eve@example.com', firstName: 'Eve' };
+const ada: FakeUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
+const ben: FakeUser = { id: 'user_01BEN', email: 'ben@example.com', firstName: 'Ben' };
+const cid: FakeUser = { id: 'user_01CID', email: 'cid@example.com', firstName: 'Cid' };
+const dee: FakeUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
+const eve: FakeUser = { id: 'user_01EVE', email: 'eve@example.com', firstName: 'Eve' };
 
 class LogLines {
   readonly lines: string[] = [];
@@ -36,7 +36,7 @@ interface Site extends WorkOSServerSite {
 }
 
 async function openSite(t: TestContext): Promise<Site> {
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, [organizationA, organizationB]);
+  const world = await WorkOSFake.start(t, config.publicBaseUrl, [organizationA, organizationB]);
   // Ada: User and Admin in A, User in B. Ben: Admin only in A. Cid: the default role only in A. Dee: no membership.
   // Eve: Admin only in A and User in B.
   world.memberships = [

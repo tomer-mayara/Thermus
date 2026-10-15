@@ -333,7 +333,7 @@ and its unit test. AUTH-08W connected the member and invitation reads and
 changes to WorkOS. These tests run offline and need no WorkOS account,
 credential, or network access. They use doubles at the provider contracts, or
 the pinned SDK with a local fake of the WorkOS API
-(`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
+(`test/support/doubles/workos/workos-fake-api.ts` and `test/support/doubles/workos/workos-fake.ts`).
 They are in the existing suites:
 
 - unit: `test/unit/hosted-admin/account-routes.test.ts`,

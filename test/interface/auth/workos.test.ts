@@ -15,7 +15,7 @@ import {
   type WorkOS,
 } from '@workos-inc/node';
 import { createRemoteJWKSet, decodeJwt, errors, jwtVerify, SignJWT, type JWTPayload, type RemoteJWKSetOptions } from 'jose';
-import { nowInSeconds, SigningKey, type TokenSettings } from '../../support/jwt-signing-key.ts';
+import { nowInSeconds, SigningKey, type TokenSettings } from '../../support/doubles/workos/jwt-signing-key.ts';
 import {
   cookiePassword,
   fakeApiKey,
@@ -25,7 +25,7 @@ import {
   workosClientFor,
   type FakeAnswer,
   type FakeClientSettings,
-} from '../../support/workos-fake-api.ts';
+} from '../../support/doubles/workos/workos-fake-api.ts';
 
 // These proofs show the pinned SDK side of each contract: what it sends, how it reads answers, and how it
 // classifies failures. The answers come from a local fake, so they do not show what the real WorkOS API sends.
