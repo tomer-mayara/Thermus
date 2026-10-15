@@ -2,13 +2,10 @@ import assert from 'node:assert/strict';
 import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import { once } from 'node:events';
 import type { Readable } from 'node:stream';
+import { completionLinesIn, completionRecordsIn, listeningUrlIn, tenantIn } from '../drivers/operator-log.ts';
 import type { CommandResult } from '../processes/command-process.ts';
 import { dockerCommand, dockerOutput } from './docker-cli.ts';
 import type { ServerExit } from '../processes/server-process.ts';
-
-const listeningLine = /Listening on http:\/\/\S+/;
-const tenantLine = /tenant (local:[0-9a-f-]+)/;
-const completionLine = /\{"event":"mcp\.tool\.completed".*\}$/gm;
 
 export class ServerContainer {
   readonly name: string;
@@ -40,17 +37,17 @@ export class ServerContainer {
   }
 
   tenant(): string {
-    const tenant = tenantLine.exec(this.output)?.[1];
+    const tenant = tenantIn(this.output);
     assert.ok(tenant, `The server reported no local tenant:\n${this.output}`);
     return tenant;
   }
 
   completionLines(): string[] {
-    return this.output.match(completionLine) ?? [];
+    return completionLinesIn(this.output);
   }
 
   completionRecords(): Record<string, unknown>[] {
-    return this.completionLines().map((line) => JSON.parse(line) as Record<string, unknown>);
+    return completionRecordsIn(this.output);
   }
 
   async stop(): Promise<ServerExit> {
@@ -105,6 +102,6 @@ class AttachedRun {
 
   private record(chunk: string): void {
     this.text += chunk;
-    if (listeningLine.test(this.text)) this.listening.resolve(true);
+    if (listeningUrlIn(this.text) !== undefined) this.listening.resolve(true);
   }
 }

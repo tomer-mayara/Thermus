@@ -1068,7 +1068,7 @@ The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page f
 
 **Operator log reader of the server sites** (`test/unit/test-support/operator-log.test.ts`)
 
-`ServerProcess`, `ServerContainer`, and `InProcessServer` each parsed the listening line and the tenant line of the operator log. `ServerContainer` and `InProcessServer` also parsed the completion records. `listeningUrlIn()`, `tenantIn()`, `completionLinesIn()`, and `completionRecordsIn()` in `test/support/drivers/operator-log.ts` are the one copy; each site keeps the log in its own form: the text of the child process, the text of `docker start --attach`, or the messages of its logger.
+`ServerProcess`, `ServerContainer`, and `InProcessServer` each parsed the listening line and the tenant line of the operator log. `ServerContainer` and `InProcessServer` also parsed the completion records. `HostedImageServer` of `test/support/container/hosted-image-gate.ts` waited for the listening line with its own text of the line. `listeningUrlIn()`, `tenantIn()`, `completionLinesIn()`, and `completionRecordsIn()` in `test/support/drivers/operator-log.ts` are the one copy; each site keeps the log in its own form: the text of the child process, the text of `docker start --attach`, or the messages of its logger.
 
 [V] Gives no listening URL before the `Listening on` line arrives, and the URL of that line when other lines are around it
 [V] Gives the local tenant of the tenant line; gives none without that line or before the full stop of that line arrives, so it gives only a complete ID

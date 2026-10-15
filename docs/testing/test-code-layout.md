@@ -117,6 +117,7 @@ test/
                          auth/hosted-live/ test-case modules; work-slice/
   support/
     dsl/                 layer 2
+    drivers/             layer 3: operator-log.ts, the reader of the operator log of the server
     drivers/browser/     layer 3: HTTP browsers, cookie jar, page forms
     drivers/mcp/         layer 3: MCP SDK client, raw MCP request, eras, OAuth client
     in-process/          layer 4: the system composed in the test process
