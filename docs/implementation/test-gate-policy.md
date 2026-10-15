@@ -138,7 +138,15 @@ contains every change of the pull request.
      `src/auth/`, `src/config/`,
      `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
      `src/organizations/`, or `src/terminal/`), or the container tests and
-     their support files. The image holds all of `dist/src`, so other changes
+     their support files. A pure move of a support file needs no container
+     gate run: only its import specifiers change, it is no container script,
+     and it computes no run-time path. The acceptance suite loads the moved
+     module, and the test-support path test
+     (`test/unit/test-support-paths.test.ts`, from Step 1 of the
+     [test code refactoring plan](test-code-refactoring-plan.md)) proves each
+     run-time path; until that test exists, the module load alone covers the
+     move. The owner decided this on 2026-10-14. The image holds all of
+     `dist/src`, so other changes
      in `src/` change the image too; the [self-hosted release](#self-hosted-release)
      checks run the container gate for each release.
    - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a

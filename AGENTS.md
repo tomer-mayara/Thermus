@@ -55,6 +55,10 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
   production. Check observable outcomes against the acceptance criteria.
   These tests can span packages; their purpose is to show that the system
   meets a user requirement.
+- **Test code layout:** [docs/testing/test-code-layout.md](docs/testing/test-code-layout.md)
+  gives the terms for the auxiliary test files (DSL, protocol driver, site,
+  test double, fixture data, preload, probe, isolation helper), the layout of
+  `test/support`, and the placement and dependency rules.
 
 ## Pull requests
 
