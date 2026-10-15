@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { request as httpRequest, type IncomingHttpHeaders } from 'node:http';
-import { publicBaseUrl, type AccountCredentials } from '../../better-auth-local.ts';
+import { publicBaseUrl, type AccountCredentials } from '../../in-process/better-auth-local.ts';
 import { cookieHeaderOf, keepCookies } from './cookie-jar.ts';
 import { decodeHtml } from './html-entities.ts';
 

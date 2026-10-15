@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { processHtml } from '../support/process-html.ts';
+import { processHtml } from '../support/in-process/process-html.ts';
 
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';
 const encodings = [

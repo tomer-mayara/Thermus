@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 
 for (const era of mcpProtocolEras) {

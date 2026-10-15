@@ -7,11 +7,11 @@ import type { BetterAuthRuntime } from '../../../src/auth/local-auth/better-auth
 import { DataDirectoryInUseError, lockDataDirectory } from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
 import { LocalInstallationError } from '../../../src/auth/local-auth/better-auth/local-installation.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { publicBaseUrl } from '../../support/better-auth-local.ts';
+import { publicBaseUrl } from '../../support/in-process/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
 import { hostedStartupLine, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { WorkOSSettingsError } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { accountsOf, addAccount, passwordOf, selfHostedConfig, selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
+import { accountsOf, addAccount, passwordOf, selfHostedConfig, selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 
 const resourceMetadataChallenge = /^Bearer .*resource_metadata="http:\/\/localhost:8080\/\.well-known\/oauth-protected-resource\/mcp"/;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;

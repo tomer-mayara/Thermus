@@ -7,13 +7,13 @@ import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
 import { trustedAdRulesFile } from '../../support/ad-rules.ts';
-import type { AccountCredentials } from '../../support/better-auth-local.ts';
+import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
-import { InProcessServer } from '../../support/in-process-server.ts';
+import { InProcessServer } from '../../support/in-process/in-process-server.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/local-mcp-user.ts';
-import { selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
+import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { RendererProcessDouble } from '../../support/renderer-process-double.ts';
 

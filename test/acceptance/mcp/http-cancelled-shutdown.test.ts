@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
 import { test } from 'node:test';
-import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 
 for (const era of mcpProtocolEras) {

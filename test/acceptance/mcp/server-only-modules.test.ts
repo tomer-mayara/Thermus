@@ -3,12 +3,12 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import { stripVTControlCharacters } from 'node:util';
-import type { AccountCredentials } from '../../support/better-auth-local.ts';
+import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, runCommand } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { hostedStartupLine, workOSSettings } from '../../support/hosted-placeholder.ts';
 import { addUser, registerArgs, type Operator } from '../../support/local-commands.ts';
-import { selfHostedServerSettings, selfHostedSettings } from '../../support/local-runtime.ts';
+import { selfHostedServerSettings, selfHostedSettings } from '../../support/in-process/local-runtime.ts';
 import { withPreload } from '../../support/server-preloads.ts';
 import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
 

@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import type { StoredResourceServerClient } from '../../src/auth/local-auth/better-auth/local-installation.ts';
 import { HttpAgent, loopbackRedirectUri, type PreRegisteredNativeClient } from './drivers/browser/better-auth-agents.ts';
-import { withRegistrationSession, type AccountCredentials, type LocalAuth } from './better-auth-local.ts';
+import { withRegistrationSession, type AccountCredentials, type LocalAuth } from './in-process/better-auth-local.ts';
 import { assertExit, runCommand, type CommandResult } from './command-process.ts';
-import { selfHostedSettings } from './local-runtime.ts';
+import { selfHostedSettings } from './in-process/local-runtime.ts';
 
 export type Operator = (args: readonly string[], input?: readonly string[]) => Promise<CommandResult>;
 

@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import type { AccessResolver } from '../../src/auth/access-context.ts';
-import type { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { startHttpServer } from '../../src/http/server.ts';
-import { createFetchToolServer } from '../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../src/mcp/get-url-as-markdown.ts';
-import { MCPServer } from '../../src/mcp/mcp-server.ts';
-import type { WebsiteFetcher, WebsiteFetchResult } from '../../src/website-fetcher/website-fetcher.ts';
-import { NoAuthProvider } from './auth/no-auth-provider.ts';
-import { eraNegotiation, type McpProtocolEra } from './drivers/mcp/mcp-protocol-eras.ts';
+import type { AccessResolver } from '../../../src/auth/access-context.ts';
+import type { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { startHttpServer } from '../../../src/http/server.ts';
+import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
+import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import type { WebsiteFetcher, WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { NoAuthProvider } from '../auth/no-auth-provider.ts';
+import { eraNegotiation, type McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 
 export const exactMarkdown = '# Exact Markdown\n\nNo extra text.\n';
 export const validFetchArguments = { url: 'HTTPS://Example.COM/Page?private-query=yes#private-fragment', reason: 'Read the page for this task' };

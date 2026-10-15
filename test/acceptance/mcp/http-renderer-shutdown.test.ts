@@ -10,7 +10,7 @@ import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts'
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
-import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
+import { validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { mockRenderer } from '../../support/renderer-process-double.ts';
 
