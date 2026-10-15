@@ -15,7 +15,7 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
 import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
 import { formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
-import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/hosted-organization-site.ts';
+import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/in-process/hosted-organization-site.ts';
 import { RequestContextProbe } from '../../support/request-context-probe.ts';
 import { fakeClientId } from '../../support/workos-fake-api.ts';
 import { signInThroughServer } from '../../support/workos-sign-in.ts';

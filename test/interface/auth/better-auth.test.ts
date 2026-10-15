@@ -21,7 +21,7 @@ import {
   withRegistrationSession,
   type AccountCredentials,
   type LocalAuth,
-} from '../../support/better-auth-local.ts';
+} from '../../support/in-process/better-auth-local.ts';
 import { PreRegisteredSdkClient, sdkFetch } from '../../support/drivers/mcp/mcp-sdk-oauth-client.ts';
 import { setProcessEnvironment } from '../../support/process-environment.ts';
 import { foreignOriginProbe } from '../../support/processes/module-paths.ts';

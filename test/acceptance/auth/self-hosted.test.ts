@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { UnauthorizedError } from '@modelcontextprotocol/client';
 import { jwtClaims, loopbackRedirectUri } from '../../support/drivers/browser/better-auth-agents.ts';
-import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/better-auth-local.ts';
+import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, assertRevealsNone, type CommandResult } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import { hiddenField, LocalBrowser } from '../../support/drivers/browser/local-browser.ts';
 import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
 import { LocalMcpUser } from '../../support/local-mcp-user.ts';
-import { selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
+import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };

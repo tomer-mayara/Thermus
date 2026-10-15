@@ -16,7 +16,7 @@ import {
   superAdminGrant,
   userGrant,
   userOf,
-} from '../../support/hosted-organization-site.ts';
+} from '../../support/in-process/hosted-organization-site.ts';
 import type { ProbeReport } from '../../support/request-context-probe.ts';
 
 class RecordingLogger {

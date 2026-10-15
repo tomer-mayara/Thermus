@@ -4,7 +4,7 @@ import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from './ad-rules.ts';
-import { publicBaseUrl } from './better-auth-local.ts';
+import { publicBaseUrl } from './in-process/better-auth-local.ts';
 import { containerAdRulesFile, containerDataDirectory, gateLabel, gateRun, removeLabelled } from './container-gate.ts';
 import { docker, dockerCommand, dockerOutput } from './docker-cli.ts';
 import type { ServerAddress } from './drivers/browser/local-browser.ts';

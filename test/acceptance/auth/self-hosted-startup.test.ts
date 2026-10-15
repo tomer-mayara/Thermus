@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { cpSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
-import { publicBaseUrl } from '../../support/better-auth-local.ts';
+import { publicBaseUrl } from '../../support/in-process/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
 import { workOSSettings } from '../../support/hosted-placeholder.ts';
-import { accountsOf, addAccount, selfHostedServerSettings, selfHostedSettings, withRuntime } from '../../support/local-runtime.ts';
+import { accountsOf, addAccount, selfHostedServerSettings, selfHostedSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
 
 const localTenant = /^local:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;

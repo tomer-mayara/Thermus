@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { seatsIn, serveAdministrationSite as serve } from '../../support/hosted-administration.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
-import { userOf } from '../../support/hosted-organization-site.ts';
+import { userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const failurePage = /The request failed\. Try again later\./;
 

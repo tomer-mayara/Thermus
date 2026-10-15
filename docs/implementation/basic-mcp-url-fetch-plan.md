@@ -114,7 +114,7 @@ provider.
 | Production fetch composition | Exists, but only behind Better Auth. It does not expose the fetcher or the pipeline. | `src/fetch-tool.ts`, `src/application.ts` |
 | HTTP bridge | Exists. | `src/http/server.ts` |
 | OTel logger adapter | Exists. No production wiring. | `src/logging/otel-logger.ts` |
-| Axiom settings reader | Exists. Tests only. The dataset is fixed to `system-log-test`. | `test/support/axiom-test-export.ts` |
+| Axiom settings reader | Exists. Tests only. The dataset is fixed to `system-log-test`. | `test/support/in-process/axiom-test-export.ts` |
 | Work slice folder and entry point | Missing. | `test/acceptance/work-slice/` |
 | A log line with the URL before the fetch | Missing. The completion record comes after the call and cuts the URL to origin and path. | |
 | A log line with the Markdown | Missing. Records exclude page text on purpose. | |
@@ -152,7 +152,7 @@ test/acceptance/work-slice/basic-mcp-url-fetch/README.md   The README of the sli
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entry point and the composition: createWorkSliceApplication(), observeFetches(), MARKDOWN_LOG_LIMIT; it runs only when executed directly
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts   The acceptance test
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh   The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
-test/support/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
+test/support/in-process/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
 test/unit/work-slice/basic-mcp-url-fetch.test.ts      observeFetches()
 test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
@@ -231,7 +231,7 @@ The slice uses the production `OtelLogger`. The log goes to Axiom only. The
 console gets only the export failure lines.
 
 `openAxiomLogging(settings, scopeName, console?)` in
-`test/support/axiom-test-export.ts` builds one `OTLPLogExporter` with the Axiom
+`test/support/in-process/axiom-test-export.ts` builds one `OTLPLogExporter` with the Axiom
 headers, one `BatchLogRecordProcessor` with `scheduledDelayMillis: 1_000` and
 `exportTimeoutMillis: 10_000`, and one `LoggerProvider`. It returns the
 `OtelLogger` and a `close()` that calls `provider.shutdown()`, which flushes.

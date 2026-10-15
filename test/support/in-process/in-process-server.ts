@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import type { TestContext } from 'node:test';
-import { serve } from '../../src/index.ts';
+import { serve } from '../../../src/index.ts';
 
 type Settings = Readonly<Record<string, string | undefined>>;
 

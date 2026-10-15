@@ -7,7 +7,7 @@ import {
   PreRegisteredNativeClient,
   ResourceServerClient,
 } from '../../support/drivers/browser/better-auth-agents.ts';
-import type { AccountCredentials, LocalAuth } from '../../support/better-auth-local.ts';
+import type { AccountCredentials, LocalAuth } from '../../support/in-process/better-auth-local.ts';
 import { assertExit, assertRevealsNone } from '../../support/command-process.ts';
 import { dataDirectory } from '../../support/data-directory.ts';
 import {
@@ -24,7 +24,7 @@ import {
   type ResourceServerCredentials,
   type UserGrant,
 } from '../../support/local-commands.ts';
-import { selfHostedServerSettings, withRuntime } from '../../support/local-runtime.ts';
+import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { ServerProcess } from '../../support/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
