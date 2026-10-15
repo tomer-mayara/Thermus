@@ -1,129 +1,12 @@
 import assert from 'node:assert/strict';
-import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
-import { copyFileSync, mkdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { test, type TestContext } from 'node:test';
-import { fileURLToPath } from 'node:url';
-import { dataDirectory } from '../../support/data-directory.ts';
+import type { SpawnSyncReturns } from 'node:child_process';
+import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { test } from 'node:test';
+import { commands, defaults, launcherCase, pnpmCall, randomPassword, settingLines, workos, type Settings } from './fixtures/launcher-case.ts';
 
-// The script finds the repository root from its own place. Each case runs a copy of the script in a temporary root, so
-// that the case chooses the rules file, the portal build, and the certificate files, and the real root stays unchanged.
-const scriptPath = 'test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh';
-const sourceScript = fileURLToPath(new URL(`${import.meta.url.endsWith('.ts') ? '../../../' : '../../../../'}${scriptPath}`, import.meta.url));
 const entryArguments = ['exec', 'node', '--import', 'tsx', 'test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts'];
-const settingNames = [
-  'DEPLOYMENT', 'PUBLIC_BASE_URL', 'WORKOS_CLIENT_ID', 'WORKOS_AUTHKIT_ISSUER', 'WORKOS_REDIRECT_URI', 'AD_RULES_FILE',
-  'LIGHTPANDA_BIN', 'AXOIM_ENDPOINT_URL', 'AXIOM_SYSTEM_LOG_TEST_DATA_SET', 'THERMUS_TLS_DIR',
-] as const;
-const secretNames = ['WORKOS_API_KEY', 'WORKOS_COOKIE_PASSWORD', 'AXIOM_API_KEY'] as const;
-type Settings = Record<(typeof settingNames)[number], string>;
-type SecretsSet = Record<(typeof secretNames)[number], boolean>;
-
-const workos = { WORKOS_API_KEY: 'sk_test_private-api-key', WORKOS_CLIENT_ID: 'client_test', WORKOS_AUTHKIT_ISSUER: 'https://thermus-test.authkit.app' };
 const axiomApiKey = 'private-axiom-key';
-// The value of the openssl double for rand -base64 32: 32 bytes give 44 characters.
-const randomPassword = Buffer.from('0123456789abcdef0123456789abcdef').toString('base64');
-
-interface PnpmCall {
-  readonly arguments: readonly string[];
-  readonly directory: string;
-  readonly settings: Settings;
-  readonly secretsSet: SecretsSet;
-  readonly cookiePasswordLength: number;
-}
-
-// The values of these cases have no quote and no backslash, so the double writes them into JSON as they are. Of a
-// secret it writes only whether it is set, and the length of the cookie password, so that no output shows a secret.
-const fakePnpm = `#!/bin/sh
-arguments=
-for argument in "$@"; do arguments="$arguments$(printf ',"%s"' "$argument")"; done
-printf '{"arguments":[%s],"directory":"%s","settings":{${settingNames.map((name) => `"${name}":"%s"`).join(',')}},"secretsSet":{${secretNames.map((name) => `"${name}":%s`).join(',')}},"cookiePasswordLength":%s}\\n' \\
-  "\${arguments#,}" "$(pwd -P)" ${settingNames.map((name) => `"$${name}"`).join(' ')} \\
-  ${secretNames.map((name) => `"$([ -n "\${${name}+set}" ] && echo true || echo false)"`).join(' ')} "\${#WORKOS_COOKIE_PASSWORD}"
-exit "\${FAKE_PNPM_EXIT:-0}"
-`;
-
-function fakeOpenssl(calls: string): string {
-  return `#!/bin/sh
-call=
-for argument in "$@"; do call="$call$(printf ',"%s"' "$argument")"; done
-printf '[%s]\\n' "\${call#,}" >> '${calls}'
-case "$1" in
-  rand) printf '%s\\n' '${randomPassword}' ;;
-  req)
-    while [ "$#" -gt 0 ]; do
-      case "$1" in
-        -keyout) printf 'test key\\n' > "$2" ;;
-        -out) printf 'test certificate\\n' > "$2" ;;
-      esac
-      shift
-    done ;;
-esac
-`;
-}
-
-interface LauncherCase {
-  // The physical path, as the script finds it.
-  readonly root: string;
-  readonly script: string;
-  run(variables: Readonly<Record<string, string>>, args?: readonly string[]): SpawnSyncReturns<string>;
-  opensslCalls(): string[][];
-}
-
-function launcherCase(t: TestContext): LauncherCase {
-  const directory = realpathSync(dataDirectory(t));
-  const root = join(directory, 'root');
-  const script = join(root, scriptPath);
-  const bin = join(directory, 'bin');
-  const home = join(directory, 'home');
-  const calls = join(directory, 'openssl-calls');
-  mkdirSync(dirname(script), { recursive: true });
-  copyFileSync(sourceScript, script);
-  mkdirSync(join(root, 'src/user-portal/dist'), { recursive: true });
-  writeFileSync(join(root, 'src/user-portal/dist/index.html'), '<!doctype html>\n');
-  writeFileSync(join(root, 'ad-rules.txt'), '');
-  mkdirSync(bin);
-  mkdirSync(home);
-  writeFileSync(join(bin, 'pnpm'), fakePnpm, { mode: 0o755 });
-  writeFileSync(join(bin, 'openssl'), fakeOpenssl(calls), { mode: 0o755 });
-  writeFileSync(calls, '');
-  return {
-    root,
-    script,
-    run: (variables, args = []) => spawnSync('bash', [script, ...args], {
-      cwd: directory,
-      encoding: 'utf8',
-      timeout: 10_000,
-      // Not process.env: a setting of the shell that runs the tests must not get to the script.
-      env: { PATH: `${bin}:/usr/bin:/bin`, HOME: home, ...variables },
-    }),
-    opensslCalls: () => readFileSync(calls, 'utf8').split('\n').filter((line) => line !== '').map((line) => JSON.parse(line) as string[]),
-  };
-}
-
-function defaults(root: string): Settings {
-  return {
-    DEPLOYMENT: 'hosted',
-    PUBLIC_BASE_URL: 'https://localhost:46443',
-    WORKOS_CLIENT_ID: workos.WORKOS_CLIENT_ID,
-    WORKOS_AUTHKIT_ISSUER: workos.WORKOS_AUTHKIT_ISSUER,
-    WORKOS_REDIRECT_URI: 'https://localhost:46443/callback',
-    AD_RULES_FILE: join(root, 'ad-rules.txt'),
-    LIGHTPANDA_BIN: join(root, '.cache/lightpanda/1.0.0/lightpanda'),
-    AXOIM_ENDPOINT_URL: 'https://us-east-1.aws.edge.axiom.co',
-    AXIOM_SYSTEM_LOG_TEST_DATA_SET: 'system-log-test',
-    THERMUS_TLS_DIR: join(root, '.cache/thermus-local-tls'),
-  };
-}
-
-function pnpmCall(result: SpawnSyncReturns<string>): PnpmCall {
-  assert.equal(result.status, 0, result.stderr);
-  return JSON.parse(result.stdout) as PnpmCall;
-}
-
-function settingLines(settings: Settings): string {
-  return settingNames.map((name) => `${name}=${settings[name]}\n`).join('');
-}
 
 function certificateLine(directory: string): string {
   return `Making a new self-signed certificate for localhost in ${directory}, because key.pem or cert.pem is missing there. Trust it as the instructions of the slice say.\n`;
@@ -138,10 +21,6 @@ function certificateCall(directory: string): string[] {
 
 function refusal(missing: string, script: string): string {
   return `Missing or empty: ${missing}. Start the slice through the staging launcher, which sets the WorkOS settings:\n  node ~/.config/thermus/with-workos-staging.cjs "${script}"\n`;
-}
-
-function commands(calls: readonly string[][]): string[] {
-  return calls.map(([command]) => command);
 }
 
 function assertNoSecret(result: SpawnSyncReturns<string>, secrets: readonly string[]): void {
