@@ -15,7 +15,7 @@ import { addUser, listedAccounts, operatorOn, registerArgs, registeredClientId, 
 import { connectWithToken, issuedGrants, LocalMcpUser } from '../../support/dsl/local-mcp-user.ts';
 import { selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
-import { RendererProcessDouble } from '../../support/renderer-process-double.ts';
+import { RendererProcessDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 const [alice, bob, carol, dana] = ['alice', 'bob', 'carol', 'dana'].map((name): AccountCredentials => ({
   email: `${name}@example.com`, password: `${name}-password-1`,

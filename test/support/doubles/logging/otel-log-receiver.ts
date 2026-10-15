@@ -4,7 +4,7 @@ import { once } from 'node:events';
 import type { TestContext } from 'node:test';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
-import { axiomExportHeaders, axiomTestSettings, trackTestExports } from './in-process/axiom-test-export.ts';
+import { axiomExportHeaders, axiomTestSettings, trackTestExports } from '../../in-process/axiom-test-export.ts';
 
 interface ReceivedLogExport {
   readonly method: string | undefined;

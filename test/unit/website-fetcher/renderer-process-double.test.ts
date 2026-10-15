@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { ChildProcess } from 'node:child_process';
 import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { mockRenderer } from '../../support/renderer-process-double.ts';
+import { mockRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 for (const requester of ['the readiness deadline', 'a cancellation'] as const) {
   test(`Given a running fetch with the renderer child double, when ${requester} requests a kill, then the double records SIGKILL and sends no signal to a process`, async (t) => {

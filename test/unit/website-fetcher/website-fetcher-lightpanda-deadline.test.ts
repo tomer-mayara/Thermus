@@ -3,7 +3,7 @@ import type { ChildProcess, ExecFileException } from 'node:child_process';
 import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
-import { mockRenderer } from '../../support/renderer-process-double.ts';
+import { mockRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 function setExitState(child: ChildProcess, state: { exitCode?: number; signalCode?: NodeJS.Signals }): void {
   for (const [property, value] of Object.entries(state)) {

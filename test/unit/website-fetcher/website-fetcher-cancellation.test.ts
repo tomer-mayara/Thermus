@@ -5,7 +5,7 @@ import { getEventListeners } from 'node:events';
 import { syncBuiltinESMExports } from 'node:module';
 import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { mockRenderer, RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { mockRenderer, RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 const requestedUrl = 'https://EXAMPLE.com';

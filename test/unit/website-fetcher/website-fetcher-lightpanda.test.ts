@@ -8,7 +8,7 @@ import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 describe('WebsiteFetcherLightpanda', () => {
   const htmlResult = (url: string, html: string) => JSON.stringify({ url, http_status: 200, content: html, error: null });
