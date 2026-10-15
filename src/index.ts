@@ -73,7 +73,10 @@ export async function serveApplication(open: () => Application | Promise<Applica
   logger.info(`Stopping after ${signal}`);
 }
 
-function stopSignal(signals: ProcessSignals): Disposable & { readonly received: Promise<NodeJS.Signals> } {
+export type StopSignal = Disposable & { readonly received: Promise<NodeJS.Signals> };
+
+// A dispose also removes both listeners when no signal came, so that a failed start leaves no listener behind.
+export function stopSignal(signals: ProcessSignals): StopSignal {
   const received = Promise.withResolvers<NodeJS.Signals>();
   let registered = true;
   const dispose = (): void => {
