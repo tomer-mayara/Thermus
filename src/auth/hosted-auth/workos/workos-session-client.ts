@@ -12,7 +12,12 @@ export type SealRefresh =
   | (SessionFacts & { readonly authenticated: true; readonly sealedSession?: string })
   | { readonly authenticated: false; readonly reason: string; readonly retryable: boolean; readonly error?: unknown };
 
-export type CodeExchange = SessionFacts & { readonly sealedSession?: string; readonly authenticationMethod?: string };
+export interface CodeExchange extends Omit<SessionFacts, 'user'> {
+  // Trusted facts from the code exchange, never from callback parameters or a decoded token.
+  readonly user: SessionFacts['user'] & { readonly emailVerified?: boolean };
+  readonly sealedSession?: string;
+  readonly authenticationMethod?: string;
+}
 
 export interface StoredSession {
   readonly accessToken?: string;

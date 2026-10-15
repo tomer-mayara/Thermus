@@ -526,6 +526,17 @@ A narrow double of the SDK part (`test/unit/auth-workos/fixtures/workos-session-
 [V] A missing, unopenable, or expired sign-in cookie, an AuthKit error, a missing, empty, or repeated code or state, and another state refuse the sign-in with the cleared sign-in cookie and no exchange; a 4xx refusal of the code is `code-refused`; another exchange failure rejects
 [V] The end of a session gives the WorkOS logout URL of the `sid` in the seal, also after the access token expired, and the cleared cookie; without a usable seal, it gives only the cleared cookie; the logout route reads the CSRF token without a WorkOS call
 
+**WorkOS callback onboarding seam** (`test/unit/auth-workos/workos-sign-in-onboarding.test.ts`)
+
+The two source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These unit specifications use the session-client double and an onboarding policy double. They keep the policy call after the trusted code exchange and before the browser cookie. They do not use real WorkOS.
+
+[V] Given an opt-in policy and a trusted Google exchange, the policy receives the exchange before its returned seal enters the cookie, and the cookie has no MFA evidence
+[V] Given an exchange without a sealed session, sign-in fails before onboarding can create a grant
+
+```sh
+npm run build && node --test dist/test/unit/auth-workos/workos-sign-in-onboarding.test.js
+```
+
 **WorkOS session routes** (`test/unit/auth-workos/workos-session-routes.test.ts`, `workos-session-routes-sign-in.test.ts`, and `workos-session-routes-logout.test.ts`)
 
 A double of the browser session records each call (`test/unit/auth-workos/fixtures/session-routes-fixtures.ts`).
@@ -1042,10 +1053,10 @@ npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch-scrip
 
 **Work slice launcher script: auth WorkOS MCP URL fetch** (`test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`)
 
-The fixture `test/unit/work-slice/fixtures/launcher-case.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the ten settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
+The 13 source and compiled cases passed on 2026-10-15 with the slice organization default and override checks. The fixture `test/unit/work-slice/fixtures/launcher-case.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the eleven settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The settings include `THERMUS_SLICE_ORGANIZATION_ID`: the staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, and a custom organization is passed unchanged. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
 
-[V] Given only the three WorkOS settings and `AXIOM_API_KEY`, when the script runs from another directory, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from `openssl rand`, and the keys; stderr lists the ten settings after the certificate line, and no output shows a secret
-[V] Given each setting with a custom value, a cookie password, and a TLS directory with both files, pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the ten values without the secrets
+[V] Given only the three WorkOS settings and `AXIOM_API_KEY`, when the script runs from another directory, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from `openssl rand`, and the keys; stderr lists the eleven settings after the certificate line, and no output shows a secret
+[V] Given each setting with a custom value, a cookie password, and a TLS directory with both files, pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the eleven values without the secrets
 [V] Given a `PUBLIC_BASE_URL` with a final slash and no `WORKOS_REDIRECT_URI`, the redirect URI is the callback on that base without a double slash
 [V] Given no `WORKOS_API_KEY`, no `WORKOS_CLIENT_ID`, or no `WORKOS_AUTHKIT_ISSUER` (three cases), the script exits with status 1 and a message that names the missing setting and the staging launcher and shows no value, and neither openssl nor pnpm runs
 [V] Given the three WorkOS settings with empty values, the script exits with status 1, and the message names the three settings
@@ -1436,13 +1447,40 @@ Run only these tests:
 npm run build && node --test dist/test/integration/server-stop-signals.test.js
 ```
 
+**Slice Google onboarding with WorkOS and organization services** (`test/integration/auth/workos-google-onboarding.test.ts`)
+
+The 34 source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These integration specifications connect the opt-in policy to the real organization directory, change recording, and pinned WorkOS SDK against a local API fake. They establish application collaboration, not real Google or WorkOS service behavior. The policy remains absent from normal hosted composition.
+
+[V] Concurrent eligible callbacks create one explicit User membership, select its organization in each session, and update seats once; repeated callbacks do not rewrite roles
+[V] Existing active non-User, pending, and inactive memberships retain roles and status without a new organization session
+[V] Other domains, subdomains, suffix domains, malformed addresses, unverified email, and non-Google methods read and change no membership
+[V] An existing active User with other roles selects the target organization without a role write; domain normalization accepts surrounding whitespace and uppercase letters
+[V] Role removal is not restored on another sign-in; hard deletion permits a later new enrollment
+[V] An ambiguous create is recorded as unknown and is not blindly repeated; a read-back of the created active User can reconcile the session
+[V] Refresh failure rejects the callback; a later callback selects the existing User without another create
+[V] A refresh with another user, another organization, no seal, or a refusal returns no session
+[V] Membership read outages or results outside the requested user, organization, and role contract fail before create
+
+```sh
+npm run build && node --test dist/test/integration/auth/workos-google-onboarding.test.js
+```
+
 **Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
 
-These tests start `LocalHttpsSite` of `test/support/hosted-live/local-https-site.ts` with the real HTTP server. The suite title is "Local HTTPS site of the hosted live gate (test support) with the real HTTP server". The first two cases cover a failed start with the default application, the real hosted composition. Its WorkOS provider gets placeholder settings that reach no WorkOS environment. A start that fails must close what it started, so that the gate process exits. Since 2026-10-15, the site takes the options `certificate`, `logger`, and `application` next to `portalBuild` (decision D7 of the [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The third case starts the site completely with these options and a small application. The hosted live gate also starts the site completely, with the portal build and the staging settings. The auth WorkOS MCP URL fetch work slice starts it with its own application and a certificate that stays. The third case listens on port 46443, the port of the gate and of the work slice. Thus it fails while one of them runs.
+The eleven source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These eleven integration cases start `LocalHttpsSite` with the real HTTP server. The failed-start and certificate cases stay in the entry file. The sibling test-case modules `hosted-live-site/mcp.ts` and `hosted-live-site/cancellation.ts` add the MCP and lifecycle cases. Their fixture data is in `test/integration/auth/fixtures/https-site-fixtures.ts`; `test/support/hosted-live/https-client.ts` is the HTTPS protocol driver. The MCP cases connect the real hosted composition and fetch server to the pinned SDK against a local WorkOS fake, with a fetch-operation double. They prove HTTP and application collaboration, not real Google or renderer behavior. The complete-site cases listen on port 46443, so the hosted live gate and the manual slice must be stopped first.
 
-[V] Given a portal build directory that does not exist, when the site starts, then it rejects with the message that names the directory and `npm run build:user-portal`, keeps the file system error as the cause, and leaves no server listening
-[V] Given a portal build and a `PATH` without OpenSSL, when the site starts, then it rejects with the spawn error, closes the application that it started, and leaves no server listening
-[V] Given a portal build, certificate files from the OpenSSL command of the site, a logger, and an application function, when the site starts, then the front at `https://localhost:46443/` gives that certificate, serves the portal, and forwards each other request to the application of that function, which gets that logger; a request that the application fails gives 500 and a report to that logger; `close()` closes the application one time and leaves no server listening
+[V] Given a missing portal build, start rejects with a setup message and file-system cause and leaves no listener
+[V] Given no OpenSSL, start rejects with the spawn error, closes the default application, and leaves no listener
+[V] Given certificate files, a logger, and an application function, the HTTPS front serves that certificate and portal, forwards requests, reports handler failure, and closes the application once
+[V] An authenticated MCP POST forwards the body and verified identity and returns the result; missing or invalid token and current User-role removal start no protected work
+[V] Disconnecting an authenticated MCP client cancels active fetch work and records no success
+[V] A client disconnect before response headers cancels its backend request
+[V] Streaming headers reach the client before the first chunk; disconnecting after a chunk cancels the upstream stream
+[V] A backend failure after a chunk fails the HTTPS response instead of completing with truncated content
+[V] Closing with active backend work cancels through application cleanup before the listener deadline and waits for the request to drain
+
+[V] A custom application that ignores the drain argument still keeps site close pending until the response drains
+[V] A custom application whose cleanup throws still drains the response before site close reports that failure
 
 Run only these tests:
 
@@ -1487,7 +1525,7 @@ npm run build && node --test dist/test/interface/auth/better-auth.test.js
 
 **WorkOS SDK** (`test/interface/auth/workos.test.ts`)
 
-These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
+The 38 source and compiled cases passed on 2026-10-15 after the explicit User-create proof was added; the complete-candidate gates remain required. These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
 
 [V] Gives an AuthKit sign-in URL with the client ID, the exact redirect URI, `response_type=code`, `provider=authkit`, an S256 challenge, and a fresh state and verifier for each call; an organization ID adds `organization_id`
 [V] Exchanges a code with the verifier and the API key as `client_secret`, and returns the user, both tokens, and an iron seal that hides the tokens; a refused code throws `OauthException` with `invalid_grant`
@@ -1509,6 +1547,7 @@ These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against 
 [V] Pages memberships with the `after` cursor; `autoPagination()` returns only the first page after a limit, and reads the first page again and waits 350 ms between pages without one
 [V] Lists the roles of an organization with their permissions in one unpaged request
 [V] Writes the complete role set with `PUT`, and creates, deactivates, and reactivates memberships, with no `If-Match`, no version, and no `Idempotency-Key` with `maxRetries: 0`
+[V] An explicit User membership create sends `role_slug: user` with `maxRetries: 0`, no absence precondition, and no idempotency key, and reads the returned active status and role set
 [V] With the default retries, gives each membership create one generated `Idempotency-Key` and each role-set update none
 [V] Loses one of two concurrent role-set updates that start from the same read
 [V] Sends one role for each invitation and drops a role set
@@ -1738,10 +1777,10 @@ npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch
 
 **Work slice: auth WorkOS MCP URL fetch** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts`)
 
-`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `observeFetches()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSWorld` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run of the slice shows the Google sign-in, the client registration of Claude Code, the renderer, and the export to Axiom. The file has five cases: the first case runs in each protocol era.
+`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `observeFetches()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSFake` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run must separately show Google sign-in, Claude Code registration and browser consent, the real renderer, and Axiom delivery. That live proof remains pending. The file has five cases: the first case runs in each protocol era.
 
 [V] Given the slice application, Ada with the role `user` in Acme, and a renderer double that serves `https://news.example/story`, when Ada signs in with Google through the server, then her session is signed in to Acme with `mfaCompleted: false`, and her portal access names Acme and the role `user`; when an MCP client in each protocol era with her Connect token for Acme lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the rules remove, the log has the started line, the completed line, and one completion record with the authority `workos:client_test`, the subject `user_01ADA`, the tenant `workos:client_test:org_01ACME`, and the status `success`, and `close()` stops the application
-[V] Given Dee without a membership, as after her first Google sign-in, her portal access gets 403, and the organization page gives the onboarding guidance; her Connect token for Acme gets 403 `access_denied` at the tool, no renderer starts, and the log has no fetch line; after the world gets her membership with the role `user`, as the operator step gives it, the next call gets the cleaned Markdown, and the log has the fetch lines with her WorkOS identity
+[V] Given Dee with a non-`thermus.ai` Google address and no membership, sign-in creates no automatic membership, portal access is refused, and the organization page gives onboarding guidance; her Connect token for Acme gets 403 `access_denied` without a renderer or fetch line; after an external change gives her a User membership, the next MCP request returns Markdown and records her WorkOS identity
 [V] Given no token, a browser token of Ada, and a Connect token for another resource, each call of `getURLAsMarkdown` gets 401 with a Bearer challenge that names the protected-resource metadata, no renderer starts, and the log has no fetch line; the metadata names the MCP resource and the AuthKit issuer of the world as its only authorization server
 [V] Given Ben with Admin only in Acme, his Connect token gets 403 `access_denied` at the tool, no renderer starts, and the log has no fetch line
 
@@ -1749,6 +1788,18 @@ The manual entry point `auth-workos-mcp-url-fetch.ts` next to this file is not a
 
 ```sh
 npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.js
+```
+
+**Automatic slice Google onboarding** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts`)
+
+The three source and compiled cases passed on 2026-10-15; the complete-candidate gates remain required. These three offline acceptance specifications use the real hosted composition; the slice case starts its HTTP server with a WorkOS API fake and renderer double. A trusted Google result enters through the browser callback before a separately minted Connect token calls MCP. It does not complete the real client OAuth flow.
+
+[V] Given a new verified `thermus.ai` Google user without a membership, the callback grants explicit User access and selects the slice organization; `/session` has that organization without MFA evidence, portal access succeeds, and a separate organization Connect token returns Markdown; a Connect token without an organization is refused
+[V] Normal hosted composition without a policy signs in the same eligible user without creating a membership or granting portal access
+[V] Missing `THERMUS_SLICE_ORGANIZATION_ID` stops slice composition before any enrollment request
+
+```sh
+npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.js
 ```
 
 **Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)

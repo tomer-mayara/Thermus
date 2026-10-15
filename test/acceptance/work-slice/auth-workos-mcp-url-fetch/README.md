@@ -26,14 +26,14 @@ its own Connect token, and monitors each fetch in Axiom.
   the slice, as Ctrl+C does. Its unit test is
   `test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`.
 - stdout shows the instructions: the portal and the MCP endpoint, the trust
-  command, the sign-in steps, the operator step, the Claude Code commands, the
+  command, the sign-in steps, the Claude Code commands, the
   Axiom link, the scope name of the run, and an APL filter. The log goes to
   Axiom only. The console shows only the export failures and, when the slice
   fails, one `FATAL` line. Stop the slice with Ctrl+C.
 
 ## One-time setup in WorkOS Staging
 
-Step 0 of the plan did this setup on 2026-10-14 in the Staging environment
+The initial setup ran on 2026-10-14 in the Staging environment
 `environment_01M4VDKATD5PXZT4H01EHCMR2A`, with the WorkOS connector:
 
 - Google sign-in is on, with the built-in Google credentials of WorkOS. The
@@ -42,8 +42,8 @@ Step 0 of the plan did this setup on 2026-10-14 in the Staging environment
   are on, so that Claude Code registers itself at AuthKit.
 - The organization "Thermus work slice" is
   `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, with the external ID `thermus-work-slice`.
-  The operator step of the walk adds the user to this organization with the
-  role `user`. A new user gets access only through that step.
+  The launcher sets this organization as the slice onboarding target. It needs
+  no verified WorkOS organization domain and no change to the default role.
 
 The registered URIs of Staging serve the slice without a change: the redirect
 URI `https://localhost:46443/callback`, the sign-out URI
@@ -69,6 +69,7 @@ each value, and an exported value comes before the value in `.env.local`.
 | `AXOIM_ENDPOINT_URL` | `https://us-east-1.aws.edge.axiom.co` | The Axiom ingestion endpoint. |
 | `AXIOM_SYSTEM_LOG_TEST_DATA_SET` | `system-log-test` | The only dataset that the slice accepts. |
 | `AXIOM_API_KEY` | None | Set it in the shell or in `.env.local` at the repository root. |
+| `THERMUS_SLICE_ORGANIZATION_ID` | `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA` | Required by the slice composition. The launcher supplies the staging default; an explicit value selects another configured slice organization. |
 | `THERMUS_TLS_DIR` | `.cache/thermus-local-tls` at the repository root | The directory of `key.pem` and `cert.pem`. Git ignores `.cache/`. |
 
 The launcher writes the settings to stderr before the start, one `NAME=value`
@@ -110,18 +111,14 @@ it.
    ```
 
 3. Open `https://localhost:46443/`, click Sign In, click "Continue with
-   Google", and sign in with the `thermus.ai` Google account. AuthKit makes the
-   user. The portal shows the name and "Your account has no product access in
-   the selected organization." The organization page gives the onboarding
-   guidance.
-4. The operator step: the owner adds the user to the organization "Thermus
-   work slice", `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, with the role User (`user`).
-   The owner uses the WorkOS dashboard or the WorkOS connector. Reload the
-   portal. It shows "You have product access in organization <ID>. Roles:
-   user." This step is a shortcut of the slice in Staging. In the product, the
-   operator grants only Super Admin, as the
-   [operator runbook](../../../../docs/implementation/hosted-organization-setup.md)
-   gives, and the Super Admin grants Admin and User in the portal.
+   Google", and sign in with a verified `@thermus.ai` Google account. Complete
+   any AuthKit challenge. The server uses the trusted WorkOS result to enroll
+   an eligible user without a membership, with the explicit role `user`.
+4. Check the portal after the callback. The session selects the configured
+   slice organization and the portal shows product access with the role
+   `user`. Check the organization page too. Existing memberships keep their
+   roles and status; an existing member without User still has no product
+   access. No operator grant is needed for an eligible new user.
 5. Connect Claude Code. Claude Code reads `NODE_EXTRA_CA_CERTS` for the OAuth
    and MCP requests. Run `claude mcp add-json` in the directory where you
    start Claude Code, or add `--scope user`. The slice prints these commands
@@ -133,18 +130,24 @@ it.
    claude mcp login thermus-hosted
    ```
 
-   The browser opens the consent page of AuthKit. Click "Allow access". Claude
-   Code keeps the token. The pinned scopes give the token the `scope` claim,
+   This is a separate browser OAuth flow for Connect. AuthKit can reuse the
+   Google sign-in, but the portal cookie is not an MCP credential. Select the
+   slice organization if AuthKit asks, and click "Allow access". Claude Code
+   keeps its own token for the MCP resource. The pinned scopes give the token the `scope` claim,
    which the server requires. `offline_access` gives a refresh token, so the
    access token of 300 seconds renews without a new sign-in.
 6. Start a new Claude Code session with the same `NODE_EXTRA_CA_CERTS`, and
    ask: "Use the thermus-hosted tool getURLAsMarkdown to read
-   https://example.com/ and tell me its title." Axiom shows the three lines of
-   the call, as below.
+   https://example.com/ and tell me its title." Check that the authenticated
+   request uses the real HTTPS MCP endpoint, the pinned renderer fetches the
+   page, the client receives Markdown, and Axiom shows the three lines of the
+   same call, as below. Do not copy keys, tokens, cookies, or authorization
+   codes into output or pull request notes.
 7. Check the validation. A request with a wrong Bearer token gets `401` with
    the metadata challenge. After the owner removes the role `user`, the next
-   tool call gets `403 access_denied` and writes no fetch line. The owner gives
-   the role back. Then the owner deletes the authorized application of the
+   tool call gets `403 access_denied` and writes no fetch line. Sign in with
+   Google again and verify that the role stays removed. Then the owner gives
+   the role back and deletes the authorized application of the
    user in WorkOS. The token works until it expires, after at most 300
    seconds. Then the refresh fails.
 8. Stop with Ctrl+C. Remove the client entry with
@@ -153,6 +156,48 @@ it.
 A Google sign-in gives no MFA evidence. Thus the members and invitations pages
 of the portal refuse that session. The portal access and MCP need no MFA
 evidence.
+
+## Slice onboarding policy
+
+Only this opt-in slice enables onboarding. The normal hosted application has
+no enrollment policy and keeps the `member` default role without product
+access. This change enables no production onboarding and sets no WorkOS
+organization domain or default User role.
+
+The callback accepts eligibility only from the trusted WorkOS authentication
+result: `authenticationMethod` is `GoogleOAuth`, `emailVerified` is true, and
+the email domain is exactly `thermus.ai`. A different domain, a suffix such as
+`thermus.ai.example`, an unverified email, or another sign-in method gets no
+automatic membership. The browser signs in before the client requests Connect
+authorization. A client-first flow does not run this callback policy.
+
+For the target organization, an absent membership can be created with the
+explicit role `user`. An active membership keeps its roles; Admin-only and
+members without User are not upgraded. Pending and inactive memberships are
+not changed. Removing User or deactivating the membership therefore keeps
+access refused. A hard-deleted membership is indistinguishable from a new
+user and can enroll again on an eligible sign-in. Use role removal or
+deactivation when access must stay revoked.
+
+The slice serializes enrollment for one user in one process. WorkOS writes
+and concurrent operator or other-process changes are not one atomic
+transaction. The slice does not blindly retry an ambiguous membership write.
+An unresolved write can block another create for the lifetime of that slice
+process. A failed callback issues no new authorized browser session; inspect
+WorkOS state before another attempt. A successful read-back of an active User
+membership can reconcile a lost write response without repeating the write.
+
+## Proof still required
+
+Keep PR #108 in Draft until the browser-first live walk and the complete
+required gates pass on the final candidate. The [validation record](../../../../docs/implementation/auth-workos-mcp-url-fetch-validation.md)
+gives the completed checks, retained findings, and open proof. Offline tests use a WorkOS fake,
+a renderer double, and a recording logger. They prove application behavior.
+The real walk must separately prove Google authentication, Connect browser
+consent and its token, the authenticated HTTPS MCP fetch, real renderer output,
+Axiom delivery, wrong-token refusal, and refusal after a current User-role
+removal. Record safe observations and test counts without secrets. A WorkOS
+configuration read-back or an offline pass is not this live proof.
 
 ## Log lines
 
@@ -176,12 +221,14 @@ A call that the server refuses with `401` or `403` writes no fetch line.
 
 The slice composes the production parts `openWorkOSConnection`,
 `composeWorkOSApplication`, `createFetchOperation`, and `fetchToolServers` with
-the test-only HTTPS front `LocalHttpsSite`. Only the fetch tool behind the
-hosted MCP endpoint and the two lines with the full URL and the Markdown are
-slice-only. The acceptance test shows the same path offline, with the fake
-WorkOS API and a renderer double, in both MCP protocol eras. The manual run
-also shows the Google sign-in, the client registration, the renderer, and the
-export to Axiom.
+the test-only HTTPS front `LocalHttpsSite`. The onboarding policy, fetch tool
+behind the hosted MCP endpoint, and two lines with the full URL and the
+Markdown are slice-only. The acceptance tests show the application path
+offline, with a fake WorkOS API and a renderer double, in both MCP protocol
+eras. The onboarding acceptance cases also check the first callback, the
+normal hosted default, and required slice configuration. The manual run must
+also show Google sign-in, client registration and consent, the renderer, and
+the export to Axiom; it remains pending until recorded.
 
 The decisions and the steps are in the [Auth WorkOS MCP URL fetch work slice plan](../../../../docs/implementation/auth-workos-mcp-url-fetch-plan.md).
 The [work slice guide](../README.md) lists the slices.

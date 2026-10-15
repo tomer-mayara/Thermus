@@ -27,7 +27,7 @@ function assertNoSecret(result: SpawnSyncReturns<string>, secrets: readonly stri
   for (const secret of secrets) assert.equal(`${result.stdout}${result.stderr}`.includes(secret), false, `The output shows the secret ${secret}`);
 }
 
-test('Given only the three WorkOS settings and AXIOM_API_KEY, when the script runs from another directory, then pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from openssl rand, and the keys; stderr lists the ten settings after the certificate line; and no output shows a secret', (t) => {
+test('Given only the three WorkOS settings and AXIOM_API_KEY, when the script runs from another directory, then pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from openssl rand, and the keys; stderr lists the eleven settings after the certificate line; and no output shows a secret', (t) => {
   const launcher = launcherCase(t);
 
   const result = launcher.run({ ...workos, AXIOM_API_KEY: axiomApiKey });
@@ -45,7 +45,7 @@ test('Given only the three WorkOS settings and AXIOM_API_KEY, when the script ru
   assertNoSecret(result, [workos.WORKOS_API_KEY, axiomApiKey, randomPassword]);
 });
 
-test('Given each setting with a custom value, a cookie password, and a TLS directory with both files, when the script runs, then pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the ten values without the secrets', (t) => {
+test('Given each setting with a custom value, a cookie password, and a TLS directory with both files, when the script runs, then pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the eleven values without the secrets', (t) => {
   const launcher = launcherCase(t);
   const rulesFile = join(launcher.root, 'custom rules.txt');
   const tlsDirectory = join(launcher.root, 'custom tls');
@@ -64,6 +64,7 @@ test('Given each setting with a custom value, a cookie password, and a TLS direc
     AXOIM_ENDPOINT_URL: 'https://eu-central-1.aws.edge.axiom.co',
     AXIOM_SYSTEM_LOG_TEST_DATA_SET: 'custom-data-set',
     THERMUS_TLS_DIR: tlsDirectory,
+    THERMUS_SLICE_ORGANIZATION_ID: 'org_custom',
   };
   const cookiePassword = 'given-cookie-password-with-forty-chars!!';
 

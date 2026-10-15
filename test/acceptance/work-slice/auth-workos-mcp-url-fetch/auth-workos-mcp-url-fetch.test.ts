@@ -32,7 +32,7 @@ const expectedMarkdown = '## Rendered story\n\nThe rendered article has a first 
   + 'Related [article](https://news.example/related) and [root](https://news.example/root).';
 const hostedSettings = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' };
 const config = loadDeploymentConfig(hostedSettings, 'http');
-const environment = { ...hostedSettings, AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: rendererExecutable };
+const environment = { ...hostedSettings, THERMUS_SLICE_ORGANIZATION_ID: 'org_01ACME', AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: rendererExecutable };
 const acme = 'org_01ACME';
 const metadataChallenge = /^Bearer .*resource_metadata="https:\/\/thermus\.example\/\.well-known\/oauth-protected-resource\/mcp"/;
 
@@ -72,7 +72,7 @@ async function openSlice(t: TestContext): Promise<SliceSite> {
   const world = await WorkOSFake.start(t, config.publicBaseUrl, [acme]);
   // The slice signs in with Google, which gives no MFA evidence.
   world.authenticationMethod = 'GoogleOAuth';
-  // Dee has no membership, as after her first Google sign-in.
+  // Dee has no membership and her example.com address is not eligible for automatic enrollment.
   world.memberships = [
     { userId: ada.id, organizationId: acme, roles: ['user'] },
     { userId: ben.id, organizationId: acme, roles: ['admin'] },
@@ -182,7 +182,7 @@ describe('The auth WorkOS MCP URL fetch work slice with the WorkOS provider, the
     });
   }
 
-  test('Given Dee without a membership, as after her first Google sign-in, when she signs in and opens her portal access and the organization page, then the access is refused and the page gives the onboarding guidance; when her Connect token for Acme calls getURLAsMarkdown, then the call gets 403 access_denied, no renderer starts, and the log has no fetch line; when the world gets her membership with the role user, as the operator step gives it, then the next call gets the cleaned Markdown and the log has the fetch lines with her WorkOS identity', { timeout: 60_000 }, async (t) => {
+  test('Given Dee with a non-thermus.ai Google address and no membership, when she signs in and opens her portal access and the organization page, then she gets no automatic membership, access is refused, and the page gives onboarding guidance; when her Connect token for Acme calls getURLAsMarkdown, then the call gets 403 access_denied, no renderer starts, and the log has no fetch line; when an external change gives her a User membership, then the next MCP request gets the cleaned Markdown and the log has the fetch lines with her WorkOS identity', { timeout: 60_000 }, async (t) => {
     const site = await openSlice(t);
     const { browser } = await signInThroughServer(site, dee);
     const access = await portalJson(browser, 'portal/access');

@@ -42,12 +42,14 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
   process.exitCode = await run(new ConsoleLogger());
 }
 
-// Production composes the hosted edition without a tool, so this is the composition root of the slice. Only the fetch
-// tool and its two lines with the full URL and the Markdown are slice-only.
+// Production composes the hosted edition without a tool, so this is the composition root of the slice. The fetch tool, its full URL
+// and Markdown log lines, and the fixed verified-Google onboarding policy belong to this slice.
 export async function composeWorkSliceApplication(parts: WorkSliceParts, logger: ApplicationLogger): Promise<Application> {
   const { config, connection, environment } = parts;
+  const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
+  if (!organizationId) throw new Error('Set THERMUS_SLICE_ORGANIZATION_ID to the WorkOS organization of this slice');
   const operation = observeFetches(createFetchOperation(environment, logger), logger);
-  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger) });
+  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger), onboarding: { organizationId } });
 }
 
 async function run(consoleLog: ConsoleLogger): Promise<number> {
@@ -117,17 +119,19 @@ function instructions(config: RouteConfig, certificateFile: string, scopeName: s
     `  security add-trusted-cert -r trustRoot -k ~/Library/Keychains/login.keychain-db "${certificateFile}"`,
     '',
     `2. Open ${config.publicBaseUrl}, click Sign In, and click "Continue with Google". Sign in with your Google account.`,
-    '   The portal shows your name and no product access.',
+    '   Use your verified @thermus.ai Google account. A new eligible user gets User access in the configured',
+    '   slice organization. The portal selects that organization and shows product access.',
     '',
-    '3. The operator step after the first sign-in: add the user to the organization "Thermus work slice" with the role',
-    '   User, in the WorkOS dashboard or with the WorkOS connector. Then reload the portal. It shows the product access.',
+    '3. An existing membership keeps its roles and status. A removed User grant, inactive or pending membership,',
+    '   unverified address, another domain, or another sign-in method gets no automatic grant.',
     '',
     '4. Connect Claude Code. Claude Code must trust the certificate for the OAuth and MCP requests:',
     `  export NODE_EXTRA_CA_CERTS="${certificateFile}"`,
     '   Run the next command in the directory where you start Claude Code, or add --scope user:',
     `  claude mcp add-json ${clientName} '${clientConfig}'`,
     `  claude mcp login ${clientName}`,
-    '   The browser opens the consent page of AuthKit. Click "Allow access".',
+    '   The browser opens the consent page of AuthKit. Select the slice organization and click "Allow access".',
+    '   This separate Connect OAuth flow gives the MCP client its own token; the browser session is for the portal.',
     '',
     '5. Start a new Claude Code session with the same NODE_EXTRA_CA_CERTS, and ask, for example:',
     `  Use the ${clientName} tool getURLAsMarkdown to read https://example.com/ and tell me its title.`,

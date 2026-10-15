@@ -4,10 +4,11 @@ import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowser
 import { sessionCookie, type SealedCookie, type SessionEnvelope } from './session-cookies.ts';
 import { isDamagedSeal, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
 import type { SealRefresh, SessionFacts, WorkOSSealedSession, WorkOSSessionClient } from './workos-session-client.ts';
-import { AuthKitSignIn, type SignInCallback, type SignInCompletion, type SignInStart } from './workos-sign-in.ts';
+import { AuthKitSignIn, type SignInCallback, type SignInCompletion, type SignInStart, type SignInOnboarding } from './workos-sign-in.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
 
 export interface WorkOSBrowserSessionOptions {
+  readonly onboarding?: SignInOnboarding;
   readonly workos: WorkOSSessionClient;
   readonly settings: Pick<WorkOSSettings, 'clientId' | 'redirectUri' | 'cookiePassword'>;
   // From workosAuthority(), so that browser sessions and Connect tokens map their users into the same authority.
@@ -54,7 +55,7 @@ export class WorkOSBrowserSession implements BrowserSession {
     this.authority = options.authority;
     this.sessionCookie = sessionCookie(options.settings.cookiePassword);
     const clock = options.clock ?? Date.now;
-    this.signIn = new AuthKitSignIn({ userManagement: this.userManagement, settings: options.settings, clock, sessionCookie: this.sessionCookie });
+    this.signIn = new AuthKitSignIn({ userManagement: this.userManagement, settings: options.settings, clock, sessionCookie: this.sessionCookie, ...(options.onboarding === undefined ? {} : { onboarding: options.onboarding }) });
   }
 
   async authenticate(cookieHeader: string | null): Promise<WorkOSSessionState> {

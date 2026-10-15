@@ -14,7 +14,7 @@ const scriptPath = 'test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-wo
 const sourceScript = fileURLToPath(new URL(scriptPath, repositoryRoot));
 const settingNames = [
   'DEPLOYMENT', 'PUBLIC_BASE_URL', 'WORKOS_CLIENT_ID', 'WORKOS_AUTHKIT_ISSUER', 'WORKOS_REDIRECT_URI', 'AD_RULES_FILE',
-  'LIGHTPANDA_BIN', 'AXOIM_ENDPOINT_URL', 'AXIOM_SYSTEM_LOG_TEST_DATA_SET', 'THERMUS_TLS_DIR',
+  'LIGHTPANDA_BIN', 'AXOIM_ENDPOINT_URL', 'AXIOM_SYSTEM_LOG_TEST_DATA_SET', 'THERMUS_TLS_DIR', 'THERMUS_SLICE_ORGANIZATION_ID',
 ] as const;
 const secretNames = ['WORKOS_API_KEY', 'WORKOS_COOKIE_PASSWORD', 'AXIOM_API_KEY'] as const;
 export type Settings = Record<(typeof settingNames)[number], string>;
@@ -113,6 +113,7 @@ export function defaults(root: string): Settings {
     AXOIM_ENDPOINT_URL: 'https://us-east-1.aws.edge.axiom.co',
     AXIOM_SYSTEM_LOG_TEST_DATA_SET: 'system-log-test',
     THERMUS_TLS_DIR: join(root, '.cache/thermus-local-tls'),
+    THERMUS_SLICE_ORGANIZATION_ID: 'org_01M4YYEQ6V2ZBM3RQEEV8CKFEA',
   };
 }
 

@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import { X509Certificate } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { request as httpsRequest } from 'node:https';
-import { tmpdir } from 'node:os';
 import { Server } from 'node:net';
 import { join } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
@@ -12,18 +10,14 @@ import { connect as tlsConnect } from 'node:tls';
 import type { Application, ApplicationLogger } from '../../../src/application.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
-import { localOrigin, type HostedLiveSettings } from '../../support/hosted-live/settings.ts';
-import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { localOrigin } from '../../support/hosted-live/settings.ts';
+import { httpsSettings as settings, portalPage, temporaryDirectory, writePortalBuild } from './fixtures/https-site-fixtures.ts';
+import { describeHttpsCancellation } from './hosted-live-site/cancellation.ts';
+import { describeHttpsMcp } from './hosted-live-site/mcp.ts';
 
 // The placeholder settings reach no WorkOS environment. The hosted composition makes no WorkOS call when it starts.
-const settings: HostedLiveSettings = {
-  apiKey: workOSSettings.WORKOS_API_KEY,
-  clientId: workOSSettings.WORKOS_CLIENT_ID,
-  authkitIssuer: workOSSettings.WORKOS_AUTHKIT_ISSUER,
-};
 const caseOptions = { timeout: 10_000 };
 const front = new URL(localOrigin);
-const portalPage = '<!doctype html><title>Portal</title>';
 const knownPath = '/known';
 const knownBody = 'The answer of the small application';
 
@@ -46,20 +40,6 @@ class SmallApplication {
       close: async () => { this.closes += 1; },
     };
   };
-}
-
-async function temporaryDirectory(t: TestContext): Promise<string> {
-  const directory = await mkdtemp(join(tmpdir(), 'thermus-hosted-live-site-'));
-  t.after(() => rm(directory, { recursive: true, force: true }));
-  return directory;
-}
-
-async function writePortalBuild(t: TestContext): Promise<string> {
-  const directory = await temporaryDirectory(t);
-  await mkdir(join(directory, 'assets'));
-  await writeFile(join(directory, 'index.html'), portalPage);
-  await writeFile(join(directory, 'assets', 'app.js'), 'document.body.dataset.portal = "ready";\n');
-  return directory;
 }
 
 // Node finds a command through the PATH of process.env when it starts the command. Without a PATH, Node uses a
@@ -195,3 +175,7 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
     );
   });
 });
+
+// One entry keeps the fixed-port cases in sequence when integration files run concurrently.
+describeHttpsCancellation();
+describeHttpsMcp();

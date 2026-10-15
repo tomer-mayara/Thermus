@@ -10,6 +10,8 @@ import {
   type HostedProviderParts,
   type RouteConfig,
 } from './application.ts';
+import type { Billing } from './billing/billing.ts';
+import type { GoogleOnboardingSettings } from './auth/hosted-auth/workos/workos-google-onboarding.ts';
 import type { WorkOSSettings } from './auth/hosted-auth/workos/workos-settings.ts';
 import { portalAccessOperation, PRODUCT_ACCESS } from './hosted-admin/portal-access.ts';
 import { MCPServer, type RequestServerBuilder } from './mcp/mcp-server.ts';
@@ -29,6 +31,8 @@ export interface WorkOSConnection {
 export interface WorkOSApplicationParts {
   readonly logger: ApplicationLogger;
   readonly buildServer?: RequestServerBuilder;
+  // Omitted by production. A slice must select its enrollment organization explicitly.
+  readonly onboarding?: GoogleOnboardingSettings;
 }
 
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
@@ -59,16 +63,17 @@ export async function openWorkOSConnection(config: RouteConfig, logger: Applicat
 
 export async function composeWorkOSApplication(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts): Promise<Application> {
   const { BillingFree } = await import('./billing/billing-free.ts');
-  const providerParts = await workosProviderParts(config, connection, parts);
+  const billing = new BillingFree();
+  const providerParts = await workosProviderParts(config, connection, { ...parts, billing });
   return composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
-    billing: new BillingFree(),
+    billing,
     operation: portalAccessOperation(config.publicBaseUrl),
   });
 }
 
-async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts): Promise<HostedProviderParts> {
+async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts> {
   const { WorkOSOrganizations } = await import('./auth/hosted-auth/workos/workos-organizations.ts');
   const { WorkOSAuthProvider } = await import('./auth/hosted-auth/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('./auth/hosted-auth/workos/workos-browser-session.ts');
@@ -82,7 +87,11 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   // their changes to the account routes.
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
-  const session = new WorkOSBrowserSession({ workos, settings, authority });
+  const { WorkOSGoogleOnboarding } = await import('./auth/hosted-auth/workos/workos-google-onboarding.ts');
+  const onboarding = parts.onboarding === undefined ? undefined : new WorkOSGoogleOnboarding({
+    ...parts.onboarding, authority, workos, settings, records: accountChangeRecorder(logger), billing: parts.billing, directory: organizations,
+  });
+  const session = new WorkOSBrowserSession({ workos, settings, authority, ...(onboarding === undefined ? {} : { onboarding }) });
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
     buildServer,

@@ -42,6 +42,8 @@ export AXOIM_ENDPOINT_URL="${AXOIM_ENDPOINT_URL:-https://us-east-1.aws.edge.axio
 export AXIOM_SYSTEM_LOG_TEST_DATA_SET="${AXIOM_SYSTEM_LOG_TEST_DATA_SET:-system-log-test}"
 # Git ignores .cache/. The certificate stays, so that the browser and Claude Code trust it one time.
 export THERMUS_TLS_DIR="${THERMUS_TLS_DIR:-$root/.cache/thermus-local-tls}"
+# Only this slice enrolls eligible Google users in its configured staging organization.
+export THERMUS_SLICE_ORGANIZATION_ID="${THERMUS_SLICE_ORGANIZATION_ID:-org_01M4YYEQ6V2ZBM3RQEEV8CKFEA}"
 
 # The slice checks the renderer and the Axiom key itself, with its own messages.
 if [[ ! -f "$AD_RULES_FILE" ]]; then
@@ -76,7 +78,8 @@ printf '%s\n' \
   "LIGHTPANDA_BIN=$LIGHTPANDA_BIN" \
   "AXOIM_ENDPOINT_URL=$AXOIM_ENDPOINT_URL" \
   "AXIOM_SYSTEM_LOG_TEST_DATA_SET=$AXIOM_SYSTEM_LOG_TEST_DATA_SET" \
-  "THERMUS_TLS_DIR=$THERMUS_TLS_DIR" >&2
+  "THERMUS_TLS_DIR=$THERMUS_TLS_DIR" \
+  "THERMUS_SLICE_ORGANIZATION_ID=$THERMUS_SLICE_ORGANIZATION_ID" >&2
 # pnpm exec gives the pinned Node runtime and passes a signal to its child. Thus a signal to this process stops the
 # slice, as Ctrl+C does. The package script would put a shell wrapper and the tsx CLI between them.
 exec pnpm exec node --import tsx test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts "$@"

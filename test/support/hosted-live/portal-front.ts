@@ -2,6 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 
 // What the HTTPS front of the local site answers: the files of the portal build at / and /assets/, with the headers
 // of the portal, and each other request forwarded to Thermus. The site in local-https-site.ts owns the listeners.
@@ -55,20 +56,31 @@ export async function answer(request: IncomingMessage, response: ServerResponse,
     }
     await forward(request, response, new URL(path, site.thermus));
   } catch {
-    if (!response.headersSent) response.writeHead(502);
-    response.end();
+    if (response.destroyed) return;
+    if (response.headersSent) response.destroy();
+    else response.writeHead(502).end();
   }
 }
 
 async function forward(request: IncomingMessage, response: ServerResponse, target: URL): Promise<void> {
   const method = request.method ?? 'GET';
   const body = method === 'GET' || method === 'HEAD' ? {} : { body: Readable.toWeb(request) as ReadableStream, duplex: 'half' as const };
-  const answer = await fetch(target, { method, headers: forwardedHeaders(request), redirect: 'manual', ...body });
-  response.writeHead(answer.status, answerHeaders(answer));
-  if (answer.body !== null) {
-    for await (const chunk of answer.body) response.write(chunk);
+  const disconnected = new AbortController();
+  const cancel = (): void => {
+    if (!response.writableFinished) disconnected.abort();
+  };
+  response.once('close', cancel);
+  request.once('aborted', cancel);
+  try {
+    const answer = await fetch(target, { method, headers: forwardedHeaders(request), redirect: 'manual', signal: disconnected.signal, ...body });
+    response.writeHead(answer.status, answerHeaders(answer));
+    response.flushHeaders();
+    if (answer.body === null) response.end();
+    else await pipeline(Readable.fromWeb(answer.body), response, { signal: disconnected.signal });
+  } finally {
+    response.off('close', cancel);
+    request.off('aborted', cancel);
   }
-  response.end();
 }
 
 function forwardedHeaders(request: IncomingMessage): Headers {

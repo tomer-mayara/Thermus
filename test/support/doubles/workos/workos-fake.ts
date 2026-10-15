@@ -219,6 +219,7 @@ export class WorkOSFake {
       cookiePassword,
     });
     this.fake.answer(membershipsRoute, (request) => this.membershipsAnswer(request));
+    this.fake.answer('POST /user_management/organization_memberships', (request) => this.createMembershipAnswer(request));
     this.fake.answer(authenticateRoute, (request) => this.authenticateAnswer(request));
     this.answerAdministration();
   }
@@ -355,6 +356,18 @@ export class WorkOSFake {
     const end = start + Math.min(Number(query.get('limit') ?? 10), this.membershipPageSize);
     const next = end < fitting.length ? membershipIdAt(fitting[end - 1].index) : null;
     return listAnswer(fitting.slice(start, end).map(({ index }) => this.membershipJson(index)), next);
+  }
+
+  // WorkOS create reactivates an inactive record. Thus callers cannot use a retry as an absence check.
+  private createMembershipAnswer(request: RecordedRequest): FakeAnswer {
+    const body = request.body as { organization_id: string; user_id: string; role_slug?: string; role_slugs?: string[] };
+    const index = this.indexOfUser(body.user_id, body.organization_id);
+    if (index !== -1 && currentStatus(this.#memberships[index]) !== 'inactive') return refusal('organization_membership_exists', 'Membership exists.');
+    const roles = body.role_slugs ?? [body.role_slug ?? 'member'];
+    if (roles.some((role) => !isKnownRole(role))) return refusal('invalid_role', 'The role is invalid.');
+    if (index !== -1) this.changeMembership(index, { roles, status: 'active' });
+    else this.memberships = [...this.#memberships, { userId: body.user_id, organizationId: body.organization_id, roles, status: 'active' }];
+    return { status: 201, body: this.membershipJson(index === -1 ? this.#memberships.length - 1 : index) };
   }
 
   private membershipAnswer(membershipId: string): FakeAnswer {

@@ -68,7 +68,14 @@ each other request to the real hosted composition. The
 [auth WorkOS MCP URL fetch work slice](../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
 runs the same local HTTPS site at the same origin, with a certificate that
 stays, so that a person trusts it one time. Its hosted composition also has the
-fetch tool. The gate and the slice cannot run at the same time. The WorkOS
+fetch tool and an opt-in onboarding policy. Only the slice enrolls an absent
+membership as User after a trusted WorkOS `GoogleOAuth` sign-in with a verified
+email whose domain is exactly `thermus.ai`. The callback selects the configured
+`THERMUS_SLICE_ORGANIZATION_ID` in the browser session; existing roles and
+membership status are preserved. Normal hosted startup has no such policy.
+Sign in to the portal first, then open the client's separate Connect browser
+authorization. The portal cookie is not an MCP credential. The gate and the
+slice cannot run at the same time. The WorkOS
 staging environment has these settings for both:
 
 - Redirect URI (the default): `https://localhost:46443/callback`.

@@ -511,7 +511,12 @@ The auth WorkOS MCP URL fetch work slice uses the same staging environment,
 the same origin `https://localhost:46443/`, and the same registered URIs. Thus
 the slice and the gate cannot run at the same time. The gate does not delete
 the organization "Thermus work slice" or the users of the slice: a run deletes
-only the data with its own name or email prefix.
+only the data with its own name or email prefix. The normal hosted
+composition of the gate enables no automatic Google onboarding. Only the manual slice opts
+in to that policy for its configured organization. Its real browser-first
+Google, Connect consent, authenticated HTTPS fetch, and Axiom proof is
+separate from the gate. Keep PR #108 in Draft until that proof and the required
+complete-candidate checks pass; configuration read-back alone is not a pass.
 
 The gate also needs:
 

@@ -372,7 +372,19 @@ a local fake of the WorkOS API:
   the `MCPServer`. The `MCPServer` gets the `buildServer` of the parts:
   production gives none, so the endpoint serves no tool, and the
   [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
-  gives the fetch tool for a local run.
+  gives the fetch tool for a local run. The slice also opts in to a Google
+  onboarding policy at the browser code exchange. A trusted WorkOS
+  `GoogleOAuth` result with `emailVerified: true` and an exact `thermus.ai`
+  email domain can create an absent membership with the explicit role `user`
+  in `THERMUS_SLICE_ORGANIZATION_ID`, then select it in the sealed browser
+  session. Existing roles and active, pending, or inactive status remain
+  unchanged. Normal hosted startup supplies no policy, keeps the `member`
+  default role, and enables no production onboarding. The slice serializes
+  callbacks in one process and reconciles an ambiguous create by read; it
+  does not blindly repeat that write. Concurrent external writes remain
+  outside that serialization, and a hard-deleted membership can enroll again.
+  The [slice plan](../implementation/auth-workos-mcp-url-fetch-plan.md)
+  gives the restrictions and the required browser-first live proof.
 - The account operation is `portalAccessOperation()`, the protected portal
   request `<base>portal/access`. It needs `product:access` and gives the
   organization and the roles of the grants that give a permission;

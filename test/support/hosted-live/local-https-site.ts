@@ -63,7 +63,7 @@ export interface LocalHttpsSiteOptions {
 export class LocalHttpsSite {
   readonly log: LogLines;
   readonly #thermus: HttpServer;
-  // The fronts, the Thermus server, the application, and the temporary directory. They close in this order.
+  // The fronts close first. Then listener drain starts, application work stops, and the drain completes.
   readonly #resources: AsyncDisposableStack;
 
   private constructor(parts: { thermus: HttpServer; resources: AsyncDisposableStack; log: LogLines }) {
@@ -85,11 +85,23 @@ export class LocalHttpsSite {
     const log = new LogLines();
     const logger = options.logger ?? log;
     const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger));
-    const application = owned.adopt(await openApplication(logger), (opened) => opened.close());
-    const thermus = owned.adopt(
-      await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl, logger }),
-      (server) => server.close(),
-    );
+    let listenerDrain: Promise<void> | undefined;
+    let drained = Promise.resolve<PromiseSettledResult<void>>({ status: 'fulfilled', value: undefined });
+    // The site owns the listener even when custom application cleanup ignores its drain or fails.
+    owned.defer(async () => {
+      const result = await drained;
+      if (result.status === 'rejected') throw result.reason;
+    });
+    const application = owned.adopt(await openApplication(logger), (opened) => opened.close(listenerDrain));
+    const thermus = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl, logger });
+    owned.defer(() => {
+      listenerDrain = thermus.close();
+      // Observe a rejection now; application cleanup can take longer than the listener drain.
+      drained = listenerDrain.then(
+        (value) => ({ status: 'fulfilled', value }),
+        (reason: unknown) => ({ status: 'rejected', reason }),
+      );
+    });
     const site: PortalSite = { files, headers: portalHeaders(settings.authkitIssuer), thermus: thermus.url };
     const tls = options.certificate ?? await selfSignedCertificate(certificateDirectory);
     // One front after the other: when a listen fails, the stack already owns each front that listens.
