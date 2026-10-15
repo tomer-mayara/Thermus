@@ -8,6 +8,7 @@ runtime guides stay current after implementation.
 - [Coding principles](coding-principles.md): design and verification guidance.
 - [Lightpanda runtime](lightpanda-runtime.md): runtime installation and renderer checks.
 - [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the renderer gate, the hosted offline checks, the self-hosted release checks, and later release gates.
+- [Test code layout](testing/test-code-layout.md): the terms for the auxiliary test files, the four-layer layout of `test/support`, and the placement and dependency rules.
 - [Work slices](../test/acceptance/work-slice/README.md): the manual runs of one thin path through the product, their entry points, and what each needs.
 - [Container installation](../README.md#container-installation): the self-hosted evaluation image, its data volume, the stopped-server commands, backup and restore, and recovery.
 - [Hosted organization setup and recovery](implementation/hosted-organization-setup.md): the operator runbook to set up a hosted organization and its Super Admin, and to revoke, replace, or recover a Super Admin in WorkOS.
