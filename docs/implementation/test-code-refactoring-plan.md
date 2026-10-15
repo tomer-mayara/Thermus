@@ -171,7 +171,7 @@ of the base commit; PR #86 moves both files into `S/` first (§3.5).
 | 9 | A/auth/hosted-live/operator-setup.ts | Test-case module | | = |
 | 10 | A/auth/hosted-live/organization-server.ts | Test-case module | | = |
 | 11 | A/auth/hosted-live/session-ending.ts | Test-case module | | = |
-| 12 | A/work-slice/basic-mcp-url-fetch.ts | Work-slice entry point and its site | | = (rule D2 exception) |
+| 12 | A/work-slice/basic-mcp-url-fetch.ts | Work-slice entry point and its site | | = (rule D2 exception until 2026-10-15, when the auth WorkOS MCP URL fetch slice moved the fetch lines to `S/work-slice/`) |
 | 13 | test/helpers/process-html.ts | System composition (three-stage pipeline) | | S/in-process/process-html.ts |
 | 14 | test/helpers/sanitize-html.ts | Package fixture | | U/html-cleaner-pipeline/fixtures/sanitize-html.ts |
 | 15 | I/auth/fixtures/local-auth-command-harness.ts | Harness | Stub, Spy | = |
@@ -338,7 +338,9 @@ Dependency rules:
 The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 move the 13 borrowed files);
 unit → support stays, because `S/` is the shared base of all test types; unit →
-work slice stays as the one documented exception. ESLint enforces D1 to D6
+work slice stayed as the one documented exception until 2026-10-15, when the
+auth WorkOS MCP URL fetch slice moved the fetch lines to `S/work-slice/` and
+the exception went. ESLint enforces D1 to D6
 (Steps 4 and 5i), and an architecture spec proves each rule, as
 `auth-boundaries.test.ts` does for `src`.
 
@@ -727,7 +729,8 @@ returns it to Draft, so it keeps its layout; Step 5 does the moves.
 3. `grep -rEn "from '(\.\./)+(unit|integration|interface|acceptance)/" test/support`
    gives nothing.
 4. `grep -rEln "from '(\.\./)+(integration|interface|acceptance)/" test/unit`
-   gives only `test/unit/work-slice/basic-mcp-url-fetch.test.ts`.
+   gave only `test/unit/work-slice/basic-mcp-url-fetch.test.ts` at Step 4.
+   Since 2026-10-15 it gives nothing.
    `grep -rEln "from '(\.\./)+unit/" test/integration test/interface test/acceptance`
    gives nothing.
    `grep -rEn "from '(\.\./)+[a-z-]+/fixtures/" test/unit | grep -v support/fixtures/`

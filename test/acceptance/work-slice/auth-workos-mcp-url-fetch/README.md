@@ -116,8 +116,12 @@ it.
    guidance.
 4. The operator step: the owner adds the user to the organization "Thermus
    work slice", `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, with the role User (`user`).
-   The owner uses the WorkOS dashboard or the WorkOS connector. Reload the portal. It shows "You have product access in
-   organization <ID>. Roles: user."
+   The owner uses the WorkOS dashboard or the WorkOS connector. Reload the
+   portal. It shows "You have product access in organization <ID>. Roles:
+   user." This step is a shortcut of the slice in Staging. In the product, the
+   operator grants only Super Admin, as the
+   [operator runbook](../../../../docs/implementation/hosted-organization-setup.md)
+   gives, and the Super Admin grants Admin and User in the portal.
 5. Connect Claude Code. Claude Code reads `NODE_EXTRA_CA_CERTS` for the OAuth
    and MCP requests. Run `claude mcp add-json` in the directory where you
    start Claude Code, or add `--scope user`. The slice prints these commands

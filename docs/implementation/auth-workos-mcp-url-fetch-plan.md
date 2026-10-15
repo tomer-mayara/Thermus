@@ -1,6 +1,6 @@
 # Auth WorkOS MCP URL fetch: work slice plan
 
-Status: steps 0 to 3 done on 2026-10-14; step 4 in work; steps 5 and 6 open.
+Status: steps 0 to 4 done, and the documents of step 6, on 2026-10-15; step 5 and the runs of step 6 open.
 Date: 2026-10-14. Branch: `claude/auth-workos-mcp-work-slice-c97848`.
 Slice folder: `test/acceptance/work-slice/auth-workos-mcp-url-fetch/`.
 Entry point: `auth-workos-mcp-url-fetch.ts` in that folder.
@@ -47,6 +47,32 @@ acceptance test and the raw MCP requests of B's case import the driver from
 move of the fetch lines ended the one exception of rule D2, so the lint
 block, its architecture case, and the layout document changed with it; a new
 case shows that the former exception is refused.
+
+Step 4 ran on 2026-10-15 with subagent C, from the landed base. The slice
+acceptance test is green in both eras: 5 of 5. The launcher has 13 unit cases
+with a fixture, `test/unit/work-slice/fixtures/launcher-case.ts`, that copies
+the launcher into a temporary root with a pnpm double and an openssl double.
+The smoke start of C found that the default portal build of `LocalHttpsSite`
+was a path from its own place, correct only from `dist/`; it now comes from
+`portalBuild` in `test/support/processes/module-paths.ts` (rule D8), with a
+case in the paths test. The site module grew past 200 lines and is split: what
+the front answers, the portal files and the forward to Thermus, is
+`test/support/hosted-live/portal-front.ts`. The entry point writes
+`Listening on https://localhost:46443/`, because it does not use
+`serveApplication()`. Two smoke runs on the owner's Mac through the staging
+launcher, with the real Axiom key: the launcher made the certificate
+(`CA:TRUE`, the three names, `serverAuth`, mode 0600), the front answered the
+portal, the protected-resource metadata with the AuthKit issuer, `401` with
+the metadata challenge without a token and with a wrong token, and `401` for
+the session; Node refused the certificate without `NODE_EXTRA_CA_CERTS`; a
+SIGINT gave exit status 0 and no export failure; Axiom had the WorkOS line and
+the stop line of the run. `npm run check` passed on the candidate. Subagent D
+changed the two gate proofs of D1 (Google as the only social provider; the
+registration endpoint and CIMD in the AuthKit metadata) and the documents;
+the changed proofs wait for the gate run of step 6. habit-hooks reports four
+files over 200 lines: the three hosted WorkOS acceptance tests, which were
+over the limit before, and the acceptance test of the slice, 248 lines with
+its four cases and their shared site; each stays with that reason.
 
 ## Goal
 
@@ -227,7 +253,7 @@ Each decision has a default. Confirm or change it before step 1.
 | D2 | Public origin and TLS | `https://localhost:46443/`, so that the registered redirect URI, Sign-out URI, Initiate login URI, and MCP resource indicator serve the slice without a change. The launcher makes one self-signed certificate with OpenSSL when it is missing, for `localhost`, `127.0.0.1`, and `::1`, under `.cache/thermus-local-tls/`, which Git ignores. The slice prints the one-time Keychain trust command for the browser and the `NODE_EXTRA_CA_CERTS` setting for Claude Code. | `mkcert`, which trusts its root in the Keychain itself. Or a public tunnel with a real certificate; that needs new URIs in WorkOS, which the gate proof of the one redirect URI refuses in Staging. |
 | D3 | How Claude Code registers | DCR and CIMD on in the environment. Claude Code registers itself with its own loopback redirect URI, so no fixed port is needed. The consent page shows the client name that Claude Code registers. | A public Connect OAuth application with PKCE, made once by the owner, with the redirect URI `http://localhost:46481/callback`; then `claude mcp add --client-id <id> --callback-port 46481`. |
 | D4 | Token scopes | The printed client command pins the scopes: `claude mcp add-json thermus-hosted '{"type":"http","url":"https://localhost:46443/mcp","oauth":{"scopes":"openid profile email offline_access"}}'`. | `scopes_supported` in the protected-resource metadata, a production change in `ProtectedResourceEndpoint`. Claude Code does not promise to request them, so the default stays the pin. |
-| D5 | First access of the new user | An operator step after the first sign-in: the owner adds the user to the slice organization "Thermus work slice" with the role `user`, in the WorkOS dashboard or with the connector (`addUserToOrganization`), as the operator runbook adds a membership. The slice makes no membership itself. The entry point prints this step, and the portal shows the result after a reload. The owner makes the organization once, with the external ID `thermus-work-slice`. | (a) Automatic membership by the verified domain `thermus.ai` on the slice organization, with `user` as the default role of that organization. WorkOS documents automatic membership for verified domains, but its examples name SSO only. This needs a live probe before the slice can depend on it, and a decision about a default role that gives access. (b) An invitation from the portal by a Super Admin that signed in with a password and MFA: the complete product path, with more steps. (c) A slice-only `--grant-user <email>` command on the test-support `OperatorRunbook`. |
+| D5 | First access of the new user | An operator step after the first sign-in: the owner adds the user to the slice organization "Thermus work slice" with the role `user`, in the WorkOS dashboard or with the connector (`addUserToOrganization`), as the operator runbook adds a membership. The slice makes no membership itself. The entry point prints this step, and the portal shows the result after a reload. The owner makes the organization once, with the external ID `thermus-work-slice`. This step is a shortcut of the slice in Staging; in the product, the operator grants only Super Admin, as the runbook gives, and the Super Admin grants Admin and User in the portal. | (a) Automatic membership by the verified domain `thermus.ai` on the slice organization, with `user` as the default role of that organization. WorkOS documents automatic membership for verified domains, but its examples name SSO only. This needs a live probe before the slice can depend on it, and a decision about a default role that gives access. (b) An invitation from the portal by a Super Admin that signed in with a password and MFA: the complete product path, with more steps. (c) A slice-only `--grant-user <email>` command on the test-support `OperatorRunbook`. |
 | D6 | Composition seam | `src/hosted-workos-application.ts` exports `openWorkOSConnection(config, logger, environment)` and `composeWorkOSApplication(config, connection, parts)`, with `parts: { logger, buildServer? }`. `openWorkOSApplication()` stays for `createApplication()` and passes no `buildServer`. The three offline tests that call `composeWorkOSApplication(config, connection, log)` change their third argument. The eslint rule of habit-hooks allows at most three parameters, so the record is the third parameter. | A copy of `workosProviderParts()` in the slice. The owner's rule refuses a copy of a production composition. |
 | D7 | HTTPS front | `LocalHttpsSite.start(settings, options)` gets two options: `certificate` (the key and certificate files to use; the default is a new self-signed certificate) and `application` (a function that opens the application; the default is the hosted composition with the staging settings). The gate keeps its behavior. The slice gives its own application and the certificate of D2. | A new class in `test/support/` that takes the files, the portal build, and the forward target, and `LocalHttpsSite` as its user. |
 | D8 | Logging | `openAxiomLogging()` and the three lines of the basic slice: the started line, the completed line with the Markdown, and the production completion record. The record shows the WorkOS identity: the authority `workos:<client ID>`, the user ID as subject, and the tenant `workos:<client ID>:<organization ID>`. The start line of the hosted composition and each failure report go to the same log. No new log line. | One slice-only line for each token check. The completion record already shows the identity, so it is not needed. |
@@ -241,7 +267,10 @@ Each decision has a default. Confirm or change it before step 1.
 ```
 src/hosted-workos-application.ts                      openWorkOSConnection(); composeWorkOSApplication(config, connection, { logger, buildServer? }); openWorkOSApplication() unchanged in behavior
 src/index.ts                                          stopSignal(signals), now exported
-test/support/hosted-live/local-https-site.ts          start(settings, { portalBuild?, certificate?, application? })
+test/support/hosted-live/local-https-site.ts          start(settings, { portalBuild?, certificate?, logger?, application? })
+test/support/hosted-live/portal-front.ts              The portal files, their headers, and the forward to Thermus, from local-https-site.ts
+test/support/processes/module-paths.ts                portalBuild, the portal build of the repository root
+test/unit/work-slice/fixtures/launcher-case.ts        The harness of the launcher test: the pnpm and openssl doubles and the temporary root
 test/support/work-slice/observe-fetches.ts            observeFetches(), MARKDOWN_LOG_LIMIT, from the basic slice
 test/support/work-slice/pinned-renderer.ts            assertPinnedRenderer(executable), from the basic slice
 test/acceptance/work-slice/README.md                  The list of the slices, with the new slice
