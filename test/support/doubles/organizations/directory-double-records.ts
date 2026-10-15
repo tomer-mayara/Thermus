@@ -1,5 +1,6 @@
 import type { RoleGrant } from '../../../../src/auth/access-context.ts';
 import type { InvitationState, MembershipStatus, OrganizationMember, Page } from '../../../../src/organizations/organization-directory.ts';
+import { memberRole } from '../../fixtures/hosted-roles.ts';
 
 export interface MemberSeed {
   readonly subject: string;
@@ -48,8 +49,6 @@ const defaultRoleGrants: ReadonlyMap<string, RoleGrant> = new Map([
   ['user', { role: 'user', permissions: ['product:access'] }],
   ['admin', { role: 'admin', permissions: ['user-grants:manage'] }],
 ]);
-// The role that the provider gives a membership without another role. It gives no application permission.
-export const memberRole: RoleGrant = { role: 'member', permissions: [] };
 
 export function emailOf(subject: string): string {
   return `${subject.replace(/^user-/, '')}@example.com`;

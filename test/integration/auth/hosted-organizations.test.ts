@@ -7,6 +7,7 @@ import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
+import { superAdminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import {
   contextAt,
   destinationPaths,
@@ -15,8 +16,6 @@ import {
   members,
   openOrganizationSite,
   statusesOf,
-  superAdminGrant,
-  userGrant,
   userOf,
 } from '../../support/in-process/hosted-organization-site.ts';
 import type { ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';

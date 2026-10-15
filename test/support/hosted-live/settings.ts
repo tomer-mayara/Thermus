@@ -1,6 +1,7 @@
 import type { HostedMfaPolicy } from './mfa-profile.ts';
 import { WorkOS } from '@workos-inc/node';
 import { browserSessionIssuer } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { hostedRolePermissions } from '../fixtures/hosted-roles.ts';
 
 export interface HostedLiveSettings {
   readonly mfaPolicy?: HostedMfaPolicy;
@@ -19,12 +20,6 @@ export const initiateLoginUri = `${localOrigin}/login`;
 export const connectRedirectUri = 'http://127.0.0.1:46480/callback';
 export const connectScope = 'openid profile email offline_access';
 
-export const hostedRolePermissions: Readonly<Record<string, readonly string[]>> = {
-  user: ['product:access'],
-  admin: ['user-grants:manage'],
-  'super-admin': ['admin-grants:manage', 'billing:manage'],
-  member: [],
-};
 const applicationPermissions: readonly string[] = Object.values(hostedRolePermissions).flat();
 
 export function workosClient({ apiKey, clientId }: HostedLiveSettings): WorkOS {

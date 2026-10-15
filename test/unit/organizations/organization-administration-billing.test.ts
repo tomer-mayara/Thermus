@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { GrantChangeRequest } from '../../../src/organizations/organization-administration.ts';
-import { memberRole, type MemberSeed } from '../../support/doubles/organizations/directory-double-records.ts';
+import type { MemberSeed } from '../../support/doubles/organizations/directory-double-records.ts';
+import { memberRole } from '../../support/fixtures/hosted-roles.ts';
 import { actorOf, adminGrant, administrationWith, changeOf, invitationsWith, members, recordLines, rolesIn, superAdminGrant, userGrant } from './fixtures/administration-fixtures.ts';
 
 // vic is an inactive Super Admin of Acme. gil is a Super Admin of Globex, the organization that each session of the
