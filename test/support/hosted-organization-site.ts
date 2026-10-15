@@ -81,8 +81,10 @@ export interface OrganizationSite {
 }
 
 // The real hosted composition, account routes, OrganizationAdministration, access contracts, and MCPServer, in this
-// process. Doubles stand only at the provider boundaries: the browser session, the membership directory, and the MCP
-// token verifier. No WorkOS setting, SDK, or credential exists.
+// process. Doubles stand at the provider boundaries: the browser session, the membership directory, and the MCP token
+// verifier. Two test-only probes stand in for the product: AccountOperationProbe gives the destinations, each with
+// the permission that it checks, and RequestContextProbe gives the MCP tool, which records its request context. No
+// WorkOS setting, SDK, or credential exists.
 export function openOrganizationSite(t: TestContext, setup: SiteSetup): OrganizationSite {
   const parts = composeSite(setup);
   t.after(() => parts.application.close());
