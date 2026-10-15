@@ -172,6 +172,6 @@ The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 of the plan move the 13 borrowed
 files); unit → support stays, because `S/` is the shared base of all test
 types; unit → work slice stays as the one documented exception. ESLint enforces
-D1 to D6 (Steps 4 and 5i of the plan), and an architecture specification proves
+D1 to D7 (Steps 4 and 5i of the plan), and an architecture specification proves
 each rule, as `test/acceptance/architecture/auth-boundaries.test.ts` does for
 `src`.
