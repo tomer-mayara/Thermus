@@ -26,7 +26,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
-| Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
+| Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration and eight invitation emails within its email quota, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
@@ -491,6 +491,17 @@ The gate also needs:
   callback of the test MCP client, which the browser catches.
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
+- Invitation emails that the email quota of the staging environment still
+  allows. WorkOS sends an email through its default email provider for each
+  send and each resend of an invitation. A complete run sends eight invitation
+  emails, and so does a run of only the AUTH-08W tests: two in the AUTH-08W
+  fixtures, two in the AUTH-08W proofs, and four in the AUTH-08W cases. A
+  refused send sends no email. When the quota is used up, WorkOS refuses each
+  send with `429` and the message "Sandbox environment email quota reached for
+  invitation emails.". Then the AUTH-08W fixtures cannot be made, and each of
+  the 17 AUTH-08W tests fails with that message. Such a run is not a pass.
+  WorkOS gives no `Retry-After` and documents no fixed quota. The quota was
+  used up at 23:17 UTC on 2026-10-14, and it was not back at 00:00 UTC.
 
 A complete run takes about 12 minutes: the third complete run of AUTH-08W
 run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
@@ -660,6 +671,34 @@ AUTH-08W ran the complete command, `npm run test:hosted-live`, three times on
 Thus the third complete run of AUTH-08W run r3 is a pass of the AUTH-08W part
 and of the hosted live gate as a whole. The completed operator MFA stays a
 manual check outside this gate, as the paragraph above gives.
+
+The ticket `a249fcb3-db9c-4721-b201-aadd8520d723` looks for the cause of the
+three `500` page reads of the second complete run. The run kept no operator
+report, so its cause is not known. A failed page of the AUTH-08W cases shows the
+last operator reports, and each report of a failed account request now also
+names the status, the code, and the request ID of the WorkOS answer that its
+cause carries (see the
+[WorkOS findings](../design/authentication-design.md#hosted-provider-findings)).
+Run r2 of the ticket did these runs on 2026-10-14 and 2026-10-15:
+
+1. Two runs of only the AUTH-08W tests, at 23:17 and at 00:00 UTC, through the
+   staging launcher: status 1, 17 tests, 0 passed, 17 failed. In each run,
+   WorkOS refused the first invitation send of the fixtures with `429`, "Sandbox
+   environment email quota reached for invitation emails.". No test reached a
+   page read.
+2. Two probes outside the repository, for 20 and 15 minutes, which repeated the
+   page reads and grant changes of the AUTH-08W cases with the real
+   `WorkOSOrganizations` and `OrganizationAdministration` and the SDK settings
+   of the hosted composition (no retry, 5-second timeout), in an organization
+   like C, also with changes of the actor's own grants. They sent no
+   invitation. They made 892 page reads, 108 grant changes, and 7,300 WorkOS
+   calls without a failure. The median call took about 150 ms, the 99th
+   percentile was at most 664 ms, and the slowest call took 2,367 ms. Calls of
+   more than 1 s came in short groups, so a slower group of WorkOS answers can
+   stop a read at the 5-second timeout, but the probes saw none.
+
+These runs are not a pass of the hosted live gate. The gate needs the invitation
+email quota again before its next run.
 
 Until the AUTH-06 cases pass, the hosted edition is not released. The
 [hosted offline checks](#hosted-offline-checks) never count as this gate.

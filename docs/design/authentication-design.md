@@ -278,7 +278,7 @@ and the WorkOS provider implements them.
 | `src/hosted-admin/account-pages.ts`, `administration-pages.ts`, and `page-html.ts` | `account-pages.ts` gives the notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. AUTH-08 added the notices of the administration routes: `mfaRequired` (`403`), `changeDenied` (`403`), `changeStale` (`409`, "Page out of date"), `invitationNotPending` (`409`), and `changeUnsupported` (`503`). AUTH-08W added `invitationAddressInUse` (`409`). `administration-pages.ts` gives the members and invitations pages, with the policy of the selection page; they escape each value that the provider gives. `page-html.ts` has the shared HTML parts, the page headers, and the escaping. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
 | `src/organizations/organization-directory.ts` | `OrganizationDirectory`, the provider contract of the organization reads and changes, with its records, requests, and results. `membershipsOf(user)` gives `OrganizationMembership` records: `organizationId`, `organizationName`, `active`, and `grants`, with every current grant. A grant holds only application permissions, so that a default role, which gives none, authorizes nothing. AUTH-08 added the member, grant, and invitation methods. The [organization administration](#organization-administration) section gives the contract. |
 | `src/organizations/organization-administration.ts`, `customer-roles.ts`, `change-records.ts`, `administration-overviews.ts`, and `directory-reads.ts` | `OrganizationAdministration` lists and authorizes the organizations of the session user, and it does the administration work of AUTH-08 for an `Actor`. `customer-roles.ts` gives the customer roles that an actor manages, `change-records.ts` runs each change and keeps its record, `administration-overviews.ts` builds the member and invitation overviews, and `directory-reads.ts` reads every page of a paged directory read. The [organization administration](#organization-administration) section gives the rules. |
-| `src/application.ts` | `composeHostedApplication(config, { session, accessResolver, organizations, mcp, browserRoutes }, { reportFailure, changeRecords, billing, operation })` composes the hosted edition from its provider parts. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. The optional `browserRoutes` are the browser routes of the provider that need no signed-in session; they answer before the account routes. AUTH-06 removed the placeholder MCP endpoint, `UnavailableMcpEndpoint`, which answered each MCP request with `503`. The third argument, `HostedAccountParts`, gives an optional account operation and three required parts: `reportFailure`, `changeRecords`, and `billing`, the one `Billing` of the hosted organizations. The composition gives the routes `OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing })`. `accountFailureReporter(logger)` writes each report as one error line: `An account request failed unexpectedly for <path>: <cause>`. `accountChangeRecorder(logger)` writes each change record as one info line, `Account change record: <JSON>`, in the operator log, until hosted storage exists. Other paths give `404`. `composeHostedApplication()` creates no `Billing`. `composeWorkOSApplication()` in `src/hosted-workos-application.ts` creates a `BillingFree` and gives it as `billing` to `composeHostedApplication()`, until AUTH-11 replaces it with the provider implementation. |
+| `src/application.ts` | `composeHostedApplication(config, { session, accessResolver, organizations, mcp, browserRoutes }, { reportFailure, changeRecords, billing, operation })` composes the hosted edition from its provider parts. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. The optional `browserRoutes` are the browser routes of the provider that need no signed-in session; they answer before the account routes. AUTH-06 removed the placeholder MCP endpoint, `UnavailableMcpEndpoint`, which answered each MCP request with `503`. The third argument, `HostedAccountParts`, gives an optional account operation and three required parts: `reportFailure`, `changeRecords`, and `billing`, the one `Billing` of the hosted organizations. The composition gives the routes `OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing })`. `accountFailureReporter(logger)` writes each report as one error line: `An account request failed unexpectedly for <path>: <cause>`. When the cause or a cause of it carries the facts of a provider answer, as the errors of the pinned WorkOS SDK do, the line ends with them, for example `(status 503, code server_error, request ID <ID>)`. The status of an answer that is not JSON comes from `rawStatus`, because the parse error of the SDK always has the status 500. Only short tokens are copied, and none of these facts is a credential. `accountChangeRecorder(logger)` writes each change record as one info line, `Account change record: <JSON>`, in the operator log, until hosted storage exists. Other paths give `404`. `composeHostedApplication()` creates no `Billing`. `composeWorkOSApplication()` in `src/hosted-workos-application.ts` creates a `BillingFree` and gives it as `billing` to `composeHostedApplication()`, until AUTH-11 replaces it with the provider implementation. |
 
 Until AUTH-06, the hosted edition started with a valid `https` public URL and
 no WorkOS setting, and each request got an explicit unavailable answer. Since
@@ -1204,6 +1204,18 @@ AUTH-08W run r3. The completed operator MFA stays a manual precondition
 without a proof; the decision ticket above decides how it is enforced and
 proven.
 
+The ticket `a249fcb3-db9c-4721-b201-aadd8520d723` looks for the cause of the
+three `500` page reads of the second complete run. Each operator report of a
+failed account request now names the status, the code, and the request ID of
+the WorkOS answer (point 12 of the findings below). Two probes with the SDK
+settings of the hosted composition repeated the page reads and grant changes of
+the cases in an organization like C: 892 page reads and 7,300 WorkOS calls
+without a failure, and no call slower than 2,367 ms. Two runs of only the
+AUTH-08W tests could not start their cases, because the email quota of the
+staging environment was used up (point 11). The
+[hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+records these runs.
+
 The values in the table below come from the diagnostics and the checks of the
 first pattern run and the first complete run. The third complete run passed
 the same checks, with C named by its external ID. The result of the ninth
@@ -1227,7 +1239,9 @@ proof comes from the complete runs.
 
 The offline proofs found the first three points. Each needed a live proof or an
 owner decision before the operation that depends on it. The probes and the live
-proofs of AUTH-08W resolved them and found the other points.
+proofs of AUTH-08W resolved them and found points 4 to 10. The live runs of the
+ticket `a249fcb3-db9c-4721-b201-aadd8520d723` found point 11, and its offline
+tests with the pinned SDK show point 12.
 
 1. **No conditional grant write.** The pinned SDK replaces the complete role
    set of a membership with `updateOrganizationMembership(id, { roleSlugs })`,
@@ -1326,6 +1340,28 @@ proofs of AUTH-08W resolved them and found the other points.
     `invitation_token` alone did not accept it either. The live gate invites
     only existing users with a password and a verified email, because an
     invitation to a new address needs an email verification code.
+11. **A sandbox email quota limits the invitations.** WorkOS sends an email
+    through its default email provider for each send and each resend of an
+    invitation. When the email quota of a sandbox environment is used up,
+    WorkOS refuses each send with `429` and the message "Sandbox environment
+    email quota reached for invitation emails.", without `Retry-After`. The SDK
+    throws `RateLimitExceededException`, so the directory refuses nothing
+    itself, and the send fails: the change record is `unknown`, and the page is
+    the `500` failure page. WorkOS documents no fixed quota for the default
+    provider; its limits follow the sending history of the environment, and a
+    custom email provider has none of them. Each run of the hosted live gate
+    sends eight invitation emails, so the quota limits the number of runs (see
+    the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)).
+12. **The errors of the pinned SDK carry the facts of the answer.** An error for
+    a WorkOS answer has its `status` and its `requestID`, and most also have the
+    `code` of WorkOS. An answer that is not JSON, such as an HTML `502` of the
+    WorkOS edge, and a request without an answer reach the caller as an
+    `Error` whose cause holds the facts: for the HTML answer a parse error with
+    `rawStatus` and `requestID` and the fixed status 500, and for a closed
+    connection the error `code`. The SDK gives no answer within its timeout as
+    `OauthException` with the status 408 and the text "Request timeout". The
+    operator report of a failed account request names these facts, so that a
+    failed page read shows which WorkOS answer stopped it.
 
 ## Hosted browser sessions
 
@@ -2241,7 +2277,7 @@ behavior.
 | `test/integration/mcp/required-permission.test.ts` and `test/integration/auth/portal-access.test.ts` | Implemented in AUTH-06: the MCP access check with a required permission, and the protected portal request with the real permission check. |
 | `test/acceptance/auth/hosted-startup.test.ts` and `hosted-workos.test.ts` | Implemented in AUTH-06. `hosted-startup` replaces the placeholder specification: the built server stops without valid WorkOS settings, and with them it refuses forged credentials without a network call. `hosted-workos` runs the real WorkOS composition behind the real HTTP server with the local fake WorkOS API: sign-in, callback, the session cookie, the portal session, product access of each grant set, refresh, ended sessions, outages, sign-out, Connect tokens at the MCP endpoint, and the organization of each credential. These tests prove the application side, not WorkOS behavior. |
 | `test/acceptance/auth/hosted-workos-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS composition with the WorkOS organization reads behind the real HTTP server with the local fake WorkOS API. Onboarding without an authorized active organization; the selection with the WorkOS names from paged reads; refused and forged selections without a switch; memberships that change after the page was shown; Super Admin alone with the billing page and without a User grant; origin and form token refusals before any organization read; and the refreshed session cookie on the `303`, the `403`, and the `500` failure page of an outage. These tests prove the application side, not WorkOS behavior. |
-| `test/acceptance/auth/hosted-workos-administration.test.ts` | Implemented in AUTH-08W: the real WorkOS composition with the WorkOS organization administration behind the real HTTP server with the local fake WorkOS API. Super Admin self-grants, refused grants, and an Admin regrant through single-role writes on the resource of Acme, by its external ID; independent grants and revocation at the next request; the removal of the last grant; stale, inactive, foreign, and forged targets; no WorkOS read without MFA evidence; the invitation forms with `address-in-use`, an acceptance that gives only the invited role, and an expired invitation; and the User seat count from every page, also during an outage. These tests prove the application side, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-workos-administration.test.ts` | Implemented in AUTH-08W: the real WorkOS composition with the WorkOS organization administration behind the real HTTP server with the local fake WorkOS API. Super Admin self-grants, refused grants, and an Admin regrant through single-role writes on the resource of Acme, by its external ID; independent grants and revocation at the next request; the removal of the last grant; stale, inactive, foreign, and forged targets; no WorkOS read without MFA evidence; the invitation forms with `address-in-use`, an acceptance that gives only the invited role, and an expired invitation; the User seat count from every page, also during an outage; and the `500` failure page without a member, an invitation, or a count when a member or invitation read gets an HTML `502` of the WorkOS edge, a `503`, a `429`, or no answer within the client timeout, with an operator report that names the status, the code, and the request ID of the WorkOS answer. These tests prove the application side, not WorkOS behavior. |
 | Existing `test/unit/billing/billing-free.test.ts` and `test/acceptance/billing/free-billing.test.ts` | `BillingFree` through the `Billing` interface: free plan, no billed seat, and refused input. The [AUTH-11 specification](billing-design.md#auth-11-implementation-specification) lists the paid billing tests. |
 
 Include these explicit acceptance specifications:
