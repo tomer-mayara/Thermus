@@ -27,8 +27,9 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
-- [Hosted Docker on Render plan](implementation/render-hosted-docker-plan.md): the GitHub auto-deploy target, production identity setup, checks, recovery, and delivery slices; RHD-01 implementation and verification are complete, and PR #115 awaits owner review.
+- [Hosted Docker on Render plan](implementation/render-hosted-docker-plan.md): the GitHub auto-deploy target, production identity setup, checks, recovery, and delivery slices; RHD-01 awaits owner review, and RHD-02 is in progress in stacked draft PR #116.
 - [RHD-01 implementation record](implementation/rhd-01.md): protected hosted fetch, fixed capacity, cancellation, shutdown deadline, and verification results.
+- [RHD-02 implementation record](implementation/rhd-02.md): hosted portal, local startup and health checks, MCP Origin validation, and verification status.
 - [MCP-P01 implementation record](implementation/mcp-p01.md): delivered HTTP fetch scope and historical verification before rebase.
 - [MCP-P02 implementation record](implementation/mcp-p02.md): shutdown ownership, request isolation, and its candidate verification.
 - [MCP-P03 implementation record](implementation/mcp-p03.md): the self-hosted fetch tool composition, the ad rules file, the local renderer runtime, image limits, and the renderer gate.

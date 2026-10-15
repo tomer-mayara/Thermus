@@ -18,6 +18,11 @@ export const repositoryRoot = new URL(fromSource ? '../../../' : '../../../../',
 // test checks only its parent folder.
 export const portalBuild = fileURLToPath(new URL('src/user-portal/dist/', repositoryRoot));
 
+// Offline hosted tests select these local inputs without changing the real portal build.
+export const hostedPortalFixture = new URL('test/support/fixtures/hosted-portal/', repositoryRoot);
+export const hostedRendererFixture = fileURLToPath(new URL('test/support/fixtures/lightpanda-version.sh', repositoryRoot));
+export const hostedPortalPreload = siblingModule('use-hosted-portal-fixture').href;
+
 // The program that the child-process sites and the command tests run: dist/src/index.js after a build.
 export const programEntry = fileURLToPath(new URL(`../../../src/index.${extension}`, import.meta.url));
 

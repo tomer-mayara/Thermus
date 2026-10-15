@@ -372,6 +372,20 @@ and one AuthKit key set, and writes the operator line below:
 fetch operation, and supply `fetchToolServers` as `buildServer`. One shared slot
 covers DNS, rendering, cleaning, and cleanup until settlement. Excess calls
 return a safe `busy` result without a queue.
+[RHD-02](../implementation/rhd-02.md) adds the public portal and local health to
+this production opener. The hosted public base path must be `/`. Before
+listening, startup validates the portal build and runs a bounded version check
+of the pinned Lightpanda 1.0.0. `GET` and `HEAD /healthz` give constant `200`
+after local initialization; other methods give `405`. Health makes no WorkOS
+call and renders no page.
+
+Every hosted request at the exact MCP path checks `Origin` before
+authentication. An absent header permits native clients. A present header must
+equal the serialized public origin exactly; foreign, malformed, opaque `null`,
+and noncanonical forms give `403`. Metadata remains public. Browser CSRF checks
+keep their separate rules. The [portal guide](../user-portal.md#deployment)
+gives static routes and CSP.
+
 A test can give the composition a connection to a local fake of the WorkOS API:
 
 - `WorkOSAuthProvider` is the MCP verifier and the access resolver of both

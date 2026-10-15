@@ -26,17 +26,26 @@ for (const [failure, preload] of [['a residual library handle', lingeringHostedH
 
 
 for (const [path, heldStage] of [['/mcp', 'token verification'], ['/account', 'browser authentication'], ['/session', 'browser authentication']] as const) {
-  test(`Given a hosted CLI waiting for ${heldStage} on ${path}, when SIGTERM starts shutdown, then the process exits cleanly without waiting for identity work or its shutdown deadline`, { timeout: 5_000 }, async (t) => {
-    const server = await ServerProcess.start(t, withPreload(settings, heldHostedIdentity));
+  // Process setup has its own allowance. The shutdown itself must still complete within one second.
+  test(`Given a hosted CLI waiting for ${heldStage} on ${path}, when SIGTERM starts shutdown, then the process exits cleanly without waiting for identity work or its shutdown deadline`, { timeout: 15_000 }, async (t) => {
+    let phase = 'server startup';
+    const server = ServerProcess.launch(t, withPreload(settings, heldHostedIdentity));
+    const reportTimeout = (): void => { t.diagnostic(`Hosted shutdown test stopped during ${phase}.\n${server.output}`); };
+    t.signal.addEventListener('abort', reportTimeout, { once: true });
+    t.after(() => t.signal.removeEventListener('abort', reportTimeout));
+    await server.started();
+    phase = 'waiting for held identity work';
     const response = server.request(path, path === '/mcp'
       ? { method: 'POST', headers: { Authorization: 'Bearer held-token', 'Content-Type': 'application/json' }, body: '{}' }
       : {}).catch(() => undefined);
     t.after(async () => { await response; });
     while (!server.output.includes(`Held hosted ${heldStage}`)) await delay(10, undefined, { signal: t.signal });
 
+    phase = 'shutdown';
     const started = performance.now();
     assert.deepEqual(await server.stop(), { code: 0, signal: null }, server.output);
     assert.ok(performance.now() - started < 1_000, server.output);
     assert.doesNotMatch(server.output, /Hosted shutdown exceeded/);
+    phase = 'response cleanup';
   });
 }

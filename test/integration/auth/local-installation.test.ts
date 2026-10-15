@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import '../../support/processes/use-hosted-portal-fixture.ts';
 import { cpSync } from 'node:fs';
 import { describe, test, type TestContext } from 'node:test';
 import { applySetCookies } from 'better-auth/cookies';

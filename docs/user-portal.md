@@ -40,26 +40,49 @@ gives no User access.
 
 ## Deployment
 
-A deployment serves the portal build at the public base path and sends each
-other request to the server:
+The production hosted application serves `src/user-portal/dist/` itself. Run
+`pnpm build:user-portal` before startup. Its package import
+`#hosted-portal/*` resolves the build in source and emitted server layouts.
+The public base path must be `/`, because the Vite build uses absolute asset
+paths. There is no portal path setting or SPA catch-all.
 
-- `GET` and `HEAD` of the base path itself give `index.html`.
-- `GET` and `HEAD` of `assets/<file>` give the files of the build.
-- Each other request goes unchanged to the Thermus server, also `login`,
-  `callback`, `logout`, `session`, `portal/access`, the account pages, `mcp`,
-  and the protected-resource metadata at the root.
+At startup, the application loads `index.html` and its flat `assets/` directory
+into memory. Each asset must be a nonempty regular file with an ASCII name that
+starts with a letter or digit and contains only letters, digits, `.`, `_`, or
+`-`. Directories and symlinks are refused. The index must reference a built
+JavaScript module. Every script and stylesheet reference must name a loaded
+asset. A missing or invalid build stops startup before listening and asks for
+`npm run build:user-portal`. A changed build takes effect after restart.
 
-The Vite build uses absolute asset paths, so the base path must be `/`. Send
-the portal pages with a Content Security Policy whose `form-action` allows each
-redirect of the sign-out. Chrome applies `form-action` also to the redirects
-after a form post, and stops the browser at the first redirect that the policy
-does not allow. The sign-out form goes to `logout` of the server. The server
-sends the browser to the WorkOS logout URL at `https://api.workos.com`. WorkOS
-sends it to the logout of the AuthKit domain, `<AuthKit domain>/api/logout`,
-which clears the AuthKit cookies. AuthKit then sends it to the Sign-out URI of
-the portal. For the AuthKit domain of `WORKOS_AUTHKIT_ISSUER`, for example
-`https://auth.example.com`, use
-`default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com https://auth.example.com`.
+- `GET` and `HEAD /` give `index.html`.
+- `GET` and `HEAD /assets/<file>` give only loaded assets. A path under
+  `/assets/` outside the loaded map gives `404`; the server does no request-time
+  file lookup.
+- `GET` and `HEAD /healthz` give constant `200` after local startup checks;
+  other methods give `405` with `Allow: GET, HEAD`. Health calls no provider
+  and renders no page.
+- Each other request goes unchanged to the existing application, including
+  non-read requests to `/` and asset paths, auth, account, `/mcp`, and root
+  protected-resource metadata. The wrapper retains request bodies, abort
+  signals, and application cleanup.
+
+Portal and asset responses have their content type and length,
+`Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, and
+`X-Frame-Options: DENY`. Their Content Security Policy allows each redirect of
+the sign-out. Chrome also applies `form-action` to redirects after a form post.
+The sign-out form posts to `logout`. The server redirects to the WorkOS logout
+URL at `https://api.workos.com`, then to `<AuthKit origin>/api/logout`, then to
+the portal Sign-out URI. With AuthKit origin `https://auth.example.com`, the
+server sends:
+
+```text
+default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com https://auth.example.com
+```
+
+The CSP uses the origin of `WORKOS_AUTHKIT_ISSUER`. It adds no broad CORS
+policy. Hosted MCP separately permits an absent `Origin` for native clients
+or the exact serialized public origin; other values get `403` before
+authentication. Browser CSRF checks keep their existing rules.
 
 Hosted MFA evidence follows `WORKOS_MFA_POLICY`. The default `optional`
 policy gives false evidence for every method and ignores older cookie
@@ -70,11 +93,14 @@ live-verified provider requirement. The work slice always keeps evidence false.
 
 The hosted live gate uses this layout at `https://localhost:46443/`. Its local
 HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
-self-signed certificate for each run, serves the portal build, and forwards
-each other request to the real hosted composition. The
+self-signed certificate for each run and forwards every request to the
+production hosted application. Thus the live browser checks use the production
+portal responses and CSP. The command needs the actual pinned renderer at an
+absolute `LIGHTPANDA_BIN` path for the local startup check. The
 [auth WorkOS MCP URL fetch work slice](../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
 runs the same local HTTPS site at the same origin, with a certificate that
-stays, so that a person trusts it one time. Its hosted composition also has the
+stays, so that a person trusts it one time. The custom development composition
+keeps a portal served by the HTTPS front. Its hosted composition also has the
 fetch tool and an opt-in onboarding policy. Only the slice enrolls an absent
 membership as User after a trusted WorkOS `GoogleOAuth` sign-in with a verified
 email whose domain is exactly `thermus.ai`. The callback selects the configured
@@ -94,8 +120,8 @@ staging environment has these settings for both:
 - MCP resource indicator: `https://localhost:46443/mcp`.
 - CORS origins: none. The portal makes no request to WorkOS.
 
-The test server sends the portal pages with the Content Security Policy above,
-with the AuthKit domain of the staging environment.
+The production application sends the Content Security Policy above with the
+AuthKit origin of staging. The custom development front uses the same policy.
 
 For another deployment, replace the origin in each of these settings and in
 `PUBLIC_BASE_URL` and `WORKOS_REDIRECT_URI`.
@@ -115,5 +141,6 @@ protected portal request with WorkOS. See the
 port 5173, without the server. The portal then shows the error page, because
 it has no server session there. Use them only for layout work.
 
-The Node server has a separate TypeScript build. Its image excludes portal
-source and browser output.
+The Node server has a separate TypeScript build. The current self-hosted image
+excludes portal source and browser output. The hosted image is planned in
+[RHD-03](implementation/render-hosted-docker-plan.md#rhd-03--build-and-prove-the-hosted-image).

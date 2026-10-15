@@ -21,7 +21,7 @@ const fatalLine = /^\[[^\]]*\] FATAL (?:\[[^\]]*\]: )?(.*)$/gm;
 const blocked = 'The test blocked a server-only module';
 const rendererReport = 'Renderer setup failure';
 const serverOnlyModuleGuard = `data:text/javascript,${encodeURIComponent(`import { registerHooks } from 'node:module';
-const serverOnly = (url) => ['/src/config/ad-rules-file.js', '/src/website-fetcher/website-fetcher-lightpanda.js'].some((end) => url.endsWith(end))
+const serverOnly = (url) => /\\/src\\/(?:config\\/ad-rules-file|website-fetcher\\/website-fetcher-lightpanda|hosted-renderer-startup|hosted-portal)\\.(?:js|ts)$/.test(url)
   || ['/src/html-cleaner-pipeline/', '/adblock-rs/'].some((part) => url.includes(part));
 registerHooks({ resolve(specifier, context, nextResolve) {
   const result = nextResolve(specifier, context);
@@ -80,18 +80,19 @@ describe('Modules that only servers load', () => {
     }
   });
 
-  test('Given trusted rules and a missing renderer, when the hosted edition starts with valid WorkOS settings, then it keeps the protected account and MCP boundaries, uses no network, and creates no local data', { timeout: 60_000 }, async (t) => {
+  test('Given trusted rules, a portal, and a pinned renderer version double, when the hosted edition starts with valid WorkOS settings, then the public portal opens, account and MCP stay protected, and the server uses no network or local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
-    const settings = { ...hostedSettings(directory), LIGHTPANDA_BIN: join(directory, 'missing-lightpanda') };
+    const settings = hostedSettings(directory);
     const server = await ServerProcess.start(t, settings);
     const page = await server.request('/');
     const pageText = await page.text();
+    const account = await server.request('/account');
     const mcp = await server.request('/mcp', mcpToolCall({ Authorization: 'Bearer any-token', Cookie: 'wos-session=any-session' }));
     await mcp.text();
     const exit = await server.stop();
 
-    assert.deepEqual([page.status, mcp.status], [401, 401]);
-    assert.match(pageText, /Sign-in required/);
+    assert.deepEqual([page.status, account.status, mcp.status], [200, 401, 401]);
+    assert.match(pageText, /Thermus hosted portal fixture/);
     assert.match(mcp.headers.get('WWW-Authenticate') ?? '', /^Bearer /);
     assert.ok(server.output.includes(hostedStartupLine), server.output);
     assert.ok(!server.output.includes(rendererReport), server.output);

@@ -1536,7 +1536,7 @@ npm run build && node --test dist/test/integration/auth/workos-google-onboarding
 
 **Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
 
-The eleven source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These eleven integration cases start `LocalHttpsSite` with the real HTTP server. The failed-start and certificate cases stay in the entry file. The sibling test-case modules `hosted-live-site/mcp.ts` and `hosted-live-site/cancellation.ts` add the MCP and lifecycle cases. Their fixture data is in `test/integration/auth/fixtures/https-site-fixtures.ts`; `test/support/hosted-live/https-client.ts` is the HTTPS protocol driver. The MCP cases connect the real hosted composition and fetch server to the pinned SDK against a local WorkOS fake, with a fetch-operation double. They prove HTTP and application collaboration, not real Google or renderer behavior. The complete-site cases listen on port 46443, so the hosted live gate and the manual slice must be stopped first.
+The earlier eleven source and compiled cases passed on 2026-10-15 with the RHD-01 complete-candidate gates. RHD-02 changes the default front to forward the portal to production and adds the pinned renderer startup prerequisite; its results are pending in the [RHD-02 record](../implementation/rhd-02.md#verification). These integration cases start `LocalHttpsSite` with the real HTTP server. The failed-start and certificate cases stay in the entry file. The sibling test-case modules `hosted-live-site/mcp.ts` and `hosted-live-site/cancellation.ts` add the MCP and lifecycle cases. Their fixture data is in `test/integration/auth/fixtures/https-site-fixtures.ts`; `test/support/hosted-live/https-client.ts` is the HTTPS protocol driver. The MCP cases connect the real hosted composition and fetch server to the pinned SDK against a local WorkOS fake, with a fetch-operation double. They prove HTTP and application collaboration, not real Google or renderer behavior. The complete-site cases listen on port 46443, so the hosted live gate and the manual slice must be stopped first.
 
 [V] Given a missing portal build, start rejects with a setup message and file-system cause and leaves no listener
 [V] Given no OpenSSL, start rejects with the spawn error, closes the default application, and leaves no listener
@@ -1779,6 +1779,38 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 
 The [RHD-01 record](../implementation/rhd-01.md#verification) gives focused
 commands, recorded red steps, and the gate results.
+
+**RHD-02 hosted portal, startup, health, and MCP Origin**
+
+These specifications use the production opener, a static portal fixture, trusted
+rules, and a version-command fixture or child-process double. They need no
+WorkOS network call. The manager-confirmed focused run passed all 151 cases
+across 19 new or changed emitted test files, and the complete acceptance
+rerun passed 333 backend and four portal cases. The dedicated container gate
+passed all 13 cases and covers the 20th changed test file. Hosted-live remains
+pending in the
+[RHD-02 record](../implementation/rhd-02.md#verification).
+
+[V] `test/acceptance/auth/hosted-portal.test.ts`: the public root and built JavaScript load with the production CSP; health is constant; account and MCP still require sign-in
+[V] `test/unit/hosted-portal/hosted-portal.test.ts`: startup refuses missing, invalid, symlinked, or empty assets and absent build references; GET/HEAD use the preloaded files, safe missing paths give 404, and other requests retain body, signal, and cleanup
+[V] `test/acceptance/auth/hosted-startup.test.ts`: missing renderer, missing or invalid portal, and non-root hosted base prevent listening with safe failures; the public root needs no sign-in, while protected routes retain their refusals
+[V] `test/unit/hosted-renderer-startup.test.ts` and `test/interface/hosted-renderer-startup.test.ts`: absolute executable, exact version, fixed timeout and output bounds, safe failure, and telemetry-off behavior
+[V] `test/acceptance/auth/hosted-mcp-origin.test.ts`: absent/exact origins keep protected MCP behavior; foreign, malformed, and opaque origins get 403 before WorkOS; metadata stays public
+[V] `test/integration/auth/hosted-mcp-origin.test.ts` and `test/unit/application.test.ts`: all MCP methods, repeated/invalid origins, configured port authority, no authentication work on refusal, and unchanged metadata/browser/account/self-hosted delegation
+
+[V] `test/unit/server-preloads.test.ts`: adding a preload retains existing settings, preserves both preloads in order, and leaves the supplied settings unchanged (two cases, covered by the manager-confirmed unit run)
+
+[V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: the three held-identity cases retain shutdown under one second, clean exit, and no deadline error, with a 15-second total test allowance and timeout-phase diagnostics
+
+Build before these focused commands. The portal acceptance uses the explicit
+fixture mapping; it does not establish the packaged image contract.
+
+```sh
+npm run build
+node --test dist/test/unit/hosted-portal/hosted-portal.test.js dist/test/unit/hosted-renderer-startup.test.js dist/test/unit/application.test.js dist/test/unit/server-preloads.test.js
+node --test dist/test/interface/hosted-renderer-startup.test.js dist/test/integration/auth/hosted-mcp-origin.test.js
+node --test dist/test/acceptance/auth/hosted-portal.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-mcp-origin.test.js
+```
 
 **Self-hosted fetch tool with real Better Auth** (`test/acceptance/mcp/self-hosted-fetch-tool.test.ts`)
 
@@ -2285,7 +2317,7 @@ The suite builds the image of the current candidate two times; the second build 
 [V] Given two users with tokens, a stopped-server password reset of one user ends only its token and old password, and the user signs in again without a new consent; a later disable of the other user ends only its token and sign-in; the peer keeps working each time
 [V] Given a live server container, one-off command containers on the same volume and a command in the server container fail with the lock error, ask for no password, and change no account
 [V] Given an installation that starts with zero accounts and later has only a disabled account, a command container that adds an account while the server is stopped gives MCP access through the installation client, and the tenant stays the same
-[V] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, and the MCP session lists only `getURLAsMarkdown`; a container with `DEPLOYMENT=hosted` and placeholder WorkOS settings then gives that session and its token no access: each account path gets 401, the forged callback gets 400 with a cleared sign-in cookie, MCP gets 401 with a Bearer challenge, nothing calls WorkOS, no tenant is reported, the container stops with status 0, and nothing is written to its volume
+[V] Given a signed-in local user, hosted, paid, and private-provider paths give 404 and add no account, and MCP lists only `getURLAsMarkdown`; starting the self-hosted image with `DEPLOYMENT=hosted`, valid WorkOS settings, trusted rules, and its pinned renderer stops before listening because the portal build is absent, with safe FATAL output, exit code 1, no local tenant or fresh-volume data, and no outbound calls (RHD-02 dedicated gate: 13/13 passed)
 [V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, the pinned production packages with a working native ad blocker, and the pinned Lightpanda 1.0.0 at `LIGHTPANDA_BIN=/opt/lightpanda/1.0.0/lightpanda`, which root owns with mode `0755`, which the `node` user cannot change, and which loads the CA certificates of the image, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting except `LIGHTPANDA_DISABLE_TELEMETRY=true`, a `0700` data directory, and `AD_RULES_FILE=/etc/thermus/ad-rules.txt`, but no rules file; the compose service mounts only that volume and the operator's `ad-rules.txt` read-only, which Compose must not make, starts with an init process, and publishes port 8080 on `127.0.0.1`
 
 Run the container gate. It needs Docker Engine with Buildx and Compose:

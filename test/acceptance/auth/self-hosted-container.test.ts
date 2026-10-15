@@ -550,7 +550,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await site.assertNoOutboundRequests();
   });
 
-  test('Given the self-hosted image, when a client calls hosted, paid, and private provider paths directly with a signed-in browser session, then each path gives 404 and adds no account, the MCP session of the signed-in user lists only the fetch tool, and a container with DEPLOYMENT=hosted and WorkOS settings gives that session and its token no access: each account path asks for a sign-in, the forged callback is refused, MCP asks for a token, nothing calls WorkOS, and nothing is written to its volume', { timeout: 300_000 }, async (t) => {
+  test('Given the self-hosted image and a signed-in local user, when the user calls hosted, paid, and private provider paths, then each gives 404 without adding an account and MCP lists only the fetch tool; when the image starts with DEPLOYMENT=hosted and valid WorkOS settings, then the missing hosted portal stops startup before listening with a safe FATAL line, no local data, and no outbound calls', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t, [alice]);
     const server = await setup.site.startServer(setup.volume);
     const user = new LocalMcpUser(setup.site.address, setup.clientIds[0] ?? '', alice);
@@ -571,39 +571,21 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await server.stop();
     const accounts = await listedAccounts(setup.operator);
     const hostedVolume = await setup.site.volume();
-    const hosted = await setup.site.startServer(hostedVolume, { environment: hostedSettings });
-    const hostedAnswers = [];
-    for (const [method, path] of hostedAndPaidPaths) {
-      const response = await fetch(new URL(path, setup.site.address()), {
-        method,
-        headers: { Origin: hostedSettings.PUBLIC_BASE_URL, Cookie: cookie, 'Content-Type': 'application/json' },
-        ...(method === 'POST' ? { body } : {}),
-      });
-      hostedAnswers.push([method, path, response.status, response.headers.get('Set-Cookie')]);
-    }
-    const hostedMcp = await fetch(new URL('mcp', setup.site.address()), {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${user.accessToken}`, Cookie: cookie, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
-    });
-    const notice = await fetch(setup.site.address());
-    const noticeText = await notice.text();
-    const hostedExit = await hosted.stop();
+    const hosted = await setup.site.createServer(hostedVolume, { environment: hostedSettings });
+    hosted.launch();
+    const hostedListens = await hosted.listeningOrExit();
+    const hostedExit = await hosted.exited();
 
     assert.ok(cookie !== '', 'the user has a browser session');
     assert.deepEqual(tools.map(({ name }) => name), fetchToolNames);
     assert.deepEqual(statuses, hostedAndPaidPaths.map(([method, path]) => [method, path, 404]));
     assert.deepEqual(accounts.map(({ email }) => email), [alice.email]);
-    assert.deepEqual(hostedAnswers, hostedAndPaidPaths.map(([method, path]) => (path.startsWith('/auth/callback')
-      ? [method, path, 400, '__Host-thermus-sign-in=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0']
-      : [method, path, 401, null])));
-    assert.equal(hostedMcp.status, 401);
-    assert.match(hostedMcp.headers.get('WWW-Authenticate') ?? '', /^Bearer /);
-    assert.deepEqual([notice.status, notice.headers.get('Set-Cookie')], [401, null]);
-    assert.match(noticeText, /Sign-in required/);
+    assert.equal(hostedListens, false, hosted.output);
+    assert.match(hosted.output, /FATAL.*The hosted portal build is missing or invalid\. Run npm run build:user-portal before startup\./);
     assert.match(hosted.output, /INFO.*Hosted authentication uses WorkOS: the client client_placeholder/);
-    assert.doesNotMatch(hosted.output, /tenant/);
-    assert.deepEqual(hostedExit, { code: 0, signal: null });
+    assert.doesNotMatch(hosted.output, /tenant|ENOENT|\/app\/src\/user-portal\/dist/);
+    for (const name of ['WORKOS_API_KEY', 'WORKOS_COOKIE_PASSWORD']) assert.ok(!hosted.output.includes(workOSSettings[name] ?? ''), hosted.output);
+    assert.deepEqual(hostedExit, { code: 1, signal: null });
     assert.deepEqual(await probeImage(images.current, 'data-files', hostedVolume), []);
     await setup.site.assertNoOutboundRequests();
   });

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import '../../support/processes/use-hosted-portal-fixture.ts';
 import { describe, test, type TestContext } from 'node:test';
 import { accountChangeRecorder, accountFailureReporter, createApplication } from '../../../src/application.ts';
+import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
 import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
 import {
@@ -12,7 +14,7 @@ import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-
 import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
-import { formFor, hostedConfig, openOrganizationSite, userOf, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
+import { formFor, openOrganizationSite, userOf, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 class RecordingLogger {
   readonly lines: string[] = [];
@@ -161,8 +163,9 @@ describe('Hosted grant management with the real composition, routes, service, an
 
   test('Given the production hosted application with the WorkOS provider, when the member and invitation pages and their changes arrive with the session cookie, form token, and values of the doubles, then each asks for a sign-in without a cookie or a form, and nothing is recorded', async () => {
     const logger = new RecordingLogger();
-    const application = await createApplication(hostedConfig, logger, { ...workOSSettingsFor(hostedConfig.publicBaseUrl), ...hostedFetchSettings });
-    const browser = new HostedBrowser(application.handle, hostedConfig.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-eve', 'org-a')));
+    const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/' }, 'http');
+    const application = await createApplication(config, logger, { ...workOSSettingsFor(config.publicBaseUrl), ...hostedFetchSettings });
+    const browser = new HostedBrowser(application.handle, config.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-eve', 'org-a')));
     const form = { csrf_token: 'forged-token', organization_id: 'org-a' };
 
     const answers = [

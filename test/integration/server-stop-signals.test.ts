@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import '../support/processes/use-hosted-portal-fixture.ts';
 import { EventEmitter, once } from 'node:events';
 import { connect, createServer, type AddressInfo } from 'node:net';
 import { test } from 'node:test';

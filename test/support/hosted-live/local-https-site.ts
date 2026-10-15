@@ -44,8 +44,10 @@ function closeFront(front: Server): Promise<void> {
 }
 
 export interface LocalHttpsSiteOptions {
-  // The directory of the portal build. The default is src/user-portal/dist/ of this repository, from the module paths.
+  // Only a custom application uses the static front. Its default portal build is src/user-portal/dist/.
   readonly portalBuild?: string;
+  // The default application checks this executable. The live gate uses LIGHTPANDA_BIN from its environment.
+  readonly rendererExecutable?: string;
   // The TLS key and certificate in PEM. The default is a new self-signed certificate for this run.
   readonly certificate?: TlsCertificate;
   // The logger of the Thermus listener and of the default application. With this option, the log of the site stays
@@ -56,11 +58,8 @@ export interface LocalHttpsSiteOptions {
   readonly application?: (logger: ApplicationLogger) => Promise<Application>;
 }
 
-// The local HTTPS test server of the hosted live gate, at https://localhost:46443/. It is the documented deployment
-// of the gate: it serves the built portal at / and /assets/, and it sends each other request to Thermus. For the gate,
-// Thermus is the real hosted composition with the WorkOS staging settings, and the certificate is a new self-signed
-// one for each run. A work slice gives its own application and a certificate that stays. A start that fails closes
-// what it started, so that the gate process can exit.
+// The HTTPS front sends every live gate request to the production application, including portal and health requests.
+// A work slice with a custom application keeps the static portal front. Failed starts release their resources.
 export class LocalHttpsSite {
   readonly log: LogLines;
   readonly #thermus: HttpServer;
@@ -79,13 +78,15 @@ export class LocalHttpsSite {
   }
 
   static async start(settings: HostedLiveSettings, options: LocalHttpsSiteOptions = {}): Promise<LocalHttpsSite> {
-    // The portal files come first. Without a portal build, the start fails before it opens a resource.
-    const files = await portalFiles(options.portalBuild ?? portalBuild);
+    if (options.application === undefined && options.portalBuild !== undefined) {
+      throw new Error('portalBuild requires a custom application; the production application owns its portal.');
+    }
+    const files = options.application === undefined ? new Map() : await portalFiles(options.portalBuild ?? portalBuild);
     await using owned = new AsyncDisposableStack();
     const certificateDirectory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
     const log = new LogLines();
     const logger = options.logger ?? log;
-    const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger));
+    const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger, options.rendererExecutable ?? process.env.LIGHTPANDA_BIN));
     let listenerDrain: Promise<void> | undefined;
     let drained = Promise.resolve<PromiseSettledResult<void>>({ status: 'fulfilled', value: undefined });
     // The site owns the listener even when custom application cleanup ignores its drain or fails.
@@ -103,7 +104,7 @@ export class LocalHttpsSite {
         (reason: unknown) => ({ status: 'rejected', reason }),
       );
     });
-    const site: PortalSite = { files, headers: portalHeaders(settings.authkitIssuer), thermus: thermus.url };
+    const site: PortalSite = { files, headers: options.application === undefined ? {} : portalHeaders(settings.authkitIssuer), thermus: thermus.url };
     const tls = options.certificate ?? await selfSignedCertificate(certificateDirectory);
     // One front after the other: when a listen fails, the stack already owns each front that listens.
     for (const host of listenAddresses) {
@@ -120,11 +121,12 @@ export class LocalHttpsSite {
   }
 }
 
-async function stagingApplication(settings: HostedLiveSettings, logger: ApplicationLogger): Promise<Application> {
+async function stagingApplication(settings: HostedLiveSettings, logger: ApplicationLogger, executable: string | undefined): Promise<Application> {
   const environment = {
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: publicBaseUrl,
     AD_RULES_FILE: trustedAdRulesFile,
+    LIGHTPANDA_BIN: executable,
     WORKOS_API_KEY: settings.apiKey,
     WORKOS_MFA_POLICY: settings.mfaPolicy ?? 'optional',
     WORKOS_CLIENT_ID: settings.clientId,

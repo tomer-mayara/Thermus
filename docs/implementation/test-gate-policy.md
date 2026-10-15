@@ -238,6 +238,13 @@ AUTH-09 added the container acceptance suite
   that the renderer blocks the loopback socket of `localhost`. Each call gets
   `Page fetch failed` and a `fetch_failed` record, and the page gets no
   connection;
+- keeps hosted, paid, and private-provider paths closed to a signed-in local
+  user, with no new account and only the fetch tool in MCP. Starting this
+  self-hosted image with `DEPLOYMENT=hosted`, valid WorkOS settings, trusted
+  rules, and its pinned renderer stops before listening because the image has
+  no portal build. The safe FATAL message names the build command, the exit
+  code is 1, the fresh volume stays empty, and no outbound call occurs. RHD-03
+  supplies the separate hosted image;
 - checks in the image that `LIGHTPANDA_BIN` names the pinned executable, which
   root owns and the `node` user cannot change, that the executable reports
   1.0.0 and loads the CA certificates of the image, and that the image sets
@@ -476,7 +483,7 @@ On the owner's Mac, the staging launcher reads the API key from the macOS
 Keychain and gives the three settings only to the command that it starts:
 
 ```sh
-node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 ```
 
 The launcher is outside the repository. Never print its key or copy it into a
@@ -486,9 +493,9 @@ The command uses one MFA profile for the complete run:
 
 ```sh
 # Default profile: WorkOS MFA must be Optional.
-node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 # Required profile: use only after WorkOS MFA is set to Required.
-WORKOS_MFA_POLICY=required node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+WORKOS_MFA_POLICY=required LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 ```
 
 The provider preflight checks `mfaEnabled: true` and requires `mfaRequired` to
@@ -548,7 +555,18 @@ Google, Connect consent, authenticated HTTPS fetch, and Axiom proof is
 separate from the gate. Keep PR #108 in Draft until that proof and the required
 complete-candidate checks pass; configuration read-back alone is not a pass.
 
+The default local HTTPS front forwards every request to the production hosted
+application, including the portal and assets. Thus the browser checks use its
+real portal policy. A custom development application keeps the front-served
+portal. The production application runs its local startup checks before it can
+serve the live gate.
+
 The gate also needs:
+
+- An absolute `LIGHTPANDA_BIN` path to the pinned Lightpanda 1.0.0 executable.
+  Hosted startup checks its version with the fixed timeout and output bounds
+  in the [runtime guide](../lightpanda-runtime.md#select-the-executable).
+  This local version check does not replace the renderer gate.
 
 - Chromium for Playwright 1.64.0: `pnpm exec playwright install chromium`.
 - OpenSSL in `PATH`: the local HTTPS test server makes a new self-signed
@@ -593,9 +611,9 @@ The Required profile has these parts:
   lists them and records their results.
 - The AUTH-06 cases of the hosted live gate, in
   `test/acceptance/auth/hosted-live/hosted-server.ts`. The local HTTPS test
-  server, `test/support/hosted-live/local-https-site.ts`, serves the portal
-  build at `https://localhost:46443/` and forwards each other request to the
-  real hosted composition of Thermus with the staging settings. Playwright
+  server, `test/support/hosted-live/local-https-site.ts`, forwards all requests
+  at `https://localhost:46443/` to the production hosted application of Thermus
+  with the staging settings. The application serves the portal and assets. Playwright
   drives the portal, the sign-in, and the sign-out; a test MCP client sends
   Connect tokens to the MCP endpoint. The cases cover the sign-in with MFA and
   the session cookie, the onboarding of a user without a membership, the

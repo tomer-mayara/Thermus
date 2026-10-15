@@ -45,7 +45,13 @@ export async function openWorkOSApplication(config: RouteConfig, logger: Applica
   const { createFetchOperation, fetchToolServers } = await import('./fetch-tool.ts');
   const { singleFetchOperation } = await import('./mcp/single-fetch-operation.ts');
   const operation = singleFetchOperation(createFetchOperation(environment, logger));
-  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger) });
+  if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
+  const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
+  await assertHostedRenderer(environment.LIGHTPANDA_BIN);
+  const { HostedPortal } = await import('./hosted-portal.ts');
+  const portal = await HostedPortal.load(connection.settings.authkitIssuer);
+  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger) });
+  return portal.withApplication(application);
 }
 
 // Invalid or missing WorkOS settings stop the start before the server listens. There is no fallback to local or
