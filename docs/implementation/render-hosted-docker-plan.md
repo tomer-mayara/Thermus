@@ -1,9 +1,9 @@
 # Hosted Docker on Render: implementation plan
 
-Status: RHD-01 implementation complete, live verification pending; RHD-02
-through RHD-05 are planned. Date: 2026-10-15.
+Status: RHD-01 implementation and verification complete; PR #115 awaits owner
+review. RHD-02 through RHD-05 are planned. Date: 2026-10-15.
 The [RHD-01 implementation and verification record](rhd-01.md) gives the results.
-PR completion and deployment remain pending.
+Owner review and merge remain pending; no deployment is recorded.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.
 
@@ -74,7 +74,7 @@ Reuse current listener drain, MCP cancellation, and renderer cleanup. Test slow
 authentication, slow DNS, and an active child under client disconnect and SIGTERM.
 The RHD-01 starting point had no finite cancellable first DNS wait, connected
 MCP lifetime after authentication, and left browser/account calls outside MCP
-ownership. RHD-01 addresses those gaps at their owners. Its candidate uses a
+ownership. RHD-01 addresses those gaps at their owners. It uses a
 five-second DNS wait and a 10-second hosted CLI shutdown deadline. A system
 lookup cannot be cancelled: its fetcher refuses further hostname lookups until
 abandoned native work settles. The existing five-second socket drain alone
@@ -286,8 +286,9 @@ required checks pass, and the operator can deploy and recover the service.
 
 ## Appendix A: delivery tickets
 
-RHD-01 implementation is complete in draft PR #115, with live verification
-pending; its [record](rhd-01.md) gives the scope and results. The remaining entries
+RHD-01 implementation and verification are complete in
+[PR #115](https://github.com/3-headed-monkey/Thermus/pull/115), which awaits owner
+review; its [record](rhd-01.md) gives the scope and results. The remaining entries
 are planned delivery slices. Each code ticket writes its failing
 Given-When-Then specification first, updates affected documents and fixtures, and
 runs its focused tests plus every applicable existing gate. The boundaries below

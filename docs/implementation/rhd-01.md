@@ -1,12 +1,12 @@
 # RHD-01: protected hosted fetch
 
-Status: implementation complete, live verification pending.
-Date: 2026-10-15. Draft PR: #115.
+Status: implementation and verification complete; PR #115 awaits owner review.
+Date: 2026-10-15. [PR #115](https://github.com/3-headed-monkey/Thermus/pull/115).
 Branch: `codex/rhd-01-hosted-fetch`.
 The [Render plan](render-hosted-docker-plan.md) gives the wider release scope.
 The manager signed off all three implementation workers and this documentation.
-Live provider verification and PR completion remain pending. No deployment or
-merge is recorded.
+Owner review and merge remain pending. The PR notes track Ready and Actions
+status. No deployment or merge is recorded.
 
 ## Implemented contract
 
@@ -106,8 +106,9 @@ units 2,507/2,507, portal units 8/8, build tests 10/10, and portal acceptance
 
 After the fixture fixes, the manager reported a new complete-candidate
 sequence, all exit 0: `npm run check` passed server units 2,507/2,507, portal
-units 8/8, build tests 10/10, and portal acceptance 4/4; integration passed
-422/422; acceptance passed backend cases 326/326 and portal cases 4/4. Each
+units 8/8, build tests 10/10, and portal acceptance 4/4;
+`npm run test:integration` passed 422/422; `npm run test:acceptance` passed
+backend cases 326/326 and portal cases 4/4. Each
 report had zero failures, cancellations, skips, and todo cases. The logs are
 `/tmp/thermus-rhd01/check-final.log`, `integration-final.log`, and
 `acceptance-final.log`. Acceptance used the local Axiom credential setup; no
@@ -125,14 +126,16 @@ review result; it does not change the tool exit status to 0.
 | Each new or changed focused test | Exit 0: 197/197 across 25 emitted files; container file covered by its dedicated gate |
 | `npm run check` | Complete-candidate pass: server units 2,507/2,507; portal units 8/8; build 10/10; portal acceptance 4/4 |
 | `habit-hooks`, empty snooze file, retained-finding reasons | Exit 1; all 158 findings retained with manager sign-off below; snooze `[]` |
-| Integration and acceptance suites | Exit 0: integration 422/422; acceptance backend 326/326 and portal 4/4; no failures, cancellations, skips, or todo cases |
+| `npm run test:integration` | Exit 0: 422/422; no failures, cancellations, skips, or todo cases |
+| `npm run test:acceptance` | Exit 0: backend 326/326 and portal 4/4; no failures, cancellations, skips, or todo cases |
 | Offline hosted checks | Covered by full integration and acceptance suites |
 | Full interface suite | Exit 0: 125/125, including WorkOS, Better Auth, local and public renderer cases, and Axiom |
 | `npm run test:mcp:renderer` | Exit 0: 9/9 |
 | `npm run test:container` | Exit 0: 13/13 |
-| Hosted live checks | Running through the documented staging launcher; result pending |
+| `npm run test:hosted-live`, Optional MFA profile | Exit 0: 77/77 tests in 16 suites; no failures, cancellations, skips, or todo cases |
 | Manager review | Three implementation workers and documentation signed off |
-| Ready, Actions, owner review, and merge | Pending |
+| Ready and Actions | See the notes of [PR #115](https://github.com/3-headed-monkey/Thermus/pull/115) |
+| Owner review and merge | Pending |
 
 The focused run selected the 25 emitted files listed in
 `/tmp/thermus-rhd01/focused-files.txt`; the changed container test ran separately.
@@ -148,7 +151,17 @@ cancellations, skips, and todo cases. These results include the existing
 self-hosted image contract. They do not prove an AMD64 hosted image or Render
 deployment; the hosted image proof belongs to RHD-03.
 
-The live gate result, PR completion, deployment, and merge remain pending.
+The WorkOS staging live gate passed through the documented launcher:
+
+```sh
+pnpm exec node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+```
+
+The Optional MFA profile exited 0: 77 tests in 16 suites, 77 passed, and zero
+failures, cancellations, skips, or todo cases. Duration: 580831.741459 ms.
+The log is `/tmp/thermus-rhd01/hosted-live.log`. No secret value is recorded.
+This is the Optional profile result; it does not claim a new Required-profile
+run. Owner review and merge remain pending. No deployment is recorded.
 
 ## Retained habit-hooks findings
 
