@@ -154,7 +154,8 @@ evidence.
 
 The connection to WorkOS writes one line at the start:
 `Hosted authentication uses WorkOS: the client <client ID> and the AuthKit issuer <issuer>.`
-The stop writes `Stopping after <signal>`. One tool call writes three log
+The start writes `Listening on https://localhost:46443/` when the HTTPS front
+listens, and the stop writes `Stopping after <signal>`. One tool call writes three log
 lines in this sequence:
 
 1. `work-slice fetch started: <requested URL>`

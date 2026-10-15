@@ -76,6 +76,7 @@ async function serveWorkSlice(): Promise<void> {
     logger,
     application: (applicationLogger) => composeWorkSliceApplication({ config, connection, environment: process.env }, applicationLogger),
   }), (site) => site.close());
+  logger.info(`Listening on ${config.publicBaseUrl}`);
   // A person can press Ctrl+C as soon as the instructions appear, so the stop handlers come first.
   using stopped = stopSignal(process);
   process.stdout.write(instructions(config, tls.certificateFile, scopeName));
