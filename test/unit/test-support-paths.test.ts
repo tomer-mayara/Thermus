@@ -3,9 +3,11 @@ import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { trustedAdRulesFile } from '../support/ad-rules.ts';
+import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
+import { probeScript } from '../support/container/container-gate.ts';
+import { edgeScript, pageScript } from '../support/container/container-site.ts';
 import { foreignOriginProbe, networkBlocker, portalBuild, programEntry, repositoryRoot, sqlTracer } from '../support/processes/module-paths.ts';
-import { failingAdCleaner } from '../support/server-preloads.ts';
+import { failingAdCleaner } from '../support/processes/server-preloads.ts';
 
 // The support code computes these paths at run time, so the compiler cannot check them. A moved module, preload,
 // or fixture file otherwise fails only in the suite that uses it, and the container and live gates run rarely.
@@ -16,6 +18,9 @@ const files = {
   foreignOriginProbe,
   failingAdCleaner: fileURLToPath(failingAdCleaner),
   trustedAdRulesFile,
+  edgeScript,
+  pageScript,
+  probeScript,
 };
 
 describe('Run-time paths of the test support code', () => {

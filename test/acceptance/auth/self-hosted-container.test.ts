@@ -5,9 +5,9 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { after, before, describe, test, type TestContext } from 'node:test';
 import { UnauthorizedError, type CallToolResult, type Client } from '@modelcontextprotocol/client';
-import { jwtClaims } from '../../support/better-auth-agents.ts';
-import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/better-auth-local.ts';
-import { assertExit, assertRevealsNone, type CommandResult } from '../../support/command-process.ts';
+import { jwtClaims } from '../../support/drivers/browser/better-auth-agents.ts';
+import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../../support/in-process/better-auth-local.ts';
+import { assertExit, assertRevealsNone, type CommandResult } from '../../support/processes/command-process.ts';
 import {
   buildGateImages,
   buildWithLightpandaAsset,
@@ -17,13 +17,13 @@ import {
   removeGateResources,
   repositoryRoot,
   type GateImages,
-} from '../../support/container-gate.ts';
-import { ContainerSite } from '../../support/container-site.ts';
-import { dockerOutput } from '../../support/docker-cli.ts';
-import { workOSSettings } from '../../support/hosted-placeholder.ts';
-import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/local-commands.ts';
-import { LocalMcpUser, type McpConnection } from '../../support/local-mcp-user.ts';
-import type { ServerContainer } from '../../support/server-container.ts';
+} from '../../support/container/container-gate.ts';
+import { ContainerSite } from '../../support/container/container-site.ts';
+import { dockerOutput } from '../../support/container/docker-cli.ts';
+import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
+import { LocalMcpUser, type McpConnection } from '../../support/dsl/local-mcp-user.ts';
+import type { ServerContainer } from '../../support/container/server-container.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };

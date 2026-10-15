@@ -10,7 +10,7 @@ import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipel
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
-import { elementHidingRules } from '../../support/ad-rules.ts';
+import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
 const context = createRequestContext({
   user: { authority: 'https://synthetic.example/', subject: 'synthetic-user' },

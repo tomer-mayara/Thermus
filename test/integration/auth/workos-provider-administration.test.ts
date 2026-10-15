@@ -14,9 +14,9 @@ import {
   type InvitationChangeRequest,
   type InvitationSendRequest,
 } from '../../../src/organizations/organization-administration.ts';
-import { BillingRecorder } from '../../support/billing-recorder.ts';
-import { fakeClientId, type FakeAnswer } from '../../support/workos-fake-api.ts';
-import { WorkOSWorld, type WorldInvitation, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
+import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
+import { fakeClientId, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
+import { WorkOSFake, type FakeInvitation, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 
 // The real WorkOSOrganizations and WorkOSAuthProvider with the pinned SDK against a local fake of the WorkOS API,
 // together with the real OrganizationAdministration, called directly as a service, and the real access resolution of
@@ -33,7 +33,7 @@ const acmeExternalId = 'customer-acme';
 const recordTime = '2026-10-14T09:00:00.000Z';
 const internalError: FakeAnswer = { status: 500, body: { message: 'Internal error' } };
 
-function person(name: string): WorldUser {
+function person(name: string): FakeUser {
   return { id: `user_01${name.toUpperCase()}`, email: `${name}@example.com`, firstName: `${name.charAt(0).toUpperCase()}${name.slice(1)}` };
 }
 
@@ -50,7 +50,7 @@ const pia = person('pia');
 // Acme: Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only
 // User, Eve an inactive membership that had User and Admin, and Gus only the default role. Globex: Bea and Pia have
 // User. Thus Acme has three active User seats: Ada, Bea, and Hal.
-const memberships: readonly WorldMembership[] = [
+const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
   { userId: dan.id, organizationId: acme, roles: ['super-admin', 'admin'] },
   { userId: cal.id, organizationId: acme, roles: ['admin'] },
@@ -63,7 +63,7 @@ const memberships: readonly WorldMembership[] = [
   { userId: pia.id, organizationId: globex, roles: ['user'] },
 ];
 
-function actorOf(user: WorldUser): Actor {
+function actorOf(user: FakeUser): Actor {
   return { user: { authority, subject: user.id, selectedOrganizationId: acme }, mfaCompleted: true };
 }
 
@@ -71,12 +71,12 @@ const bySam = actorOf(sam);
 const byDan = actorOf(dan);
 const byCal = actorOf(cal);
 
-function pendingInvitation(id: string, organizationId: string): WorldInvitation {
+function pendingInvitation(id: string, organizationId: string): FakeInvitation {
   return { id, email: 'guest@example.com', organizationId, roleSlug: 'user', state: 'pending', expiresAt: '2099-01-01T00:00:00.000Z' };
 }
 
 async function openSite(t: TestContext) {
-  const world = await WorkOSWorld.start(t, publicBaseUrl, [acme, globex]);
+  const world = await WorkOSFake.start(t, publicBaseUrl, [acme, globex]);
   world.memberships = memberships;
   world.organizationNames = { [acme]: 'Acme', [globex]: 'Globex' };
   world.organizationExternalIds = { [acme]: acmeExternalId };
@@ -122,7 +122,7 @@ function entryOf(overview: MemberOverview, membershipId: string): MemberEntry {
   return entry;
 }
 
-function invitedUser(site: Site, email: string): WorldUser {
+function invitedUser(site: Site, email: string): FakeUser {
   const user = site.world.users.find((candidate) => candidate.email === email);
   assert.ok(user, `WorkOS has no user with the address ${email}.`);
   return user;
@@ -162,7 +162,7 @@ function invitationSend(email: string, role: string): WorkOSChange {
 }
 
 // The memberships of WorkOS other than those of these users in Acme.
-function otherMemberships(all: readonly WorldMembership[], changed: readonly WorldUser[]): WorldMembership[] {
+function otherMemberships(all: readonly FakeMembership[], changed: readonly FakeUser[]): FakeMembership[] {
   return all.filter(({ userId, organizationId }) => organizationId !== acme || !changed.some(({ id }) => id === userId));
 }
 
@@ -179,7 +179,7 @@ function inAnyOrder<T>(items: readonly T[]): T[] {
 // Lets another administrator change a membership in WorkOS while the service reads the user of a member: after the
 // service read the revision and before the directory reads the membership again for its write. The user read still
 // gets the answer that the world gave before.
-async function changeDuringUserRead(site: Site, user: WorldUser, change: () => void): Promise<void> {
+async function changeDuringUserRead(site: Site, user: FakeUser, change: () => void): Promise<void> {
   const path = `/user_management/users/${user.id}`;
   const answer: FakeAnswer = { status: 200, body: await (await fetch(new URL(path, site.world.fake.origin))).json() };
   site.world.fake.answer(`GET ${path}`, () => {

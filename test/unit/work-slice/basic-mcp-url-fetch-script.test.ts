@@ -4,7 +4,7 @@ import { mkdirSync, realpathSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 
 const script = fileURLToPath(new URL(import.meta.url.endsWith('.ts') ? '../../../test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh' : '../../../../test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh', import.meta.url));
 const physicalRoot = realpathSync(fileURLToPath(new URL(import.meta.url.endsWith('.ts') ? '../../../' : '../../../../', import.meta.url)));

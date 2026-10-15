@@ -4,7 +4,7 @@ import { copyFileSync, mkdirSync, readFileSync, realpathSync, writeFileSync } fr
 import { dirname, join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { dataDirectory } from '../../../support/data-directory.ts';
+import { dataDirectory } from '../../../support/isolation/data-directory.ts';
 import { repositoryRoot } from '../../../support/processes/module-paths.ts';
 
 // The harness of the launcher test of the auth WorkOS MCP URL fetch slice. The script finds the repository root from

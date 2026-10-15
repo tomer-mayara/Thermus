@@ -3,7 +3,7 @@ import http from 'node:http';
 import https from 'node:https';
 import { describe, test } from 'node:test';
 import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { createContextForUrl } from '../../../support/html-cleaner-context.ts';
+import { createContextForUrl } from '../fixtures/html-cleaner-context.ts';
 
 describe('Supplied ad rules', () => {
   test('uses supplied rules on an ordinary host and honors exceptions', async () => {

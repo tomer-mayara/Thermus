@@ -9,7 +9,7 @@ import { createServer, type Server } from 'node:http';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { permitIPv4Fixture } from '../support/network-fixture.ts';
+import { permitIPv4Fixture } from '../support/doubles/website-fetcher/network-fixture.ts';
 
 const originalExecFile = childProcess.execFile;
 const READINESS_WAIT_MS = 5_000;

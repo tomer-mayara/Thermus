@@ -8,10 +8,10 @@ import {
   loopbackRedirectUri,
   PreRegisteredNativeClient,
   ResourceServerClient,
-} from '../../support/better-auth-agents.ts';
-import { mcpResourceUrl, withRegistrationSession, type AccountCredentials } from '../../support/better-auth-local.ts';
-import { assertExit, assertRevealsNone } from '../../support/command-process.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+} from '../../support/drivers/browser/better-auth-agents.ts';
+import { mcpResourceUrl, withRegistrationSession, type AccountCredentials } from '../../support/in-process/better-auth-local.ts';
+import { assertExit, assertRevealsNone } from '../../support/processes/command-process.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import {
   addUser,
   listedAccounts,
@@ -23,8 +23,8 @@ import {
   signIn,
   storedResourceServerClient,
   userGrant,
-} from '../../support/local-commands.ts';
-import { withRuntime } from '../../support/local-runtime.ts';
+} from '../../support/dsl/local-commands.ts';
+import { withRuntime } from '../../support/in-process/local-runtime.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };

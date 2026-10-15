@@ -5,14 +5,14 @@ import { getEventListeners } from 'node:events';
 import { syncBuiltinESMExports } from 'node:module';
 import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { mockRenderer, RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { controlledRenderer, RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 const requestedUrl = 'https://EXAMPLE.com';
 const success = JSON.stringify({ url: 'https://example.com/final', http_status: 200, content: '<html>Ready</html>', error: null });
 
 test('Given a cancelled call, when fetching, then it does no DNS or renderer work', async (t) => {
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const execute = t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {
     (args[3] as Completion)(null, success, '');
     return renderer.child;
@@ -29,7 +29,7 @@ test('Given a cancelled call, when fetching, then it does no DNS or renderer wor
 
 for (const dnsFails of [false, true]) {
   test(`Given DNS is pending, when the call is cancelled and DNS ${dnsFails ? 'fails' : 'completes'}, then no renderer starts`, async (t) => {
-    const renderer = mockRenderer(t);
+    const renderer = controlledRenderer(t);
     let completeLookup!: (addresses: Array<{ address: string; family: number }>) => void;
     let failLookup!: (error: Error) => void;
     t.mock.method(dns, 'lookup', () => new Promise((resolve, reject) => {
@@ -52,7 +52,7 @@ for (const dnsFails of [false, true]) {
 for (const completion of ['success', 'process failure', 'HTTP failure'] as const) {
   test(`Given a running renderer, when cancelled before ${completion}, then it kills the child and rejects after cleanup`, async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
-    const renderer = mockRenderer(t);
+    const renderer = controlledRenderer(t);
     const controller = new AbortController();
     const reason = new Error('Call cancelled');
     const result = new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal);
@@ -80,7 +80,7 @@ for (const completion of ['success', 'process failure', 'HTTP failure'] as const
 for (const fails of [false, true]) {
   test(`Given a call with a signal, when the renderer ${fails ? 'fails' : 'completes'}, then it releases the abort listener and readiness timer`, async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
-    const renderer = mockRenderer(t);
+    const renderer = controlledRenderer(t);
     const controller = new AbortController();
     const result = new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal);
     await renderer.launched;
@@ -99,7 +99,7 @@ for (const fails of [false, true]) {
 
 test('Given renderer launch fails, when fetching with a signal, then it releases its listener and timer', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const error = new Error('Launch failed');
   t.mock.method(childProcess, 'execFile', () => { throw error; });
   syncBuiltinESMExports();
@@ -113,7 +113,7 @@ test('Given renderer launch fails, when fetching with a signal, then it releases
 });
 
 test('Given cancellation happens while reading renderer output, when the result is ready, then it cannot return success', async (t) => {
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const controller = new AbortController();
   const result = new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal);
   await renderer.launched;
@@ -132,7 +132,7 @@ test('Given cancellation happens while reading renderer output, when the result 
 
 test('Given the readiness timer killed a renderer, when cancellation follows, then the child is killed once', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const controller = new AbortController();
   const result = new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal);
   const rejected = assert.rejects(result, (error) => error === controller.signal.reason);
@@ -152,7 +152,7 @@ test('Given the readiness timer killed a renderer, when cancellation follows, th
 
 test('Given a cancelled renderer completed, when its callback runs again, then cleanup runs once and no output is parsed', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const controller = new AbortController();
   const removeListener = t.mock.method(controller.signal, 'removeEventListener');
   const parse = t.mock.method(JSON, 'parse');
@@ -174,7 +174,7 @@ test('Given a cancelled renderer completed, when its callback runs again, then c
 
 test('Given concurrent fetches share a fetcher, when one is cancelled, then the other keeps its result and resources', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const otherChild = new RendererChildDouble();
   const completions: Completion[] = [];
   t.mock.method(childProcess, 'execFile', ((...args: Parameters<typeof childProcess.execFile>): ChildProcess => {

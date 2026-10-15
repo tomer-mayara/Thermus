@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { permitIPv4Fixture, startFixture } from '../support/network-fixture.ts';
+import { permitIPv4Fixture, startFixture } from '../support/doubles/website-fetcher/network-fixture.ts';
 
 const html = '<html><head><title>Redirect fixture</title></head><body><main><p>Related pages: <a href="child">Child</a> and <a href="/root">Root</a>.</p></main></body></html>';
 

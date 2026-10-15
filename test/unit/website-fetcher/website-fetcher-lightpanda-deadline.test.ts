@@ -3,7 +3,7 @@ import type { ChildProcess, ExecFileException } from 'node:child_process';
 import { test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
-import { mockRenderer } from '../../support/renderer-process-double.ts';
+import { controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 function setExitState(child: ChildProcess, state: { exitCode?: number; signalCode?: NodeJS.Signals }): void {
   for (const [property, value] of Object.entries(state)) {
@@ -17,7 +17,7 @@ function successResult() {
 
 test('keeps a clean exit completed before the deadline when its callback is delayed', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
@@ -30,7 +30,7 @@ test('keeps a clean exit completed before the deadline when its callback is dela
 
 test('preserves the original error when a failed exit precedes the deadline callback', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
@@ -48,7 +48,7 @@ test('preserves the original error when a failed exit precedes the deadline call
 
 test('rejects a clean callback when the still-running child reached the deadline', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
@@ -60,7 +60,7 @@ test('rejects a clean callback when the still-running child reached the deadline
 
 test('keeps an HTTP failure when the renderer exits before the readiness deadline', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 
@@ -80,7 +80,7 @@ test('keeps an HTTP failure when the renderer exits before the readiness deadlin
 
 test('keeps a readiness failure when the late callback reports HTTP failure', async (t) => {
   t.mock.timers.enable({ apis: ['setTimeout'] });
-  const renderer = mockRenderer(t);
+  const renderer = controlledRenderer(t);
   const result = new WebsiteFetcherLightpanda().fetchURL('https://example.com/');
   await renderer.launched;
 

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { Client, SdkHttpError, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
+import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
+import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given missing or malformed Bearer credentials in ${era}, when the fetch HTTP resource is requested, then authentication refuses before fetch or completion`, async (t) => {

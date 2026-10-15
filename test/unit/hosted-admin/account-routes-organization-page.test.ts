@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { formsIn } from '../../support/hosted-browser.ts';
+import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { accountRequest, ann, assertPage, ben, organization, publicOrigin, serve, signedIn } from './fixtures/account-routes-fixtures.ts';
 import { annToken, serveAnn, sessionCookies } from './fixtures/organization-routes-fixtures.ts';
 

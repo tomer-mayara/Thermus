@@ -153,9 +153,9 @@ command. The [gate policy](test-gate-policy.md) defines the required runs.
   eight. It does not prove renderer behavior.
 - Changed tests: server processes in the auth acceptance and integration tests
   get `AD_RULES_FILE` from `selfHostedServerSettings(directory)` in
-  `test/support/local-runtime.ts`. Commands still use
+  `test/support/in-process/local-runtime.ts`. Commands still use
   `selfHostedSettings(directory)`. Self-hosted tool lists now expect
-  `['getURLAsMarkdown']`. `test/support/mcp-protocol-eras.ts` holds the protocol
+  `['getURLAsMarkdown']`. `test/support/drivers/mcp/mcp-protocol-eras.ts` holds the protocol
   era list and the client negotiation option of the MCP acceptance tests.
 - New test support: `in-process-server.ts` runs the production `serve()` in the
   test process. `renderer-process-double.ts` stands in for the renderer process
@@ -316,7 +316,7 @@ keeps the behavior of AUTH-06 and of this slice:
   removed the placeholder. The hosted case of `server-only-modules.test.ts` now
   starts the hosted edition with the module-load guard, a missing rules file, a
   missing renderer, and the placeholder WorkOS settings of
-  `test/support/hosted-placeholder.ts`. It expects the AUTH-06 answers: `401`
+  `test/support/fixtures/hosted-placeholder.ts`. It expects the AUTH-06 answers: `401`
   with "Sign-in required" for the account page, and `401` with a Bearer
   challenge for an MCP tool call with a Bearer token and a session cookie. The
   server tries no outbound connection.

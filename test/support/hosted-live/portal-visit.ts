@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { Page } from 'playwright';
-import type { PageForm } from '../hosted-browser.ts';
+import type { PageForm } from '../drivers/browser/hosted-browser.ts';
 import { completeAuthKit } from './authkit-driver.ts';
 import type { LiveRun } from './live-run.ts';
 import { originAndPath } from './navigations.ts';

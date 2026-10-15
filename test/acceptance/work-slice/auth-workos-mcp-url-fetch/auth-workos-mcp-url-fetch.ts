@@ -13,7 +13,7 @@ import { createFetchOperation, fetchToolServers } from '../../../../src/fetch-to
 import { composeWorkOSApplication, openWorkOSConnection, type WorkOSConnection } from '../../../../src/hosted-workos-application.ts';
 import { stopSignal } from '../../../../src/index.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
-import { axiomTestSettings, openAxiomLogging } from '../../../support/axiom-test-export.ts';
+import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { LocalHttpsSite } from '../../../support/hosted-live/local-https-site.ts';
 import { connectScope, localOrigin } from '../../../support/hosted-live/settings.ts';
 import { observeFetches } from '../../../support/work-slice/observe-fetches.ts';

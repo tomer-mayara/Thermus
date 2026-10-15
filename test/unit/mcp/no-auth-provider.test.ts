@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
+import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
 
 test('Given the test-only NoAuthProvider, when supplied different token contents and caller identity, then it supplies one fixed synthetic identity and workspace with only product access', async () => {
   const resource = new URL('https://thermus.example/mcp');

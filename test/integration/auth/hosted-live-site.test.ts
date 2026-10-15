@@ -13,7 +13,7 @@ import type { Application, ApplicationLogger } from '../../../src/application.ts
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
 import { localOrigin, type HostedLiveSettings } from '../../support/hosted-live/settings.ts';
-import { workOSSettings } from '../../support/hosted-placeholder.ts';
+import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 
 // The placeholder settings reach no WorkOS environment. The hosted composition makes no WorkOS call when it starts.
 const settings: HostedLiveSettings = {

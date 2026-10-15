@@ -12,7 +12,7 @@ import {
   loopbackRedirectUri,
   PreRegisteredNativeClient,
   ResourceServerClient,
-} from '../../support/better-auth-agents.ts';
+} from '../../support/drivers/browser/better-auth-agents.ts';
 import {
   authIssuer,
   localInstallationId,
@@ -21,9 +21,9 @@ import {
   withRegistrationSession,
   type AccountCredentials,
   type LocalAuth,
-} from '../../support/better-auth-local.ts';
-import { PreRegisteredSdkClient, sdkFetch } from '../../support/mcp-sdk-oauth-client.ts';
-import { setProcessEnvironment } from '../../support/process-environment.ts';
+} from '../../support/in-process/better-auth-local.ts';
+import { PreRegisteredSdkClient, sdkFetch } from '../../support/drivers/mcp/mcp-sdk-oauth-client.ts';
+import { setProcessEnvironment } from '../../support/isolation/process-environment.ts';
 import { foreignOriginProbe } from '../../support/processes/module-paths.ts';
 
 type UserWithAccountStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };

@@ -5,7 +5,7 @@ import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeli
 import { HiddenHtmlScanner } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { HtmlToMarkdownPipeline, type Step } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { elementHidingRules } from '../../../support/ad-rules.ts';
+import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 
 describe('Known HTML pipeline output', () => {
   test('withholds HTML when the scanner fails before markdown conversion', async (t) => {

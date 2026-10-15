@@ -10,8 +10,8 @@ import { createFetchOperation, fetchToolServers } from '../../../../src/fetch-to
 import { serveApplication } from '../../../../src/index.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
-import { NoAuthProvider } from '../../../support/auth/no-auth-provider.ts';
-import { axiomTestSettings, openAxiomLogging } from '../../../support/axiom-test-export.ts';
+import { NoAuthProvider } from '../../../support/doubles/auth/no-auth-provider.ts';
+import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { observeFetches } from '../../../support/work-slice/observe-fetches.ts';
 import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
 

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import type { AccountFailureReport } from '../../../src/hosted-admin/account-routes.ts';
-import { CLEARED_SESSION_COOKIE } from '../../support/browser-session-store.ts';
-import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';
-import { formFor, hostedConfig, serveOrganizationSite, statusesOf, userOf } from '../../support/hosted-organization-site.ts';
+import { CLEARED_SESSION_COOKIE } from '../../support/doubles/auth/browser-session-store.ts';
+import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { formFor, hostedConfig, serveOrganizationSite, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const mia = userOf('user-mia', 'org-a');
 

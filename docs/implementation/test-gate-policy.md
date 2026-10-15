@@ -72,11 +72,12 @@ rejection class run in `test/integration/auth/`. MCP rejection and access tests
 run in `test/integration/mcp/` for the same reason. The direct auth import guards
 run through the existing ESLint configuration in `habit-hooks`. Their fixture
 specification, `test/acceptance/architecture/auth-boundaries.test.ts`, also needs
-a focused run and the acceptance suite. The rules D1 to D3 and D6 of the
+a focused run and the acceptance suite. The rules D1 to D7 of the
 [test code layout](../testing/test-code-layout.md#dependency-rules) run through
-the same ESLint configuration. Their specification,
-`test/acceptance/architecture/test-layer-boundaries.test.ts`, also needs a
-focused run and the acceptance suite.
+the same ESLint configuration. Two specifications prove them:
+`test/acceptance/architecture/test-type-boundaries.test.ts` for D2 and D3, and
+`test/acceptance/architecture/test-support-boundaries.test.ts` for D1 and D4 to
+D7. Each also needs a focused run and the acceptance suite.
 
 ## Focused commands
 
@@ -220,7 +221,7 @@ AUTH-09 added the container acceptance suite
   lookup. The container has no route out, so the renderer cannot connect, and
   the call gets `Page fetch failed` and a `fetch_failed` record. The renderer
   starts, so the server log gets no renderer setup report;
-- loads the test-only page seam `test/support/container-page.ts` into the server
+- loads the test-only page seam `test/support/container/container-page.ts` into the server
   container of the two renderer cases, with `--import` in `NODE_OPTIONS`. The
   seam serves a JavaScript page on port 8090 of the container and gives the
   lookup of `localhost` a public address, as `resolveAsPublic` does. With
@@ -280,7 +281,7 @@ The gate needs `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda
 1.0.0 executable. [Lightpanda runtime](../lightpanda-runtime.md) gives the
 setup. The gate needs no public network access and no Axiom credentials. The
 pages are local HTTP fixtures on `127.0.0.1`. The test-only `permitIPv4Fixture`
-seam in `test/support/network-fixture.ts` lets the renderer reach only that
+seam in `test/support/doubles/website-fetcher/network-fixture.ts` lets the renderer reach only that
 address in the test scope. It keeps the other launch options of the fetcher,
 also the renderer environment, so the gate checks the telemetry setting of the
 fetcher. Production has no private-network bypass.
@@ -333,7 +334,7 @@ and its unit test. AUTH-08W connected the member and invitation reads and
 changes to WorkOS. These tests run offline and need no WorkOS account,
 credential, or network access. They use doubles at the provider contracts, or
 the pinned SDK with a local fake of the WorkOS API
-(`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
+(`test/support/doubles/workos/workos-fake-api.ts` and `test/support/doubles/workos/workos-fake.ts`).
 They are in the existing suites:
 
 - unit: `test/unit/hosted-admin/account-routes.test.ts`,

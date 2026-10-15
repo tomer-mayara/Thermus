@@ -3,8 +3,8 @@ import { after, before, type TestContext } from 'node:test';
 import { decodeJwt } from 'jose';
 import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
 import { workosAuthority } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { nowInSeconds, SigningKey } from '../../../support/jwt-signing-key.ts';
-import { cookiePassword, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type FakeClientSettings } from '../../../support/workos-fake-api.ts';
+import { nowInSeconds, SigningKey } from '../../../support/doubles/workos/jwt-signing-key.ts';
+import { cookiePassword, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type FakeClientSettings } from '../../../support/doubles/workos/workos-fake-api.ts';
 
 // A local WorkOS world for the browser session: the fake WorkOS API with a browser key set, and the real session with
 // the pinned SDK client. The test plays AuthKit and scripts each answer of the API.

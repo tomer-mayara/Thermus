@@ -8,8 +8,8 @@ import dns from 'node:dns/promises';
 import { test } from 'node:test';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
+import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;
 type Launch = [executable: string, args: readonly string[], options: ExecFileOptionsWithStringEncoding, finish: Completion];

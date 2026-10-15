@@ -109,7 +109,8 @@ test/
   unit/<package>/        test cases; fixtures/ = data and doubles of this package only
   integration/<area>/    test cases; fixtures/ = files of this area only
   interface/<area>/      test cases
-  acceptance/<area>/     test cases; auth/hosted-live/ test-case modules; work-slice/
+  acceptance/<area>/     test cases; fixtures/ = files of this area only;
+                         auth/hosted-live/ test-case modules; work-slice/
   support/
     dsl/                 layer 2
     drivers/browser/     layer 3: HTTP browsers, cookie jar, page forms
@@ -173,7 +174,9 @@ home.
 The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 of the plan move the 13 borrowed
 files); unit → support stays, because `S/` is the shared base of all test
-types. ESLint enforces
-D1 to D6 (Steps 4 and 5i of the plan), and an architecture specification proves
-each rule, as `test/acceptance/architecture/auth-boundaries.test.ts` does for
+types. ESLint enforces D1 to D7 (Steps 4 and 5i of the plan), and two
+architecture specifications prove each rule, one for each axis.
+`test/acceptance/architecture/test-type-boundaries.test.ts` proves D2 and D3,
+and `test/acceptance/architecture/test-support-boundaries.test.ts` proves D1 and
+D4 to D7, as `test/acceptance/architecture/auth-boundaries.test.ts` does for
 `src`.

@@ -17,17 +17,17 @@ import {
   loopbackRedirectUri,
   PreRegisteredNativeClient,
   type TokenResponse,
-} from '../../support/better-auth-agents.ts';
-import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/better-auth-local.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+} from '../../support/drivers/browser/better-auth-agents.ts';
+import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/in-process/better-auth-local.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
-import { resourceServerClient, userGrant, type UserGrant } from '../../support/local-commands.ts';
-import { addAccount, passwordOf, selfHostedConfig } from '../../support/local-runtime.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
+import { resourceServerClient, userGrant, type UserGrant } from '../../support/dsl/local-commands.ts';
+import { addAccount, passwordOf, selfHostedConfig } from '../../support/in-process/local-runtime.ts';
+import { ProtectedToolSpy, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 const resourceMetadataUrl = 'http://localhost:8080/.well-known/oauth-protected-resource/mcp';
-const productAccess = RequestContextProbe.requiredPermission;
+const productAccess = ProtectedToolSpy.requiredPermission;
 const alice: AccountCredentials = { email: 'alice@example.com', password: passwordOf('alice@example.com') };
 const bob: AccountCredentials = { email: 'bob@example.com', password: passwordOf('bob@example.com') };
 const carol: AccountCredentials = { email: 'carol@example.com', password: passwordOf('carol@example.com') };
@@ -41,7 +41,7 @@ interface LocalInstallationUnderTest {
 
 interface McpServerUnderTest {
   readonly server: MCPServer;
-  readonly probe: RequestContextProbe;
+  readonly probe: ProtectedToolSpy;
   readonly reporter: FailureReporterSpy;
 }
 
@@ -84,7 +84,7 @@ function providerFor(runtime: BetterAuthRuntime, resourceServer: ResourceServerC
 }
 
 function mcpServer(t: TestContext, provider: BetterAuthProvider, requiredScopes?: readonly string[]): McpServerUnderTest {
-  const probe = new RequestContextProbe();
+  const probe = new ProtectedToolSpy();
   const reporter = new FailureReporterSpy();
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl, expectedResource: new URL(mcpResourceUrl), requiredScopes },
@@ -100,7 +100,7 @@ function callProbe(t: TestContext, token: string, url = 'https://example.com/pag
     url: mcpResourceUrl,
     method: 'tools/call',
     token,
-    params: { name: RequestContextProbe.toolName, arguments: { url } },
+    params: { name: ProtectedToolSpy.toolName, arguments: { url } },
     signal: t.signal,
   });
 }

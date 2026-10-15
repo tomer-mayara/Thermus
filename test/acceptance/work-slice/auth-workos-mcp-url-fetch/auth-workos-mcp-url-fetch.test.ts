@@ -5,12 +5,12 @@ import type { ApplicationLogger } from '../../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
-import { trustedAdRulesFile } from '../../../support/ad-rules.ts';
-import { listenerTransport, type HostedBrowser } from '../../../support/hosted-browser.ts';
-import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../../support/mcp-protocol-eras.ts';
-import { RendererProcessDouble } from '../../../support/renderer-process-double.ts';
-import { signInThroughServer, type WorkOSServerSite } from '../../../support/workos-sign-in.ts';
-import { WorkOSWorld, type WorldUser } from '../../../support/workos-world.ts';
+import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
+import { listenerTransport, type HostedBrowser } from '../../../support/drivers/browser/hosted-browser.ts';
+import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';
+import { signInThroughServer, type WorkOSServerSite } from '../../../support/dsl/workos-sign-in.ts';
+import { WorkOSFake, type FakeUser } from '../../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest, rpcResult } from '../../../support/drivers/mcp/mcp-http-request.ts';
 import { composeWorkSliceApplication } from './auth-workos-mcp-url-fetch.ts';
 
@@ -36,9 +36,9 @@ const environment = { ...hostedSettings, AD_RULES_FILE: trustedAdRulesFile, LIGH
 const acme = 'org_01ACME';
 const metadataChallenge = /^Bearer .*resource_metadata="https:\/\/thermus\.example\/\.well-known\/oauth-protected-resource\/mcp"/;
 
-const ada: WorldUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
-const ben: WorldUser = { id: 'user_01BEN', email: 'ben@example.com', firstName: 'Ben' };
-const dee: WorldUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
+const ada: FakeUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
+const ben: FakeUser = { id: 'user_01BEN', email: 'ben@example.com', firstName: 'Ben' };
+const dee: FakeUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
 
 interface RecordingLog extends ApplicationLogger {
   readonly lines: string[];
@@ -69,7 +69,7 @@ function recordingLog(): RecordingLog {
 async function openSlice(t: TestContext): Promise<SliceSite> {
   const renderer = RendererProcessDouble.install(t);
   renderer.serve(storyUrl, { finalUrl: storyUrl, html: storyHtml });
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, [acme]);
+  const world = await WorkOSFake.start(t, config.publicBaseUrl, [acme]);
   // The slice signs in with Google, which gives no MFA evidence.
   world.authenticationMethod = 'GoogleOAuth';
   // Dee has no membership, as after her first Google sign-in.
@@ -135,7 +135,7 @@ function fetchLines(log: RecordingLog): string[] {
   return log.lines.filter((line) => line.includes('work-slice fetch'));
 }
 
-function assertFetchLog(log: RecordingLog, user: WorldUser): void {
+function assertFetchLog(log: RecordingLog, user: FakeUser): void {
   const { lines } = log;
   assert.equal(lines.length, 3, `The log must have three lines:\n${lines.join('\n')}`);
   assert.equal(lines[0], `work-slice fetch started: ${storyUrl}`);

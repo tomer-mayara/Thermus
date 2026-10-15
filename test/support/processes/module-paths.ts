@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 const fromSource = import.meta.url.endsWith('.ts');
 const extension = fromSource ? 'ts' : 'js';
 
-function supportModule(name: string): URL {
-  return new URL(`../${name}.${extension}`, import.meta.url);
+function siblingModule(name: string): URL {
+  return new URL(`./${name}.${extension}`, import.meta.url);
 }
 
 // The folder of package.json.
@@ -22,6 +22,6 @@ export const portalBuild = fileURLToPath(new URL('src/user-portal/dist/', reposi
 export const programEntry = fileURLToPath(new URL(`../../../src/index.${extension}`, import.meta.url));
 
 // The preloads load by URL through --import. The probe runs as the main module of a new Node process.
-export const networkBlocker = supportModule('deny-network').href;
-export const sqlTracer = supportModule('trace-sqlite').href;
-export const foreignOriginProbe = fileURLToPath(supportModule('foreign-origin-probe'));
+export const networkBlocker = siblingModule('deny-network').href;
+export const sqlTracer = siblingModule('trace-sqlite').href;
+export const foreignOriginProbe = fileURLToPath(siblingModule('foreign-origin-probe'));

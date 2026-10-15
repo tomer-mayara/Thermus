@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { BillingRecorder } from '../../support/billing-recorder.ts';
-import { recordLines, rolesOf, seatsIn, serveAdministrationSite, shownPage, submitOnPage } from '../../support/hosted-administration.ts';
-import { formsIn } from '../../support/hosted-browser.ts';
-import { formFor, userOf } from '../../support/hosted-organization-site.ts';
+import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
+import { recordLines, rolesOf, seatsIn, serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
+import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { formFor, userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const failurePage = /The request failed\. Try again later\./;
 const mfaNotice = /Multi-factor authentication required/;

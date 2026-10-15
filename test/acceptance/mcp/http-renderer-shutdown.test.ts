@@ -9,16 +9,16 @@ import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
-import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
-import { mockRenderer } from '../../support/renderer-process-double.ts';
+import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
+import { validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
+import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given a running renderer through ${era} HTTP, when shutdown starts, then its child, timer, and abort listener close once before provider release`, { timeout: 5_000 }, async (t) => {
     const resource = new URL('https://thermus.example/mcp');
     const provider = new NoAuthProvider(resource);
-    const renderer = mockRenderer(t);
+    const renderer = controlledRenderer(t);
 
     const fetcher = new WebsiteFetcherLightpanda();
     const signals: AbortSignal[] = [];

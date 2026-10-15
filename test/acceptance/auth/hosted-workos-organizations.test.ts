@@ -3,10 +3,10 @@ import { describe, test, type TestContext } from 'node:test';
 import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
-import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser } from '../../support/hosted-browser.ts';
-import { formFor, statusesOf } from '../../support/hosted-organization-site.ts';
-import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
-import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
+import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { formFor, statusesOf } from '../../support/in-process/hosted-organization-site.ts';
+import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
+import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 // The real hosted composition with the WorkOS provider and the WorkOS organization reads, behind the real HTTP server
@@ -22,17 +22,17 @@ const umbrella = 'org_01UMBRELLA';
 const hooli = 'org_01HOOLI';
 const organizationNames = { [acme]: 'Acme', [globex]: 'Globex', [initech]: 'Initech', [umbrella]: 'Umbrella', [hooli]: 'Hooli' };
 
-const ada: WorldUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
-const cid: WorldUser = { id: 'user_01CID', email: 'cid@example.com', firstName: 'Cid' };
-const dee: WorldUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
-const ivy: WorldUser = { id: 'user_01IVY', email: 'ivy@example.com', firstName: 'Ivy' };
-const otto: WorldUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
-const sam: WorldUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
+const ada: FakeUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
+const cid: FakeUser = { id: 'user_01CID', email: 'cid@example.com', firstName: 'Cid' };
+const dee: FakeUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
+const ivy: FakeUser = { id: 'user_01IVY', email: 'ivy@example.com', firstName: 'Ivy' };
+const otto: FakeUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
+const sam: FakeUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
 
 // Ada: User and Admin in Acme, User in Globex, inactive in Initech, and only the default role in Umbrella. Cid: only
 // the default role in Acme. Dee: no membership. Ivy: only an inactive membership in Acme. Otto: User in Hooli. Sam:
 // only Super Admin in Acme.
-const memberships: readonly WorldMembership[] = [
+const memberships: readonly FakeMembership[] = [
   { userId: ada.id, organizationId: acme, roles: ['user', 'admin'] },
   { userId: ada.id, organizationId: globex, roles: ['user'] },
   { userId: ada.id, organizationId: initech, roles: ['user', 'admin'], status: 'inactive' },
@@ -54,7 +54,7 @@ interface Site extends WorkOSServerSite {
 }
 
 async function openSite(t: TestContext): Promise<Site> {
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, Object.keys(organizationNames));
+  const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
   const log = new LogLines();
@@ -67,7 +67,7 @@ async function openSite(t: TestContext): Promise<Site> {
   return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
 }
 
-async function signIn(site: Site, user: WorldUser, organizationId?: string): Promise<HostedBrowser> {
+async function signIn(site: Site, user: FakeUser, organizationId?: string): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -79,7 +79,7 @@ async function sessionOrganization(browser: HostedBrowser): Promise<unknown> {
   return (JSON.parse(answer.body) as Record<string, unknown>).organizationId;
 }
 
-async function mcpStatus(site: Site, user: WorldUser, organizationId: string): Promise<number> {
+async function mcpStatus(site: Site, user: FakeUser, organizationId: string): Promise<number> {
   const token = await site.world.connectToken(user, { org_id: organizationId });
   return (await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', token }))).status;
 }

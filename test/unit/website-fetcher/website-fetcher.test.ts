@@ -4,8 +4,8 @@ import dns from 'node:dns/promises';
 import { describe, test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
-import { syncBuiltinMocks } from '../../support/builtin-mocks.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
+import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 const url = 'https://example.com/';
 const html = '<html><body>Rendered page</body></html>';

@@ -5,7 +5,7 @@ import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-cont
 import { hostedTenantId, WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
 import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
 import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { nowInSeconds, SigningKey } from '../../support/jwt-signing-key.ts';
+import { nowInSeconds, SigningKey } from '../../support/doubles/workos/jwt-signing-key.ts';
 
 const authority = workosAuthority('client_01ENVIRONMENT');
 const authkitIssuer = 'https://reasonable-field-33-staging.authkit.app';

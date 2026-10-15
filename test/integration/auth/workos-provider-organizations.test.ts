@@ -13,13 +13,13 @@ import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { PRODUCT_ACCESS } from '../../../src/hosted-admin/portal-access.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
-import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
-import { formsIn, type HostedBrowser } from '../../support/hosted-browser.ts';
-import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/hosted-organization-site.ts';
-import { RequestContextProbe } from '../../support/request-context-probe.ts';
-import { fakeClientId } from '../../support/workos-fake-api.ts';
-import { signInThroughServer } from '../../support/workos-sign-in.ts';
-import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
+import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
+import { formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/in-process/hosted-organization-site.ts';
+import { ProtectedToolSpy } from '../../support/doubles/mcp/protected-tool-spy.ts';
+import { fakeClientId } from '../../support/doubles/workos/workos-fake-api.ts';
+import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 // The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the
@@ -43,13 +43,13 @@ const destinations = new Map([
 ]);
 const membershipsRoute = 'GET /user_management/organization_memberships';
 
-const mia: WorldUser = { id: 'user_01MIA', email: 'mia@example.com', firstName: 'Mia' };
-const otto: WorldUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
-const sam: WorldUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
+const mia: FakeUser = { id: 'user_01MIA', email: 'mia@example.com', firstName: 'Mia' };
+const otto: FakeUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
+const sam: FakeUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
 
 // Mia: User in Acme, Admin in Globex, inactive in Initech, and only the default role in Umbrella. Otto: every role in
 // Hooli. Sam: only Super Admin in Acme.
-const memberships: readonly WorldMembership[] = [
+const memberships: readonly FakeMembership[] = [
   { userId: mia.id, organizationId: acme, roles: ['user'] },
   { userId: mia.id, organizationId: globex, roles: ['admin'] },
   { userId: mia.id, organizationId: initech, roles: ['user', 'admin'], status: 'inactive' },
@@ -59,7 +59,7 @@ const memberships: readonly WorldMembership[] = [
 ];
 
 async function openSite(t: TestContext) {
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, Object.keys(organizationNames));
+  const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
   const { settings, workos, authkitKeySet } = world.connection();
@@ -68,8 +68,8 @@ async function openSite(t: TestContext) {
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const session = new WorkOSBrowserSession({ workos, settings, authority });
-  const pages = new AccountOperationProbe(destinations);
-  const tools = new RequestContextProbe();
+  const pages = new AccountOperationSpy(destinations);
+  const tools = new ProtectedToolSpy();
   const mcp = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
     buildServer: tools.buildServer,
@@ -88,7 +88,7 @@ async function openSite(t: TestContext) {
 
 type Site = Awaited<ReturnType<typeof openSite>>;
 
-async function signIn(site: Site, user: WorldUser, organizationId?: string): Promise<HostedBrowser> {
+async function signIn(site: Site, user: FakeUser, organizationId?: string): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -120,7 +120,7 @@ describe('WorkOS organization reads with the real session, organization service,
     const admins = await contextAt(browser, 'administration/admins');
     const refusals = [(await browser.open('portal')).status, (await browser.open('administration/users')).status];
     const token = await site.world.connectToken(sam, { org_id: acme });
-    const tool = await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params: { name: RequestContextProbe.toolName, arguments: { url: 'https://example.com/' } } }));
+    const tool = await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params: { name: ProtectedToolSpy.toolName, arguments: { url: 'https://example.com/' } } }));
 
     assert.equal(selected.location?.href, 'https://thermus.example/team/billing');
     assert.equal(billing.status, 200, billing.body);
@@ -192,9 +192,9 @@ describe('WorkOS organization reads with the real session, organization service,
   });
 
   for (const { label, change } of [
-    { label: 'the membership of another user', change: (world: WorkOSWorld) => world.fake.answer(membershipsRoute, membershipAnswerOf(otto.id, hooli, 'active')) },
-    { label: 'an inactive membership', change: (world: WorkOSWorld) => world.fake.answer(membershipsRoute, membershipAnswerOf(mia.id, initech, 'inactive')) },
-    { label: 'a default role that gives product:access', change: (world: WorkOSWorld) => world.fake.answer(`GET /authorization/organizations/${acme}/roles`, permissiveDefaultRoles()) },
+    { label: 'the membership of another user', change: (world: WorkOSFake) => world.fake.answer(membershipsRoute, membershipAnswerOf(otto.id, hooli, 'active')) },
+    { label: 'an inactive membership', change: (world: WorkOSFake) => world.fake.answer(membershipsRoute, membershipAnswerOf(mia.id, initech, 'inactive')) },
+    { label: 'a default role that gives product:access', change: (world: WorkOSFake) => world.fake.answer(`GET /authorization/organizations/${acme}/roles`, permissiveDefaultRoles()) },
   ]) {
     test(`Given WorkOS answers ${label}, when the organization page opens and a selection is posted, then each fails with 500 and an operator report, shows neither an organization nor the onboarding guidance, and switches nothing`, async (t) => {
       const site = await openSite(t);

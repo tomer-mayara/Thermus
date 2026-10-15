@@ -137,7 +137,7 @@ the owner's Mac.
 | Browser sign-in, callback, sign-out, session JSON, portal | Exist. | `src/auth/hosted-auth/workos/workos-session-routes.ts`, `src/user-portal/` |
 | MFA evidence of a session | Exists, for a password sign-in only. A Google sign-in gives `mfaCompleted: false`. The administration pages then answer `403`. | `src/auth/hosted-auth/workos/workos-sign-in.ts` |
 | HTTPS in front of the hosted edition | Test support only. `LocalHttpsSite` serves the portal build at `https://localhost:46443/`, forwards each other request to Thermus, and makes a new self-signed certificate for each run in a temporary directory. | `test/support/hosted-live/local-https-site.ts` |
-| Fake WorkOS API for offline tests, with Connect tokens, sign-ins, memberships, roles, and the sign-in method | Exists. | `test/support/workos-world.ts` |
+| Fake WorkOS API for offline tests, with Connect tokens, sign-ins, memberships, roles, and the sign-in method | Exists. | `test/support/doubles/workos/workos-fake.ts` |
 | Work slice parts: Axiom logging, the fetch lines, the renderer check, the launcher pattern | Exist in the basic slice. `observeFetches()` and the renderer check are private to its entry point. | `test/acceptance/work-slice/basic-mcp-url-fetch/` |
 | Google sign-in in Staging | Off. Each social provider is off; password sign-in is on; MFA is `Required`; passkeys and magic sign-in are off; sign-up is allowed; email verification is required. The live gate proves "no social provider". | WorkOS Staging, `test/acceptance/auth/hosted-live/configuration.ts` |
 | Dynamic Client Registration and Client ID Metadata Documents in Staging | Off. The AuthKit metadata has no `registration_endpoint`. Claude Code needs one of them, or a pre-registered client. The live gate only records this as a diagnostic. | WorkOS Staging |
@@ -162,7 +162,7 @@ the owner's Mac.
    `openWorkOSApplication()` loads the settings, makes the SDK client and the
    key set, and composes. The slice needs the connection with the real WorkOS
    and the composition with its tool. The offline test needs the composition
-   with the fake connection of `WorkOSWorld`. So the connection step becomes
+   with the fake connection of `WorkOSFake`. So the connection step becomes
    its own export.
 3. **No exported stop-signal wait.** `serveApplication()` starts one HTTP
    listener and waits for `SIGINT` or `SIGTERM`. The slice has two listeners,
@@ -261,7 +261,7 @@ Each decision has a default. Confirm or change it before step 1.
 | D6 | Composition seam | `src/hosted-workos-application.ts` exports `openWorkOSConnection(config, logger, environment)` and `composeWorkOSApplication(config, connection, parts)`, with `parts: { logger, buildServer? }`. `openWorkOSApplication()` stays for `createApplication()` and passes no `buildServer`. The three offline tests that call `composeWorkOSApplication(config, connection, log)` change their third argument. The eslint rule of habit-hooks allows at most three parameters, so the record is the third parameter. | A copy of `workosProviderParts()` in the slice. The owner's rule refuses a copy of a production composition. |
 | D7 | HTTPS front | `LocalHttpsSite.start(settings, options)` gets two options: `certificate` (the key and certificate files to use; the default is a new self-signed certificate) and `application` (a function that opens the application; the default is the hosted composition with the staging settings). The gate keeps its behavior. The slice gives its own application and the certificate of D2. | A new class in `test/support/` that takes the files, the portal build, and the forward target, and `LocalHttpsSite` as its user. |
 | D8 | Logging | `openAxiomLogging()` and the three lines of the basic slice: the started line, the completed line with the Markdown, and the production completion record. The record shows the WorkOS identity: the authority `workos:<client ID>`, the user ID as subject, and the tenant `workos:<client ID>:<organization ID>`. The start line of the hosted composition and each failure report go to the same log. No new log line. | One slice-only line for each token check. The completion record already shows the identity, so it is not needed. |
-| D9 | Proof | An offline acceptance test with `WorkOSWorld`, the renderer double, and a recording logger, in both protocol eras. The manual run proves Google sign-in, DCR, Claude Code, and the Axiom export, and the pull request records it. The complete hosted live gate runs after the gate proof changes (D1). | Also a `.live.ts` case of the slice in the gate. Not now: the gate drives AuthKit with a password user, and a Google sign-in needs a real Google account. |
+| D9 | Proof | An offline acceptance test with `WorkOSFake`, the renderer double, and a recording logger, in both protocol eras. The manual run proves Google sign-in, DCR, Claude Code, and the Axiom export, and the pull request records it. The complete hosted live gate runs after the gate proof changes (D1). | Also a `.live.ts` case of the slice in the gate. Not now: the gate drives AuthKit with a password user, and a Google sign-in needs a real Google account. |
 | D10 | Sign-in method and MFA evidence | A Google sign-in gives no MFA evidence. The administration pages refuse that session. The slice documents this. No code changes. | Count a Google sign-in as MFA-completed. Refused: it contradicts the design, and WorkOS gives no MFA claim. |
 
 ## Design
@@ -394,7 +394,7 @@ The README of the slice gives this walk. The entry point prints the commands.
 
 ### Acceptance
 
-File: `auth-workos-mcp-url-fetch.test.ts`. Offline. It uses `WorkOSWorld`
+File: `auth-workos-mcp-url-fetch.test.ts`. Offline. It uses `WorkOSFake`
 with the organization `org_01ACME`, `RendererProcessDouble`, the trusted rules
 fixture, a recording logger, `signInThroughServer()` with `HostedBrowser`, and
 the real MCP SDK client through the real HTTP bridge, in both protocol eras.

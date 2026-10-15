@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import { HtmlToMarkdownPipeline } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { createContext } from '../../../../support/html-cleaner-context.ts';
+import { createContext } from '../../fixtures/html-cleaner-context.ts';
 
 async function cleanDocument(body: string) {
   const pipeline = new HtmlToMarkdownPipeline([
