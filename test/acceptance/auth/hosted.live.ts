@@ -15,6 +15,7 @@ import { describeMembershipProofs } from './hosted-live/memberships.ts';
 import { describeOperatorSetupProofs } from './hosted-live/operator-setup.ts';
 import { describeOptionalAdministrationServerCases } from './hosted-live/optional-administration-server.ts';
 import { describeOrganizationServerCases } from './hosted-live/organization-server.ts';
+import { describeSignupServerCases } from './hosted-live/signup-server.ts';
 import { describeSessionEndingProofs } from './hosted-live/session-ending.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -192,4 +193,5 @@ if ('problems' in setup) {
   else describeOptionalAdministrationServerCases(run);
   describeHostedServerCases(run);
   describeExpiredSelectionCase();
+  describeSignupServerCases(run);
 }

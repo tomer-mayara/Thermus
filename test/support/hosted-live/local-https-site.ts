@@ -6,6 +6,7 @@ import { createServer, type Server } from 'node:https';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
+import type { SignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
 import { createApplication, type Application, type ApplicationLogger } from '../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
@@ -44,6 +45,7 @@ function closeFront(front: Server): Promise<void> {
 }
 
 export interface LocalHttpsSiteOptions {
+  readonly signupDocuments?: SignupDocuments;
   // Only a custom application uses the static front. Its default portal build is src/user-portal/dist/.
   readonly portalBuild?: string;
   // The default application checks this executable. The live gate uses LIGHTPANDA_BIN from its environment.
@@ -78,15 +80,12 @@ export class LocalHttpsSite {
   }
 
   static async start(settings: HostedLiveSettings, options: LocalHttpsSiteOptions = {}): Promise<LocalHttpsSite> {
-    if (options.application === undefined && options.portalBuild !== undefined) {
-      throw new Error('portalBuild requires a custom application; the production application owns its portal.');
-    }
-    const files = options.application === undefined ? new Map() : await portalFiles(options.portalBuild ?? portalBuild);
+    const files = await frontFiles(options);
     await using owned = new AsyncDisposableStack();
     const certificateDirectory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
     const log = new LogLines();
     const logger = options.logger ?? log;
-    const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger, options.rendererExecutable ?? process.env.LIGHTPANDA_BIN));
+    const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger, options));
     let listenerDrain: Promise<void> | undefined;
     let drained = Promise.resolve<PromiseSettledResult<void>>({ status: 'fulfilled', value: undefined });
     // The site owns the listener even when custom application cleanup ignores its drain or fails.
@@ -121,7 +120,9 @@ export class LocalHttpsSite {
   }
 }
 
-async function stagingApplication(settings: HostedLiveSettings, logger: ApplicationLogger, executable: string | undefined): Promise<Application> {
+async function stagingApplication(settings: HostedLiveSettings, logger: ApplicationLogger, options: Pick<LocalHttpsSiteOptions, 'rendererExecutable' | 'signupDocuments'>): Promise<Application> {
+  const executable = options.rendererExecutable ?? process.env.LIGHTPANDA_BIN;
+  const documents = options.signupDocuments;
   const environment = {
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: publicBaseUrl,
@@ -134,5 +135,27 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
     WORKOS_REDIRECT_URI: browserRedirectUri,
     WORKOS_COOKIE_PASSWORD: randomBytes(32).toString('base64url'),
   };
-  return createApplication(loadDeploymentConfig(environment, 'http'), logger, environment);
+  const config = loadDeploymentConfig(environment, 'http');
+  if (documents === undefined) return createApplication(config, logger, environment);
+  const { composeWorkOSApplication, openWorkOSConnection } = await import('../../../src/hosted-workos-application.ts');
+  const { createFetchOperation, fetchToolServers } = await import('../../../src/fetch-tool.ts');
+  const { singleFetchOperation } = await import('../../../src/mcp/single-fetch-operation.ts');
+  const { assertHostedRenderer } = await import('../../../src/hosted-renderer-startup.ts');
+  const { HostedPortal } = await import('../../../src/hosted-portal.ts');
+  await assertHostedRenderer(executable);
+  const connection = await openWorkOSConnection(config, logger, environment);
+  const portal = await HostedPortal.load(settings.authkitIssuer);
+  const application = await composeWorkOSApplication(config, connection, {
+    logger, buildServer: fetchToolServers(singleFetchOperation(createFetchOperation(environment, logger)), logger),
+    signup: { enabled: true, documents },
+  });
+  return portal.withApplication(application);
+}
+
+async function frontFiles(options: LocalHttpsSiteOptions): ReturnType<typeof portalFiles> {
+  if (options.application === undefined) {
+    if (options.portalBuild !== undefined) throw new Error('portalBuild requires a custom application; the production application owns its portal.');
+    return new Map();
+  }
+  return portalFiles(options.portalBuild ?? portalBuild);
 }

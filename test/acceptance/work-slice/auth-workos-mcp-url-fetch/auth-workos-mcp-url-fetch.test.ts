@@ -173,7 +173,7 @@ describe('The auth WorkOS MCP URL fetch work slice with the WorkOS provider, the
 
       const { signedIn, organizationId, mfaCompleted } = session.body;
       assert.deepEqual({ status: session.status, signedIn, organizationId, mfaCompleted }, { status: 200, signedIn: true, organizationId: acme, mfaCompleted: false });
-      assert.deepEqual(access, { status: 200, body: { organizationId: acme, roles: ['user'] } });
+      assert.deepEqual(access, { status: 200, body: { organizationId: acme, roles: ['user'], plan: 'free', mcpUrl: config.mcpResourceUrl } });
       assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }]);
       assertText(result, expectedMarkdown);
       assertFetchLog(site.log, ada);

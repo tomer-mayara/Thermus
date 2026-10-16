@@ -7,9 +7,11 @@ const roles = [{ slug: 'member', permissions: [] }, { slug: 'user', permissions:
 // Extends the WorkOS HTTP fake with persistent personal organizations and external-ID uniqueness.
 export class WorkOSSignupFake {
   readonly organizations: Record<string, unknown>[] = [];
+  failOrganizationReads = false;
 
   constructor(world: WorkOSFake) {
     world.fake.answerEach('GET /organizations/external_id/:id', (_request, id) => {
+      if (this.failOrganizationReads) return { status: 503, body: { message: 'private provider error' } };
       const organization = this.organizations.find((saved) => saved.external_id === id);
       return organization === undefined ? { status: 404, body: { message: 'Organization not found' } } : { status: 200, body: organization };
     });

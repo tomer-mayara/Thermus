@@ -5,6 +5,8 @@ import { signInWithAuthKit, type BrowserSignIn } from './browser-session.ts';
 import { authorizeWithConnect, type ConnectGrant } from './connect-grant.ts';
 import { FixtureRegistry, type FixtureKind } from './fixture-registry.ts';
 import { LiveBrowser } from './live-browser.ts';
+import type { SignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
+import { createSignupFixtures } from './signup-fixtures.ts';
 import { LocalHttpsSite } from './local-https-site.ts';
 import { createOrganizationFixtures, type OrganizationFixtures } from './organization-fixtures.ts';
 import { requestTimeout, workosClient, type HostedLiveSettings } from './settings.ts';
@@ -32,6 +34,7 @@ export class LiveRun {
   readonly fixtures: () => Promise<StagingFixtures>;
   readonly organizationFixtures: () => Promise<OrganizationFixtures>;
   readonly administrationFixtures: () => Promise<AdministrationFixtures>;
+  readonly signupFixtures: () => ReturnType<typeof createSignupFixtures>;
   readonly newUserSignIn: () => Promise<BrowserSignIn>;
   readonly newUserLaterSignIn: () => Promise<BrowserSignIn>;
   readonly organizationSignIn: () => Promise<BrowserSignIn>;
@@ -39,14 +42,15 @@ export class LiveRun {
   readonly site: () => Promise<LocalHttpsSite>;
   #site: Promise<LocalHttpsSite> | undefined;
 
-  constructor(settings: HostedLiveSettings) {
+  constructor(settings: HostedLiveSettings, options: { readonly signupDocuments?: SignupDocuments; readonly existingFixtures?: () => Promise<StagingFixtures> } = {}) {
     this.settings = settings;
     this.workos = workosClient(settings);
     this.browser = new LiveBrowser(() => checkAuthKitReachable(settings.authkitIssuer));
-    this.#registry = new FixtureRegistry(this.workos);
-    this.fixtures = once(() => createStagingFixtures(this.workos, this.#registry));
+    this.#registry = new FixtureRegistry(this.workos, settings.clientId);
+    this.fixtures = options.existingFixtures ?? once(() => createStagingFixtures(this.workos, this.#registry));
     this.organizationFixtures = once(async () => createOrganizationFixtures(this.workos, this.#registry, await this.fixtures()));
     this.administrationFixtures = once(async () => createAdministrationFixtures(this.workos, this.#registry, await this.fixtures()));
+    this.signupFixtures = once(async () => createSignupFixtures(this.workos, this.#registry, (await this.fixtures()).runId));
     this.newUserSignIn = once(async () => signInWithAuthKit(this, { user: (await this.fixtures()).newUser }));
     this.newUserLaterSignIn = once(async () => {
       await this.newUserSignIn();
@@ -56,7 +60,7 @@ export class LiveRun {
       const { twoOrganizationUser, organizationA } = await this.fixtures();
       return signInWithAuthKit(this, { user: twoOrganizationUser, organizationName: organizationA.name });
     });
-    this.site = () => (this.#site ??= LocalHttpsSite.start(settings));
+    this.site = () => (this.#site ??= LocalHttpsSite.start(settings, options.signupDocuments === undefined ? {} : { signupDocuments: options.signupDocuments }));
     this.connectGrant = once(async () => {
       const { connectUser, organizationA, oauthApplication } = await this.fixtures();
       return authorizeWithConnect(this, { user: connectUser, organizationName: organizationA.name, clientId: oauthApplication.clientId });
@@ -68,11 +72,16 @@ export class LiveRun {
     this.#registry.record(kind, id);
   }
 
+  async stopSite(): Promise<void> {
+    const site = this.#site;
+    this.#site = undefined;
+    await (await site?.catch(() => undefined))?.close();
+  }
+
   async end(): Promise<void> {
     try {
       await this.browser.close();
-      const site = await this.#site?.catch(() => undefined);
-      await site?.close();
+      await this.stopSite();
     } finally {
       await this.#registry.deleteAll();
     }

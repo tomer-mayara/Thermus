@@ -170,7 +170,7 @@ describe('Setup gate of the hosted live command', () => {
     }
   });
 
-  test('Given staging settings and outbound access denied, when the global MFA preflight reaches the network blocker, then the gate exits 1 with all 77 planned proofs cancelled, no pass, skip, or todo, and a visible preflight failure before browser or provider work; the API key stays private', caseOptions, async (t) => {
+  test('Given staging settings and outbound access denied, when the global MFA preflight reaches the network blocker, then the gate exits 1 with all 79 planned proofs cancelled, no pass, skip, or todo, and a visible preflight failure before browser or provider work; the API key stays private', caseOptions, async (t) => {
     const settings = stagingSettings();
 
     const run = await runGate(t, settings);
@@ -178,7 +178,7 @@ describe('Setup gate of the hosted live command', () => {
 
     const output = outputOf(run);
     assertExitOne(run);
-    assert.deepEqual(summary, { tests: 77, pass: 0, fail: 0, cancelled: 77, skipped: 0, todo: 0 }, output);
+    assert.deepEqual(summary, { tests: 79, pass: 0, fail: 0, cancelled: 79, skipped: 0, todo: 0 }, output);
     assert.match(output, /# Hosted live MFA profile: optional\./);
     assert.match(output, /failureType: 'hookFailed'/);
     assert.match(output, /failureType: 'cancelledByParent'/);

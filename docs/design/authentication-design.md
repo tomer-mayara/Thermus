@@ -1474,6 +1474,15 @@ grant. The organization retains the acceptance record and prevents grant replay.
 The [FS-01 implementation record](../implementation/fs-01.md) gives the retry,
 concurrency, revocation, and release limits. No production legal bundle ships yet.
 
+FS-02 adds a read-only signup inspection. Existing product users can continue
+without another agreement. A retained personal record with missing, pending,
+inactive, or inconsistent access requires support; another authorized workspace
+can still be selected. A provider failure never becomes signup eligibility.
+Only the activation POST can create a workspace or grant. It still requires a
+fresh verified-email read. Both successful activation and Continue use the
+existing organization selector with a server-built return path to the portal.
+See the [FS-02 record](../implementation/fs-02.md).
+
 The owner selected a server-owned session on 2026-10-14: the server signs in,
 keeps the session, and signs out, and the portal is on the same origin.
 
@@ -1550,6 +1559,13 @@ signed-in session:
 The [user portal](../user-portal.md) uses these routes and the protected portal
 request `<base>portal/access`. It keeps no session or token of its own and no
 longer uses the AuthKit JavaScript SDK.
+
+The protected response includes the free plan and the configured MCP endpoint.
+The portal shows native client connection steps and explains that each client
+chooses its own workspace at Connect consent. A browser selection cannot
+retarget an MCP token. An authenticated MCP request without product access gets
+the same HTTP 403 OAuth denial, with a trusted signup link and advice to
+reauthorize for the intended workspace. This guidance grants no access.
 
 ## Organization administration
 
@@ -1631,9 +1647,10 @@ guidance:
   the organization name, with "(selected)" for the selected organization.
   Without an authorized organization, the answer is the onboarding guidance
   page (`200`): the account has no active access to an organization; accept
-  the invitation in the email; with no invitation, contact the operator of
-  this Thermus service, because only the operator can set up a new
-  organization. This page has no form. Other methods give `405` with
+  the invitation in the email; or contact the operator of this Thermus service.
+  The WorkOS composition also links to signup availability. When signup is off,
+  that link shows the closed notice. Other compositions without signup retain
+  the operator setup guidance. This page has no form. Other methods give `405` with
   `Allow: GET, HEAD`.
 - `POST <base>/organizations/select` checks the post in this order. The
   `Origin` header must equal the public origin, before the body is read (else

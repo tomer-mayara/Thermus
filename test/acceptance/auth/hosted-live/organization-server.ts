@@ -6,7 +6,7 @@ import { formsIn, type PageForm } from '../../../support/drivers/browser/hosted-
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf, superAdminRole } from '../../../support/hosted-live/operator-runbook.ts';
 import { formNamed, serverGet, serverPost, sessionJson, signInThroughPortal, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
-import { localOrigin } from '../../../support/hosted-live/settings.ts';
+import { localOrigin, mcpResource } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
 const signInOptions = { timeout: 240_000 };
@@ -85,7 +85,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       assert.equal(switched.location, `${localOrigin}/portal/access`);
       assert.equal(sessionCookiesIn(switched).length, 1, 'The switch set no new session cookie.');
       assert.equal(portal.status, 200, portal.body);
-      assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationB.id, roles: ['user'] });
+      assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationB.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       const selectedSession = await sessionJson(page);
       assert.equal(selectedSession.organizationId, organizationB.id);
       assert.equal(selectedSession.mfaCompleted, requiredMfa);

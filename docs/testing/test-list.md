@@ -28,6 +28,28 @@ results. These tests use test document text; no private policy draft is shipped.
   checks concurrent creation and acceptance metadata in disposable Staging
   organizations. Only `npm run test:interface:workos-signup` selects the live file.
 
+### Portal and MCP handoff (FS-02)
+
+The [FS-02 record](../implementation/fs-02.md) keeps its validation results.
+
+- Unit inspection cases cover existing access without another agreement,
+  retained records, other workspaces, failures, and cancellation with no writes.
+  Cleanup tests limit personal-record recovery to fixture-owned users.
+- Signup route integration and composed acceptance cover Continue, the portal
+  return path, retained-record support, cookies, and provider failures.
+- Portal acceptance covers free access, the configured MCP endpoint, native
+  client steps, and separate browser workspace selection. Account guidance
+  acceptance keeps signup closed while offering signup, invitation, and support
+  paths. MCP acceptance keeps 401/403/500 behavior and proves guidance never
+  grants access or runs a denied tool.
+- The hosted live gate adds two Staging cases. They use a TEST ONLY agreement,
+  a real browser, Connect PKCE, and an MCP SDK client. They check new activation,
+  exact acceptance fields, User-only access, the actual token workspace,
+  browser-B/token-A isolation, revoked A refusal, and continued B access.
+  The SDK uses the gate's loopback HTTP listener behind its HTTPS front.
+  The fetched public reference page is `https://example.com/`.
+  Pending and retained-without-membership cases remain offline proofs.
+
 ## Unit
 
 **MCP Server**

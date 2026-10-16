@@ -4,7 +4,7 @@ import { readForm } from '../../../hosted-admin/account-form.ts';
 import { noticePage, seeOther } from './workos-session-pages.ts';
 import { validateSignupDocuments } from './workos-signup-documents.ts';
 import { signupAgreementIn } from './workos-signup-form.ts';
-import { signupClosedPage, signupFailurePage, signupFormPage, signupSignInPage } from './workos-signup-pages.ts';
+import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupSignInPage } from './workos-signup-pages.ts';
 import type { SignupActivation, SignupDocuments, SignupResult } from './workos-signup.ts';
 
 export interface WorkOSSignupRoutesOptions {
@@ -31,7 +31,7 @@ export class WorkOSSignupRoutes {
   private readonly documents?: SignupDocuments;
   private readonly origin: string;
   private readonly path: string;
-  private readonly destination: string;
+  private readonly destination: URL;
   private readonly login: string;
   private readonly clock: () => number;
   private readonly attempts = new Map<string, { until: number; count: number }>();
@@ -45,7 +45,8 @@ export class WorkOSSignupRoutes {
     if (!base.pathname.endsWith('/')) base.pathname += '/';
     this.origin = base.origin;
     this.path = new URL('signup', base).pathname;
-    this.destination = new URL('organizations', base).href;
+    this.destination = new URL('organizations', base);
+    this.destination.searchParams.set('return_to', base.pathname);
     const login = new URL('login', base);
     login.searchParams.set('return_to', this.path);
     this.login = login.pathname + login.search;
@@ -101,13 +102,23 @@ export class WorkOSSignupRoutes {
         const answer = request.method === 'GET' ? signupSignInPage(documents, this.login) : signupFailurePage(401, 'Sign in before you activate access.');
         return withCookies(answer, cookies);
       }
-      const answer = request.method === 'GET' ? signupFormPage(documents, state.csrfToken, this.path) : await this.activateForm(request, state, run);
+      const answer = request.method === 'GET' ? await this.inspectSignup(request, state, run) : await this.activateForm(request, state, run);
       return withCookies(answer, cookies);
     } catch (error) {
       if (request.signal.aborted) throw error;
       this.options.reportFailure('Hosted signup request failed.');
       return withCookies(signupFailurePage(503, 'Activation is temporarily unavailable. Try again later.'), cookies);
     }
+  }
+
+  private async inspectSignup(request: Request, state: SignedInBrowserSession, run: RequestOperation): Promise<Response> {
+    const result = await run(() => this.options.activation.inspect({ user: state.user, signal: request.signal }));
+    request.signal.throwIfAborted();
+    const destination = this.destination.pathname + this.destination.search;
+    if (result.status === 'existing-access') return signupContinuePage(destination);
+    if (result.status === 'eligible') return signupFormPage(this.requireDocuments(), state.csrfToken, this.path);
+    if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.', result.canContinue ? destination : undefined);
+    return signupFailurePage(503, 'Activation is temporarily unavailable. Try again later.');
   }
 
   private async activateForm(request: Request, state: SignedInBrowserSession, run: RequestOperation): Promise<Response> {
@@ -123,7 +134,7 @@ export class WorkOSSignupRoutes {
   }
 
   private activationAnswer(result: SignupResult): Response {
-    if (result.status === 'active' || result.status === 'existing-access') return seeOther(this.destination, []);
+    if (result.status === 'active' || result.status === 'existing-access') return seeOther(this.destination.href, []);
     if (result.status === 'unverified') return signupFailurePage(403, 'Verify your email before you activate access.');
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.');
     return signupFailurePage(503, 'Activation is temporarily unavailable. Try again later.');

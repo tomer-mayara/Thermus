@@ -19,7 +19,7 @@ import {
   signInThroughPortal,
   type ServerAnswer,
 } from '../../../support/hosted-live/portal-visit.ts';
-import { localOrigin } from '../../../support/hosted-live/settings.ts';
+import { localOrigin, mcpResource } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
 interface ShownPage {
@@ -274,7 +274,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       t.diagnostic(`portal ${portalBefore.status} > ${portalAfter.status}; offered ${JSON.stringify(offered)}; C: ${inC.status} ${JSON.stringify(inC.roles)}; B: ${inB.status} ${JSON.stringify(inB.roles)}`);
 
       assert.equal(portalBefore.status, 200, portalBefore.body);
-      assert.deepEqual(JSON.parse(portalBefore.body), { organizationId: organizationC.id, roles: ['user'] });
+      assert.deepEqual(JSON.parse(portalBefore.body), { organizationId: organizationC.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       assertSeeOther(revoked, 'members');
       assert.equal(portalAfter.status, 403);
       assert.deepEqual(offered, [organizationB.name]);
@@ -397,7 +397,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       assert.ok([userVisit, adminVisit].every(({ pages }) => pages.some((path) => path.startsWith('/mfa/'))), 'AuthKit did not ask for the MFA step in an acceptance.');
       assert.deepEqual([userMembership.status, userMembership.roles], ['active', ['user']]);
       assert.equal(userPortal.status, 200, userPortal.body);
-      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, roles: ['user'] });
+      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       assert.deepEqual([adminMembership.status, adminMembership.roles], ['active', ['admin']]);
       assert.equal(adminPortal.status, 403);
       assert.equal(adminMembers.status, 200, 'The Admin invitee cannot open the members page.');

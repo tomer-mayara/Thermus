@@ -146,7 +146,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.equal(sessionCookiesOf(selected).length, 1);
     assert.notEqual(browser.cookieHeader, before);
     assert.equal(portal.status, 200, portal.body);
-    assert.deepEqual(JSON.parse(portal.body), { organizationId: globex, roles: ['user'] });
+    assert.deepEqual(JSON.parse(portal.body), { organizationId: globex, roles: ['user'], plan: 'free', mcpUrl: config.mcpResourceUrl });
     assert.equal((await browser.open('billing')).status, 403);
     assert.equal(await sessionOrganization(browser), globex);
     assert.deepEqual(relisted.map(({ label }) => label), ['Acme', 'Globex (selected)']);
@@ -171,7 +171,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
       assert.equal(refusal.location, undefined);
       assert.deepEqual(sessionCookiesOf(refusal), []);
     }
-    assert.deepEqual(JSON.parse(portal.body), { organizationId: acme, roles: ['user', 'admin'] });
+    assert.deepEqual(JSON.parse(portal.body), { organizationId: acme, roles: ['user', 'admin'], plan: 'free', mcpUrl: config.mcpResourceUrl });
     assert.equal(await sessionOrganization(browser), acme);
     assert.deepEqual(switchesIn(site), []);
   });

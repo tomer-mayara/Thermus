@@ -40,6 +40,7 @@ export interface McpHttpAuthOptions {
   // Each MCP request needs this application permission, such as product:access. An allowed context without it gets
   // the answer of a denial. Without this option, each allowed context is enough.
   requiredPermission?: string;
+  accessDeniedDescription?: string;
 }
 
 type BearerGate = (request: Request) => Promise<AuthInfo | Response>;
@@ -229,14 +230,14 @@ function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): B
   };
 }
 
-function accessGate(auth: Pick<McpHttpAuthOptions, 'accessResolver' | 'requiredPermission'>, reportFailure: FailureReporter): AccessGate {
-  const { accessResolver, requiredPermission } = auth;
+function accessGate(auth: Pick<McpHttpAuthOptions, 'accessResolver' | 'requiredPermission' | 'accessDeniedDescription'>, reportFailure: FailureReporter): AccessGate {
+  const { accessResolver, requiredPermission, accessDeniedDescription = 'Access denied' } = auth;
   return async (authInfo) => {
     try {
       const decision = await accessResolver.resolve(verifiedUserOf(authInfo));
-      if (decision.allowed !== true) return accessDenied();
+      if (decision.allowed !== true) return accessDenied(accessDeniedDescription);
       const context = requireTrustedTenant(frozenCopy(decision.context));
-      if (requiredPermission !== undefined && !context.permissions.includes(requiredPermission)) return accessDenied();
+      if (requiredPermission !== undefined && !context.permissions.includes(requiredPermission)) return accessDenied(accessDeniedDescription);
       return context;
     } catch (cause) {
       reportFailure({ step: 'access-resolution', cause });
@@ -264,8 +265,8 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
-function accessDenied(): Response {
-  return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
+function accessDenied(description: string): Response {
+  return errorResponse(OAuthErrorCode.AccessDenied, description, 403);
 }
 
 function errorResponse(code: OAuthErrorCode, description: string, status: number): Response {

@@ -18,7 +18,7 @@ function contextWith(grants: readonly RoleGrant[]) {
 }
 
 async function access(grants: readonly RoleGrant[], path = '/team/portal/access', method = 'GET') {
-  const response = await portalAccessOperation(base)(new Request(`https://thermus.example${path}`, { method }), contextWith(grants));
+  const response = await portalAccessOperation(base, 'https://mcp.example/service/mcp')(new Request(`https://thermus.example${path}`, { method }), contextWith(grants));
   return { status: response.status, body: response.headers.get('Content-Type')?.includes('json') ? await response.json() : await response.text(), response };
 }
 
@@ -26,7 +26,7 @@ describe('Product access of the portal with the real permission check', () => {
   test('Given User and Admin grants, when the portal reads its product access, then it gets the organization and the roles that give a permission, without a highest role', async () => {
     const { status, body, response } = await access([admin, user, member]);
     assert.equal(status, 200);
-    assert.deepEqual(body, { organizationId: 'org_01ACME', roles: ['admin', 'user'] });
+    assert.deepEqual(body, { organizationId: 'org_01ACME', roles: ['admin', 'user'], plan: 'free', mcpUrl: 'https://mcp.example/service/mcp' });
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
   });
 
