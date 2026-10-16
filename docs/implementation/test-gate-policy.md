@@ -325,6 +325,22 @@ non-root runtime user, without network access. It does not rebuild them.
 A failed check must prevent a final runtime image. No Docker daemon runs
 inside the build. These checks supplement the required pull request runs.
 
+### Acceptance: hosted build with constrained CPU
+
+Given a Linux AMD64 hosted builder with constrained CPU and the pinned build
+inputs, when `npm run build:hosted` runs, then every selected test must pass
+with its existing assertions and deadlines. The build must keep the complete
+test selection and the production selector limits. A failed check must still
+prevent a runtime image.
+
+The initial Render build, `dep-db8pua7f3r2c73f0b3ag`, failed this scenario on
+main `3736b78d`: 2,533 of 2,534 backend unit tests passed. The case
+`rejects 32 repeated descendant combinators within the time limit` took
+12,309 ms in total, and its child did not close within the separate 3,000 ms
+work deadline. The total includes child startup; it is not selector CPU time.
+CPU contention between test files is a hypothesis, not a proven cause. This
+failed build is the initial regression evidence; it is not a gate pass.
+
 ## Hosted image gate
 
 `npm run test:container:hosted` makes a clean backend build and runs only
