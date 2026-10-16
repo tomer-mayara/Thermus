@@ -35,3 +35,8 @@ export const workSliceShutdownProbe = fileURLToPath(siblingModule('work-slice-sh
 export const lingeringHostedHandle = siblingModule('keep-hosted-handle-open').href;
 export const heldHostedIdentity = siblingModule('hold-hosted-identity').href;
 export const heldHostedCleanup = siblingModule('hold-hosted-cleanup').href;
+
+// Files mounted into the hosted-image gate; none is copied into the final image.
+export const hostedImageIdentity = fileURLToPath(new URL(`../container/hosted-image-identity.${extension}`, import.meta.url));
+export const hostedImagePage = fileURLToPath(new URL(`../container/hosted-image-page.${extension}`, import.meta.url));
+export const hostedImageProbe = fileURLToPath(new URL(`../container/hosted-image-probe.${extension}`, import.meta.url));

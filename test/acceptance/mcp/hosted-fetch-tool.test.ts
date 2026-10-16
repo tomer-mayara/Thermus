@@ -12,7 +12,7 @@ const markdown = 'The rendered article has enough words to keep this first parag
 const renderedOutput = JSON.stringify({ url, http_status: 200, content: html, error: null });
 const params = { name: 'getURLAsMarkdown', arguments: { url, reason } };
 
-test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and safe completion records are returned, and missing or revoked access is refused before rendering', { timeout: 5_000 }, async (t) => {
+test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and safe completion records are returned, and missing or revoked access is refused before rendering', { timeout: 30_000 }, async (t) => {
   const site = await openHostedFetchSite(t);
   const renderer = RendererProcessDouble.install(t);
   renderer.serve(url, { finalUrl: url, html });

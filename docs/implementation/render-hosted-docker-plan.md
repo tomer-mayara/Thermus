@@ -1,11 +1,12 @@
 # Hosted Docker on Render: implementation plan
 
-Status: RHD-01 and RHD-02 implementation and verification complete.
-PR #116 is stacked on PR #115; both await owner review.
-RHD-03 through RHD-05 are planned. Date: 2026-10-15.
+Status: RHD-01, RHD-02, and RHD-03 implementation and local verification complete.
+PR #117 is stacked on PR #116, which is stacked on PR #115. All await owner review.
+RHD-04 and RHD-05 are planned. Date: 2026-10-15.
 The [RHD-01 record](rhd-01.md) gives its results. The
 [RHD-02 record](rhd-02.md) gives the portal, local health, request boundary,
-and verification results.
+and verification results. The [RHD-03 record](rhd-03.md) tracks the hosted
+image, production rules decision, and AMD64 runtime evidence.
 Owner review and merge remain pending; no deployment is recorded.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.
@@ -164,14 +165,20 @@ gate must run without WorkOS or Axiom secrets. See [Docker on Render](https://re
 Prove real rendering in the final **Linux AMD64** image: native module loading,
 CA-backed HTTPS, JavaScript results, private-network refusal, overload,
 cancellation, and bounded shutdown. The [runtime record](../lightpanda-runtime.md)
-has AMD64 digest/version evidence but no rendered-page proof. ARM64 evidence does
-not close that gap. Test failed offline checks and invalid startup locally.
+links the [RHD-03 result](rhd-03.md#verification): the final Linux AMD64 gate
+passed all eight tests, including real rendering, invalid startup, and a
+failed offline test that prevents a runtime image. This is local image evidence;
+production deployment remains in RHD-04 and RHD-05.
 
-Select a trusted production rules policy before image completion, version its
-file, ship it, and set the absolute `AD_RULES_FILE` path. Do not use a test fixture
-as production policy or silently default to an empty file. If the owner deliberately
-selects an empty policy, record the loss of rule-based ad removal. Rules changes
-produce a checked image; no runtime download or persistent disk is needed.
+The owner selected a pinned EasyList snapshot as the hosted production policy.
+The candidate includes the snapshot and its provenance and license files;
+host application and final AMD64 image verification passed. The image ships
+the selected file at
+`AD_RULES_FILE=/etc/thermus/ad-rules.txt`. The
+[hosted image policy](../reference/ad-rules.md#hosted-image-policy) links
+its pinned source, license, limits, and update process.
+A reviewed rules change produces a checked image. No runtime rules download
+or persistent disk is needed.
 
 ## Production WorkOS and Render setup
 
@@ -294,7 +301,11 @@ RHD-01 implementation and verification are complete in
 review; its [record](rhd-01.md) gives the scope and results. RHD-02 implementation
 and verification are complete in [PR #116](https://github.com/3-headed-monkey/Thermus/pull/116),
 stacked on PR #115 and awaiting owner review; its [record](rhd-02.md) gives the
-results. RHD-03 through RHD-05 remain planned. Each code ticket writes its failing
+results. RHD-03 implementation and local verification are complete in
+[PR #117](https://github.com/3-headed-monkey/Thermus/pull/117), stacked on
+PR #116 and awaiting owner review; its [record](rhd-03.md) gives the passed
+gates and manager sign-off.
+RHD-04 and RHD-05 remain planned. Each code ticket writes its failing
 Given-When-Then specification first, updates affected documents and fixtures, and
 runs its focused tests plus every applicable existing gate. The boundaries below
 identify each ticket's proof; they do not waive repository checks.
@@ -305,7 +316,7 @@ identify each ticket's proof; they do not waive repository checks.
 and completion status, trusted rules, and bounded work lifetime. Update the hosted
 no-native-module contract while preserving operator-command isolation.
 
-**Dependencies:** none; select production rules before RHD-03 completes.
+**Dependencies:** none. RHD-03 ships the owner-selected pinned EasyList snapshot.
 
 **Acceptance:** Given a valid Connect user with User access, when tools are listed
 and called, then cleaned Markdown is returned; missing/revoked access is refused;

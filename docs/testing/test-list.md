@@ -2330,6 +2330,65 @@ npm run test:container
 
 `npm test` and `npm run test:acceptance` select this file but skip its suite. Only `npm run test:container` is a container gate pass.
 
+**Hosted image acceptance** (`test/acceptance/auth/hosted-image.runtime.ts`)
+
+This dedicated acceptance specification builds and runs the final hosted image
+for Linux AMD64. Its `.runtime.ts` name keeps it outside normal `*.test.js`
+discovery. It needs Docker Engine with Buildx and an AMD64 builder/runtime,
+native or emulated. Image build downloads need network access or cached pinned
+inputs; the renderer needs public HTTPS egress to `https://example.com/`.
+The tests use no live WorkOS or Axiom credential. The
+[hosted image gate](../implementation/test-gate-policy.md#hosted-image-gate)
+gives the command and prerequisites. The final Linux AMD64 gate passed
+8/8 tests under bundled Linux Rosetta, with zero failures, cancellations,
+skips, or todo cases. [RHD-03](../implementation/rhd-03.md) records the result.
+
+The real CLI case uses the image unchanged with placeholder runtime settings.
+The fetch cases mount test-only provider and controlled-page seams. These seams
+supply a fixed Connect User and permit the local JavaScript fixture. They keep
+the final image's real cleaner, renderer, production dependencies, and production
+entry point. The public HTTPS case uses the renderer's normal TLS verification.
+This proves packaged application behavior and does not prove WorkOS behavior.
+The gate has a 60-minute total allowance for the build and image cases. Its
+failed-check case injects a failure into an existing unit file, before the
+later suites. Production readiness and shutdown bounds stay unchanged.
+
+[V] Given the final image, its metadata and files show Linux AMD64, the checked portal, production packages, working native cleaner and shipped rules, Lightpanda 1.0.0, CA certificates, non-root execution, and no development tools or test output
+[V] Given the unmodified image and placeholder runtime settings, the real CLI serves portal assets and CSP, responds to health, requires MCP authentication, and refuses a foreign Origin
+[V] Given the provider seam's Connect User, the real renderer fetches public HTTPS with verified TLS and returns the controlled page's JavaScript output after the native cleaner applies the shipped policy
+[V] Given private targets, overload, disconnect, and active-renderer SIGTERM, private calls fail before rendering, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
+[V] Given missing rules, a missing renderer, an empty cookie password, or an HTTP public base URL, the real CLI exits with status 1 before listening and shows no secret
+[V] Given a final image with its portal hidden by an empty mount, startup fails before listening with a safe portal error
+[V] Given a copied context with an injected failing offline test, the final-target build fails and creates no runtime image
+
+Run the dedicated final Linux AMD64 gate:
+
+```sh
+npm run test:container:hosted
+```
+
+**Hosted rules policy** (`test/acceptance/hosted-ad-policy.test.ts`)
+
+The owner selected a pinned EasyList snapshot for the hosted rules. The
+candidate includes the snapshot, provenance, and license. The specification
+loads it through the real native cleaner and public cleaning pipeline. It is
+included in `build:hosted` and the normal acceptance selection. The worker
+reported a red source run before replacement and a green 1/1 source run after
+replacement. The final host offline selection passed 90/90 and the full
+acceptance command passed 334 backend cases plus four portal cases, including
+the emitted policy test. The final Linux AMD64 image gate also passed 8/8. The
+[RHD-03 record](../implementation/rhd-03.md)
+tracks the final candidate results. The [rules reference](../reference/ad-rules.md#hosted-image-policy)
+links the pinned source, license, scope, and update process.
+
+[V] Given the pinned EasyList snapshot and an `aside` with class `ad-banner-container`, the native cleaner removes that element and preserves ordinary article content and the similar class `ad-banner-container-story`
+
+Run the emitted specification after a clean build:
+
+```sh
+npm run build && node --test dist/test/acceptance/hosted-ad-policy.test.js
+```
+
 **Hosted live gate setup** (`test/acceptance/auth/hosted-live-setup.test.ts`)
 
 These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied. They need no portal build. Without it, the local HTTPS test server of the gate starts nothing and rejects at once with the message that names `npm run build:user-portal`. The gate process then exits.

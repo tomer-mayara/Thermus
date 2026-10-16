@@ -1,0 +1,35 @@
+# Include the actual check inputs, including fixture data and architecture rules.
+*
+!.habit-hooks/
+!.npmrc
+!docker/
+!docs/lightpanda-runtime.md
+!migrations/
+!package.json
+!patches/
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!src/
+!test/
+!tsconfig.json
+!tsconfig.build.json
+!tsconfig.user-portal.json
+
+# Apply these exclusions after the allowlist, also inside included directories.
+**/.env*
+**/.git
+**/.git/**
+**/node_modules
+**/dist
+**/.cache
+**/coverage
+**/playwright-report
+**/test-results
+**/*.log
+**/.DS_Store
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/credentials*
+**/secrets/

@@ -446,7 +446,7 @@ Node 24 ESM package. Application and suite TypeScript compiles with `tsc`, and N
 - pnpm 12.10.1
 - A POSIX shell for build commands (macOS or Linux)
 - Lightpanda 1.0.0 for rendering, the live renderer tests, and the renderer gate; follow [runtime setup](docs/lightpanda-runtime.md). `pnpm install` does not install it. The unit suite needs no renderer. The container image holds its own renderer.
-- Docker Engine with Buildx and Compose for the [container installation](#container-installation) and `pnpm test:container`. No other suite needs Docker.
+- Docker Engine with Buildx and Compose for the [container installation](#container-installation) and `pnpm test:container`. The hosted image gate also needs a builder and runtime for Linux AMD64; see the [test gate policy](docs/implementation/test-gate-policy.md).
 
 `package.json` and `pnpm-lock.yaml` pin the development runtime to Node 24.20.0,
 the same version as the Docker image. `pnpm install` installs this runtime if it
@@ -466,7 +466,9 @@ pnpm test:unit        # clean build, then node --test on dist/test/unit/
 pnpm test:integration # clean build, then node --test on dist/test/integration/
 pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
-pnpm test:container   # clean build, then the container gate: the image and its containers without outbound access
+pnpm test:container   # clean build, then the self-hosted container gate without outbound access
+pnpm test:container:hosted # clean build, then the final Linux AMD64 hosted image gate
+pnpm build:hosted     # offline checks, integration selection, and local renderer gate; needs pinned LIGHTPANDA_BIN and OpenSSL
 pnpm test:hosted-live # clean build, portal build, then the hosted live gate; needs WorkOS staging settings, Playwright Chromium, and the pinned LIGHTPANDA_BIN
 pnpm test:mcp:renderer # clean build, then the renderer gate: the fetch tool with the pinned Lightpanda; needs LIGHTPANDA_BIN
 pnpm work-slice:basic-mcp-url-fetch # the basic MCP URL fetch work slice: the fetch tool with the mock provider, a local LLM client, and Axiom logs; needs PUBLIC_BASE_URL, AD_RULES_FILE, LIGHTPANDA_BIN, and the Axiom settings
@@ -495,6 +497,8 @@ docs/        Documentation, design plans, and archived records
 dist/        tsc output (gitignored)
 Dockerfile, compose.yaml, .dockerignore
              The self-hosted evaluation image, its Compose service, and its build context
+Dockerfile.hosted, Dockerfile.hosted.dockerignore
+             The hosted image and its build context
 ```
 
 ## TypeScript
@@ -529,11 +533,31 @@ the tests read from the environment or the repository's `.env.local`.
 It also runs portal acceptance tests and builds the portal bundle. Portal tests
 run from TypeScript source on Node 24 because the Node build excludes browser source.
 
-`npm run check` does not run the full integration, acceptance, interface, or container suites, or the renderer gate. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+`npm run check` does not run the full integration, acceptance, interface, or container suites,
+the hosted image gate, or the renderer gate. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
 
 `pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
 
-`pnpm test:mcp:renderer` makes a clean build and runs the explicit renderer gate, `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select it. Set `LIGHTPANDA_BIN` to the absolute path of the pinned Lightpanda 1.0.0 executable first; the [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) tells how. The gate needs no public network access and no Axiom credentials: its pages are local HTTP fixtures on `127.0.0.1`. Without the pinned renderer, setup fails, and no test passes. Only a pass of this command is proof of rendered tool behavior; the container gate checks only one local page with the renderer of the image. The [renderer gate](docs/implementation/test-gate-policy.md#renderer-gate-mcp-p03) gives the rules.
+`pnpm build:hosted` runs `check`, all emitted integration tests, the selected
+architecture and hosted acceptance/interface tests, and the real local renderer
+gate. Set an absolute `LIGHTPANDA_BIN` to Lightpanda 1.0.0 and have OpenSSL in
+`PATH` and port 46443 free. No live credentials or public network access are
+needed. `Dockerfile.hosted` supplies the renderer and requires these checks
+before it can produce the runtime. The [hosted offline build checks](docs/implementation/test-gate-policy.md#hosted-offline-build-checks)
+give the exact selection and prerequisites.
+
+`pnpm test:container:hosted` builds and tests the final hosted image for Linux
+AMD64, with a native or emulated Docker builder/runtime and public HTTPS
+egress to `https://example.com/`. The file
+`test/acceptance/auth/hosted-image.runtime.ts` is outside the normal test
+globs. Only this command runs the [hosted image gate](docs/implementation/test-gate-policy.md#hosted-image-gate).
+The [RHD-03 record](docs/implementation/rhd-03.md) gives the current proof
+status and the completed Linux AMD64 image proof. The image ships the
+owner-selected pinned EasyList snapshot for the hosted rules. The [hosted image policy](docs/reference/ad-rules.md#hosted-image-policy)
+gives its provenance, license, limits, and update process. The self-hosted
+Compose installation keeps its separate gate.
+
+`pnpm test:mcp:renderer` makes a clean build and runs the explicit renderer gate, `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select it. Set `LIGHTPANDA_BIN` to the absolute path of the pinned Lightpanda 1.0.0 executable first; the [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) tells how. The gate needs no public network access and no Axiom credentials: its pages are local HTTP fixtures on `127.0.0.1`. Without the pinned renderer, setup fails, and no test passes. The last phase of `pnpm build:hosted` runs this same complete file. A pass of the renderer gate proves its rendered tool cases; the self-hosted container gate checks one local page with the renderer of that image. The [renderer gate](docs/implementation/test-gate-policy.md#renderer-gate-mcp-p03) gives the rules.
 
 `pnpm work-slice:basic-mcp-url-fetch` runs `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts` from source with `tsx`. The file name has no `.test`, so `pnpm test` and `pnpm test:acceptance` do not select it, as with the `.runtime.ts` and `.live.ts` files. The script composes the production parts with the test-only mock provider, which accepts any Bearer token. It prints the command that adds the server to Claude Code with a static `Authorization` header. It sends its log only to Axiom's `system-log-test` dataset: one tool call writes the URL before the fetch, the Markdown after it, and the completion record. The console shows only the export failures and, when the script fails, one `FATAL` line. The script reads the settings of the server. `PUBLIC_BASE_URL` is required, for example `http://127.0.0.1:8080`. `AD_RULES_FILE` is required; an empty file gives no ad rules, as for the server. `LIGHTPANDA_BIN` must be the absolute path of the pinned Lightpanda 1.0.0. `LISTEN_HOST` and `LISTEN_PORT` are optional; the default port is 8080, and it must be free. The script also needs the Axiom settings of the [OTel logger test guide](docs/testing/otel-logger.md), in the environment or in `.env.local`, and public network access. `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` sets the required settings with their defaults, except `AXIOM_API_KEY`, and runs the entry point with the pinned Node runtime of pnpm from the repository root, also when you start it from another directory; a signal to its process stops the server. The [README of the slice](test/acceptance/work-slice/basic-mcp-url-fetch/README.md) describes it, and the [work slice guide](test/acceptance/work-slice/README.md) lists the slices. The [work slice plan](docs/implementation/basic-mcp-url-fetch-plan.md) records the decisions and the run. The acceptance test of the slice, `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts`, runs offline in the acceptance suite with a renderer double. The script is a development tool. Production keeps Better Auth and the hosted WorkOS provider, and no server setting selects the mock provider.
 
@@ -541,13 +565,10 @@ run from TypeScript source on Node 24 because the Node build excludes browser so
 
 Only the slice enables automatic onboarding: a trusted WorkOS Google sign-in with a verified exact `thermus.ai` email domain can create an absent membership with the explicit role `user` in `THERMUS_SLICE_ORGANIZATION_ID`. The launcher defaults that ID to the staging slice organization. Existing roles and membership states stay unchanged. The browser session selects the organization before the client opens its own Connect OAuth consent. Normal hosted startup enables no onboarding policy and keeps the `member` default role. The [validation record](docs/implementation/auth-workos-mcp-url-fetch-validation.md) gives the completed checks and retained findings. The live Google, Connect, HTTPS fetch, and Axiom proof remains required before the draft PR is ready.
 
-The hosted WorkOS, organization, and administration tests are offline, and the unit, integration, and acceptance suites select them. To run only the hosted integration and acceptance files:
-
-```sh
-npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/integration/auth/portal-access.test.js dist/test/integration/auth/workos-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-workos.test.js dist/test/acceptance/auth/hosted-workos-organizations.test.js dist/test/acceptance/auth/hosted-workos-administration.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
-```
-
-A pass of these files proves the application side with doubles or with a fake of the WorkOS API only. It is not a hosted live gate pass and no proof of WorkOS behavior.
+The hosted WorkOS, organization, and administration tests are offline. They use
+doubles or a local fake of the WorkOS API. The [hosted offline checks](docs/implementation/test-gate-policy.md#hosted-offline-checks)
+give the focused integration and acceptance selection. A pass proves the
+application side and does not prove WorkOS behavior or pass the hosted live gate.
 
 The small-text acceptance tests exercise the sanitizer and Defuddle through the public pipeline. `pnpm test:acceptance` runs them with the other acceptance tests. To run only this file:
 

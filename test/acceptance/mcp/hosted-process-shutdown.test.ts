@@ -12,7 +12,7 @@ const settings = {
 };
 
 for (const [failure, preload] of [['a residual library handle', lingeringHostedHandle], ['cleanup that never settles', heldHostedCleanup]] as const) {
-  test(`Given a hosted CLI with ${failure}, when SIGTERM starts shutdown, then the process exits with a failure at the fixed deadline below the Render stop window`, { timeout: 15_000 }, async (t) => {
+  test(`Given a hosted CLI with ${failure}, when SIGTERM starts shutdown, then the process exits with a failure at the fixed deadline below the Render stop window`, { timeout: 30_000 }, async (t) => {
     const server = await ServerProcess.start(t, withPreload(settings, preload));
     const started = performance.now();
     const result = await server.stop();

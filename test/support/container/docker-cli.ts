@@ -10,11 +10,12 @@ export interface DockerResult {
 interface DockerOptions {
   readonly input?: string | Buffer;
   readonly environment?: NodeJS.ProcessEnv;
+  readonly signal?: AbortSignal;
 }
 
 export function docker(args: readonly string[], options: DockerOptions = {}): Promise<DockerResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn('docker', args, { stdio: ['pipe', 'pipe', 'pipe'], env: options.environment ?? process.env });
+    const child = spawn('docker', args, { stdio: ['pipe', 'pipe', 'pipe'], env: options.environment ?? process.env, ...(options.signal === undefined ? {} : { signal: options.signal }) });
     const stdout: Buffer[] = [];
     let stderr = '';
     child.stdout.on('data', (chunk: Buffer) => stdout.push(chunk));
