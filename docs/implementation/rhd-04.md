@@ -1,8 +1,9 @@
 # RHD-04: production identity and Render setup
 
 Status: incomplete; initial acceptance is not satisfied. Date: 2026-10-15.
-Draft [PR #118](https://github.com/3-headed-monkey/Thermus/pull/118) is stacked
-on PR #117. Production identity settings are partly configured; setup is incomplete.
+Draft [PR #118](https://github.com/3-headed-monkey/Thermus/pull/118) now targets
+`main` after PRs #115–117 merged. Production identity settings are
+partly configured; setup is incomplete.
 This record starts before provider changes. It contains no secret values.
 The [hosted Docker plan](render-hosted-docker-plan.md) defines the scope.
 RHD-05 owns rollout, remote journeys, load, auto-deploy proof, and recovery.
@@ -199,11 +200,9 @@ further environment changes until checked `main` is ready.
   This order gives no implicit enrollment: ungranted access stays denied.
 - Production native client configuration is verified below. Actual registration,
   login, and refresh proofs belong to RHD-05.
-- Merge the reviewed stack through PR #117 before selecting checked `main`.
-  This branch starts at PR #117 head
-  `c3a2734144a043b1d184f8531a59d4f2dafe41b1`.
-  PRs #115–117 remain open and unmerged. Current `main`,
-  `cf2928ba239e4ef88e7cf7e660d5b08bc04b6486`, lacks that stack.
+- Checked `main` is ready: PRs #115–117 were reviewed and merged. The
+  [RHD-05 record](rhd-05.md) gives exact merge commits and matching tree evidence.
+  The old `main` revision in the failed setup attempts above is historical.
 
 ## Native MCP client configuration
 
@@ -296,7 +295,7 @@ then publish In production before the production sign-in proof. Real browser
 sign-in belongs to RHD-05 after Render is live. Keep secrets in protected storage
 and preserve identity-only scopes and disabled token return.
 
-PR #117 remains open and unmerged. Wait for checked `main` before rollout.
+The first intended deployment has not started. Current remote `/healthz` is `502`.
 Enable On Commit only after the RHD-05 remote smoke. The Google project exists;
 Google and WorkOS connection settings are verified; production publication remains
 pending.
@@ -326,8 +325,9 @@ matched its stored initial snapshot.
 
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
-items are identity verification and User grants, Google publication, and checked
-`main`. Native client registration, login, and refresh remain RHD-05 proofs.
+items are identity verification and User grants, and Google publication. Checked
+`main` and native configuration are ready; registration, login, and refresh remain
+RHD-05 proofs.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
 Do not run staging fixture creation or cleanup against production.

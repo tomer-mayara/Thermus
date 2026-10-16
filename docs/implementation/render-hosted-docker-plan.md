@@ -1,15 +1,16 @@
 # Hosted Docker on Render: implementation plan
 
 Status: RHD-01, RHD-02, and RHD-03 implementation and local verification complete.
-PR #117 is stacked on PR #116, which is stacked on PR #115. All await owner review.
+PRs #115–117 were reviewed and merged; checked `main` is ready for first deployment.
 RHD-04 is incomplete in draft [PR #118](https://github.com/3-headed-monkey/Thermus/pull/118),
-stacked on PR #117; its [setup record](rhd-04.md) gives the read-backs and pending
-owner actions. RHD-05 is planned. Date: 2026-10-15.
+retargeted to `main`; its [setup record](rhd-04.md) gives the read-backs and pending
+work. The [RHD-05 record](rhd-05.md) specifies the first deployment before it starts.
+Date: 2026-10-15.
 The [RHD-01 record](rhd-01.md) gives its results. The
 [RHD-02 record](rhd-02.md) gives the portal, local health, request boundary,
 and verification results. The [RHD-03 record](rhd-03.md) tracks the hosted
 image, production rules decision, and AMD64 runtime evidence.
-Owner review and merge remain pending; no deployment is recorded.
+The first intended deployment has not started; no live deployment is recorded.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.
 
@@ -300,15 +301,16 @@ required checks pass, and the operator can deploy and recover the service.
 ## Appendix A: delivery tickets
 
 RHD-01 implementation and verification are complete in
-[PR #115](https://github.com/3-headed-monkey/Thermus/pull/115), which awaits owner
-review; its [record](rhd-01.md) gives the scope and results. RHD-02 implementation
+[PR #115](https://github.com/3-headed-monkey/Thermus/pull/115), now merged;
+its [record](rhd-01.md) gives the scope and results. RHD-02 implementation
 and verification are complete in [PR #116](https://github.com/3-headed-monkey/Thermus/pull/116),
-stacked on PR #115 and awaiting owner review; its [record](rhd-02.md) gives the
+now merged; its [record](rhd-02.md) gives the
 results. RHD-03 implementation and local verification are complete in
-[PR #117](https://github.com/3-headed-monkey/Thermus/pull/117), stacked on
-PR #116 and awaiting owner review; its [record](rhd-03.md) gives the passed
+[PR #117](https://github.com/3-headed-monkey/Thermus/pull/117), now merged;
+its [record](rhd-03.md) gives the passed
 gates and manager sign-off.
-RHD-04 remains incomplete; RHD-05 remains planned. Each code ticket writes its failing
+RHD-04 remains incomplete; the [RHD-05 record](rhd-05.md) gives its initial
+deployment specification. Each code ticket writes its failing
 Given-When-Then specification first, updates affected documents and fixtures, and
 runs its focused tests plus every applicable existing gate. The boundaries below
 identify each ticket's proof; they do not waive repository checks.
