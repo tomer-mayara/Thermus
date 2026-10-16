@@ -337,6 +337,11 @@ The consent page verifies the signed authorization query before it displays the 
 
 ## Hosted edition
 
+For hosted early access, follow [User onboarding](docs/implementation/hosted-user-onboarding.md)
+before a User grant and [account deletion](docs/implementation/hosted-account-deletion.md)
+for a removal request. Acceptance is an operator-managed private record, not an
+application check. Updated policy pages remain unpublished until separately approved.
+
 The hosted edition uses WorkOS: AuthKit signs in browser users, and Connect authorizes MCP clients. `DEPLOYMENT=hosted` needs the five `WORKOS_*` settings of [`.env.example`](.env.example):
 
 ```sh

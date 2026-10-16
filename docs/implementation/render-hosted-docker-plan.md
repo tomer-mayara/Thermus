@@ -234,8 +234,13 @@ permissions, as required by [the role mapping](../../src/auth/hosted-auth/workos
 All three mapped roles must exist, even for fetch-only use. Roles do not inherit:
 Admin or Super Admin alone does not give User access. The
 [operator runbook](hosted-organization-setup.md) grants roles but does not define
-them. Preprovision known users and explicit User grants externally, with its
-operator MFA prerequisites. Optional MFA gives no proven MFA evidence, so privileged
+them. Before a new or renewed User grant, use the private identity and terms
+evidence in [User onboarding](hosted-user-onboarding.md), with the operator MFA
+prerequisites. Use an explicit grant after verification, not a User-role
+invitation. Acceptance is an operator procedure, not a runtime check. Existing
+Users need the documented transition; earlier release sign-ins are not evidence
+of agreement. Use [account deletion](hosted-account-deletion.md) for authorized
+removal and privacy requests. Optional MFA gives no proven MFA evidence, so privileged
 Thermus UI writes stay denied. Add no login-based enrollment or implicit grant.
 
 Configure the selected native MCP client independently for production; use
