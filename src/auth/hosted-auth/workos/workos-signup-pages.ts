@@ -1,6 +1,10 @@
+import { createHash } from 'node:crypto';
 import { escapeHtml } from '../../../html/html-escape.ts';
 import { FORM_HEADERS, NOTICE_HEADERS, hiddenField, htmlDocument, postForm } from '../../../hosted-admin/page-html.ts';
 import type { SignupDocuments } from './workos-signup.ts';
+
+const SIGNUP_STYLE = 'body { margin: 0; padding: 1rem; font-family: system-ui, sans-serif; line-height: 1.5; } main { max-width: 72ch; margin: auto; } pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }';
+const SIGNUP_STYLE_HASH = createHash('sha256').update(SIGNUP_STYLE).digest('base64');
 
 export function signupClosedPage(status = 200): Response {
   return answer('Activation is closed', ['<p>New account activation is closed.</p>', '<p><a href="/login">Sign in</a></p>', '<p><a href="mailto:legal@thermus.ai">Contact</a></p>'], { status });
@@ -37,5 +41,8 @@ function notice(documents: SignupDocuments): string {
 }
 
 function answer(title: string, content: readonly string[], init: ResponseInit = {}): Response {
-  return new Response(htmlDocument(title, content), { status: 200, headers: NOTICE_HEADERS, ...init });
+  const headers = new Headers(init.headers ?? NOTICE_HEADERS);
+  headers.set('Content-Security-Policy', `${headers.get('Content-Security-Policy')}; style-src 'sha256-${SIGNUP_STYLE_HASH}'`);
+  const page = htmlDocument(title, content).replace('</head>', `<style>${SIGNUP_STYLE}</style>\n</head>`);
+  return new Response(page, { status: 200, ...init, headers });
 }

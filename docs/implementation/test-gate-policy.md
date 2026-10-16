@@ -374,7 +374,8 @@ Lightpanda asset needs network access unless those inputs are cached. The runtim
 `https://example.com/`. Tests need no live WorkOS or Axiom credential. The final-image run must prove real
 native cleaner loading, CA-backed HTTPS and JavaScript rendering, private
 network refusal, capacity refusal, cancellation, bounded shutdown, invalid
-startup refusal, and a failed offline check that prevents a runtime image.
+startup refusal, the exact approved pre-sign-in notice with signup enabled only
+in an image test, and a failed offline check that prevents a runtime image.
 The [RHD-03 record](rhd-03.md) tracks the case details and results.
 The gate allows 60 minutes for its build and image cases. Its deliberate
 failed-check case injects a failing offline test into an existing unit file.

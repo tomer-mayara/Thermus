@@ -34,7 +34,7 @@ export interface WorkOSApplicationParts {
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
-  // Production has no approved signup documents yet. Tests supply their own document bundle.
+  // Explicit composition supplies its own documents. Production selects the approved bundle at startup.
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
   // A composition can discard MFA evidence, but only the configured Required policy can supply it.
   readonly mfaEvidence?: 'unproven';
@@ -45,7 +45,8 @@ const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
 export async function openWorkOSApplication(config: RouteConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
   const { loadSelfServeSignupEnabled } = await import('./auth/hosted-auth/workos/workos-signup-settings.ts');
-  const signup = { enabled: loadSelfServeSignupEnabled(environment) };
+  const { approvedSignupDocuments } = await import('./auth/hosted-auth/workos/workos-approved-signup-documents.ts');
+  const signup = { enabled: loadSelfServeSignupEnabled(environment), documents: approvedSignupDocuments };
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createFetchOperation, fetchToolServers } = await import('./fetch-tool.ts');
   const { singleFetchOperation } = await import('./mcp/single-fetch-operation.ts');

@@ -2,8 +2,10 @@
 
 This runbook covers manual User grants and the proposal to transition existing
 users. [Self-serve activation](fs-01.md) and [portal/MCP handoff](fs-02.md)
-have a separate implemented path. Signup remains off, with no production legal
-bundle. These procedures publish no policy, send no notice, and change no access.
+have a separate implemented path. Signup remains off. [FS-04](fs-04.md) supplies
+the frozen FS-03 document bundle in production composition under the separate
+owner approval for implementation. The original review manifest remains unchanged.
+These procedures publish no policy, send no notice, and change no access.
 
 ## Control and limits
 

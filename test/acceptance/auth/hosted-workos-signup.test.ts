@@ -1,3 +1,7 @@
+import { approvedSignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-approved-signup-documents.ts';
+import { createHash } from 'node:crypto';
+import { parseHTML } from 'linkedom';
+import { openProductionSignupSite } from '../../support/in-process/production-signup-site.ts';
 import assert from 'node:assert/strict';
 import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
@@ -241,3 +245,83 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
 });
+
+
+describe('FS-04 production signup documents', () => {
+  test('Given production signup is off by default, when GET, HEAD, or an old form arrives, then it stays closed without policy bytes or provider reads', async (t) => {
+    const site = await openProductionSignupSite(t);
+    const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
+    const get = await browser.open('signup');
+    const post = await browser.post('signup', { agreement: 'accepted' });
+    const head = await site.transport(new Request(new URL('signup', site.publicBaseUrl), { method: 'HEAD' }));
+
+    assert.equal(get.status, 200);
+    assert.equal(post.status, 403);
+    assert.equal(head.status, 200);
+    assert.equal(await head.text(), '');
+    for (const page of [get, post]) {
+      assert.match(page.body, /New account activation is closed/);
+      assert.doesNotMatch(page.body, /<pre>|fs03-review|Terms of Service|Privacy Notice|By checking/);
+    }
+    assert.deepEqual(site.world.fake.takeRequests(), []);
+  });
+
+  test('Given signup is enabled only in a production-path test, when a visitor signs in and accepts the complete frozen documents, then their exact versions and hashes reach the acceptance record', async (t) => {
+    const site = await openProductionSignupSite(t, true);
+    const visitor = new HostedBrowser(site.transport, site.publicBaseUrl);
+    const noticePage = await visitor.open('signup');
+    const notice = parseHTML(noticePage.body).document.querySelector('#privacy-notice pre')?.textContent;
+    assert.equal(noticePage.status, 200, noticePage.body);
+    assert.equal(createHash('sha256').update(notice ?? '').digest('hex'), 'a56c234b9bf98f3d5a9f0e5231547a45e1cbbe0099e019c8b5326f47b5a69669');
+    assert.match(noticePage.body, /Sign in/);
+    assert.deepEqual(site.world.fake.takeRequests(), []);
+
+    const user = { id: 'user_FROZEN_POLICY', email: 'person@example.com', firstName: 'Person' };
+    site.world.users = [user];
+    const { browser } = await signInThroughServer(site, user);
+    const page = await browser.open('signup');
+    assert.equal(page.status, 200, page.body);
+    const document = parseHTML(page.body).document;
+    const terms = document.querySelector('#terms pre')?.textContent ?? '';
+    assert.equal(Buffer.byteLength(terms, 'utf8'), 17523);
+    assert.equal(createHash('sha256').update(terms).digest('hex'), '31ec3ed48a4513f167d8e5cc49d1ff7b0e059f0c9ffe128f4c274a4e3efad15f');
+    assert.equal(document.querySelector('#privacy-notice pre')?.textContent, notice);
+    const checkbox = document.querySelector('input[type="checkbox"]');
+    assert.ok(checkbox);
+    assert.equal(document.querySelectorAll('input[type="checkbox"]').length, 1);
+    assert.equal(checkbox.hasAttribute('checked'), false);
+    const agreement = checkbox.parentElement?.textContent?.slice(1) ?? '';
+    assert.equal(Buffer.byteLength(agreement), 388);
+    assert.equal(createHash('sha256').update(agreement).digest('hex'), 'a55a976f413b27220d205c629243e16ae3f95a40d12008bcfb98f2bd14f70ab6');
+    const form = formsIn(page.body).find(({ action }) => action === '/signup');
+    assert.ok(form);
+    assert.equal(form.fields.document_version, 'fs03-review-2026-10-16-v1');
+
+    const result = await browser.post('signup', { ...form.fields, agreement: 'accepted' });
+    assert.equal(result.status, 303, result.body);
+    const metadata = site.signupFake.organizations[0]?.metadata as Record<string, string>;
+    assert.equal(metadata.documents_version, form.fields.document_version);
+    assert.equal(metadata.terms_version, 'hosted-terms-review-2026-10-16-v1');
+    assert.equal(metadata.terms_sha256, '31ec3ed48a4513f167d8e5cc49d1ff7b0e059f0c9ffe128f4c274a4e3efad15f');
+    assert.equal(metadata.notice_version, 'hosted-privacy-review-2026-10-16-v1');
+    assert.equal(metadata.notice_sha256, 'a56c234b9bf98f3d5a9f0e5231547a45e1cbbe0099e019c8b5326f47b5a69669');
+    assert.equal(metadata.agreement_version, 'hosted-agreement-review-2026-10-16-v1');
+  });
+});
+
+
+for (const part of ['terms', 'notice'] as const) {
+  for (const corruption of ['bytes', 'hash'] as const) {
+    test(`Given the approved ${part} with corrupt ${corruption}, when signup is composed, then it fails before any provider read or write`, async (t) => {
+      const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/' }, 'http');
+      const world = await WorkOSFake.start(t, config.publicBaseUrl, []);
+      const original = approvedSignupDocuments[part];
+      const changed = corruption === 'bytes' ? { ...original, text: original.text + ' ' } : { ...original, sha256: '0'.repeat(64) };
+      const documents = { ...approvedSignupDocuments, [part]: changed };
+      await assert.rejects(composeWorkOSApplication(config, world.connection(), {
+        logger: { info: () => {}, error: () => {} }, signup: { enabled: true, documents },
+      }), /document bytes or hash/);
+      assert.deepEqual(world.fake.takeRequests(), []);
+    });
+  }
+}

@@ -10,7 +10,8 @@
 ## Free hosted signup (FS-01)
 
 The [FS-01 record](../implementation/fs-01.md) keeps the complete-candidate
-results. These tests use test document text; no private policy draft is shipped.
+results. The original FS-01 cases use test document text. FS-04 adds the
+production document proofs below.
 
 - Unit: `test/unit/auth-workos/workos-signup*.test.ts` covers current verified
   identity, acceptance metadata in the initial create, one User grant, concurrency,
@@ -27,6 +28,24 @@ results. These tests use test document text; no private policy draft is shipped.
   writes after provider faults. `test/interface/auth/workos-signup.live.ts`
   checks concurrent creation and acceptance metadata in disposable Staging
   organizations. Only `npm run test:interface:workos-signup` selects the live file.
+
+### Approved production documents (FS-04)
+
+The [FS-04 record](../implementation/fs-04.md) tracks the complete candidate.
+Signup remains off by default. The source-owned bundle preserves the exact
+FS-03 bytes and versions under the separate owner implementation approval.
+The frozen private manifest keeps its historical review status.
+
+[V] Real production startup with signup omitted keeps GET, HEAD, and old POST closed, sends no policy bytes, and makes no provider request
+[V] Real production startup with signup enabled only in a test shows the complete notice before sign-in, the complete terms and notice after sign-in, and the exact unchecked agreement; byte hashes and lengths match the frozen source, and acceptance retains its version IDs and hashes
+[V] Corrupt approved terms or notice bytes and hashes fail composition before any provider request
+[V] Literal policy markup remains escaped text before and after sign-in; scoped wrapping CSS has its exact CSP hash, scripts remain denied, and the form remains same-origin
+
+Focused command after a clean build:
+
+```sh
+node --test dist/test/acceptance/auth/hosted-workos-signup.test.js dist/test/integration/auth/workos-signup-routes.test.js dist/test/unit/auth-workos/workos-signup-documents.test.js
+```
 
 ### Portal and MCP handoff (FS-02)
 
@@ -2398,6 +2417,7 @@ later suites. Production readiness and shutdown bounds stay unchanged.
 
 [V] Given the final image, its metadata and files show Linux AMD64, the checked portal, production packages, working native cleaner and shipped rules, Lightpanda 1.0.0, CA certificates, non-root execution, and no development tools or test output
 [V] Given the unmodified image and placeholder runtime settings, the real CLI serves portal assets and CSP, responds to health, requires MCP authentication, and refuses a foreign Origin
+[V] Given the unmodified image and placeholder credentials with signup enabled only in the test, a visitor sees the complete byte-exact approved notice before sign-in and no activation form
 [V] Given the provider seam's Connect User, the real renderer fetches public HTTPS with verified TLS and returns the controlled page's JavaScript output after the native cleaner applies the shipped policy
 [V] Given private targets, overload, disconnect, and active-renderer SIGTERM, private calls fail before rendering, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
 [V] Given missing rules, a missing renderer, an empty cookie password, or an HTTP public base URL, the real CLI exits with status 1 before listening and shows no secret
