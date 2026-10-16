@@ -204,7 +204,14 @@ further environment changes until checked `main` is ready.
   PRs #115–117 remain open and unmerged. Current `main`,
   `cf2928ba239e4ef88e7cf7e660d5b08bc04b6486`, lacks that stack.
 
-The owner chose setup steps for a new Thermus Google Cloud project.
+The owner explicitly authorized creating a new Thermus Google Cloud project and
+connecting its Google OAuth client to WorkOS Production. Business-account sign-in
+is complete. Project `Thermus`, ID `thermus-511802`, was created under organization
+`thermus.ai` and selected. OAuth consent, client creation, and WorkOS save remain
+pending. The consent wizard is prepared with app name `Thermus`, External
+audience, and the business operator as support and developer contact. It is
+unsaved at the Google API Services User Data Policy agreement; action-time
+confirmation has been requested. No OAuth client or credentials exist yet.
 
 ## Google Cloud OAuth setup steps
 
@@ -213,8 +220,21 @@ the OAuth client; no Google hosting is needed. Follow the current
 [WorkOS instructions](https://workos.com/docs/integrations/google-oauth) and
 [Google consent setup](https://developers.google.com/workspace/guides/configure-oauth-consent).
 
-1. Create a Google Cloud project with display name `Thermus`. Select or accept an
-   available project ID and record its actual value after creation; none is known.
+The WorkOS Production Google dialog was read again. Its exact Google callback is:
+
+`https://auth.workos.com/sso/oauth/google/EbBjbztH0euVsoez6KC6QNYyQ/callback`
+
+The WorkOS Production Google provider remains unconfigured and unsaved.
+The dialog shows default email and
+profile scopes, with **Return Google OAuth tokens** unchecked.
+The owner supplied [the Thermus homepage](https://thermus.ai), which was verified
+live in the browser. No privacy policy or terms links were found there; its
+Security and trust button opens a waitlist. The owner deferred policy pages;
+OAuth client setup can continue. Google documents the links for
+external production apps in its [branding guidance](https://support.google.com/cloud/answer/15549049).
+Branding verification and publication have not been done.
+
+1. Use the created `Thermus` project, `thermus-511802`, under `thermus.ai`.
 2. Configure Google Auth Platform branding with app name `Thermus`, support email,
    developer contact, and the required application links. Use owner-approved
    contact details and real public URLs.
@@ -223,10 +243,9 @@ the OAuth client; no Google hosting is needed. Follow the current
    publish In production before the production sign-in proof. Complete any
    branding or domain verification Google requires.
 4. Create an OAuth client of type Web application, named `Thermus WorkOS Production`.
-   Copy the exact Google Redirect URI from the Google provider configuration in
-   WorkOS **Production** into Google's authorized redirect URIs. This is Google's
-   callback to WorkOS, not Thermus `<origin>/callback`. Do not derive it from the
-   AuthKit issuer or use an example URI.
+   Set Google's authorized redirect URI to the verified Production callback above.
+   This is Google's callback to WorkOS, not Thermus `<origin>/callback`.
+   Do not derive it from the AuthKit issuer or use an example URI.
 5. Keep WorkOS's default authentication scopes. The identity scope set is
    `openid`, `email`, and `profile`; Google can display the latter two as
    `https://www.googleapis.com/auth/userinfo.email` and
@@ -241,8 +260,8 @@ the OAuth client; no Google hosting is needed. Follow the current
    here. The real browser sign-in remains an RHD-05 check.
 
 PR #117 remains open and unmerged. Wait for checked `main` before rollout.
-Enable On Commit only after the RHD-05 remote smoke. Google setup is prepared
-only; no Google Cloud project or credentials have been created.
+Enable On Commit only after the RHD-05 remote smoke. The Google project exists;
+OAuth consent, client creation, and WorkOS configuration remain pending.
 The Production key correction is complete within the read-back limits above.
 Actual startup and live credential use have not been proved.
 
