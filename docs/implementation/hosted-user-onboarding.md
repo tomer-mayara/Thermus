@@ -1,18 +1,25 @@
 # Hosted User onboarding
 
-This runbook implements the approved operator-managed onboarding process for
-hosted early access. The operator records express agreement before an explicit
-User grant. The application does not store or check that agreement. Updated
-policy pages stay unpublished. This runbook sends no acceptance request and
-changes no production access by itself.
+This runbook covers manual User grants and the proposal to transition existing
+users. [Self-serve activation](fs-01.md) and [portal/MCP handoff](fs-02.md)
+have a separate implemented path. Signup remains off, with no production legal
+bundle. These procedures publish no policy, send no notice, and change no access.
 
 ## Control and limits
 
-The owner assigns an operator and a private record store with limited access.
-Keep completed records and evidence there, outside Git, public tickets, and
-application logs. Use the blank [acceptance template](templates/hosted-terms-acceptance.md).
-Keep only necessary evidence; set a review date for retained records and any
-exception. Do not include credentials, invitation tokens, or fetched pages.
+Tomer is the operator. The restricted `~/.codex/operator-records` directory is
+the private record store. Keep completed records and evidence there, outside Git,
+public tickets, and application logs. Use the blank
+[acceptance template](templates/hosted-terms-acceptance.md). Keep only necessary
+evidence for a stated purpose, with an access owner and review/deletion date.
+Do not include credentials, invitation tokens, or fetched pages. A durable,
+restricted backup and a verified restore procedure remain prerequisites before
+opening signup; the local record directory alone does not meet that requirement.
+
+For a manual grant, the operator checks and records express agreement before
+granting User. The application does not check agreement on manual grants or on
+every product request. Self-serve activation does check explicit agreement and
+stores an initial acceptance marker in WorkOS. It is not an acceptance history.
 
 Initially, the operator controls User grants. Customer Admins can grant User,
 including to themselves; a Super Admin can grant itself Admin and then User.
@@ -20,7 +27,33 @@ Direct WorkOS writes also bypass this procedure. The application does not
 prevent these paths. Before delegating grant authority, the owner must establish
 who checks and records each agreement and how the operator reviews compliance.
 If these controls cannot be maintained, stop new grants and escalate to the owner.
-Do not claim that acceptance is enforced by software.
+Do not claim software enforces acceptance on these manual or delegated paths.
+
+## Self-serve activation and its record
+
+With signup enabled and an approved bundle supplied by composition, `/signup`
+shows the complete notice before sign-in. An eligible signed-in person sees the
+terms, notice, and one unchecked agreement checkbox. POST checks the current
+bundle version, same origin, session CSRF token, express agreement, and a fresh
+WorkOS verified-email result for the sealed subject. Personal and company email
+addresses can qualify. Email verification does not verify age, employment, or
+business authority; the approved wording must cover the adult/business terms.
+
+A confirmed new personal-organization create permits one initial explicit User
+membership attempt. No Admin or Super Admin is granted. WorkOS retains the
+[signup record](hosted-signup-recovery.md#retained-personal-record). Freeze and
+retain exact bundle, terms, notice, and agreement bytes with their versions and
+hashes in the private store before use. Never reuse a version for changed bytes.
+The marker holds document hashes and an agreement version, not complete text.
+
+Existing product access offers Continue without another agreement or personal
+workspace. Admin-only access is not product access and can qualify for a separate
+personal workspace. A retained marker with missing, pending, inactive, or
+inconsistent access requires support; it does not authorize a new grant. Use
+[signup inspection and recovery](hosted-signup-recovery.md), not the manual
+new-membership procedure below, for an incomplete signup.
+
+## Manual grants and invitations
 
 Do not send or resend User invitations. WorkOS may allow a different address in
 the invited domain to accept, so evidence for the invited address does not prove
@@ -36,8 +69,9 @@ and Connect consent are not terms acceptance.
    [organization setup](hosted-organization-setup.md#before-you-start) before
    each provider write. Never copy API keys into the record.
 2. Freeze the exact, complete terms and privacy notice in the private store.
-   Give each document a version, a date, and a SHA-256 hash of its retained
-   bytes. Each version and date must identify one exact document; never reuse
+   Retain the exact agreement wording too. Give the bundle, terms, notice, and
+   agreement distinct versions and record their SHA-256 hashes and dates. Each
+   version and date must identify one exact document; never reuse
    a version for changed bytes. Have the owner approve those complete versions
    for private onboarding before use. Approval of operating defaults is not
    approval of incomplete legal text and is not any person's agreement. Keep
@@ -53,7 +87,9 @@ and Connect consent are not terms acceptance.
    be exactly one active membership for the verified user and organization.
    Record its ID, status, and role slugs. Stop for pending, inactive,
    directory-managed, foreign, duplicate, or ambiguous membership. If there is
-   no membership, use the limited setup below, then repeat this check.
+   no membership, first rule out a retained or uncertain personal signup with
+   the recovery runbook. Only an ordinary manual onboarding case may use the
+   limited setup below; then repeat this check.
 
 ### Create a non-product membership only when none exists
 
@@ -145,22 +181,45 @@ MCP use. A request already in progress can finish after removal of access.
 
 ## Reconcile existing users and invitations
 
-Prepare a private inventory of active User memberships, pending User invitations,
-and people who can grant User, in every hosted organization. Record the actual
-user IDs, organization IDs, and evidence status. Do not treat historical sign-in,
-an invitation, or Connect consent as agreement. Do not backdate evidence or
-silently grandfather existing Users.
+This section is a proposal for owner review, not authority to execute a
+transition. Tomer prepares the private inventory and decision record. Do not
+send notices, cancel invitations, or change existing access until the owner
+approves the exact execution scope.
 
-Submit an explicit transition to the owner: responsible operator, complete frozen
-documents, notice text, delivery method, cutoff date, and proposed handling of
-missing evidence and pending User invitations. Obtain the owner's approval
-before sending notices or changing existing access. This task prepares the
-reconciliation procedure; it does not send notices, cancel invitations, or revoke
-production access. Until approved actions are complete, record each unresolved
-gap and do not claim that all existing Users have agreed. At the approved cutoff,
-verify outcomes and record any owner-authorized access removal using the
-[deletion runbook](hosted-account-deletion.md) where applicable. Removal of User
-is separate from deletion of identity or other organization access.
+Inventory current product access in every hosted organization, including custom
+roles that give `product:access`, pending User invitations, and people who can
+grant User. Record user/organization IDs and evidence status, without raw provider
+responses. Distinguish these cases:
+
+| State | Proposed handling |
+| --- | --- |
+| Manual access with complete current agreement evidence | Verify the identity, organization, document versions, and evidence reference. Preserve the record. |
+| Valid initial self-serve marker | Match its versions/hashes to retained bytes. It proves an initial marker was recorded, not agreement to future terms. |
+| Access without sufficient agreement evidence | Record the gap; propose private delivery and a fresh express response. Do not infer agreement from use. |
+| Incomplete, revoked, or inconsistent signup | Follow the recovery runbook. No automatic grant or metadata repair. |
+| Pending User invitation or delegated grant authority | Propose a scoped invitation/grant-control plan; do not send, resend, or revoke through this proposal. |
+
+A person can have different evidence for different organizations. Historical
+sign-in, an invitation, or Connect consent is not terms acceptance. Do not
+backdate evidence, overwrite the initial marker, or silently grandfather users.
+FS-02 Continue lets existing product users proceed; it does not collect a new
+agreement or execute this transition.
+
+Submit one private proposal with the exact frozen documents and agreement text,
+notice text, recipients and verified delivery method, responsible operator,
+proposed cutoff date, and treatment of missing responses and pending invitations.
+Keep execution approval, policy publication, and signup opening separate. The
+owner must approve any proposed User removal at cutoff; preserve unrelated
+roles, memberships, and authorized access. Explain and obtain approval for any
+broader session or Connect effects under the [deletion runbook](hosted-account-deletion.md).
+A proposed cutoff is not authority to delete an identity or signup marker.
+
+Record each delivery, response/version, unresolved gap, and approved outcome in
+the private store. Do not claim all existing users agreed until evidence proves
+it. Later-version evidence belongs in a separate dated record; WorkOS's initial
+metadata is not an agreement history. Set review/deletion dates for transition
+records and retained exceptions. Record backup readiness before execution that
+relies on those records. This task prepares the proposal only.
 
 ## Acceptance scenarios
 
@@ -179,5 +238,5 @@ is separate from deletion of identity or other organization access.
   removes only authorized access, and targets authorized deletion actions
   within 30 calendar days of receipt without extending legal deadlines.
 
-These scenarios verify an operating procedure. They do not claim that the
-application checks or stores agreement records.
+These scenarios verify the manual procedure. FS-01 separately checks and stores
+an initial acceptance marker only for its self-serve activation path.
