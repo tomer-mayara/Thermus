@@ -1,13 +1,26 @@
 # Hosted Docker on Render: implementation plan
 
 Status: RHD-01, RHD-02, and RHD-03 implementation and local verification complete.
-PR #117 is stacked on PR #116, which is stacked on PR #115. All await owner review.
-RHD-04 and RHD-05 are planned. Date: 2026-10-15.
+PRs #115–117 and build fix #120 were reviewed and merged; the retry from checked
+`main` is live and initial public smoke passed 15/15. Both initial identities now
+have verified User-only grants; full RHD-05 remains incomplete.
+RHD-04 and full RHD-05 remain incomplete.
+[PR #119](https://github.com/tomer-mayara/Thermus/pull/119) targets `main` and
+consolidates earlier [PR #118](https://github.com/tomer-mayara/Thermus/pull/118).
+The [setup record](rhd-04.md) and [release record](rhd-05.md) give current evidence
+and limits.
+Updated: 2026-10-16.
 The [RHD-01 record](rhd-01.md) gives its results. The
 [RHD-02 record](rhd-02.md) gives the portal, local health, request boundary,
 and verification results. The [RHD-03 record](rhd-03.md) tracks the hosted
 image, production rules decision, and AMD64 runtime evidence.
-Owner review and merge remain pending; no deployment is recorded.
+The first intended deployment failed its build; the retry is live with initial
+public acceptance satisfied. Browser access/logout and controlled revocation
+passed. Native CIMD login, tool discovery, real fetch, and tool-call denial/
+recovery and actual native refresh passed. Bounded capacity and one-slot refusal/recovery passed within recorded limits;
+deployment/recovery release proofs remain pending.
+The canonical repository is
+`https://github.com/tomer-mayara/Thermus`.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.
 
@@ -225,9 +238,10 @@ them. Preprovision known users and explicit User grants externally, with its
 operator MFA prerequisites. Optional MFA gives no proven MFA evidence, so privileged
 Thermus UI writes stay denied. Add no login-based enrollment or implicit grant.
 
-Register the selected native MCP client independently in production; use the
-existing Claude Code flow as the first proof. Enable CIMD, which is off by default;
-enable DCR only if that client needs it. Set the exact `<origin>/mcp` resource.
+Configure the selected native MCP client independently for production; use
+Claude Code first. Its automatic CIMD path needs no manual client registration
+before login. Enable CIMD, which is off by default; enable DCR only if the live
+client flow shows a need. Set the exact `<origin>/mcp` resource.
 Preserve existing OIDC scopes, issuer/audience checks, and current-grant checks;
 do not invent permission OAuth scopes. A browser cookie is not an MCP credential.
 See [WorkOS MCP setup](https://workos.com/docs/authkit/mcp). Never run staging fixture
@@ -297,15 +311,16 @@ required checks pass, and the operator can deploy and recover the service.
 ## Appendix A: delivery tickets
 
 RHD-01 implementation and verification are complete in
-[PR #115](https://github.com/3-headed-monkey/Thermus/pull/115), which awaits owner
-review; its [record](rhd-01.md) gives the scope and results. RHD-02 implementation
+[PR #115](https://github.com/3-headed-monkey/Thermus/pull/115), now merged;
+its [record](rhd-01.md) gives the scope and results. RHD-02 implementation
 and verification are complete in [PR #116](https://github.com/3-headed-monkey/Thermus/pull/116),
-stacked on PR #115 and awaiting owner review; its [record](rhd-02.md) gives the
+now merged; its [record](rhd-02.md) gives the
 results. RHD-03 implementation and local verification are complete in
-[PR #117](https://github.com/3-headed-monkey/Thermus/pull/117), stacked on
-PR #116 and awaiting owner review; its [record](rhd-03.md) gives the passed
+[PR #117](https://github.com/3-headed-monkey/Thermus/pull/117), now merged;
+its [record](rhd-03.md) gives the passed
 gates and manager sign-off.
-RHD-04 and RHD-05 remain planned. Each code ticket writes its failing
+RHD-04 remains incomplete; the [RHD-05 record](rhd-05.md) gives its initial
+deployment specification. Each code ticket writes its failing
 Given-When-Then specification first, updates affected documents and fixtures, and
 runs its focused tests plus every applicable existing gate. The boundaries below
 identify each ticket's proof; they do not waive repository checks.
@@ -378,7 +393,14 @@ first intended manual deploy is configured, auto-deploy and previews remain off.
 **Scope:** first remote smoke, designated-user access checks, capacity measurement,
 harmless Git auto-deploy, controlled rollback, operator runbook and release record.
 
-**Dependencies:** RHD-04.
+**Dependencies:** RHD-04 provider, service, and runtime configuration and a checked
+`main` revision must be ready before the first deployment. New production
+identities can need that deployment for their first sign-in and provider
+verification. RHD-05 can start those steps before RHD-04 grants are complete.
+After verification, finish the explicit RHD-04 User grants and read-backs before
+protected product and MCP success tests. RHD-04 stays incomplete until then.
+This order gives no implicit enrollment or access: ungranted access stays denied,
+and auto-deploy stays off until the remote smoke passes.
 
 **Acceptance:** Given the configured service, when the checked revision deploys,
 then the real browser and separate MCP journeys pass; a reviewed Git change
