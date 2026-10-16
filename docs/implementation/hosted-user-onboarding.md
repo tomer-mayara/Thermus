@@ -37,9 +37,11 @@ and Connect consent are not terms acceptance.
    each provider write. Never copy API keys into the record.
 2. Freeze the exact, complete terms and privacy notice in the private store.
    Give each document a version, a date, and a SHA-256 hash of its retained
-   bytes. Have the owner approve those complete versions for private onboarding
-   before use. Approval of recommended defaults is not approval of incomplete
-   legal text and is not any person's agreement. Keep publication separate.
+   bytes. Each version and date must identify one exact document; never reuse
+   a version for changed bytes. Have the owner approve those complete versions
+   for private onboarding before use. Approval of operating defaults is not
+   approval of incomplete legal text and is not any person's agreement. Keep
+   publication separate.
 3. Verify the actual WorkOS identity using step 2 of organization setup: exactly
    one user, verified email, and confirmation that this is the intended person.
    Record its user ID and the identity evidence. Read the organization by its
@@ -93,12 +95,12 @@ Privately supply both frozen documents to the verified person and use this
 request, with every bracketed field completed:
 
 > Please read the attached Thermus hosted early-access Terms of Service
-> [terms version, date, SHA-256] and Privacy Notice [notice version, date,
-> SHA-256]. To request User access for [organization name and ID], reply:
+> [terms version and date] and Privacy Notice [notice version and date].
+> To request User access for [organization name and ID], reply:
 > “I am 18 or older and will use Thermus for business purposes. I expressly
 > agree to the supplied Thermus hosted early-access Terms of Service [terms
-> version and SHA-256]. I have received and read the supplied Privacy Notice
-> [notice version and SHA-256]. [If acting for an organization: I am authorized
+> version and date]. I have received and read the supplied Privacy Notice
+> [notice version and date]. [If acting for an organization: I am authorized
 > to agree for organization name and ID.]” The notice acknowledgment records
 > that you saw the notice; it does not request consent under privacy law.
 
