@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit && npm run typecheck:user-portal",
     "check": "npm run typecheck && npm run test:unit && npm run test:build && node --test \"test/acceptance/user-portal/**/*.test.ts\" && npm run build:user-portal",
     "test": "npm run build && node --test \"dist/test/**/*.test.js\" && npm run test:user-portal",
-    "test:unit": "npm run build && node --test \"dist/test/unit/**/*.test.js\" && node --test \"test/unit/user-portal/**/*.test.ts\"",
+    "test:unit": "npm run build && node --test --test-concurrency=1 \"dist/test/unit/**/*.test.js\" && node --test \"test/unit/user-portal/**/*.test.ts\"",
     "test:interface": "npm run build && node --test \"dist/test/interface/**/*.test.js\"",
     "test:interface:axiom": "npm run build && node --test dist/test/interface/logging/otel-logger-axiom.live.js",
     "test:integration": "npm run build && node --test \"dist/test/integration/**/*.test.js\"",
