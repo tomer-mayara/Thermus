@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
-import { openWorkOSSignupSite } from '../../support/in-process/workos-signup-site.ts';
+import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
+import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
 test('Given a signed-in hosted user with no workspace and signup off, when they open the organization page, then they can check signup availability or follow invitation and support guidance without an automatic grant', async (t) => {
-  const site = await openWorkOSSignupSite(t);
+  const site = await serveWorkOSSite(t, { config: hostedRootConfig, organizations: ['org_INTERNAL'], signupFake: true });
   const { browser, callback } = await signInThroughServer(site, { id: 'user_NO_WORKSPACE', email: 'new@example.com', firstName: 'New' });
   assert.equal(callback.status, 303, callback.body);
   site.world.fake.takeRequests();

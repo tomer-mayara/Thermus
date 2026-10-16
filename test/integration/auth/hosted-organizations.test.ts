@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import { describe, test, type TestContext } from 'node:test';
 import { accountFailureReporter, createApplication } from '../../../src/application.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import {
   contextAt,
@@ -158,9 +158,8 @@ describe('Hosted organization onboarding and selection with the real routes and 
 
   test('Given the production hosted application with the WorkOS provider, when the organization page and a selection arrive with the session cookie, form token, and organization values of the doubles, then each asks for a sign-in without a cookie, and nothing is selected or reported', async () => {
     const logger = new OperatorLogSpy();
-    const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/' }, 'http');
-    const application = await createApplication(config, logger, { ...workOSSettingsFor(config.publicBaseUrl), ...hostedFetchSettings });
-    const browser = new HostedBrowser(application.handle, config.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-mia', 'org-a')));
+    const application = await createApplication(hostedRootConfig, logger, { ...workOSSettingsFor(hostedRootConfig.publicBaseUrl), ...hostedFetchSettings });
+    const browser = new HostedBrowser(application.handle, hostedRootConfig.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-mia', 'org-a')));
 
     const answers = [
       await browser.open('organizations?return_to=/team/portal'),

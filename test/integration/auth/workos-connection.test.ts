@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { openWorkOSConnection } from '../../../src/hosted-workos-application.ts';
+import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http');
 const logger = { info() {}, error() {} };
 
 test('Given the production WorkOS connection, when organization and membership writes get a server error, then each sends one POST with no retry', async (t) => {
@@ -13,7 +12,7 @@ test('Given the production WorkOS connection, when organization and membership w
     requests.push({ path: new URL(input instanceof Request ? input.url : input).pathname, method: init?.method });
     return Response.json({ message: 'Fixture failure' }, { status: 500, headers: { 'Retry-After': '0' } });
   });
-  const { workos } = await openWorkOSConnection(config, logger, workOSSettingsFor(config.publicBaseUrl));
+  const { workos } = await openWorkOSConnection(hostedRootConfig, logger, workOSSettingsFor(hostedRootConfig.publicBaseUrl));
 
   await assert.rejects(workos.organizations.createOrganization({ name: 'FS01 fixture', externalId: 'FS01-fixture' }), { status: 500 });
   await assert.rejects(workos.userManagement.createOrganizationMembership({ organizationId: 'org_01ACME', userId: 'user_01ADA', roleSlug: 'user' }), { status: 500 });
@@ -34,7 +33,7 @@ test('Given the production WorkOS connection and a write that never answers, whe
       signal.addEventListener('abort', () => reject(new DOMException('Fixture abort', 'AbortError')), { once: true });
     });
   });
-  const { workos } = await openWorkOSConnection(config, logger, workOSSettingsFor(config.publicBaseUrl));
+  const { workos } = await openWorkOSConnection(hostedRootConfig, logger, workOSSettingsFor(hostedRootConfig.publicBaseUrl));
   const write = workos.organizations.createOrganization({ name: 'FS01 fixture', externalId: 'FS01-fixture' });
   const signal = await entered.promise;
 

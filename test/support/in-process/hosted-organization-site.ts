@@ -4,7 +4,6 @@ import { composeHostedApplication, type Application } from '../../../src/applica
 import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
 import type { Billing } from '../../../src/billing/billing.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import type { AccountFailureReporter } from '../../../src/hosted-admin/account-routes.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
@@ -17,8 +16,8 @@ import { BrowserSessionStore, type SignInOptions } from '../doubles/auth/browser
 import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from '../drivers/browser/hosted-browser.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
 import { ProtectedToolSpy } from '../doubles/mcp/protected-tool-spy.ts';
+import { hostedConfig } from '../fixtures/hosted-config.ts';
 
-export const hostedConfig = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
 export const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
 export const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };

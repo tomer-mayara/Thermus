@@ -1,21 +1,17 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import type { WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { formsIn, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 import { formFor, statusesOf } from '../../support/in-process/hosted-organization-site.ts';
-import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
-import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
-import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
-import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
 // The real hosted composition with the WorkOS provider and the WorkOS organization reads, behind the real HTTP server
 // on a loopback port. A local fake of the WorkOS API stands in for WorkOS, so these specifications prove the
 // application side only. The hosted live gate proves the same flows against WorkOS.
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const sessionCookie = '__Host-thermus-session';
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
@@ -45,25 +41,16 @@ const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
 ];
 
-interface Site extends WorkOSServerSite {
-  readonly log: OperatorLogSpy;
-}
+const openSite = (t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional') => serveWorkOSSite(t, {
+  organizations: Object.keys(organizationNames),
+  mfaPolicy,
+  setUp: (world) => {
+    world.memberships = memberships;
+    world.organizationNames = organizationNames;
+  },
+});
 
-async function openSite(t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional'): Promise<Site> {
-  const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
-  world.memberships = memberships;
-  world.organizationNames = organizationNames;
-  const log = new OperatorLogSpy();
-  const application = await composeWorkOSApplication(config, world.connection(mfaPolicy), { logger: log });
-  const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-  t.after(async () => {
-    await server.close();
-    await application.close();
-  });
-  return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
-}
-
-async function signIn(site: Site, user: FakeUser, organizationId?: string): Promise<HostedBrowser> {
+async function signIn(site: WorkOSSite, user: FakeUser, organizationId?: string): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -75,9 +62,9 @@ async function sessionOrganization(browser: HostedBrowser): Promise<unknown> {
   return (JSON.parse(answer.body) as Record<string, unknown>).organizationId;
 }
 
-async function mcpStatus(site: Site, user: FakeUser, organizationId: string): Promise<number> {
+async function mcpStatus(site: WorkOSSite, user: FakeUser, organizationId: string): Promise<number> {
   const token = await site.world.connectToken(user, { org_id: organizationId });
-  return (await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', token }))).status;
+  return (await site.discover(token)).status;
 }
 
 function sessionCookiesOf(answer: BrowserAnswer): string[] {
@@ -85,7 +72,7 @@ function sessionCookiesOf(answer: BrowserAnswer): string[] {
 }
 
 // The organizations that a refresh of a browser session asked WorkOS to switch to, from each recorded request.
-function switchesIn(site: Site): unknown[] {
+function switchesIn(site: WorkOSSite): unknown[] {
   return site.world.fake.takeRequests()
     .filter(({ method, path }) => method === 'POST' && path.startsWith('/user_management/authenticate'))
     .map(({ body }) => (body as Record<string, unknown> | undefined)?.organization_id)
@@ -141,7 +128,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.equal(sessionCookiesOf(selected).length, 1);
     assert.notEqual(browser.cookieHeader, before);
     assert.equal(portal.status, 200, portal.body);
-    assert.deepEqual(JSON.parse(portal.body), { organizationId: globex, roles: ['user'], plan: 'free', mcpUrl: config.mcpResourceUrl });
+    assert.deepEqual(JSON.parse(portal.body), { organizationId: globex, roles: ['user'], plan: 'free', mcpUrl: hostedConfig.mcpResourceUrl });
     assert.equal((await browser.open('billing')).status, 403);
     assert.equal(await sessionOrganization(browser), globex);
     assert.deepEqual(relisted.map(({ label }) => label), ['Acme', 'Globex (selected)']);
@@ -166,7 +153,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
       assert.equal(refusal.location, undefined);
       assert.deepEqual(sessionCookiesOf(refusal), []);
     }
-    assert.deepEqual(JSON.parse(portal.body), { organizationId: acme, roles: ['user', 'admin'], plan: 'free', mcpUrl: config.mcpResourceUrl });
+    assert.deepEqual(JSON.parse(portal.body), { organizationId: acme, roles: ['user', 'admin'], plan: 'free', mcpUrl: hostedConfig.mcpResourceUrl });
     assert.equal(await sessionOrganization(browser), acme);
     assert.deepEqual(switchesIn(site), []);
   });

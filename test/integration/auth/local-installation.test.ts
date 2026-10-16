@@ -7,10 +7,10 @@ import { createApplication, type Application } from '../../../src/application.ts
 import type { BetterAuthRuntime } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
 import { DataDirectoryInUseError, lockDataDirectory } from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
 import { LocalInstallationError } from '../../../src/auth/local-auth/better-auth/local-installation.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { publicBaseUrl } from '../../support/in-process/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/isolation/data-directory.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { WorkOSSettingsError } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { accountsOf, addAccount, passwordOf, selfHostedConfig, selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 
@@ -185,10 +185,9 @@ describe('Local installation with the real application and provider', () => {
   }
 
   test('Given the hosted deployment, when the application starts, then it selects the WorkOS provider instead of the local runtime: without the WorkOS settings it refuses to start, and with them account and MCP requests without credentials get 401, and repeated closes give one result', async () => {
-    const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http');
-    await assert.rejects(createApplication(config, new RecordingLogger(), {}), WorkOSSettingsError);
+    await assert.rejects(createApplication(hostedRootConfig, new RecordingLogger(), {}), WorkOSSettingsError);
     const logger = new RecordingLogger();
-    const application = await createApplication(config, logger, { ...workOSSettings, ...hostedFetchSettings });
+    const application = await createApplication(hostedRootConfig, logger, { ...workOSSettings, ...hostedFetchSettings });
 
     const answers = [await application.handle(new Request('https://thermus.example/account')), await application.handle(mcpRequest('forged-token'))];
     const closes = [application.close(), application.close()];

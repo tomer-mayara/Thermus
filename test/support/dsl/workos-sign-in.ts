@@ -1,12 +1,6 @@
-import { HostedBrowser, type BrowserAnswer, type BrowserTransport } from '../drivers/browser/hosted-browser.ts';
-import type { WorkOSFake, FakeUser } from '../doubles/workos/workos-fake.ts';
-
-// A hosted server that uses the WorkOS provider with the fake WorkOS API of the world.
-export interface WorkOSServerSite {
-  readonly world: WorkOSFake;
-  readonly transport: BrowserTransport;
-  readonly publicBaseUrl: string;
-}
+import { HostedBrowser, type BrowserAnswer } from '../drivers/browser/hosted-browser.ts';
+import type { FakeUser } from '../doubles/workos/workos-fake.ts';
+import type { WorkOSServerSite } from '../in-process/workos-site.ts';
 
 export interface ServerSignIn {
   readonly browser: HostedBrowser;
