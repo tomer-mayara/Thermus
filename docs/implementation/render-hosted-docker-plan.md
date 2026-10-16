@@ -1,16 +1,19 @@
 # Hosted Docker on Render: implementation plan
 
 Status: RHD-01, RHD-02, and RHD-03 implementation and local verification complete.
-PRs #115–117 were reviewed and merged; checked `main` is ready for first deployment.
+PRs #115–117 and build fix #120 were reviewed and merged; the retry from checked
+`main` is live and initial public smoke passed 15/15. Full RHD-05 remains incomplete.
 RHD-04 is incomplete in draft [PR #118](https://github.com/3-headed-monkey/Thermus/pull/118),
 retargeted to `main`; its [setup record](rhd-04.md) gives the read-backs and pending
-work. The [RHD-05 record](rhd-05.md) specifies the first deployment before it starts.
+work. The [RHD-05 record](rhd-05.md) records the first-deployment specification and results.
 Date: 2026-10-15.
 The [RHD-01 record](rhd-01.md) gives its results. The
 [RHD-02 record](rhd-02.md) gives the portal, local health, request boundary,
 and verification results. The [RHD-03 record](rhd-03.md) tracks the hosted
 image, production rules decision, and AMD64 runtime evidence.
-The first intended deployment has not started; no live deployment is recorded.
+The first intended deployment failed its build; the retry is live with initial
+public acceptance satisfied. Authenticated journeys and release proofs remain
+pending. The canonical repository is `https://github.com/tomer-mayara/Thermus`.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.
 

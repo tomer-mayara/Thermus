@@ -98,8 +98,8 @@ repository. Both read back with `emailVerifiedAt: null`, no password, and no
 memberships. No grant was made; no Super Admin was requested. Identity creation
 and stopped-grant records are in the operator JSONL outside this repository;
 the task records its location. Provider verification must finish before User
-grants. The configured origin is not live, so application-assisted verification
-must wait for the first deployment.
+grants. The origin was not live when those grants stopped. It is now live with
+public smoke passed; application-assisted identity verification remains pending.
 
 Production URL settings were persisted and read back:
 
@@ -118,7 +118,7 @@ gives no User access. Optional MFA keeps protected Thermus administration denied
 Follow the [organization runbook](hosted-organization-setup.md) for Super Admin
 changes; none is requested here.
 
-## Verified Render service and pending runtime settings
+## Verified Render service and runtime settings
 
 Reuse the owner-created service `Thermus` (`srv-db8mnqg473hc739d529g`) at
 `https://thermus.onrender.com`; do not create the earlier proposed `thermus-hosted`.
@@ -128,7 +128,7 @@ usage. See [Render pricing](https://render.com/pricing).
 
 | Setting | Verified read-back |
 | --- | --- |
-| Repository / branch | `https://github.com/3-headed-monkey/Thermus` / `main` |
+| Repository / branch | `https://github.com/tomer-mayara/Thermus` / `main` |
 | Runtime / root directory | Docker / empty root directory |
 | Docker context / file | `.` / `./Dockerfile.hosted` |
 | Health / Docker command | `/healthz` / empty command |
@@ -165,8 +165,8 @@ three and last four characters match the masked Production key display. The full
 key is no longer visible in WorkOS, so this is not a full-value comparison or
 successful API authentication. Checks stayed in memory and variables were cleared;
 no secret values were printed or saved. The replacement blocker is cleared;
-actual live credential use belongs to RHD-05. No new deployment occurred: only
-the two failed attempts below remain.
+actual live credential use belongs to RHD-05. At the time of the key correction,
+only the two failed setup attempts below existed.
 The image defines listener
 `0.0.0.0:8080`, absolute rules and renderer paths, and disabled telemetry.
 No Blueprint is needed. The Dashboard
@@ -183,20 +183,18 @@ The MCP environment update unexpectedly triggered `dep-db8mtcjbc2fs73beo450`,
 despite auto-deploy being off and the REST documentation stating no automatic
 deploy. It ended `build_failed` on old `main`: `Dockerfile.hosted` was absent.
 Neither attempt made the service live. These were setup failures, not deliberate
-fault tests. No manual deploy was requested. Use Dashboard **Save only** for
-further environment changes until checked `main` is ready.
+fault tests. No manual deploy had been requested at that point. Later intended
+deployment attempts are recorded in [RHD-05](rhd-05.md). Use Dashboard **Save only**
+for environment changes that must not deploy.
 
 ## Pending owner information and ordering
 
 - Complete the deferred Google public links and production publication below.
   Production activation and permission write authority are now verified.
-- Complete provider verification for both initial identities before User grants.
-  The organization exists, but neither identity has a membership. Application-
-  assisted verification must wait until the configured origin is live.
-  Once provider, service, and runtime configuration and checked `main` are ready,
-  RHD-05 can start the first deployment and identity-verification step. Then
-  finish explicit RHD-04 User grants and read-backs before protected product or
-  MCP success tests. RHD-04 stays incomplete until those grants are verified.
+- The first deployment and public smoke are complete. Verify both initial
+  identities, then finish explicit RHD-04 User grants and read-backs before
+  protected product or MCP success tests. RHD-04 stays incomplete until those
+  grants are verified.
   This order gives no implicit enrollment: ungranted access stays denied.
 - Production native client configuration is verified below. Actual registration,
   login, and refresh proofs belong to RHD-05.
@@ -295,12 +293,15 @@ then publish In production before the production sign-in proof. Real browser
 sign-in belongs to RHD-05 after Render is live. Keep secrets in protected storage
 and preserve identity-only scopes and disabled token return.
 
-The first intended deployment has not started. Current remote `/healthz` is `502`.
-Enable On Commit only after the RHD-05 remote smoke. The Google project exists;
+The first intended deployment failed its build; the retry from checked `main`
+is live with public smoke passed 15/15. The [RHD-05 record](rhd-05.md) gives
+the exact revision, fix, and public acceptance evidence.
+Keep On Commit off until authenticated RHD-05 remote smoke passes.
+The Google project exists;
 Google and WorkOS connection settings are verified; production publication remains
 pending.
 The Production key correction is complete within the read-back limits above.
-Actual startup and live credential use have not been proved.
+Startup passed. Successful WorkOS API credential use remains unproved by public smoke.
 
 ## Validation and handoff
 
