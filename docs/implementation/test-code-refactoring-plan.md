@@ -754,3 +754,178 @@ returns it to Draft, so it keeps its layout; Step 5 does the moves.
 9. For each line `old new` of the combined move list,
    `grep -rn "old" docs README.md AGENTS.md test` gives nothing, except in
    `docs/archive/`.
+
+## 4. Addendum (2026-10-16): the additions since Step 5
+
+Between the Step 5 stack and its merge, 45 commits landed on `main` from the
+free hosted signup, MFA policy, hosted Docker image, production deployment,
+and auth work-slice work (PRs #108 and #114 to #124). They changed 145 files
+under `test/` and added 38 auxiliary files, 21 of them under `test/support`.
+This addendum records what they changed, what the review of 2026-10-16 found
+when it classified the new files against `docs/testing/test-code-layout.md`,
+what Step 6 must absorb, and the extra cleanup, Step 9. Each fact below was
+checked with `grep` or by reading the file.
+
+### 4.1 What still holds
+
+- No file under `src/**` imports test code. The one mention is a comment in
+  `src/html/html-escape.ts`.
+- The two architecture specifications pass (56 cases), and the lint rules D1
+  to D7 report nothing over `test/**`. No file imports across test types, and
+  no unit test imports another package's fixtures. The new work removed the
+  old work-slice exception of D2 and updated the rule text.
+- `test/support` has no loose file.
+
+### 4.2 What broke or drifted
+
+- **A tenth folder.** `S/work-slice/` holds three files. The layout tree
+  lists nine folders, and D2 now names the tenth, so the layout document
+  contradicts itself.
+- **The Step 6 copies grew.** 6a: the MCP SDK client setup is in 15 files
+  (16 sites), among them `A/auth/hosted-live/signup-server.ts`. 6c:
+  `openSite()` is in 8 files, the hosted test configuration in 7, and
+  `composeWorkOSApplication` is called in 11 files, where Step 6c found 3; the
+  new `S/in-process/workos-signup-site.ts` is a second site composer that
+  overlaps the planned `workos-site.ts`. 6d: the role catalog has two more
+  copies, in `S/doubles/workos/workos-signup-fake.ts` and
+  `U/auth-workos/fixtures/signup-workos-fake.ts`. 6g: the listening-line
+  parser has a fourth copy, in `S/container/hosted-image-gate.ts`. 6b, 6e,
+  and 6f are unchanged.
+- **A double parked as data.** `S/fixtures/lightpanda-version.sh` stands in
+  for the Lightpanda executable; it is a stub, not fixture data.
+- **A driver in the live-gate folder.** `S/hosted-live/https-client.ts` is a
+  node:https driver that only two integration test-case modules use, and
+  `frontGet()` in `I/auth/hosted-live-site.test.ts` is a second copy.
+- **Container scripts copied instead of extended.** `hosted-image-probe.ts`
+  repeats the pnpm store regex, the renderer version call, the write check,
+  and eight of nine development package names of `container-probe.ts`;
+  `hosted-image-page.ts` repeats the DNS override, the `--block-cidrs`
+  launch wrapper, and the port-8090 page of `container-page.ts`. D6 forbids
+  a shared import between container scripts, and the lint rule and the
+  support spec name only the three old scripts. `hosted-image-identity.ts`
+  imports three `src` modules and works only because the gate mounts it at a
+  hard-coded image path that copies the repository layout.
+- **Test code re-creates product code.** `S/work-slice/pinned-renderer.ts`
+  repeats `assertHostedRenderer` of `src/hosted-renderer-startup.ts`, which
+  came later. `S/hosted-live/portal-front.ts` repeats the headers and the
+  build loading of `HostedPortal` in `src/hosted-portal.ts`, which also came
+  later. `S/drivers/workos/signup-contract-driver.ts` rebuilds the SDK client
+  that `workosClient` of `S/hosted-live/settings.ts` builds, repeats the
+  staging-key guard of `hosted.live.ts`, and hard-codes the staging client ID.
+- **One default in ten places.** `settings.mfaPolicy` is optional, and ten
+  readers repeat `?? 'optional'`.
+- **Names.** `U/work-slice/fixtures/launcher-case.ts` is a harness, and the
+  layout names a harness `<subject>-harness.ts`; "case" claims a test case.
+  `SignupWorkOSFake` (unit) and `WorkOSSignupFake` (support) differ only in
+  word order. The rename of `workos-session-world.ts` (Step 8a) is still open.
+- **D7.** Five new tests of support code are outside `U/test-support/`:
+  `U/server-preloads.test.ts`, `U/work-slice/observe-fetches.test.ts`,
+  `U/work-slice/stop-signal.test.ts`,
+  `U/auth-workos/signup-contract-cleanup.test.ts`, and
+  `U/auth-workos/signup-live-cleanup.test.ts`.
+- **Exports without an importer.** `HostedImageServer`, `HttpsExchange`,
+  `PortalFile`, `WorkSliceParts`, `LocalHttpsSiteOptions`, `BrowserSession`
+  (live), `settings` and `World` (`workos-session-world.ts`), `ClientCall` and
+  `checked` (`workos-session-client-double.ts`).
+- **Comments that disagree with the code.** The header of `live-run.ts` says a
+  run deletes its fixtures, but a run made with `existingFixtures` does not.
+  `auth-workos-mcp-url-fetch.ts` line 45 says production composes the hosted
+  edition without a tool, but `src/hosted-workos-application.ts` adds the
+  fetch tool servers since commit 080dd065. Both launcher scripts say pnpm
+  runs the package script, which they do not do, and the basic entry point
+  names the package script while its README and launcher use `pnpm exec node`.
+- **Layout document.** The tree lists `drivers/browser/` and `drivers/mcp/`
+  only; `drivers/workos/` exists now and the Terms allow it. The data folder
+  `S/fixtures/hosted-portal/` is not named.
+
+Two-copy pairs, recorded for the third copy and not shared now (DRY3): the
+probe run, label cleanup, `waitForLog`, port lookup, and `--env` flatten of
+`hosted-image-gate.ts` against `container-gate.ts` and `container-site.ts`;
+the private harness of `U/work-slice/basic-mcp-url-fetch-script.test.ts`
+against `launcher-case.ts`; `Environment`, `run()`, and the Axiom instruction
+lines of the two work-slice entry points; and `temporaryDirectory()` of
+`I/auth/fixtures/https-site-fixtures.ts` against `dataDirectory()` (check).
+
+### 4.3 What Step 6 absorbs
+
+Step 6 continues on the rebased stack with these changes to its items. 6a
+covers the 15 files. 6c's `serveWorkOSSite(t, setUp)` takes over
+`workos-signup-site.ts` (options for the signup fake and the signup documents)
+and replaces the `openSite()` of `A/auth/hosted-mcp-signup-guidance.test.ts`
+and the direct `composeWorkOSApplication` calls of the hosted-workos signup
+and MFA policy tests and of `A/work-slice/…/auth-workos-onboarding.test.ts`;
+`S/hosted-live/local-https-site.ts` and the auth work-slice entry point keep
+their own composition, because they are sites of other deployments. 6d's
+`hosted-roles.ts` also feeds `workos-signup-fake.ts`; the unit fixture copy
+stays, as §3.3 says. 6g's operator log reader also serves
+`hosted-image-gate.ts`. Criterion 7 changes to: `composeWorkOSApplication` is
+called only in `workos-site.ts`, `local-https-site.ts`, and the auth
+work-slice entry point.
+
+### 4.4 Step 9: the extra cleanup
+
+One draft PR per item, stacked, after Step 6 is merged. The same rules as
+Steps 5 and 6: baseline counts first, `git mv` for a move, a rename in a
+second commit, no behavior change, docs in the same PR, Docker only where
+marked.
+
+- **9a. Retire the tenth folder.** `S/work-slice/observe-fetches.ts` →
+  `S/doubles/mcp/fetch-operation-spy.ts` (P3: unit and acceptance use it; the
+  contract `FetchOperation` is in `src/mcp`); `S/work-slice/stop-signal.ts` →
+  `S/processes/stop-signal.ts` (P3), with a header line that says why it uses
+  `on` where `src/index.ts` uses `once`; `S/work-slice/pinned-renderer.ts` is
+  deleted and the two entry points call `assertHostedRenderer` of
+  `src/hosted-renderer-startup.ts`, because an entry point runs product code
+  (owner's call: keep a copy in `A/work-slice/fixtures/` instead). Update D2
+  in `test-code-layout.md` and in this plan, line 45 of
+  `test-type-boundaries.test.ts`, `docs/testing/test-list.md`,
+  `docs/implementation/basic-mcp-url-fetch-plan.md`, and
+  `docs/implementation/auth-workos-mcp-url-fetch-validation.md`. Then
+  criterion 2 holds again.
+- **9b (Docker). Extend the container scripts instead of copying them.** Add
+  the hosted image probes as `PROBE` entries of `container-probe.ts` and the
+  hosted page as a mode of `container-page.ts`, delete `hosted-image-probe.ts`
+  and `hosted-image-page.ts`, and point `hosted-image-gate.ts` at the shared
+  scripts through `module-paths.ts`. Put the in-image paths of the identity
+  and page mounts in one place. Extend the D6 lint rule and the support spec
+  to every script under `S/container/` that runs in a container. Remove the
+  `export` of `HostedImageServer`. Check: `npm run test:container` and the
+  hosted image gate.
+- **9c. Signup fakes.** Make `workos-signup-fake.ts` use the shared role
+  catalog of 6d and the `roleJson` and `organizationJson` of `workos-fake.ts`
+  (export them from the fake). Rename `SignupWorkOSFake` in the unit fixture
+  to `SignupClientFake`, because it stands in for the narrow SDK client of
+  `WorkOSSignup`.
+- **9d. The renderer stub.** `S/fixtures/lightpanda-version.sh` →
+  `S/doubles/website-fetcher/lightpanda-stub.sh`; `hosted-placeholder.ts` and
+  `module-paths.ts` follow.
+- **9e. The HTTPS driver.** `S/hosted-live/https-client.ts` →
+  `S/drivers/browser/https-client.ts` (P4), and `frontGet()` of
+  `I/auth/hosted-live-site.test.ts` uses it.
+- **9f. One MFA default.** `settings.ts` gives `mfaPolicy` with its default
+  applied; the ten `?? 'optional'` fallbacks go.
+- **9g. Names and D7.** `launcher-case.ts` →
+  `auth-workos-mcp-url-fetch-script-harness.ts`; `workos-session-world.ts` →
+  `workos-session-fixtures.ts` with its identifiers (Step 8a); the five new
+  tests of support code → `U/test-support/`. Optional: the older tests of
+  support code (`renderer-process-double.test.ts`, `network-fixture.test.ts`,
+  `no-auth-provider.test.ts`, `operator-runbook.test.ts`,
+  `axiom-test-export.test.ts`, `test-support-paths.test.ts`) → the same folder.
+- **9h. Comments, exports, and the layout document.** Fix the four comments
+  of §4.2; remove the `export` of the nine symbols of §4.2; add
+  `drivers/workos/` and the `fixtures/hosted-portal/` data folder to the tree
+  in `test-code-layout.md`, and say that D6 covers every container script.
+- **9i (owner's call). Product copies.** Let `LocalHttpsSite` serve the
+  portal through `HostedPortal` of `src` and retire `portal-front.ts`, since
+  the work-slice README allows a test-only part only where the product has
+  none. Make `SignupContractDriver` take its client from `workosClient` of
+  `settings.ts`, share the staging-key guard with `hosted.live.ts`, and read
+  the client ID from the settings. Both need a run of the live gate or the
+  signup contract test, so they wait for a ticket that runs it.
+
+Acceptance for Step 9: criteria 2 to 5 of §3.6 hold; criterion 7 holds as
+§4.3 restates it; `ls test/support/doubles/mcp` lists `fetch-operation-spy.ts`;
+`find test/support/container -name 'hosted-image-p*'` gives nothing; the D6
+spec names every container script; `grep -rn "?? 'optional'" test` gives
+nothing; and each moved or renamed path is absent from the docs outside
+`docs/archive/`.
