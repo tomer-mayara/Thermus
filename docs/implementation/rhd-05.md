@@ -118,3 +118,41 @@ registration/login/refresh, real fetch and denial/revocation checks, capacity
 measurement, cookie continuity, On Commit proof, rollback, and restoration.
 The native client configuration is ready; live proofs have not run. Public policy
 pages remain owner-deferred. No release or complete RHD-05 pass is recorded.
+
+## Manual authenticated acceptance specification
+
+Status: all checks below are pending. This specification precedes authentication
+and grants. The owner authorized checks of both existing intended identities and
+explicit User access. Public policy pages and Google publication remain deferred;
+these checks use the configured Testing app and do not establish a public launch.
+
+**Given** the live checked deployment, both intended existing identities without
+product grants, and the saved production browser and native client configuration,
+
+**When** each person completes real provider sign-in, the operator reads back
+provider verification, and each initially ungranted account is checked,
+
+**Then** both identities are provider-verified through sign-in, with no manual
+verification override, and neither account has product access before its grant.
+
+**When** the operator grants only `user` in the intended organization and reads
+back both active memberships,
+
+**Then** each membership has the explicit User grant and no Admin or Super Admin
+grant. Browser account and product status show the expected access. Logout ends
+the session, and protected browser access without that session is denied.
+
+**When** the separate Claude Code client completes CIMD login, lists tools, runs
+a real fetch, and refreshes its credential,
+
+**Then** each operation succeeds under the intended production identity and User
+grant. Browser session success alone does not satisfy this native client proof.
+
+**When** the operator revokes User from the designated account and reads the
+membership again,
+
+**Then** protected product and MCP requests are refused despite existing
+credentials. Restore only User, read it back, and confirm access returns.
+
+Record safe outcomes only: no tokens, personal emails, or fetched page contents
+belong in this repository. Auto-deploy stays off until authenticated smoke passes.
