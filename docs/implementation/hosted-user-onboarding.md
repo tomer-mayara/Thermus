@@ -46,6 +46,9 @@ and Connect consent are not terms acceptance.
    one user, verified email, and confirmation that this is the intended person.
    Record its user ID and the identity evidence. Read the organization by its
    external ID and confirm its name and ID. Stop on a mismatch or ambiguity.
+   For a new person without an identity, privately supply the complete notice
+   before asking them to use the normal hosted sign-in flow. Then repeat this
+   verification. Sign-in creates no User grant and does not record agreement.
 4. Read all membership statuses using step 3 of organization setup. There must
    be exactly one active membership for the verified user and organization.
    Record its ID, status, and role slugs. Stop for pending, inactive,
