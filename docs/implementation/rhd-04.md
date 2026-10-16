@@ -84,13 +84,20 @@ CIMD, and sign-up enabled. DCR, Google, passkeys, and magic sign-in are disabled
 DCR remains conditional on the actual Claude Code flow. Provider sign-up does
 not grant Thermus product access; no automatic enrollment was added.
 
-Production user and organization reads still show none. No account, membership,
-or grant was created. The owner approved User access for two initial identities;
-their email addresses stay outside this repository. No Super Admin was requested.
-`Thermus AI`, external ID `thermus-ai`, is planned only. Dashboard MFA enrollment
-is now configured and the workspace MFA requirement is enabled, both read back.
-Completed MFA sign-in still needs owner confirmation before provisioning.
-Dashboard MFA is separate from Optional end-user MFA.
+The owner confirmed completed dashboard MFA sign-in. Read-back shows
+`isMfaConfigured: true`, `isMfaRequired: true`, and last login
+`2026-10-16T01:37:26.833Z` (2026-10-15 in America/Denver). Dashboard MFA is
+separate from Optional end-user MFA.
+
+Created organization `Thermus AI`, external ID `thermus-ai`, with ID
+`org_01M515XQD27ZTRYZ546RSWBMY8`; an independent read confirmed it. The two
+approved initial identities were created. Their email addresses stay outside this
+repository. Both read back with `emailVerifiedAt: null`, no password, and no
+memberships. No grant was made; no Super Admin was requested. Identity creation
+and stopped-grant records are in the operator JSONL outside this repository;
+the task records its location. Provider verification must finish before User
+grants. The configured origin is not live, so application-assisted verification
+must wait for the first deployment.
 
 Production URL settings were persisted and read back:
 
@@ -126,7 +133,7 @@ usage. See [Render pricing](https://render.com/pricing).
 | Auto-deploy | Trigger `off`, auto-deploy `no` |
 | Previews / pre-deploy command | Off / none |
 
-The UI confirms seven saved environment keys and no linked environment groups.
+The UI confirms nine saved environment keys and no linked environment groups.
 Each saved public value below was independently checked in the UI and matched:
 
 | Key | Verified saved value |
@@ -139,10 +146,19 @@ Each saved public value below was independently checked in the UI and matched:
 | `WORKOS_REDIRECT_URI` | `https://thermus.onrender.com/callback` |
 | `WORKOS_MFA_POLICY` | `optional` |
 
-The production API key and stable cookie password are not installed. The Render
-form has two unsaved empty fields, `WORKOS_API_KEY` and `WORKOS_COOKIE_PASSWORD`,
-with **Save only** selected. The form was handed to the owner for direct secret
-entry. Keep secrets in protected settings. The image defines listener
+The owner saved `WORKOS_API_KEY` and `WORKOS_COOKIE_PASSWORD` with **Save only**.
+The UI confirms both are nonempty, neither has surrounding whitespace, and the
+cookie password has at least 32 characters. Secret values were never printed or
+saved outside protected settings. A later in-memory comparison confirmed that
+the saved API key exactly matches the key in the WorkOS Staging API Keys dialog.
+Only the match result was emitted; comparison variables were cleared.
+Production has no active API keys; staging has one. The saved API key is therefore
+from the wrong environment and must be replaced. The cookie password checks pass.
+The WorkOS Production API Keys and Render Environment pages are open and marked
+for owner handoff. No replacement form was opened and no key was created.
+No replacement or deployment is recorded. The earlier **Save only** action
+triggered no new deployment; only the two failed attempts are recorded.
+The image defines listener
 `0.0.0.0:8080`, absolute rules and renderer paths, and disabled telemetry.
 No Blueprint is needed. The Dashboard
 and [full create-service API](https://api-docs.render.com/reference/create-service)
@@ -163,21 +179,25 @@ further environment changes until checked `main` is ready.
 
 ## Pending owner information and ordering
 
-- Complete the Google project setup below and confirm protected secret access.
+- Complete the Google project setup below.
   Production activation and permission write authority are now verified.
-- The planned organization is `Thermus AI`, external ID `thermus-ai`; creation
-  awaits operator MFA. The owner approved User access
-  for two initial identities in the session. Keep their email addresses outside
-  this repository. Verify those identities before granting access. No Super Admin
-  was requested.
-- Confirm completed operator MFA sign-in before provisioning and the external
-  record location. Enrollment and the workspace requirement are verified.
+- Replace the saved staging API key with a production key, then check its
+  production scope without exposing its value. Actual live use belongs to RHD-05.
+- Complete provider verification for both initial identities before User grants.
+  The organization exists, but neither identity has a membership. Application-
+  assisted verification must wait until the configured origin is live.
+  Once provider, service, and runtime configuration and checked `main` are ready,
+  RHD-05 can start the first deployment and identity-verification step. Then
+  finish explicit RHD-04 User grants and read-backs before protected product or
+  MCP success tests. RHD-04 stays incomplete until those grants are verified.
+  This order gives no implicit enrollment: ungranted access stays denied.
 - Configure the production native client, with Claude Code first. The login
   proof belongs to RHD-05.
 - Merge the reviewed stack through PR #117 before selecting checked `main`.
   This branch starts at PR #117 head
   `c3a2734144a043b1d184f8531a59d4f2dafe41b1`.
-  Current `main`, `cf2928ba239e4ef88e7cf7e660d5b08bc04b6486`, lacks that stack.
+  PRs #115–117 remain open and unmerged. Current `main`,
+  `cf2928ba239e4ef88e7cf7e660d5b08bc04b6486`, lacks that stack.
 
 The owner chose setup steps for a new Thermus Google Cloud project.
 
@@ -218,6 +238,8 @@ the OAuth client; no Google hosting is needed. Follow the current
 PR #117 remains open and unmerged. Wait for checked `main` before rollout.
 Enable On Commit only after the RHD-05 remote smoke. Google setup is prepared
 only; no Google Cloud project or credentials have been created.
+The wrong-environment API key still blocks startup readiness and must be corrected
+before the initial deployment and identity-verification step can start.
 
 ## Validation and handoff
 
@@ -240,8 +262,8 @@ state. The later Render checkout proves Git access for that checkout only.
 
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
-items are operator MFA confirmation, accounts and User grants, Google setup,
-protected runtime secrets, native client setup, and checked `main`.
+items are identity verification and User grants, Google setup, production API-key
+replacement and scope check, native client setup, and checked `main`.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
 Do not run staging fixture creation or cleanup against production.

@@ -380,7 +380,14 @@ first intended manual deploy is configured, auto-deploy and previews remain off.
 **Scope:** first remote smoke, designated-user access checks, capacity measurement,
 harmless Git auto-deploy, controlled rollback, operator runbook and release record.
 
-**Dependencies:** RHD-04.
+**Dependencies:** RHD-04 provider, service, and runtime configuration and a checked
+`main` revision must be ready before the first deployment. New production
+identities can need that deployment for their first sign-in and provider
+verification. RHD-05 can start those steps before RHD-04 grants are complete.
+After verification, finish the explicit RHD-04 User grants and read-backs before
+protected product and MCP success tests. RHD-04 stays incomplete until then.
+This order gives no implicit enrollment or access: ungranted access stays denied,
+and auto-deploy stays off until the remote smoke passes.
 
 **Acceptance:** Given the configured service, when the checked revision deploys,
 then the real browser and separate MCP journeys pass; a reviewed Git change
