@@ -13,9 +13,9 @@ const renderedOutput = JSON.stringify({ url, http_status: 200, content: html, er
 const params = { name: 'getURLAsMarkdown', arguments: { url, reason } };
 
 test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and safe completion records are returned, and missing or revoked access is refused before rendering', { timeout: 5_000 }, async (t) => {
+  const site = await openHostedFetchSite(t);
   const renderer = RendererProcessDouble.install(t);
   renderer.serve(url, { finalUrl: url, html });
-  const site = await openHostedFetchSite(t);
   const listed = await rpcResult(await site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/list', token: site.token })));
   assert.deepEqual((listed.tools as Array<{ name: string; inputSchema: unknown }>).map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: params.name, inputSchema: fetchToolInputSchema }]);
 
@@ -37,9 +37,9 @@ test('Given production hosted composition with trusted rules and a valid Connect
 });
 
 test('Given one renderer active in production hosted composition, when another authorized request calls the tool, then it promptly gets a safe busy error and a busy completion, and a call after settlement can run', { timeout: 5_000 }, async (t) => {
+  const site = await openHostedFetchSite(t);
   const renderer = controlledRenderer(t);
   t.after(() => renderer.finish(null, renderedOutput, ''));
-  const site = await openHostedFetchSite(t);
   const call = () => site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/call', token: site.token, params }));
   const first = call();
   await renderer.launched;
@@ -58,9 +58,9 @@ test('Given one renderer active in production hosted composition, when another a
 
 for (const outcome of ['failure', 'cancelled'] as const) {
   test(`Given a production hosted fetch with ${outcome}, when another call arrives before the renderer settles, then busy is returned until cleanup completes and the next call can render`, { timeout: 5_000 }, async (t) => {
+    const site = await openHostedFetchSite(t);
     const renderer = controlledRenderer(t);
     t.after(() => renderer.finish(null, renderedOutput, ''));
-    const site = await openHostedFetchSite(t);
     const controller = new AbortController();
     const call = (signal?: AbortSignal) => site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/call', token: site.token, params, signal }));
     const first = call(controller.signal);

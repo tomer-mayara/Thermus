@@ -11,7 +11,8 @@
     ".habit-hooks"
   ],
   "imports": {
-    "#auth-local-migrations/*": "./migrations/auth-local/*"
+    "#auth-local-migrations/*": "./migrations/auth-local/*",
+    "#hosted-portal/*": "./src/user-portal/dist/*"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",

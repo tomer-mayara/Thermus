@@ -1,4 +1,5 @@
 import type { TestContext } from 'node:test';
+import '../processes/use-hosted-portal-fixture.ts';
 import { openWorkOSApplication } from '../../../src/hosted-workos-application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { hostedFetchSettings, workOSSettings } from '../fixtures/hosted-placeholder.ts';

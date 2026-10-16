@@ -93,7 +93,7 @@ export LIGHTPANDA_BIN="/absolute/path with spaces/lightpanda"
 "$LIGHTPANDA_BIN" version
 ```
 
-The fetcher passes the value directly as the executable path. It preserves spaces. The value is not a shell command; do not append flags or include quote characters in the value. If `LIGHTPANDA_BIN` is empty or unset, the fetcher runs `lightpanda` from `PATH`. To use that fallback, verify it first:
+The fetcher passes the value directly as the executable path. It preserves spaces. The value is not a shell command; do not append flags or include quote characters in the value. For the self-hosted server, if `LIGHTPANDA_BIN` is empty or unset, the fetcher runs `lightpanda` from `PATH`. To use that fallback, verify it first:
 
 ```sh
 unset LIGHTPANDA_BIN
@@ -101,7 +101,19 @@ command -v lightpanda
 lightpanda version
 ```
 
-A selected executable that is missing or cannot start produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Server startup does not run or check the renderer. A server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the fetcher error. The server log gets a [renderer setup report](#renderer-setup-report). The operator must verify the runtime before use with the commands above.
+A selected executable that is missing or cannot start produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Self-hosted startup does not run or check the renderer. A self-hosted server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the fetcher error. The server log gets a [renderer setup report](#renderer-setup-report). The operator must verify the runtime before use with the commands above.
+
+Hosted startup requires an absolute `LIGHTPANDA_BIN` path. After trusted rules and
+the native cleaner load, it runs the executable directly with `version`, with
+telemetry off. Trimmed stdout must equal `1.0.0`. The check has a fixed
+5,000 ms timeout and a 1,024-byte limit for each output stream; it uses
+`SIGKILL` when the child exceeds a bound. A missing setting, relative path,
+start failure, nonzero exit, wrong version, timeout, or excessive output stops
+startup before listening. The safe error starts with
+`Hosted renderer setup failed: LIGHTPANDA_BIN` and points to this guide. It
+shows no executable path, child output, or raw cause. The check proves the
+local version command; `/healthz` does not prove page rendering or WorkOS
+reachability. See [RHD-02](implementation/rhd-02.md).
 
 ## Telemetry
 

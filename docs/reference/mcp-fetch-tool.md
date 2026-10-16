@@ -89,7 +89,7 @@ user that `users disable` disabled get HTTP 401. A banned user with a live
 session gets HTTP 403. These refusals happen before any fetch or cleaning and
 write no completion record.
 
-Startup does not run or check the renderer. Without a usable renderer, each page
+Self-hosted startup does not run or check the renderer. Without a usable renderer, each page
 fetch fails with `Page fetch failed` and a `fetch_failed` record. The tool does
 not pass on the fetcher error. The operator log gets a
 [renderer setup report](#renderer-setup-report) instead. The container image
@@ -103,10 +103,11 @@ WorkOS Connect tokens and the current User grant protect each request. Missing
 or revoked access is refused before fetching. The slot covers DNS, rendering,
 cleaning, and cleanup across requests; there is no queue or capacity setting.
 An abort does not free the slot before settlement. A busy call writes its own
-safe completion record with status `busy`. This slice adds no onboarding,
-public root, portal serving, health route, Origin policy, or deployment. The
-[Render plan](../implementation/render-hosted-docker-plan.md) assigns those
-changes to later slices. Test fixtures do not select production ad rules.
+safe completion record with status `busy`. RHD-01 adds no onboarding or
+deployment. [RHD-02](../implementation/rhd-02.md) adds portal serving, local
+health, startup checks, and hosted MCP Origin validation. Hosted startup checks
+the pinned renderer before listening; self-hosted startup keeps its deferred
+renderer failure behavior. Test fixtures do not select production ad rules.
 
 ## Renderer setup report
 

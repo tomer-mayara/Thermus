@@ -198,15 +198,16 @@ describe('Self-hosted server startup with one persistent installation', () => {
     assert.deepEqual(readdirSync(directory), []);
   });
 
-  test('Given the hosted edition with a data directory setting, when the server starts, then it serves the WorkOS edition, which asks for a sign-in, reports no local tenant, and creates no local data', { timeout: 60_000 }, async (t) => {
+  test('Given the hosted edition with a data directory setting, when the server starts, then it serves the public portal, keeps the account protected, reports no local tenant, and creates no local data', { timeout: 60_000 }, async (t) => {
     const directory = dataDirectory(t);
 
     const server = await ServerProcess.start(t, hostedSettings(directory));
     const notice = await server.request('/');
+    const account = await server.request('/account');
     const exit = await server.stop();
 
-    assert.deepEqual([notice.status, exit], [401, { code: 0, signal: null }]);
-    assert.match(await notice.text(), /Sign-in required/);
+    assert.deepEqual([notice.status, account.status, exit], [200, 401, { code: 0, signal: null }]);
+    assert.match(await notice.text(), /Thermus hosted portal fixture/);
     assert.doesNotMatch(server.output, /tenant/);
     assert.deepEqual(readdirSync(directory), []);
   });

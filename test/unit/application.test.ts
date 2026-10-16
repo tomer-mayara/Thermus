@@ -153,3 +153,88 @@ test('Given hosted browser routes of the provider, when their paths are requeste
     ['/team/organizations', 'account'], ['/team/mcp', 'mcp'], ['/team/loginx', 'account'], ['/login', 'Not Found'],
   ]);
 });
+
+test('Given a hosted MCP resource, when any HTTP method carries a refused Origin, then no route owner receives the request', async () => {
+  const { route, calls } = recordingHostedRoutes();
+  const origins = [
+    '', 'null', 'not an origin', 'https://evil.example', 'http://thermus.example', 'https://thermus.example:8443',
+    'https://thermus.example/', 'https://thermus.example/team/', 'https://thermus.example?x=1', 'https://thermus.example#fragment',
+    'https://user:password@thermus.example', 'https://thermus.example, https://evil.example',
+    'https://thermus.example https://evil.example', 'https://thermus.example, https://thermus.example',
+    'https://thermus.example junk', 'https://thermus.example\\', 'https://THERMUS.example', 'https://thermus.example:443',
+  ];
+
+  for (const method of ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD']) {
+    for (const origin of origins) {
+      const response = await route(new Request(routeConfig.mcpResourceUrl, { method, headers: { Origin: origin } }));
+
+      assert.equal(response.status, 403, `${method} ${JSON.stringify(origin)}`);
+      assert.equal(response.headers.get('Access-Control-Allow-Origin'), null);
+    }
+  }
+
+  assert.deepEqual(calls, []);
+});
+
+test('Given a hosted MCP resource, when Origin is absent or equals the serialized public origin, then each method reaches MCP with the complete request', async () => {
+  const { route, calls } = recordingHostedRoutes();
+
+  for (const method of ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD']) {
+    for (const headers of [{}, { Origin: 'https://thermus.example' }]) {
+      const request = new Request(`${routeConfig.mcpResourceUrl}?resource=value`, { method, headers });
+      const response = await route(request);
+
+      assert.equal(response.status, 200);
+      assert.equal(calls.at(-1)?.request, request);
+    }
+  }
+
+  assert.equal(calls.length, 14);
+  assert.ok(calls.every(({ route }) => route === 'mcp'));
+});
+
+test('Given a hosted MCP resource, when repeated Origin headers name the public origin, then the combined header is refused before MCP', async () => {
+  const { route, calls } = recordingHostedRoutes();
+  const request = new Request(routeConfig.mcpResourceUrl, {
+    headers: [['Origin', 'https://thermus.example'], ['Origin', 'https://thermus.example']],
+  });
+
+  assert.equal((await route(request)).status, 403);
+  assert.deepEqual(calls, []);
+});
+
+test('Given a public URL with a port and a base path, when the request URL or forwarded headers name another origin, then only the configured public origin is accepted', async () => {
+  const config = {
+    publicBaseUrl: 'https://thermus.example:8443/team/',
+    mcpResourceUrl: 'https://thermus.example:8443/team/mcp',
+    resourceMetadataUrl: 'https://thermus.example:8443/.well-known/oauth-protected-resource/team/mcp',
+  };
+  const route = routeHostedRequests(config, { mcp: async () => new Response('MCP'), account: async () => new Response('account') });
+
+  for (const [origin, status] of [['https://thermus.example:8443', 200], ['https://thermus.example', 403], ['http://internal.example', 403]] as const) {
+    const request = new Request('http://internal.example/team/mcp', {
+      headers: { Origin: origin, Host: 'internal.example', 'X-Forwarded-Host': 'internal.example', 'X-Forwarded-Proto': 'http' },
+    });
+
+    assert.equal((await route(request)).status, status, origin);
+  }
+});
+
+test('Given a hosted installation, when a foreign Origin requests metadata, account paths, or an MCP child path, then their existing owners receive the complete request', async () => {
+  const { route, calls } = recordingHostedRoutes();
+
+  for (const { path, owner } of hostedRoutes.filter(({ path }) => path !== '/team/mcp')) {
+    const request = new Request(`https://thermus.example${path}`, { headers: { Origin: 'https://evil.example' } });
+
+    assert.equal(await (await route(request)).text(), owner);
+    assert.deepEqual(calls.at(-1), { route: owner, request });
+  }
+});
+
+test('Given a local installation, when MCP carries a foreign Origin, then local routing still delegates the complete request to MCP', async () => {
+  const { route, calls } = recordingRoutes();
+  const request = new Request(routeConfig.mcpResourceUrl, { headers: { Origin: 'https://evil.example' } });
+
+  assert.equal(await (await route(request)).text(), 'mcp');
+  assert.deepEqual(calls, [{ route: 'mcp', request }]);
+});

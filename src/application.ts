@@ -168,14 +168,20 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
 }
 
 export function routeHostedRequests(config: RouteConfig, handlers: HostedRequestHandlers): FetchHandler {
-  const basePath = new URL(config.publicBaseUrl).pathname;
+  const publicUrl = new URL(config.publicBaseUrl);
+  const basePath = publicUrl.pathname;
+  const mcpPath = new URL(config.mcpResourceUrl).pathname;
   const mcpPaths = new Set([
-    new URL(config.mcpResourceUrl).pathname,
+    mcpPath,
     '/.well-known/oauth-protected-resource',
     new URL(config.resourceMetadataUrl).pathname,
   ]);
   return async (request) => {
     const pathname = new URL(request.url).pathname;
+    if (pathname === mcpPath) {
+      const origin = request.headers.get('Origin');
+      if (origin !== null && origin !== publicUrl.origin) return new Response('Forbidden', { status: 403 });
+    }
     if (mcpPaths.has(pathname)) return handlers.mcp(request);
     if (handlers.browser?.handles(pathname)) return handlers.browser.handle(request);
     if (pathname.startsWith(basePath)) return handlers.account(request);
