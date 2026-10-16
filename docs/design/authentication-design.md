@@ -1465,6 +1465,15 @@ browser credentials separate from MCP bearer handling.
 
 ### Browser session of AUTH-06
 
+FS-01 adds `/signup` before the organization-gated account routes. It uses the
+same identity session and requires a fresh WorkOS `emailVerified` result, but
+needs no existing membership. The default-off switch controls new activation
+only. Approved document bytes, one explicit agreement, origin and CSRF checks,
+and a confirmed new personal-organization creation precede the initial User
+grant. The organization retains the acceptance record and prevents grant replay.
+The [FS-01 implementation record](../implementation/fs-01.md) gives the retry,
+concurrency, revocation, and release limits. No production legal bundle ships yet.
+
 The owner selected a server-owned session on 2026-10-14: the server signs in,
 keeps the session, and signs out, and the portal is on the same origin.
 
