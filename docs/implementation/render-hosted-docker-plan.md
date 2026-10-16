@@ -227,9 +227,10 @@ them. Preprovision known users and explicit User grants externally, with its
 operator MFA prerequisites. Optional MFA gives no proven MFA evidence, so privileged
 Thermus UI writes stay denied. Add no login-based enrollment or implicit grant.
 
-Register the selected native MCP client independently in production; use the
-existing Claude Code flow as the first proof. Enable CIMD, which is off by default;
-enable DCR only if that client needs it. Set the exact `<origin>/mcp` resource.
+Configure the selected native MCP client independently for production; use
+Claude Code first. Its automatic CIMD path needs no manual client registration
+before login. Enable CIMD, which is off by default; enable DCR only if the live
+client flow shows a need. Set the exact `<origin>/mcp` resource.
 Preserve existing OIDC scopes, issuer/audience checks, and current-grant checks;
 do not invent permission OAuth scopes. A browser cookie is not an MCP credential.
 See [WorkOS MCP setup](https://workos.com/docs/authkit/mcp). Never run staging fixture

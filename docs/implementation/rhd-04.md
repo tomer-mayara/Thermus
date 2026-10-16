@@ -197,13 +197,50 @@ further environment changes until checked `main` is ready.
   finish explicit RHD-04 User grants and read-backs before protected product or
   MCP success tests. RHD-04 stays incomplete until those grants are verified.
   This order gives no implicit enrollment: ungranted access stays denied.
-- Configure the production native client, with Claude Code first. The login
-  proof belongs to RHD-05.
+- Production native client configuration is verified below. Actual registration,
+  login, and refresh proofs belong to RHD-05.
 - Merge the reviewed stack through PR #117 before selecting checked `main`.
   This branch starts at PR #117 head
   `c3a2734144a043b1d184f8531a59d4f2dafe41b1`.
   PRs #115–117 remain open and unmerged. Current `main`,
   `cf2928ba239e4ef88e7cf7e660d5b08bc04b6486`, lacks that stack.
+
+## Native MCP client configuration
+
+Claude Code 2.1.300 is installed. Its [official OAuth guidance](https://code.claude.com/docs/en/mcp#use-pre-configured-oauth-credentials)
+supports automatic CIMD; [WorkOS recommends CIMD](https://workos.com/docs/authkit/mcp)
+and reserves DCR for older clients. No manual client registration is needed
+before the documented login flow.
+
+From the Thermus repository directory, this local-scope configuration was added
+and read back exactly:
+
+```sh
+claude mcp add-json --scope local thermus-production '{"type":"http","url":"https://thermus.onrender.com/mcp","oauth":{"scopes":"openid profile email offline_access"}}'
+```
+
+The name was absent in local, user, and project scopes before setup. Existing
+MCP entries and repository `.mcp.json` are unchanged. No client ID, secret, fixed
+callback, headers, metadata override, or certificate override was added.
+
+Production read-back confirms CIMD enabled, DCR disabled, and the only/default
+OAuth resource `https://thermus.onrender.com/mcp`, ID
+`authkit_oauth_resource_01M511F4QYR5PJDMNA1R2QC3A8`. Public issuer metadata
+returned HTTP 200 with the production issuer above, CIMD, S256, auth method
+`none`, scopes `email`, `offline_access`, `openid`, `profile`, and no
+`registration_endpoint`. OAuth Connect applications are empty with exhausted cursors.
+Fresh staging AuthKit settings still match the initial snapshot.
+
+No login was attempted. After Render is live and User grants are verified,
+run this from the Thermus directory because the configuration has local scope:
+
+```sh
+claude mcp login thermus-production
+```
+
+RHD-05 must prove actual CIMD registration, login, and refresh. Enable DCR only
+if the observed live flow needs it. Saved configuration is not a registration
+or login pass.
 
 ## Google Cloud OAuth configuration
 
@@ -289,8 +326,8 @@ matched its stored initial snapshot.
 
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
-items are identity verification and User grants, Google publication, native client setup,
-and checked `main`.
+items are identity verification and User grants, Google publication, and checked
+`main`. Native client registration, login, and refresh remain RHD-05 proofs.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
 Do not run staging fixture creation or cleanup against production.
