@@ -149,15 +149,22 @@ Each saved public value below was independently checked in the UI and matched:
 The owner saved `WORKOS_API_KEY` and `WORKOS_COOKIE_PASSWORD` with **Save only**.
 The UI confirms both are nonempty, neither has surrounding whitespace, and the
 cookie password has at least 32 characters. Secret values were never printed or
-saved outside protected settings. A later in-memory comparison confirmed that
-the saved API key exactly matches the key in the WorkOS Staging API Keys dialog.
-Only the match result was emitted; comparison variables were cleared.
-Production has no active API keys; staging has one. The saved API key is therefore
-from the wrong environment and must be replaced. The cookie password checks pass.
-The WorkOS Production API Keys and Render Environment pages are open and marked
-for owner handoff. No replacement form was opened and no key was created.
-No replacement or deployment is recorded. The earlier **Save only** action
-triggered no new deployment; only the two failed attempts are recorded.
+saved outside protected settings. The first saved API key was confirmed in memory
+to match the Staging key. The owner then created a Production key and replaced
+only `WORKOS_API_KEY` in Render with **Save only**. The cookie password is unchanged.
+
+Production read-back shows one active, nonexpired key,
+`key_01M518FYX3WKT38PQZSH388D4Y`, named `Production Key (Render)`, for application
+`app_01M4VDKC50NT3Z13KGM1P2BFRD`. It was created at
+`2026-10-16T02:26:10.466Z` (2026-10-15 in America/Denver). A separate browser
+read confirmed Production context. The saved Render value is nonempty, starts
+with `sk_`, is not masked text, and has no surrounding whitespace. Its first
+three and last four characters match the masked Production key display. The full
+key is no longer visible in WorkOS, so this is not a full-value comparison or
+successful API authentication. Checks stayed in memory and variables were cleared;
+no secret values were printed or saved. The replacement blocker is cleared;
+actual live credential use belongs to RHD-05. No new deployment occurred: only
+the two failed attempts below remain.
 The image defines listener
 `0.0.0.0:8080`, absolute rules and renderer paths, and disabled telemetry.
 No Blueprint is needed. The Dashboard
@@ -181,8 +188,6 @@ further environment changes until checked `main` is ready.
 
 - Complete the Google project setup below.
   Production activation and permission write authority are now verified.
-- Replace the saved staging API key with a production key, then check its
-  production scope without exposing its value. Actual live use belongs to RHD-05.
 - Complete provider verification for both initial identities before User grants.
   The organization exists, but neither identity has a membership. Application-
   assisted verification must wait until the configured origin is live.
@@ -238,8 +243,8 @@ the OAuth client; no Google hosting is needed. Follow the current
 PR #117 remains open and unmerged. Wait for checked `main` before rollout.
 Enable On Commit only after the RHD-05 remote smoke. Google setup is prepared
 only; no Google Cloud project or credentials have been created.
-The wrong-environment API key still blocks startup readiness and must be corrected
-before the initial deployment and identity-verification step can start.
+The Production key correction is complete within the read-back limits above.
+Actual startup and live credential use have not been proved.
 
 ## Validation and handoff
 
@@ -262,8 +267,8 @@ state. The later Render checkout proves Git access for that checkout only.
 
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
-items are identity verification and User grants, Google setup, production API-key
-replacement and scope check, native client setup, and checked `main`.
+items are identity verification and User grants, Google setup, native client setup,
+and checked `main`.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
 Do not run staging fixture creation or cleanup against production.
