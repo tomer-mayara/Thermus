@@ -900,6 +900,16 @@ session revocation.
 
 ## Hosted authentication and access
 
+Hosted early access uses the [operator-managed onboarding procedure](../implementation/hosted-user-onboarding.md)
+to record express terms acceptance before an explicit User grant. This is an
+operating requirement; the application still resolves access from current WorkOS
+grants and does not store or check acceptance. Do not use User-role invitations
+or automatic Google enrollment for this procedure. Native MCP users follow the
+same private agreement process. The [deletion runbook](../implementation/hosted-account-deletion.md)
+separates organization access removal, session/client revocation, and record
+deletion. Neither procedure publishes policy pages or changes current accounts
+by itself.
+
 Configure AuthKit/Connect as the MCP authorization server. It owns MCP consent
 and token endpoints. Register the exact MCP URL as the resource indicator and
 serve hosted protected-resource metadata through the SDK helpers. The separate
