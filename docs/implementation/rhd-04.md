@@ -1,9 +1,9 @@
 # RHD-04: production identity and Render setup
 
-Status: incomplete; initial acceptance is not satisfied. Date: 2026-10-15.
-Draft [PR #118](https://github.com/3-headed-monkey/Thermus/pull/118) now targets
-`main` after PRs #115–117 merged. Production identity settings are
-partly configured; setup is incomplete.
+Status: incomplete; initial acceptance is not satisfied. Updated: 2026-10-16.
+[PR #119](https://github.com/tomer-mayara/Thermus/pull/119) targets `main` and
+consolidates earlier [PR #118](https://github.com/tomer-mayara/Thermus/pull/118).
+RHD-04 acceptance remains incomplete.
 This record starts before provider changes. It contains no secret values.
 The [hosted Docker plan](render-hosted-docker-plan.md) defines the scope.
 RHD-05 owns rollout, remote journeys, load, auto-deploy proof, and recovery.
@@ -195,7 +195,7 @@ for environment changes that must not deploy.
   Complete the remaining authenticated checks in RHD-05; no implicit enrollment
   was added. RHD-04 remains incomplete while deferred Google publication is open.
 - Production native client configuration and CIMD registration are verified.
-  Login and fetch are verified; native refresh remains pending in RHD-05.
+  Login, fetch, and native refresh are verified in RHD-05.
 - Checked `main` is ready: PRs #115–117 were reviewed and merged. The
   [RHD-05 record](rhd-05.md) gives exact merge commits and matching tree evidence.
   The old `main` revision in the failed setup attempts above is historical.
@@ -238,7 +238,7 @@ claude mcp login thermus-production
 The [RHD-05 record](rhd-05.md) gives login, discovery, and connection revocation/
 recovery and actual tool-call denial evidence. Real native fetch and recovery
 have passed. The separate Claude model-account sign-in
-blocker is resolved; native refresh remains unverified.
+blocker is resolved; a later expired-token fetch proved native refresh.
 DCR remains off. Native refresh must use the Connect token lifetime, not the
 300-second browser access-token lifetime.
 
@@ -329,11 +329,8 @@ state. The later Render checkout proves Git access for that checkout only.
 After the Google changes, staging `authkitSettings` was read again and still
 matched its stored initial snapshot.
 
-The manager reviewed this record and the plan status update. The whitespace check
-passed, and all 25 relative file links resolved at that review. Remaining acceptance
-items include deferred Google publication and remaining authenticated checks. Checked
-`main`, native configuration, and CIMD registration are ready; native fetch passed;
-actual refresh remains an RHD-05 proof.
-No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
-in Draft #118.
+The manager reviewed this record and the plan status update. Whitespace and
+relative links passed review. Remaining release checks are in RHD-05.
+No complete provider acceptance pass is recorded; deferred Google publication
+keeps RHD-04 incomplete. PR #119 contains the consolidated record.
 Do not run staging fixture creation or cleanup against production.

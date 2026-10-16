@@ -1,10 +1,11 @@
 # RHD-05: first deployment and release proof
 
-Status: initial public acceptance satisfied; full RHD-05 incomplete. Client date: 2026-10-15.
-Draft [PR #119](https://github.com/tomer-mayara/Thermus/pull/119) tracks this work,
-stacked on Draft [PR #118](https://github.com/tomer-mayara/Thermus/pull/118).
-Both branches incorporate current `main`. The acceptance below was written before
-the first deployment. The retry is live and public smoke passed 15/15.
+Status: initial public acceptance satisfied; full RHD-05 incomplete. Updated: 2026-10-16.
+[PR #119](https://github.com/tomer-mayara/Thermus/pull/119) targets `main` and
+consolidates earlier [PR #118](https://github.com/tomer-mayara/Thermus/pull/118).
+The candidate incorporates checked `main`. The acceptance below was written
+before the first deployment. The retry is live and public smoke passed 15/15;
+full RHD-05 acceptance remains incomplete.
 
 ## Manual first-deployment acceptance
 
@@ -112,10 +113,11 @@ Both initial identities are now provider-verified and have explicit User-only
 grants read back, as recorded below. Ungranted access stays denied. RHD-04
 remains incomplete; Google publication is still deferred.
 
-Full RHD-05 still needs Google publication and remaining browser journeys, native refresh,
-capacity measurement, cookie continuity, On Commit proof, rollback, and restoration.
+Full RHD-05 still needs Google publication and remaining release proofs,
+deployment cookie continuity, On Commit proof, rollback, and restoration.
+Bounded capacity evidence is complete within the limits below.
 Native configuration, CIMD registration, login, and tool discovery are verified.
-A real native fetch passed; actual native refresh remains pending. Public policy
+Real native fetch and actual native refresh passed. Public policy
 pages remain owner-deferred.
 No release or complete RHD-05 pass is recorded.
 
@@ -232,7 +234,7 @@ Admin grant was made.
 
 Browser revocation/restoration and native connection revocation/recovery passed.
 The later persistent-client check below proves tools/call denial; actual native
-refresh remains unproved. Refresh
+refresh was unproved at that point. Refresh
 must be tested against the Connect token lifetime; the 300-second AuthKit browser
 lifetime is not a native refresh deadline. Privacy/terms and Google publication
 remain deferred, Testing is unchanged, and auto-deploy stays off. Full RHD-04 and
@@ -255,8 +257,9 @@ with the exact URL and reason above. A fresh membership read confirmed active
 User only. The unpaginated application-error query for `12:28–12:36Z` was empty.
 
 There was no further Thermus MCP login after approximately `05:19Z`. Continued
-native access for more than seven hours is proved; actual refresh is not. The
-Connect token lifetime and refresh event are unavailable through the inspected
+native access for more than seven hours was proved; that alone did not prove
+refresh. The
+Connect token lifetime and refresh event were unavailable through the then-inspected
 safe diagnostics. Neither the AuthKit 300-second lifetime nor a documentation
 example establishes this native credential's expiry. Native connection
 revocation/recovery remains proved; explicit tools/call denial is proved below.
@@ -290,5 +293,112 @@ in that directory. No fetched page contents are recorded here.
 Final provider reads confirm both memberships active with sole User. Business
 membership is unchanged (`updatedAt: 04:48:10.301Z`); personal membership has
 `updatedAt: 12:34:17.210Z`. Auto-deploy remains off. Google Testing and the owner's
-privacy/terms deferral are unchanged. Actual native refresh remains unverified;
-continued access alone does not prove a refresh event.
+privacy/terms deferral are unchanged. At that point native refresh was unverified;
+the expired-token proof below now establishes it.
+
+
+## Expired-token native refresh proof
+
+The baseline native access token had issued-at `2026-10-16T12:34:32Z` and expiry
+`12:39:32Z`. A normal native fetch at `13:18:40–13:18:50Z` succeeded with exactly
+one tool call to `https://example.com/`, without login, consent, or credential
+edits. The subsequent token had issued-at `13:18:47Z` and expiry `13:23:47Z`.
+A refresh token was present, and expected issuer, resource, client, and user
+matched before and after. No credential values are recorded here.
+
+Render recorded successful `mcp.tool.completed` at `13:18:48Z`, taking 118 ms.
+Decoded metadata alone does not verify a signature; the successful fetch used
+production token validation. This proves actual native refresh after expiry.
+
+## Manual capacity and deployment acceptance specifications
+
+Initial status: all checks in this section were pending. These specifications
+preceded production capacity and deployment work; capacity results follow below. Public policy pages and Google
+publication remain owner-deferred; owner review is still required.
+
+**Given** the checked live service, one `1c-2g` instance, fixed fetch cap of one,
+a designated User account, and controlled representative and near-limit pages,
+**when** bounded fetch runs exercise both workloads, **then** record CPU, memory,
+response time, health responsiveness, and outcomes against existing safety and
+timeout limits. Use the results for owner review before broader enrollment;
+no new latency or throughput target is implied.
+
+**Given** one admitted fetch still owns the slot, **when** an excess request
+arrives, **then** it is refused promptly with the safe busy tool result. Health
+remains responsive. After the admitted work and cleanup settle, another request
+succeeds. Record cancellation or failure recovery if exercised; do not free the
+slot while its child still runs.
+
+**Given** a designated browser session and a stable cookie key, **when** a healthy
+replacement deploy or restart completes, **then** that session retains the same
+intended organization and User access without a new login. Verify protected
+behavior after the change; never record the cookie value.
+
+**Given** authenticated smoke has passed and a reviewed harmless change is ready,
+**when** On Commit is enabled and that change reaches `main`, **then** Render
+starts the Git-triggered deployment of its exact checked commit. The deployment
+becomes healthy and public/authenticated smoke passes. Do not inject production
+build or startup failures.
+
+**Given** two healthy retained versions with compatible cookie keys, **when** the
+operator rolls back to the earlier artifact, **then** its revision and health
+match expectations and public/authenticated smoke passes. **When** the latest
+checked `main` is restored, **then** smoke passes again and On Commit is enabled.
+Read back relevant settings: rollback can change the retained deployment's
+service environment, command, health path, and instance count; external WorkOS,
+domains, compute plan, and environment-group settings need separate inspection.
+Record deploy IDs, commits, measurements, cookie continuity, and recovery results.
+Full RHD-05 remains incomplete until the required release evidence and owner
+review are complete.
+
+
+## Bounded capacity results
+
+Representative and near-limit probes passed. The representative page was 14845
+bytes with a JavaScript marker; server time was 848 ms. The near-limit page had
+9 MiB of inert JSON hydration input and passed its marker; server time was
+12.783 seconds and the native result envelope contained 73 characters. This is
+not large-DOM stress or a throughput proof.
+
+The native pair serialized about 6.1 seconds apart and could not prove overlap.
+A direct pinned MCP SDK probe then exercised overlap and recovery:
+
+| Request | Server time | Client time | Outcome |
+| --- | --- | --- | --- |
+| Admitted slow fetch | 5.505 s | 6.047 s | Success |
+| Excess fetch | 0.419 ms | 321 ms | Safe busy refusal |
+| Recovery fetch | 309 ms | 1.101 s | Success |
+
+The fixture saw only seven origin requests; rejected excess never fetched.
+The native process closed and the fixture and tunnel stopped at `13:32:20Z`.
+Thirty-second CPU samples reached 0.181 cores against a one-core limit. Memory
+samples reached 661315600 bytes (about 631 MiB) against 2 GiB, then fell to
+111345660 bytes. These are sampled maxima, not instantaneous peaks or sustained
+capacity evidence. Retain the fixed one-slot cap.
+
+Initial health checks were 60/60 `200`, maximum 4.403 seconds. Four direct overlap
+and recovery samples were all `200`, taking 116–237 ms. A follow-up window was
+19/20: one unclassified client request failed at `13:31:34.98Z`, after the probe
+ended at `13:31:29.33Z`. Subsequent requests returned `200`; no application log
+errors or restarts were visible. The failure has no established cause and is
+not omitted from the results. Health request logs were empty/unavailable, so
+they do not establish its cause. Fresh post-capacity public smoke exited 0 with
+15/15 checks passed; safe results are
+`/tmp/thermus-rhd05/release/public-post-capacity-results.json`.
+
+Safe summaries and sampled logs/metrics are under `/tmp/thermus-rhd05/release/`:
+`representative-native-session-summary.json`, `near-limit-native-session-summary.json`,
+`pair-native-session-summary.json` (inconclusive), `direct-capacity-summary.json`,
+`capacity-health.json`, `direct-health.json`, `render-capacity-metrics.json`,
+`render-capacity-initial-logs.json`, `render-capacity-direct-logs.json`, and
+`render-capacity-followup-metrics.json`. Cookie continuity, Git-triggered deploy,
+healthy rollback/restoration, and owner review remain pending. Full RHD-05 is
+incomplete.
+
+The same personal browser session reloaded at `13:31–13:32Z` with User access
+in the intended organization, without a new login. The baseline screenshot is
+`/tmp/thermus-rhd05/release/browser-continuity-baseline.png`; no deployment cookie
+continuity is proved yet. Render read-back shows empty included/ignored build
+filters, `main`, auto-deploy/previews off, and one instance. No configuration or
+environment mutation was made for these reads. Memory returning to about 111 MB
+does not establish absence of leaks.
