@@ -2,7 +2,9 @@
 
 Status: RHD-01, RHD-02, and RHD-03 implementation and local verification complete.
 PR #117 is stacked on PR #116, which is stacked on PR #115. All await owner review.
-RHD-04 and RHD-05 are planned. Date: 2026-10-15.
+RHD-04 is incomplete in draft [PR #118](https://github.com/3-headed-monkey/Thermus/pull/118),
+stacked on PR #117; its [setup record](rhd-04.md) gives the read-backs and pending
+owner actions. RHD-05 is planned. Date: 2026-10-15.
 The [RHD-01 record](rhd-01.md) gives its results. The
 [RHD-02 record](rhd-02.md) gives the portal, local health, request boundary,
 and verification results. The [RHD-03 record](rhd-03.md) tracks the hosted
@@ -305,7 +307,7 @@ results. RHD-03 implementation and local verification are complete in
 [PR #117](https://github.com/3-headed-monkey/Thermus/pull/117), stacked on
 PR #116 and awaiting owner review; its [record](rhd-03.md) gives the passed
 gates and manager sign-off.
-RHD-04 and RHD-05 remain planned. Each code ticket writes its failing
+RHD-04 remains incomplete; RHD-05 remains planned. Each code ticket writes its failing
 Given-When-Then specification first, updates affected documents and fixtures, and
 runs its focused tests plus every applicable existing gate. The boundaries below
 identify each ticket's proof; they do not waive repository checks.
