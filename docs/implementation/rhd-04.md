@@ -80,7 +80,8 @@ Multiple roles are enabled, `member` remains the default, and SSO and Directory
 Sync role assignment are disabled.
 
 AuthKit read-back confirms Optional MFA, password sign-in, email verification,
-CIMD, and sign-up enabled. DCR, Google, passkeys, and magic sign-in are disabled.
+CIMD, and sign-up enabled. DCR, passkeys, and magic sign-in are disabled.
+Google was initially disabled and is now enabled, as recorded below.
 DCR remains conditional on the actual Claude Code flow. Provider sign-up does
 not grant Thermus product access; no automatic enrollment was added.
 
@@ -186,7 +187,7 @@ further environment changes until checked `main` is ready.
 
 ## Pending owner information and ordering
 
-- Complete the Google project setup below.
+- Complete the deferred Google public links and production publication below.
   Production activation and permission write authority are now verified.
 - Complete provider verification for both initial identities before User grants.
   The organization exists, but neither identity has a membership. Application-
@@ -204,64 +205,64 @@ further environment changes until checked `main` is ready.
   PRs #115–117 remain open and unmerged. Current `main`,
   `cf2928ba239e4ef88e7cf7e660d5b08bc04b6486`, lacks that stack.
 
-The owner explicitly authorized creating a new Thermus Google Cloud project and
-connecting its Google OAuth client to WorkOS Production. Business-account sign-in
-is complete. Project `Thermus`, ID `thermus-511802`, was created under organization
-`thermus.ai` and selected. OAuth consent, client creation, and WorkOS save remain
-pending. The consent wizard is prepared with app name `Thermus`, External
-audience, and the business operator as support and developer contact. It is
-unsaved at the Google API Services User Data Policy agreement; action-time
-confirmation has been requested. No OAuth client or credentials exist yet.
+## Google Cloud OAuth configuration
 
-## Google Cloud OAuth setup steps
+The owner authorized the Google Cloud project and its connection to WorkOS
+Production, including acceptance of the Google API Services User Data Policy.
+Business-account sign-in is complete. Project `Thermus`, ID `thermus-511802`,
+was created under `thermus.ai` and selected; its OAuth configuration was created.
+WorkOS handles authentication and Render hosts Thermus. Google supplies the OAuth
+client; no Google hosting is needed. Follow the [WorkOS instructions](https://workos.com/docs/integrations/google-oauth)
+and [Google consent setup](https://developers.google.com/workspace/guides/configure-oauth-consent).
 
-WorkOS handles authentication and Render hosts Thermus. Google Cloud supplies
-the OAuth client; no Google hosting is needed. Follow the current
-[WorkOS instructions](https://workos.com/docs/integrations/google-oauth) and
-[Google consent setup](https://developers.google.com/workspace/guides/configure-oauth-consent).
+Saved branding has app name `Thermus`, the approved business operator as support
+and developer contact, homepage `https://thermus.ai`, authorized domains
+`thermus.ai` and `workos.com`, and no logo. The homepage was verified live; no
+privacy or terms links were found and its Security and trust button opens a
+waitlist. The owner deferred those pages, so their branding fields remain blank.
+Audience is External, publishing status is Testing, and there are no test users.
+Publish app is disabled because Branding configuration is incomplete. Google
+requires the public links for external production apps; see its
+[branding guidance](https://support.google.com/cloud/answer/15549049).
+Branding verification and publication have not been done.
 
-The WorkOS Production Google dialog was read again. Its exact Google callback is:
+Saved Data Access has exactly three non-sensitive scopes: `userinfo.email`,
+`userinfo.profile`, and `openid`. Sensitive and restricted tables are empty.
+These are the identity scopes `email`, `profile`, and `openid`; see
+[Google OpenID Connect](https://developers.google.com/identity/protocols/oauth2/openid-connect).
+The WorkOS Production Google configuration has default email and profile scopes
+and **Return Google OAuth tokens** unchecked. Its exact callback is:
 
 `https://auth.workos.com/sso/oauth/google/EbBjbztH0euVsoez6KC6QNYyQ/callback`
 
-The WorkOS Production Google provider remains unconfigured and unsaved.
-The dialog shows default email and
-profile scopes, with **Return Google OAuth tokens** unchecked.
-The owner supplied [the Thermus homepage](https://thermus.ai), which was verified
-live in the browser. No privacy policy or terms links were found there; its
-Security and trust button opens a waitlist. The owner deferred policy pages;
-OAuth client setup can continue. Google documents the links for
-external production apps in its [branding guidance](https://support.google.com/cloud/answer/15549049).
-Branding verification and publication have not been done.
+The owner reports creating the Google client and saving its credentials in
+WorkOS. Production read-back confirms GoogleOAuth credential
+`oauth_credential_01M5197HKWJZ3ZJ9N05TP9R1YW`, state `Valid`, with client ID
+`1095718049617-r18sqt9hul9gbfqjgmjcunq8745u0s6v.apps.googleusercontent.com`.
+Both redirect and default redirect match the callback above. A protected redacted
+secret is present, `isUserlandEnabled` is true, `customScopes` is empty,
+`returnProviderTokens` is false, and no custom domain is set. AuthKit confirms
+`isGoogleOauthEnabled: true`. This does not prove full secret equality or live
+authentication.
 
-1. Use the created `Thermus` project, `thermus-511802`, under `thermus.ai`.
-2. Configure Google Auth Platform branding with app name `Thermus`, support email,
-   developer contact, and the required application links. Use owner-approved
-   contact details and real public URLs.
-3. Set audience to External, because the approved identities include a personal
-   Google account. Testing can use explicitly listed test users during setup;
-   publish In production before the production sign-in proof. Complete any
-   branding or domain verification Google requires.
-4. Create an OAuth client of type Web application, named `Thermus WorkOS Production`.
-   Set Google's authorized redirect URI to the verified Production callback above.
-   This is Google's callback to WorkOS, not Thermus `<origin>/callback`.
-   Do not derive it from the AuthKit issuer or use an example URI.
-5. Keep WorkOS's default authentication scopes. The identity scope set is
-   `openid`, `email`, and `profile`; Google can display the latter two as
-   `https://www.googleapis.com/auth/userinfo.email` and
-   `https://www.googleapis.com/auth/userinfo.profile`. Add no Google API scopes
-   or return-Google-token option. See [Google OpenID Connect](https://developers.google.com/identity/protocols/oauth2/openid-connect).
-6. Enter the Google client ID and secret directly into the WorkOS Production
-   Google configuration using the app's own credentials, then save and enable
-   Google sign-in. Keep the secret in protected storage; never paste it into
-   Git, chat, a ticket, or a log.
-7. Read back the project/client identity, audience, publication, exact callback,
-   and WorkOS credential presence without exposing the secret. Record the result
-   here. The real browser sign-in remains an RHD-05 check.
+Google-side read-back in `thermus-511802` confirms exactly one client,
+`Thermus WorkOS Production`, created October 15, 2026, of type Web application.
+Its full public client ID exactly matches WorkOS's client ID above. Saved details
+confirm the exact callback, zero JavaScript origins, and AI-powered-agent
+unchecked. This is human sign-in through WorkOS; the callback is not Thermus's
+`/callback`. The connection is configured and verified on both sides within
+these read-back limits. No secret value was read or exposed in this check, and
+no full secret comparison was made.
+
+Complete the owner-deferred public links and any required branding/domain checks,
+then publish In production before the production sign-in proof. Real browser
+sign-in belongs to RHD-05 after Render is live. Keep secrets in protected storage
+and preserve identity-only scopes and disabled token return.
 
 PR #117 remains open and unmerged. Wait for checked `main` before rollout.
 Enable On Commit only after the RHD-05 remote smoke. The Google project exists;
-OAuth consent, client creation, and WorkOS configuration remain pending.
+Google and WorkOS connection settings are verified; production publication remains
+pending.
 The Production key correction is complete within the read-back limits above.
 Actual startup and live credential use have not been proved.
 
@@ -283,10 +284,12 @@ queries after the production changes were byte-identical to their initial text
 snapshots. This proves
 only that these inspected settings are unchanged; it does not cover all provider
 state. The later Render checkout proves Git access for that checkout only.
+After the Google changes, staging `authkitSettings` was read again and still
+matched its stored initial snapshot.
 
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
-items are identity verification and User grants, Google setup, native client setup,
+items are identity verification and User grants, Google publication, native client setup,
 and checked `main`.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
