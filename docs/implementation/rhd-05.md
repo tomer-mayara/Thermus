@@ -113,10 +113,10 @@ grants read back, as recorded below. Ungranted access stays denied. RHD-04
 remains incomplete; Google publication is still deferred.
 
 Full RHD-05 still needs Google publication and remaining browser journeys, native
-login/refresh, real fetch and denial/revocation checks, capacity
+refresh, real fetch and tool-call denial checks, capacity
 measurement, cookie continuity, On Commit proof, rollback, and restoration.
-Native configuration and CIMD registration are verified. Native login, tools,
-fetch, and refresh remain pending. Public policy pages remain owner-deferred.
+Native configuration, CIMD registration, login, and tool discovery are verified.
+Fetch and native refresh remain pending. Public policy pages remain owner-deferred.
 No release or complete RHD-05 pass is recorded.
 
 ## Manual authenticated acceptance specification
@@ -204,10 +204,31 @@ Claude Code reached consent and registered CIMD client
 `https://claude.ai/oauth/claude-code-client-metadata` as application
 `app_01M51GQSBBXX3WX66ZYR1GN6K0`. Read-back confirms
 `isClientIdMetadataDocument: true`, Public, and `credentials: []`; DCR stays off.
-Consent still awaits owner action-time confirmation for ongoing access. The CLI
-exited 1 with Authentication timeout while approval was pending. Restart the
-flow after approval; this is not an authentication-failure proof or native
-success. Native login, tool listing, fetch, refresh, and designated-account
-revocation/restoration remain
-unproved. Privacy/terms and Google publication remain deferred, Testing is
-unchanged, and auto-deploy stays off. Full RHD-04/RHD-05 completion is not claimed.
+The earlier CLI timeout occurred while consent approval was pending. The owner
+then approved the exact designated personal account's native consent, and
+`claude mcp login thermus-production` succeeded around `2026-10-16T05:19Z`. The provider recorded
+`authentication.oauth_succeeded` at `05:19:02.376Z`; the CLI completed seconds later.
+The initial probe connected and discovered
+`mcp__thermus-production__getURLAsMarkdown`; safe results are in
+`/tmp/thermus-rhd05/authenticated/initial-native-summary.json`. No tool was called:
+Claude Code's separate Anthropic model-account OAuth had expired. Thermus MCP
+authentication succeeded; separate `claude auth login` awaits owner completion.
+This is not a Thermus OAuth failure.
+
+The operator changed only the personal active membership from sole User to
+default Member at `2026-10-16T05:22:13.053Z`. The same browser session was denied
+and `/portal/access` showed access denied. Native `claude mcp get` changed from
+Connected before revocation to Needs authentication during revocation. The
+operator restored sole User at `05:22:48.294Z`; an independent read confirmed
+active `user`. The same browser then showed the exact organization and
+`roles: [user]`, and the native connection returned Connected without a new
+native login. Business membership was untouched. Both writes checked the exact
+expected sole role and were recorded outside the repository. No Admin or Super
+Admin grant was made.
+
+Browser revocation/restoration and native connection revocation/recovery passed.
+No native tools/call denial, actual fetch, or native refresh is proved. Refresh
+must be tested against the Connect token lifetime; the 300-second AuthKit browser
+lifetime is not a native refresh deadline. Privacy/terms and Google publication
+remain deferred, Testing is unchanged, and auto-deploy stays off. Full RHD-04 and
+RHD-05 completion is not claimed.

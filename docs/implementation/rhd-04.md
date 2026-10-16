@@ -112,7 +112,8 @@ Production URL settings were persisted and read back:
 
 Public AuthKit metadata confirms CIMD support, no `registration_endpoint`, and
 scopes `email`, `offline_access`, `openid`, `profile`. Native client registration
-and journeys remain pending. Roles do not inherit: Admin or Super Admin alone
+was pending at setup; native login and discovery are now verified in RHD-05.
+Roles do not inherit: Admin or Super Admin alone
 gives no User access. Optional MFA keeps protected Thermus administration denied.
 Follow the [organization runbook](hosted-organization-setup.md) for Super Admin
 changes; none is requested here.
@@ -194,7 +195,7 @@ for environment changes that must not deploy.
   Complete the remaining authenticated checks in RHD-05; no implicit enrollment
   was added. RHD-04 remains incomplete while deferred Google publication is open.
 - Production native client configuration and CIMD registration are verified.
-  Login and refresh proofs remain in RHD-05.
+  Login is verified; fetch and refresh proofs remain in RHD-05.
 - Checked `main` is ready: PRs #115–117 were reviewed and merged. The
   [RHD-05 record](rhd-05.md) gives exact merge commits and matching tree evidence.
   The old `main` revision in the failed setup attempts above is historical.
@@ -226,18 +227,19 @@ returned HTTP 200 with the production issuer above, CIMD, S256, auth method
 exhausted cursors.
 Fresh staging AuthKit settings still match the initial snapshot.
 
-The native login attempt has registered the CIMD client and reached consent;
-owner confirmation is pending. The CLI timed out while approval was pending;
-restart the flow after approval. The command runs from the Thermus directory
-because the configuration has local scope:
+The owner approved the designated personal account's native consent, and
+`claude mcp login thermus-production` succeeded. The server connected and exposed
+its fetch tool. The command uses local scope and runs from the Thermus directory:
 
 ```sh
 claude mcp login thermus-production
 ```
 
-RHD-05 records the CIMD registration; login and refresh remain unproved.
-Enable DCR only if the observed live flow needs it. Saved configuration is not a registration
-or login pass.
+The [RHD-05 record](rhd-05.md) gives login, discovery, and connection revocation/
+recovery evidence. Actual fetch and native refresh remain unproved. The separate
+Claude model-account sign-in needs renewal; this is not a Thermus OAuth failure.
+DCR remains off. Native refresh must use the Connect token lifetime, not the
+300-second browser access-token lifetime.
 
 ## Google Cloud OAuth configuration
 
@@ -329,7 +331,7 @@ matched its stored initial snapshot.
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
 items include deferred Google publication and remaining authenticated checks. Checked
-`main`, native configuration, and CIMD registration are ready; native login and
+`main`, native configuration, and CIMD registration are ready; native fetch and
 refresh remain RHD-05 proofs.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
