@@ -10,7 +10,7 @@ with query strings, fetched pages, or request content. Follow the
 
 - Request ID and restricted source reference:
 - Received at (date, time, timezone):
-- Handler and owner:
+- Handler (Tomer) and owner:
 - Target (receipt plus 30 calendar days):
 - Earlier legal deadline, if applicable; reviewer/reference:
 - Requested outcome: organization removal / whole account / role-only change:
@@ -18,6 +18,8 @@ with query strings, fetched pages, or request content. Follow the
 - Organization authority verification method and result, if applicable:
 - Confirmed scope and requester confirmation reference/date:
 - WorkOS environment, user ID, organization IDs, membership IDs:
+- Personal signup organization/external ID and marker inventory (safe reference):
+- In-flight activation status; closed admission/drain evidence and writer coordination:
 - Other memberships/roles to preserve; inventory checked at:
 - Approved session/Connect/invitation scope and regrant restrictions:
 - Session/deactivation side effects and scope evidence (organization ID alone
@@ -44,6 +46,16 @@ outcome, record the inspection result before any retry.
 - Current Render configuration checked at; log history/drains/persistence:
 - Incomplete actions and provider questions; owner and next action/date:
 - Retained categories and minimum evidence; purpose/legal basis reference:
+- Signup marker retained/deleted/pending decision, replay-barrier effect, approval:
+- Sole-personal-organization deletion: whole-account identity/scope verification:
+- Trusted marker, exact organization/external IDs, all-status membership and
+  invitation inventory, and other provider resource/ownership evidence:
+- Cascade/session/Connect effects established; unknown effects and escalation:
+- All writers quiesced; settled reread evidence and time:
+- Accepted loss of replay protection/re-enrollment consequence; owner/reference:
+- Exact-resource irreversible-action approval; one delete result and exact-ID/
+  known-external-ID readback; unknown-outcome reconciliation before any retry:
+- Exact agreed document/wording copies retained; later evidence kept separately:
 - Provider residual/backup periods: confirmed evidence or unknown:
 - Retained evidence access owner and review/deletion date:
 - Requester response date/reference; disclosed exceptions and uncertainties:

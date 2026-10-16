@@ -2,7 +2,8 @@
 
 The external operator handles hosted access removal and deletion requests with
 this manual procedure. Use the [private record template](templates/hosted-deletion-request.md).
-Keep completed records in a restricted operator store, outside Git. This runbook
+Tomer is the operator. Keep completed records in restricted
+`~/.codex/operator-records`, outside Git. This runbook
 does not publish or adopt the private privacy and terms drafts.
 
 ## Process checks
@@ -23,6 +24,15 @@ They are not automated tests or evidence of a live deletion.
 - Given a retained security record or an unknown provider backup period, when
   the operator closes the request, then the result names the exception, its
   owner and review date, without promising all copies were erased.
+
+- Given a retained personal signup record after revocation, when the operator
+  handles deletion, then it remains a distinct scoped decision. Its replay-barrier
+  purpose, minimum retained evidence, review date, and re-enrollment consequences
+  are recorded; an access removal alone does not authorize erasing it.
+- Given a sole personal organization proposed for whole-account deletion, when
+  inventory or cascade effects are unknown, then only that step stops. When
+  ownership and effects are established and exact-resource approval is recorded,
+  one delete and scoped readback follow; other deletion duties continue.
 
 ## 1. Receive, verify, and set the scope
 
@@ -56,9 +66,21 @@ approved role changes. Confirm that each ID matches the intended person and
 organization. Use the WorkOS [user](https://workos.com/docs/reference/authkit/user)
 and [membership](https://workos.com/docs/reference/authkit/organization-membership)
 read procedures; follow pagination and inspect memberships in all statuses.
-Do not copy full provider responses into the record.
+Do not copy full provider responses into the record. Also inventory the
+[retained personal signup record](hosted-signup-recovery.md#retained-personal-record),
+its reserved external ID and nine acceptance fields, and any later private
+agreement evidence. The marker is pseudonymous personal data, not anonymous
+operational data. It is an initial acceptance marker, not an agreement history.
 
 ## 2. Promptly remove authorized access
+
+If activation is in progress or its outcome is uncertain, follow
+[activation coordination](hosted-signup-recovery.md#coordinate-an-activation-already-in-progress)
+before a conflicting operator change: close admission, verify the deployed
+closed state, drain in-flight work, and coordinate other writers. The signup
+switch does not cancel an accepted write. Read the settled state before the
+approved access change. Do not erase a personal organization or marker to stop
+or repair signup.
 
 Access removal is separate from deletion. After identity, authority, and scope
 are confirmed, promptly perform the approved access changes. Sign in to the
@@ -104,9 +126,12 @@ control takes user and application IDs; it does not offer an organization filter
 If a grant also serves retained access, stop that grant's removal and resolve the
 scope with the owner. Record any access gap and provider follow-up. Do not
 broaden the change silently. [Connect verification](https://workos.com/docs/authkit/connect/oauth)
-distinguishes local JWT checks from synchronous introspection. Account-specific
-Connect token lifetimes and all revocation effects remain unverified. AuthKit's
-five-minute token setting is not evidence about Connect tokens.
+distinguishes local JWT checks from synchronous introspection. Use any verified
+Connect lifetime only for the environment, application, and
+release that its evidence covers. Do not treat a prior observed token lifetime
+as a universal setting or a provider retention period. The full revocation
+impact and residual-data schedule need separate evidence. AuthKit's five-minute
+token setting is not evidence about Connect tokens.
 
 Inspect pending invitations and provisioning paths for the approved scope. Use
 [Revoke an invitation](https://workos.com/docs/reference/authkit/invitation/revoke)
@@ -118,9 +143,11 @@ Do not change shared provisioning or unrelated invitations to remove one user.
 Directory-managed memberships require coordination with the authorized IdP
 owner; confirm the scoped source change and resulting WorkOS state.
 
-Do not delete an organization, shared Connect application, Render service, or
-log stream, or rotate shared secrets, to remove one person. Do not change a
-Google account or a third-party MCP client's data under this procedure.
+Do not delete a shared organization, shared Connect application, Render service,
+or log stream, or rotate shared secrets, to remove one person. The sole personal
+signup organization exception below requires its own exact-resource approval.
+Do not change a Google account or a third-party MCP client's data under this
+procedure.
 
 ## 3. Complete authorized deletion
 
@@ -146,6 +173,70 @@ before a retry. Absence in the correct environment confirms only the observed
 resource state, not erasure of every provider copy. Keep partial failures open
 with a named owner, next action, and date. Do not repeat a destructive action
 against a different ID to work around an error.
+
+### Retained signup marker and account deletion
+
+Ordinary access revocation keeps the personal organization and reserved external
+ID. They prevent automatic replay of the initial grant. Removing or changing the
+marker, its subject, or its external ID can lose that protection; it is not
+routine cleanup. A later identity can also have a different subject. Do not
+promise a permanent ban or one account per human.
+
+For whole-account deletion, record separately whether the retained personal
+organization/marker and acceptance evidence must be kept or deleted, why, and
+for how long. Retain only necessary evidence for a stated purpose or legal duty,
+with an owner and review/deletion date. Preserve exact agreed document bytes
+without unrelated personal data. A local private record is not a runtime replay
+barrier; do not suggest it can replace the retained provider marker.
+
+### Delete a sole personal signup organization
+
+Use this exception only for verified whole-account deletion. It does not apply
+to ordinary role or organization-access removal. Stop this step and escalate
+if ownership, provider effects, or scope cannot be established; continue other
+authorized deletion duties and track their legal deadline.
+
+1. Match the verified identity and whole-account scope to the known trusted
+   reserved marker. Read the exact organization ID and known external ID; both
+   must identify the same personal organization and subject. A name such as
+   “Personal workspace” alone is not evidence. Record the IDs privately.
+2. Inventory memberships in every status, invitations in every state, and other
+   resources associated with that organization. Establish sole-person ownership:
+   there must be no unrelated member, organization data, application, connection,
+   directory, domain, or other resource whose scope is unknown. Inspect provider
+   resource inventories through their supported read controls. Document any
+   provider cascade and session/Connect side effects before proceeding. Do not
+   infer an empty inventory from the absence of a Thermus database. If a required
+   read or cascade/effect cannot be verified, stop this step rather than guess.
+3. Quiesce signup and every operator/provisioning writer as described in the
+   recovery runbook. Prove settled reads after in-flight work ends, then repeat
+   the ID, ownership, and resource checks. A new writer or changed inventory
+   returns this step to inspection; it does not authorize broader deletion.
+4. Retain only justified minimum evidence in the restricted store, with its
+   purpose/legal basis, owner, and review/deletion date. Keep necessary exact
+   agreed document bytes. Explain that local evidence does not enforce a runtime
+   replay barrier. Record the owner's accepted consequence: deleting the marker
+   can allow a later eligible signup; it is not a permanent account ban.
+5. Obtain explicit irreversible-action approval for the exact environment,
+   organization ID, external ID, verified scope, known side effects, and loss
+   of replay protection. Recheck operator MFA and reread the exact resource
+   immediately before the action. Follow WorkOS's
+   [Delete an Organization](https://workos.com/docs/reference/organization#delete-an-organization)
+   contract to send one delete for that organization ID. Do not substitute
+   another ID, delete by name, or sweep other personal organizations.
+6. Read the exact ID and known external ID afterward. A timeout or lost response
+   means unknown: inspect before considering any retry. Poll reads within a
+   bounded review period if deletion is still settling. Do not retry until the
+   observed state is reconciled and a scoped decision authorizes it. If reads
+   disagree, find a replacement ID, or remain unavailable, stop and escalate;
+   never delete the new ID as a substitute. Record confirmed absence separately
+   from provider residual-record and backup uncertainty.
+
+Handle the remaining user, memberships, sessions, invitations, and Connect
+records under their own approved scope and controls. Preserve unrelated access
+and records; organization deletion is not evidence that those separate actions
+completed. Report retained evidence, unfinished actions, and provider limits.
+Do not claim organization deletion purges every copy.
 
 Review private onboarding/acceptance records, support records, and any known
 manual exports for the same approved scope. Delete unnecessary personal data.
@@ -176,9 +267,9 @@ the record; do not send secrets or full content.
 
 Give the requester a clear result through the authorized contact process:
 completed actions and dates, scope preserved, incomplete actions, retained
-categories and reasons, provider uncertainties, and the next review date where
-needed. State that Thermus's 30-day target concerns authorized actions under its
-control. Do not state that every copy is gone. Copies held by the person's
+categories and reasons, including signup markers and agreement evidence,
+provider uncertainties, and the next review date where needed. State that
+Thermus's 30-day target concerns authorized actions under its control. Do not state that every copy is gone. Copies held by the person's
 Google account, a requested website, or their MCP client need that party's own
 process. Record response date and reference, then review retained evidence on
 its due date. This runbook authorizes no message or deletion merely by being read.
