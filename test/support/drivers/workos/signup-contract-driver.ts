@@ -57,7 +57,7 @@ export class SignupContractDriver {
         await this.workos.organizations.getOrganization(id);
       } catch (error) {
         if (error instanceof Error && 'status' in error && error.status === 404) return;
-        throw error;
+        if (!(error instanceof Error && 'status' in error && error.status === 408)) throw error;
       }
       await delay(200);
     }

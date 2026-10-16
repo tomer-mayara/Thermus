@@ -8,16 +8,17 @@ import type { SignupActivation, SignupDocuments } from '../../../src/auth/hosted
 const document = (text: string) => ({ version: 'v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents: SignupDocuments = { version: 'v1', terms: document('Test <terms>'), notice: document('Test <notice>'), agreement: { version: 'v1', text: 'I agree as an adult for business use.' } };
 
-function setup(enabled = true, signedIn = true) {
+function setup(enabled = true, signedIn = true, publicBaseUrl = 'https://thermus.example/') {
   let calls = 0;
+  let inspections = 0;
   let sessions = 0;
   const failures: string[] = [];
   const state: BrowserSessionState = signedIn ? { status: 'signed-in', user: { authority: 'workos:test', subject: 'user_test' }, csrfToken: 'secret', mfaCompleted: false,
     cookies: ['renewed=session; Secure'], selectOrganization: async () => { throw new Error('No switch'); } } : { status: 'signed-out', cookies: [] };
   const session: BrowserSession = { authenticate: async () => { sessions++; return state; } };
-  const activation: SignupActivation = { activate: async () => { calls++; return { status: 'active', organizationId: 'org_new' }; } };
-  const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled, documents, session, activation, reportFailure: (message) => failures.push(message) });
-  return { routes, activation, session, failures, calls: () => calls, sessions: () => sessions };
+  const activation: SignupActivation = { inspect: async () => { inspections++; return { status: 'eligible' }; }, activate: async () => { calls++; return { status: 'active', organizationId: 'org_new' }; } };
+  const routes = new WorkOSSignupRoutes({ publicBaseUrl, enabled, documents, session, activation, reportFailure: (message) => failures.push(message) });
+  return { routes, activation, session, failures, calls: () => calls, sessions: () => sessions, inspections: () => inspections };
 }
 
 function post(body = 'csrf_token=secret&document_version=v1&agreement=accepted', origin = 'https://thermus.example'): Request {
@@ -30,6 +31,7 @@ test('Given closed signup, when GET or POST arrives, then it does no session or 
   assert.equal((await world.routes.handle(post())).status, 403);
   assert.equal(world.calls(), 0);
   assert.equal(world.sessions(), 0);
+  assert.equal(world.inspections(), 0);
 });
 
 test('Given enabled signup without approved documents, when composed, then startup fails', () => {
@@ -44,6 +46,7 @@ test('Given signed-out signup, when opened, then the full escaped notice appears
   assert.match(html, /Test &lt;notice&gt;/);
   assert.match(html, /login\?return_to=%2Fsignup/);
   assert.ok(html.indexOf('Test &lt;notice&gt;') < html.indexOf('Sign in'));
+  assert.equal(world.inspections(), 0);
 });
 
 test('Given signed-in signup, when opened then posted with express agreement, then it redirects to organizations and keeps session cookies', async () => {
@@ -54,9 +57,60 @@ test('Given signed-in signup, when opened then posted with express agreement, th
   assert.match(form, /Test &lt;terms&gt;/);
   const answer = await world.routes.handle(post());
   assert.equal(answer.status, 303);
-  assert.equal(answer.headers.get('Location'), 'https://thermus.example/organizations');
+  assert.equal(answer.headers.get('Location'), 'https://thermus.example/organizations?return_to=%2F');
   assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
   assert.equal(world.calls(), 1);
+  assert.equal(world.inspections(), 1);
+});
+
+test('Given current product access, when signup is read, then it offers Continue without agreement or activation and preserves refreshed cookies', async () => {
+  const world = setup();
+  world.activation.inspect = async () => ({ status: 'existing-access' });
+  const answer = await world.routes.handle(new Request('https://thermus.example/signup?return_to=https://other.example/'));
+  assert.equal(answer.status, 200);
+  const html = await answer.text();
+  assert.match(html, /<a href="\/organizations\?return_to=%2F">Continue<\/a>/);
+  assert.doesNotMatch(html, /checkbox|Test &lt;terms&gt;|other\.example/);
+  assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
+  assert.equal(world.calls(), 0);
+});
+
+for (const canContinue of [false, true]) {
+  test(`Given a retained activation needs support and other access is ${canContinue}, when signup is read, then it offers support and only a current authorized continuation`, async () => {
+    const world = setup();
+    world.activation.inspect = async () => ({ status: 'support-required', canContinue });
+    const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
+    assert.equal(answer.status, 409);
+    const html = await answer.text();
+    assert.match(html, /mailto:legal@thermus.ai/);
+    assert.doesNotMatch(html, /checkbox|Activate free access/);
+    assert.equal(html.includes('Continue to another workspace'), canContinue);
+    if (canContinue) assert.match(html, /href="\/organizations\?return_to=%2F"/);
+    assert.equal(world.calls(), 0);
+  });
+}
+
+for (const failure of ['result', 'exception']) {
+  test(`Given a signup inspection ${failure} is unavailable, when signup is read, then it shows no agreement and preserves refreshed cookies`, async () => {
+    const world = setup();
+    world.activation.inspect = async () => { if (failure === 'exception') throw new Error('provider secret'); return { status: 'unavailable' }; };
+    const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
+    assert.equal(answer.status, 503);
+    assert.doesNotMatch(await answer.text(), /checkbox|provider secret|Activate free access/);
+    assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
+    assert.equal(world.calls(), 0);
+  });
+}
+
+test('Given a public-base path, when existing access continues or activation succeeds, then both selector destinations return to that server-owned portal path', async () => {
+  const world = setup(true, true, 'https://thermus.example/app/');
+  world.activation.inspect = async () => ({ status: 'existing-access' });
+  const page = await world.routes.handle(new Request('https://thermus.example/app/signup?return_to=/other'));
+  assert.match(await page.text(), /href="\/app\/organizations\?return_to=%2Fapp%2F"/);
+  const activation = new Request('https://thermus.example/app/signup', post());
+  const answer = await world.routes.handle(activation);
+  assert.equal(answer.status, 303);
+  assert.equal(answer.headers.get('Location'), 'https://thermus.example/app/organizations?return_to=%2Fapp%2F');
 });
 
 test('Given forged or stale signup, when posted, then no activation runs', async () => {
@@ -65,6 +119,7 @@ test('Given forged or stale signup, when posted, then no activation runs', async
   assert.equal(world.sessions(), 0);
   assert.equal((await world.routes.handle(post('csrf_token=secret&document_version=old&agreement=accepted'))).status, 400);
   assert.equal(world.calls(), 0);
+  assert.equal(world.inspections(), 0);
 });
 
 test('Given signup HEAD, when handled, then the response has no body and no session or activation work', async () => {
@@ -73,6 +128,7 @@ test('Given signup HEAD, when handled, then the response has no body and no sess
   assert.equal(await answer.text(), '');
   assert.equal(world.sessions(), 0);
   assert.equal(world.calls(), 0);
+  assert.equal(world.inspections(), 0);
 });
 
 test('Given an activation outage after session refresh, when posted, then the cookie survives and logs contain only fixed text', async () => {
@@ -136,6 +192,22 @@ test('Given a cancelled session lookup, when it later succeeds, then no activati
   assert.equal(world.calls(), 0);
 });
 
+test('Given a cancelled signup inspection, when its provider read later completes, then no activation starts or failure detail is logged', async () => {
+  const world = setup();
+  let complete!: (state: { status: 'existing-access' }) => void;
+  let started!: () => void;
+  const inspecting = new Promise<void>((resolve) => { started = resolve; });
+  world.activation.inspect = () => new Promise((resolve) => { complete = resolve; started(); });
+  const cancellation = new AbortController();
+  const answer = world.routes.handle(new Request('https://thermus.example/signup', { signal: cancellation.signal }));
+  await inspecting;
+  cancellation.abort(new Error('cancelled'));
+  await assert.rejects(answer, /cancelled/);
+  complete({ status: 'existing-access' });
+  assert.equal(world.calls(), 0);
+  assert.deepEqual(world.failures, []);
+});
+
 test('Given cancelled requests with provider lookups still running, when another post arrives, then the outstanding work still holds admission slots', async () => {
   const world = setup();
   const completions: Array<(state: BrowserSessionState) => void> = [];
@@ -156,7 +228,7 @@ test('Given a full subject limiter, when a new subject posts, then it is refused
   let activations = 0;
   const session: BrowserSession = { authenticate: async () => ({ status: 'signed-in', user: { authority: 'workos:test', subject }, csrfToken: 'secret', mfaCompleted: false,
     cookies: [], selectOrganization: async () => { throw new Error('No switch'); } }) };
-  const activation: SignupActivation = { activate: async () => { activations++; return { status: 'existing-access' }; } };
+  const activation: SignupActivation = { inspect: async () => ({ status: 'eligible' }), activate: async () => { activations++; return { status: 'existing-access' }; } };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents, session, activation, reportFailure: () => {}, clock: () => time });
   for (let index = 0; index < 1024; index++) {
     subject = `user_${index}`;

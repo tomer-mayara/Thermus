@@ -308,6 +308,8 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/auth/hosted-portal.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-origin.test.js`,
    `dist/test/acceptance/auth/hosted-workos-signup.test.js`,
+   `dist/test/acceptance/auth/hosted-signup-guidance.test.js`,
+   `dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js`,
    `dist/test/acceptance/mcp/hosted-fetch-tool.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`, and
@@ -618,10 +620,10 @@ mismatch fails the run. The command does not change provider MFA settings.
 The Optional profile proves normal browser/Connect flows with no application
 MFA evidence and explicit administration refusal. The Required profile keeps
 the positive administration proofs under the matched password-MFA contract.
-Each profile registers 77 cases. Required keeps the eight positive
-application administration cases; Optional replaces them with refusal and
-invitation-acceptance cases that preserve the MFA boundary. Operator/API
-administration contract proofs run in both profiles: those service-credential
+Each profile registers 79 cases, including the two FS-02 signup cases. Required
+keeps the eight positive application administration cases. Optional replaces
+them with refusal and invitation-acceptance cases that preserve the MFA boundary.
+Operator/API administration contract proofs run in both profiles: those service-credential
 proofs do not give an Optional browser session administration authority.
 A pass of one profile does not prove the other. Restore shared Staging to
 Optional after an authorized Required-profile run.
@@ -674,6 +676,18 @@ application, including the portal and assets. Thus the browser checks use its
 real portal policy. A custom development application keeps the front-served
 portal. The production application runs its local startup checks before it can
 serve the live gate.
+
+The final FS-02 cases stop that site and start a test composition with clearly
+marked test documents and signup enabled. It retains the production portal,
+fetch tool, renderer checks, and cleanup. The default composition stays closed.
+The two cases reuse the original fixture workspaces and Connect application.
+Their registry owns only their new signup user and personal organization.
+Cleanup recovers a lost personal-organization response through the deterministic
+external ID of a fixture-owned user; it never sweeps all signup organizations.
+These cases prove activation, selector-to-portal navigation, and real MCP fetches
+for the verified token workspace. Revoking workspace A denies the same token
+while browser B and a fresh B token still work. A repeat activation cannot
+restore A. No production setting or policy page changes.
 
 The gate also needs:
 

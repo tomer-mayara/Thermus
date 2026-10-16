@@ -35,7 +35,7 @@ test('Given a new verified thermus.ai Google user without a membership, when bro
   assert.equal(JSON.parse(session.body).organizationId, organizationId);
   assert.equal(JSON.parse(session.body).mfaCompleted, false);
   assert.equal(access.status, 200);
-  assert.deepEqual(JSON.parse(access.body), { organizationId, roles: ['user'] });
+  assert.deepEqual(JSON.parse(access.body), { organizationId, roles: ['user'], plan: 'free', mcpUrl: config.mcpResourceUrl });
   const response = await transport(mcpRequest({ url: config.mcpResourceUrl, token: await world.connectToken(user, { org_id: organizationId }), method: 'tools/call', params: {
     name: 'getURLAsMarkdown', arguments: { url, reason: 'Read the onboarding article' },
   } }));

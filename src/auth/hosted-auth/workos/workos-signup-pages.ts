@@ -21,9 +21,14 @@ export function signupFormPage(documents: SignupDocuments, csrfToken: string, ac
   ], { status: 200, headers: FORM_HEADERS });
 }
 
-export function signupFailurePage(status: number, message: string): Response {
+export function signupContinuePage(destination: string): Response {
+  return answer('Your access is ready', ['<p>You already have access to a workspace.</p>', `<p><a href="${escapeHtml(destination)}">Continue</a></p>`]);
+}
+
+export function signupFailurePage(status: number, message: string, destination?: string): Response {
   return answer('Activation did not complete', [`<p>${escapeHtml(message)}</p>`,
     ...(status === 409 ? ['<p><a href="mailto:legal@thermus.ai">Contact</a></p>'] : []),
+    ...(destination === undefined ? [] : [`<p><a href="${escapeHtml(destination)}">Continue to another workspace</a></p>`]),
   ], { status });
 }
 

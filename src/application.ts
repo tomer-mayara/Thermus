@@ -54,6 +54,7 @@ export interface HostedAccountParts {
   // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.
   readonly billing: Billing;
   readonly operation?: AccountOperation;
+  readonly signupUrl?: string;
 }
 
 export interface Application {
@@ -154,6 +155,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     organizations: new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing }),
     reportFailure: account.reportFailure,
     operation: account.operation,
+    signupUrl: account.signupUrl,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
   const shutdown = new AbortController();

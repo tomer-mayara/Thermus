@@ -9,6 +9,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { connect as tlsConnect } from 'node:tls';
 import type { Application, ApplicationLogger } from '../../../src/application.ts';
 import '../../support/processes/use-hosted-portal-fixture.ts';
+import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../support/hosted-live/settings.ts';
@@ -156,6 +157,7 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
 
     const portal = await frontGet('/', certificate.cert);
     const health = await frontGet('/healthz', certificate.cert);
+    const signup = await frontGet('/signup', certificate.cert);
     const missingAsset = await frontGet('/assets/missing.js', certificate.cert);
     const account = await frontGet('/account', certificate.cert);
     const mcp = await frontGet('/mcp', certificate.cert);
@@ -163,12 +165,29 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
     assert.equal(portal.status, 200);
     assert.match(portal.body, /Thermus hosted portal fixture/);
     assert.equal(health.status, 200);
+    assert.equal(signup.status, 200);
+    assert.match(signup.body, /Activation is closed/);
     assert.equal(missingAsset.status, 404);
     assert.equal(account.status, 401);
     assert.match(account.body, /Sign-in required/);
     assert.equal(mcp.status, 401);
     assert.ok(site.log.lines.some((line) => line.includes('Hosted authentication uses WorkOS')));
     await site.close();
+  });
+
+  test('Given the live test composition with TEST ONLY documents, when an unsigned visitor opens signup, then it serves the test notice and real portal without a WorkOS call', caseOptions, async (t) => {
+    const certificate = await selfSignedCertificate(await temporaryDirectory(t));
+    const site = await LocalHttpsSite.start(settings, { rendererExecutable: hostedRendererFixture, certificate, signupDocuments });
+    t.after(() => site.close());
+
+    const signup = await frontGet('/signup', certificate.cert);
+    const portal = await frontGet('/', certificate.cert);
+
+    assert.equal(signup.status, 200);
+    assert.ok(signup.body.includes(signupDocuments.notice.text));
+    assert.match(signup.body, /Sign in/);
+    assert.equal(portal.status, 200);
+    assert.match(portal.body, /Thermus hosted portal fixture/);
   });
 
   // This case listens on port 46443, the port of the hosted live gate and the work slice. It fails while one of them runs.

@@ -15,10 +15,16 @@ export type SignupResult =
   | { readonly status: 'active'; readonly organizationId: string }
   | { readonly status: 'existing-access' | 'unverified' | 'support-required' | 'unavailable' };
 
+export type SignupState =
+  | { readonly status: 'eligible' | 'existing-access' | 'unavailable' }
+  | { readonly status: 'support-required'; readonly canContinue: boolean };
+
 export interface SignupActivation {
+  inspect(request: { readonly user: AuthenticatedUser; readonly signal: AbortSignal }): Promise<SignupState>;
   activate(request: { readonly user: AuthenticatedUser; readonly documents: SignupDocuments; readonly signal: AbortSignal }): Promise<SignupResult>;
 }
 
+type InspectionRequest = Parameters<SignupActivation['inspect']>[0];
 type ActivationRequest = Parameters<SignupActivation['activate']>[0];
 
 interface PersonalOrganization {
@@ -67,6 +73,23 @@ const RECORD_KEYS = ['schema', 'subject', 'accepted_at', 'documents_version', 't
 export class WorkOSSignup implements SignupActivation {
   constructor(private readonly options: WorkOSSignupOptions) {}
 
+  async inspect(request: InspectionRequest): Promise<SignupState> {
+    try {
+      const { user, signal } = request;
+      if (user.authority !== this.options.authority || !user.subject || signal.aborted) return UNAVAILABLE;
+      const existing = await this.findOrganization(personalExternalId(user));
+      signal.throwIfAborted();
+      if (existing !== undefined) {
+        const access = await this.savedAccess(existing, request);
+        if (access.status === 'active') return { status: 'existing-access' };
+        return { status: 'support-required', canContinue: await this.hasProductAccess(request, existing.id) };
+      }
+      return { status: await this.hasProductAccess(request) ? 'existing-access' : 'eligible' };
+    } catch {
+      return UNAVAILABLE;
+    }
+  }
+
   async activate(request: ActivationRequest): Promise<SignupResult> {
     try {
       const { user, signal } = request;
@@ -86,12 +109,16 @@ export class WorkOSSignup implements SignupActivation {
     const existing = await this.findOrganization(personalExternalId(user));
     signal.throwIfAborted();
     if (existing !== undefined) return this.savedAccess(existing, request);
+    if (await this.hasProductAccess(request)) return { status: 'existing-access' };
+    return this.createPersonalWorkspace(request);
+  }
+
+  private async hasProductAccess({ user, signal }: InspectionRequest, excludedOrganizationId?: string): Promise<boolean> {
+    signal.throwIfAborted();
     const memberships = await this.options.directory.membershipsOf(user);
     signal.throwIfAborted();
-    if (memberships.some((membership) => membership.active && membership.grants.some((grant) => grant.permissions.includes('product:access')))) {
-      return { status: 'existing-access' };
-    }
-    return this.createPersonalWorkspace(request);
+    return memberships.some((membership) => membership.organizationId !== excludedOrganizationId && membership.active
+      && membership.grants.some((grant) => grant.permissions.includes('product:access')));
   }
 
   private async createPersonalWorkspace(request: ActivationRequest): Promise<SignupResult> {
@@ -145,7 +172,7 @@ export class WorkOSSignup implements SignupActivation {
     }
   }
 
-  private async savedAccess(organization: PersonalOrganization, request: ActivationRequest, requireUserOnly = false): Promise<SignupResult> {
+  private async savedAccess(organization: PersonalOrganization, request: InspectionRequest, requireUserOnly = false): Promise<SignupResult> {
     const { user, signal } = request;
     if (!validRecord(organization, user)) return SUPPORT;
     const records = await this.memberships(organization.id, signal);

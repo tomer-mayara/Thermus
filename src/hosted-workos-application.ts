@@ -86,7 +86,8 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
     billing,
-    operation: portalAccessOperation(config.publicBaseUrl),
+    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl),
+    signupUrl: new URL('signup', config.publicBaseUrl).href,
   });
 }
 
@@ -112,7 +113,14 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   });
   const session = new WorkOSBrowserSession({ workos, settings, authority, mfaEvidence: parts.mfaEvidence ?? (settings.mfaPolicy === 'required' ? 'password-mfa-required' : 'unproven'), ...(onboarding === undefined ? {} : { onboarding }) });
   const server = new MCPServer({
-    auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
+    auth: {
+      verifier: provider,
+      accessResolver: provider,
+      resourceMetadataUrl: config.resourceMetadataUrl,
+      expectedResource: new URL(config.mcpResourceUrl),
+      requiredPermission: PRODUCT_ACCESS,
+      accessDeniedDescription: `Access denied. Open ${new URL('signup', config.publicBaseUrl).href} to check free signup availability. If you already have access, reauthorize this MCP client and choose the intended workspace.`,
+    },
     buildServer,
     reportFailure: operatorFailureReporter(logger),
   });

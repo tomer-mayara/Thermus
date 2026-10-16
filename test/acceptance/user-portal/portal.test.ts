@@ -38,7 +38,7 @@ test('Given a signed-out visitor, when Sign In is clicked, then the portal sends
 });
 
 test('Given a signed-in user with User access, when the portal opens, then it shows the server profile and the product access of the current organization, and Sign Out posts the session form token to the sign-out route', async () => {
-  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', roles: ['admin', 'user'] } });
+  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', roles: ['admin', 'user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' } });
   assert.match(document.body.textContent ?? '', /Welcome, Ada Lovelace!.*Email: ada@example.com.*Name: Ada Lovelace/s);
   assert.match(document.body.textContent ?? '', /You have product access in organization org_01ACME\. Roles: admin, user\./);
   const form = document.querySelector('form');
@@ -53,14 +53,30 @@ test('Given a signed-in user whose current grants do not include User, when the 
   const { document } = await openPortal({ session: { ...ada, name: undefined } });
   assert.match(document.body.textContent ?? '', /Welcome, ada@example.com!/);
   assert.match(document.body.textContent ?? '', /Your account has no product access in the selected organization\./);
-  assert.equal(document.querySelector('.product-access a')?.getAttribute('href'), 'organizations');
+  assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2F');
   assert.doesNotMatch(document.body.textContent ?? '', /You have product access/);
 });
 
 test('Given HTML in the profile fields of the server, when the portal shows the profile, then those fields remain text', async () => {
   const name = '<img src=x onerror="alert(1)">';
-  const { document } = await openPortal({ session: { ...ada, name, email: '<b>ada@example.com</b>' }, productAccess: { organizationId: '<script>alert(1)</script>', roles: ['<i>user</i>'] } });
+  const { document } = await openPortal({ session: { ...ada, name, email: '<b>ada@example.com</b>' }, productAccess: { organizationId: '<script>alert(1)</script>', roles: ['<i>user</i>'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' } });
   assert.equal(document.querySelector('img, script, b, i'), null, 'Server values must not create HTML elements');
   assert.ok(document.body.textContent?.includes(name));
   assert.ok(document.body.textContent?.includes('<b>ada@example.com</b>'));
+});
+
+test('Given product access, when the portal opens, then it explains free access and the separate native MCP connection', async () => {
+  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', roles: ['user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' } });
+  const text = document.body.textContent ?? '';
+  assert.match(text, /Free access.*No card.*no automatic charge/s);
+  assert.match(text, /https:\/\/thermus.example\/mcp/);
+  assert.match(text, /remote HTTP.*Sign in.*intended workspace.*Approve.*fetch/s);
+  assert.match(text, /only affects this browser.*own consent/s);
+  assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2F');
+});
+
+test('Given no product access, when the portal opens, then signup and browser workspace selection remain available', async () => {
+  const { document } = await openPortal({ session: ada });
+  assert.equal(document.querySelector('a[href="signup"]')?.textContent, 'Start free access');
+  assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2F');
 });

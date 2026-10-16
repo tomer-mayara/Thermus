@@ -12,7 +12,7 @@ const JSON_HEADERS: Readonly<Record<string, string>> = {
 
 // The protected request of the portal: it shows the product access that the current grants of the selected
 // organization give. The account routes checked the session and the current access first.
-export function portalAccessOperation(publicBaseUrl: string): AccountOperation {
+export function portalAccessOperation(publicBaseUrl: string, mcpResourceUrl: string): AccountOperation {
   const path = new URL('portal/access', publicBaseUrl.endsWith('/') ? publicBaseUrl : `${publicBaseUrl}/`).pathname;
   return async (request, context) => {
     if (new URL(request.url).pathname !== path) return noticePage('notFound');
@@ -24,6 +24,6 @@ export function portalAccessOperation(publicBaseUrl: string): AccountOperation {
       throw error;
     }
     const roles = context.grants.filter((grant) => grant.permissions.length > 0).map((grant) => grant.role);
-    return Response.json({ organizationId: context.organizationId, roles }, { headers: JSON_HEADERS });
+    return Response.json({ organizationId: context.organizationId, roles, plan: 'free', mcpUrl: mcpResourceUrl }, { headers: JSON_HEADERS });
   };
 }

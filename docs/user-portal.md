@@ -28,7 +28,7 @@ of the server. It uses these server paths, relative to the base path:
 | Path | Use in the portal |
 | --- | --- |
 | `session` | `GET` on load. `401` shows the signed-out page. `200` gives the profile, the organization of the session, the MFA evidence, and the form token of the session. |
-| `portal/access` | `GET` after a sign-in: the protected portal request. The server checks the session and reads the current grants of the selected organization. `200` gives the organization and its roles when the user has User; `403` shows that the account has no product access, with a link to `organizations`. |
+| `portal/access` | `GET` after a sign-in: the protected portal request. The server checks the session and reads the current grants of the selected organization. `200` gives the organization, its roles, `plan: "free"`, and the configured `mcpUrl` when the user has User. The portal shows free access, no card requirement, no automatic charge, and native MCP connection steps. `403` shows signup and organization selection links. Signup can remain closed. |
 | `login` | The Sign In button opens it. The server starts the AuthKit sign-in. |
 | `logout` | The Sign Out button posts a form with the `csrf_token` field. The server checks the origin and the token, clears the session cookie, and sends the browser to the WorkOS logout URL. |
 | `organizations` | The organization page of the server: onboarding guidance or the organization selection. |
@@ -37,6 +37,13 @@ The profile and the organization ID that the portal shows are display data.
 They never select a tenant or give access. Each protected request uses the
 verified server session and a current read of the grants. A sign-in alone
 gives no User access.
+
+Organization selection links return to the portal. This selection affects only
+this browser. To connect a native MCP client, add the displayed endpoint as a
+remote HTTP server, sign in, choose the intended workspace in client consent,
+approve the connection, and fetch a page. The client's verified Connect token
+sets the MCP workspace through its `org_id`. A browser workspace change does
+not change that token or move an existing client connection.
 
 ## Deployment
 
