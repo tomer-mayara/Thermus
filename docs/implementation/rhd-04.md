@@ -195,7 +195,7 @@ for environment changes that must not deploy.
   Complete the remaining authenticated checks in RHD-05; no implicit enrollment
   was added. RHD-04 remains incomplete while deferred Google publication is open.
 - Production native client configuration and CIMD registration are verified.
-  Login is verified; fetch and refresh proofs remain in RHD-05.
+  Login and fetch are verified; native refresh remains pending in RHD-05.
 - Checked `main` is ready: PRs #115–117 were reviewed and merged. The
   [RHD-05 record](rhd-05.md) gives exact merge commits and matching tree evidence.
   The old `main` revision in the failed setup attempts above is historical.
@@ -236,8 +236,9 @@ claude mcp login thermus-production
 ```
 
 The [RHD-05 record](rhd-05.md) gives login, discovery, and connection revocation/
-recovery evidence. Actual fetch and native refresh remain unproved. The separate
-Claude model-account sign-in needs renewal; this is not a Thermus OAuth failure.
+recovery and actual tool-call denial evidence. Real native fetch and recovery
+have passed. The separate Claude model-account sign-in
+blocker is resolved; native refresh remains unverified.
 DCR remains off. Native refresh must use the Connect token lifetime, not the
 300-second browser access-token lifetime.
 
@@ -331,8 +332,8 @@ matched its stored initial snapshot.
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
 items include deferred Google publication and remaining authenticated checks. Checked
-`main`, native configuration, and CIMD registration are ready; native fetch and
-refresh remain RHD-05 proofs.
+`main`, native configuration, and CIMD registration are ready; native fetch passed;
+actual refresh remains an RHD-05 proof.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
 Do not run staging fixture creation or cleanup against production.

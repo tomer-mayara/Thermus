@@ -15,8 +15,9 @@ and verification results. The [RHD-03 record](rhd-03.md) tracks the hosted
 image, production rules decision, and AMD64 runtime evidence.
 The first intended deployment failed its build; the retry is live with initial
 public acceptance satisfied. Browser access/logout and controlled revocation
-passed; native CIMD login and tool discovery passed. Native fetch/refresh and
-release proofs remain pending. The canonical repository is
+passed. Native CIMD login, tool discovery, real fetch, and tool-call denial/
+recovery passed. Actual native refresh and release proofs remain pending.
+The canonical repository is
 `https://github.com/tomer-mayara/Thermus`.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.
 This plan creates no service, account setting, issue, or deployment.

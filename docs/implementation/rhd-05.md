@@ -112,11 +112,11 @@ Both initial identities are now provider-verified and have explicit User-only
 grants read back, as recorded below. Ungranted access stays denied. RHD-04
 remains incomplete; Google publication is still deferred.
 
-Full RHD-05 still needs Google publication and remaining browser journeys, native
-refresh, real fetch and tool-call denial checks, capacity
-measurement, cookie continuity, On Commit proof, rollback, and restoration.
+Full RHD-05 still needs Google publication and remaining browser journeys, native refresh,
+capacity measurement, cookie continuity, On Commit proof, rollback, and restoration.
 Native configuration, CIMD registration, login, and tool discovery are verified.
-Fetch and native refresh remain pending. Public policy pages remain owner-deferred.
+A real native fetch passed; actual native refresh remains pending. Public policy
+pages remain owner-deferred.
 No release or complete RHD-05 pass is recorded.
 
 ## Manual authenticated acceptance specification
@@ -206,13 +206,17 @@ Claude Code reached consent and registered CIMD client
 `isClientIdMetadataDocument: true`, Public, and `credentials: []`; DCR stays off.
 The earlier CLI timeout occurred while consent approval was pending. The owner
 then approved the exact designated personal account's native consent, and
-`claude mcp login thermus-production` succeeded around `2026-10-16T05:19Z`. The provider recorded
-`authentication.oauth_succeeded` at `05:19:02.376Z`; the CLI completed seconds later.
+`claude mcp login thermus-production` succeeded around `2026-10-16T05:19Z`.
+The provider recorded
+`authentication.oauth_succeeded` at `05:19:02.376Z`; the CLI completed seconds
+later.
 The initial probe connected and discovered
 `mcp__thermus-production__getURLAsMarkdown`; safe results are in
-`/tmp/thermus-rhd05/authenticated/initial-native-summary.json`. No tool was called:
+`/tmp/thermus-rhd05/authenticated/initial-native-claude-signin-blocked.json`.
+No tool was called in that initial blocked attempt:
 Claude Code's separate Anthropic model-account OAuth had expired. Thermus MCP
-authentication succeeded; separate `claude auth login` awaits owner completion.
+authentication succeeded. The owner later restored Claude account sign-in;
+the model-account blocker is resolved.
 This is not a Thermus OAuth failure.
 
 The operator changed only the personal active membership from sole User to
@@ -227,8 +231,64 @@ expected sole role and were recorded outside the repository. No Admin or Super
 Admin grant was made.
 
 Browser revocation/restoration and native connection revocation/recovery passed.
-No native tools/call denial, actual fetch, or native refresh is proved. Refresh
+The later persistent-client check below proves tools/call denial; actual native
+refresh remains unproved. Refresh
 must be tested against the Connect token lifetime; the 300-second AuthKit browser
 lifetime is not a native refresh deadline. Privacy/terms and Google publication
 remain deferred, Testing is unchanged, and auto-deploy stays off. Full RHD-04 and
 RHD-05 completion is not claimed.
+
+## Successful native fetch
+
+After the owner restored Claude account sign-in, the native probe ran from
+`2026-10-16T12:28:34.216616Z` to `12:28:43.263418Z` and exited 0. It connected,
+listed the fetch tool, and made exactly one `getURLAsMarkdown` call to
+`https://example.com/` with reason `RHD-05 initial production MCP check`.
+The result had `isError: false`, meaningful expected content, and no permission
+denials. No fetched page contents are recorded here. The safe summary is
+`/tmp/thermus-rhd05/authenticated/initial-native-summary.json`.
+
+Render recorded `mcp.tool.completed` success at `12:28:41.154378536Z`, duration
+346 ms, for subject `user_01M515ZBGTVTR46WP7SXV0QMZJ` and tenant
+`workos:client_01M4VDKC291XX3CDEFP5ZKY5KP:org_01M515XQD27ZTRYZ546RSWBMY8`,
+with the exact URL and reason above. A fresh membership read confirmed active
+User only. The unpaginated application-error query for `12:28–12:36Z` was empty.
+
+There was no further Thermus MCP login after approximately `05:19Z`. Continued
+native access for more than seven hours is proved; actual refresh is not. The
+Connect token lifetime and refresh event are unavailable through the inspected
+safe diagnostics. Neither the AuthKit 300-second lifetime nor a documentation
+example establishes this native credential's expiry. Native connection
+revocation/recovery remains proved; explicit tools/call denial is proved below.
+
+## Persistent native revocation check
+
+One native CLI process handled all three phases without a restart on 2026-10-16.
+The tool was discovered before User removal. Each phase made exactly one
+expected tools/call:
+
+| Phase (UTC) | Result |
+| --- | --- |
+| Initial, `12:32:59–12:33:07` | Real fetch passed with meaningful expected content. |
+| Revoked, `12:34:01–12:34:09` | `isError: true`, access denied, and no expected page content. |
+| Restored, `12:34:29–12:34:35` | Real fetch passed with meaningful expected content. |
+
+A guarded update changed personal User to default Member at `12:33:59.083Z`;
+read-back confirmed active Member. A cleanup safeguard restored sole User at
+`12:34:17.210Z`, independently read back. There was no login or consent between
+phases. The CLI closed cleanly with exit 0. This proves actual tool-call denial
+and recovery in the same native client. Prior browser checks were not repeated.
+
+Render recorded successful initial and restored completions at `12:33:03Z`
+and `12:34:33Z`, taking 174 ms and 91 ms, with the same expected subject and
+tenant recorded above. Reasons were `RHD-05 persistent initial production MCP
+check` and `RHD-05 persistent restored production MCP check`. Safe phase summaries
+are `/tmp/thermus-rhd05/authenticated/initial-native-session-summary.json`,
+`revoked-native-session-summary.json`, and `restored-native-session-summary.json`
+in that directory. No fetched page contents are recorded here.
+
+Final provider reads confirm both memberships active with sole User. Business
+membership is unchanged (`updatedAt: 04:48:10.301Z`); personal membership has
+`updatedAt: 12:34:17.210Z`. Auto-deploy remains off. Google Testing and the owner's
+privacy/terms deferral are unchanged. Actual native refresh remains unverified;
+continued access alone does not prove a refresh event.
