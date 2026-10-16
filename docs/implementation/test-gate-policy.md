@@ -33,6 +33,10 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
 `npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
+The backend unit command uses `node --test --test-concurrency=1` with the
+complete unit glob. It runs one test file at a time, so other unit files do not
+compete with the child processes that check work deadlines. Test selection,
+process isolation, assertions, and deadlines stay unchanged.
 It does not run the full integration, acceptance, interface, or container suites,
 the hosted image gate, or the renderer gate. `npm test` does not run the build test, because `tsconfig.build.json`
 excludes it from `dist/`. Only `npm run test:hosted-live` runs the hosted live file.
@@ -327,11 +331,14 @@ inside the build. These checks supplement the required pull request runs.
 
 ### Acceptance: hosted build with constrained CPU
 
-Given a Linux AMD64 hosted builder with constrained CPU and the pinned build
-inputs, when `npm run build:hosted` runs, then every selected test must pass
-with its existing assertions and deadlines. The build must keep the complete
-test selection and the production selector limits. A failed check must still
-prevent a runtime image.
+Given a Linux AMD64 Render Starter builder with two CPUs and 8 GB of memory
+and the pinned build inputs, when `npm run build:hosted` runs, then every
+selected test must pass with its existing assertions and deadlines. The build
+must keep the complete test selection and the production selector limits.
+A failed check must still prevent a runtime image.
+
+The local image proof uses an AMD64 runtime in a VM with two CPUs and 4 GiB
+of memory. Record the local proof and the Render build result separately.
 
 The initial Render build, `dep-db8pua7f3r2c73f0b3ag`, failed this scenario on
 main `3736b78d`: 2,533 of 2,534 backend unit tests passed. The case
