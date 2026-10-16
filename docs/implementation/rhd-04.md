@@ -94,12 +94,11 @@ separate from Optional end-user MFA.
 Created organization `Thermus AI`, external ID `thermus-ai`, with ID
 `org_01M515XQD27ZTRYZ546RSWBMY8`; an independent read confirmed it. The two
 approved initial identities were created. Their email addresses stay outside this
-repository. Both read back with `emailVerifiedAt: null`, no password, and no
-memberships. No grant was made; no Super Admin was requested. Identity creation
-and stopped-grant records are in the operator JSONL outside this repository;
-the task records its location. Provider verification must finish before User
-grants. The origin was not live when those grants stopped. It is now live with
-public smoke passed; application-assisted identity verification remains pending.
+repository. Initially both were unverified without memberships, so grants stopped.
+Both have now completed real Google sign-in and provider verification, then
+received explicit User-only active memberships. No manual verification override
+or Admin/Super Admin grant was made. The [RHD-05 record](rhd-05.md) gives exact
+read-backs and browser proof limits. Operator records remain outside this repository.
 
 Production URL settings were persisted and read back:
 
@@ -191,13 +190,11 @@ for environment changes that must not deploy.
 
 - Complete the deferred Google public links and production publication below.
   Production activation and permission write authority are now verified.
-- The first deployment and public smoke are complete. Verify both initial
-  identities, then finish explicit RHD-04 User grants and read-backs before
-  protected product or MCP success tests. RHD-04 stays incomplete until those
-  grants are verified.
-  This order gives no implicit enrollment: ungranted access stays denied.
-- Production native client configuration is verified below. Actual registration,
-  login, and refresh proofs belong to RHD-05.
+- Both identities are provider-verified with User-only active grants read back.
+  Complete the remaining authenticated checks in RHD-05; no implicit enrollment
+  was added. RHD-04 remains incomplete while deferred Google publication is open.
+- Production native client configuration and CIMD registration are verified.
+  Login and refresh proofs remain in RHD-05.
 - Checked `main` is ready: PRs #115–117 were reviewed and merged. The
   [RHD-05 record](rhd-05.md) gives exact merge commits and matching tree evidence.
   The old `main` revision in the failed setup attempts above is historical.
@@ -225,18 +222,21 @@ OAuth resource `https://thermus.onrender.com/mcp`, ID
 `authkit_oauth_resource_01M511F4QYR5PJDMNA1R2QC3A8`. Public issuer metadata
 returned HTTP 200 with the production issuer above, CIMD, S256, auth method
 `none`, scopes `email`, `offline_access`, `openid`, `profile`, and no
-`registration_endpoint`. OAuth Connect applications are empty with exhausted cursors.
+`registration_endpoint`. OAuth Connect applications were initially empty with
+exhausted cursors.
 Fresh staging AuthKit settings still match the initial snapshot.
 
-No login was attempted. After Render is live and User grants are verified,
-run this from the Thermus directory because the configuration has local scope:
+The native login attempt has registered the CIMD client and reached consent;
+owner confirmation is pending. The CLI timed out while approval was pending;
+restart the flow after approval. The command runs from the Thermus directory
+because the configuration has local scope:
 
 ```sh
 claude mcp login thermus-production
 ```
 
-RHD-05 must prove actual CIMD registration, login, and refresh. Enable DCR only
-if the observed live flow needs it. Saved configuration is not a registration
+RHD-05 records the CIMD registration; login and refresh remain unproved.
+Enable DCR only if the observed live flow needs it. Saved configuration is not a registration
 or login pass.
 
 ## Google Cloud OAuth configuration
@@ -289,9 +289,10 @@ these read-back limits. No secret value was read or exposed in this check, and
 no full secret comparison was made.
 
 Complete the owner-deferred public links and any required branding/domain checks,
-then publish In production before the production sign-in proof. Real browser
-sign-in belongs to RHD-05 after Render is live. Keep secrets in protected storage
-and preserve identity-only scopes and disabled token return.
+then publish In production before public launch. RHD-05 now records successful
+browser sign-in with the configured Testing app; those checks do not prove
+publication. Keep secrets in protected storage and preserve identity-only scopes
+and disabled token return.
 
 The first intended deployment failed its build; the retry from checked `main`
 is live with public smoke passed 15/15. The [RHD-05 record](rhd-05.md) gives
@@ -301,7 +302,8 @@ The Google project exists;
 Google and WorkOS connection settings are verified; production publication remains
 pending.
 The Production key correction is complete within the read-back limits above.
-Startup passed. Successful WorkOS API credential use remains unproved by public smoke.
+Startup passed. Later callback, session, organization-selection, and current-grant
+flows proved live WorkOS API use; public smoke alone did not prove it.
 
 ## Validation and handoff
 
@@ -326,9 +328,9 @@ matched its stored initial snapshot.
 
 The manager reviewed this record and the plan status update. The whitespace check
 passed, and all 25 relative file links resolved at that review. Remaining acceptance
-items are identity verification and User grants, and Google publication. Checked
-`main` and native configuration are ready; registration, login, and refresh remain
-RHD-05 proofs.
+items include deferred Google publication and remaining authenticated checks. Checked
+`main`, native configuration, and CIMD registration are ready; native login and
+refresh remain RHD-05 proofs.
 No provider acceptance pass or Ready status is recorded; RHD-04 remains incomplete
 in Draft #118.
 Do not run staging fixture creation or cleanup against production.

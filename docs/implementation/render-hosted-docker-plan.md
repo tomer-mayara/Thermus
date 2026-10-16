@@ -2,7 +2,8 @@
 
 Status: RHD-01, RHD-02, and RHD-03 implementation and local verification complete.
 PRs #115–117 and build fix #120 were reviewed and merged; the retry from checked
-`main` is live and initial public smoke passed 15/15. Full RHD-05 remains incomplete.
+`main` is live and initial public smoke passed 15/15. Both initial identities now
+have verified User-only grants; full RHD-05 remains incomplete.
 RHD-04 is incomplete in draft [PR #118](https://github.com/3-headed-monkey/Thermus/pull/118),
 retargeted to `main`; its [setup record](rhd-04.md) gives the read-backs and pending
 work. The [RHD-05 record](rhd-05.md) records the first-deployment specification and results.

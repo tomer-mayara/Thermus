@@ -108,21 +108,21 @@ their read-back limits, and the two earlier failed setup attempts.
 
 ## Remaining release work
 
-After the first deployment, complete provider verification of the initial
-identities and explicit RHD-04 User grants before protected product/MCP success
-checks. Ungranted access stays denied. RHD-04 remains incomplete until its grants
-and read-backs pass.
+Both initial identities are now provider-verified and have explicit User-only
+grants read back, as recorded below. Ungranted access stays denied. RHD-04
+remains incomplete; Google publication is still deferred.
 
-Full RHD-05 still needs live API credential use, Google publication and browser journeys, native CIMD
-registration/login/refresh, real fetch and denial/revocation checks, capacity
+Full RHD-05 still needs Google publication and remaining browser journeys, native
+login/refresh, real fetch and denial/revocation checks, capacity
 measurement, cookie continuity, On Commit proof, rollback, and restoration.
-The native client configuration is ready; live proofs have not run. Public policy
-pages remain owner-deferred. No release or complete RHD-05 pass is recorded.
+Native configuration and CIMD registration are verified. Native login, tools,
+fetch, and refresh remain pending. Public policy pages remain owner-deferred.
+No release or complete RHD-05 pass is recorded.
 
 ## Manual authenticated acceptance specification
 
-Status: all checks below are pending. This specification precedes authentication
-and grants. The owner authorized checks of both existing intended identities and
+Initial status: all checks below were pending. This specification preceded
+authentication and grants. The owner authorized checks of both existing intended identities and
 explicit User access. Public policy pages and Google publication remain deferred;
 these checks use the configured Testing app and do not establish a public launch.
 
@@ -156,3 +156,58 @@ credentials. Restore only User, read it back, and confirm access returns.
 
 Record safe outcomes only: no tokens, personal emails, or fetched page contents
 belong in this repository. Auto-deploy stays off until authenticated smoke passes.
+
+## Authenticated checks: partial results
+
+Both existing intended identities completed real Google sign-in using the
+configured Testing app. No manual verified override was used. Provider reads:
+
+| Identity | User ID | Verified at (UTC, 2026-10-16) |
+| --- | --- | --- |
+| Business | `user_01M515Z5V41GQ2E2KMHT3T4WST` | `04:45:26.306Z` |
+| Personal | `user_01M515ZBGTVTR46WP7SXV0QMZJ` | `04:47:23.416Z` |
+
+Both browsers showed no product access before grants. The operator then added
+only User role `role_01M5113VYK46GWNZWQHBF7808W`, mapped solely to
+`product:access`. Independent reads confirm active memberships with sole role
+`user`, no Admin or Super Admin:
+
+| Identity | Membership ID | Created at (UTC, 2026-10-16) |
+| --- | --- | --- |
+| Business | `om_01M51GKZ24PBKDMCJW2NQWCJ3X` | `04:48:10.301Z` |
+| Personal | `om_01M51GMCR2XN0A33Q39GFKRKBD` | `04:48:24.316Z` |
+
+The personal pre-grant session initially had no selected organization. Choosing
+Thermus AI through the organizations flow then showed product access and
+`Roles: user`. A reload around `04:55Z`, beyond the configured 300-second
+access-token lifetime after organization selection at `04:49:18Z`, retained
+product access without a new login. This proves browser session renewal, not
+native token refresh.
+
+Business post-grant Google sign-in showed product access in
+`org_01M515XQD27ZTRYZ546RSWBMY8` with `Roles: user`. Its screenshot is
+`/tmp/thermus-rhd05/authenticated/business-user-access.jpg`. Both post-grant
+Sign Out actions returned the public portal, then `/portal/access` showed
+Sign-in required. The business pre-grant logout also returned the public portal;
+`/account` showed Sign-in required. Provider reads after both post-grant logouts
+confirm Revoked sessions: personal ended at `04:56:19.971Z` and business at
+`04:57:43.903Z`. Both User grants remain intact.
+
+Successful callback, session, organization-selection, and current-grant flows
+prove live runtime WorkOS API use; the production key's `lastUsedAt` was
+`2026-10-16T04:49:18.234Z`. Error logs for `04:44:00–04:58:25Z` were empty.
+Operator records were updated outside the repository. Safe screenshots are in
+`/tmp/thermus-rhd05/authenticated/`; no personal emails or credentials are
+recorded here.
+
+Claude Code reached consent and registered CIMD client
+`https://claude.ai/oauth/claude-code-client-metadata` as application
+`app_01M51GQSBBXX3WX66ZYR1GN6K0`. Read-back confirms
+`isClientIdMetadataDocument: true`, Public, and `credentials: []`; DCR stays off.
+Consent still awaits owner action-time confirmation for ongoing access. The CLI
+exited 1 with Authentication timeout while approval was pending. Restart the
+flow after approval; this is not an authentication-failure proof or native
+success. Native login, tool listing, fetch, refresh, and designated-account
+revocation/restoration remain
+unproved. Privacy/terms and Google publication remain deferred, Testing is
+unchanged, and auto-deploy stays off. Full RHD-04/RHD-05 completion is not claimed.
