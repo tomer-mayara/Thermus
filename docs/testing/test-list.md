@@ -1751,11 +1751,34 @@ callback through the real MCP HTTP path.
 [V] Waits for both independent cleanup tasks even when one finishes first
 [V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
 [V] After a client cancels a call while the fetcher waits, the server stop that follows the `cancelled` record does not wait for the client connections
-[V] A call that is still in authentication when the server stops gets a generic `500`, does not start the fetch tool, and does not make the server stop wait for the grace period
+[V] RHD-01: a request cancelled during token verification or access resolution stops waiting before the identity call settles and cannot start a tool server after its late result
 
 ```sh
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"
 ```
+
+**RHD-01 protected hosted fetch and bounded waits**
+
+The production hosted opener uses the real WorkOS adapter against a local fake,
+trusted test rules, the real cleaning pipeline, the HTTP bridge, and a renderer
+process double. The cancellation cases use request and provider doubles at
+public boundaries. The CLI deadline cases start the built hosted process with
+preloads for stalled cleanup and a residual library handle. Identity-wait cases
+prove clean CLI exit before the deadline. These are offline proofs; they
+are not WorkOS, real-renderer, image, or Render deployment proofs.
+
+[V] `test/acceptance/mcp/hosted-fetch-tool.test.ts`: a current Connect User lists and calls the tool, gets cleaned Markdown and a safe record, and missing or revoked access is refused before rendering
+[V] The same file: an overlapping call gets the safe busy result and a `busy` record; success, failure, and cancellation release the shared slot only after settlement
+[V] `test/acceptance/mcp/http-dns-cancellation.test.ts`: client cancellation and shutdown in both protocol eras end the wait before DNS answers and prevent renderer startup
+[V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
+[V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
+[V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: stalled cleanup or a residual handle causes an error exit at the fixed 10-second hosted CLI deadline, while shutdown during MCP/account/session identity waits exits cleanly
+[V] `test/unit/mcp/single-fetch-operation.test.ts`: one shared slot refuses overlap without queuing and returns capacity only after settlement
+[V] `test/unit/website-fetcher/website-fetcher-dns-wait.test.ts`: the five-second wait, abort, late completion, residual lookup ownership, and recovery do not change the resolver policy or start late rendering
+[V] `test/unit/http/request-cancellation.test.ts`, `test/unit/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/unit/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
+
+The [RHD-01 record](../implementation/rhd-01.md#verification) gives focused
+commands, recorded red steps, and the gate results.
 
 **Self-hosted fetch tool with real Better Auth** (`test/acceptance/mcp/self-hosted-fetch-tool.test.ts`)
 
@@ -1794,10 +1817,10 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 
 **Server-only modules** (`test/acceptance/mcp/server-only-modules.test.ts`)
 
-The built entry point runs in separate processes with an import hook that blocks the rules reader, the renderer, the cleaning pipeline, and adblock-rs. The rules file and the renderer are missing.
+The built entry point runs in separate processes with an import hook that blocks the rules reader, the renderer, the cleaning pipeline, and adblock-rs. Operator commands must remain isolated from those modules. Both production server branches must load the protected fetch composition. RHD-01 focused verification passed.
 
 [V] Given the guard, the operator adds two users, lists them, registers a client, resets a password, and disables a user; each command exits with status 0, loads no server-only module, and writes no renderer setup report
-[V] Given the guard and the WorkOS settings, the hosted edition listens, asks for a sign-in on the account page, and answers an MCP tool call with a Bearer token and a session cookie with 401 and a Bearer challenge; it loads no server-only module, writes no renderer setup report, uses no network, stops with status 0 after `SIGTERM`, and creates no data
+[V] Given the guard, WorkOS settings, and trusted rules, hosted startup fails before listening because it must load the fetch composition; without the guard, missing trusted rules stop hosted startup before listening
 [V] Given the guard and trusted rules, the self-hosted server stops with status 1 before it listens, and its `FATAL` line shows the guard message, so the guard sees the modules that the server loads
 
 ```sh
@@ -1992,8 +2015,9 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 
 **Hosted startup with WorkOS** (`test/acceptance/auth/hosted-startup.test.ts`)
 
-AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass.
+AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass. RHD-01 supplies trusted fixture rules for normal hosted startup and adds a missing-rules refusal case; focused verification passed.
 
+[V] With valid WorkOS settings but no trusted rules file, startup stops before listening with the safe `AD_RULES_FILE` error
 [V] Without WorkOS settings, startup stops before it listens with a `FATAL` line that names each missing WorkOS setting, and the server uses no network
 [V] With refused WorkOS values, startup stops before it listens; the line names each setting and its rule but not the value
 [V] With valid WorkOS settings, forged bearer tokens, cookies, organization IDs, and form input give no access or session: MCP gets 401 with the Bearer challenge of the metadata, each account, organization, member, invitation, and billing path gets 401, a forged callback gets 400, a forged session cookie is only cleared, the output shows no secret or tenant, and the server uses no network
@@ -2023,10 +2047,10 @@ The real hosted composition with the WorkOS provider runs behind the real HTTP s
 [V] The protected-resource metadata names the MCP resource and the AuthKit issuer
 [V] A browser session in one organization and an MCP token in another each keep their own organization
 [V] A membership read outage gives 500 without protected work at the MCP endpoint and the portal request, and operator reports without the token
-[V] With a `buildServer` in the parts of `composeWorkOSApplication()` that gives a test-only tool, the Connect token of a User lists that tool; without a `buildServer`, as in production, the endpoint has no tool list: `tools/list` gets HTTP 404 with the JSON-RPC error -32601 "Method not found"
+[V] With a `buildServer` in the parts of `composeWorkOSApplication()` that gives a test-only tool, the Connect token of a User lists that tool; without a `buildServer` in the lower-level test composition, the endpoint has no tool list: `tools/list` gets HTTP 404 with the JSON-RPC error -32601 "Method not found"
 [V] `openWorkOSConnection()` gives the WorkOS settings of the environment and writes one operator line that names the client and the AuthKit issuer; without WorkOS settings, it rejects with the settings error and writes no line
 
-Since 2026-10-15, `composeWorkOSApplication()` takes the parts record `{ logger, buildServer? }` as its third argument. `openWorkOSConnection()` is its own export (decision D6 of the [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The last two cases cover these seams; the acceptance test of that work slice covers the real fetch tool.
+Since 2026-10-15, `composeWorkOSApplication()` takes the parts record `{ logger, buildServer? }` as its third argument. `openWorkOSConnection()` is its own export (decision D6 of the [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The last two cases cover these seams. The RHD-01 acceptance file `test/acceptance/mcp/hosted-fetch-tool.test.ts` covers the production opener; the development work-slice test covers its separate composition.
 
 Run only these tests:
 

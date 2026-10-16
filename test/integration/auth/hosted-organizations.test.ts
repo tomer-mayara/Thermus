@@ -3,7 +3,7 @@ import { describe, test, type TestContext } from 'node:test';
 import { accountFailureReporter, createApplication } from '../../../src/application.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
-import { hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import {
   contextAt,
   destinationPaths,
@@ -162,7 +162,7 @@ describe('Hosted organization onboarding and selection with the real routes and 
 
   test('Given the production hosted application with the WorkOS provider, when the organization page and a selection arrive with the session cookie, form token, and organization values of the doubles, then each asks for a sign-in without a cookie, and nothing is selected or reported', async () => {
     const logger = new RecordingLogger();
-    const application = await createApplication(hostedConfig, logger, workOSSettingsFor(hostedConfig.publicBaseUrl));
+    const application = await createApplication(hostedConfig, logger, { ...workOSSettingsFor(hostedConfig.publicBaseUrl), ...hostedFetchSettings });
     const browser = new HostedBrowser(application.handle, hostedConfig.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-mia', 'org-a')));
 
     const answers = [

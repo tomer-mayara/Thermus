@@ -1,3 +1,4 @@
+import { waitForRequest } from '../../../http/request-cancellation.ts';
 import { sameSecret } from './session-cookies.ts';
 import { readSignOutForm } from './sign-out-form.ts';
 import type { WorkOSBrowserSession, WorkOSSignedInSession } from './workos-browser-session.ts';
@@ -67,7 +68,7 @@ export class WorkOSSessionRoutes {
     const route = this.routes.get(path);
     if (route === undefined) return noticePage('notFound');
     try {
-      return await route(request);
+      return await waitForRequest(request.signal, () => route(request));
     } catch (cause) {
       if (request.signal.aborted) throw cause;
       this.reportFailure({ path, cause });
@@ -102,6 +103,7 @@ export class WorkOSSessionRoutes {
     if (request.headers.get('Origin') !== this.publicOrigin) return noticePage('forgedRequest');
     const form = await readSignOutForm(request);
     if ('refusal' in form) return noticePage(form.refusal);
+    request.signal.throwIfAborted();
     const cookieHeader = request.headers.get('Cookie');
     const sessionToken = this.session.csrfTokenOf(cookieHeader);
     if (sessionToken !== undefined && !sameSecret(form.csrfToken, sessionToken)) return noticePage('forgedRequest');

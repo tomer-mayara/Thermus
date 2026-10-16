@@ -24,7 +24,7 @@ export class ServerProcess {
 
   private constructor(settings: ServerSettings, args: readonly string[]) {
     // The server runs with outbound access denied: each attempt fails and writes a line that a test can find.
-    this.child = spawn(process.execPath, ['--import', networkBlocker, programEntry, ...args], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
+    this.child = spawn(process.execPath, [...(programEntry.endsWith('.ts') ? ['--import', 'tsx'] : []), '--import', networkBlocker, programEntry, ...args], { env: { ...settings }, stdio: ['ignore', 'pipe', 'pipe'] });
     this.exit = once(this.child, 'exit').then(([code, signal]) => ({ code, signal }));
     for (const stream of [this.child.stdout, this.child.stderr]) {
       stream.setEncoding('utf8').on('data', (chunk: string) => this.record(chunk));

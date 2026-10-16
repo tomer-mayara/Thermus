@@ -83,7 +83,7 @@ test('Given cleanup that rejects during close, when all close callers finish, th
 });
 
 for (const stage of ['verification', 'access'] as const) {
-  test(`Given ${stage} in progress, when close starts, then it waits for the provider call and does not start the next stage`, async (t) => {
+  test(`Given ${stage} in progress, when close starts, then it stops waiting for the provider call and does not start the next stage`, async (t) => {
     const entered = Promise.withResolvers<void>();
     const release = Promise.withResolvers<void>();
     let resolved = 0;
@@ -111,7 +111,7 @@ for (const stage of ['verification', 'access'] as const) {
     let finished = false;
     const closing = server.close().then(() => { finished = true; });
     await setImmediate();
-    assert.equal(finished, false);
+    assert.equal(finished, true);
     release.resolve();
     await Promise.all([rejected, closing]);
     assert.equal(resolved, stage === 'access' ? 1 : 0);
@@ -119,7 +119,7 @@ for (const stage of ['verification', 'access'] as const) {
   });
 }
 
-test('Given a verifier that starts shutdown before it returns, when its provider work is still pending, then close waits and access resolution never starts', async (t) => {
+test('Given a verifier that starts shutdown before it returns, when its provider work is still pending, then close settles and access resolution never starts', async (t) => {
   const entered = Promise.withResolvers<void>();
   const release = Promise.withResolvers<void>();
   let closing: Promise<void> | undefined;
@@ -139,10 +139,10 @@ test('Given a verifier that starts shutdown before it returns, when its provider
     },
   });
   t.after(() => release.resolve());
-  const rejected = assert.rejects(server.fetch(mcpRequest({ url: resourceUrl, token: 'token', method: 'tools/list' })), /closed|shut/i);
+  const rejected = assert.rejects(server.fetch(mcpRequest({ url: resourceUrl, token: 'token', method: 'tools/list' })), /closed|shut|abort/i);
   await entered.promise;
   await setImmediate();
-  assert.equal(finished, false);
+  assert.equal(finished, true);
   release.resolve();
   await Promise.all([closing, rejected]);
   assert.equal(accesses, 0);

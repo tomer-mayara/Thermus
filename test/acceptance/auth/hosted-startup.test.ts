@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
 // The built server with the hosted edition and outbound access denied. These specifications show the start of the
@@ -8,6 +8,7 @@ import { ServerProcess, type ServerSettings } from '../../support/processes/serv
 // with WorkOS.
 
 const hostedSettings: ServerSettings = {
+  ...hostedFetchSettings,
   DEPLOYMENT: 'hosted',
   PUBLIC_BASE_URL: 'https://thermus.example',
   LISTEN_HOST: '127.0.0.1',
@@ -134,6 +135,15 @@ describe('Hosted edition with the WorkOS provider', () => {
     for (const name of Object.keys(refused)) assert.match(server.output, new RegExp(`${name} is not valid: `));
     for (const value of Object.values(refused)) assert.ok(!server.output.includes(value), `The output shows ${value}.`);
     assert.equal(server.attemptedOutboundAccess, false, server.output);
+  });
+
+  test('Given valid WorkOS settings without readable trusted rules, when the hosted server starts, then it stops before listening and names only the rules setting and failure', { timeout: 60_000 }, async (t) => {
+    for (const AD_RULES_FILE of ['', '/missing/private-rules.txt']) {
+      const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, AD_RULES_FILE });
+      await assertStopsBeforeListening(server, /FATAL.*AD_RULES_FILE/);
+      assert.ok(!server.output.includes('/missing/private-rules.txt'), server.output);
+      assert.equal(server.attemptedOutboundAccess, false, server.output);
+    }
   });
 
   test('Given valid WorkOS settings and outbound access denied, when MCP, account, organization, and billing operations arrive with forged bearer tokens, cookies, organization IDs, and form input, then none gets access or a session: MCP asks for a token, each account path asks for a sign-in, a forged callback is refused, and the server uses no network', { timeout: 60_000 }, async (t) => {

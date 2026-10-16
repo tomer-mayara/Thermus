@@ -154,11 +154,11 @@ test('Given a cancelled renderer completed, when its callback runs again, then c
   t.mock.timers.enable({ apis: ['setTimeout'] });
   const renderer = controlledRenderer(t);
   const controller = new AbortController();
-  const removeListener = t.mock.method(controller.signal, 'removeEventListener');
   const parse = t.mock.method(JSON, 'parse');
   const result = new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal);
   const rejected = assert.rejects(result, (error) => error === controller.signal.reason);
   await renderer.launched;
+  const removeListener = t.mock.method(controller.signal, 'removeEventListener');
 
   controller.abort();
   renderer.finish(null, success, '');

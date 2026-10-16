@@ -86,7 +86,7 @@ The fetcher keeps its options in the container: the network block list, the read
 
 ## Select the executable
 
-The self-hosted server reads `LIGHTPANDA_BIN` from its environment when it starts. It gives the value to the fetcher constructor. The fetcher takes no setting, such as `LIGHTPANDA_BIN`, from the environment. A nonempty value selects the executable. Use an absolute path so it works from any working directory. Paths with spaces work when quoted in shell commands:
+Both production compositions read `LIGHTPANDA_BIN` from their environment when they start and give the value to the fetcher constructor. The fetcher takes no setting, such as `LIGHTPANDA_BIN`, from the environment. A nonempty value selects the executable. Use an absolute path so it works from any working directory. Paths with spaces work when quoted in shell commands:
 
 ```sh
 export LIGHTPANDA_BIN="/absolute/path with spaces/lightpanda"
@@ -111,7 +111,7 @@ The `version` command stops before telemetry starts, so the version checks in th
 
 ## Renderer setup report
 
-When the renderer cannot start, the self-hosted server writes one `ERROR` line to its log, for example:
+When the renderer cannot start, the server writes one `ERROR` line to its log, for example:
 
 ```text
 Renderer setup failure: the Lightpanda executable is missing (ENOENT). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.

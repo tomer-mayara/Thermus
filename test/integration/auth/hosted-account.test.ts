@@ -167,17 +167,36 @@ describe('Hosted account routes with session and membership directory doubles an
 
   test('Given the composition with an MCP endpoint double, when MCP and metadata requests and a path outside the public URL arrive and the application closes two times, then the endpoint gets each MCP request without a browser session lookup, the other path gives 404, and the endpoint closes one time', async () => {
     const { application, session, mcp } = serve();
+    const disconnected = new AbortController();
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
     const requests = [
-      new Request(config.mcpResourceUrl, { method: 'POST', headers: { Cookie: 'session=ann', Authorization: 'Bearer forged-token' } }),
+      new Request(config.mcpResourceUrl, {
+        method: 'POST', headers: { Cookie: 'session=ann', Authorization: 'Bearer forged-token', 'Content-Type': 'application/json' },
+        body, signal: disconnected.signal,
+      }),
       new Request(config.resourceMetadataUrl),
     ];
 
     const answers = await Promise.all(requests.map(async (request) => (await application.handle(request)).text()));
     const outside = await application.handle(new Request('https://thermus.example/account', { headers: { Cookie: 'session=ann' } }));
-    await Promise.all([application.close(), application.close()]);
 
     assert.deepEqual(answers, ['MCP endpoint double', 'MCP endpoint double']);
-    assert.deepEqual(mcp.requests, requests);
+    assert.equal(mcp.requests.length, requests.length);
+    for (const [index, forwarded] of mcp.requests.entries()) {
+      const original = requests[index];
+      assert.ok(original);
+      assert.equal(forwarded.url, original.url);
+      assert.equal(forwarded.method, original.method);
+      assert.deepEqual([...forwarded.headers], [...original.headers]);
+      assert.equal(await forwarded.text(), index === 0 ? body : '');
+      assert.equal(forwarded.signal.aborted, false);
+    }
+    disconnected.abort();
+    assert.deepEqual(mcp.requests.map((request) => request.signal.aborted), [true, false]);
+    await Promise.all([application.close(), application.close()]);
+
+    assert.deepEqual(mcp.requests.map((request) => request.signal.aborted), [true, true]);
+    assert.equal(requests[1]?.signal.aborted, false, 'Application shutdown owns the forwarded signal only');
     assert.equal(outside.status, 404);
     assert.deepEqual([session.calls, mcp.closes], [[], 1]);
   });

@@ -9,7 +9,7 @@ import { LocalInstallationError } from '../../../src/auth/local-auth/better-auth
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { publicBaseUrl } from '../../support/in-process/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/isolation/data-directory.ts';
-import { hostedStartupLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { WorkOSSettingsError } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { accountsOf, addAccount, passwordOf, selfHostedConfig, selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
 
@@ -187,7 +187,7 @@ describe('Local installation with the real application and provider', () => {
     const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, 'http');
     await assert.rejects(createApplication(config, new RecordingLogger(), {}), WorkOSSettingsError);
     const logger = new RecordingLogger();
-    const application = await createApplication(config, logger, workOSSettings);
+    const application = await createApplication(config, logger, { ...workOSSettings, ...hostedFetchSettings });
 
     const answers = [await application.handle(new Request('https://thermus.example/account')), await application.handle(mcpRequest('forged-token'))];
     const closes = [application.close(), application.close()];

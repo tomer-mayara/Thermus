@@ -1,3 +1,4 @@
+import { waitForRequest } from '../http/request-cancellation.ts';
 import type { AccessResolver, RequestContext } from '../auth/access-context.ts';
 import type { OrganizationAdministration } from '../organizations/organization-administration.ts';
 import { readForm, ReturnDestinations, selectionIn, single } from './account-form.ts';
@@ -55,7 +56,8 @@ export class HostedAccountRoutes {
   }
 
   async handle(request: Request): Promise<Response> {
-    const session = await this.session.authenticate(request.headers.get('Cookie'));
+    const session = await waitForRequest(request.signal, () => this.session.authenticate(request.headers.get('Cookie')));
+    request.signal.throwIfAborted();
     if (session.status === 'signed-out') return withCookies(noticePage('signedOut'), session.cookies);
     return this.answerSignedIn(request, session);
   }
@@ -82,7 +84,8 @@ export class HostedAccountRoutes {
   // The member, invitation, and billing pages and the member and invitation changes come first; another path goes to
   // the account operation.
   private async tenantOperation(request: Request, session: SignedInBrowserSession, path: string): Promise<Response> {
-    const decision = await this.accessResolver.resolve(session.user);
+    const decision = await waitForRequest(request.signal, () => this.accessResolver.resolve(session.user));
+    request.signal.throwIfAborted();
     if (decision.allowed !== true) return accessDeniedPage(this.paths.organizations);
     const context = requireTrustedTenant(frozenCopy(decision.context));
     const administration = this.administration.handlerFor(path);
@@ -98,7 +101,7 @@ export class HostedAccountRoutes {
     const destinations = new URL(request.url).searchParams.getAll('return_to');
     const returnTo = destinations.length === 0 ? this.destinations.fallback : this.destinations.check(single(destinations));
     if (returnTo === undefined) return noticePage('invalidRequest');
-    const organizations = await this.organizations.listOrganizations(session.user);
+    const organizations = await waitForRequest(request.signal, () => this.organizations.listOrganizations(session.user));
     if (organizations.length === 0) return noticePage('noOrganization');
     return organizationSelectionPage({ action: this.paths.selection, csrfToken: session.csrfToken, returnTo, organizations });
   }
@@ -109,9 +112,11 @@ export class HostedAccountRoutes {
     if (request.method !== 'POST') return noticePage('methodNotAllowed', { Allow: 'POST' });
     if (request.headers.get('Origin') !== this.publicOrigin) return noticePage('forgedRequest');
     const form = await readForm(request);
+    request.signal.throwIfAborted();
     const selection = typeof form === 'string' ? form : selectionIn(form, session.csrfToken, this.destinations);
     if (typeof selection === 'string') return noticePage(selection);
-    const organization = await this.organizations.authorizeSelection(session.user, selection.organizationId);
+    const organization = await waitForRequest(request.signal, () => this.organizations.authorizeSelection(session.user, selection.organizationId));
+    request.signal.throwIfAborted();
     if (organization === undefined) return noticePage('organizationDenied');
     const change = await session.selectOrganization(organization.organizationId);
     return withCookies(this.switchAnswer(change, selection.returnTo), change.cookies);

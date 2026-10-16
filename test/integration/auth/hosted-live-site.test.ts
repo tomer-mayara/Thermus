@@ -144,6 +144,23 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
     );
   });
 
+  test('Given valid placeholder WorkOS settings and the default hosted gate composition, when the local HTTPS site starts with its trusted rules fixture, then it serves the portal and keeps account and MCP requests without credentials protected', caseOptions, async (t) => {
+    const certificate = await selfSignedCertificate(await temporaryDirectory(t));
+    const site = await LocalHttpsSite.start(settings, { portalBuild: await writePortalBuild(t), certificate });
+    t.after(() => site.close());
+
+    const portal = await frontGet('/', certificate.cert);
+    const account = await frontGet('/account', certificate.cert);
+    const mcp = await frontGet('/mcp', certificate.cert);
+
+    assert.deepEqual(portal, { status: 200, body: portalPage });
+    assert.equal(account.status, 401);
+    assert.match(account.body, /Sign-in required/);
+    assert.equal(mcp.status, 401);
+    assert.ok(site.log.lines.some((line) => line.includes('Hosted authentication uses WorkOS')));
+    await site.close();
+  });
+
   // This case listens on port 46443, the port of the hosted live gate and the work slice. It fails while one of them runs.
   test('Given a portal build, certificate files from the OpenSSL command of the site, a logger, and an application function, when the site starts, then the front at https://localhost:46443/ gives that certificate, serves the portal, and forwards each other request to the application of that function, which gets that logger; a request that the application fails gives 500 and a report to that logger; close() closes the application one time and leaves no server listening', caseOptions, async (t) => {
     closeLeakedServersAfter(t);

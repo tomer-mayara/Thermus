@@ -147,7 +147,7 @@ for (const era of mcpProtocolEras) {
 
     await refused;
     assert.ok(elapsedMs < 1_000, `server stop took ${elapsedMs.toFixed(1)} ms`);
-    assert.deepEqual(failures, ['The HTTP handler failed for POST /mcp: Error']);
+    assert.deepEqual(failures, ['The HTTP handler failed for POST /mcp: AbortError']);
     assert.deepEqual(operationCalls, []);
     assert.deepEqual(records, []);
   });

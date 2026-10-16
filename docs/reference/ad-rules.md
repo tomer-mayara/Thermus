@@ -36,7 +36,7 @@ const rules = readFileSync('/etc/thermus/ad-rules.txt', 'utf8');
 const ads = new CleanHtmlAdsAdblockRs(rules);
 ```
 
-Choose and validate that path in application configuration. If the file cannot be read, `readFileSync` throws before the cleaner is constructed. The caller owns the failure policy. The cleaner does not download rules or make network requests. This step applies cosmetic rules to supplied HTML. It does not block network requests. Test fixture rule lists are supplied by tests only. The self-hosted server reads its rules from `AD_RULES_FILE`; the [server rules file](#server-rules-file) section gives its policy.
+Choose and validate that path in application configuration. If the file cannot be read, `readFileSync` throws before the cleaner is constructed. The caller owns the failure policy. The cleaner does not download rules or make network requests. This step applies cosmetic rules to supplied HTML. It does not block network requests. Test fixture rule lists are supplied by tests only. The self-hosted and hosted servers read their rules from `AD_RULES_FILE`; the [server rules file](#server-rules-file) section gives its policy.
 
 If you used `new CleanHtmlAdsAdblockRs()` before, pass the intended rules string instead. For a deliberate no-op, pass `''`.
 
@@ -56,7 +56,7 @@ The test uses 32, 128, and 512 matches on short lines, in minified source, and i
 
 ## Server rules file
 
-The self-hosted server reads its trusted rules from the file that `AD_RULES_FILE` names. [`readAdRulesFile(environment)`](../../src/config/ad-rules-file.ts) reads the setting from the server environment. [`createFetchOperation()`](../../src/fetch-tool.ts) gives the text to one `CleanHtmlAdsAdblockRs` when the server starts.
+Both production server compositions use the trusted rules file that `AD_RULES_FILE` names. [`readAdRulesFile(environment)`](../../src/config/ad-rules-file.ts) reads the setting from the server environment. [`createFetchOperation()`](../../src/fetch-tool.ts) gives the text to one `CleanHtmlAdsAdblockRs` when the server starts.
 
 - The value must be the absolute path of a trusted file.
 - The server reads the file one time, with one `readFileSync` call. There is no check before the read, so the file cannot change between a check and the read.
@@ -65,7 +65,7 @@ The self-hosted server reads its trusted rules from the file that `AD_RULES_FILE
 - There is no syntax check. The native parser ignores lines that it cannot parse. An empty file, or a file with only comments, makes the cleaner a no-op. The other pipeline steps still run.
 - There is no updater. The server keeps the rules that it read at startup. A changed file takes effect at the next server start.
 
-Only the server reads `AD_RULES_FILE`. `loadDeploymentConfig` does not read it. The local account and client commands share that loader and never read the rules. The commands and the hosted edition load no rules reader, renderer, cleaning pipeline, or adblock-rs module.
+Only the server reads `AD_RULES_FILE`. `loadDeploymentConfig` does not read it. The local account and client commands share that loader and never read the rules. The commands load no rules reader, renderer, cleaning pipeline, or adblock-rs module. The hosted server loads these modules for its protected fetch tool. The production rules source, license, version, and update policy remain an owner choice for RHD-03; test fixtures are not a production rules policy.
 
 A rules failure stops startup before the server opens the data directory and before it listens. The server writes one `FATAL` line and exits with status 1:
 

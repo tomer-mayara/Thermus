@@ -1,3 +1,5 @@
+import { trustedAdRulesFile } from './ad-rules.ts';
+
 // WorkOS settings with placeholder values for the public base URL https://thermus.example. They are valid for the
 // settings check but reach no WorkOS environment.
 export const workOSSettings: Readonly<Record<string, string>> = {
@@ -15,3 +17,8 @@ export function workOSSettingsFor(publicBaseUrl: string): Readonly<Record<string
 }
 
 export const hostedStartupLine = 'Hosted authentication uses WorkOS: the client client_placeholder and the AuthKit issuer https://thermus-test.authkit.app.';
+
+// Hosted startup builds the production fetch operation. These fixtures need no running renderer.
+export const hostedFetchSettings: Readonly<Record<string, string>> = {
+  AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: '/opt/thermus-test/lightpanda',
+};
