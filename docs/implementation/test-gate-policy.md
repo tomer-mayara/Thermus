@@ -23,6 +23,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
+| Signup provider contract | `npm run test:interface:workos-signup` | `dist/test/interface/auth/workos-signup.live.js` | Configured Thermus WorkOS Staging key and client, and public network access. Creates and deletes disposable organizations only. Production keys are refused. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
@@ -173,6 +174,10 @@ contains every change of the pull request.
    - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a
      change to the WorkOS SDK or jose packages or to the hosted authentication
      flow. They run offline with a focused command.
+   - The offline signup retry proof, `test/interface/auth/workos-signup.test.ts`,
+     and the Staging signup provider contract, `npm run test:interface:workos-signup`,
+     for changes to signup creation, its acceptance record, or its SDK retry
+     configuration. The [FS-01 record](fs-01.md) gives the scope and limits.
    - The hosted live gate, `npm run test:hosted-live`, for a change to the
      hosted authentication flow, to the WorkOS organization reads or changes,
      or to the steps of the [operator runbook](hosted-organization-setup.md),
@@ -302,6 +307,7 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/auth/hosted-startup.test.js`,
    `dist/test/acceptance/auth/hosted-portal.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-origin.test.js`,
+   `dist/test/acceptance/auth/hosted-workos-signup.test.js`,
    `dist/test/acceptance/mcp/hosted-fetch-tool.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`, and

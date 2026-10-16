@@ -471,6 +471,7 @@ pnpm test:unit        # clean build, then node --test on dist/test/unit/
 pnpm test:integration # clean build, then node --test on dist/test/integration/
 pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
+pnpm test:interface:workos-signup # disposable WorkOS Staging organization concurrency proof; requires Staging credentials
 pnpm test:container   # clean build, then the self-hosted container gate without outbound access
 pnpm test:container:hosted # clean build, then the final Linux AMD64 hosted image gate
 pnpm build:hosted     # offline checks, integration selection, and local renderer gate; needs pinned LIGHTPANDA_BIN and OpenSSL

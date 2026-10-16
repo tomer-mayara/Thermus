@@ -71,6 +71,13 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     }
     for (const secret of [workOSSettings.WORKOS_API_KEY, workOSSettings.WORKOS_COOKIE_PASSWORD]) assert.ok(secret !== undefined && !html.includes(secret));
     assert.equal((await fetch(new URL('/healthz', server.url), { method: 'HEAD', signal: step.signal })).status, 200);
+    const signup = await fetch(new URL('/signup', server.url), { signal: step.signal });
+    assert.equal(signup.status, 200);
+    assert.equal(signup.headers.get('Cache-Control'), 'no-store');
+    assert.match(await signup.text(), /New account activation is closed/);
+    const oldAgreement = await fetch(new URL('/signup', server.url), { method: 'POST', body: 'agreement=accepted', signal: step.signal });
+    assert.equal(oldAgreement.status, 403);
+    assert.match(await oldAgreement.text(), /New account activation is closed/);
     assert.equal((await fetch(mcpRequest({ url: new URL('/mcp', server.url).href, method: 'tools/list', signal: step.signal }))).status, 401);
     const foreign = await fetch(mcpRequest({ url: new URL('/mcp', server.url).href, method: 'tools/list', token: 'unused-token', headers: { Origin: 'https://foreign.example' }, signal: step.signal }));
     assert.equal(foreign.status, 403);
@@ -131,7 +138,7 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
   });
 
   await t.test('Given invalid local startup inputs, when the image starts, then the real CLI fails before listening', { timeout: 120_000 }, async (step) => {
-    const invalidSettings: Readonly<Record<string, string>>[] = [{ AD_RULES_FILE: '/missing-rules' }, { LIGHTPANDA_BIN: '/missing-renderer' }, { WORKOS_COOKIE_PASSWORD: '' }, { PUBLIC_BASE_URL: 'http://thermus.example/' }];
+    const invalidSettings: Readonly<Record<string, string>>[] = [{ AD_RULES_FILE: '/missing-rules' }, { LIGHTPANDA_BIN: '/missing-renderer' }, { WORKOS_COOKIE_PASSWORD: '' }, { PUBLIC_BASE_URL: 'http://thermus.example/' }, { SELF_SERVE_SIGNUP_ENABLED: 'true' }, { SELF_SERVE_SIGNUP_ENABLED: 'yes' }];
     for (const environment of invalidSettings) {
       const { code, logs } = await gate.rejectedStartup(environment, step.signal);
       assert.equal(code, 1);

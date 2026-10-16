@@ -7,6 +7,27 @@
 
 # Tests
 
+## Free hosted signup (FS-01)
+
+The [FS-01 record](../implementation/fs-01.md) keeps the complete-candidate
+results. These tests use test document text; no private policy draft is shipped.
+
+- Unit: `test/unit/auth-workos/workos-signup*.test.ts` covers current verified
+  identity, acceptance metadata in the initial create, one User grant, concurrency,
+  unknown writes, restart, revocation, strict form fields, and frozen documents.
+- Integration: `test/integration/auth/workos-signup-routes.test.ts` covers HTTP
+  responses, cookies, request limits, and cancellation;
+  `test/integration/auth/workos-connection.test.ts` checks the real production
+  SDK connection's retry and timeout settings with a local transport double.
+- Acceptance: `test/acceptance/auth/hosted-workos-signup.test.ts` drives the
+  composed application through HTTP with the WorkOS API fake. It checks closed
+  signup, the notice and agreement, personal User access, revoked access,
+  existing roles, and fresh email verification.
+- Interface: `test/interface/auth/workos-signup.test.ts` checks single-attempt
+  writes after provider faults. `test/interface/auth/workos-signup.live.ts`
+  checks concurrent creation and acceptance metadata in disposable Staging
+  organizations. Only `npm run test:interface:workos-signup` selects the live file.
+
 ## Unit
 
 **MCP Server**

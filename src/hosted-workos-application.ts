@@ -13,6 +13,7 @@ import {
 import type { Billing } from './billing/billing.ts';
 import type { GoogleOnboardingSettings } from './auth/hosted-auth/workos/workos-google-onboarding.ts';
 import type { WorkOSSettings } from './auth/hosted-auth/workos/workos-settings.ts';
+import type { SignupDocuments } from './auth/hosted-auth/workos/workos-signup.ts';
 import { portalAccessOperation, PRODUCT_ACCESS } from './hosted-admin/portal-access.ts';
 import { MCPServer, type RequestServerBuilder } from './mcp/mcp-server.ts';
 
@@ -33,6 +34,8 @@ export interface WorkOSApplicationParts {
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
+  // Production has no approved signup documents yet. Tests supply their own document bundle.
+  readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
   // A composition can discard MFA evidence, but only the configured Required policy can supply it.
   readonly mfaEvidence?: 'unproven';
 }
@@ -41,6 +44,8 @@ export interface WorkOSApplicationParts {
 const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
 export async function openWorkOSApplication(config: RouteConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+  const { loadSelfServeSignupEnabled } = await import('./auth/hosted-auth/workos/workos-signup-settings.ts');
+  const signup = { enabled: loadSelfServeSignupEnabled(environment) };
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createFetchOperation, fetchToolServers } = await import('./fetch-tool.ts');
   const { singleFetchOperation } = await import('./mcp/single-fetch-operation.ts');
@@ -50,7 +55,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: Applica
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);
   const { HostedPortal } = await import('./hosted-portal.ts');
   const portal = await HostedPortal.load(connection.settings.authkitIssuer);
-  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger) });
+  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger), signup });
   return portal.withApplication(application);
 }
 
@@ -90,6 +95,8 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const { WorkOSAuthProvider } = await import('./auth/hosted-auth/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('./auth/hosted-auth/workos/workos-browser-session.ts');
   const { WorkOSSessionRoutes } = await import('./auth/hosted-auth/workos/workos-session-routes.ts');
+  const { WorkOSSignup } = await import('./auth/hosted-auth/workos/workos-signup.ts');
+  const { WorkOSSignupRoutes } = await import('./auth/hosted-auth/workos/workos-signup-routes.ts');
   const { workosAuthority } = await import('./auth/hosted-auth/workos/workos-settings.ts');
   const { ProtectedResourceEndpoint } = await import('./mcp/protected-resource-endpoint.ts');
   const { settings, workos, authkitKeySet } = connection;
@@ -110,6 +117,18 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     reportFailure: operatorFailureReporter(logger),
   });
   const mcp = new ProtectedResourceEndpoint({ server, mcpResourceUrl: config.mcpResourceUrl, resourceMetadataUrl: config.resourceMetadataUrl, authorizationServer: settings.authkitIssuer });
-  const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure: accountFailureReporter(logger) });
+  const sessionRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure: accountFailureReporter(logger) });
+  const signupRoutes = new WorkOSSignupRoutes({
+    publicBaseUrl: config.publicBaseUrl,
+    enabled: parts.signup?.enabled ?? false,
+    documents: parts.signup?.documents,
+    session,
+    activation: new WorkOSSignup({ authority, workos, directory: organizations }),
+    reportFailure: (message) => logger.error(message),
+  });
+  const browserRoutes = {
+    handles: (path: string) => signupRoutes.handles(path) || sessionRoutes.handles(path),
+    handle: (request: Request) => signupRoutes.handles(new URL(request.url).pathname) ? signupRoutes.handle(request) : sessionRoutes.handle(request),
+  };
   return { session, accessResolver: provider, organizations, mcp, browserRoutes };
 }
