@@ -46,8 +46,13 @@ for a zoom check.
 Use Node 24.20.0 and pnpm 12.10.1. The renderer runs used
 `LIGHTPANDA_BIN=$PWD/.cache/lightpanda/1.0.0/lightpanda`. The container runs
 used the existing Colima Docker socket through a command-local `DOCKER_HOST`.
-The merged-candidate container runs use a temporary Rosetta runtime. The
-original Docker configuration is saved for restoration after the gates.
+The merged-candidate container runs used a temporary Rosetta runtime. After
+the gates, the manager restored the original 4 CPU / 4 GiB configuration and
+QEMU handlers. All three configuration hashes and both handler records match
+the saved originals. Docker uses its original `colima` context, the three
+original exited containers are unchanged, and the gate containers and image
+tags are removed.
+The first restored boot stalled; a restart completed and passed these checks.
 
 The new behavior first failed the acceptance and focused tests. The final
 focused run passed 56 backend tests and 23 portal tests, with no failures,
@@ -91,9 +96,10 @@ comparison with the design kit passed, so the license is retained as supplied.
 
 ## Retained habit-hooks findings
 
-The complete-candidate run exited 1 with 26 comment findings and three file-size
-findings. It reported no complexity finding. The manager retains these items
-for the reasons below. `.habit-hooks/snooze.json` stays `[]`.
+The complete-candidate `habit-hooks --branch origin/main` run exited 1 with
+26 comment findings and three file-size findings. It reported no complexity
+finding. The manager retains these items for the reasons below.
+`.habit-hooks/snooze.json` stays `[]`.
 
 - `src/user-portal/portal.ts`: four comment lines explain the server-owned
   session boundary and why authentication paths are relative. These constraints
