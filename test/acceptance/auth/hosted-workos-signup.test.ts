@@ -65,6 +65,107 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.deepEqual(site.signupFake.organizations, []);
   });
 
+  for (const method of ['GET', 'POST'] as const) {
+    test(`Given a signed-in user deleted from WorkOS, when signup receives ${method}, then it offers fresh sign-in without activation writes`, async (t) => {
+      const site = await openSignupSite(t, true);
+      const user = { id: 'user_DELETED', email: 'deleted@example.com', firstName: 'Person' };
+      site.world.users = [user];
+      const { browser } = await signInThroughServer(site, user);
+      const form = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
+      assert.ok(form);
+      site.world.users = [];
+      site.world.fake.takeRequests();
+
+      const answer = method === 'GET' ? await browser.open('signup')
+        : await browser.post('signup', { ...form.fields, agreement: 'accepted' });
+
+      assert.equal(answer.status, method === 'GET' ? 200 : 401, answer.body);
+      assert.ok(answer.body.includes(signupDocuments.notice.text), answer.body);
+      const page = parseHTML(answer.body).document;
+      const signIn = page.querySelector('.task-card a[href="/login?return_to=%2Fsignup"]');
+      assert.ok(signIn);
+      assert.equal(signIn.textContent, 'Sign in to continue');
+      assert.equal(page.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
+      assert.equal(page.querySelector('#privacy-notice .document-reader')?.getAttribute('tabindex'), '0');
+      assert.deepEqual(formsIn(answer.body), []);
+      assert.doesNotMatch(answer.body, /type="checkbox"|temporarily unavailable/);
+      assert.deepEqual(site.signupFake.organizations, []);
+      assert.deepEqual(site.world.memberships, []);
+      assert.deepEqual(site.world.fake.takeRequests().filter(({ method: verb }) => verb !== 'GET'), []);
+    });
+  }
+
+  test('Given a signed-out visitor posts an old signup form, when signup answers, then the full notice and a usable Sign in link appear without writes', async (t) => {
+    const site = await openSignupSite(t, true);
+    const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
+    site.world.fake.takeRequests();
+    const answer = await browser.post('signup', { csrf_token: 'old-token', document_version: signupDocuments.version, agreement: 'accepted' });
+
+    assert.equal(answer.status, 401, answer.body);
+    assert.ok(answer.body.includes(signupDocuments.notice.text), answer.body);
+    const signIn = parseHTML(answer.body).document.querySelector('.task-card a[href="/login?return_to=%2Fsignup"]');
+    assert.ok(signIn);
+    assert.equal(signIn.textContent, 'Sign in to continue');
+    assert.deepEqual(formsIn(answer.body), []);
+    assert.equal(site.signupFake.organizations.length, 0);
+    assert.equal(site.world.memberships.length, 0);
+    assert.deepEqual(site.world.fake.takeRequests(), []);
+  });
+
+  test('Given a deleted user follows signup Sign in, when a fresh user returns and accepts the agreement, then one new workspace receives User access', async (t) => {
+    const site = await openSignupSite(t, true);
+    const deleted = { id: 'user_OLD', email: 'returning@example.com', firstName: 'Person' };
+    site.world.users = [deleted];
+    const { browser } = await signInThroughServer(site, deleted);
+    site.world.users = [];
+    const recovery = await browser.open('signup');
+    const signIn = parseHTML(recovery.body).document.querySelector('a[href="/login?return_to=%2Fsignup"]');
+    assert.ok(signIn, recovery.body);
+    const start = await browser.open(signIn.getAttribute('href') ?? '');
+    const state = start.location?.searchParams.get('state');
+    assert.ok(state);
+    const fresh = { ...deleted, id: 'user_FRESH' };
+    site.world.users = [fresh];
+    const callback = await browser.open(`callback?code=${site.world.codeFor(fresh)}&state=${encodeURIComponent(state)}`);
+    assert.equal(callback.location?.pathname, '/signup', callback.body);
+    const form = formsIn((await browser.follow(callback)).body).find(({ action }) => action === '/signup');
+    assert.ok(form);
+    const activation = await browser.post('signup', { ...form.fields, agreement: 'accepted' });
+
+    assert.equal(activation.status, 303, activation.body);
+    assert.equal(activation.location?.pathname, '/organizations');
+    assert.equal(site.signupFake.organizations.length, 1);
+    const organization = site.signupFake.organizations[0];
+    assert.ok(organization);
+    assert.equal((organization.metadata as Record<string, string>).subject, fresh.id);
+    assert.deepEqual(site.world.rolesOf(fresh, String(organization.id)), ['user']);
+    assert.equal(site.world.memberships.length, 1);
+  });
+
+  for (const method of ['GET', 'POST'] as const) {
+    test(`Given a current-user provider outage, when signup receives ${method}, then it reports unavailability without activation writes`, async (t) => {
+      const site = await openSignupSite(t, true);
+      const user = { id: 'user_READ_OUTAGE', email: 'person@example.com', firstName: 'Person' };
+      site.world.users = [user];
+      const { browser } = await signInThroughServer(site, user);
+      const form = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
+      assert.ok(form);
+      site.world.fake.answer(`GET /user_management/users/${user.id}`, { status: 503, body: { message: 'private provider error' } });
+      site.world.fake.takeRequests();
+
+      const answer = method === 'GET' ? await browser.open('signup')
+        : await browser.post('signup', { ...form.fields, agreement: 'accepted' });
+
+      assert.equal(answer.status, 503, answer.body);
+      assert.match(answer.body, /temporarily unavailable/);
+      assert.doesNotMatch(answer.body, /private provider error/);
+      assert.deepEqual(formsIn(answer.body), []);
+      assert.equal(site.signupFake.organizations.length, 0);
+      assert.equal(site.world.memberships.length, 0);
+      assert.deepEqual(site.world.fake.takeRequests().filter(({ method: verb }) => verb !== 'GET'), []);
+    });
+  }
+
   test('Given current User access, when signup opens, then Continue uses the selector and returns to the portal without another agreement or provider write', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_CONTINUE', email: 'person@company.example', firstName: 'Person' };
@@ -147,7 +248,9 @@ describe('Hosted self-service signup with a test legal bundle', () => {
 
   test('Given a signed-in user, when acceptance is missing or the origin is foreign, then no provider write occurs', async (t) => {
     const site = await openSignupSite(t, true);
-    const { browser } = await signInThroughServer(site, { id: 'user_INVALID', email: 'person@example.com', firstName: 'Person' });
+    const user = { id: 'user_INVALID', email: 'person@example.com', firstName: 'Person' };
+    site.world.users = [user];
+    const { browser } = await signInThroughServer(site, user);
     const page = await browser.open('signup');
     const form = formsIn(page.body).find(({ action }) => action === '/signup');
     assert.ok(form);
@@ -234,6 +337,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   test('Given the personal-record lookup fails, when signup opens, then the page reports unavailability instead of offering a new agreement', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_OUTAGE', email: 'person@example.com', firstName: 'Person' };
+    site.world.users = [user];
     const { browser } = await signInThroughServer(site, user);
     site.signupFake.failOrganizationReads = true;
     site.world.fake.takeRequests();

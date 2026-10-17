@@ -3,7 +3,7 @@ import { describe, test, type TestContext } from 'node:test';
 import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
 import { recordLines, rolesOf, seatsIn, serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
 import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
-import { userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { userOf } from '../../support/fixtures/hosted-members.ts';
 
 const failurePage = /The request failed\. Try again later\./;
 const mfaNotice = /Multi-factor authentication required/;

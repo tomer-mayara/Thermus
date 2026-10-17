@@ -50,7 +50,7 @@ const defaultRoleGrants: ReadonlyMap<string, RoleGrant> = new Map([
   ['admin', { role: 'admin', permissions: ['user-grants:manage'] }],
 ]);
 
-export function emailOf(subject: string): string {
+function emailOf(subject: string): string {
   return `${subject.replace(/^user-/, '')}@example.com`;
 }
 

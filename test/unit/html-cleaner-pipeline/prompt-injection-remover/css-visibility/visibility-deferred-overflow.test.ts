@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { cleanBody } from './helpers/css-pipeline.ts';
+import { cleanBody } from './fixtures/css-pipeline.ts';
 
 describe('deferred overflow shorthand boundaries', () => {
   for (const { name, overflow, visible, child = 'rotateX(-90deg)' } of [

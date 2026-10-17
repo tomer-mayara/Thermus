@@ -7,9 +7,8 @@ const inspect = (fake: SignupClientFake, signal = new AbortController().signal) 
 const activate = (fake: SignupClientFake) => new WorkOSSignup(fake.options()).activate({ user, documents, signal: new AbortController().signal });
 const otherAccess = { organizationId: 'org_other', organizationName: 'Other workspace', active: true, grants: [{ role: 'user', permissions: ['product:access' as const] }] };
 
-test('Given no personal record or product access, when signup state is inspected, then it is eligible without a user lookup or provider write', async () => {
+test('Given no personal record or product access, when signup state is inspected, then it is eligible after a current-user read without a provider write', async () => {
   const fake = new SignupClientFake();
-  fake.userManagement.getUser = async () => { throw new Error('An inspection must not verify a new activation'); };
 
   assert.deepEqual(await inspect(fake), { status: 'eligible' });
   assert.deepEqual(fake.organizationWrites, []);
@@ -99,3 +98,36 @@ test('Given another identity authority, when signup state is inspected, then it 
   fake.organizations.getOrganizationByExternalId = async () => { assert.fail('Unexpected organization lookup'); };
   assert.deepEqual(await new WorkOSSignup(fake.options()).inspect({ user: { ...user, authority: 'other' }, signal: new AbortController().signal }), { status: 'unavailable' });
 });
+
+for (const operation of ['inspect', 'activate'] as const) {
+  for (const status of [404, 401, 403, 429, 503] as const) {
+    test(`Given current-user read returns ${status}, when signup ${operation} runs, then only user absence requires sign-in and no write occurs`, async () => {
+      const fake = new SignupClientFake();
+      fake.userManagement.getUser = async () => { throw Object.assign(new Error('provider secret'), { status }); };
+      const result = operation === 'inspect' ? await inspect(fake) : await activate(fake);
+      assert.deepEqual(result, { status: status === 404 ? 'sign-in-required' : 'unavailable' });
+      assert.deepEqual(fake.organizationWrites, []);
+      assert.deepEqual(fake.membershipWrites, []);
+    });
+  }
+}
+
+test('Given current-user inspection returns another identity, when signup is inspected, then it remains unavailable without writes', async () => {
+  const fake = new SignupClientFake();
+  fake.currentUser.id = 'user_other';
+  assert.deepEqual(await inspect(fake), { status: 'unavailable' });
+  assert.deepEqual(fake.organizationWrites, []);
+});
+
+for (const operation of ['inspect', 'activate'] as const) {
+  test(`Given membership discovery returns 404 for an existing user, when signup ${operation} runs, then it stays unavailable without writes`, async () => {
+    const fake = new SignupClientFake();
+    const options = fake.options();
+    options.directory.membershipsOf = async () => { throw Object.assign(new Error('membership read failed'), { status: 404 }); };
+    const signup = new WorkOSSignup(options);
+    const request = { user, documents, signal: new AbortController().signal };
+    assert.deepEqual(await signup[operation](request), { status: 'unavailable' });
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+}

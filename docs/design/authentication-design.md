@@ -2245,10 +2245,12 @@ routes, `OrganizationAdministration`, access contracts, and MCPServer with
 (`openOrganizationSite()`) or behind the real HTTP server on a loopback port
 (`serveOrganizationSite()`). A setup can give the memberships, more MCP tokens,
 and a change recorder; the site keeps each change record, and `browserOf()`
-can sign in a session without MFA. `hosted-administration.ts` gives the
-memberships, `serveAdministrationSite()`, and the page helpers of the AUTH-08
-tests. The site,
-`hosted-administration.ts`, `MembershipDirectoryDouble`,
+can sign in a session without MFA. `hosted-members.ts` gives the users and
+the memberships of these tests. `hosted-access.ts` gives the steps that read
+which pages a browser can open and the request context of a page.
+`hosted-administration.ts` gives `serveAdministrationSite()` and the page
+helpers of the AUTH-08 tests. The site, `hosted-members.ts`,
+`hosted-access.ts`, `hosted-administration.ts`, `MembershipDirectoryDouble`,
 `AccountOperationSpy`, `BrowserSessionStore`, and `HostedBrowser` are in
 `test/support/`. The unit tests of the organization routes share
 `serveAnn()`, the form helpers, and the session cookies of
@@ -2271,7 +2273,13 @@ invitations, as the probes of WorkOS staging showed. It accepts a role write
 only on the resource of the organization of the membership, named by the
 external ID of the organization, or by the organization ID when the
 organization has none. A test can repeat a membership on the next page and
-make the later member pages or the invitation reads fail.
+make the later member pages or the invitation reads fail. `workos-fake.ts`
+keeps this state and the public API of the fake, and four parts in the same
+folder hold the rest: `workos-fake-wire.ts` the JSON shapes and the list and
+error answers, `workos-fake-directory.ts` the membership, user, organization,
+and role-assignment routes, `workos-fake-invitations.ts` the invitation routes,
+and `workos-fake-sessions.ts` the codes, the refreshes, and the browser and
+Connect tokens.
 
 ## Implementation slices
 

@@ -11,11 +11,12 @@ import {
   type GrantChangeRequest,
 } from '../../../src/organizations/organization-administration.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
-import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
+import { recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
+import { administrationMembers, userOf } from '../../support/fixtures/hosted-members.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
-import { openOrganizationSite, userOf, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
+import { openOrganizationSite, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 function open(t: TestContext, logger = new OperatorLogSpy()) {
   const site = openOrganizationSite(t, {

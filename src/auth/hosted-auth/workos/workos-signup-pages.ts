@@ -24,14 +24,14 @@ export function signupClosedPage(status = 200): Response {
   });
 }
 
-export function signupSignInPage(documents: SignupDocuments, loginUrl: string): Response {
+export function signupSignInPage(documents: SignupDocuments, loginUrl: string, status = 200): Response {
   return answer({ title: 'Start free access', heading: 'Start free access.', description: 'Connect your AI assistant to Thermus in two steps.', current: 1, content: [
     '<p class="step-caption">STEP 1 OF 2</p><h2>Sign in to continue</h2>',
     '<p class="task-copy">After sign-in, you will return here to review the terms and activate access.</p>',
     signupDocumentReader('privacy-notice', 'Privacy Notice', documents.notice),
     link(loginUrl, 'Sign in to continue', 'primary-action'),
     `<p class="task-copy">${FREE_ACCESS}</p>`,
-  ] });
+  ], response: { status } });
 }
 
 export function signupFormPage(documents: SignupDocuments, csrfToken: string, action: string): Response {

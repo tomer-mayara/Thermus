@@ -72,7 +72,7 @@ This repository needs these kinds of test double:
 | mock | `AccessResolverMock`, `IdentityVerifierMock`, `FailureReporterMock`, `mockRenderer()`, "the mock provider" in docs | Spy; stub | Wrong. Rename the classes and the function. The docs phrase is owner decision 3 of the plan. |
 | fixture, `fixtures/` | Data, builders, private doubles; `network-fixture.ts` is a local web site | Fixture data; fake | Keep. |
 | support | Shared test code | Root of layers 2 to 4, doubles, shared data | Keep; sort by role. |
-| helpers | Two folders with no defined meaning | — | Remove the word. PR #86 removed `test/helpers`. |
+| helpers | Two folders with no defined meaning | — | Removed. PR #86 removed `test/helpers`; Step 8b renamed `…/css-visibility/helpers/` to `fixtures/`. |
 | probe | In-process spies and child scripts | Probe (child scripts only) | Two meanings. Rename the spies. |
 | seam | The "page seam" of `container-page.ts` | Seam | Keep. |
 | driver | `authkit-driver.ts`, the runbook driver | Protocol driver | Keep. |

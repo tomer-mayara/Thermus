@@ -1,9 +1,9 @@
 import { fromJsonSchema, McpServer } from '@modelcontextprotocol/server';
 import { requirePermission, type RequestContext } from '../../../../src/auth/access-context.ts';
 
-export type ProbeArguments = Readonly<Record<string, string>> & { readonly url: string };
+type ProbeArguments = Readonly<Record<string, string>> & { readonly url: string };
 
-export interface ProbeWork {
+interface ProbeWork {
   readonly step: 'fetch' | 'clean';
   readonly subject: string;
   readonly tenantId: string;

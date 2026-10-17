@@ -46,25 +46,33 @@ for a zoom check.
 Use Node 24.20.0 and pnpm 12.10.1. The renderer runs used
 `LIGHTPANDA_BIN=$PWD/.cache/lightpanda/1.0.0/lightpanda`. The container runs
 used the existing Colima Docker socket through a command-local `DOCKER_HOST`.
-No global Docker setting was changed.
+The merged-candidate container runs use a temporary Rosetta runtime. The
+original Docker configuration is saved for restoration after the gates.
 
 The new behavior first failed the acceptance and focused tests. The final
-focused run passed 50 backend tests and 23 portal tests, with no failures,
+focused run passed 56 backend tests and 23 portal tests, with no failures,
 cancellations, skips, or todos. This includes the new AuthKit artifact checks.
 
 | Check | Result |
 | --- | --- |
 | Frozen dependency install | Exit 0 |
-| `npm run check`, inside `build:hosted` | Exit 0; 2,640 backend unit, 14 portal unit, 13 build, and 9 portal acceptance tests passed |
-| Remaining `npm run build:hosted` gates | Exit 0; 459 integration, 114 selected acceptance/interface, and 9 renderer tests passed |
-| `npm run test:acceptance` | Exit 0; 363 backend and 9 portal tests passed |
-| Focused changed tests | Exit 0; 50 backend and 23 portal tests passed |
+| `npm run check`, inside `build:hosted` | Exit 0; 2,663 backend unit, 14 portal unit, 13 build, and 9 portal acceptance tests passed |
+| Remaining `npm run build:hosted` gates | Exit 0; 459 integration, 120 selected acceptance/interface, and 9 renderer tests passed |
+| `npm run test:acceptance` | Exit 0; 369 backend and 9 portal tests passed |
+| Focused changed tests | Exit 0; 56 backend and 23 portal tests passed |
 | Offline WorkOS interface | Exit 0; 38 tests passed |
 | `npm run test:container` | Exit 0; 13 tests passed |
-| `npm run test:container:hosted` | Exit 0; 9 tests passed on Linux AMD64 |
-| `npm run test:hosted-live` | Exit 0; 79 tests passed |
+| `npm run test:container:hosted` | Exit 0; all 9 Linux AMD64 image tests passed |
+| `npm run test:hosted-live` | Exit 0; all 79 Staging tests passed |
 
 All passing Node reports have zero failures, cancellations, skips, and todos.
+The final candidate integrates main through `64c1bdd7`, including deleted-user
+recovery and the test-support refactors. The conflict resolution keeps the
+branded sign-in page and forwards its recovery status. The recovery assertions
+first exposed two POST responses with status 200 instead of 401. After the
+correction, all 123 focused signup tests passed. The table records runs on the
+combined candidate.
+
 The Staging hosted-live gate covers activation, workspace selection, session
 refresh, sign-out, token expiry, and MCP access. It uses the configured Optional
 MFA profile. It does not test the interactive Google account chooser.
@@ -126,7 +134,6 @@ contains the apply and rollback steps.
 The portal code has not been deployed. Owner pull request review is required
 before merge and production rollout under `AGENTS.md`.
 
-The manager signs off the implementation and delegated changes for owner
-review. All required automated test runs passed. The visual limitations and
-retained findings are recorded above. Temporary preview servers and test
-containers are stopped, and the temporary build image tags are removed.
+The manager reviewed and signed off the implementation and delegated changes.
+All required combined-candidate test suites passed. The pull request is ready
+for owner review.

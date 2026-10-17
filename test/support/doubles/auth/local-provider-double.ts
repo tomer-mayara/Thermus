@@ -3,7 +3,7 @@ import type { LocalAuth, ResourceServerClient, ResourceServerClientRecord } from
 const SESSION_COOKIE = 'better-auth.session_token';
 const EMAIL = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i;
 
-export interface StoredUser {
+interface StoredUser {
   readonly id: string;
   email: string;
   name: string;
@@ -11,13 +11,13 @@ export interface StoredUser {
   banExpires: Date | null;
 }
 
-export interface RegisteredClientRecord {
+interface RegisteredClientRecord {
   readonly clientId: string;
   readonly sessionUserId: string;
   readonly metadata: Readonly<Record<string, unknown>>;
 }
 
-export type ProviderOperation =
+type ProviderOperation =
   | 'createUser'
   | 'signInEmail'
   | 'adminCreateOAuthClient'
@@ -27,7 +27,7 @@ export type ProviderOperation =
   | 'deleteSession';
 
 // The shape of a Better Auth APIError that callers can read: a status and a body code.
-export class ProviderError extends Error {
+class ProviderError extends Error {
   readonly statusCode: number;
   readonly body: { readonly code: string; readonly message: string };
 
@@ -45,7 +45,7 @@ interface SortBy {
 }
 
 // It holds a client at the start, so a registration creates only the native client.
-export class ResourceServerClientRecordDouble implements ResourceServerClientRecord {
+class ResourceServerClientRecordDouble implements ResourceServerClientRecord {
   readonly recorded: ResourceServerClient[] = [];
   stored: ResourceServerClient | undefined = { clientId: 'stored-resource-server-client', clientSecret: 'stored-resource-server-secret' };
   readFailure: Error | undefined;

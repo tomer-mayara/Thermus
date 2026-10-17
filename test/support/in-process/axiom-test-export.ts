@@ -28,7 +28,7 @@ function axiomLogEndpoint(value: string | undefined): string {
   return endpoint.href;
 }
 
-export interface AxiomTestSettings {
+interface AxiomTestSettings {
   readonly apiKey: string;
   readonly endpoint: string;
   readonly dataset: string;

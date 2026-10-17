@@ -16,6 +16,8 @@ production document proofs below.
 - Unit: `test/unit/auth-workos/workos-signup*.test.ts` covers current verified
   identity, acceptance metadata in the initial create, one User grant, concurrency,
   unknown writes, restart, revocation, strict form fields, and frozen documents.
+  Current-user read tests distinguish a deleted user (404) from provider failures
+  (401, 403, 429, and 503) during inspection and activation.
 - Integration: `test/integration/auth/workos-signup-routes.test.ts` covers HTTP
   responses, cookies, request limits, and cancellation;
   `test/integration/auth/workos-connection.test.ts` checks the real production
@@ -25,7 +27,10 @@ production document proofs below.
   `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it
   with the signup fake. It checks closed signup, the notice and agreement,
   personal User access, revoked access, existing roles, and fresh email
-  verification.
+  verification. Deleted-user GET and POST offer fresh sign-in with the full
+  notice and no activation writes. Signed-out old forms return 401 with a usable
+  sign-in link. A fresh sign-in can activate for its new subject. Current-user
+  outages remain 503.
 - Interface: `test/interface/auth/workos-signup.test.ts` checks single-attempt
   writes after provider faults. `test/interface/auth/workos-signup.live.ts`
   checks concurrent creation and acceptance metadata in disposable Staging
@@ -1178,6 +1183,26 @@ Three functions found the form of a page by its button text. They were `formFor(
 [V] Fails with an `AssertionError` when no form has the button text; the message names the text and lists the button texts of the page, without a field value such as the form token
 [V] Fails with a message that names the text and lists no button text, `[]`, when there is no form
 
+**Hosted members of the organization tests** (`test/unit/test-support/hosted-members.test.ts`)
+
+`test/support/in-process/hosted-organization-site.ts` had three layers: the site, its fixture data, and DSL steps. Step 7b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md) split it. `test/support/fixtures/hosted-members.ts` has the fixture data. `authority` is the authority of the provider double, `hosted-provider-double`. `userOf()` makes a user, and `member()` makes a membership. `members` has the memberships of the organization tests, and `administrationMembers` has the memberships of the administration tests. Before, `administrationMembers` was in `test/support/dsl/hosted-administration.ts`. The site keeps the composition. It gives `authority` to the directory double and to the MCP identities. When a test gives no memberships, the site uses `members`.
+
+[V] Gives a membership in each of the five organizations of the tests, `org-a` to `org-e`, the name of that organization: Acme, Globex, Initech, Umbrella, or Hooli; the membership is active and has the given grants
+[V] Gives a membership in another organization the organization ID as its name
+[V] Gives a user without an organization the authority `hosted-provider-double` and no `selectedOrganizationId`
+[V] Gives a user with an organization that organization as `selectedOrganizationId`
+[V] In `members`, nora has no membership; mia is a User in Acme, an Admin in Globex, and inactive in Initech; and otto is the only member of Umbrella
+[V] In `administrationMembers`, Acme has four active memberships with User: otto, cy, fay, and una, and Globex has three: cy, una, and ben; the User grants of ivy, which is inactive, and of pia, which is pending, do not count
+
+**Access steps of the hosted organization tests** (`test/unit/test-support/hosted-access.test.ts`)
+
+Step 7b also moved the DSL steps of the site to `test/support/dsl/hosted-access.ts`. `statusesOf()` gives the status of each page that a browser opens, and `contextAt()` gives the request context of a page. `destinationPaths`, the four destinations of the site, is the default of `statusesOf()`. Each step takes a browser that can open a path, `Pick<HostedBrowser, 'open'>`. Thus the test gives a stub browser that answers by path.
+
+[V] `statusesOf()` gives the status of each path, in the order of the paths
+[V] Without paths, `statusesOf()` opens the four destinations `portal`, `administration/users`, `administration/admins`, and `billing`
+[V] `contextAt()` gives the request context of a page that answers 200 with the context in JSON
+[V] `contextAt()` fails with an `AssertionError` when the page answers 403; the message begins with the body of the answer
+
 **Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
 
 `test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads `lingeringHostedHandle`, `heldHostedIdentity`, and `heldHostedCleanup`, the hosted portal fixture and its preload `hostedPortalPreload`, the Lightpanda stub `lightpandaStub`, the three container scripts `containerEdgeScript`, `containerPageScript`, and `containerProbeScript` of `test/support/container/`, the identity preload `hostedImageIdentity` of the hosted image gate, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, the local HTTPS site, the container gate, and the hosted image gate read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. Before Step 9b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md), `container-gate.ts` and `container-site.ts` computed the paths of the three container scripts. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts` and `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`.
@@ -1485,7 +1510,7 @@ npm run build && node --test dist/test/integration/auth/hosted-organizations.tes
 
 **Hosted organization administration with doubles** (`test/integration/auth/hosted-administration.test.ts`)
 
-These tests open the shared site of `test/support/in-process/hosted-organization-site.ts` in one process with `openOrganizationSite()`, with the memberships of `test/support/dsl/hosted-administration.ts`. In Acme, these are members with Super Admin alone, all three roles, User plus Admin (two members), Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. The real hosted composition, account routes, `AdministrationRoutes`, `OrganizationAdministration`, access contracts, and MCPServer run with doubles only at the provider boundaries. `BrowserSessionStore` keeps the MFA evidence of each session. `MembershipDirectoryDouble` extends `OrganizationDirectoryDouble`, so that one stateful set of memberships, grants, revisions, and invitations gives the access resolution and the organization work, and a grant change takes effect in the next access resolution. `IdentityVerifierSpy` verifies the MCP tokens. The site keeps each change record. `HostedBrowser` opens the pages and submits their forms, as a person does. `accountFailureReporter()` writes to an `OperatorLogSpy` (`test/support/doubles/application/operator-log-spy.ts`). No WorkOS setting, SDK, or credential exists. These tests prove application policy with doubles, not WorkOS behavior.
+These tests open the shared site of `test/support/in-process/hosted-organization-site.ts` in one process with `openOrganizationSite()`, with the memberships of `administrationMembers` in `test/support/fixtures/hosted-members.ts`. In Acme, these are members with Super Admin alone, all three roles, User plus Admin (two members), Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. The real hosted composition, account routes, `AdministrationRoutes`, `OrganizationAdministration`, access contracts, and MCPServer run with doubles only at the provider boundaries. `BrowserSessionStore` keeps the MFA evidence of each session. `MembershipDirectoryDouble` extends `OrganizationDirectoryDouble`, so that one stateful set of memberships, grants, revisions, and invitations gives the access resolution and the organization work, and a grant change takes effect in the next access resolution. `IdentityVerifierSpy` verifies the MCP tokens. The site keeps each change record. `HostedBrowser` opens the pages and submits their forms, as a person does. `accountFailureReporter()` writes to an `OperatorLogSpy` (`test/support/doubles/application/operator-log-spy.ts`). No WorkOS setting, SDK, or credential exists. These tests prove application policy with doubles, not WorkOS behavior.
 
 [V] Direct service calls on the directory of the site follow the rules of the forms: a Super Admin grants Admin and then User to itself, an Admin cannot grant Admin, and a User plus Admin member revokes its own User grant; the next MCP requests use the current grants, the members page of that member still works, its other organization keeps its grants, and each call is recorded
 [V] An Admin and a Super Admin post changes of the same member from pages with the same revision, and the directory runs both at the same time: one gets 303, the other 409 with the out-of-date notice, and the grant that the second actor wanted to revoke stays; the records say `applied` and `stale`

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { cleanBody } from './helpers/css-pipeline.ts';
+import { cleanBody } from './fixtures/css-pipeline.ts';
 
 const payload = 'Target text<img src="/target.png" alt="Target image">';
 const offsets = ['1208925819614629174706176', '-100000000', '-1208925819614629174706176', '100000000'];
