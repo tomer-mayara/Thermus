@@ -12,7 +12,7 @@ import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../../../support/doubles/auth/no-auth-provider.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
-import { observeFetches } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
+import { fetchOperationSpy } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
 import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -28,7 +28,7 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 // slice. The slice has no OAuth provider and no pages, so their paths are not found.
 export function createWorkSliceApplication(environment: Environment, logger: ApplicationLogger): Application {
   const urls = loadPublicUrls(environment, 'self-hosted');
-  const operation = observeFetches(createFetchOperation(environment, logger), logger);
+  const operation = fetchOperationSpy(createFetchOperation(environment, logger), logger);
   const provider = new NoAuthProvider(new URL(urls.mcpResourceUrl));
   const mcp = new MCPServer({
     auth: {

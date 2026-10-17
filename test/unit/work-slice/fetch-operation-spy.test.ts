@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import type { ApplicationLogger } from '../../../src/application.ts';
 import type { RequestContext } from '../../../src/auth/access-context.ts';
 import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
-import { MARKDOWN_LOG_LIMIT, observeFetches } from '../../support/doubles/mcp/fetch-operation-spy.ts';
+import { MARKDOWN_LOG_LIMIT, fetchOperationSpy } from '../../support/doubles/mcp/fetch-operation-spy.ts';
 
 const url = 'https://news.example/story?page=2';
 const context: RequestContext = {
@@ -29,7 +29,7 @@ function observedFetch(outcome: () => Promise<string>, limit?: number): Observed
     info: (message) => { timeline.push(`INFO ${message}`); },
     error: (message) => { timeline.push(`ERROR ${message}`); },
   };
-  const operation = observeFetches(async (requestedUrl, requestContext, signal) => {
+  const operation = fetchOperationSpy(async (requestedUrl, requestContext, signal) => {
     calls.push({ url: requestedUrl, context: requestContext, signal });
     timeline.push(operationRuns);
     return outcome();

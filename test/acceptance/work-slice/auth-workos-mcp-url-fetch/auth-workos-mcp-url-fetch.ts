@@ -15,7 +15,7 @@ import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { LocalHttpsSite } from '../../../support/hosted-live/local-https-site.ts';
 import { connectScope, localOrigin } from '../../../support/hosted-live/settings.ts';
-import { observeFetches } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
+import { fetchOperationSpy } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
 import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
 import { workSliceStopSignal } from '../../../support/processes/stop-signal.ts';
 
@@ -48,7 +48,7 @@ export async function composeWorkSliceApplication(parts: WorkSliceParts, logger:
   const { config, connection, environment } = parts;
   const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
   if (!organizationId) throw new Error('Set THERMUS_SLICE_ORGANIZATION_ID to the WorkOS organization of this slice');
-  const operation = observeFetches(createFetchOperation(environment, logger), logger);
+  const operation = fetchOperationSpy(createFetchOperation(environment, logger), logger);
   return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger), onboarding: { organizationId }, mfaEvidence: 'unproven' });
 }
 
