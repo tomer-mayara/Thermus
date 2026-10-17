@@ -1,7 +1,7 @@
 // The basic MCP URL fetch work slice: a manual run with the mock provider and Axiom logs, not a test. See README.md here.
 // This file is the entry point of the slice and also exports its composition for the tests. It runs only when it is
 // executed directly, with the guard of src/index.ts, so that the tests can import it.
-// Run it from the repository root: pnpm work-slice:basic-mcp-url-fetch
+// Start it with the launcher basic-mcp-url-fetch.sh in this folder, as README.md here says.
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application, type ApplicationLogger } from '../../../../src/application.ts';

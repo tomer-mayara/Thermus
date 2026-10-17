@@ -11,7 +11,7 @@ set -euo pipefail
 
 # CDPATH= keeps cd silent, so that root gets only the path.
 root=$(CDPATH= cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd -P)
-# The slice reads .env.local from the current directory, and pnpm runs the package script from the root.
+# The slice reads .env.local from the current directory. The last line names the entry point by its path from the root.
 cd "$root"
 
 export PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-http://127.0.0.1:8080}"

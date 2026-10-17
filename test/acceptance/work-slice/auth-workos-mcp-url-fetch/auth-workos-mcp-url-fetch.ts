@@ -42,8 +42,10 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
   process.exitCode = await run(new ConsoleLogger());
 }
 
-// Production composes the hosted edition without a tool, so this is the composition root of the slice. The fetch tool, its full URL
-// and Markdown log lines, and the fixed verified-Google onboarding policy belong to this slice.
+// Production also composes the hosted edition with the fetch tool, in openWorkOSApplication. The slice has its own
+// composition root for three parts that only the slice has. The fetch operation spy logs the full URL and the
+// Markdown of each fetch. The onboarding policy is the fixed verified-Google policy of the slice organization. With
+// mfaEvidence 'unproven', the slice treats MFA as unproven, also when WORKOS_MFA_POLICY is required.
 export async function composeWorkSliceApplication(parts: WorkSliceParts, logger: ApplicationLogger): Promise<Application> {
   const { config, connection, environment } = parts;
   const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
