@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { WorkOSSignup } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
-import { SignupWorkOSFake, documents, user } from './fixtures/signup-client-fake.ts';
+import { SignupClientFake, documents, user } from './fixtures/signup-client-fake.ts';
 
-const inspect = (fake: SignupWorkOSFake, signal = new AbortController().signal) => new WorkOSSignup(fake.options()).inspect({ user, signal });
-const activate = (fake: SignupWorkOSFake) => new WorkOSSignup(fake.options()).activate({ user, documents, signal: new AbortController().signal });
+const inspect = (fake: SignupClientFake, signal = new AbortController().signal) => new WorkOSSignup(fake.options()).inspect({ user, signal });
+const activate = (fake: SignupClientFake) => new WorkOSSignup(fake.options()).activate({ user, documents, signal: new AbortController().signal });
 const otherAccess = { organizationId: 'org_other', organizationName: 'Other workspace', active: true, grants: [{ role: 'user', permissions: ['product:access' as const] }] };
 
 test('Given no personal record or product access, when signup state is inspected, then it is eligible without a user lookup or provider write', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   fake.userManagement.getUser = async () => { throw new Error('An inspection must not verify a new activation'); };
 
   assert.deepEqual(await inspect(fake), { status: 'eligible' });
@@ -17,7 +17,7 @@ test('Given no personal record or product access, when signup state is inspected
 });
 
 test('Given current product access and an unverified email, when signup state is inspected, then existing access can continue without another agreement', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   fake.currentUser.emailVerified = false;
   fake.existingAccess = [otherAccess];
 
@@ -27,7 +27,7 @@ test('Given current product access and an unverified email, when signup state is
 });
 
 test('Given an active personal workspace, when signup state is inspected without documents, then existing access remains usable without another write', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   assert.equal((await activate(fake)).status, 'active');
 
   assert.deepEqual(await inspect(fake), { status: 'existing-access' });
@@ -37,7 +37,7 @@ test('Given an active personal workspace, when signup state is inspected without
 
 for (const state of ['absent', 'pending', 'inactive', 'non-product', 'directory-managed', 'duplicate', 'invalid-record'] as const) {
   test(`Given a retained personal record with ${state} state, when inspected, then support is required and another workspace remains usable without repair`, async () => {
-    const fake = new SignupWorkOSFake();
+    const fake = new SignupClientFake();
     assert.equal((await activate(fake)).status, 'active');
     if (state === 'absent') fake.memberships = [];
     else if (state === 'duplicate') fake.memberships.push(fake.memberships[0]);
@@ -57,14 +57,14 @@ for (const state of ['absent', 'pending', 'inactive', 'non-product', 'directory-
 }
 
 test('Given only an admin grant or an inactive User grant, when inspected, then signup remains eligible', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   fake.existingAccess = [{ ...otherAccess, active: false }, { ...otherAccess, grants: [{ role: 'admin', permissions: ['user-grants:manage'] }] }];
   assert.deepEqual(await inspect(fake), { status: 'eligible' });
   assert.deepEqual(fake.organizationWrites, []);
 });
 
 test('Given a provider read fails, when signup state is inspected, then the failure cannot become eligibility', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   fake.readFailure = true;
   assert.deepEqual(await inspect(fake), { status: 'unavailable' });
   assert.deepEqual(fake.organizationWrites, []);
@@ -72,7 +72,7 @@ test('Given a provider read fails, when signup state is inspected, then the fail
 });
 
 test('Given membership discovery fails, when signup state is inspected, then the failure cannot become eligibility', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   const options = fake.options();
   options.directory.membershipsOf = async () => { throw new Error('provider secret'); };
   assert.deepEqual(await new WorkOSSignup(options).inspect({ user, signal: new AbortController().signal }), { status: 'unavailable' });
@@ -80,7 +80,7 @@ test('Given membership discovery fails, when signup state is inspected, then the
 });
 
 test('Given a request is cancelled during a personal-record lookup, when the read returns, then no next provider call starts', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   const controller = new AbortController();
   const options = fake.options();
   let directoryReads = 0;
@@ -95,7 +95,7 @@ test('Given a request is cancelled during a personal-record lookup, when the rea
 });
 
 test('Given another identity authority, when signup state is inspected, then it is unavailable without provider work', async () => {
-  const fake = new SignupWorkOSFake();
+  const fake = new SignupClientFake();
   fake.organizations.getOrganizationByExternalId = async () => { assert.fail('Unexpected organization lookup'); };
   assert.deepEqual(await new WorkOSSignup(fake.options()).inspect({ user: { ...user, authority: 'other' }, signal: new AbortController().signal }), { status: 'unavailable' });
 });

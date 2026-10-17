@@ -10,7 +10,8 @@ export const user = { authority: 'workos:staging', subject: 'user_verified' };
 export const documents: SignupDocuments = { version: 'bundle-v1', terms: { version: 'terms-v1', sha256: 'a'.repeat(64), text: 'Terms' },
   notice: { version: 'notice-v1', sha256: 'b'.repeat(64), text: 'Notice' }, agreement: { version: 'agreement-v1', text: 'I agree.' } };
 
-export class SignupWorkOSFake {
+// A fake of the narrow SDK client that WorkOSSignup needs: the workos option of WorkOSSignupOptions.
+export class SignupClientFake {
   readonly organizationWrites: CreateOrganizationOptions[] = [];
   readonly membershipWrites: CreateOrganizationMembershipOptions[] = [];
   readonly membershipReads: ListOrganizationMembershipsOptions[] = [];
