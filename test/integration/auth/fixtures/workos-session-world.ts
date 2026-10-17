@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { after, before, type TestContext } from 'node:test';
+import type { TestContext } from 'node:test';
 import { decodeJwt } from 'jose';
 import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
 import { workosAuthority } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../../support/doubles/workos/jwt-signing-key.ts';
 import { cookiePassword, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type FakeClientSettings } from '../../../support/doubles/workos/workos-fake-api.ts';
+import { guardOutboundFetch } from '../../../support/isolation/outbound-fetch-guard.ts';
 
 // A local WorkOS world for the browser session: the fake WorkOS API with a browser key set, and the real session with
 // the pinned SDK client. The test plays AuthKit and scripts each answer of the API.
@@ -38,19 +39,10 @@ export interface World {
 
 // Each test of the suite may reach only the local fake. Call it in the describe block.
 export function allowOnlyLoopbackRequests(): void {
-  const realFetch = globalThis.fetch;
-  const outboundRequests: string[] = [];
-  before(() => {
-    globalThis.fetch = async (input, init) => {
-      const url = new URL(input instanceof Request ? input.url : String(input));
-      if (url.hostname === '127.0.0.1') return realFetch(input, init);
-      outboundRequests.push(url.href);
-      throw new Error('Outbound network access is not allowed in these tests');
-    };
-  });
-  after(() => {
-    globalThis.fetch = realFetch;
-    assert.deepEqual(outboundRequests, [], 'no request left the machine');
+  guardOutboundFetch({
+    allowLoopback: true,
+    refusal: 'Outbound network access is not allowed in these tests',
+    finding: 'no request left the machine',
   });
 }
 
