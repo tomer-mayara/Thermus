@@ -54,7 +54,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       assert.ok(session, 'The server set no session cookie.');
       assert.deepEqual([session.httpOnly, session.secure, session.sameSite, session.path], [true, true, 'Lax', '/']);
       assert.equal(cookies.some(({ name }) => name === signInCookie), false, 'The sign-in cookie stayed after the callback.');
-      assert.match(await page.locator('.product-access').innerText(), new RegExp(`You have product access in organization ${organizationA.id}\\. Roles: admin, user\\.`));
+      assert.match(await page.locator('.product-access').textContent() ?? '', new RegExp(`You have product access in organization ${organizationA.id}\\. Roles: admin, user\\.`));
       const json = await sessionJson(page);
       assert.equal(json.mfaCompleted, requiredMfa, 'The password session MFA evidence does not match the configured and read-back policy.');
       assert.equal(json.organizationId, organizationA.id);

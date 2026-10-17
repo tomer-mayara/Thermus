@@ -79,11 +79,10 @@ for (const mcpUrl of ['javascript:alert(1)', '<img src=x>', undefined]) {
   });
 }
 
-test('Given a portal under a public base path, when access is denied, then workspace selection returns to that portal', async () => {
+test('Given a portal under a public base path, when access is denied, then signup recovery uses the relative route', async () => {
   const { document, options } = portal({ session: signedIn, 'portal/access': async () => new Response(null, { status: 403 }) });
   Object.defineProperty(document, 'baseURI', { value: 'https://thermus.example/team/' });
   await initializePortal(options);
-  assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2Fteam%2F');
   assert.equal(document.querySelector('a[href="signup"]')?.getAttribute('href'), 'signup');
 });
 

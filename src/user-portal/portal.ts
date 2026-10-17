@@ -25,7 +25,7 @@ interface ProductAccess {
 }
 
 // The paths are relative, so the portal works under any public base path of the server.
-const paths = { session: 'session', productAccess: 'portal/access', signIn: 'login', signOut: 'logout', organizations: 'organizations' };
+const paths = { session: 'session', productAccess: 'portal/access', signIn: 'login', signOut: 'logout' };
 const readOptions: RequestInit = { credentials: 'same-origin', headers: { Accept: 'application/json' } };
 
 export async function initializePortal(options: PortalOptions): Promise<void> {
@@ -56,7 +56,15 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
     const access = productAccess(await answer.json());
     status.textContent = `You have product access in organization ${access.organizationId}. Roles: ${access.roles.join(', ')}.`;
     showConnection(container, access);
-    showWorkspaceSelection(status);
+    status.removeAttribute('role');
+    const details = container.ownerDocument.createElement('details');
+    details.className = 'access-details';
+    const summary = container.ownerDocument.createElement('summary');
+    summary.textContent = 'Details';
+    const explanation = container.ownerDocument.createElement('p');
+    explanation.textContent = 'This selection only affects this browser. Your MCP client uses the workspace from its own consent.';
+    details.append(summary, status, explanation);
+    container.querySelector('.auth-container section')?.append(details);
     return;
   }
   if (answer.status !== 403) throw new Error('The product access request failed');
@@ -65,7 +73,6 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
   link.href = 'signup';
   link.textContent = 'Start free access';
   status.append(link);
-  showWorkspaceSelection(status);
 }
 
 function productAccess(body: unknown): ProductAccess {
@@ -74,18 +81,6 @@ function productAccess(body: unknown): ProductAccess {
   const endpoint = new URL(mcpUrl);
   if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) throw new Error('The MCP endpoint is not valid');
   return { organizationId, roles: roles.map(String), plan, mcpUrl };
-}
-
-function showWorkspaceSelection(container: Element): void {
-  const document = container.ownerDocument;
-  const link = document.createElement('a');
-  const basePath = new URL('.', document.baseURI || 'https://portal.invalid/').pathname;
-  link.href = `${paths.organizations}?return_to=${encodeURIComponent(basePath)}`;
-  link.className = 'workspace-selection';
-  link.textContent = 'Open the organization page';
-  const explanation = document.createElement('span');
-  explanation.append(document.createTextNode(' '), link, document.createTextNode('. This selection only affects this browser. Your MCP client uses the workspace from its own consent.'));
-  container.append(explanation);
 }
 
 function showConnection(container: HTMLElement, access: ProductAccess): void {

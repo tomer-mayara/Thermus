@@ -70,7 +70,7 @@ function setCookiesOf(headers: readonly { readonly name: string; readonly value:
 async function waitForPortal(page: Page): Promise<void> {
   await page.waitForURL(`${localOrigin}/`);
   await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
-  await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor();
+  await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor({ state: 'attached' });
 }
 
 // The sign-in that the server starts shows the invitation again, with the AuthKit authorization session in the query.
