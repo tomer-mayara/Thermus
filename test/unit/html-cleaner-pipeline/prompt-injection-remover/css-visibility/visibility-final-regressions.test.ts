@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { createPipeline } from './helpers/css-pipeline.ts';
+import { createPipeline } from './fixtures/css-pipeline.ts';
 
 async function cleanBody(body: string) {
   return createPipeline().process('https://example.com/',

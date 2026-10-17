@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { cleanBody } from './helpers/css-pipeline.ts';
+import { cleanBody } from './fixtures/css-pipeline.ts';
 
 describe('non-planar rank proof', () => {
   const largeMatrix = 'matrix(10000000000000000,10000000000000000,1,2,0,0)';
