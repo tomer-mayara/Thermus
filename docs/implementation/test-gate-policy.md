@@ -169,9 +169,11 @@ contains every change of the pull request.
    - `npm run build:hosted` and `npm run test:container:hosted` for a change to
      `Dockerfile.hosted`, `Dockerfile.hosted.dockerignore`, either command,
      `docker/verify-hosted-runtime.mjs`, the shipped hosted rules, or a hosted
-     runtime build input. This includes shared dependency pins, migrations,
-     backend or portal source, and their build configuration. Run the hosted
-     image gate for changes to its test or support files too. A final Linux
+     build input or an input of its offline checks. This includes shared
+     dependency pins, migrations, backend or portal source, their build
+     configuration, `script/`, and the test sources, support code, and fixtures
+     that the hosted build uses. Run the hosted image gate for changes to its
+     test or support files too. A final Linux
      AMD64 image pass is required; a host-only or ARM64 run does not replace it.
    - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a
      change to the WorkOS SDK or jose packages or to the hosted authentication

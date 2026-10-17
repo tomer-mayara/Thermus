@@ -9,6 +9,7 @@
 !patches/
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
+!script/
 !src/
 !test/
 !tsconfig.json

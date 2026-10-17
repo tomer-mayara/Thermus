@@ -90,7 +90,9 @@ The fetcher keeps its options in the container: the network block list, the read
 digest checks, executable path, CA bundle source, and telemetry setting. It
 adds the built portal and versioned hosted rules. The separate
 [`Dockerfile.hosted.dockerignore`](../Dockerfile.hosted.dockerignore) includes
-the build and test inputs and excludes local environment files and keys.
+the build and test inputs, including `script/` for the debug-client tests,
+and excludes local environment files and keys. The failed-check proof copies
+the same script inputs into its temporary build context.
 The build runs `npm run build:hosted` without external network access,
 including the real local renderer gate with its bundled executable. It then
 checks the assembled outputs with production dependencies as `node`.
