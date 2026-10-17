@@ -8,7 +8,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { listeningUrlIn } from '../drivers/operator-log.ts';
 import { workOSSettingsFor } from '../fixtures/hosted-placeholder.ts';
-import { hostedImageIdentity, hostedImagePage, hostedImageProbe, repositoryRoot } from '../processes/module-paths.ts';
+import { containerProbeScript, hostedImageIdentity, hostedImagePage, repositoryRoot } from '../processes/module-paths.ts';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 const root = fileURLToPath(repositoryRoot);
@@ -39,7 +39,8 @@ export class HostedImageGate {
   }
 
   async facts(): Promise<Record<string, unknown>> {
-    const output = await this.output(['run', '--rm', '--interactive', '--platform', 'linux/amd64', '--label', this.label, '--network', 'none', '--entrypoint', 'node', this.tag, '--input-type=module', '-'], readFileSync(hostedImageProbe));
+    const probe = ['run', '--rm', '--interactive', '--platform', 'linux/amd64', '--label', this.label, '--network', 'none', '--env', 'PROBE=hosted-image'];
+    const output = await this.output([...probe, '--entrypoint', 'node', this.tag, '--input-type=module', '-'], readFileSync(containerProbeScript));
     return JSON.parse(output) as Record<string, unknown>;
   }
 
