@@ -13,7 +13,7 @@ import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../support/hosted-live/settings.ts';
-import { hostedRendererFixture } from '../../support/processes/module-paths.ts';
+import { lightpandaStub } from '../../support/processes/module-paths.ts';
 import { httpsSettings as settings, portalPage, temporaryDirectory, writePortalBuild } from './fixtures/https-site-fixtures.ts';
 import { describeHttpsCancellation } from './hosted-live-site/cancellation.ts';
 import { describeHttpsMcp } from './hosted-live-site/mcp.ts';
@@ -141,7 +141,7 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
     const mcpServerClose = t.mock.method(MCPServer.prototype, 'close');
     const before = serverHandles();
 
-    const started = withPath(t, emptyDirectory, () => LocalHttpsSite.start(settings, { rendererExecutable: hostedRendererFixture }));
+    const started = withPath(t, emptyDirectory, () => LocalHttpsSite.start(settings, { rendererExecutable: lightpandaStub }));
 
     await assert.rejects(started, { code: 'ENOENT', syscall: 'spawn openssl' });
     assert.deepEqual(
@@ -152,7 +152,7 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
 
   test('Given valid placeholder WorkOS settings and the default hosted gate composition, when the local HTTPS site starts with its trusted rules fixture, then it serves the portal and keeps account and MCP requests without credentials protected', caseOptions, async (t) => {
     const certificate = await selfSignedCertificate(await temporaryDirectory(t));
-    const site = await LocalHttpsSite.start(settings, { rendererExecutable: hostedRendererFixture, certificate });
+    const site = await LocalHttpsSite.start(settings, { rendererExecutable: lightpandaStub, certificate });
     t.after(() => site.close());
 
     const portal = await frontGet('/', certificate.cert);
@@ -177,7 +177,7 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
 
   test('Given the live test composition with TEST ONLY documents, when an unsigned visitor opens signup, then it serves the test notice and real portal without a WorkOS call', caseOptions, async (t) => {
     const certificate = await selfSignedCertificate(await temporaryDirectory(t));
-    const site = await LocalHttpsSite.start(settings, { rendererExecutable: hostedRendererFixture, certificate, signupDocuments });
+    const site = await LocalHttpsSite.start(settings, { rendererExecutable: lightpandaStub, certificate, signupDocuments });
     t.after(() => site.close());
 
     const signup = await frontGet('/signup', certificate.cert);

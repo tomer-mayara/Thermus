@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import { probeScript } from '../support/container/container-gate.ts';
 import { edgeScript, pageScript } from '../support/container/container-site.ts';
-import { hostedImageIdentity, hostedImagePage, hostedImageProbe, foreignOriginProbe, heldHostedCleanup, heldHostedIdentity, hostedPortalFixture, hostedPortalPreload, hostedRendererFixture, lingeringHostedHandle, networkBlocker, portalBuild, programEntry, repositoryRoot, sqlTracer, workSliceShutdownProbe } from '../support/processes/module-paths.ts';
+import { hostedImageIdentity, hostedImagePage, hostedImageProbe, foreignOriginProbe, heldHostedCleanup, heldHostedIdentity, hostedPortalFixture, hostedPortalPreload, lightpandaStub, lingeringHostedHandle, networkBlocker, portalBuild, programEntry, repositoryRoot, sqlTracer, workSliceShutdownProbe } from '../support/processes/module-paths.ts';
 import { failingAdCleaner } from '../support/processes/server-preloads.ts';
 
 // The support code computes these paths at run time, so the compiler cannot check them. A moved module, preload,
@@ -18,7 +18,7 @@ const files = {
   programEntry,
   hostedPortalPreload: fileURLToPath(hostedPortalPreload),
   hostedPortalIndex: fileURLToPath(new URL('index.html', hostedPortalFixture)),
-  hostedRendererFixture,
+  lightpandaStub,
   heldHostedCleanup: fileURLToPath(heldHostedCleanup),
   heldHostedIdentity: fileURLToPath(heldHostedIdentity),
   lingeringHostedHandle: fileURLToPath(lingeringHostedHandle),
