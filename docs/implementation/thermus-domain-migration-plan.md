@@ -1,6 +1,7 @@
 # Thermus app domain migration plan
 
-Date: October 16, 2026, America/Denver. Status: rollout in progress.
+Date: October 16, 2026, America/Denver. Status: implemented; documentation
+publication pending.
 The owner authorized implementation on October 16 local time (October 17 UTC).
 Paid WorkOS features remain outside the authorized scope.
 
@@ -34,7 +35,7 @@ The investigation on this date found:
 | --- | --- |
 | Marketing | `thermus.ai` is live on Netlify. |
 | App service | Thermus AI workspace, Render service Thermus; `main`, Docker, `Dockerfile.hosted`. |
-| Deployment | Auto-deploy is enabled. The live baseline commit is `64c1bdd7870088484d8ce18c4113e809ed7656a0`; this documentation branch starts from it. |
+| Deployment | Auto-deploy was enabled. The cutover baseline commit was `64c1bdd7870088484d8ce18c4113e809ed7656a0`. |
 | WorkOS Production | Callback `https://thermus.onrender.com/callback`, sign-out `https://thermus.onrender.com/`, initiate login `https://thermus.onrender.com/login`, MCP resource `https://thermus.onrender.com/mcp`. |
 | AuthKit | `https://spontaneous-mountain-26.authkit.app`; no AuthKit custom domain. |
 | DNS | Cloudflare is authoritative. The initial read contained 14 records and no explicit `app` record. |
@@ -42,19 +43,37 @@ The investigation on this date found:
 Recorded progress on October 17 UTC:
 
 - Added and read back the DNS-only `app` CNAME to `thermus.onrender.com`.
-- Added the Render custom domain. Domain verification passed; Render reports
-  certificate issuance pending. HTTPS `/healthz` returned 200. These observations
-  do not establish completed TLS provisioning or new-origin authentication.
-- Added and read back new WorkOS callback, sign-out, and MCP resource entries as
-  nondefaults. Existing IDs and defaults are preserved.
+- Render domain verification and certificate issuance passed; HTTPS `/healthz`
+  returned 200.
+- Read back the paired runtime URL changes and WorkOS's new callback, sign-out,
+  initiate-login, and MCP resource defaults. Old entries and IDs remain. The free
+  AuthKit issuer is unchanged; signup remains enabled (`true`).
+- Render cutover deployment `dep-db9gg9rrjlhs73eofid0` became Live at 05:31:32 UTC
+  on the baseline commit.
+- Marketing PR 16 merged once at `cc4dbe0e59580af2cf591bb1305cf29753e097c0`.
+  Netlify deployment `6ad309e157ba5073206e9d8f` published at 05:39 UTC. Root links
+  reach app `/login` and `/signup`; published guide, auth, and skill bytes match
+  the validated build. Frozen policies remain unchanged.
+- Concurrent owner branding PR 145 advanced `main` and the live app to
+  `25933c8c61a5e0976d5bf01ea488d5442f8907ab`. API deployment
+  `dep-db9gi8dg1s2s738l4ke0` became Live at 05:40:43 UTC. This documentation branch
+  includes that change; the migration does not revert it.
+- Disabled the old Render subdomain and read back `renderSubdomainPolicy` as
+  `disabled`. Public GET requests to its root and `/mcp` return 404. The app's
+  `/healthz` still returns 200; MCP discovery returns 200 with the new resource
+  and unchanged free issuer. Claude Code still reports the new connection as
+  connected.
+- Restored On Commit auto-deploy. Read-back confirms `autoDeploy: yes`, trigger
+  `commit`, and branch `main`.
 - Saved public-setting and DNS rollback evidence privately in
   `/Users/tomermayara/.codex/thermus-domain-cutover-2026-10-17`.
   Unchanged secrets were not copied.
 
-Canonical runtime changes, provider default changes, full acceptance,
-publication, and old-host retirement remain pending. Older release records
-describe auto-deploy as disabled; use the current read-back. The target table
-below describes the intended final state, not completed work.
+Only final documentation publication remains pending. The acceptance record
+below states the production test limits; implementation does not imply that
+every acceptance scenario was exercised.
+The baseline table records the starting state; the target table states the
+selected configuration.
 
 ## Exact target settings
 
@@ -170,7 +189,8 @@ required explicit resource configuration. Keep the original resource through
 the rollback window. See
 [WorkOS MCP authorization](https://workos.com/docs/authkit/mcp).
 
-After all new checks and publications pass, disable the Render subdomain.
+After the agreed cutover checks and marketing publication pass, disable the
+Render subdomain.
 Render then returns platform 404 responses for the old hostname, while the
 custom domain remains available. This changes HTTP routing; keep the app CNAME
 target `thermus.onrender.com`. Verify both outcomes after the change. See
@@ -182,8 +202,28 @@ runtime settings, restore the recorded auto-deploy policy, and read it back.
 
 ## Acceptance and rollback
 
-Record results against the deployed commit and saved settings. Use approved
-accounts and test paths. Do not open signup to run a migration test.
+Live evidence includes fresh Google sign-in for an existing account through the
+new callback, a usable session after five minutes, logout to the new app root,
+and entry from the base AuthKit URL. The user explicitly approved native Claude
+Code OAuth consent; authorization at the new endpoint and an actual
+`getURLAsMarkdown` call passed. Discovery, the public Bearer challenge, and
+foreign-Origin 403 checks passed.
+
+A second actual native `getURLAsMarkdown` call passed after the old hostname was
+disabled and branding commit `25933c8c` was live. A browser reload retained the
+existing workspace access and showed the new MCP URL. The temporary local MCP
+test credentials were logged out and its entry removed afterward. The existing
+client entry was untouched.
+
+Native Connect refresh after token expiry, a direct old-audience bearer request,
+new-user activation, password reset, and invitation email flows were not
+exercised. No complete live acceptance pass is claimed. Keep those limits with
+the following scenarios; a browser session after five minutes does not prove
+native Connect refresh. Use approved accounts and test paths. Do not open signup
+to run a migration test.
+
+The table is a reference for expected behavior, not a report that every case
+passed in production.
 
 | Given | When | Then |
 | --- | --- | --- |
@@ -203,7 +243,7 @@ activation or agreement.
 
 This repository change contains documentation only. Run document/link checks,
 `npm run check`, and `habit-hooks` on the complete pull request candidate. The
-live rollout still needs the acceptance checks above; repository checks cannot
+production checks and their limits are recorded above. Repository checks do not
 prove production DNS, provider settings, or authentication. If source behavior
 becomes necessary, first write the failing acceptance case, use TDD, and follow
 the [test gate policy](test-gate-policy.md), including focused tests and
@@ -213,6 +253,8 @@ If a required flow fails, restore the saved canonical Render URL pair and
 WorkOS defaults/initiate-login settings, enable the old Render hostname, and
 restore published links. Keep both MCP resources. New-origin clients may need
 to reconnect to the old endpoint. Do not delete consents to undo the cutover.
+Restore domain settings on the current approved build; do not revert the
+owner's concurrent branding change solely to undo the hostname change.
 
 Render deployment rollback can use the target deployment's older environment
 for that deployment, but it does not restore current saved settings. Restore
