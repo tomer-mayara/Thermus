@@ -10,13 +10,13 @@ import { pathToFileURL } from 'node:url';
 import type { Application, ApplicationLogger, RouteConfig } from '../../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
 import { createFetchOperation, fetchToolServers } from '../../../../src/fetch-tool.ts';
+import { assertHostedRenderer } from '../../../../src/hosted-renderer-startup.ts';
 import { composeWorkOSApplication, openWorkOSConnection, type WorkOSConnection } from '../../../../src/hosted-workos-application.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { LocalHttpsSite } from '../../../support/hosted-live/local-https-site.ts';
 import { connectScope, localOrigin } from '../../../support/hosted-live/settings.ts';
 import { fetchOperationSpy } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
-import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
 import { workSliceStopSignal } from '../../../support/processes/stop-signal.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -67,7 +67,7 @@ async function serveWorkSlice(): Promise<void> {
   using stopped = workSliceStopSignal(process);
   const config = loadDeploymentConfig(process.env, 'http');
   assertSliceOrigin(config.publicBaseUrl);
-  await assertPinnedRenderer(process.env.LIGHTPANDA_BIN);
+  await assertHostedRenderer(process.env.LIGHTPANDA_BIN);
   const tls = await readTlsFiles(process.env.THERMUS_TLS_DIR);
   const scopeName = `thermus-work-slice-${randomUUID()}`;
   await using owned = new AsyncDisposableStack();
