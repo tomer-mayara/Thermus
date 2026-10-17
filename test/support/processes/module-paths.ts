@@ -41,8 +41,9 @@ export const lingeringHostedHandle = siblingModule('keep-hosted-handle-open').hr
 export const heldHostedIdentity = siblingModule('hold-hosted-identity').href;
 export const heldHostedCleanup = siblingModule('hold-hosted-cleanup').href;
 
-// The container sites send these scripts into containers: container-site.ts copies the edge and the page seam, and
-// container-gate.ts sends the probe on standard input. The paths test proves that each one exists after a build.
+// The container sites send these scripts into containers. container-site.ts copies the edge and the page seam, and
+// hosted-image-gate.ts mounts the page seam. container-gate.ts and hosted-image-gate.ts send the probe on standard
+// input. The paths test proves that each one exists after a build.
 export const containerEdgeScript = containerModule('container-edge');
 export const containerPageScript = containerModule('container-page');
 export const containerProbeScript = containerModule('container-probe');
