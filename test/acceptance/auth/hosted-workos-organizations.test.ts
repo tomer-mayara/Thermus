@@ -7,6 +7,7 @@ import { startHttpServer } from '../../../src/http/server.ts';
 import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { formFor, statusesOf } from '../../support/in-process/hosted-organization-site.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
+import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 
@@ -44,21 +45,15 @@ const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
 ];
 
-class LogLines {
-  readonly lines: string[] = [];
-  readonly info = (message: string): void => { this.lines.push(`INFO ${message}`); };
-  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
-}
-
 interface Site extends WorkOSServerSite {
-  readonly log: LogLines;
+  readonly log: OperatorLogSpy;
 }
 
 async function openSite(t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional'): Promise<Site> {
   const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
-  const log = new LogLines();
+  const log = new OperatorLogSpy();
   const application = await composeWorkOSApplication(config, world.connection(mfaPolicy), { logger: log });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   t.after(async () => {

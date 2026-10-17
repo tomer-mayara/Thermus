@@ -10,6 +10,7 @@ import type { SignupDocuments } from '../../../src/auth/hosted-auth/workos/worko
 import { createApplication, type Application, type ApplicationLogger } from '../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
+import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
 import { portalBuild } from '../processes/module-paths.ts';
 import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
 import { answer, portalFiles, portalHeaders, type PortalSite } from './portal-front.ts';
@@ -22,12 +23,6 @@ interface TlsCertificate {
 
 const publicBaseUrl = `${localOrigin}/`;
 const listenAddresses = ['127.0.0.1', '::1'];
-class LogLines {
-  readonly lines: string[] = [];
-  readonly info = (message: string): void => { this.lines.push(`INFO ${message}`); };
-  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
-}
-
 // Writes key.pem and cert.pem into the directory and gives their PEM contents.
 export async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
   const key = join(directory, 'key.pem');
@@ -63,12 +58,12 @@ export interface LocalHttpsSiteOptions {
 // The HTTPS front sends every live gate request to the production application, including portal and health requests.
 // A work slice with a custom application keeps the static portal front. Failed starts release their resources.
 export class LocalHttpsSite {
-  readonly log: LogLines;
+  readonly log: OperatorLogSpy;
   readonly #thermus: HttpServer;
   // The fronts close first. Then listener drain starts, application work stops, and the drain completes.
   readonly #resources: AsyncDisposableStack;
 
-  private constructor(parts: { thermus: HttpServer; resources: AsyncDisposableStack; log: LogLines }) {
+  private constructor(parts: { thermus: HttpServer; resources: AsyncDisposableStack; log: OperatorLogSpy }) {
     this.#thermus = parts.thermus;
     this.#resources = parts.resources;
     this.log = parts.log;
@@ -83,7 +78,7 @@ export class LocalHttpsSite {
     const files = await frontFiles(options);
     await using owned = new AsyncDisposableStack();
     const certificateDirectory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
-    const log = new LogLines();
+    const log = new OperatorLogSpy();
     const logger = options.logger ?? log;
     const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger, options));
     let listenerDrain: Promise<void> | undefined;

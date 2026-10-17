@@ -7,6 +7,7 @@ import type { RequestServerBuilder } from '../../../src/mcp/mcp-server.ts';
 import { HostedBrowser, listenerTransport, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
+import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { nowInSeconds } from '../../support/doubles/workos/jwt-signing-key.ts';
 import { WorkOSFake, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
@@ -28,14 +29,8 @@ const cid: FakeUser = { id: 'user_01CID', email: 'cid@example.com', firstName: '
 const dee: FakeUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
 const eve: FakeUser = { id: 'user_01EVE', email: 'eve@example.com', firstName: 'Eve' };
 
-class LogLines {
-  readonly lines: string[] = [];
-  readonly info = (message: string): void => { this.lines.push(`INFO ${message}`); };
-  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
-}
-
 interface Site extends WorkOSServerSite {
-  readonly log: LogLines;
+  readonly log: OperatorLogSpy;
 }
 
 async function openSite(t: TestContext, buildServer?: RequestServerBuilder): Promise<Site> {
@@ -50,7 +45,7 @@ async function openSite(t: TestContext, buildServer?: RequestServerBuilder): Pro
     { userId: eve.id, organizationId: organizationA, roles: ['admin'] },
     { userId: eve.id, organizationId: organizationB, roles: ['user'] },
   ];
-  const log = new LogLines();
+  const log = new OperatorLogSpy();
   const application = await composeWorkOSApplication(config, world.connection('required'), { logger: log, buildServer });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   t.after(async () => {
@@ -281,8 +276,8 @@ describe('Hosted WorkOS edition: Connect tokens at the MCP endpoint', () => {
 describe('Hosted WorkOS edition: the connection to WorkOS', () => {
   test('Given the WorkOS settings of an environment, when the connection opens, then it gives those settings and writes one operator line that names the client and the AuthKit issuer; given no WorkOS settings, then it rejects and writes no line', async () => {
     const environment = workOSSettingsFor(config.publicBaseUrl);
-    const opened = new LogLines();
-    const refused = new LogLines();
+    const opened = new OperatorLogSpy();
+    const refused = new OperatorLogSpy();
 
     const connection = await openWorkOSConnection(config, opened, environment);
     await assert.rejects(openWorkOSConnection(config, refused, {}), /^WorkOSSettingsError: The hosted edition cannot start: the WorkOS settings are not valid\./);
