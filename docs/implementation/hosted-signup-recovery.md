@@ -35,6 +35,23 @@ Use [manual onboarding](hosted-user-onboarding.md) and
 approval. The [FS-01 record](fs-01.md) gives the creation proof and failure rules;
 [FS-02](fs-02.md) gives the current inspection and Continue behavior.
 
+## Deleted user in a browser session
+
+A valid browser cookie can still name a user deleted from WorkOS. Signup reads
+that current user before it inspects access and again before activation. Only a
+404 from this user read requires fresh sign-in. Other provider failures remain
+temporarily unavailable; a missing organization or membership does not mean that
+the user was deleted.
+
+GET signup shows the full notice and a Sign in link. POST signup returns 401
+with the same notice and link, including a submission from a signed-out browser.
+The link starts a new sign-in and returns to signup. Its callback replaces the
+browser session. This recovery does not clear the cookie or change authentication
+on other routes. It creates no organization or membership for the deleted user.
+A fresh sign-in can use normal signup for its current subject. Any retained
+personal marker for an earlier subject stays in place and still blocks grant
+replay for that subject.
+
 ## Retained personal record
 
 The external ID is `thermus-signup:` followed by a base64url SHA-256 of the trusted
@@ -72,6 +89,7 @@ Account deletion needs the distinct decision in the deletion runbook.
 
    | Observed state | Result |
    | --- | --- |
+   | Current-user read confirms the user is absent (404) | Offer fresh Sign in with the full notice; POST returns 401. Make no activation write. |
    | Valid personal marker and current active product access | Continue through the selector; no create or role update. |
    | Marker exists; membership absent, pending, inactive, or inconsistent | Support required. Keep the marker; no grant replay or repair. Other authorized workspaces remain available. |
    | No marker and current product access elsewhere | Continue through the selector; no extra personal workspace. |

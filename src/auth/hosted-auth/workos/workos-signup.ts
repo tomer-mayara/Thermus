@@ -13,10 +13,10 @@ export interface SignupDocuments {
 
 export type SignupResult =
   | { readonly status: 'active'; readonly organizationId: string }
-  | { readonly status: 'existing-access' | 'unverified' | 'support-required' | 'unavailable' };
+  | { readonly status: 'existing-access' | 'unverified' | 'support-required' | 'unavailable' | 'sign-in-required' };
 
 export type SignupState =
-  | { readonly status: 'eligible' | 'existing-access' | 'unavailable' }
+  | { readonly status: 'eligible' | 'existing-access' | 'unavailable' | 'sign-in-required' }
   | { readonly status: 'support-required'; readonly canContinue: boolean };
 
 export interface SignupActivation {
@@ -77,6 +77,10 @@ export class WorkOSSignup implements SignupActivation {
     try {
       const { user, signal } = request;
       if (user.authority !== this.options.authority || !user.subject || signal.aborted) return UNAVAILABLE;
+      const current = await this.currentUser(user.subject);
+      signal.throwIfAborted();
+      if (current === undefined) return { status: 'sign-in-required' };
+      if (current.id !== user.subject) return UNAVAILABLE;
       const existing = await this.findOrganization(personalExternalId(user));
       signal.throwIfAborted();
       if (existing !== undefined) {
@@ -94,13 +98,23 @@ export class WorkOSSignup implements SignupActivation {
     try {
       const { user, signal } = request;
       if (user.authority !== this.options.authority || !user.subject || signal.aborted) return UNAVAILABLE;
-      const current = await this.options.workos.userManagement.getUser(user.subject);
+      const current = await this.currentUser(user.subject);
       signal.throwIfAborted();
+      if (current === undefined) return { status: 'sign-in-required' };
       if (current.id !== user.subject) return UNAVAILABLE;
       if (current.emailVerified !== true) return { status: 'unverified' };
       return await this.chooseWorkspace(request);
     } catch {
       return UNAVAILABLE;
+    }
+  }
+
+  private async currentUser(subject: string): Promise<{ readonly id: string; readonly emailVerified: boolean } | undefined> {
+    try {
+      return await this.options.workos.userManagement.getUser(subject);
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'status' in error && error.status === 404) return undefined;
+      throw error;
     }
   }
 
