@@ -48,7 +48,5 @@ export const containerEdgeScript = containerModule('container-edge');
 export const containerPageScript = containerModule('container-page');
 export const containerProbeScript = containerModule('container-probe');
 
-// Files mounted into the hosted-image gate; none is copied into the final image.
+// The identity preload that the hosted-image gate mounts. It is not copied into the final image.
 export const hostedImageIdentity = containerModule('hosted-image-identity');
-export const hostedImagePage = containerModule('hosted-image-page');
-export const hostedImageProbe = containerModule('hosted-image-probe');
