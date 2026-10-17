@@ -11,6 +11,10 @@ function siblingModule(name: string): URL {
   return new URL(`./${name}.${extension}`, import.meta.url);
 }
 
+function containerModule(name: string): string {
+  return fileURLToPath(new URL(`../container/${name}.${extension}`, import.meta.url));
+}
+
 // The folder of package.json.
 export const repositoryRoot = new URL(fromSource ? '../../../' : '../../../../', import.meta.url);
 
@@ -37,7 +41,13 @@ export const lingeringHostedHandle = siblingModule('keep-hosted-handle-open').hr
 export const heldHostedIdentity = siblingModule('hold-hosted-identity').href;
 export const heldHostedCleanup = siblingModule('hold-hosted-cleanup').href;
 
+// The container sites send these scripts into containers: container-site.ts copies the edge and the page seam, and
+// container-gate.ts sends the probe on standard input. The paths test proves that each one exists after a build.
+export const containerEdgeScript = containerModule('container-edge');
+export const containerPageScript = containerModule('container-page');
+export const containerProbeScript = containerModule('container-probe');
+
 // Files mounted into the hosted-image gate; none is copied into the final image.
-export const hostedImageIdentity = fileURLToPath(new URL(`../container/hosted-image-identity.${extension}`, import.meta.url));
-export const hostedImagePage = fileURLToPath(new URL(`../container/hosted-image-page.${extension}`, import.meta.url));
-export const hostedImageProbe = fileURLToPath(new URL(`../container/hosted-image-probe.${extension}`, import.meta.url));
+export const hostedImageIdentity = containerModule('hosted-image-identity');
+export const hostedImagePage = containerModule('hosted-image-page');
+export const hostedImageProbe = containerModule('hosted-image-probe');

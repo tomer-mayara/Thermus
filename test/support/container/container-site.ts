@@ -2,18 +2,16 @@ import assert from 'node:assert/strict';
 import { connect } from 'node:net';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
-import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
 import { publicBaseUrl } from '../in-process/better-auth-local.ts';
+import { containerEdgeScript, containerPageScript } from '../processes/module-paths.ts';
 import { containerAdRulesFile, containerDataDirectory, gateLabel, gateRun, removeLabelled } from './container-gate.ts';
 import { docker, dockerCommand, dockerOutput } from './docker-cli.ts';
 import type { ServerAddress } from '../drivers/browser/local-browser.ts';
 import type { Operator } from '../dsl/local-commands.ts';
 import { ServerContainer } from './server-container.ts';
 
-export const edgeScript = fileURLToPath(new URL('./container-edge.js', import.meta.url));
-export const pageScript = fileURLToPath(new URL('./container-page.js', import.meta.url));
-const containerPageScript = '/tmp/container-page.mjs';
+const pageTarget = '/tmp/container-page.mjs';
 const outboundQuery = /^Outbound DNS query.*$/gm;
 let sites = 0;
 
@@ -66,7 +64,7 @@ export class ContainerSite {
     const edgeCommand = ['--user', 'root', '--entrypoint', 'node', image, '/tmp/container-edge.mjs'];
     await dockerOutput(['container', 'create', '--name', names.edge, ...labels, '--network', outside, '--publish', '127.0.0.1::8080', ...edgeCommand]);
     await dockerOutput(['network', 'connect', names.network, names.edge]);
-    await dockerOutput(['container', 'cp', edgeScript, `${names.edge}:/tmp/container-edge.mjs`]);
+    await dockerOutput(['container', 'cp', containerEdgeScript, `${names.edge}:/tmp/container-edge.mjs`]);
     await dockerOutput(['container', 'start', names.edge]);
     await waitForLog(names.edge, /Edge ready/);
     const [published = ''] = (await dockerOutput(['container', 'port', names.edge, '8080/tcp'])).split('\n');
@@ -90,11 +88,11 @@ export class ContainerSite {
     this.servers += 1;
     const name = `thermus-gate-${this.names.id}-server-${this.servers}`;
     const server = ['container', 'create', '--init', '--name', name, '--network-alias', 'thermus'];
-    const page: Record<string, string> = options.page === undefined ? {} : { NODE_OPTIONS: `--import=${containerPageScript}`, CONTAINER_GATE_PAGE: options.page };
+    const page: Record<string, string> = options.page === undefined ? {} : { NODE_OPTIONS: `--import=${pageTarget}`, CONTAINER_GATE_PAGE: options.page };
     await dockerOutput([...server, ...this.containerSettings(volume, { ...options.environment, ...page }), options.image ?? this.image]);
     // The engine copies the files into the container, so the gate needs no host path that the engine shares.
     if (options.adRules !== false) await dockerOutput(['container', 'cp', trustedAdRulesFile, `${name}:${containerAdRulesFile}`]);
-    if (options.page !== undefined) await dockerOutput(['container', 'cp', pageScript, `${name}:${containerPageScript}`]);
+    if (options.page !== undefined) await dockerOutput(['container', 'cp', containerPageScript, `${name}:${pageTarget}`]);
     return new ServerContainer(name);
   }
 
