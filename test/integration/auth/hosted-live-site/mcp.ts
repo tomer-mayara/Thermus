@@ -5,7 +5,7 @@ import { loadDeploymentConfig } from '../../../../src/config/deployment-config.t
 import { fetchToolServers } from '../../../../src/fetch-tool.ts';
 import { WorkOSFake } from '../../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../../support/drivers/mcp/mcp-http-request.ts';
-import { sendHttpsRequest } from '../../../support/hosted-live/https-client.ts';
+import { sendHttpsRequest } from '../../../support/drivers/browser/https-client.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../../support/hosted-live/settings.ts';
 import { composeApplicationWithWorkOSFake } from '../../../support/in-process/workos-site.ts';
