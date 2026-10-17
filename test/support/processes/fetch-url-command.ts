@@ -1,10 +1,15 @@
+import { mkdtemp, realpath, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import type { TestContext } from 'node:test';
-import { fetchUrlScript } from './module-paths.ts';
+import { fetchUrlScript, fetchUrlOAuthEntry } from './module-paths.ts';
 
-export async function runFetchUrl(t: TestContext, args: readonly string[], options: { credential?: string; input?: string; keepInputOpen?: boolean } = {}) {
-  const child = spawn(process.execPath, [fetchUrlScript, ...args], {
-    env: { PATH: process.env.PATH, ...(options.credential === undefined ? {} : { THERMUS_API_KEY: options.credential }) },
+export async function runFetchUrl(t: TestContext, args: readonly string[], options: { credential?: string; input?: string; keepInputOpen?: boolean; stateDirectory?: string; oauth?: { profile: Record<string, string>; ca: string; interactive?: boolean; authTimeoutMs?: number; redirectUrl?: string; browserAction?: 'wait' | 'cancel'; failSync?: boolean } } = {}) {
+  const stateDirectory = options.stateDirectory ?? await realpath(await mkdtemp(join(tmpdir(), 'thermus-fetch-state-')));
+  if (!options.stateDirectory) t.after(() => rm(stateDirectory, { recursive: true, force: true }));
+  const child = spawn(process.execPath, [options.oauth ? fetchUrlOAuthEntry : fetchUrlScript, ...args], {
+    env: { PATH: process.env.PATH, XDG_STATE_HOME: stateDirectory, ...(options.oauth ? { THERMUS_TEST_OAUTH: JSON.stringify(options.oauth), NODE_EXTRA_CA_CERTS: options.oauth.ca } : {}), ...(options.credential === undefined ? {} : { THERMUS_API_KEY: options.credential }) },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL'); });

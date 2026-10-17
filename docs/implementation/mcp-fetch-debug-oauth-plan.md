@@ -1,14 +1,14 @@
 # MCP fetch debug OAuth upgrade plan
 
-Status: **Proposed — not implemented**. Date: **2026-10-17**.
+Status: **Implemented; final gates in progress**. Date: **2026-10-17**.
 
 ## Purpose and current behavior
 
-[fetch-url.mjs](../../script/fetch-url.mjs) accepts a supplied Bearer credential,
-connects through the pinned MCP client, calls `getURLAsMarkdown` with
-`{url, reason}`, and prints exact Markdown. It does not sign in or refresh.
-The [script guide](../../script/README.md) and
-[original specification](mcp-fetch-debug.md) describe that implemented behavior.
+Before this upgrade, [fetch-url.mjs](../../script/fetch-url.mjs) accepted a
+supplied Bearer credential, connected through the pinned MCP client, called
+`getURLAsMarkdown` with `{url, reason}`, and printed exact Markdown. It did not
+sign in or refresh. The [original specification](mcp-fetch-debug.md) records
+that boundary. The [script guide](../../script/README.md) describes current use.
 
 Add browser OAuth preparation before the existing token-only MCP transport.
 Initial public CLI support is only for `https://app.thermus.ai/mcp` and its fixed
@@ -45,7 +45,7 @@ running request that already holds a token. Say this in the local diagnostic.
 
 Login/logout reject URL, reason, explicit credential input, and each other.
 If `THERMUS_API_KEY` is present, give a useful instruction to unset it first.
-Fetch still requires a URL and reason. Proposed use:
+Fetch still requires a URL and reason. Use:
 
 ```sh
 pnpm exec node script/fetch-url.mjs --login
@@ -78,7 +78,7 @@ RS256; exact AuthKit issuer and MCP audience; usable `sub`, `sid`, `client_id`,
 intended authorized workspace. Verify refresh and backend acceptance too.
 Do not assume every public application supplies the same organization context.
 
-Propose the fixed callback `http://127.0.0.1:46481/callback`. This is the simplest
+Use the fixed callback `http://127.0.0.1:46481/callback`. This is the simplest
 exact registration for this release, not an OAuth requirement. Prove a real
 WorkOS redirect reaches this listener; fail if the port is busy. Do not silently
 change ports or redirect URIs. Existing
@@ -276,9 +276,87 @@ available. `script/` is a hosted build input. Local-double or pattern passes do
 not replace full hosted gates. Record unavailable, skipped, or zero-test runs
 accurately, with candidate, commands, exit status, and counts.
 
+## Provider configuration and evidence
+
+Both dedicated Connect applications were created as first-party Public OAuth
+clients. WorkOS read-back confirms no client secrets and exactly one default
+callback: `http://127.0.0.1:46481/callback`. Existing application settings and
+shared MFA policy were not changed.
+
+| Environment | Application | Public client ID |
+| --- | --- | --- |
+| Staging | `app_01M561HD70Q2MCKKVM0J2SBDPY` | `client_01M561HD70DB58BEKMSF8GCAQN` |
+| Production | `app_01M561NFVXQ7R0PJFPD3ZCPKDJ` | `client_01M561NFVWJDE1SQ4EFMKS38C6` |
+
+The Staging prerequisite passed through a real browser and HTTP callback. Its
+issuer was `https://reasonable-field-33-staging.authkit.app`; its resource was
+`https://localhost:46443/mcp`. WorkOS returned the required user, client,
+workspace, issuer, audience, and session claims, with `openid offline_access`.
+Access lifetime was 300 seconds in this run. Refresh rotated the refresh token.
+The hosted MCP composition accepted both access tokens. After membership
+deactivation it returned 403 and did no protected work. This first proof used
+fixed fetch output; it did not prove the renderer or the finished CLI.
+
+The production tuple is the public client above, issuer
+`https://spontaneous-mountain-26.authkit.app`, and resource
+`https://app.thermus.ai/mcp`. Production configuration was read back; no user
+authorization or fetch was run against production during setup.
+
+The actual-script Staging proof also passed. It selected workspace B from two
+memberships, fetched with the real pinned renderer, reused the saved grant, and
+refreshed without a browser. Fresh login replaced the grant. Remote authorization
+removal left the unexpired JWT usable but stopped refresh; the script kept a
+login-required marker and recovered through fresh login. Local logout removed
+the saved grant while leaving remote authorization and a copied JWT usable.
+The test aged its private saved expiry to trigger refresh; it did not wait for
+the WorkOS access token's natural expiry. Owned users, organizations, and private
+state were removed after the test.
+
+## Implementation review and validation
+
+The implementation keeps command parsing and MCP transport in `fetch-url.mjs`.
+OAuth preparation, browser callback/launcher ownership, and private storage each
+have one module. A shared error class carries only local diagnostics. There is
+no new dependency, backend authorization change, registration cache, or token
+argument. The store also removes validated orphan temporary files under its
+lock after an interrupted write.
+
+Acceptance tests were written and observed failing before implementation.
+The manager reviewed the CLI/OAuth, credential-store, and live-proof work and
+signed off each part. All commands used pinned Node 24.20.0.
+
+| Check | Result |
+| --- | --- |
+| Focused changed script, SDK interface, storage, and support-path tests | Exit 0; 140 passed; no failures, cancellations, skips, or todo cases. |
+| `npm run build:hosted` | Exit 0. Includes `npm run check`: 2735 backend unit, 19 portal unit, 13 build, and 16 portal acceptance tests; then 459 integration, 120 hosted, and 9 real-renderer tests. All passed. |
+| `npm run test:acceptance`, with the existing Axiom test settings supplied only to the child process | Exit 0; 412 backend and 16 portal tests passed; no failures, cancellations, skips, or todo cases. |
+| `node --test dist/test/interface/auth/workos.test.js` | Exit 0; 38 passed; no failures, cancellations, skips, or todo cases. |
+| Focused live FS-02 signup handoff after its guide assertion correction | Exit 0; both cases passed; no failures, cancellations, skips, or todo cases. |
+| Dedicated Staging provider and actual-script proofs, final source rerun | Exit 0; 2 passed in 32.4 seconds; no failures, cancellations, skips, or todo cases. |
+| `habit-hooks` | Exit 1; 28 reviewed findings retained with reasons below. Snooze remains `[]`. |
+
+The first acceptance run failed only because the worktree lacked the Axiom
+ingest settings. The complete rerun above used the existing test settings from
+the main checkout without copying its environment file or printing secrets.
+The first complete hosted live run passed 78 of 79 cases. The one failure waited
+for instruction text removed by the earlier agent-picker change. The corrected
+test checks the default agent, selects Codex, and checks its endpoint command and
+current consent text. Its session, workspace, Connect token, and real MCP fetch
+checks remain. The focused rerun passed; the complete rerun is pending.
+
+Retained style findings: the four exported token, discovery, callback, and
+launcher functions support narrow security-boundary tests. Production calls
+them internally; the exported names are used by tests. Keeping them with their
+lifecycle owner avoids extra single-use modules. Two file-size findings cover
+the cohesive credential transaction and its storage/crash specification; the
+200-line threshold is not a useful split point. Twenty existing comments explain
+source/emitted paths, test layout, and the shared callback port that requires
+the signup suite to run last; they remain applicable. The store's one flat
+credential-admission guard
+keeps an explained complexity exception so its validation rule stays together.
+
 Sources checked **2026-10-17**: [Connect OAuth](https://workos.com/docs/authkit/connect/oauth),
 [WorkOS MCP](https://workos.com/docs/authkit/mcp),
 [Connect tokens](https://workos.com/docs/reference/workos-connect/token),
 [RFC 8252](https://www.rfc-editor.org/rfc/rfc8252), and the locally pinned
-SDK 2.3.1 helper contracts. This plan records no new executed test or provider
-proof.
+SDK 2.3.1 helper contracts.
