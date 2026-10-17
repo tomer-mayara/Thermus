@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
-import { workSliceStopSignal } from '../../support/work-slice/stop-signal.ts';
+import { workSliceStopSignal } from '../../support/processes/stop-signal.ts';
 
 function handlerCounts(signals: EventEmitter): number[] {
   return ['SIGINT', 'SIGTERM'].map((signal) => signals.listenerCount(signal));

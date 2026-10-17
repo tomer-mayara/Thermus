@@ -12,7 +12,7 @@ import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../../../support/doubles/auth/no-auth-provider.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
-import { observeFetches } from '../../../support/work-slice/observe-fetches.ts';
+import { observeFetches } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
 import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
