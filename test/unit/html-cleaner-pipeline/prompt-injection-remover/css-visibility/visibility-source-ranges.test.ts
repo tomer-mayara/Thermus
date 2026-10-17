@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { sanitizeHtml } from '../../fixtures/sanitize-html.ts';
-import { createPipeline } from './helpers/css-pipeline.ts';
+import { createPipeline } from './fixtures/css-pipeline.ts';
 
 describe('visibility in parsed HTML source ranges', () => {
   for (const hiddenTail of [true, false]) {

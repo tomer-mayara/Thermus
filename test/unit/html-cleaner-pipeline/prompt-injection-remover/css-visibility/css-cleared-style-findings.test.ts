@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { createPipeline } from './helpers/css-pipeline.ts';
+import { createPipeline } from './fixtures/css-pipeline.ts';
 
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';
 
