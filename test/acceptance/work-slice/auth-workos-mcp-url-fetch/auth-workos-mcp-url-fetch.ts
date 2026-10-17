@@ -73,8 +73,8 @@ async function serveWorkSlice(): Promise<void> {
   await using owned = new AsyncDisposableStack();
   const { logger } = owned.adopt(openAxiomLogging(axiomTestSettings(), scopeName), (opened) => opened.close());
   const connection = await openWorkOSConnection(config, logger, process.env);
-  const { apiKey, clientId, authkitIssuer } = connection.settings;
-  owned.adopt(await LocalHttpsSite.start({ apiKey, clientId, authkitIssuer }, {
+  const { apiKey, clientId, authkitIssuer, mfaPolicy } = connection.settings;
+  owned.adopt(await LocalHttpsSite.start({ apiKey, clientId, authkitIssuer, mfaPolicy }, {
     certificate: { key: tls.key, cert: tls.cert },
     logger,
     application: (applicationLogger) => composeWorkSliceApplication({ config, connection, environment: process.env }, applicationLogger),

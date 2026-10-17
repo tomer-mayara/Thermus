@@ -35,13 +35,13 @@ printf '{"arguments":[%s],"directory":"%s","settings":{"PUBLIC_BASE_URL":"%s","A
 exit "\${FAKE_PNPM_EXIT:-0}"
 `;
 
-interface LauncherCase {
+interface ScriptHarness {
   readonly directory: string;
   readonly emptyRulesFile: string;
   run(variables: Readonly<Record<string, string>>, args?: readonly string[]): SpawnSyncReturns<string>;
 }
 
-function launcherCase(t: TestContext): LauncherCase {
+function scriptHarness(t: TestContext): ScriptHarness {
   const directory = dataDirectory(t);
   const bin = join(directory, 'bin');
   const home = join(directory, 'home');
@@ -73,7 +73,7 @@ function settingLines(settings: Settings): string {
 }
 
 test(`Given only AD_RULES_FILE with an empty file and AXIOM_API_KEY, when the script runs from another directory, then pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other four settings and the key, stderr lists the five settings, and no output shows the key`, (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run({ AD_RULES_FILE: launcher.emptyRulesFile, AXIOM_API_KEY: 'private-value' });
 
@@ -84,7 +84,7 @@ test(`Given only AD_RULES_FILE with an empty file and AXIOM_API_KEY, when the sc
 });
 
 test('Given each of the five settings with a custom value, when the script runs, then pnpm gets each value unchanged, and stderr lists these values', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
   const rulesFile = join(launcher.directory, 'custom rules.txt');
   writeFileSync(rulesFile, '');
   const settings: Settings = {
@@ -102,7 +102,7 @@ test('Given each of the five settings with a custom value, when the script runs,
 });
 
 test('Given extra arguments, when the script runs, then pnpm exec gets them after the entry point', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run({ AD_RULES_FILE: launcher.emptyRulesFile }, ['--first', 'two words']);
 
@@ -110,7 +110,7 @@ test('Given extra arguments, when the script runs, then pnpm exec gets them afte
 });
 
 test('Given an AD_RULES_FILE that does not exist, when the script runs, then it exits with status 1 and a message that names AD_RULES_FILE and the touch command, and pnpm does not run', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
   const missing = join(launcher.directory, 'missing-rules.txt');
 
   const result = launcher.run({ AD_RULES_FILE: missing });
@@ -121,7 +121,7 @@ test('Given an AD_RULES_FILE that does not exist, when the script runs, then it 
 });
 
 test('Given a pnpm that exits with status 3, when the script runs, then the script exits with status 3', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run({ AD_RULES_FILE: launcher.emptyRulesFile, FAKE_PNPM_EXIT: '3' });
 

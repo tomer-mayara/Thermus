@@ -22,7 +22,7 @@ export async function assertMfaProfileBeforeLiveProofs(run: LiveRun): Promise<vo
   const { token } = await run.workos.widgets.createToken({ organizationId: organizationA.id, userId: twoOrganizationUser.id, scopes: ['widgets:users-table:manage'] });
   const data = await queryWidgetGraph(token, authenticationSettingsQuery);
   const authentication = field(data, 'authenticationSettings');
-  assertProviderMfaProfile(run.settings.mfaPolicy ?? 'optional', authentication);
+  assertProviderMfaProfile(run.settings.mfaPolicy, authentication);
 }
 
 export function describeConfigurationProofs(run: LiveRun): void {
@@ -62,7 +62,7 @@ export function describeConfigurationProofs(run: LiveRun): void {
       assert.deepEqual(others.map(({ slug }) => slug), [], 'Another environment role has an application permission.');
     });
 
-    test(`Given the ${settings.mfaPolicy ?? 'optional'} profile and a member of a staging organization, when a widget token reads authentication settings, then MFA is enabled with the selected requirement, password sign-in is on, and passkey sign-in is off`, fixtureOptions, async (t) => {
+    test(`Given the ${settings.mfaPolicy} profile and a member of a staging organization, when a widget token reads authentication settings, then MFA is enabled with the selected requirement, password sign-in is on, and passkey sign-in is off`, fixtureOptions, async (t) => {
       const { twoOrganizationUser, organizationA } = await run.fixtures();
       const { token } = await workos.widgets.createToken({ organizationId: organizationA.id, userId: twoOrganizationUser.id, scopes: ['widgets:users-table:manage'] });
 
@@ -71,7 +71,7 @@ export function describeConfigurationProofs(run: LiveRun): void {
       const authentication = field(data, 'authenticationSettings');
       t.diagnostic(`authenticationSettings: ${JSON.stringify(authentication)}`);
       t.diagnostic(`authkitSettings: ${JSON.stringify(data.authkitSettings)}`);
-      assertProviderMfaProfile(settings.mfaPolicy ?? 'optional', authentication);
+      assertProviderMfaProfile(settings.mfaPolicy, authentication);
       assert.equal(authentication.passwordAuthEnabled, true);
       assert.equal(authentication.passkeyAuthEnabled, false);
     });

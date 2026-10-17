@@ -7,8 +7,8 @@ import { nowInSeconds, SigningKey } from '../../../support/doubles/workos/jwt-si
 import { cookiePassword, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type FakeClientSettings } from '../../../support/doubles/workos/workos-fake-api.ts';
 import { guardOutboundFetch } from '../../../support/isolation/outbound-fetch-guard.ts';
 
-// A local WorkOS world for the browser session: the fake WorkOS API with a browser key set, and the real session with
-// the pinned SDK client. The test plays AuthKit and scripts each answer of the API.
+// A local session fixture for the browser session: the fake WorkOS API with a browser key set, and the real session
+// with the pinned SDK client. The test plays AuthKit and scripts each answer of the API.
 
 export const settings = { clientId: fakeClientId, redirectUri: 'https://thermus.example/team/callback', cookiePassword };
 export const authority = workosAuthority(fakeClientId);
@@ -31,7 +31,7 @@ export const ada = {
   updated_at: '2026-10-13T08:00:00.000Z',
 };
 
-export interface World {
+export interface SessionFixture {
   readonly fake: WorkOSFakeApi;
   readonly browserKey: SigningKey;
   readonly session: WorkOSBrowserSession;
@@ -46,7 +46,7 @@ export function allowOnlyLoopbackRequests(): void {
   });
 }
 
-export async function startWorld(t: TestContext): Promise<World> {
+export async function startSessionFixture(t: TestContext): Promise<SessionFixture> {
   const fake = await WorkOSFakeApi.start(t);
   const browserKey = await SigningKey.generate('browser-key-1');
   fake.browserKeySet.publish(browserKey);
@@ -57,7 +57,7 @@ export function sessionFor(fake: WorkOSFakeApi, client: FakeClientSettings = {})
   return new WorkOSBrowserSession({ workos: workosClientFor(fake, client), settings, authority, mfaEvidence: 'password-mfa-required' });
 }
 
-export function accessToken(world: World, organizationId: string, expired = false): Promise<string> {
+export function accessToken(world: SessionFixture, organizationId: string, expired = false): Promise<string> {
   const now = nowInSeconds();
   return world.browserKey.sign(
     { sub: ada.id, sid: 'session_01ADA', client_id: fakeClientId, org_id: organizationId },
@@ -85,7 +85,7 @@ export function grantsSent(fake: WorkOSFakeApi): ReadonlyArray<Readonly<Record<s
 }
 
 // The browser starts the sign-in and comes back from AuthKit with a code. Gives the Cookie header of the new session.
-export async function signIn(world: World, token: string): Promise<string> {
+export async function signIn(world: SessionFixture, token: string): Promise<string> {
   const start = await world.session.startSignIn({ returnTo: '/team/' });
   world.fake.answer(authenticateRoute, tokenAnswer(token, 'refresh-1'));
   const state = new URL(start.url).searchParams.get('state') ?? '';

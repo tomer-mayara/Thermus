@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { withPreload } from '../support/processes/server-preloads.ts';
+import { withPreload } from '../../support/processes/server-preloads.ts';
 
 test('Given settings without a preload, when a test adds one, then it keeps the settings and selects that preload', () => {
   assert.deepEqual(withPreload({ DEPLOYMENT: 'hosted' }, 'file:///fixture.js'), {

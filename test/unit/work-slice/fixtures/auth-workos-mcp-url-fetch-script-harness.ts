@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { dataDirectory } from '../../../support/isolation/data-directory.ts';
 import { repositoryRoot } from '../../../support/processes/module-paths.ts';
 
-// The harness of the launcher test of the auth WorkOS MCP URL fetch slice. The script finds the repository root from
+// The harness of the script test of the auth WorkOS MCP URL fetch slice. The script finds the repository root from
 // its own place. Each case runs a copy of the script in a temporary root, so that the case chooses the rules file, the
 // portal build, and the certificate files, and the real root stays unchanged.
 const scriptPath = 'test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh';
@@ -62,7 +62,7 @@ esac
 `;
 }
 
-interface LauncherCase {
+interface ScriptHarness {
   // The physical path, as the script finds it.
   readonly root: string;
   readonly script: string;
@@ -70,7 +70,7 @@ interface LauncherCase {
   opensslCalls(): string[][];
 }
 
-export function launcherCase(t: TestContext): LauncherCase {
+export function scriptHarness(t: TestContext): ScriptHarness {
   const directory = realpathSync(dataDirectory(t));
   const root = join(directory, 'root');
   const script = join(root, scriptPath);

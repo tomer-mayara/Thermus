@@ -153,7 +153,7 @@ test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entr
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts   The acceptance test
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh   The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
 test/support/in-process/axiom-test-export.ts          axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
-test/unit/work-slice/fetch-operation-spy.test.ts      fetchOperationSpy(); until 2026-10-15 basic-mcp-url-fetch.test.ts
+test/unit/test-support/fetch-operation-spy.test.ts    fetchOperationSpy(); until 2026-10-15 test/unit/work-slice/basic-mcp-url-fetch.test.ts
 test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
@@ -331,10 +331,10 @@ for both protocol eras of `mcpProtocolEras`.
 
 ### Unit
 
-- `test/unit/work-slice/fetch-operation-spy.test.ts` (until 2026-10-15
-  `basic-mcp-url-fetch.test.ts`): `fetchOperationSpy()` with
-  an operation double: the started and completed lines, the cut at the limit,
-  the failed line, and the error that passes through.
+- `test/unit/test-support/fetch-operation-spy.test.ts` (until 2026-10-15
+  `test/unit/work-slice/basic-mcp-url-fetch.test.ts`): `fetchOperationSpy()`
+  with an operation double: the started and completed lines, the cut at the
+  limit, the failed line, and the error that passes through.
 - The production seams have their own cases: the failure cases of
   `console-logger.test.ts` for `BaseLogger.messageOf()`, a `loadPublicUrls()`
   case in `deployment-config.test.ts`, and a `serveApplication()` case in
@@ -352,7 +352,7 @@ for both protocol eras of `mcpProtocolEras`.
 ### Commands
 
 ```bash
-npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/basic-mcp-url-fetch/*.test.js
+npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/test-support/fetch-operation-spy.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/basic-mcp-url-fetch/*.test.js
 ```
 
 ## Steps

@@ -224,7 +224,7 @@ Since 2026-10-15, `src/index.ts` exports `stopSignal()`. An `EventEmitter` is th
 npm run build && node --test dist/test/unit/stop-signal.test.js
 ```
 
-**Work slice stop wait** (`test/unit/work-slice/stop-signal.test.ts`)
+**Work slice stop wait** (`test/unit/test-support/stop-signal.test.ts`)
 
 Three source cases passed in the reviewed 20-case shutdown focus. An
 `EventEmitter` replaces process signals at the public helper interface. The
@@ -236,7 +236,7 @@ startup and keeps its signal handlers until the site closes and logging flushes.
 [V] Disposes twice after failed startup without removing another owner's handler or resolving a stop result
 
 ```sh
-npm run build && node --test dist/test/unit/work-slice/stop-signal.test.js
+npm run build && node --test dist/test/unit/test-support/stop-signal.test.js
 ```
 
 **Better Auth runtime lifecycle** (`test/unit/auth-better-auth/better-auth-runtime.test.ts`)
@@ -1053,13 +1053,13 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 
 [V] One fetcher with a configured executable runs two concurrent calls with the same executable, arguments, and process options, each with its own URL; each call gets its own result
 
-**Local renderer fixture launcher** (`test/unit/website-fetcher/network-fixture.test.ts`)
+**Local renderer fixture launcher** (`test/unit/test-support/network-fixture.test.ts`)
 
 [V] Uses the selected executable for default, empty, and configured LIGHTPANDA_BIN values, including a path with spaces
 [V] Permits only the trusted localhost fetch scope and keeps the launch options of the fetcher, also its renderer environment
 [V] Rejects another executable or a public-site fetch through the fixture launcher
 
-**Renderer process double** (`test/unit/website-fetcher/renderer-process-double.test.ts`)
+**Renderer process double** (`test/unit/test-support/renderer-process-double.test.ts`)
 
 `kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/doubles/website-fetcher/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double. The offline acceptance tests get one for each launch from `RendererProcessDouble`. The renderer setup report test of the server composition and the renderer shutdown cases also give this double as the renderer child.
 
@@ -1221,7 +1221,7 @@ The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` doubl
 npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
 ```
 
-**Work slice fetch lines** (`test/unit/work-slice/fetch-operation-spy.test.ts`)
+**Work slice fetch lines** (`test/unit/test-support/fetch-operation-spy.test.ts`)
 
 `fetchOperationSpy()` and `MARKDOWN_LOG_LIMIT` write the fetch lines of both work slices. They are in `test/support/doubles/mcp/fetch-operation-spy.ts`, and the test imports them from there. Before 2026-10-15, they were private to the entry point of the basic slice, and the test was `test/unit/work-slice/basic-mcp-url-fetch.test.ts`. The cases did not change. A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
 
@@ -1231,7 +1231,7 @@ npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.j
 [V] Gives the operation the same URL, request context, and signal
 
 ```sh
-npm run build && node --test dist/test/unit/work-slice/fetch-operation-spy.test.js
+npm run build && node --test dist/test/unit/test-support/fetch-operation-spy.test.js
 ```
 
 **Work slice launcher script: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
@@ -1250,7 +1250,7 @@ npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch-scrip
 
 **Work slice launcher script: auth WorkOS MCP URL fetch** (`test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`)
 
-The 13 source and compiled cases passed on 2026-10-15 with the slice organization default and override checks. The fixture `test/unit/work-slice/fixtures/launcher-case.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the eleven settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The settings include `THERMUS_SLICE_ORGANIZATION_ID`: the staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, and a custom organization is passed unchanged. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
+The 13 source and compiled cases passed on 2026-10-15 with the slice organization default and override checks. The harness `test/unit/work-slice/fixtures/auth-workos-mcp-url-fetch-script-harness.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the eleven settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The settings include `THERMUS_SLICE_ORGANIZATION_ID`: the staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, and a custom organization is passed unchanged. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
 
 [V] Given only the three WorkOS settings and `AXIOM_API_KEY`, when the script runs from another directory, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from `openssl rand`, and the keys; stderr lists the eleven settings after the certificate line, and no output shows a secret
 [V] Given each setting with a custom value, a cookie password, and a TLS directory with both files, pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the eleven values without the secrets
@@ -1519,7 +1519,7 @@ npm run build && node --test dist/test/integration/auth/hosted-administration.te
 
 **WorkOS browser session with the pinned SDK** (`test/integration/auth/workos-browser-session.test.ts` and `workos-browser-session-switch.test.ts`)
 
-The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-world.ts`). `allowOnlyLoopbackRequests()` of that file calls `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`. Thus a replaced `fetch` lets only requests to `127.0.0.1` through and records no request that leaves the machine.
+The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-fixtures.ts`). `allowOnlyLoopbackRequests()` of that file calls `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`. Thus a replaced `fetch` lets only requests to `127.0.0.1` through and records no request that leaves the machine.
 
 [V] A completed AuthKit sign-in exchanges the code with the verifier of the AuthKit URL, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in
 [V] A valid access token is checked against the browser key set without a refresh or a cookie change
@@ -1970,7 +1970,7 @@ gives the results. PR #116 is stacked on PR #115; both await owner review.
 [V] `test/acceptance/auth/hosted-mcp-origin.test.ts`: absent/exact origins keep protected MCP behavior; foreign, malformed, and opaque origins get 403 before WorkOS; metadata stays public
 [V] `test/integration/auth/hosted-mcp-origin.test.ts` and `test/unit/application.test.ts`: all MCP methods, repeated/invalid origins, configured port authority, no authentication work on refusal, and unchanged metadata/browser/account/self-hosted delegation
 
-[V] `test/unit/server-preloads.test.ts`: adding a preload retains existing settings, preserves both preloads in order, and leaves the supplied settings unchanged (two cases, covered by the manager-confirmed unit run)
+[V] `test/unit/test-support/server-preloads.test.ts`: adding a preload retains existing settings, preserves both preloads in order, and leaves the supplied settings unchanged (two cases, covered by the manager-confirmed unit run)
 
 [V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: the three held-identity cases retain shutdown under one second, clean exit, and no deadline error, with a 15-second total test allowance and timeout-phase diagnostics
 
@@ -1979,7 +1979,7 @@ fixture mapping; it does not establish the packaged image contract.
 
 ```sh
 npm run build
-node --test dist/test/unit/hosted-portal/hosted-portal.test.js dist/test/unit/hosted-renderer-startup.test.js dist/test/unit/application.test.js dist/test/unit/server-preloads.test.js
+node --test dist/test/unit/hosted-portal/hosted-portal.test.js dist/test/unit/hosted-renderer-startup.test.js dist/test/unit/application.test.js dist/test/unit/test-support/server-preloads.test.js
 node --test dist/test/interface/hosted-renderer-startup.test.js dist/test/integration/auth/hosted-mcp-origin.test.js
 node --test dist/test/acceptance/auth/hosted-portal.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-mcp-origin.test.js
 ```
@@ -2156,7 +2156,7 @@ exception and its three cases are gone. One case shows that the former
 exception is refused.
 
 [V] D2: refuses an import of another test type from each of the four test types; allows support code, own fixtures, the same type, `src`, and packages
-[V] D2, the former exception: `test/unit/work-slice/fetch-operation-spy.test.ts` may not import the entry point of either work slice; it may import `test/support/doubles/mcp/fetch-operation-spy.ts`
+[V] D2, the former exception: `test/unit/test-support/fetch-operation-spy.test.ts` may not import the entry point of either work slice; it may import `test/support/doubles/mcp/fetch-operation-spy.ts`
 [V] D3: refuses the fixtures of another unit package, also from a fixture file; allows own fixtures, shared support fixtures and doubles, and the package fixtures from a nested folder
 [V] Checks exact path segments without refusing names that only resemble a test type folder
 
