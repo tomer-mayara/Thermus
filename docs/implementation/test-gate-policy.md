@@ -933,8 +933,18 @@ Run r2 of the ticket did these runs on 2026-10-14 and 2026-10-15:
    more than 1 s came in short groups, so a slower group of WorkOS answers can
    stop a read at the 5-second timeout, but the probes saw none.
 
-These runs are not a pass of the hosted live gate. The gate needs the invitation
-email quota again before its next run.
+These historical runs were not a pass of the hosted live gate. The invitation
+email quota blocked their next complete run at that time.
+
+On 2026-10-17, the complete hosted live command ran on commit `5da0251d` with
+the Optional MFA profile: status 0, 79 tests in 17 suites, 79 passed, 0 failed,
+0 cancelled, 0 skipped, and 0 todo, in 583,462.096167 ms. The invitation checks
+passed, all fixtures were cleaned, and the run changed no provider setting.
+This is one complete Optional-profile pass. It does not meet the investigation's
+requirement for two consecutive complete runs, and it does not prove the
+positive application administration cases of the Required MFA profile. The
+cause of the original three page-read `500` responses remains unknown. This
+run establishes no new root-cause fix.
 
 Until the AUTH-06 cases pass, the hosted edition is not released. The
 [hosted offline checks](#hosted-offline-checks) never count as this gate.

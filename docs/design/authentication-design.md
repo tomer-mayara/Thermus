@@ -1294,7 +1294,11 @@ without a failure, and no call slower than 2,367 ms. Three runs of only the
 AUTH-08W tests could not start their cases, because the email quota of the
 staging environment was used up (point 11). The
 [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
-records these runs.
+records these runs. On 2026-10-17, a complete Optional MFA run on `5da0251d`
+passed all 79 tests, including the invitation checks. That single pass does not
+meet the two-consecutive-run requirement or prove positive administration under
+Required MFA. The cause of the original three page-read `500` responses remains
+unknown; this run establishes no new root-cause fix.
 
 The values in the table below come from the diagnostics and the checks of the
 first pattern run and the first complete run. The third complete run passed
