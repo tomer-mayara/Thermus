@@ -71,7 +71,7 @@ export class HostedImageGate {
     const context = mkdtempSync(join(tmpdir(), 'thermus-hosted-failed-check-'));
     this.t.after(() => rmSync(context, { recursive: true, force: true }));
     // Copy only the hosted build inputs. Exclude sensitive and generated files also within those folders.
-    for (const input of ['Dockerfile.hosted', 'Dockerfile.hosted.dockerignore', '.habit-hooks', '.npmrc', 'docker', 'docs', 'migrations', 'package.json', 'patches', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'src', 'test', 'tsconfig.json', 'tsconfig.build.json', 'tsconfig.user-portal.json']) {
+    for (const input of ['Dockerfile.hosted', 'Dockerfile.hosted.dockerignore', '.habit-hooks', '.npmrc', 'docker', 'docs', 'migrations', 'package.json', 'patches', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'script', 'src', 'test', 'tsconfig.json', 'tsconfig.build.json', 'tsconfig.user-portal.json']) {
       cpSync(join(root, input), join(context, input), {
         recursive: true,
         filter: (path) => !['.git', 'node_modules', 'dist', '.cache', 'coverage', 'secrets', 'playwright-report', 'test-results'].includes(basename(path))
