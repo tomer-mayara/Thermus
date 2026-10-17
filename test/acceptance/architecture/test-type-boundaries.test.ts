@@ -38,11 +38,11 @@ describe('Given rule D2: a file in test/<type>/ imports no other test type', () 
 
 describe('Given rule D2 without the former work-slice exception', () => {
   it('when the unit test of the work-slice fetch lines names a work-slice entry point, then the import is refused', async () => {
-    await assertForbidden('test/unit/work-slice/fetch-operation-spy.test.ts', [
+    await assertForbidden('test/unit/test-support/fetch-operation-spy.test.ts', [
       '../../acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts',
       '../../acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts',
     ]);
-    await assertAllowed('test/unit/work-slice/fetch-operation-spy.test.ts', ['../../support/doubles/mcp/fetch-operation-spy.ts']);
+    await assertAllowed('test/unit/test-support/fetch-operation-spy.test.ts', ['../../support/doubles/mcp/fetch-operation-spy.ts']);
   });
 });
 
