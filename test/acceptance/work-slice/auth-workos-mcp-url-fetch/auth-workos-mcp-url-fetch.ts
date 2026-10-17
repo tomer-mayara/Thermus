@@ -21,7 +21,7 @@ import { workSliceStopSignal } from '../../../support/processes/stop-signal.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-export interface WorkSliceParts {
+interface WorkSliceParts {
   readonly config: RouteConfig;
   readonly connection: WorkOSConnection;
   readonly environment: Environment;

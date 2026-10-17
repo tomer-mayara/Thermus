@@ -1,7 +1,7 @@
 import { request as httpsRequest } from 'node:https';
 import type { ClientRequest, IncomingMessage } from 'node:http';
 
-export interface HttpsExchange {
+interface HttpsExchange {
   readonly request: ClientRequest;
   readonly response: Promise<IncomingMessage>;
 }

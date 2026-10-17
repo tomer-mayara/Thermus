@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises';
 // What the HTTPS front of the local site answers: the files of the portal build at / and /assets/, with the headers
 // of the portal, and each other request forwarded to Thermus. The site in local-https-site.ts owns the listeners.
 
-export interface PortalFile {
+interface PortalFile {
   readonly body: Buffer;
   readonly type: string;
 }

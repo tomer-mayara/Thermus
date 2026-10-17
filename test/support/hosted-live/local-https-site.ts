@@ -39,7 +39,7 @@ function closeFront(front: Server): Promise<void> {
   return new Promise<void>((resolve) => front.close(() => resolve()));
 }
 
-export interface LocalHttpsSiteOptions {
+interface LocalHttpsSiteOptions {
   readonly signupDocuments?: SignupDocuments;
   // Only a custom application uses the static front. Its default portal build is src/user-portal/dist/.
   readonly portalBuild?: string;
