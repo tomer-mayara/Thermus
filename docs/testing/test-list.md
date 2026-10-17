@@ -71,6 +71,25 @@ The [FS-02 record](../implementation/fs-02.md) keeps its validation results.
   The fetched public reference page is `https://example.com/`.
   Pending and retained-without-membership cases remain offline proofs.
 
+### Signup close and reopen (FS-05)
+
+`test/acceptance/auth/hosted-signup-restart.test.ts` uses test documents and
+the local WorkOS API fake. It closes the listener and application, then starts
+new application instances with the same provider state and browser cookie.
+The case checks that closed signup refuses the original form without a provider
+request while existing browser and MCP access still work. After another stop
+and membership revocation, reopened signup requires support, keeps the retained
+marker, and cannot replay the grant. The personal workspace stays denied while
+another authorized workspace remains usable through the browser and MCP.
+This is local acceptance coverage. It does not open production signup or replace
+the separately authorized deployed checks in [FS-05](../implementation/fs-05.md).
+
+Focused command after a clean build:
+
+```sh
+node --test dist/test/acceptance/auth/hosted-signup-restart.test.js
+```
+
 ## Unit
 
 **MCP Server**
@@ -1270,8 +1289,17 @@ no WorkOS, renderer, or Axiom connection. This collaboration across the real
 child-process/launcher boundary is integration coverage. The source pass does
 not prove real Axiom delivery.
 
+Each signal case now uses its own offline local-dependency fixture without
+install-state metadata. This reproduced the Render failure: pnpm installed
+before the probe ran and wrote to stderr. The probe disables dependency
+verification only for its own pnpm invocation. The required frozen install still
+runs before tests; missing Node or tsx still fails startup. This signal check must
+not reinstall dependencies beside other tests that import them. Both regression
+cases failed before the change and pass with the invocation setting.
+
 [V] SIGINT sent to the process group and forwarded again during asynchronous cleanup preserves the first signal, reaches the flush marker, and exits the whole chain with 0
 [V] The same process-chain behavior holds for SIGTERM
+[V] Both signal cases retain empty stderr, the exact pinned runtime, and unchanged fixture and dependency-tree entries even when dependency install state is missing
 
 ```sh
 npm run build && node --test dist/test/integration/work-slice/shutdown-signals.test.js

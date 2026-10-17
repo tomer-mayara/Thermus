@@ -23,9 +23,10 @@ Tomer performs this procedure. Keep the case and minimum evidence in restricted
 `~/.codex/operator-records`, outside Git. Record environment, subject, resource
 IDs, observation times, expected document versions, outcome, next action, and
 review date. Never copy keys, cookies, tokens, raw responses, or fetched content.
-A durable restricted backup and verified restore procedure remain prerequisites
-before signup opens. Retain the exact approved document/agreement bytes there;
-a version or hash without the matching bytes is not enough.
+On October 16, 2026, the owner removed the durable backup and restore prerequisite
+and chose this restricted local folder alone. No off-device backup or restore
+proof is required. Retain the exact approved document/agreement bytes, versions,
+and hashes there; a version or hash without the matching bytes is not enough.
 
 This procedure permits inspection and a recovery proposal. It does not authorize
 provider writes, restoration of access, record replacement, or account deletion.

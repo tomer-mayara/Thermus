@@ -545,8 +545,9 @@ the hosted image gate, or the renderer gate. The [test gate policy](docs/impleme
 `pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
 
 `pnpm build:hosted` runs `check`, all emitted integration tests, the selected
-architecture and hosted acceptance/interface tests, and the real local renderer
-gate. Set an absolute `LIGHTPANDA_BIN` to Lightpanda 1.0.0 and have OpenSSL in
+architecture and hosted acceptance/interface tests, including signup close and
+reopen, and the real local renderer gate. Set an absolute `LIGHTPANDA_BIN` to
+Lightpanda 1.0.0 and have OpenSSL in
 `PATH` and port 46443 free. No live credentials or public network access are
 needed. `Dockerfile.hosted` supplies the renderer and requires these checks
 before it can produce the runtime. The [hosted offline build checks](docs/implementation/test-gate-policy.md#hosted-offline-build-checks)
