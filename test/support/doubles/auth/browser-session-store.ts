@@ -19,7 +19,7 @@ export interface SignInOptions {
   readonly mfaCompleted?: boolean;
 }
 
-export interface SessionSwitch {
+interface SessionSwitch {
   readonly subject: string;
   readonly organizationId: string;
 }

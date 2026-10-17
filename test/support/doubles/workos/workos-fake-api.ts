@@ -17,7 +17,7 @@ export interface RecordedRequest {
   readonly ifMatch: string | undefined;
 }
 
-export interface FakeResponse {
+interface FakeResponse {
   readonly status: number;
   readonly body?: unknown;
   readonly headers?: Readonly<Record<string, string>>;

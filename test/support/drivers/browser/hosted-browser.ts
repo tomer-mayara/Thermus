@@ -19,7 +19,7 @@ export interface PageForm {
   readonly label: string;
 }
 
-export interface PostOptions {
+interface PostOptions {
   // The Origin header. null sends none; the default is the public origin.
   readonly origin?: string | null;
   readonly headers?: Readonly<Record<string, string>>;

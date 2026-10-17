@@ -8,7 +8,7 @@ import type {
 } from '../../../../src/auth/hosted-auth/browser-session.ts';
 
 export type ConfiguredSession = BrowserSessionState | Error | (() => Promise<BrowserSessionState>);
-export type ConfiguredSwitch = OrganizationSwitch | Error;
+type ConfiguredSwitch = OrganizationSwitch | Error;
 
 export interface SignedInSetup {
   readonly csrfToken?: string;

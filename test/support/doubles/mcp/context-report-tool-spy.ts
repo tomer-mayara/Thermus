@@ -1,7 +1,7 @@
 import { fromJsonSchema, McpServer } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../../../../src/auth/access-context.ts';
 
-export type ContextReportArguments = Readonly<Record<string, string>>;
+type ContextReportArguments = Readonly<Record<string, string>>;
 
 export interface ContextReport {
   readonly context: RequestContext;
