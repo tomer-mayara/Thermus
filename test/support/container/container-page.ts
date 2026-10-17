@@ -34,8 +34,7 @@ const imageScript = "document.getElementById('story').textContent = 'JavaScript 
 type Answer = readonly [status: number, type: string, body: string];
 
 interface Mode {
-  // The answer to each path in files, and to each other path. A path with null gets no answer, so a renderer that loads
-  // it runs until it is stopped.
+  // A path with null gets no answer, so a renderer that loads it runs until it is stopped.
   readonly files: Readonly<Record<string, Answer | null>>;
   readonly otherPaths: Answer;
   readonly host: string;
