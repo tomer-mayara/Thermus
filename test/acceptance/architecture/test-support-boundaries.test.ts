@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
+import { basename, dirname, extname } from 'node:path';
 import { describe, it } from 'node:test';
+import * as modulePaths from '../../support/processes/module-paths.ts';
 import { assertAllowed, assertForbidden, eslint } from './fixtures/import-guards.ts';
 
-const containerScripts = ['container-edge', 'container-page', 'container-probe'].map(
-  (name) => `test/support/container/${name}.ts`,
-);
+function containerSource(path: string): string {
+  return `test/support/container/${basename(path, extname(path))}.ts`;
+}
+
+// The scripts that the sites send into containers: each path of module-paths.ts in the container folder, except the
+// identity preload. That preload runs in the server process of the hosted image, not alone in a container.
+const containerFolder = dirname(modulePaths.containerProbeScript);
+const containerScripts = Object.values(modulePaths)
+  .filter((path): path is string => typeof path === 'string' && dirname(path) === containerFolder && path !== modulePaths.hostedImageIdentity)
+  .map(containerSource);
 
 describe('Given rule D1: support code imports only src, packages, and support code', () => {
   for (const filePath of ['test/support/x.ts', 'test/support/dsl/x.ts']) {
@@ -98,7 +107,18 @@ describe('Given rule D5: support doubles and fixtures import no DSL module and n
   }
 });
 
-describe('Given rule D6: a container script imports only node: modules', () => {
+describe('Given rule D6: every container script imports only node: modules, because it runs alone in a container', () => {
+  it('when a site sends a script into a container, then rule D6 covers that script', async () => {
+    assert.ok(containerScripts.length > 0, 'module-paths.ts gives no container script');
+    for (const filePath of containerScripts) {
+      const [result] = await eslint.lintText("export * from '../../src/application.ts';", { filePath });
+      assert.ok(
+        result.messages.some((message) => message.severity === 2 && message.message.includes('Rule D6')),
+        `${filePath} must be under rule D6; got ${JSON.stringify(result.messages)}`,
+      );
+    }
+  });
+
   for (const filePath of containerScripts) {
     it(`when ${filePath} names a module that is not a node: module, then the import is refused`, async () => {
       await assertForbidden(filePath, [
@@ -115,6 +135,14 @@ describe('Given rule D6: a container script imports only node: modules', () => {
     for (const filePath of containerScripts) {
       await assertAllowed(filePath, ['node:http', 'node:dns/promises', 'node:child_process', 'node:fs']);
     }
+  });
+
+  it('when the identity preload of the hosted image names src, then rule D1 allows the import, because the preload runs in the server process and rule D6 does not cover it', async () => {
+    await assertAllowed(containerSource(modulePaths.hostedImageIdentity), [
+      '../../../src/auth/access-context.ts',
+      '../../../src/auth/identity-verifier.ts',
+      '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts',
+    ]);
   });
 });
 

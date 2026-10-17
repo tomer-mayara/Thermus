@@ -4,17 +4,31 @@ import { dirname } from 'node:path';
 import { describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
-import { probeScript } from '../support/container/container-gate.ts';
-import { edgeScript, pageScript } from '../support/container/container-site.ts';
-import { hostedImageIdentity, hostedImagePage, hostedImageProbe, foreignOriginProbe, heldHostedCleanup, heldHostedIdentity, hostedPortalFixture, hostedPortalPreload, lightpandaStub, lingeringHostedHandle, networkBlocker, portalBuild, programEntry, repositoryRoot, sqlTracer, workSliceShutdownProbe } from '../support/processes/module-paths.ts';
+import {
+  containerEdgeScript,
+  containerPageScript,
+  containerProbeScript,
+  foreignOriginProbe,
+  heldHostedCleanup,
+  heldHostedIdentity,
+  hostedImageIdentity,
+  hostedPortalFixture,
+  hostedPortalPreload,
+  lightpandaStub,
+  lingeringHostedHandle,
+  networkBlocker,
+  portalBuild,
+  programEntry,
+  repositoryRoot,
+  sqlTracer,
+  workSliceShutdownProbe,
+} from '../support/processes/module-paths.ts';
 import { failingAdCleaner } from '../support/processes/server-preloads.ts';
 
 // The support code computes these paths at run time, so the compiler cannot check them. A moved module, preload,
 // or fixture file otherwise fails only in the suite that uses it, and the container and live gates run rarely.
 const files = {
   hostedImageIdentity,
-  hostedImagePage,
-  hostedImageProbe,
   programEntry,
   hostedPortalPreload: fileURLToPath(hostedPortalPreload),
   hostedPortalIndex: fileURLToPath(new URL('index.html', hostedPortalFixture)),
@@ -28,9 +42,9 @@ const files = {
   workSliceShutdownProbe,
   failingAdCleaner: fileURLToPath(failingAdCleaner),
   trustedAdRulesFile,
-  edgeScript,
-  pageScript,
-  probeScript,
+  containerEdgeScript,
+  containerPageScript,
+  containerProbeScript,
 };
 
 describe('Run-time paths of the test support code', () => {

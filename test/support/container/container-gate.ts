@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { repositoryRoot as repositoryRootUrl } from '../processes/module-paths.ts';
+import { containerProbeScript, repositoryRoot as repositoryRootUrl } from '../processes/module-paths.ts';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 export const containerDataDirectory = '/var/lib/thermus';
@@ -13,8 +13,6 @@ export const gateRun = randomBytes(4).toString('hex');
 // Each resource of this test run has this label, so the cleanup finds it also after a failed step.
 export const gateLabel = `thermus.container-gate=${gateRun}`;
 
-// The three container scripts are siblings of this module. The path test proves that each one exists after a build.
-export const probeScript = fileURLToPath(new URL('./container-probe.js', import.meta.url));
 const engineChecks = [['version', '--format', '{{.Server.Version}}'], ['buildx', 'version'], ['compose', 'version']];
 
 export interface GateImages {
@@ -79,6 +77,6 @@ async function labelled(list: readonly string[], label: string): Promise<string[
 export async function probeImage<T>(image: string, probe: string, volume?: string): Promise<T> {
   const mount = volume === undefined ? [] : ['--volume', `${volume}:${containerDataDirectory}`];
   const args = ['container', 'run', '--rm', '--interactive', '--label', gateLabel, '--network', 'none', ...mount, '--env', `PROBE=${probe}`];
-  const output = await dockerOutput([...args, '--entrypoint', 'node', image, '--input-type=module', '-'], { input: readFileSync(probeScript) });
+  const output = await dockerOutput([...args, '--entrypoint', 'node', image, '--input-type=module', '-'], { input: readFileSync(containerProbeScript) });
   return JSON.parse(output) as T;
 }

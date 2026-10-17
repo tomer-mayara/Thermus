@@ -1,5 +1,6 @@
-// Runs in a one-off container of the image under test; container-gate.ts sends it on standard input.
-// PROBE names one of the probes at the end of this file, and the script prints the result as JSON.
+// Runs in a one-off container of an image under test. container-gate.ts and hosted-image-gate.ts send it on standard
+// input, so the image needs no mounted test file. PROBE names one of the probes at the end of this file, and the script
+// prints the result as JSON.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { accessSync, constants, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -10,10 +11,11 @@ import { DatabaseSync } from 'node:sqlite';
 const APPLICATION = '/app';
 const DATA_DIR = process.env.DATA_DIR ?? '/var/lib/thermus';
 const DEVELOPMENT_PACKAGES = [
-  'typescript', 'tsx', 'esbuild', 'eslint', 'knip', 'ts-morph', '@modelcontextprotocol/client', '@types/node', '@types/css-tree',
-  '@typescript-eslint/parser', '@typescript-eslint/eslint-plugin',
+  'typescript', 'tsx', 'esbuild', 'eslint', 'knip', 'ts-morph', 'playwright', '@modelcontextprotocol/client', '@types/node',
+  '@types/css-tree', '@typescript-eslint/parser', '@typescript-eslint/eslint-plugin',
 ];
 const PINNED_PACKAGES = ['better-auth', '@better-auth/mcp', '@modelcontextprotocol/server', 'adblock-rs'];
+const BUILD_TOOLS = ['cargo', 'rustc', 'cc', 'gcc', 'make', 'pnpm', 'tsc'];
 
 function fileHashes(directory: string): Record<string, string> {
   const files = readdirSync(directory, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile());
@@ -36,6 +38,11 @@ function developmentPackages(): string[] {
 
 function packageVersion(name: string): string {
   return (JSON.parse(readFileSync(join(APPLICATION, 'node_modules', name, 'package.json'), 'utf8')) as { version: string }).version;
+}
+
+function productionPackages(): string[] {
+  const { dependencies } = JSON.parse(readFileSync(join(APPLICATION, 'package.json'), 'utf8')) as { dependencies: Record<string, string> };
+  return Object.keys(dependencies).filter((name) => existsSync(join(APPLICATION, 'node_modules', name, 'package.json'))).sort();
 }
 
 interface AdBlocker {
@@ -66,6 +73,19 @@ function writable(path: string): boolean {
   }
 }
 
+function onPath(command: string): boolean {
+  try {
+    execFileSync('sh', ['-c', `command -v ${command}`], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function rendererVersion(path: string): string {
+  return execFileSync(path, ['version'], { encoding: 'utf8', timeout: 10_000 }).trim();
+}
+
 // The messages that the renderer logs for an HTTPS page without a network. The renderer reads the CA certificates of
 // the system when it starts, and it logs "No certificates loaded" when it finds none.
 function offlineHttpsLog(path: string): string[] {
@@ -84,7 +104,7 @@ function renderer(): unknown {
     groupId: file.gid,
     mode: (file.mode & 0o777).toString(8),
     writablePaths: [path, dirname(path)].filter(writable),
-    version: execFileSync(path, ['version'], { encoding: 'utf8', timeout: 10_000 }).trim(),
+    version: rendererVersion(path),
     offlineHttpsLog: offlineHttpsLog(path),
   };
 }
@@ -106,6 +126,25 @@ function imageFacts(): unknown {
   };
 }
 
+// The hosted image ships its rules and its renderer, so the probe fails without them.
+function hostedImageFacts(): unknown {
+  const renderer = process.env.LIGHTPANDA_BIN ?? '';
+  return {
+    architecture: process.arch,
+    user: process.getuid?.(),
+    rootEntries: readdirSync(APPLICATION).sort(),
+    distEntries: readdirSync(join(APPLICATION, 'dist')).sort(),
+    portal: existsSync(join(APPLICATION, 'src/user-portal/dist/index.html')),
+    developmentPackages: developmentPackages(),
+    productionPackages: productionPackages(),
+    rulesHash: createHash('sha256').update(readFileSync(process.env.AD_RULES_FILE ?? '', 'utf8')).digest('hex'),
+    rendererVersion: rendererVersion(renderer),
+    rendererWritable: writable(renderer),
+    certificates: existsSync('/etc/ssl/certs/ca-certificates.crt'),
+    tools: BUILD_TOOLS.filter(onPath),
+  };
+}
+
 function withDatabase<T>(work: (database: DatabaseSync) => T): T {
   const database = new DatabaseSync(join(DATA_DIR, 'auth.sqlite'));
   try {
@@ -117,6 +156,7 @@ function withDatabase<T>(work: (database: DatabaseSync) => T): T {
 
 const probes: Readonly<Record<string, () => unknown>> = {
   image: imageFacts,
+  'hosted-image': hostedImageFacts,
   'data-files': () => readdirSync(DATA_DIR).sort(),
   'installation-ids': () => withDatabase((database) => database.prepare('SELECT "id" FROM "thermus_installation"').all().map(({ id }) => String(id))),
   'remove-installation-identity': () => withDatabase((database) => database.exec('DELETE FROM "thermus_installation"')),

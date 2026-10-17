@@ -173,7 +173,7 @@ The eleven added or newly inspected comment locations have these reasons:
 | `test/support/container/docker-cli.ts`: 25 | A Docker command can intentionally close stdin. Observing the pipe error prevents an unhandled `EPIPE` without masking the process exit status. |
 | `test/support/container/hosted-image-gate.ts`: 67 | Explain why the copied failure-test context includes only build inputs, before Docker applies its own filtering, to exclude credentials and submodules. |
 | `test/support/container/hosted-image-identity.ts`: 5, 6 | Keep the proof boundary: this seam is absent from the final image and replaces only external identity behavior. |
-| `test/support/container/hosted-image-page.ts`: 19, 25, 26 | Explain controlled DNS and the exact local page exception while the real renderer child still runs and settles. |
-| `test/support/container/hosted-image-probe.ts`: 1 | Explain why the probe runs from stdin with no mounted test dependency. |
+| `test/support/container/container-page.ts` | Explain controlled DNS and the exact local page exception while the real renderer child still runs and settles. Step 9b of the test code refactoring plan moved these comments from the old hosted page seam into the mode `hosted` of this page seam. |
+| `test/support/container/container-probe.ts` | Explain why the probe runs from stdin with no mounted test dependency. Step 9b moved this comment from the old hosted image probe into the header of this probe, which now has the `hosted-image` probe. |
 | `test/support/processes/module-paths.ts`: 39 | Distinguish runtime-only test mounts from files in the final artifact. |
 | `test/acceptance/auth/hosted-image.runtime.ts`: 20 | Explain dedicated gate discovery and the Docker and AMD64 prerequisites. |

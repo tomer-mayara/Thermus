@@ -8,12 +8,15 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { listeningUrlIn } from '../drivers/operator-log.ts';
 import { workOSSettingsFor } from '../fixtures/hosted-placeholder.ts';
-import { hostedImageIdentity, hostedImagePage, hostedImageProbe, repositoryRoot } from '../processes/module-paths.ts';
+import { containerPageScript, containerProbeScript, hostedImageIdentity, repositoryRoot } from '../processes/module-paths.ts';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 const root = fileURLToPath(repositoryRoot);
-const identityTarget = '/app/dist/test/support/container/hosted-image-identity.js';
-const pageTarget = '/app/dist/test/support/container/hosted-image-page.js';
+// The emitted test support in the image. The identity preload must be here, because its relative imports find the
+// compiled src of the image at /app/dist/src. The page seam is mounted next to it.
+const mountedSupport = '/app/dist/test/support/container/';
+const identityTarget = `${mountedSupport}${basename(hostedImageIdentity)}`;
+const pageTarget = `${mountedSupport}${basename(containerPageScript)}`;
 const publicBaseUrl = 'https://thermus.example/';
 const settings = { ...workOSSettingsFor(publicBaseUrl), PUBLIC_BASE_URL: publicBaseUrl };
 
@@ -39,15 +42,17 @@ export class HostedImageGate {
   }
 
   async facts(): Promise<Record<string, unknown>> {
-    const output = await this.output(['run', '--rm', '--interactive', '--platform', 'linux/amd64', '--label', this.label, '--network', 'none', '--entrypoint', 'node', this.tag, '--input-type=module', '-'], readFileSync(hostedImageProbe));
+    const probe = ['run', '--rm', '--interactive', '--platform', 'linux/amd64', '--label', this.label, '--network', 'none', '--env', 'PROBE=hosted-image'];
+    const output = await this.output([...probe, '--entrypoint', 'node', this.tag, '--input-type=module', '-'], readFileSync(containerProbeScript));
     return JSON.parse(output) as Record<string, unknown>;
   }
 
   async server(environment: Readonly<Record<string, string>> = {}, seam = true, signal = this.t.signal): Promise<HostedImageServer> {
     const mounts = seam ? [
       '--mount', `type=bind,src=${hostedImageIdentity},dst=${identityTarget},readonly`,
-      '--mount', `type=bind,src=${hostedImagePage},dst=${pageTarget},readonly`,
+      '--mount', `type=bind,src=${containerPageScript},dst=${pageTarget},readonly`,
       '--env', `NODE_OPTIONS=--import=${identityTarget} --import=${pageTarget}`,
+      '--env', 'CONTAINER_GATE_PAGE=hosted',
     ] : [];
     const name = await this.createAndStart(environment, ['--publish', '127.0.0.1::8080', ...mounts], signal);
     const binding = await dockerOutput(['container', 'port', name, '8080/tcp'], { signal });

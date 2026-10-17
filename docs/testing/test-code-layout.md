@@ -172,8 +172,7 @@ home.
   `S/drivers/**`.
 - D6. Each script under `S/container/` that runs in a container runs there
   alone, so it imports only `node:` modules: `container-edge.ts`,
-  `container-page.ts`, `container-probe.ts`, and, until Step 9b of the plan
-  replaces them, `hosted-image-page.ts` and `hosted-image-probe.ts`. The one
+  `container-page.ts`, and `container-probe.ts`. The one
   exception is the preload `hosted-image-identity.ts`: the hosted image gate
   mounts it at the path of the emitted test support in the image. The preload
   does not run alone: it runs in the server process of the image and imports
