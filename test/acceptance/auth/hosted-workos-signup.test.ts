@@ -65,6 +65,31 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.deepEqual(site.signupFake.organizations, []);
   });
 
+  for (const method of ['GET', 'POST'] as const) {
+    test(`Given a signed-in user deleted from WorkOS, when signup receives ${method}, then it offers fresh sign-in without activation writes`, async (t) => {
+      const site = await openSignupSite(t, true);
+      const user = { id: 'user_DELETED', email: 'deleted@example.com', firstName: 'Person' };
+      site.world.users = [user];
+      const { browser } = await signInThroughServer(site, user);
+      const form = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
+      assert.ok(form);
+      site.world.users = [];
+      site.world.fake.takeRequests();
+
+      const answer = method === 'GET' ? await browser.open('signup')
+        : await browser.post('signup', { ...form.fields, agreement: 'accepted' });
+
+      assert.equal(answer.status, method === 'GET' ? 200 : 401, answer.body);
+      assert.ok(answer.body.includes(signupDocuments.notice.text), answer.body);
+      assert.match(answer.body, /href="\/login\?return_to=%2Fsignup">Sign in<\/a>/);
+      assert.deepEqual(formsIn(answer.body), []);
+      assert.doesNotMatch(answer.body, /type="checkbox"|temporarily unavailable/);
+      assert.deepEqual(site.signupFake.organizations, []);
+      assert.deepEqual(site.world.memberships, []);
+      assert.deepEqual(site.world.fake.takeRequests().filter(({ method: verb }) => verb !== 'GET'), []);
+    });
+  }
+
   test('Given current User access, when signup opens, then Continue uses the selector and returns to the portal without another agreement or provider write', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_CONTINUE', email: 'person@company.example', firstName: 'Person' };
