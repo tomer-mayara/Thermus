@@ -42,7 +42,7 @@ describe('Given rule D2 without the former work-slice exception', () => {
       '../../acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts',
       '../../acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts',
     ]);
-    await assertAllowed('test/unit/work-slice/observe-fetches.test.ts', ['../../support/work-slice/observe-fetches.ts']);
+    await assertAllowed('test/unit/work-slice/observe-fetches.test.ts', ['../../support/doubles/mcp/fetch-operation-spy.ts']);
   });
 });
 

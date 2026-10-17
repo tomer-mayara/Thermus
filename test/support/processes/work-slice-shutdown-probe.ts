@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
-import { workSliceStopSignal } from '../work-slice/stop-signal.ts';
+import { workSliceStopSignal } from './stop-signal.ts';
 
 const mode = process.argv[2];
 const signal = process.argv[3] === 'SIGTERM' ? 'SIGTERM' : 'SIGINT';

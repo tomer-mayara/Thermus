@@ -15,9 +15,9 @@ import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { LocalHttpsSite } from '../../../support/hosted-live/local-https-site.ts';
 import { connectScope, localOrigin } from '../../../support/hosted-live/settings.ts';
-import { observeFetches } from '../../../support/work-slice/observe-fetches.ts';
+import { observeFetches } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
 import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
-import { workSliceStopSignal } from '../../../support/work-slice/stop-signal.ts';
+import { workSliceStopSignal } from '../../../support/processes/stop-signal.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
