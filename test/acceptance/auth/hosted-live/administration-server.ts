@@ -19,6 +19,7 @@ import {
   type ServerAnswer,
 } from '../../../support/hosted-live/portal-visit.ts';
 import { localOrigin, mcpResource } from '../../../support/hosted-live/settings.ts';
+import { assertServerRedirect } from '../../../support/dsl/hosted-live-response.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
 interface ShownPage {
@@ -333,12 +334,16 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const first = await shownPage(run, page, 'invitations');
       const invite = (role: 'User' | 'Admin', email: string) => submit(page, formLabelled(first.forms, `Invite as ${role}`), { email });
 
-      const sent = [await invite('User', inviteeUser.email), await invite('Admin', inviteeAdmin.email), await invite('User', inviteeUser.email)];
+      const expectChange = async (answer: ServerAnswer): Promise<ServerAnswer> => {
+        assertServerRedirect(answer, `${localOrigin}/invitations`, (await run.site()).log.lines);
+        return answer;
+      };
+      const sent = [await expectChange(await invite('User', inviteeUser.email)), await expectChange(await invite('Admin', inviteeAdmin.email)), await expectChange(await invite('User', inviteeUser.email))];
       const refused = [await invite('Admin', inviteeUser.email), await invite('User', actor.email)];
       const pending = await shownPage(run, page, 'invitations');
-      const resent = await submit(page, formLabelled(pending.forms, `Resend the invitation to ${inviteeUser.email}`));
-      const third = await invite('User', inviteeRevoked.email);
-      const revoked = await submitFrom(page, 'invitations', `Revoke the invitation to ${inviteeRevoked.email}`);
+      const resent = await expectChange(await submit(page, formLabelled(pending.forms, `Resend the invitation to ${inviteeUser.email}`)));
+      const third = await expectChange(await invite('User', inviteeRevoked.email));
+      const revoked = await expectChange(await submitFrom(page, 'invitations', `Revoke the invitation to ${inviteeRevoked.email}`));
       const after = await shownPage(run, page, 'invitations');
       const invitations = await invitationsInWorkOS(organizationC.id);
       const idOf = (invitee: LiveUser) => invitations.find(({ email }) => email === invitee.email)?.id ?? 'absent';

@@ -1297,8 +1297,15 @@ staging environment was used up (point 11). The
 records these runs. On 2026-10-17, a complete Optional MFA run on `5da0251d`
 passed all 79 tests, including the invitation checks. That single pass does not
 meet the two-consecutive-run requirement or prove positive administration under
-Required MFA. The cause of the original three page-read `500` responses remains
-unknown; this run establishes no new root-cause fix.
+Required MFA. A later complete Required run passed 78 of 79 tests: the third
+invitation's revoke form was absent, and its send response had not yet been
+checked. The case now checks successful mutation responses before dependent
+lookups and gives the last three operator error reports on failure. A focused
+rerun stopped before the scenario with a fixture invitation quota error (`429`).
+That error proves the focused run's blocker, not the cause of the earlier
+missing form or the original three page-read `500` responses. Those causes
+remain unknown; no new root-cause fix is established. The gate policy records
+the exact results and the restoration of staging to Optional MFA.
 
 The values in the table below come from the diagnostics and the checks of the
 first pattern run and the first complete run. The third complete run passed

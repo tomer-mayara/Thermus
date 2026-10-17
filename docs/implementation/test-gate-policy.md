@@ -946,6 +946,28 @@ positive application administration cases of the Required MFA profile. The
 cause of the original three page-read `500` responses remains unknown. This
 run establishes no new root-cause fix.
 
+A later complete Required MFA run on 2026-10-17, on commit `c670ec8d`, exited
+1: 79 tests in 18 suites, 78 passed, 1 failed, 0 cancelled, 0 skipped, and
+0 todo, in 787,234.956541 ms. The invitation mutation case could not find the
+revoke form for its third invitation. It had not yet checked that send's
+response, so the run kept no response or operator report that explains the
+missing form. The next case accepted both earlier invitations. This run is not a Required-profile gate pass.
+
+The invitation case now checks every expected-success mutation response before
+a dependent page or form lookup. A failed check shows the status, the expected
+redirect, and the last three operator error reports, without the response body,
+cookies, or an unexpected redirect URL. Three offline diagnostic tests passed.
+A focused Required run of this changed case, with the pattern
+`when it invites an identity`, then exited 1: 1 test in 1 suite, 0 passed,
+1 failed, 0 cancelled, 0 skipped, and 0 todo, in 19,997.9195 ms. Its fixture
+invitation failed before the scenario with `RateLimitExceededException`, status
+429, "Sandbox environment email quota reached for invitation emails.", request
+ID `41ba903e-4501-41a4-a718-12831fe18bbf`, and no `Retry-After`. This proves the
+quota blocked that focused run. It does not establish the cause of the earlier
+missing revoke form or of the original three page-read `500` responses. The
+changed live case has no passing run yet. After each Required run, staging was
+restored to Optional MFA and the saved setting was read back and verified.
+
 Until the AUTH-06 cases pass, the hosted edition is not released. The
 [hosted offline checks](#hosted-offline-checks) never count as this gate.
 
