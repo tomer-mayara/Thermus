@@ -1519,7 +1519,7 @@ npm run build && node --test dist/test/integration/auth/hosted-administration.te
 
 **WorkOS browser session with the pinned SDK** (`test/integration/auth/workos-browser-session.test.ts` and `workos-browser-session-switch.test.ts`)
 
-The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-world.ts`). `allowOnlyLoopbackRequests()` of that file calls `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`. Thus a replaced `fetch` lets only requests to `127.0.0.1` through and records no request that leaves the machine.
+The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-fixtures.ts`). `allowOnlyLoopbackRequests()` of that file calls `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`. Thus a replaced `fetch` lets only requests to `127.0.0.1` through and records no request that leaves the machine.
 
 [V] A completed AuthKit sign-in exchanges the code with the verifier of the AuthKit URL, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in
 [V] A valid access token is checked against the browser key set without a refresh or a cookie change
