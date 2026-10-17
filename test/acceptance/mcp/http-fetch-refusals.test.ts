@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Client, SdkHttpError, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { SdkHttpError, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given missing or malformed Bearer credentials in ${era}, when the fetch HTTP resource is requested, then authentication refuses before fetch or completion`, async (t) => {
@@ -45,9 +46,8 @@ for (const era of mcpProtocolEras) {
 
   test(`Given a second supplied token in ${era}, when another HTTP client calls the tool, then test auth keeps the same synthetic authority and subject`, async (t) => {
     const site = await openFetchSite(t, era);
-    const client = new Client({ name: 'second-test-client', version: '0.0.0' }, { versionNegotiation: eraNegotiation(era) });
+    const client = await connectMcpClient(t, new StreamableHTTPClientTransport(site.url, { authProvider: { token: async () => 'different-supplied-token' } }), { era, checkEra: false });
     t.after(() => client.close());
-    await client.connect(new StreamableHTTPClientTransport(site.url, { authProvider: { token: async () => 'different-supplied-token' } }), { signal: t.signal, timeout: 5_000 });
     await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
     await client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
     assert.equal(site.records.length, 2);

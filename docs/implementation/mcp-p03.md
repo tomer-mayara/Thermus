@@ -157,6 +157,7 @@ command. The [gate policy](test-gate-policy.md) defines the required runs.
   `selfHostedSettings(directory)`. Self-hosted tool lists now expect
   `['getURLAsMarkdown']`. `test/support/drivers/mcp/mcp-protocol-eras.ts` holds the protocol
   era list and the client negotiation option of the MCP acceptance tests.
+  `test/support/drivers/mcp/mcp-sdk-client.ts` builds and connects the SDK client of the tests.
 - New test support: `in-process-server.ts` runs the production `serve()` in the
   test process. `renderer-process-double.ts` stands in for the renderer process
   and DNS. `server-preloads.ts` and `fail-ad-cleaner.ts` make the native rule

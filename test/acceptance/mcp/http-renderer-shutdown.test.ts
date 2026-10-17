@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { getEventListeners } from 'node:events';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
-import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
 import { composeApplication } from '../../../src/application.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
@@ -11,7 +11,8 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
 import { validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 import { controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 for (const era of mcpProtocolEras) {
@@ -47,18 +48,15 @@ for (const era of mcpProtocolEras) {
     providers.defer(() => { events.push('provider closed'); });
     const application = composeApplication((request) => server.fetch(request), server, providers);
     const listener = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href });
-    const client = new Client({ name: 'renderer-shutdown-acceptance', version: '0.0.0' }, {
-      versionNegotiation: eraNegotiation(era),
-    });
+    let client: Client | undefined = undefined;
     let finish: typeof renderer.finish | undefined;
     t.after(async () => {
       finish?.(new Error('Test cleanup'), '', '');
       finish = undefined;
-      await client.close();
+      await client?.close();
       await application.close(listener.close());
     });
-    await client.connect(new StreamableHTTPClientTransport(new URL('mcp', listener.url), { authProvider: { token: async () => 'test-token' } }), { signal: t.signal, timeout: 5_000 });
-    assert.equal(client.getNegotiatedProtocolVersion(), era);
+    client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL('mcp', listener.url), { authProvider: { token: async () => 'test-token' } }), { era });
     t.mock.timers.enable({ apis: ['setTimeout'] });
     const scheduled = t.mock.method(globalThis, 'setTimeout');
     const cleared = t.mock.method(globalThis, 'clearTimeout');

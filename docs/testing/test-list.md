@@ -1169,6 +1169,18 @@ also passed after this test-only path correction.
 npm run build && node --test dist/test/unit/test-support-paths.test.js
 ```
 
+**MCP SDK client driver** (`test/unit/test-support/mcp-sdk-client.test.ts`)
+
+Sixteen setups in fifteen files built an SDK `Client` with a `versionNegotiation` option and connected it. They were in `LocalMcpUser`, `openFetchSite()`, the two work-slice acceptance tests, the SDK HTTP contract test, the MCP access and failure report tests, the HTTP fetch refusal, fetch cancellation, DNS cancellation, request isolation, and renderer shutdown tests, the two cases of the HTTP shutdown test, the MCP discovery unit test, and the signup cases of the hosted live gate. `connectMcpClient()` in `test/support/drivers/mcp/mcp-sdk-client.ts` is the one copy. Each caller keeps its own transport, because the auth and the fetch differ. Each caller closes the client itself. If the connection or the era check fails, the driver closes the client.
+
+[V] Connects to an SDK server with the defaults in protocol version 2026-07-28; the client lists the tools of the server
+[V] Connects in the era 2025-11-25 through the legacy negotiation of the SDK; the client lists the tools of the server
+[V] Stops the version probe of a server that does not answer after the default connect timeout of 5,000 ms
+[V] Stops the version probe after a connect timeout of 10,000 ms
+[V] Stops the version probe after its own 5,000 ms with `probe: true`, also when the connect timeout is 10,000 ms
+[V] Fails the era check when an SDK server offers only protocol version 2025-06-18 to a connection in the era 2025-11-25, and closes the client
+[V] Gives the client of that connection with `checkEra: false`; the client uses protocol version 2025-06-18
+
 **Image build: Lightpanda digest check** (`test/unit/image/check-lightpanda-digest.test.ts`)
 
 The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` double gives the check the digest of the asset, because the unit suite has no Lightpanda asset. The expected digests come from `docs/lightpanda-runtime.md`.

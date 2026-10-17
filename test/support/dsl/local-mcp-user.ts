@@ -1,12 +1,12 @@
-import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
-import { Client, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, UnauthorizedError, type Client } from '@modelcontextprotocol/client';
 import { PreRegisteredNativeClient } from '../drivers/browser/better-auth-agents.ts';
 import { mcpResourceUrl, publicBaseUrl, type AccountCredentials } from '../in-process/better-auth-local.ts';
 import { LocalBrowser, serverFetch, type ServerAddress } from '../drivers/browser/local-browser.ts';
 import { userGrant, type UserGrant } from './local-commands.ts';
 import { withRuntime } from '../in-process/local-runtime.ts';
-import { eraNegotiation, type McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
+import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
 import { PreRegisteredSdkClient } from '../drivers/mcp/mcp-sdk-oauth-client.ts';
 
 export interface McpConnection {
@@ -81,12 +81,7 @@ export async function connectWithToken(t: TestContext, connection: { server: Ser
 }
 
 async function connectedClient(t: TestContext, transport: StreamableHTTPClientTransport, era: McpProtocolEra): Promise<Client> {
-  const client = new Client(
-    { name: 'thermus-acceptance', version: '0.0.0' },
-    { versionNegotiation: { ...eraNegotiation(era), probe: { timeoutMs: 5_000, maxRetries: 0 } } },
-  );
+  const client = await connectMcpClient(t, transport, { era, probe: true, timeoutMs: 10_000 });
   t.after(() => client.close());
-  await client.connect(transport, { timeout: 10_000, signal: t.signal });
-  assert.equal(client.getNegotiatedProtocolVersion(), era);
   return client;
 }

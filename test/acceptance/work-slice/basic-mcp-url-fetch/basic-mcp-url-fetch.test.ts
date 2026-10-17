@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { Client, StreamableHTTPClientTransport, type CallToolResult } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, type CallToolResult, type Client } from '@modelcontextprotocol/client';
 import type { ApplicationLogger } from '../../../../src/application.ts';
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
 import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
-import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../../support/drivers/mcp/mcp-sdk-client.ts';
 import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { createWorkSliceApplication } from './basic-mcp-url-fetch.ts';
 
@@ -58,14 +59,10 @@ async function startWorkSlice(t: TestContext, log: RecordingLog): Promise<Starte
 }
 
 async function connectedClient(t: TestContext, server: StartedWorkSlice, era: McpProtocolEra): Promise<Client> {
-  const client = new Client({ name: 'work-slice-acceptance', version: '0.0.0' }, {
-    versionNegotiation: { ...eraNegotiation(era), probe: { timeoutMs: 5_000, maxRetries: 0 } },
-  });
-  t.after(() => client.close());
-  await client.connect(new StreamableHTTPClientTransport(new URL('mcp', server.url), {
+  const client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL('mcp', server.url), {
     authProvider: { token: async () => 'any-token' },
-  }), { signal: t.signal, timeout: 5_000 });
-  assert.equal(client.getNegotiatedProtocolVersion(), era);
+  }), { era, probe: true });
+  t.after(() => client.close());
   return client;
 }
 
