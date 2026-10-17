@@ -20,28 +20,40 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. No renderer. |
 | Build | `npm run test:build` | `test/unit/build-output.test.ts`, from source | Offline. It builds temporary projects with the real compiler. |
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
-| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
+| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
+| Signup provider contract | `npm run test:interface:workos-signup` | `dist/test/interface/auth/workos-signup.live.js` | Configured Thermus WorkOS Staging key and client, and public network access. Creates and deletes disposable organizations only. Production keys are refused. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
-| All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
+| All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
-| Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration and eight invitation emails within its email quota, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
+| Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, OpenSSL, free local port 46443, and local loopback access. The Docker build supplies the renderer. |
+| Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
+| Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration and an invitation email quota that allows seven emails for Optional MFA or eight for Required MFA, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
 `npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
-It does not run the full integration, acceptance, interface, or container suites, or the renderer gate. `npm test` does not run the build test, because `tsconfig.build.json`
-excludes it from `dist/`. No suite command except `npm run test:hosted-live`
-runs the hosted live file.
+The backend unit command uses `node --test --test-concurrency=1` with the
+complete unit glob. It runs one test file at a time, so other unit files do not
+compete with the child processes that check work deadlines. Test selection,
+process isolation, assertions, and deadlines stay unchanged.
+It does not run the full integration, acceptance, interface, or container suites,
+the hosted image gate, or the renderer gate. `npm test` does not run the build test, because `tsconfig.build.json`
+excludes it from `dist/`. Only `npm run test:hosted-live` runs the hosted live file.
+The ordinary `test` and `test:acceptance` commands use the quoted Node glob
+`**/!(hosted-image).test.js` to exclude the hosted image test by basename.
+Node 24.20.0 supports this exclusion. Only `npm run test:container:hosted` runs
+that gate; the ordinary commands do not register it as a skipped test.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
 Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
 `npm run test:container` sets the setting.
 
 The renderer gate file uses the `.runtime.ts` name, so `npm test` and
-`npm run test:acceptance` do not select it. Only `npm run test:mcp:renderer`
-runs it. The [renderer gate](#renderer-gate-mcp-p03) section gives the rules.
+`npm run test:acceptance` do not select it. `npm run test:mcp:renderer`
+runs it directly, and `npm run build:hosted` runs the same complete file as its
+last phase. The [renderer gate](#renderer-gate-mcp-p03) section gives the rules.
 
 The interface suite needs the pinned Lightpanda executable. It also contains a
 public-site smoke test that needs public network access.
@@ -72,7 +84,12 @@ rejection class run in `test/integration/auth/`. MCP rejection and access tests
 run in `test/integration/mcp/` for the same reason. The direct auth import guards
 run through the existing ESLint configuration in `habit-hooks`. Their fixture
 specification, `test/acceptance/architecture/auth-boundaries.test.ts`, also needs
-a focused run and the acceptance suite.
+a focused run and the acceptance suite. The rules D1 to D7 of the
+[test code layout](../testing/test-code-layout.md#dependency-rules) run through
+the same ESLint configuration. Two specifications prove them:
+`test/acceptance/architecture/test-type-boundaries.test.ts` for D2 and D3, and
+`test/acceptance/architecture/test-support-boundaries.test.ts` for D1 and D4 to
+D7. Each also needs a focused run and the acceptance suite.
 
 ## Focused commands
 
@@ -138,12 +155,31 @@ contains every change of the pull request.
      `src/auth/`, `src/config/`,
      `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
      `src/organizations/`, or `src/terminal/`), or the container tests and
-     their support files. The image holds all of `dist/src`, so other changes
+     their support files. A pure move of a support file needs no container
+     gate run: only its import specifiers change, it is no container script,
+     and it computes no run-time path. The acceptance suite loads the moved
+     module, and the test-support path test
+     (`test/unit/test-support-paths.test.ts`, from Step 1 of the
+     [test code refactoring plan](test-code-refactoring-plan.md)) proves each
+     run-time path; until that test exists, the module load alone covers the
+     move. The owner decided this on 2026-10-14. The image holds all of
+     `dist/src`, so other changes
      in `src/` change the image too; the [self-hosted release](#self-hosted-release)
      checks run the container gate for each release.
+   - `npm run build:hosted` and `npm run test:container:hosted` for a change to
+     `Dockerfile.hosted`, `Dockerfile.hosted.dockerignore`, either command,
+     `docker/verify-hosted-runtime.mjs`, the shipped hosted rules, or a hosted
+     runtime build input. This includes shared dependency pins, migrations,
+     backend or portal source, and their build configuration. Run the hosted
+     image gate for changes to its test or support files too. A final Linux
+     AMD64 image pass is required; a host-only or ARM64 run does not replace it.
    - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a
      change to the WorkOS SDK or jose packages or to the hosted authentication
      flow. They run offline with a focused command.
+   - The offline signup retry proof, `test/interface/auth/workos-signup.test.ts`,
+     and the Staging signup provider contract, `npm run test:interface:workos-signup`,
+     for changes to signup creation, its acceptance record, or its SDK retry
+     configuration. The [FS-01 record](fs-01.md) gives the scope and limits.
    - The hosted live gate, `npm run test:hosted-live`, for a change to the
      hosted authentication flow, to the WorkOS organization reads or changes,
      or to the steps of the [operator runbook](hosted-organization-setup.md),
@@ -208,7 +244,7 @@ AUTH-09 added the container acceptance suite
   lookup. The container has no route out, so the renderer cannot connect, and
   the call gets `Page fetch failed` and a `fetch_failed` record. The renderer
   starts, so the server log gets no renderer setup report;
-- loads the test-only page seam `test/support/container-page.ts` into the server
+- loads the test-only page seam `test/support/container/container-page.ts` into the server
   container of the two renderer cases, with `--import` in `NODE_OPTIONS`. The
   seam serves a JavaScript page on port 8090 of the container and gives the
   lookup of `localhost` a public address, as `resolveAsPublic` does. With
@@ -225,6 +261,13 @@ AUTH-09 added the container acceptance suite
   that the renderer blocks the loopback socket of `localhost`. Each call gets
   `Page fetch failed` and a `fetch_failed` record, and the page gets no
   connection;
+- keeps hosted, paid, and private-provider paths closed to a signed-in local
+  user, with no new account and only the fetch tool in MCP. Starting this
+  self-hosted image with `DEPLOYMENT=hosted`, valid WorkOS settings, trusted
+  rules, and its pinned renderer stops before listening because the image has
+  no portal build. The safe FATAL message names the build command, the exit
+  code is 1, the fresh volume stays empty, and no outbound call occurs. RHD-03
+  supplies the separate hosted image;
 - checks in the image that `LIGHTPANDA_BIN` names the pinned executable, which
   root owns and the `node` user cannot change, that the executable reports
   1.0.0 and loads the CA certificates of the image, and that the image sets
@@ -254,6 +297,105 @@ docker volume rm $(docker volume ls --quiet --filter label=thermus.container-gat
 docker image rm --force $(docker image ls --quiet --filter label=thermus.container-gate)
 ```
 
+## Hosted offline build checks
+
+`npm run build:hosted` starts with `npm run check`. That command builds the
+backend during the unit suite and builds the portal last. The hosted command
+then runs these emitted files directly, without another build:
+
+1. `dist/test/integration/**/*.test.js`: the complete offline integration suite.
+2. `dist/test/acceptance/architecture/*.test.js`: all architecture specifications;
+   `dist/test/acceptance/hosted-ad-policy.test.js`,
+   `dist/test/acceptance/auth/hosted-startup.test.js`,
+   `dist/test/acceptance/auth/hosted-portal.test.js`,
+   `dist/test/acceptance/auth/hosted-mcp-origin.test.js`,
+   `dist/test/acceptance/auth/hosted-workos-signup.test.js`,
+   `dist/test/acceptance/auth/hosted-signup-restart.test.js`,
+   `dist/test/acceptance/auth/hosted-signup-guidance.test.js`,
+   `dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js`,
+   `dist/test/acceptance/mcp/hosted-fetch-tool.test.js`,
+   `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
+   `dist/test/acceptance/mcp/server-only-modules.test.js`, and
+   `dist/test/interface/hosted-renderer-startup.test.js`.
+3. `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`: the real local
+   renderer gate, with the pinned executable.
+
+The exact selection is in `package.json`. It includes the current emitted
+integration glob and explicit, nonempty acceptance and interface paths. It
+excludes the Axiom tests, public-site renderer smoke test, live WorkOS gate,
+and Docker gates. The command needs the pinned Node and dependencies, OpenSSL
+in `PATH`, a free local port 46443, local loopback connections, and the
+absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no live credential or
+public network access. A local command is:
+
+```sh
+LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" npm run build:hosted
+```
+
+`Dockerfile.hosted` supplies its checked renderer and runs this command with
+`RUN --network=none`. The final runtime copies backend and portal outputs
+from that checked stage, so BuildKit cannot skip its checks. The final stage
+then checks the assembled outputs with the production dependencies, as the
+non-root runtime user, without network access. It does not rebuild them.
+A failed check must prevent a final runtime image. No Docker daemon runs
+inside the build. These checks supplement the required pull request runs.
+
+### Acceptance: hosted build with constrained CPU
+
+Given a Linux AMD64 Render Starter builder with two CPUs and 8 GB of memory
+and the pinned build inputs, when `npm run build:hosted` runs, then every
+selected test must pass with its existing assertions and deadlines. The build
+must keep the complete test selection and the production selector limits.
+A failed check must still prevent a runtime image.
+
+The local image proof uses an AMD64 runtime in a VM with two CPUs and 4 GiB
+of memory. Record the local proof and the Render build result separately.
+
+The initial Render build, `dep-db8pua7f3r2c73f0b3ag`, failed this scenario on
+main `3736b78d`: 2,533 of 2,534 backend unit tests passed. The case
+`rejects 32 repeated descendant combinators within the time limit` took
+12,309 ms in total, and its child did not close within the separate 3,000 ms
+work deadline. The total includes child startup; it is not selector CPU time.
+CPU contention between test files is a hypothesis, not a proven cause. This
+failed build is the initial regression evidence; it is not a gate pass.
+
+## Hosted image gate
+
+`npm run test:container:hosted` makes a clean backend build and runs only
+`test/acceptance/auth/hosted-image.test.ts` as emitted JavaScript. The ordinary
+`test` and `test:acceptance` command globs explicitly exclude this basename.
+The command is also the focused command for that file:
+
+```sh
+npm run test:container:hosted
+```
+
+FS-04 renamed this file from `hosted-image.runtime.ts` to `hosted-image.test.ts`
+on October 16, 2026. Earlier validation records keep the command and filename
+used for those runs. Use the current dedicated command for a new run. The
+renderer and live gate names did not change.
+
+The gate must build and run the final `Dockerfile.hosted` image for
+`linux/amd64`. It needs Docker Engine with Buildx and a native or emulated
+AMD64 builder and runtime. Downloading the pinned base images, packages, and
+Lightpanda asset needs network access unless those inputs are cached. The runtime test needs public HTTPS egress to
+`https://example.com/`. Tests need no live WorkOS or Axiom credential. The final-image run must prove real
+native cleaner loading, CA-backed HTTPS and JavaScript rendering, private
+network refusal, capacity refusal, cancellation, bounded shutdown, invalid
+startup refusal, the exact approved pre-sign-in notice with signup enabled only
+in an image test, and a failed offline check that prevents a runtime image.
+The [RHD-03 record](rhd-03.md) tracks the case details and results.
+The gate allows 60 minutes for its build and image cases. Its deliberate
+failed-check case injects a failing offline test into an existing unit file.
+The build must stop there without producing a runtime image. This allowance
+does not change production readiness or shutdown limits.
+
+A successful build alone does not pass the runtime gate. A pass of the
+self-hosted container gate, host renderer gate, or ARM64 image does not prove
+this Linux AMD64 image. A pass does not prove real WorkOS behavior or a
+Render deployment. Record architecture and complete test counts with the
+command result.
+
 ## Renderer gate (MCP-P03)
 
 MCP-P03 added the explicit renderer gate,
@@ -268,14 +410,14 @@ The gate needs `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda
 1.0.0 executable. [Lightpanda runtime](../lightpanda-runtime.md) gives the
 setup. The gate needs no public network access and no Axiom credentials. The
 pages are local HTTP fixtures on `127.0.0.1`. The test-only `permitIPv4Fixture`
-seam in `test/support/network-fixture.ts` lets the renderer reach only that
+seam in `test/support/doubles/website-fetcher/network-fixture.ts` lets the renderer reach only that
 address in the test scope. It keeps the other launch options of the fetcher,
 also the renderer environment, so the gate checks the telemetry setting of the
 fetcher. Production has no private-network bypass.
 
 The gate runs the production `serve()` in the test process with real Better
 Auth, the real cleaning pipeline, trusted test rules, and the pinned renderer.
-The real MCP SDK HTTP client calls `getURLAsMarkdown`. The seven cases cover:
+The real MCP SDK HTTP client calls `getURLAsMarkdown`. The nine cases cover:
 
 - exact cleaned Markdown from a local JavaScript page and one safe completion
   record, in the modern 2026-07-28 and the legacy 2025-11-25 era, after the
@@ -290,6 +432,11 @@ The real MCP SDK HTTP client calls `getURLAsMarkdown`. The seven cases cover:
 - hidden content, sanitizer-withheld HTML with exact empty success, an HTTP
   error with `Page fetch failed` and no renderer setup report, and a DOM deeper
   than 256 levels with `Page processing failed`;
+- a page whose script completes after 6.5 seconds and returns rendered content
+  within the fixed 20-second readiness allowance;
+- a page that never reaches network idle: the child stops before the call
+  completes, no partial Markdown returns, and the server writes one safe
+  `readiness_timeout` report and one `fetch_failed` completion record;
 - a modern client cancellation that stops the renderer child and writes one
   `cancelled` record;
 - a legacy call that server shutdown cancels: the renderer child stops before
@@ -302,8 +449,10 @@ acceptance suite has `test/acceptance/mcp/renderer-gate-setup.test.ts`. It runs
 the gate four times with bad prerequisites. It checks that each run fails with
 its setup error and that no gate test passes, is skipped, or is left as todo.
 
-Only a run of `npm run test:mcp:renderer` that exits with status 0 and shows
-each of the seven cases as passed is a renderer gate pass. A run that selects zero
+A run of `npm run test:mcp:renderer` that exits with status 0 and shows
+each of the nine cases as passed is a renderer gate pass. The final phase of
+`npm run build:hosted` runs that same complete file; record its renderer
+result separately from the earlier build phases. A run that selects zero
 tests, skips a test, leaves a test as todo, or stops with a setup error is not a
 pass. A passing default acceptance suite never counts as rendered end-to-end
 proof, and a container gate pass does not count either. Claim rendered tool
@@ -321,7 +470,7 @@ and its unit test. AUTH-08W connected the member and invitation reads and
 changes to WorkOS. These tests run offline and need no WorkOS account,
 credential, or network access. They use doubles at the provider contracts, or
 the pinned SDK with a local fake of the WorkOS API
-(`test/support/workos-fake-api.ts` and `test/support/workos-world.ts`).
+(`test/support/doubles/workos/workos-fake-api.ts` and `test/support/doubles/workos/workos-fake.ts`).
 They are in the existing suites:
 
 - unit: `test/unit/hosted-admin/account-routes.test.ts`,
@@ -371,10 +520,11 @@ They are in the existing suites:
   `test/acceptance/auth/hosted-grant-refusals.test.ts`,
   `test/acceptance/auth/hosted-invitations.test.ts`, and
   `test/acceptance/auth/hosted-seats.test.ts`, in
-  `npm run test:acceptance`. The container gate also starts the image with
-  `DEPLOYMENT=hosted` and placeholder WorkOS settings.
+  `npm run test:acceptance`. The self-hosted container gate also checks that
+  `DEPLOYMENT=hosted` with placeholder WorkOS settings fails before listening,
+  because that image has no built portal.
 
-This command is the offline hosted gate. It runs the hosted integration and
+This focused command runs the hosted integration and
 acceptance files. Its glob `workos-*.test.js` selects each WorkOS integration
 file, also `workos-provider-organizations.test.js` and
 `workos-provider-administration.test.js`:
@@ -452,21 +602,54 @@ environment of the command:
 | `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, memberships, and invitations. |
 | `WORKOS_CLIENT_ID` | The client ID of the staging environment. |
 | `WORKOS_AUTHKIT_ISSUER` | The AuthKit domain of the staging environment, exactly as WorkOS shows it: an absolute `https` URL without spaces, a username, a password, a query, or a fragment. |
+| `WORKOS_MFA_POLICY` | Omitted or `optional` selects the Optional profile; `required` selects the Required profile. These are the only accepted exact values. The provider must match the selected profile. |
 
 On the owner's Mac, the staging launcher reads the API key from the macOS
 Keychain and gives the three settings only to the command that it starts:
 
 ```sh
-node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 ```
 
 The launcher is outside the repository. Never print its key or copy it into a
 file, a ticket, or a log.
 
-Configure the staging environment as the hosted edition needs it:
+The command uses one MFA profile for the complete run:
 
-- Email and password sign-in with MFA required. No social sign-in provider,
-  no passkey, and no magic sign-in: only a password sign-in proves MFA.
+```sh
+# Default profile: WorkOS MFA must be Optional.
+LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+# Required profile: use only after WorkOS MFA is set to Required.
+WORKOS_MFA_POLICY=required LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+```
+
+The provider preflight checks `mfaEnabled: true` and requires `mfaRequired` to
+be false for Optional or true for Required before any live test or login. A
+mismatch fails the run. The command does not change provider MFA settings.
+The Optional profile proves normal browser/Connect flows with no application
+MFA evidence and explicit administration refusal. The Required profile keeps
+the positive administration proofs under the matched password-MFA contract.
+Each profile registers 79 cases, including the two FS-02 signup cases. Required
+keeps the eight positive application administration cases. Optional replaces
+them with refusal and invitation-acceptance cases that preserve the MFA boundary.
+Operator/API administration contract proofs run in both profiles: those service-credential
+proofs do not give an Optional browser session administration authority.
+A pass of one profile does not prove the other. Restore shared Staging to
+Optional after an authorized Required-profile run.
+
+Configure the other staging settings as the hosted edition needs them:
+
+- Email and password sign-in and Google OAuth with the built-in Google
+  credentials of WorkOS. No other social sign-in provider, no passkey, and no
+  magic sign-in. Optional gives no MFA evidence for any method. Only the
+  explicit Required profile can use Password under its verified provider
+  requirement; Google gives no MFA evidence. Google sign-in is on since
+  2026-10-14, for the
+  [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+  (decision D1 of its [plan](auth-workos-mcp-url-fetch-plan.md)).
+- Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD)
+  on, so that MCP clients such as Claude Code register themselves at AuthKit.
+  They are on since 2026-10-14, for the same work slice.
 - Multiple roles for each membership, and the roles and permissions of the
   [hosted role mapping](../design/authentication-design.md#hosted-role-mapping).
 - The redirect URI `https://localhost:46443/callback` as the default, the
@@ -475,27 +658,72 @@ Configure the staging environment as the hosted edition needs it:
 - The MCP resource indicator `https://localhost:46443/mcp`.
 
 The WorkOS API can save the redirect URI and the resource indicator. The
-social providers, the Sign-out URI, and the Initiate login URI are dashboard
-settings. The configuration proofs of the gate read back each setting that the
-API or the hosted pages show. The session-end proofs follow the redirects of
-the WorkOS logout to the Sign-out URI and of a direct AuthKit visit to the
-Initiate login URI. A redirect is not a page, so these proofs watch the
-navigation requests of the browser.
+Sign-out URI and the Initiate login URI are dashboard settings. The dashboard
+also keeps the sign-in methods and the social providers, under Authentication,
+and DCR and CIMD. The WorkOS connector can change these too, with its
+`updateAuthkitSettings` operation. The configuration proofs of the gate read
+back each setting that the API or the hosted pages show. The proof of the
+AuthKit metadata reads DCR and CIMD back: the `registration_endpoint` and
+`client_id_metadata_document_supported`. The session-end proofs follow the
+redirects of the WorkOS logout to the Sign-out URI and of a direct AuthKit
+visit to the Initiate login URI. A redirect is not a page, so these proofs
+watch the navigation requests of the browser.
+
+The auth WorkOS MCP URL fetch work slice uses the same staging environment,
+the same origin `https://localhost:46443/`, and the same registered URIs. Thus
+the slice and the gate cannot run at the same time. The gate does not delete
+the configured slice organization or its users: a run deletes
+only the data with its own name or email prefix. The normal hosted
+composition of the gate enables no automatic Google onboarding. Only the manual slice opts
+in to that policy for its configured organization. Its real browser-first
+Google, Connect consent, authenticated HTTPS fetch, and Axiom proof is
+separate from the gate. Keep PR #108 in Draft until that proof and the required
+complete-candidate checks pass; configuration read-back alone is not a pass.
+
+The default local HTTPS front forwards every request to the production hosted
+application, including the portal and assets. Thus the browser checks use its
+real portal policy. A custom development application keeps the front-served
+portal. The production application runs its local startup checks before it can
+serve the live gate.
+
+The final FS-02 cases stop that site and start a test composition with clearly
+marked test documents and signup enabled. It retains the production portal,
+fetch tool, renderer checks, and cleanup. The default composition stays closed.
+The two cases reuse the original fixture workspaces and Connect application.
+Their registry owns only their new signup user and personal organization.
+Cleanup recovers a lost personal-organization response through the deterministic
+external ID of a fixture-owned user; it never sweeps all signup organizations.
+These cases prove activation, selector-to-portal navigation, and real MCP fetches
+for the verified token workspace. Revoking workspace A denies the same token
+while browser B and a fresh B token still work. A repeat activation cannot
+restore A. No production setting or policy page changes.
 
 The gate also needs:
+
+- An absolute `LIGHTPANDA_BIN` path to the pinned Lightpanda 1.0.0 executable.
+  Hosted startup checks its version with the fixed timeout and output bounds
+  in the [runtime guide](../lightpanda-runtime.md#select-the-executable).
+  This local version check does not replace the renderer gate.
 
 - Chromium for Playwright 1.64.0: `pnpm exec playwright install chromium`.
 - OpenSSL in `PATH`: the local HTTPS test server makes a new self-signed
   certificate for `localhost` for each run.
 - Free local ports: 46443 for the local HTTPS test server, and 46480 for the
-  callback of the test MCP client, which the browser catches.
+  callback of the test MCP client, which the browser catches. Nothing else
+  listens on port 46443: not the auth WorkOS MCP URL fetch work slice, and
+  not the integration case of the local HTTPS site in
+  `test/integration/auth/hosted-live-site.test.ts`, which
+  `npm run test:integration` runs.
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 - Invitation emails that the email quota of the staging environment still
   allows. WorkOS sends an email through its default email provider for each
   send and each resend of an invitation. A complete run, and a run of only the
-  AUTH-08W tests, makes eight sends and resends that WorkOS accepts: two in the
-  AUTH-08W fixtures, two in the AUTH-08W proofs, and four in the AUTH-08W cases.
+  AUTH-08W tests, makes seven sends and resends with Optional MFA, or eight
+  with Required MFA, that WorkOS accepts. Both profiles make two in the
+  AUTH-08W fixtures and two in the AUTH-08W proofs. The Optional cases make
+  three operator invitation sends; their application sends and resends are
+  refused before WorkOS. The Required cases make three sends and one resend.
   When the quota is used up, WorkOS refuses each send with `429` and the
   message "Sandbox environment email quota reached for invitation emails.".
   Then the AUTH-08W fixtures cannot be made, and each of the 17 AUTH-08W tests
@@ -503,8 +731,8 @@ The gate also needs:
   `Retry-After` and documents no fixed quota. A run at 23:17 UTC on 2026-10-14
   found the quota used up, and so did runs at 00:00 and 00:24 UTC.
 
-A complete run takes about 12 minutes: the third complete run of AUTH-08W
-run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
+The historical Required-profile run took about 12 minutes: the third
+complete run of AUTH-08W run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
 tokens to expire, and the AUTH-07W expiry case after it uses the same wait.
 
 If a setting is missing, empty, or refused, the command fails with one setup
@@ -518,7 +746,14 @@ settings and every live test passes. Missing hosted credentials, a setup error,
 and skipped live tests can never count as a successful hosted gate. Do not put
 credentials in the repository, in logs, or in pull request notes.
 
-The command has six parts:
+The Required profile has the six parts below. The Optional profile keeps
+the common browser, session, Connect, access, organization, and revocation
+proofs and replaces positive MFA/administration expectations with no-evidence
+and administration-refusal cases. Neither profile silently changes the
+provider setting. Counts and final candidate results belong in the
+[validation record](auth-workos-mcp-url-fetch-validation.md).
+
+The Required profile has these parts:
 
 - The provider proofs of AUTH-06: the AuthKit metadata and key sets, the saved
   configuration, the browser sign-in with required MFA, sessions and their
@@ -527,9 +762,9 @@ The command has six parts:
   lists them and records their results.
 - The AUTH-06 cases of the hosted live gate, in
   `test/acceptance/auth/hosted-live/hosted-server.ts`. The local HTTPS test
-  server, `test/support/hosted-live/local-https-site.ts`, serves the portal
-  build at `https://localhost:46443/` and forwards each other request to the
-  real hosted composition of Thermus with the staging settings. Playwright
+  server, `test/support/hosted-live/local-https-site.ts`, forwards all requests
+  at `https://localhost:46443/` to the production hosted application of Thermus
+  with the staging settings. The application serves the portal and assets. Playwright
   drives the portal, the sign-in, and the sign-out; a test MCP client sends
   Connect tokens to the MCP endpoint. The cases cover the sign-in with MFA and
   the session cookie, the onboarding of a user without a membership, the
@@ -615,9 +850,10 @@ these users. The invitations of the proofs and cases go only to these
 existing users, because an invitation to a new address needs an email
 verification code at the acceptance. The run deletes them at the end with
 its other fixtures. They need no other setting or prerequisite. With them,
-the complete command has 77 tests: the 60 tests of AUTH-06 and AUTH-07W, with
-the three operator proofs of the ticket
-`9255ad59-3484-43bd-bdf5-e6e391e07bd6`, and the 17 AUTH-08W tests.
+the complete command has 79 tests in either MFA profile: the 60 tests of
+AUTH-06 and AUTH-07W, with the three operator proofs of the ticket
+`9255ad59-3484-43bd-bdf5-e6e391e07bd6`, the 17 AUTH-08W tests, and the two
+FS-02 signup cases.
 
 Record the results of the AUTH-06 cases separately from the full hosted release
 gate. A pass of the AUTH-06 cases lets AUTH-06 complete its scope: identity

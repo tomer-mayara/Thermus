@@ -4,8 +4,8 @@ import { test } from 'node:test';
 import { Server } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../../../src/auth/access-context.ts';
 import { MCPServer, type McpRequestLifetime } from '../../../src/mcp/mcp-server.ts';
-import { alice, bob, contextFor, identityFor, resourceUrl } from './fixtures/access-test-server.ts';
-import { mcpRequest } from './fixtures/mcp-http-request.ts';
+import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { alice, bob, contextFor, identityFor, resourceUrl } from '../../support/in-process/access-test-server.ts';
 
 for (const abortAlice of [false, true]) {
   test(`Given reverse overlapping request bindings, when ${abortAlice ? 'Alice aborts and shutdown follows' : 'shutdown starts'}, then frozen contexts and tracked lifetimes stay separate until both cleanups finish`, { timeout: 2_000 }, async (t) => {

@@ -1,0 +1,23 @@
+{
+  "authkitBackground": {
+    "css": ".ak-Background { color: #F3F2EE; background: #17181D; font-family: \"IBM Plex Sans\", system-ui, sans-serif; }"
+  },
+  "authkitCard": {
+    "css": ".ak-Card { box-sizing: border-box; max-width: 464px; width: 100%; padding: 32px; border: 1px solid #2C2D34; border-radius: 12px; background: #212228; }"
+  },
+  "authkitHeader": {
+    "css": ".ak-Header .ak-Heading { color: #F3F2EE; font-family: \"IBM Plex Serif\", Georgia, serif; font-size: clamp(30px, 2.8vw, 40px); font-weight: 500; line-height: 1.15; letter-spacing: -.02em; overflow-wrap: break-word; }"
+  },
+  "authkitButton": {
+    "css": ".ak-PrimaryButton { min-height: 48px; border-radius: 6px; background: #E8552A; color: #17181D; font-family: \"IBM Plex Sans\", system-ui, sans-serif; font-weight: 600; } .ak-PrimaryButton:hover { background: #F26B43; color: #17181D; } .ak-PrimaryButton:focus-visible { outline: 3px solid #F3F2EE; outline-offset: 4px; }"
+  },
+  "authkitOAuthButton": {
+    "css": ".ak-AuthButton { min-height: 48px; border: 1px solid #7B7E88; border-radius: 6px; color: #F3F2EE; background: transparent; font-family: \"IBM Plex Sans\", system-ui, sans-serif; } .ak-AuthButton:focus-visible { outline: 3px solid #F3F2EE; outline-offset: 4px; }"
+  },
+  "authkitInput": {
+    "css": ".ak-TextField { min-height: 48px; border: 1px solid #7B7E88; border-radius: 6px; color: #F3F2EE; background: #17181D; font-family: \"IBM Plex Sans\", system-ui, sans-serif; } .ak-TextField:focus-within { outline: 3px solid #F3F2EE; outline-offset: 3px; } .ak-TextField .rt-TextFieldInput { color: #F3F2EE; font-family: \"IBM Plex Sans\", system-ui, sans-serif; }"
+  },
+  "authkitLabel": {
+    "css": ".ak-Label { color: #F3F2EE; font-family: \"IBM Plex Sans\", system-ui, sans-serif; }"
+  }
+}

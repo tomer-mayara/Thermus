@@ -2,7 +2,7 @@
 
 Status: done; refactored onto production seams on 2026-10-14.
 Date: 2026-10-14. Branch: `claude/basic-mcp-url-fetch-d00f84`.
-Entry point: `test/acceptance/work-slice/basic-mcp-url-fetch.ts`.
+Entry point: `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts`.
 The owner accepted the defaults of each decision on 2026-10-14, with one
 change: the entry point lives under `test/acceptance/work-slice/`, not under
 `script/`, and that folder has a `README.md` that describes each work slice.
@@ -68,6 +68,27 @@ call sites: `index.ts` for the listening line, `work-slice-application.ts`
 `fetch-tool-server.ts` for the record.
 `SIGINT` gave exit status 0, so every export was accepted.
 
+On 2026-10-14, the owner merged pull request 80 as `1ed55aa`. The owner
+decided to keep `openAxiomLogging()` in test support until the audit-trail work
+makes the Axiom export a production feature. The launcher script
+`test/acceptance/work-slice/basic-mcp-url-fetch.sh` came in a second pull
+request. It runs the entry point through `pnpm exec node --import tsx`, the
+pinned Node runtime of pnpm, and not through the package script: pnpm passes a
+signal to that child, but the package script puts a shell wrapper and the
+`tsx` CLI between them, and a signal to the wrapper stops nothing. A smoke run
+on 2026-10-14, scope `thermus-work-slice-6b704cb0-c370-4daf-af43-875d1cd20cfe`,
+started the slice from another directory; `SIGINT` to the process of the
+launcher gave exit status 0, a free port, and the listening and stop lines in
+Axiom.
+
+On 2026-10-15, the owner moved the files of the slice into their own folder,
+`test/acceptance/work-slice/basic-mcp-url-fetch/`. Each work slice now has a
+folder with its entry point, launcher script, acceptance test, and `README.md`,
+and `test/acceptance/work-slice/README.md` lists the slices. The launcher goes
+up one more level to the repository root and runs the entry point at its new
+path. The import paths, the package script, the two unit tests, and the
+documents follow the move.
+
 ## Goal
 
 One script starts the MCP fetch tool for a local LLM and shows each fetch in
@@ -87,13 +108,13 @@ provider.
 
 | Part | State | Where |
 | --- | --- | --- |
-| Mock provider | Exists. Tests only. | `test/support/auth/no-auth-provider.ts` |
+| Mock provider | Exists. Tests only. | `test/support/doubles/auth/no-auth-provider.ts` |
 | MCP server with the Bearer checks | Exists. | `src/mcp/mcp-server.ts` |
 | Fetch tool, operation, and completion record | Exists. | `src/mcp/fetch-tool-server.ts`, `src/mcp/get-url-as-markdown.ts` |
 | Production fetch composition | Exists, but only behind Better Auth. It does not expose the fetcher or the pipeline. | `src/fetch-tool.ts`, `src/application.ts` |
 | HTTP bridge | Exists. | `src/http/server.ts` |
 | OTel logger adapter | Exists. No production wiring. | `src/logging/otel-logger.ts` |
-| Axiom settings reader | Exists. Tests only. The dataset is fixed to `system-log-test`. | `test/support/axiom-test-export.ts` |
+| Axiom settings reader | Exists. Tests only. The dataset is fixed to `system-log-test`. | `test/support/in-process/axiom-test-export.ts` |
 | Work slice folder and entry point | Missing. | `test/acceptance/work-slice/` |
 | A log line with the URL before the fetch | Missing. The completion record comes after the call and cuts the URL to origin and path. | |
 | A log line with the Markdown | Missing. Records exclude page text on purpose. | |
@@ -107,7 +128,7 @@ Each decision has a default. Confirm or change it before step 1.
 
 | ID | Decision | Default | Alternative |
 | --- | --- | --- | --- |
-| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. The composition in the entry point, which the tests import; it runs only when executed directly. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
+| D1 | Layout | The entry point and its acceptance test in `test/acceptance/work-slice/`, with a `README.md` for the work slices. Since 2026-10-15, each slice has its own folder there, `basic-mcp-url-fetch/` for this slice, with its own `README.md`. The `README.md` of the parent folder lists the slices. The composition in the entry point, which the tests import; it runs only when executed directly. The package script `work-slice:basic-mcp-url-fetch`. The entry point is not a `*.test.ts` file, so no suite selects it, as with the `.runtime.ts` and `.live.ts` files. | A `script/` directory. It needs a change of the `include` list of `tsconfig.json`. |
 | D2 | Page text in the logs | The slice logs the full requested URL before the fetch and the Markdown after it, cut at 65,536 code points. These two lines come from the slice only. The production completion record stays as it is. | Log only the Markdown length. |
 | D3 | Axiom dataset and settings | Reuse `axiomTestSettings()`: `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL`, and the dataset `system-log-test`, from the environment or from `.env.local`. | A new reader for a dedicated dataset. |
 | D4 | LLM client | Claude Code with a static `Authorization` header. | Codex with `http_headers` in `~/.codex/config.toml`. |
@@ -126,11 +147,14 @@ src/config/deployment-config.ts                       loadPublicUrls(environment
 src/fetch-tool.ts                                     createFetchOperation(environment, logger) and fetchToolServers(operation, logger)
 src/mcp/get-url-as-markdown.ts                        the FetchOperation type, now exported
 src/index.ts                                          serveApplication(open, options), ProcessSignals, and ServeOptions, now exported
-test/acceptance/work-slice/README.md                  A short description of each work slice
-test/acceptance/work-slice/basic-mcp-url-fetch.ts     The entry point and the composition: createWorkSliceApplication(), observeFetches(), MARKDOWN_LOG_LIMIT; it runs only when executed directly
-test/acceptance/work-slice/basic-mcp-url-fetch.test.ts   The acceptance test
-test/support/axiom-test-export.ts                     axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
-test/unit/work-slice/basic-mcp-url-fetch.test.ts      observeFetches()
+test/acceptance/work-slice/README.md                  The guide: what a work slice is, and the list of the slices
+test/acceptance/work-slice/basic-mcp-url-fetch/README.md   The README of the slice: the command, the settings, and the log lines
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entry point and the composition: createWorkSliceApplication(); it runs only when executed directly. fetchOperationSpy() and MARKDOWN_LOG_LIMIT are in test/support/doubles/mcp/fetch-operation-spy.ts. The entry point checks the renderer with assertHostedRenderer() of src/hosted-renderer-startup.ts
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts   The acceptance test
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh   The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
+test/support/in-process/axiom-test-export.ts          axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
+test/unit/test-support/fetch-operation-spy.test.ts    fetchOperationSpy(); until 2026-10-15 test/unit/work-slice/basic-mcp-url-fetch.test.ts
+test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
 
@@ -163,6 +187,13 @@ one shell setup serves the server and the script.
 | `AD_RULES_FILE` | Required. `createFetchOperation()` loads the file with `readAdRulesFile()`, as for the server. An empty file gives no rules. | None |
 | `AXIOM_API_KEY`, `AXOIM_ENDPOINT_URL` | Read by `axiomTestSettings()`, also from `.env.local` in the current directory. | None |
 
+The launcher script
+`test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` gives
+defaults to `PUBLIC_BASE_URL`, `AD_RULES_FILE`, `LIGHTPANDA_BIN`,
+`AXOIM_ENDPOINT_URL`, and `AXIOM_SYSTEM_LOG_TEST_DATA_SET`. The
+[README of the slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
+lists them.
+
 ### Composition
 
 `createWorkSliceApplication(environment, logger)` composes the production parts
@@ -170,7 +201,7 @@ with the mock provider, in this order:
 
 1. The public URLs: `loadPublicUrls(environment, 'self-hosted')`.
 2. The operation: `createFetchOperation(environment, logger)`, wrapped by
-   `observeFetches()`. See [Logging](#logging). `createFetchOperation()` makes
+   `fetchOperationSpy()`. See [Logging](#logging). `createFetchOperation()` makes
    the production pipeline, the fetcher with `LIGHTPANDA_BIN`, and the renderer
    setup reporter.
 3. The mock provider: `new NoAuthProvider(new URL(mcpResourceUrl))`. It is the
@@ -200,7 +231,7 @@ The slice uses the production `OtelLogger`. The log goes to Axiom only. The
 console gets only the export failure lines.
 
 `openAxiomLogging(settings, scopeName, console?)` in
-`test/support/axiom-test-export.ts` builds one `OTLPLogExporter` with the Axiom
+`test/support/in-process/axiom-test-export.ts` builds one `OTLPLogExporter` with the Axiom
 headers, one `BatchLogRecordProcessor` with `scheduledDelayMillis: 1_000` and
 `exportTimeoutMillis: 10_000`, and one `LoggerProvider`. It returns the
 `OtelLogger` and a `close()` that calls `provider.shutdown()`, which flushes.
@@ -208,8 +239,9 @@ The scope name is `thermus-work-slice-<run id>`, with a new run ID for each
 start. The script prints it. The OTel tests use the same approach to find their
 records in Axiom.
 
-`observeFetches(operation, logger)` wraps the operation and writes the two
-lines of the slice:
+`fetchOperationSpy(operation, logger)` in
+`test/support/doubles/mcp/fetch-operation-spy.ts` wraps the operation and
+writes the two lines of the slice:
 
 ```text
 work-slice fetch started: <requested URL>
@@ -277,7 +309,8 @@ proxy with the header. The plan does not cover that.
 
 ### Acceptance
 
-File: `test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`. Offline. It
+File: `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts`.
+Offline. It
 uses `RendererProcessDouble` for the renderer and DNS, a recording logger for
 the log, and the real MCP SDK HTTP client through the real HTTP bridge. It runs
 for both protocol eras of `mcpProtocolEras`.
@@ -298,9 +331,10 @@ for both protocol eras of `mcpProtocolEras`.
 
 ### Unit
 
-- `test/unit/work-slice/basic-mcp-url-fetch.test.ts`: `observeFetches()` with
-  an operation double: the started and completed lines, the cut at the limit,
-  the failed line, and the error that passes through.
+- `test/unit/test-support/fetch-operation-spy.test.ts` (until 2026-10-15
+  `test/unit/work-slice/basic-mcp-url-fetch.test.ts`): `fetchOperationSpy()`
+  with an operation double: the started and completed lines, the cut at the
+  limit, the failed line, and the error that passes through.
 - The production seams have their own cases: the failure cases of
   `console-logger.test.ts` for `BaseLogger.messageOf()`, a `loadPublicUrls()`
   case in `deployment-config.test.ts`, and a `serveApplication()` case in
@@ -318,18 +352,20 @@ for both protocol eras of `mcpProtocolEras`.
 ### Commands
 
 ```bash
-npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/*.test.js
+npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/test-support/fetch-operation-spy.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/basic-mcp-url-fetch/*.test.js
 ```
 
 ## Steps
 
 Steps 0 to 6 record the first delivery, before the refactoring of 2026-10-14.
 The folder `test/support/work-slice/` of steps 1 to 3 does not exist now; the
-composition is in the entry point. For a new run, the slice also needs
-`PUBLIC_BASE_URL` and `AD_RULES_FILE`, as the server does. The log lines go to
-Axiom only, so the script terminal shows no log line. The
-[work slice guide](../../test/acceptance/work-slice/README.md) lists the
-settings.
+composition is in the entry point. Since 2026-10-15, the files of the slice are
+in `test/acceptance/work-slice/basic-mcp-url-fetch/`. The steps give the paths
+of the first delivery. For a new run, the slice also needs `PUBLIC_BASE_URL`
+and `AD_RULES_FILE`, as the server does. The log lines go to Axiom only, so the
+script terminal shows no log line. The
+[README of the slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
+lists the settings.
 
 ### Step 0: prerequisites on this Mac
 
@@ -389,8 +425,9 @@ Done when: both unit tests pass with the focused command.
 
 ### Step 3: the composition, green
 
-1. Write `work-slice-server.test.ts` for `observeFetches()` and the route
-   function, then `work-slice-server.ts` with `startWorkSliceServer()`.
+1. Write `work-slice-server.test.ts` for `observeFetches()` (its name until
+   2026-10-16, now `fetchOperationSpy()`) and the route function, then
+   `work-slice-server.ts` with `startWorkSliceServer()`.
 2. Run the acceptance test until it passes in both eras.
 
 Done when: the acceptance test and the three unit tests pass.
@@ -420,14 +457,17 @@ stops cleanly without a client. The last check needs step 0.
 
 This is the goal. Record the output of each checkpoint.
 
-1. Start the script from the worktree root:
+1. Start the launcher script from the worktree root. From another directory,
+   give its full path. It sets the settings to their defaults and runs the entry point with
+   the pinned Node runtime of pnpm:
 
 ```bash
-pnpm work-slice:basic-mcp-url-fetch
+test/acceptance/work-slice/basic-mcp-url-fetch.sh
 ```
 
-Checkpoint: stderr shows `Listening on http://127.0.0.1:8080`. stdout shows
+Checkpoint: stderr shows the five settings that the script sets. stdout shows
 the client command, the Axiom dataset link, and the scope name of this run.
+The `Listening on` line goes to Axiom only.
 
 2. In another terminal, add the server to Claude Code and check the
    connection:

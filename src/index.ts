@@ -26,6 +26,7 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 
 async function run(args: readonly string[], environment: Environment, logger: ConsoleLogger): Promise<number> {
   if (args.length > 0) return runOperatorCommand(args, environment, logger);
+  using deadline = environment.DEPLOYMENT === 'hosted' ? hostedShutdownDeadline(logger) : undefined;
   try {
     await serve(environment, logger, process);
     return 0;
@@ -73,7 +74,10 @@ export async function serveApplication(open: () => Application | Promise<Applica
   logger.info(`Stopping after ${signal}`);
 }
 
-function stopSignal(signals: ProcessSignals): Disposable & { readonly received: Promise<NodeJS.Signals> } {
+export type StopSignal = Disposable & { readonly received: Promise<NodeJS.Signals> };
+
+// A dispose also removes both listeners when no signal came, so that a failed start leaves no listener behind.
+export function stopSignal(signals: ProcessSignals): StopSignal {
   const received = Promise.withResolvers<NodeJS.Signals>();
   let registered = true;
   const dispose = (): void => {
@@ -90,4 +94,20 @@ function stopSignal(signals: ProcessSignals): Disposable & { readonly received: 
   signals.once('SIGINT', stop);
   signals.once('SIGTERM', stop);
   return { received: received.promise, [Symbol.dispose]: dispose };
+}
+
+// Keep the deadline alive while cleanup runs, then unreference it so a clean process exits naturally.
+// Leave the timer installed after cleanup: a provider can leave a socket or another handle alive.
+function hostedShutdownDeadline(logger: ApplicationLogger): Disposable {
+  const deadlineMs = 10_000;
+  let deadline: NodeJS.Timeout | undefined;
+  const arm = (): void => {
+    if (deadline !== undefined) return;
+    deadline = setTimeout(() => {
+      try { logger.error(`Hosted shutdown exceeded ${deadlineMs} ms`); } finally { process.exit(1); }
+    }, deadlineMs);
+  };
+  process.once('SIGINT', arm);
+  process.once('SIGTERM', arm);
+  return { [Symbol.dispose]: () => { process.off('SIGINT', arm); process.off('SIGTERM', arm); deadline?.unref(); } };
 }

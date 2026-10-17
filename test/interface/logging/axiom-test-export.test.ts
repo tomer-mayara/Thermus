@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { LogRecordExporter } from '@opentelemetry/sdk-logs';
-import { axiomTestSettings, trackTestExports } from '../../support/axiom-test-export.ts';
+import { axiomTestSettings, trackTestExports } from '../../support/in-process/axiom-test-export.ts';
 
 test('Given test settings, when the destination is selected, then only the Axiom test dataset and HTTPS endpoint are accepted', () => {
   const environment = { AXIOM_API_KEY: 'test-key', AXOIM_ENDPOINT_URL: 'https://us-east-1.aws.edge.axiom.co/ignored', AXIOM_SYSTEM_LOG_DATA_SET: 'system-log' };

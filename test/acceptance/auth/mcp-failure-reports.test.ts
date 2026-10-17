@@ -2,18 +2,19 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test, type TestContext } from 'node:test';
 import { inspect } from 'node:util';
 import {
-  Client,
   InsufficientScopeError,
   SdkHttpError,
   StreamableHTTPClientTransport,
   UnauthorizedError,
+  type Client,
 } from '@modelcontextprotocol/client';
 import type { AccessDecision } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
+import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';
@@ -35,21 +36,21 @@ function identityFor(subject: string): VerifiedIdentity {
 describe('Operator reports of unexpected MCP failures', () => {
   const identityOutage = new Error('identity provider unavailable');
   const lookupOutage = new Error('private membership lookup failure for user-uma');
-  let reporter: FailureReporterMock;
+  let reporter: FailureReporterSpy;
   let server: MCPServer;
 
   beforeEach(() => {
-    const verifier = new IdentityVerifierMock(new Map<string, VerifiedIdentity | Error>([
+    const verifier = new IdentityVerifierSpy(new Map<string, VerifiedIdentity | Error>([
       ['secret-outage-token', identityOutage],
       ['secret-uma-token', identityFor('user-uma')],
       ['secret-dana-token', identityFor('user-dana')],
       ['secret-scopeless-token', { ...identityFor('user-uma'), scopes: [] }],
     ]));
-    const resolver = new AccessResolverMock(new Map<string, AccessDecision | Error>([
+    const resolver = new AccessResolverSpy(new Map<string, AccessDecision | Error>([
       ['user-uma', lookupOutage],
       ['user-dana', { allowed: false, reason: 'membership-inactive' }],
     ]));
-    reporter = new FailureReporterMock();
+    reporter = new FailureReporterSpy();
     server = new MCPServer({
       auth: {
         verifier,
@@ -67,17 +68,13 @@ describe('Operator reports of unexpected MCP failures', () => {
   });
 
   async function connect(t: TestContext, token: string): Promise<Client> {
-    const client = new Client(
-      { name: 'thermus-acceptance', version: '0.0.0' },
-      { versionNegotiation: { mode: { pin: '2026-07-28' }, probe: { timeoutMs: 5_000, maxRetries: 0 } } },
-    );
     const transport = new StreamableHTTPClientTransport(new URL(resourceUrl), {
       authProvider: { token: async () => token },
       requestInit: { headers: { Cookie: session } },
       fetch: (url, init) => server.fetch(new Request(url, init)),
     });
+    const client = await connectMcpClient(t, transport, { probe: true, checkEra: false });
     t.after(() => client.close());
-    await client.connect(transport, { timeout: 5_000, signal: t.signal });
     return client;
   }
 

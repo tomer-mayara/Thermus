@@ -1,5 +1,6 @@
+import { escapeHtml } from '../html/html-escape.ts';
 import type { AuthorizedOrganization } from '../organizations/organization-administration.ts';
-import { escapeHtml, FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
+import { FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
 
 interface Notice {
   readonly status: number;
@@ -79,6 +80,18 @@ export type NoticeName = keyof typeof NOTICES;
 
 export function noticePage(name: NoticeName, headers: Readonly<Record<string, string>> = {}): Response {
   return noticeResponse(NOTICES[name], [], headers);
+}
+
+export function noOrganizationPage(signupUrl?: string): Response {
+  if (signupUrl === undefined) return noticePage('noOrganization');
+  return noticeResponse({
+    ...NOTICES.noOrganization,
+    paragraphs: [
+      NOTICES.noOrganization.paragraphs[0],
+      NOTICES.noOrganization.paragraphs[1],
+      'For help with access, contact the operator of this Thermus service.',
+    ],
+  }, [`<p><a href="${escapeHtml(signupUrl)}">Check free signup availability</a>.</p>`]);
 }
 
 // A user without access to a page often has no organization yet, so the page points to the onboarding guidance.

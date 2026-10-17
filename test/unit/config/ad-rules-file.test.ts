@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import fs, { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { AdRulesFileError, readAdRulesFile } from '../../../src/config/ad-rules-file.ts';
+import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 
 type Environment = Record<string, string | undefined>;
 
@@ -27,11 +27,7 @@ function rulesFile(t: TestContext, contents: string | Uint8Array): string {
 // The module under test imports readFileSync by name, so the ESM export must also get the double.
 function mockFileReads(t: TestContext, implementation: typeof fs.readFileSync = fs.readFileSync) {
   const reads = t.mock.method(fs, 'readFileSync', implementation);
-  syncBuiltinESMExports();
-  t.after(() => {
-    t.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(t);
   return reads;
 }
 

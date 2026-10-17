@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider, type LogRecordExporter } from '@opentelemetry/sdk-logs';
-import { axiomTestSettings } from '../../support/axiom-test-export.ts';
+import { axiomExportHeaders, axiomTestSettings } from '../../support/in-process/axiom-test-export.ts';
 import { OtelLogger } from '../../../src/logging/otel-logger.ts';
 
 describe('OtelLogger live Axiom OTLP interface', () => {
@@ -11,10 +11,10 @@ describe('OtelLogger live Axiom OTLP interface', () => {
 
   beforeEach(async () => {
     fixture = undefined;
-    const { apiKey, endpoint, dataset } = axiomTestSettings();
+    const settings = axiomTestSettings();
     const output = new OTLPLogExporter({
-      url: endpoint,
-      headers: { Authorization: `Bearer ${apiKey}`, 'X-Axiom-Dataset': dataset },
+      url: settings.endpoint,
+      headers: axiomExportHeaders(settings),
       timeoutMillis: 5_000,
     });
     const resultCodes: number[] = [];

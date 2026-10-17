@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { processHtml } from '../../../helpers/process-html.ts';
+import { processHtml } from '../../../support/in-process/process-html.ts';
 
 function substackPage(bodyHtml: string): string {
   const preloadData = JSON.stringify({

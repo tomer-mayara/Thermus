@@ -8,7 +8,7 @@ import { browserRedirectUri, type HostedLiveSettings } from './settings.ts';
 import type { LiveUser } from './staging-fixtures.ts';
 import { readToken, type TokenView } from './tokens.ts';
 
-export interface SignInRequest {
+interface SignInRequest {
   readonly user: LiveUser;
   readonly organizationName?: string;
 }
@@ -29,7 +29,7 @@ export interface SignInServices {
 }
 
 // The sealed session that a hosted server keeps in its cookie. It holds the latest seal after each refresh.
-export class BrowserSession {
+class BrowserSession {
   readonly #workos: WorkOS;
   readonly #cookiePassword: string;
   #sealed: string;
@@ -74,7 +74,7 @@ export async function signInWithAuthKit(services: SignInServices, request: SignI
   const { url, state, codeVerifier } = await workos.userManagement.getAuthorizationUrlWithPKCE({ provider: 'authkit', redirectUri: browserRedirectUri, clientId: settings.clientId });
   const page = await browser.newPage();
   const authkitHost = new URL(settings.authkitIssuer).host;
-  const visit = await visitAuthKit(page, url, { ...request, authkitHost, callback: browserRedirectUri });
+  const visit = await visitAuthKit(page, url, { ...request, authkitHost, callback: browserRedirectUri, mfaPolicy: settings.mfaPolicy });
   const code = visit.callback.searchParams.get('code');
   assert.ok(code, `The callback has no authorization code. It has: ${[...visit.callback.searchParams.keys()].join(', ')}.`);
   const cookiePassword = randomBytes(32).toString('base64url');

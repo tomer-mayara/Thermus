@@ -11,7 +11,7 @@ const userLabels = [
   'c-invitee-admin', 'c-invitee-revoked',
 ] as const;
 
-export type AdministrationUserLabel = (typeof userLabels)[number];
+type AdministrationUserLabel = (typeof userLabels)[number];
 
 interface MembershipSetting {
   readonly make: FixtureFactory;

@@ -18,7 +18,7 @@ export interface ChangeRecord {
   readonly organizationId: string;
   readonly target: ChangeTarget;
   // 'invite', 'resend-invitation', 'revoke-invitation', or the action of a grant change as requested: 'grant',
-  // 'revoke', or another text, which changes nothing.
+  // 'revoke'. The opt-in sign-in policy uses 'automatic-enrollment' for a new User membership.
   readonly action: string;
   readonly role?: string;
   readonly outcome: ChangeOutcome;

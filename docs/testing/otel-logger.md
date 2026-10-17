@@ -71,9 +71,9 @@ The tests read `.env.local` without shell evaluation. Exported environment
 values take precedence. Keep the file and its credentials out of version
 control and test reports.
 
-The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
+The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
 uses the production `OtelLogger` through `openAxiomLogging()` in
-`test/support/axiom-test-export.ts`. It reads the same settings with the same
+`test/support/in-process/axiom-test-export.ts`. It reads the same settings with the same
 reader and exports to the same test dataset. The log lines go to Axiom only.
 The console gets only the export failure lines: one line for each refused or
 failed export. After such a failure, the script writes one `FATAL` line and

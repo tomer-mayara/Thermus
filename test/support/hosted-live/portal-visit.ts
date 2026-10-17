@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import type { Page } from 'playwright';
-import type { PageForm } from '../hosted-browser.ts';
 import { completeAuthKit } from './authkit-driver.ts';
 import type { LiveRun } from './live-run.ts';
 import { originAndPath } from './navigations.ts';
@@ -20,15 +19,15 @@ export interface ServerAnswer {
   readonly location: string | undefined;
 }
 
-// A sign-in through the portal of the local HTTPS site: the Sign In button, /login, the AuthKit pages, and the
+// A sign-in through the portal of the local HTTPS site: the Sign in link, /login, the AuthKit pages, and the
 // callback of the server. The browser keeps the cookies of the server, as a user's browser does.
 export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string): Promise<PortalVisit> {
   await run.site();
   const authkitHost = new URL(run.settings.authkitIssuer).host;
   const page = await run.browser.newPage();
   await page.goto(`${localOrigin}/`);
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  const pages = await completeAuthKit(page, { user, authkitHost, ...(organizationName === undefined ? {} : { organizationName }) });
+  await page.getByRole('link', { name: 'Sign in', exact: true }).click();
+  const pages = await completeAuthKit(page, { user, authkitHost, mfaPolicy: run.settings.mfaPolicy, ...(organizationName === undefined ? {} : { organizationName }) });
   await waitForPortal(page);
   return { page, pages, signedInAt: Date.now() };
 }
@@ -41,17 +40,9 @@ export async function acceptInvitationThroughPortal(run: LiveRun, user: LiveUser
   const authkitHost = new URL(run.settings.authkitIssuer).host;
   const page = await run.browser.newPage();
   await openInvitationLink(page, invitationLink, authkitHost);
-  const pages = await completeAuthKit(page, { user, authkitHost });
+  const pages = await completeAuthKit(page, { user, authkitHost, mfaPolicy: run.settings.mfaPolicy });
   await waitForPortal(page);
   return { page, pages, signedInAt: Date.now() };
-}
-
-// The form of a page with this button text. The message gives only the button texts, because the fields hold the form
-// token of the session.
-export function formNamed(forms: readonly PageForm[], label: string): PageForm {
-  const form = forms.find((candidate) => candidate.label === label);
-  assert.ok(form, `The page offers no form "${label}": ${JSON.stringify(forms.map((candidate) => candidate.label))}`);
-  return form;
 }
 
 // A request of the browser with its cookies, which follows no redirect.
@@ -79,7 +70,7 @@ function setCookiesOf(headers: readonly { readonly name: string; readonly value:
 async function waitForPortal(page: Page): Promise<void> {
   await page.waitForURL(`${localOrigin}/`);
   await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
-  await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor();
+  await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor({ state: 'attached' });
 }
 
 // The sign-in that the server starts shows the invitation again, with the AuthKit authorization session in the query.

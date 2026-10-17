@@ -11,6 +11,7 @@ import {
 } from '@modelcontextprotocol/server';
 import { serveStdio, type StdioServerHandle } from '@modelcontextprotocol/server/stdio';
 
+import { waitForRequest } from '../http/request-cancellation.ts';
 import type { AccessResolver, RequestContext } from '../auth/access-context.ts';
 import type { IdentityVerifier } from '../auth/identity-verifier.ts';
 import { IdentityVerifierSdkAdapter, verifiedUserOf } from './identity-verifier-sdk-adapter.ts';
@@ -39,6 +40,7 @@ export interface McpHttpAuthOptions {
   // Each MCP request needs this application permission, such as product:access. An allowed context without it gets
   // the answer of a denial. Without this option, each allowed context is enough.
   requiredPermission?: string;
+  accessDeniedDescription?: string;
 }
 
 type BearerGate = (request: Request) => Promise<AuthInfo | Response>;
@@ -92,16 +94,17 @@ export class MCPServer {
 
   private async serveRequest(request: Request): Promise<Response> {
     this.requireOpen();
-    if (this.http === undefined) {
+    const http = this.http;
+    if (http === undefined) {
       throw new Error('HTTP authentication must be configured before serving requests');
     }
-    const authInfo = await this.http.authenticate(request);
-    this.requireOpen();
-    if (authInfo instanceof Response) return authInfo;
-    const context = await this.http.resolveAccess(authInfo);
-    this.requireOpen();
-    if (context instanceof Response) return context;
     const signal = AbortSignal.any([request.signal, this.shutdown.signal]);
+    const authInfo = await waitForRequest(signal, () => http.authenticate(request));
+    signal.throwIfAborted();
+    if (authInfo instanceof Response) return authInfo;
+    const context = await waitForRequest(signal, () => http.resolveAccess(authInfo));
+    signal.throwIfAborted();
+    if (context instanceof Response) return context;
     const lifetime: McpRequestLifetime = Object.freeze({ signal, track: <T>(task: Promise<T>) => this.track(this.tasks, task) });
     return this.dispatchRequest(request, this.newRequestAuthBoundTo(context, authInfo, lifetime), signal);
   }
@@ -227,14 +230,14 @@ function bearerGate(auth: McpHttpAuthOptions, reportFailure: FailureReporter): B
   };
 }
 
-function accessGate(auth: Pick<McpHttpAuthOptions, 'accessResolver' | 'requiredPermission'>, reportFailure: FailureReporter): AccessGate {
-  const { accessResolver, requiredPermission } = auth;
+function accessGate(auth: Pick<McpHttpAuthOptions, 'accessResolver' | 'requiredPermission' | 'accessDeniedDescription'>, reportFailure: FailureReporter): AccessGate {
+  const { accessResolver, requiredPermission, accessDeniedDescription = 'Access denied' } = auth;
   return async (authInfo) => {
     try {
       const decision = await accessResolver.resolve(verifiedUserOf(authInfo));
-      if (decision.allowed !== true) return accessDenied();
+      if (decision.allowed !== true) return accessDenied(accessDeniedDescription);
       const context = requireTrustedTenant(frozenCopy(decision.context));
-      if (requiredPermission !== undefined && !context.permissions.includes(requiredPermission)) return accessDenied();
+      if (requiredPermission !== undefined && !context.permissions.includes(requiredPermission)) return accessDenied(accessDeniedDescription);
       return context;
     } catch (cause) {
       reportFailure({ step: 'access-resolution', cause });
@@ -262,8 +265,8 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
-function accessDenied(): Response {
-  return errorResponse(OAuthErrorCode.AccessDenied, 'Access denied', 403);
+function accessDenied(description: string): Response {
+  return errorResponse(OAuthErrorCode.AccessDenied, description, 403);
 }
 
 function errorResponse(code: OAuthErrorCode, description: string, status: number): Response {

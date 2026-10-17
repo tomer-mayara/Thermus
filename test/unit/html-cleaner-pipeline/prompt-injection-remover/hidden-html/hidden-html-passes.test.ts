@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { HiddenHtmlScanner } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { createContext } from '../../../../support/html-cleaner-context.ts';
+import { createContext } from '../../fixtures/html-cleaner-context.ts';
 
 const threatUrl = `https://attacker.example/?payload=${'a'.repeat(128)}`;
 const scanLimitWarning = 'HTML scan limit reached; remaining HTML withheld';

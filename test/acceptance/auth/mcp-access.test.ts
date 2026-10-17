@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test, type TestContext } from 'node:test';
-import { Client, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
+import { SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError, type Client } from '@modelcontextprotocol/client';
 import {
   createRequestContext,
   type AccessDecision,
@@ -8,14 +8,15 @@ import {
 } from '../../../src/auth/access-context.ts';
 import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
-import { AccessResolverMock } from '../../unit/mcp/fixtures/access-resolver-mock.ts';
-import { IdentityVerifierMock } from '../../unit/mcp/fixtures/identity-verifier-mock.ts';
+import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
+import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
+import { ProtectedToolSpy, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
 const authority = 'https://auth.thermus.example';
-const productAccess = RequestContextProbe.requiredPermission;
+const productAccess = ProtectedToolSpy.requiredPermission;
 const nowSeconds = Math.floor(Date.now() / 1_000);
 
 function member(subject: string, organizationId: string): AuthenticatedUser {
@@ -49,15 +50,15 @@ describe('Trusted access context for MCP HTTP requests', () => {
   const erin = member('user-erin', 'org-a');
   const owen = member('user-owen', 'org-a');
   const uma = member('user-uma', 'org-a');
-  let resolver: AccessResolverMock;
-  let probe: RequestContextProbe;
+  let resolver: AccessResolverSpy;
+  let probe: ProtectedToolSpy;
   let server: MCPServer;
 
   beforeEach(() => {
-    const verifier = new IdentityVerifierMock(new Map(
+    const verifier = new IdentityVerifierSpy(new Map(
       [alice, bob, dana, erin, owen, uma].map((user) => [`${user.subject}-token`, identityFor(user)]),
     ));
-    resolver = new AccessResolverMock(new Map<string, AccessDecision | Error>([
+    resolver = new AccessResolverSpy(new Map<string, AccessDecision | Error>([
       [alice.subject, allowed(alice, 'tenant-org-a', { user: [productAccess] })],
       [bob.subject, allowed(bob, 'tenant-org-b', { user: [productAccess] })],
       [dana.subject, { allowed: false, reason: 'membership-inactive' }],
@@ -65,7 +66,7 @@ describe('Trusted access context for MCP HTTP requests', () => {
       [owen.subject, allowed(owen, 'tenant-org-a', { 'super-admin': ['admin-grants:manage', 'billing:manage'], user: [productAccess] })],
       [uma.subject, new Error('private membership lookup failure for user-uma')],
     ]));
-    probe = new RequestContextProbe();
+    probe = new ProtectedToolSpy();
     server = new MCPServer({
       auth: { verifier, accessResolver: resolver, resourceMetadataUrl, expectedResource: new URL(resourceUrl) },
       buildServer: probe.buildServer,
@@ -78,22 +79,18 @@ describe('Trusted access context for MCP HTTP requests', () => {
   });
 
   async function connect(t: TestContext, token: string | undefined, headers: Record<string, string> = {}): Promise<Client> {
-    const client = new Client(
-      { name: 'thermus-acceptance', version: '0.0.0' },
-      { versionNegotiation: { mode: { pin: '2026-07-28' }, probe: { timeoutMs: 5_000, maxRetries: 0 } } },
-    );
     const transport = new StreamableHTTPClientTransport(new URL(resourceUrl), {
       authProvider: { token: async () => token },
       requestInit: { headers },
       fetch: (url, init) => server.fetch(new Request(url, init)),
     });
+    const client = await connectMcpClient(t, transport, { probe: true, checkEra: false });
     t.after(() => client.close());
-    await client.connect(transport, { timeout: 5_000, signal: t.signal });
     return client;
   }
 
   async function callProbe(client: Client, args: Record<string, string>) {
-    const result = await client.callTool({ name: RequestContextProbe.toolName, arguments: args });
+    const result = await client.callTool({ name: ProtectedToolSpy.toolName, arguments: args });
     const [content] = result.content;
     assert.equal(content?.type, 'text');
     return { isError: result.isError === true, text: content.text };

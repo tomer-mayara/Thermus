@@ -14,6 +14,37 @@ pnpm build:user-portal
 The build writes `src/user-portal/dist/`: `index.html` and the files in
 `assets/`. The portal reads no build setting and keeps no secret.
 
+## Public entry
+
+The portal reads the session before it shows the public entry or workspace.
+The public entry uses the [approved design](design/portal-design.md) and its
+exact product copy. Sign in opens `login`. Start free access opens `signup`.
+These are native links. The signup route decides whether activation is open
+and whether the user can activate access. The public page does not grant access.
+
+The desktop page shows a static flow with three nodes. Agents send Request +
+reason to Thermus, and Thermus sends Approved requests to the web. Raw pages
+return from the web to Thermus. Clean content returns from Thermus to the
+agents. The flow has an accessible text description. It describes the product;
+it does not add an approval step to the server.
+
+Below 960px, the page stacks the brand copy above the welcome card and hides
+the diagram. The copy remains complete. Each primary action is at least 48px
+high. A skip link moves keyboard focus to the main content. Links and buttons
+have a visible focus ring. Session errors retain their safe message and offer
+Try again, which reloads the entry through its normal server route.
+
+The header uses the exact Thermus dark logo. The logo opens the portal, and
+`thermus.ai` opens the marketing website. Footer links open that website's
+Privacy Notice and Terms of Service at `https://thermus.ai/privacy` and
+`https://thermus.ai/terms`. The product activation documents remain on signup.
+
+The logo, favicon, and IBM Plex Sans, Serif, and Mono font files are in
+`src/user-portal/public/assets/`. Vite copies them into the flat output asset
+directory. The fonts use the SIL Open Font License. The unmodified license is
+shipped beside them as `assets/plex-OFL.txt`. The logo and font files come from
+the existing Thermus marketing design kit. No third-party font request is made.
+
 ## Server-owned session
 
 The hosted Thermus server owns the browser session. The portal keeps no
@@ -28,8 +59,8 @@ of the server. It uses these server paths, relative to the base path:
 | Path | Use in the portal |
 | --- | --- |
 | `session` | `GET` on load. `401` shows the signed-out page. `200` gives the profile, the organization of the session, the MFA evidence, and the form token of the session. |
-| `portal/access` | `GET` after a sign-in: the protected portal request. The server checks the session and reads the current grants of the selected organization. `200` gives the organization and its roles when the user has User; `403` shows that the account has no product access, with a link to `organizations`. |
-| `login` | The Sign In button opens it. The server starts the AuthKit sign-in. |
+| `portal/access` | `GET` after a sign-in: the protected portal request. The server checks the session and reads the current grants of the selected organization. `200` gives the organization, its roles, `plan: "free"`, and the configured `mcpUrl` when the user has User. The portal shows free access, no card requirement, no automatic charge, and native MCP connection steps. `403` shows signup and organization selection links. Signup can remain closed. |
+| `login` | The Sign in link opens it. The server starts the AuthKit sign-in. |
 | `logout` | The Sign Out button posts a form with the `csrf_token` field. The server checks the origin and the token, clears the session cookie, and sends the browser to the WorkOS logout URL. |
 | `organizations` | The organization page of the server: onboarding guidance or the organization selection. |
 
@@ -38,34 +69,85 @@ They never select a tenant or give access. Each protected request uses the
 verified server session and a current read of the grants. A sign-in alone
 gives no User access.
 
+Organization selection links return to the portal. This selection affects only
+this browser. To connect a native MCP client, add the displayed endpoint as a
+remote HTTP server, sign in, choose the intended workspace in client consent,
+approve the connection, and fetch a page. The client's verified Connect token
+sets the MCP workspace through its `org_id`. A browser workspace change does
+not change that token or move an existing client connection.
+
 ## Deployment
 
-A deployment serves the portal build at the public base path and sends each
-other request to the server:
+The production hosted application serves `src/user-portal/dist/` itself. Run
+`pnpm build:user-portal` before startup. Its package import
+`#hosted-portal/*` resolves the build in source and emitted server layouts.
+The public base path must be `/`, because the Vite build uses absolute asset
+paths. There is no portal path setting or SPA catch-all.
 
-- `GET` and `HEAD` of the base path itself give `index.html`.
-- `GET` and `HEAD` of `assets/<file>` give the files of the build.
-- Each other request goes unchanged to the Thermus server, also `login`,
-  `callback`, `logout`, `session`, `portal/access`, the account pages, `mcp`,
-  and the protected-resource metadata at the root.
+At startup, the application loads `index.html` and its flat `assets/` directory
+into memory. Each asset must be a nonempty regular file with an ASCII name that
+starts with a letter or digit and contains only letters, digits, `.`, `_`, or
+`-`. Directories and symlinks are refused. The index must reference a built
+JavaScript module. Every script and stylesheet reference must name a loaded
+asset. A missing or invalid build stops startup before listening and asks for
+`npm run build:user-portal`. A changed build takes effect after restart.
 
-The Vite build uses absolute asset paths, so the base path must be `/`. Send
-the portal pages with a Content Security Policy whose `form-action` allows each
-redirect of the sign-out. Chrome applies `form-action` also to the redirects
-after a form post, and stops the browser at the first redirect that the policy
-does not allow. The sign-out form goes to `logout` of the server. The server
-sends the browser to the WorkOS logout URL at `https://api.workos.com`. WorkOS
-sends it to the logout of the AuthKit domain, `<AuthKit domain>/api/logout`,
-which clears the AuthKit cookies. AuthKit then sends it to the Sign-out URI of
-the portal. For the AuthKit domain of `WORKOS_AUTHKIT_ISSUER`, for example
-`https://auth.example.com`, use
-`default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com https://auth.example.com`.
+- `GET` and `HEAD /` give `index.html`.
+- `GET` and `HEAD /assets/<file>` give only loaded assets. A path under
+  `/assets/` outside the loaded map gives `404`; the server does no request-time
+  file lookup.
+- `GET` and `HEAD /healthz` give constant `200` after local startup checks;
+  other methods give `405` with `Allow: GET, HEAD`. Health calls no provider
+  and renders no page.
+- Each other request goes unchanged to the existing application, including
+  non-read requests to `/` and asset paths, auth, account, `/mcp`, and root
+  protected-resource metadata. The wrapper retains request bodies, abort
+  signals, and application cleanup.
+
+Portal and asset responses have their content type and length,
+`Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, and
+`X-Frame-Options: DENY`. Their Content Security Policy allows each redirect of
+the sign-out. Chrome also applies `form-action` to redirects after a form post.
+The sign-out form posts to `logout`. The server redirects to the WorkOS logout
+URL at `https://api.workos.com`, then to `<AuthKit origin>/api/logout`, then to
+the portal Sign-out URI. With AuthKit origin `https://auth.example.com`, the
+server sends:
+
+```text
+default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com https://auth.example.com
+```
+
+The CSP uses the origin of `WORKOS_AUTHKIT_ISSUER`. It adds no broad CORS
+policy. Hosted MCP separately permits an absent `Origin` for native clients
+or the exact serialized public origin; other values get `403` before
+authentication. Browser CSRF checks keep their existing rules.
+
+Hosted MFA evidence follows `WORKOS_MFA_POLICY`. The default `optional`
+policy gives false evidence for every method and ignores older cookie
+evidence. Product access still needs User; members, invitations, billing, and
+administration changes stay refused without MFA evidence. No step-up UI is
+added. Required can infer evidence from Password only under its explicit,
+live-verified provider requirement. The work slice always keeps evidence false.
 
 The hosted live gate uses this layout at `https://localhost:46443/`. Its local
 HTTPS test server, `test/support/hosted-live/local-https-site.ts`, makes a
-self-signed certificate for each run, serves the portal build, and forwards
-each other request to the real hosted composition. The WorkOS staging
-environment has these settings for it:
+self-signed certificate for each run and forwards every request to the
+production hosted application. Thus the live browser checks use the production
+portal responses and CSP. The command needs the actual pinned renderer at an
+absolute `LIGHTPANDA_BIN` path for the local startup check. The
+[auth WorkOS MCP URL fetch work slice](../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+runs the same local HTTPS site at the same origin, with a certificate that
+stays, so that a person trusts it one time. The custom development composition
+keeps a portal served by the HTTPS front. Its hosted composition also has the
+fetch tool and an opt-in onboarding policy. Only the slice enrolls an absent
+membership as User after a trusted WorkOS `GoogleOAuth` sign-in with a verified
+email whose domain is exactly `thermus.ai`. The callback selects the configured
+`THERMUS_SLICE_ORGANIZATION_ID` in the browser session; existing roles and
+membership status are preserved. Normal hosted startup has no such policy.
+Sign in to the portal first, then open the client's separate Connect browser
+authorization. The portal cookie is not an MCP credential. The gate and the
+slice cannot run at the same time. The WorkOS
+staging environment has these settings for both:
 
 - Redirect URI (the default): `https://localhost:46443/callback`.
 - Default Sign-out URI: `https://localhost:46443/`.
@@ -76,8 +158,8 @@ environment has these settings for it:
 - MCP resource indicator: `https://localhost:46443/mcp`.
 - CORS origins: none. The portal makes no request to WorkOS.
 
-The test server sends the portal pages with the Content Security Policy above,
-with the AuthKit domain of the staging environment.
+The production application sends the Content Security Policy above with the
+AuthKit origin of staging. The custom development front uses the same policy.
 
 For another deployment, replace the origin in each of these settings and in
 `PUBLIC_BASE_URL` and `WORKOS_REDIRECT_URI`.
@@ -87,7 +169,10 @@ For another deployment, replace the origin in each of these settings and in
 `pnpm check` checks portal types, runs its unit and acceptance tests, and
 builds its browser bundle. `pnpm test`, `pnpm test:unit`, and
 `pnpm test:acceptance` include the applicable portal tests. These tests use a
-double of the server and a local DOM. The hosted live gate,
+double of the server and a local DOM. Public entry cases cover the exact copy,
+action and footer destinations, the flow's accessible description, native
+links, and error recovery. Existing cases cover signed-in profile display,
+access, workspace selection, safe server values, and the sign-out form. The hosted live gate,
 `npm run test:hosted-live`, builds the portal and proves the sign-in, the
 callback, the sign-out, the external sign-in through `/login`, and the
 protected portal request with WorkOS. See the
@@ -97,5 +182,6 @@ protected portal request with WorkOS. See the
 port 5173, without the server. The portal then shows the error page, because
 it has no server session there. Use them only for layout work.
 
-The Node server has a separate TypeScript build. Its image excludes portal
-source and browser output.
+The Node server has a separate TypeScript build. The current self-hosted image
+excludes portal source and browser output. The hosted image is planned in
+[RHD-03](implementation/render-hosted-docker-plan.md#rhd-03--build-and-prove-the-hosted-image).

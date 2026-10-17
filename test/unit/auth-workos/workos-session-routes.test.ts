@@ -118,7 +118,8 @@ describe('WorkOSSessionRoutes: failures', () => {
     const controller = new AbortController();
     controller.abort();
 
-    await assert.rejects(routes.handle(browserRequest('/team/session', { signal: controller.signal })), (error) => error === cause);
+    await assert.rejects(routes.handle(browserRequest('/team/session', { signal: controller.signal })), { name: 'AbortError' });
+    assert.deepEqual(session.calls, []);
 
     assert.deepEqual(failures, []);
   });

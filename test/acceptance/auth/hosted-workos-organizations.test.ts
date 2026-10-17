@@ -1,19 +1,17 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser } from '../../support/hosted-browser.ts';
-import { formFor, statusesOf } from '../../support/hosted-organization-site.ts';
-import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
-import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
-import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+import type { WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
+import { statusesOf } from '../../support/dsl/hosted-access.ts';
+import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
 // The real hosted composition with the WorkOS provider and the WorkOS organization reads, behind the real HTTP server
 // on a loopback port. A local fake of the WorkOS API stands in for WorkOS, so these specifications prove the
 // application side only. The hosted live gate proves the same flows against WorkOS.
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const sessionCookie = '__Host-thermus-session';
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
@@ -22,17 +20,17 @@ const umbrella = 'org_01UMBRELLA';
 const hooli = 'org_01HOOLI';
 const organizationNames = { [acme]: 'Acme', [globex]: 'Globex', [initech]: 'Initech', [umbrella]: 'Umbrella', [hooli]: 'Hooli' };
 
-const ada: WorldUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
-const cid: WorldUser = { id: 'user_01CID', email: 'cid@example.com', firstName: 'Cid' };
-const dee: WorldUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
-const ivy: WorldUser = { id: 'user_01IVY', email: 'ivy@example.com', firstName: 'Ivy' };
-const otto: WorldUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
-const sam: WorldUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
+const ada: FakeUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
+const cid: FakeUser = { id: 'user_01CID', email: 'cid@example.com', firstName: 'Cid' };
+const dee: FakeUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
+const ivy: FakeUser = { id: 'user_01IVY', email: 'ivy@example.com', firstName: 'Ivy' };
+const otto: FakeUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
+const sam: FakeUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
 
 // Ada: User and Admin in Acme, User in Globex, inactive in Initech, and only the default role in Umbrella. Cid: only
 // the default role in Acme. Dee: no membership. Ivy: only an inactive membership in Acme. Otto: User in Hooli. Sam:
 // only Super Admin in Acme.
-const memberships: readonly WorldMembership[] = [
+const memberships: readonly FakeMembership[] = [
   { userId: ada.id, organizationId: acme, roles: ['user', 'admin'] },
   { userId: ada.id, organizationId: globex, roles: ['user'] },
   { userId: ada.id, organizationId: initech, roles: ['user', 'admin'], status: 'inactive' },
@@ -43,31 +41,16 @@ const memberships: readonly WorldMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
 ];
 
-class LogLines {
-  readonly lines: string[] = [];
-  readonly info = (message: string): void => { this.lines.push(`INFO ${message}`); };
-  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
-}
+const openSite = (t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional') => serveWorkOSSite(t, {
+  organizations: Object.keys(organizationNames),
+  mfaPolicy,
+  setUp: (world) => {
+    world.memberships = memberships;
+    world.organizationNames = organizationNames;
+  },
+});
 
-interface Site extends WorkOSServerSite {
-  readonly log: LogLines;
-}
-
-async function openSite(t: TestContext): Promise<Site> {
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, Object.keys(organizationNames));
-  world.memberships = memberships;
-  world.organizationNames = organizationNames;
-  const log = new LogLines();
-  const application = await composeWorkOSApplication(config, world.connection(), log);
-  const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-  t.after(async () => {
-    await server.close();
-    await application.close();
-  });
-  return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
-}
-
-async function signIn(site: Site, user: WorldUser, organizationId?: string): Promise<HostedBrowser> {
+async function signIn(site: WorkOSSite, user: FakeUser, organizationId?: string): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -79,9 +62,9 @@ async function sessionOrganization(browser: HostedBrowser): Promise<unknown> {
   return (JSON.parse(answer.body) as Record<string, unknown>).organizationId;
 }
 
-async function mcpStatus(site: Site, user: WorldUser, organizationId: string): Promise<number> {
+async function mcpStatus(site: WorkOSSite, user: FakeUser, organizationId: string): Promise<number> {
   const token = await site.world.connectToken(user, { org_id: organizationId });
-  return (await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', token }))).status;
+  return (await site.discover(token)).status;
 }
 
 function sessionCookiesOf(answer: BrowserAnswer): string[] {
@@ -89,7 +72,7 @@ function sessionCookiesOf(answer: BrowserAnswer): string[] {
 }
 
 // The organizations that a refresh of a browser session asked WorkOS to switch to, from each recorded request.
-function switchesIn(site: Site): unknown[] {
+function switchesIn(site: WorkOSSite): unknown[] {
   return site.world.fake.takeRequests()
     .filter(({ method, path }) => method === 'POST' && path.startsWith('/user_management/authenticate'))
     .map(({ body }) => (body as Record<string, unknown> | undefined)?.organization_id)
@@ -130,7 +113,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     const list = await browser.open('organizations?return_to=/team/portal/access');
     const forms = formsIn(list.body);
     const before = browser.cookieHeader;
-    const selected = await browser.submit(formFor(forms, 'Globex'));
+    const selected = await browser.submit(formLabelled(forms, 'Globex'));
     const portal = await browser.follow(selected);
     const relisted = formsIn((await browser.open('organizations')).body);
 
@@ -145,7 +128,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.equal(sessionCookiesOf(selected).length, 1);
     assert.notEqual(browser.cookieHeader, before);
     assert.equal(portal.status, 200, portal.body);
-    assert.deepEqual(JSON.parse(portal.body), { organizationId: globex, roles: ['user'] });
+    assert.deepEqual(JSON.parse(portal.body), { organizationId: globex, roles: ['user'], plan: 'free', mcpUrl: hostedConfig.mcpResourceUrl });
     assert.equal((await browser.open('billing')).status, 403);
     assert.equal(await sessionOrganization(browser), globex);
     assert.deepEqual(relisted.map(({ label }) => label), ['Acme', 'Globex (selected)']);
@@ -155,7 +138,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
   test('Given the same member, when a selection form names the inactive Initech, the default-role Umbrella, the Hooli of another user, or an unknown organization, also with forged organization values in the query and the headers, then each selection is refused with 403, WorkOS gets no switch, and the session keeps Acme', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, ada, acme);
-    const acmeForm = formFor(formsIn((await browser.open(`organizations?organizationId=${hooli}`, { 'X-Organization-Id': hooli })).body), 'Acme (selected)');
+    const acmeForm = formLabelled(formsIn((await browser.open(`organizations?organizationId=${hooli}`, { 'X-Organization-Id': hooli })).body), 'Acme (selected)');
 
     const refusals = [];
     for (const organizationId of [initech, umbrella, hooli, 'org_01UNKNOWN']) {
@@ -170,7 +153,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
       assert.equal(refusal.location, undefined);
       assert.deepEqual(sessionCookiesOf(refusal), []);
     }
-    assert.deepEqual(JSON.parse(portal.body), { organizationId: acme, roles: ['user', 'admin'] });
+    assert.deepEqual(JSON.parse(portal.body), { organizationId: acme, roles: ['user', 'admin'], plan: 'free', mcpUrl: hostedConfig.mcpResourceUrl });
     assert.equal(await sessionOrganization(browser), acme);
     assert.deepEqual(switchesIn(site), []);
   });
@@ -184,9 +167,9 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
       ...memberships.map((membership) => (membership.userId === ada.id && membership.organizationId === globex ? { ...membership, status: 'inactive' as const } : membership)),
       { userId: ada.id, organizationId: hooli, roles: ['user'] },
     ];
-    const refused = await browser.submit(formFor(shown, 'Globex'));
+    const refused = await browser.submit(formLabelled(shown, 'Globex'));
     const offered = formsIn((await browser.open('organizations')).body);
-    const selected = await browser.submit(formFor(offered, 'Hooli'));
+    const selected = await browser.submit(formLabelled(offered, 'Hooli'));
 
     assert.deepEqual(shown.map(({ label }) => label), ['Acme (selected)', 'Globex']);
     assert.equal(refused.status, 403, refused.body);
@@ -196,12 +179,12 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     assert.deepEqual(switchesIn(site), [hooli]);
   });
 
-  test('Given a member with only Super Admin in Acme, when it opens the organization page and selects Acme for the billing page, then Acme is offered and selected, and its billing page, an administration page of Super Admin, opens; but the protected portal request and the MCP endpoint refuse it, because no User grant is inferred', async (t) => {
-    const site = await openSite(t);
+  test('Given a member with only Super Admin in Acme and an explicit Required MFA profile, when it opens the organization page and selects Acme for the billing page, then Acme is offered and selected, and its billing page, an administration page of Super Admin, opens; but the protected portal request and the MCP endpoint refuse it, because no User grant is inferred', async (t) => {
+    const site = await openSite(t, 'required');
     const browser = await signIn(site, sam);
 
     const forms = formsIn((await browser.open('organizations?return_to=/team/billing')).body);
-    const selected = await browser.submit(formFor(forms, 'Acme'));
+    const selected = await browser.submit(formLabelled(forms, 'Acme'));
     const billing = await browser.follow(selected);
     const portal = await browser.open('portal/access');
 
@@ -218,7 +201,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
   test('Given a signed-in member, when a selection comes from another origin or with another form token, then each is refused with 403 before any organization read, and WorkOS gets no switch', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, ada, acme);
-    const globexForm = formFor(formsIn((await browser.open('organizations')).body), 'Globex');
+    const globexForm = formLabelled(formsIn((await browser.open('organizations')).body), 'Globex');
     site.world.fake.takeRequests();
 
     const foreign = await browser.submit(globexForm, { origin: 'https://evil.example' });
@@ -237,13 +220,13 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     site.world.expireAccessTokens();
     const browser = await signIn(site, ada, acme);
     const forms = formsIn((await browser.open('organizations')).body);
-    const initechForm = { ...formFor(forms, 'Globex'), fields: { ...formFor(forms, 'Globex').fields, organization_id: initech } };
+    const initechForm = { ...formLabelled(forms, 'Globex'), fields: { ...formLabelled(forms, 'Globex').fields, organization_id: initech } };
 
-    const selected = await browser.submit(formFor(forms, 'Globex'));
+    const selected = await browser.submit(formLabelled(forms, 'Globex'));
     const refused = await browser.submit(initechForm);
     site.world.membershipOutage = { status: 500, body: { message: 'Internal error' } };
     const failedPage = await browser.open('organizations');
-    const failedSelection = await browser.submit(formFor(forms, 'Acme (selected)'));
+    const failedSelection = await browser.submit(formLabelled(forms, 'Acme (selected)'));
 
     assert.equal(selected.status, 303, selected.body);
     assert.equal(sessionCookiesOf(selected).length, 2, 'The 303 lacks the refreshed cookie or the cookie of the switch.');

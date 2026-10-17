@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { assertRevealsNone, passwords, run, AdministrationOpenerDouble, ScriptedInput } from './fixtures/local-auth-command-harness.ts';
-import { LocalProviderDouble } from '../../unit/auth-better-auth/fixtures/local-provider-double.ts';
+import { LocalProviderDouble } from '../../support/doubles/auth/local-provider-double.ts';
 
 describe('runLocalAuthCommand users', () => {
   describe('users', () => {

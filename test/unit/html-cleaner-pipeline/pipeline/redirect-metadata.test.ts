@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { HtmlToMarkdownPipeline } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { elementHidingRules } from '../../../support/ad-rules.ts';
+import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 
 const html = '<html><head><title>Links</title></head><body><main><p>Links to related content: <a href="child">Child</a>, <a href="/root">Root</a>, <a href="//other.example/page">Other host</a>.</p></main></body></html>';
 

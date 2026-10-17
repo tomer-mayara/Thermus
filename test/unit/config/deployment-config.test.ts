@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DeploymentConfigError, loadDeploymentConfig, loadPublicUrls, type DeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { workOSSettings } from '../../support/hosted-placeholder.ts';
+import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 
 type Environment = Record<string, string | undefined>;
 type Edition = DeploymentConfig['deployment'];

@@ -1,11 +1,10 @@
 import { execFile, type ChildProcess, type ExecFileException } from 'node:child_process';
-import { assertPublicDestination, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
-import { systemErrorName, WebsiteFetchHttpError, WebsiteFetchLaunchError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
+import { PublicDestinationPolicy, LIGHTPANDA_BLOCKED_CIDRS } from './network-policy.ts';
+import { systemErrorName, WEBSITE_FETCH_READINESS_BUDGET_MS, WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError, type WebsiteFetcher, type WebsiteFetchResult } from './website-fetcher.ts';
 
 const LIGHTPANDA_DEFAULT_BIN = 'lightpanda';
 const LIGHTPANDA_MAX_BUFFER_BYTES = 32 * 1024 * 1024;
 const LIGHTPANDA_TIMEOUT_MS = 60_000;
-const LIGHTPANDA_READINESS_DEADLINE_MS = 5_000;
 const LIGHTPANDA_HTTP_ERROR_EXIT_CODE = 22;
 const SYSTEM_LIMIT_CODES = new Set<unknown>(['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM']);
 
@@ -78,6 +77,7 @@ function launchError(error: unknown, executable: string): WebsiteFetchLaunchErro
 
 export class WebsiteFetcherLightpanda implements WebsiteFetcher {
   private readonly executable: string;
+  private readonly destinations = new PublicDestinationPolicy();
 
   // An empty value selects lightpanda on PATH, as an unset LIGHTPANDA_BIN does.
   public constructor(executable?: string) {
@@ -91,7 +91,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
       throw new Error(`Fetch URL must use http or https: ${url}`);
     }
     try {
-      await assertPublicDestination(parsed);
+      await this.destinations.assertPublicDestination(parsed, signal);
     } catch (error) {
       signal?.throwIfAborted();
       throw error;
@@ -136,7 +136,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
           try {
             signal?.throwIfAborted();
             if (readinessLimitReached) {
-              throw new Error(`Lightpanda readiness limit exceeded after ${LIGHTPANDA_READINESS_DEADLINE_MS} ms`, {
+              throw new WebsiteFetchReadinessTimeoutError({
                 cause: error ?? undefined,
               });
             }
@@ -154,7 +154,7 @@ export class WebsiteFetcherLightpanda implements WebsiteFetcher {
             if (completed || child?.exitCode !== null || child.signalCode !== null) return;
             readinessLimitReached = true;
             stopChild();
-          }, LIGHTPANDA_READINESS_DEADLINE_MS);
+          }, WEBSITE_FETCH_READINESS_BUDGET_MS);
         }
       } catch (error) {
         cleanup();

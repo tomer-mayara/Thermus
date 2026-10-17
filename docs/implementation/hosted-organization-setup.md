@@ -17,8 +17,13 @@ runs these steps against the WorkOS staging environment. The section
   replaces, and recovers Super Admin. This authority is outside the customer
   roles, and it needs no global administration product.
 - The operator grants only the explicit role `super-admin`. Super Admin gives no
-  Admin and no User. A Super Admin can then grant Admin to itself in Thermus,
-  and with that Admin authority, User to itself.
+  Admin and no User. With the Required MFA evidence described in step 5, a
+  Super Admin can then grant Admin to itself in Thermus, and with that Admin
+  authority, User to itself. These are procedural bypasses of operator-managed
+  onboarding: before any User grant, follow
+  [Hosted User onboarding](hosted-user-onboarding.md). The application does not
+  check agreement evidence. Initially, the operator controls User grants; do
+  not delegate grant authority without the controls in that runbook.
 - Each step adds or removes only the role `super-admin`, with one role
   assignment on the organization. The other grants of the person stay: User,
   Admin, and the default role `member`, also when a customer changes User or
@@ -31,6 +36,10 @@ runs these steps against the WorkOS staging environment. The section
 - This runbook does not create, rename, or delete a customer organization on
   request of a customer, does not change organization settings, does not author
   roles, and does not reset passwords or MFA factors.
+
+The operator dashboard MFA prerequisite below is separate from the AuthKit
+end-user policy. Shared Staging can use AuthKit Optional while the operator
+still must complete dashboard MFA before each runbook write.
 
 ## Before you start
 
@@ -50,7 +59,11 @@ runs these steps against the WorkOS staging environment. The section
    intended Super Admin, and the reason. The external ID is the customer
    reference of the operator, for example `thermus-customer-0042`. It is unique
    in the environment.
-3. **The record.** Keep one record line for each step, as
+3. **Onboarding control.** Confirm the User onboarding responsibility before
+   granting authority that can lead to User access. A Super Admin grant is not
+   terms acceptance. Keep policy documents and completed agreement records
+   private, as [Hosted User onboarding](hosted-user-onboarding.md) requires.
+4. **The record.** Keep one record line for each step, as
    [Records](#records) gives.
 
 The examples use the WorkOS API with `curl` in `bash` or `zsh`.
@@ -156,9 +169,17 @@ Write the roles that you read in the record as the roles after. If the
 membership is not active with `super-admin`, the outcome is `unknown`:
 continue with [After an unknown outcome](#after-an-unknown-outcome).
 
-Then ask the person to sign in to Thermus with MFA. Its organization page lists
-the organization, its billing page opens, and its portal shows no product
-access: Super Admin alone gives no User. Record `applied`.
+For the customer billing check, set `WORKOS_MFA_POLICY=required` only with a
+matching WorkOS environment that requires MFA. Ask the person to sign in
+through Password and complete the required MFA step. Its organization page
+lists the organization, its billing page opens, and its portal shows no
+product access: Super Admin alone gives no User.
+
+With the default `WORKOS_MFA_POLICY=optional`, the customer session has no MFA
+evidence. Billing and protected administration pages and writes are refused,
+also with Super Admin. This refusal does not mean that the provider grant
+failed. Record `applied` when the membership read above verifies the grant;
+use the browser outcome that matches the configured MFA contract.
 
 ## Revoke Super Admin
 

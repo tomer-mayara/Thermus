@@ -8,7 +8,8 @@ import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { WebsiteFetchReadinessTimeoutError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 describe('WebsiteFetcherLightpanda', () => {
   const htmlResult = (url: string, html: string) => JSON.stringify({ url, http_status: 200, content: html, error: null });
@@ -115,7 +116,7 @@ describe('WebsiteFetcherLightpanda', () => {
     let settled = false;
     void result.then(() => { settled = true; }, () => { settled = true; });
 
-    t.mock.timers.tick(4999);
+    t.mock.timers.tick(19_999);
     assert.deepEqual(child.signals, []);
     t.mock.timers.tick(1);
     assert.deepEqual(child.signals, ['SIGKILL']);
@@ -127,8 +128,10 @@ describe('WebsiteFetcherLightpanda', () => {
     });
     finish(error, '<html>Partial</html>', '');
     await assert.rejects(result, (caught) => {
-      assert.ok(caught instanceof Error);
-      assert.equal(caught.message, 'Lightpanda readiness limit exceeded after 5000 ms');
+      assert.ok(caught instanceof WebsiteFetchReadinessTimeoutError);
+      assert.equal(caught.category, 'readiness_timeout');
+      assert.equal(caught.budgetMs, 20_000);
+      assert.equal(caught.message, 'Lightpanda readiness limit exceeded after 20000 ms');
       assert.equal(caught.cause, error);
       return true;
     });

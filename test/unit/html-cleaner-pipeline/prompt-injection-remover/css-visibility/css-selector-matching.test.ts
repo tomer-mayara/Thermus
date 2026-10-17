@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import https from 'node:https';
 import { describe, test } from 'node:test';
-import { createPipeline } from './helpers/css-pipeline.ts';
+import { createPipeline } from './fixtures/css-pipeline.ts';
 
 describe('CSS selector token matching', () => {
   const matchingCases = [

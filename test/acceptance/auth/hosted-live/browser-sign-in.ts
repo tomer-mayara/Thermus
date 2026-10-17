@@ -12,16 +12,20 @@ const sealedSessionLimit = 3_800;
 
 export function describeBrowserSignInProofs(run: LiveRun): void {
   const { settings, workos } = run;
+  const requiredMfa = settings.mfaPolicy === 'required';
 
   describe('Hosted live proofs: browser sign-in through hosted AuthKit', () => {
-    test('Given a new user with a password and required MFA, when the user signs in through hosted AuthKit, then AuthKit asks for the MFA enrollment and sends no callback before the TOTP step; after it, the callback has a code and the request state, and the code exchange reports the Password method', signInOptions, async (t) => {
+    test(requiredMfa
+      ? 'Given a new user with a password and required MFA, when the user signs in through hosted AuthKit, then AuthKit asks for the MFA enrollment and sends no callback before the TOTP step; after it, the callback has a code and the request state, and the code exchange reports the Password method'
+      : 'Given a new user with a password and Optional MFA, when the user signs in through hosted AuthKit, then the password reaches the callback without an MFA step, with the request state, and the code exchange reports Password without proving MFA', signInOptions, async (t) => {
       const { visit, stateMatches, exchange } = await run.newUserSignIn();
       t.diagnostic(`AuthKit pages before the callback: ${visit.pages.join(' > ')}`);
       t.diagnostic(`callback: ${visit.callback.origin}${visit.callback.pathname} with ${[...visit.callback.searchParams.keys()].join(', ')}`);
       t.diagnostic(`authentication method: ${String(exchange.authenticationMethod)}`);
 
       assert.ok(visit.pages.includes('/password'), 'AuthKit did not ask for the password.');
-      assert.ok(visit.pages.indexOf('/mfa/enrollment') > visit.pages.indexOf('/password'), 'AuthKit did not ask for the MFA enrollment after the password, before the callback.');
+      if (requiredMfa) assert.ok(visit.pages.indexOf('/mfa/enrollment') > visit.pages.indexOf('/password'), 'AuthKit did not ask for the MFA enrollment after the password, before the callback.');
+      else assert.ok(visit.pages.every((path) => !path.startsWith('/mfa/')), 'Optional MFA demanded an MFA step.');
       assert.equal(`${visit.callback.origin}${visit.callback.pathname}`, browserRedirectUri);
       assert.ok(stateMatches, 'The callback does not have the state of the authorization request.');
       assert.equal(exchange.authenticationMethod, 'Password');
@@ -47,11 +51,17 @@ export function describeBrowserSignInProofs(run: LiveRun): void {
       await jwtVerify(exchange.accessToken, browserKeys, { issuer: browserIssuer(settings) });
     });
 
-    test('Given that user with an enrolled authenticator, when the user signs in again in a new browser, then AuthKit asks for the TOTP code and not for a new enrollment', signInOptions, async (t) => {
+    test(requiredMfa
+      ? 'Given that user with an enrolled authenticator, when the user signs in again in a new browser, then AuthKit asks for the TOTP code and not for a new enrollment'
+      : 'Given that Optional MFA user without an enrolled authenticator, when the user signs in again in a new browser, then the password reaches the callback without enrollment or a TOTP demand', signInOptions, async (t) => {
       const { visit } = await run.newUserLaterSignIn();
       t.diagnostic(`AuthKit pages before the callback: ${visit.pages.join(' > ')}`);
 
-      assert.ok(visit.pages.includes('/mfa/verification'), 'AuthKit did not ask for the TOTP code.');
+      if (requiredMfa) assert.ok(visit.pages.includes('/mfa/verification'), 'AuthKit did not ask for the TOTP code.');
+      else {
+        assert.ok(visit.pages.includes('/password'), 'AuthKit did not ask for the password.');
+        assert.ok(visit.pages.every((path) => !path.startsWith('/mfa/')), 'Optional MFA demanded an MFA step.');
+      }
       assert.ok(!visit.pages.includes('/mfa/enrollment'), 'AuthKit asked for a new MFA enrollment.');
     });
 

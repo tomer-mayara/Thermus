@@ -1,17 +1,19 @@
 import { requirePermission, type RequestContext } from '../auth/access-context.ts';
 import { assertHtmlInputSize } from '../html-cleaner-pipeline/html-input-limit.ts';
 import type { HtmlToMarkdownPipeline } from '../html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { WebsiteFetchLaunchError, type WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
+import { WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError, type WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
 import { isValidFetchUrl } from './fetch-tool-schema.ts';
 
 export type RendererSetupFailure = Pick<WebsiteFetchLaunchError, 'failure' | 'code'>;
+export type RendererReadinessTimeout = Pick<WebsiteFetchReadinessTimeoutError, 'category' | 'budgetMs'>;
 
 export type FetchOperation = (url: string, context: RequestContext, signal: AbortSignal) => Promise<string>;
 
-export function createGetURLAsMarkdown({ fetcher, pipeline, reportRendererSetupFailure }: {
+export function createGetURLAsMarkdown({ fetcher, pipeline, reportRendererSetupFailure, reportRendererReadinessTimeout }: {
   fetcher: WebsiteFetcher;
   pipeline: Pick<HtmlToMarkdownPipeline, 'process'>;
   reportRendererSetupFailure?: (failure: RendererSetupFailure) => void;
+  reportRendererReadinessTimeout?: (failure: RendererReadinessTimeout) => void;
 }): FetchOperation {
   return async (url, context, signal) => {
     throwIfCancelled(signal);
@@ -24,6 +26,7 @@ export function createGetURLAsMarkdown({ fetcher, pipeline, reportRendererSetupF
     } catch (error) {
       throwIfCancelled(signal, error);
       if (error instanceof WebsiteFetchLaunchError) reportSafely(reportRendererSetupFailure, error);
+      if (error instanceof WebsiteFetchReadinessTimeoutError) reportTimeoutSafely(reportRendererReadinessTimeout, error);
       throw new Error('Page fetch failed');
     }
 
@@ -51,6 +54,14 @@ function throwIfCancelled(signal: AbortSignal, error?: unknown): void {
 function reportSafely(report: ((failure: RendererSetupFailure) => void) | undefined, { failure, code }: WebsiteFetchLaunchError): void {
   try {
     report?.({ failure, code });
+  } catch {
+    // The report is best effort. It cannot change the tool result.
+  }
+}
+
+function reportTimeoutSafely(report: ((failure: RendererReadinessTimeout) => void) | undefined, { category, budgetMs }: WebsiteFetchReadinessTimeoutError): void {
+  try {
+    report?.({ category, budgetMs });
   } catch {
     // The report is best effort. It cannot change the tool result.
   }

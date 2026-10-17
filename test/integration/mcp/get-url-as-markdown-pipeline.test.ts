@@ -6,7 +6,7 @@ import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
-import { elementHidingRules } from '../../support/ad-rules.ts';
+import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
 const context = createRequestContext({
   user: { authority: 'https://synthetic.example/', subject: 'synthetic-user' },

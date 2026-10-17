@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, test } from 'node:test';
-import { workOSSettings } from '../../support/hosted-placeholder.ts';
-import { ServerProcess, type ServerSettings } from '../../support/server-process.ts';
+import { pathToFileURL } from 'node:url';
+import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
+import { withPreload } from '../../support/processes/server-preloads.ts';
+import { ServerProcess, type ServerSettings } from '../../support/processes/server-process.ts';
 
 // The built server with the hosted edition and outbound access denied. These specifications show the start of the
 // WorkOS provider and the refusal of forged credentials without a WorkOS call. The hosted live gate proves the flows
 // with WorkOS.
 
 const hostedSettings: ServerSettings = {
+  ...hostedFetchSettings,
   DEPLOYMENT: 'hosted',
   PUBLIC_BASE_URL: 'https://thermus.example',
   LISTEN_HOST: '127.0.0.1',
@@ -36,7 +42,6 @@ interface ForgedOperation {
 }
 
 const accountOperations: readonly ForgedOperation[] = [
-  { area: 'account', path: '/', init: { headers: { Cookie: forgedCookie } } },
   { area: 'account', path: '/account', init: { headers: { Cookie: forgedCookie, Authorization: `Bearer ${forgedToken}` } } },
   { area: 'account', path: '/portal/access', init: { headers: { Cookie: forgedCookie, 'X-Organization-Id': forgedOrganization } } },
   { area: 'account', path: '/onboarding', init: { headers: { Cookie: forgedCookie } } },
@@ -136,16 +141,60 @@ describe('Hosted edition with the WorkOS provider', () => {
     assert.equal(server.attemptedOutboundAccess, false, server.output);
   });
 
+  test('Given valid WorkOS settings without readable trusted rules, when the hosted server starts, then it stops before listening and names only the rules setting and failure', { timeout: 60_000 }, async (t) => {
+    for (const AD_RULES_FILE of ['', '/missing/private-rules.txt']) {
+      const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, AD_RULES_FILE });
+      await assertStopsBeforeListening(server, /FATAL.*AD_RULES_FILE/);
+      assert.ok(!server.output.includes('/missing/private-rules.txt'), server.output);
+      assert.equal(server.attemptedOutboundAccess, false, server.output);
+    }
+  });
+
+  test('Given valid WorkOS settings and trusted rules but a missing renderer, when the hosted server starts, then it stops before listening with a safe renderer setup message and uses no network', { timeout: 60_000 }, async (t) => {
+    const LIGHTPANDA_BIN = '/missing/private-renderer-secret';
+    const server = ServerProcess.launch(t, { ...hostedSettings, ...workOSSettings, LIGHTPANDA_BIN });
+
+    await assertStopsBeforeListening(server, /FATAL.*Hosted renderer setup failed: LIGHTPANDA_BIN/);
+    assert.ok(!server.output.includes(LIGHTPANDA_BIN), server.output);
+    assert.equal(server.attemptedOutboundAccess, false, server.output);
+  });
+
+  for (const portal of ['missing', 'invalid'] as const) {
+    test(`Given valid hosted settings but a ${portal} portal build, when the server starts, then it stops before listening with a safe build message and uses no network`, { timeout: 60_000 }, async (t) => {
+      const directory = dataDirectory(t);
+      const index = join(directory, 'index.html');
+      if (portal === 'invalid') {
+        mkdirSync(join(directory, 'assets'));
+        writeFileSync(index, '<!doctype html><script type="module" src="/assets/missing.js"></script>');
+      }
+      const preload = `data:text/javascript,${encodeURIComponent(`import { registerHooks } from 'node:module';
+registerHooks({ resolve(specifier, context, nextResolve) {
+  if (specifier === '#hosted-portal/index.html') return { url: ${JSON.stringify(pathToFileURL(index).href)}, shortCircuit: true };
+  return nextResolve(specifier, context);
+} });`)}`;
+      const server = ServerProcess.launch(t, withPreload({ ...hostedSettings, ...workOSSettings }, preload));
+
+      await assertStopsBeforeListening(server, /FATAL.*The hosted portal build is missing or invalid\. Run npm run build:user-portal before startup\./);
+      assert.ok(!server.output.includes(directory), server.output);
+      assertShowsNoSecret(server, workOSSettings);
+      assert.equal(server.attemptedOutboundAccess, false, server.output);
+    });
+  }
+
   test('Given valid WorkOS settings and outbound access denied, when MCP, account, organization, and billing operations arrive with forged bearer tokens, cookies, organization IDs, and form input, then none gets access or a session: MCP asks for a token, each account path asks for a sign-in, a forged callback is refused, and the server uses no network', { timeout: 60_000 }, async (t) => {
     const settings = { ...hostedSettings, ...workOSSettings };
     const server = await ServerProcess.start(t, settings);
 
+    const portal = await answerOf(server, '/', { headers: { Cookie: forgedCookie } });
     const mcp = [await answerOf(server, '/mcp', mcpCall(forgedToken)), await answerOf(server, '/mcp', mcpCall())];
     const accounts = [];
     for (const operation of accountOperations) accounts.push(await answerOf(server, operation.path, operation.init));
     const callback = await answerOf(server, '/auth/callback?code=forged-code&state=forged-state', { headers: { Cookie: forgedCookie } });
     await server.stop();
 
+    assert.equal(portal.status, 200);
+    assert.match(portal.body, /Thermus hosted portal fixture/);
+    assertNoSession(portal, 'public portal');
     for (const answer of mcp) {
       assert.equal(answer.status, 401);
       assert.match(answer.challenge ?? '', /^Bearer .*resource_metadata="https:\/\/thermus\.example\/\.well-known\/oauth-protected-resource\/mcp"/);
@@ -211,6 +260,7 @@ describe('Hosted edition with the WorkOS provider', () => {
     const invalidSettings: ReadonlyArray<[ServerSettings, RegExp]> = [
       [{ PUBLIC_BASE_URL: 'http://localhost:8080' }, /FATAL.*PUBLIC_BASE_URL must use https\./],
       [{ PUBLIC_BASE_URL: 'https://thermus.example/?tenant=acme' }, /FATAL.*PUBLIC_BASE_URL must not contain a query\./],
+      [{ PUBLIC_BASE_URL: 'https://thermus.example/team/', WORKOS_REDIRECT_URI: 'https://thermus.example/team/callback' }, /FATAL.*The hosted portal requires PUBLIC_BASE_URL with the base path \/\./],
       [{ PUBLIC_BASE_URL: 'https://operator:hunter2@thermus.example' }, /FATAL.*PUBLIC_BASE_URL must not contain a username or password\./],
       [{ PUBLIC_BASE_URL: '' }, /FATAL.*PUBLIC_BASE_URL is required\./],
       [{ LISTEN_PORT: '80.5' }, /FATAL.*LISTEN_PORT must be a whole number/],

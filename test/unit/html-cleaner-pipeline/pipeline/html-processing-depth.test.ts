@@ -6,7 +6,7 @@ import {
   HtmlToMarkdownPipeline,
   type Ctx,
 } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { elementHidingRules } from '../../../support/ad-rules.ts';
+import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 
 describe('HTML to Markdown pipeline depth limit', () => {
   for (const { label, html } of [

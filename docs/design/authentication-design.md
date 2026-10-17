@@ -201,8 +201,11 @@ appears in no common error. The WorkOS provider reads its own settings:
 `loadWorkOSSettings(environment, publicBaseUrl)` in
 `src/auth/hosted-auth/workos/workos-settings.ts` reads `WORKOS_API_KEY` (it
 starts with `sk_`), `WORKOS_CLIENT_ID` (it starts with `client_`),
-`WORKOS_AUTHKIT_ISSUER`, `WORKOS_REDIRECT_URI`, and `WORKOS_COOKIE_PASSWORD`.
-It keeps the issuer exactly as written for the exact token issuer check, and
+`WORKOS_AUTHKIT_ISSUER`, `WORKOS_REDIRECT_URI`, `WORKOS_COOKIE_PASSWORD`, and
+`WORKOS_MFA_POLICY`. The MFA policy defaults to `optional` when omitted. Only
+the exact values `optional` and `required` are valid; empty, case-changed, or
+whitespace-padded values are refused. It is a provider-specific contract, not
+a common deployment setting. It keeps the issuer exactly as written for the exact token issuer check, and
 it requires the issuer to be an https origin without a path or a final slash.
 It requires the redirect URI to be an https URL on the public origin, inside
 the public base path, without a query or a fragment, and written as the URL
@@ -220,6 +223,15 @@ requests and routes them; it does not know membership policy.
 Shutdown starts listener close to refuse new connections, then passes its drain
 promise to `Application.close()`. MCP cancellation starts before that drain is
 awaited. Provider resources close after MCP work and listener drain finish.
+RHD-01 connects cancellation before token and access waits, so a cancelled or
+closing request cannot dispatch a tool after a late identity result. Hosted
+account and browser waits use the request/shutdown signal before their next
+stage. Calls without a provider cancellation API can finish later; their late
+results stay observed. Tool cleanup remains owned until settlement. The hosted
+CLI has a fixed 10-second shutdown deadline for stalled cleanup or residual
+handles; it reports an error and exits 1. Normal shutdown exits cleanly.
+Self-hosted operation has no new CLI deadline. The
+[RHD-01 record](../implementation/rhd-01.md) gives the verification results.
 Repeated close calls share cleanup; cleanup errors remain visible. See the
 [MCP lifecycle contract](../reference/mcp-fetch-tool.md#cancellation-and-test-composition).
 
@@ -275,7 +287,7 @@ and the WorkOS provider implements them.
 | `src/auth/hosted-auth/browser-session.ts` | `BrowserSession.authenticate(cookieHeader)` gives a `BrowserSessionState`: `signed-in`, or `signed-out` with `cookies`. A `SignedInBrowserSession` has the `user`, an `AuthenticatedUser` that carries the organization that the session selected; the `csrfToken`, a secret of the session that each form of the account pages sends back, which stays the same for the whole session, also after a refresh or an organization switch, so that a form shown before still posts; `mfaCompleted`, which is true only when the provider proved that the sign-in of the session completed a multi-factor challenge, because an enrollment alone is no proof; the `cookies`; and `selectOrganization(organizationId)`. `CookieEffects` are `Set-Cookie` values that must reach the browser with the answer, also with a redirect or an error page, so that the browser does not lose a session that the provider refreshed or ended during the request. `selectOrganization()` gives an `OrganizationSwitch`: `switched`, `refused`, or `signed-out`, each with cookies. Only this call changes the organization of a session, and only for that browser. The account routes call it only after `OrganizationAdministration` found an authorized active membership. The provider gets only the `Cookie` header of the request, so no form field, query, or other header can select the user or the organization. A lookup or switch failure, such as an outage, throws. |
 | `src/hosted-admin/account-routes.ts` | `HostedAccountRoutes` gets each browser path under the public URL and checks the browser session first. The routes treat the public base URL as a directory: a URL without a final slash works the same, so `/teamevil` is never under `/team`. The deployment configuration always gives the final slash. `signed-out` gives `401` with the cookie effects of the session. For a signed-in session, `<base>/organizations` and `<base>/organizations/select` need the identity only: they run no access resolution (see [organization administration](#organization-administration)). For each other path, the routes call `AccessResolver.resolve(user)` and then require a trusted tenant. Only then do the routes give a member or invitation path to `AdministrationRoutes`, with the session and a frozen copy of the decided context, and each other path to an `AccountOperation(request, context)`, with a frozen copy of the decided context, as MCPServer does. A denial gives `403` without the reason, with a second paragraph that links to `<base>/organizations`: "To select another organization, or to see how to get access, open the organization page." A request without a route or an operation gives `404`. The hosted edition gives one account operation, the protected portal request `<base>portal/access` of AUTH-06. Each operation checks its own permission before work starts. An `AccountOperation` gets no MFA evidence yet, so the billing change operation of AUTH-11 must add it before it can require MFA. Each answer after a sign-in carries the cookie effects of the session, in their order, before the cookies of the answer itself, so that a later cookie, such as the cookie of a switch, replaces an earlier one in the browser. This includes operation answers, also a redirect whose headers cannot change, the `303` of a selection or a change, and each refusal and failure page (`400`, `401`, `403`, `404`, `405`, `409`, `413`, `415`, `500`, and `503`). The routes add the cookie effects inside the failure guard. A failure after a sign-in, in the access resolution, an organization read or change, the organization switch, or the account operation, an allowed decision without a tenant, or an operation answer that cannot carry the cookie effects, such as an error response (`Response.error()`) or an answer whose body was already read, gives a `500` page, "The request failed. Try again later.", with the cookie effects of the session. `reportFailure` gives its path and cause to the operator. AUTH-12 gave the caller an exception for an access lookup failure and for an allowed decision without a tenant ID; AUTH-07 changed both on purpose. A session lookup failure still reaches the caller, so the HTTP server answers a generic `500` without a cookie. This stays distinct from a missing session (`401`) and never erases the session. A request that the client aborted gets no page and no report. `account-form.ts` checks the form input. |
 | `src/hosted-admin/administration-routes.ts` | `AdministrationRoutes` gets the member and invitation paths after the session check and the current access resolution with a trusted tenant. The actor is the user of the decided context with the MFA evidence of the session, and the organization is the organization of the decided context. A context without an organization gives the `403` access denial. The [organization administration](#organization-administration) section gives the routes and their checks. |
-| `src/hosted-admin/account-pages.ts`, `administration-pages.ts`, and `page-html.ts` | `account-pages.ts` gives the notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. AUTH-08 added the notices of the administration routes: `mfaRequired` (`403`), `changeDenied` (`403`), `changeStale` (`409`, "Page out of date"), `invitationNotPending` (`409`), and `changeUnsupported` (`503`). AUTH-08W added `invitationAddressInUse` (`409`). `administration-pages.ts` gives the members and invitations pages, with the policy of the selection page; they escape each value that the provider gives. `page-html.ts` has the shared HTML parts, the page headers, and the escaping. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
+| `src/hosted-admin/account-pages.ts`, `administration-pages.ts`, and `page-html.ts` | `account-pages.ts` gives the notice pages: fixed HTML text without a form or script, with a Content Security Policy that allows nothing (`form-action 'none'`). `accessDeniedPage()` adds a link to the organization page to the `403` access denial notice; the link path comes from the public URL, not from the request, and the page escapes it. The organization selection page escapes the organization names and IDs that the provider gives, and its policy has `form-action 'self'`. AUTH-08 added the notices of the administration routes: `mfaRequired` (`403`), `changeDenied` (`403`), `changeStale` (`409`, "Page out of date"), `invitationNotPending` (`409`), and `changeUnsupported` (`503`). AUTH-08W added `invitationAddressInUse` (`409`). `administration-pages.ts` gives the members and invitations pages, with the policy of the selection page; they escape each value that the provider gives. `page-html.ts` has the shared HTML parts and the page headers. The escaping is `escapeHtml()` of `src/html/html-escape.ts`. Each page sends `Cache-Control: no-store`, `nosniff`, and `X-Frame-Options: DENY`, and sets no cookie of its own. |
 | `src/organizations/organization-directory.ts` | `OrganizationDirectory`, the provider contract of the organization reads and changes, with its records, requests, and results. `membershipsOf(user)` gives `OrganizationMembership` records: `organizationId`, `organizationName`, `active`, and `grants`, with every current grant. A grant holds only application permissions, so that a default role, which gives none, authorizes nothing. AUTH-08 added the member, grant, and invitation methods. The [organization administration](#organization-administration) section gives the contract. |
 | `src/organizations/organization-administration.ts`, `customer-roles.ts`, `change-records.ts`, `administration-overviews.ts`, and `directory-reads.ts` | `OrganizationAdministration` lists and authorizes the organizations of the session user, and it does the administration work of AUTH-08 for an `Actor`. `customer-roles.ts` gives the customer roles that an actor manages, `change-records.ts` runs each change and keeps its record, `administration-overviews.ts` builds the member and invitation overviews, and `directory-reads.ts` reads every page of a paged directory read. The [organization administration](#organization-administration) section gives the rules. |
 | `src/application.ts` | `composeHostedApplication(config, { session, accessResolver, organizations, mcp, browserRoutes }, { reportFailure, changeRecords, billing, operation })` composes the hosted edition from its provider parts. `HostedProviderParts` names the parts that change with the provider; the MCP endpoint has the `fetch` and `close` methods of `MCPServer`, and the application closes it. The optional `browserRoutes` are the browser routes of the provider that need no signed-in session; they answer before the account routes. AUTH-06 removed the placeholder MCP endpoint, `UnavailableMcpEndpoint`, which answered each MCP request with `503`. The third argument, `HostedAccountParts`, gives an optional account operation and three required parts: `reportFailure`, `changeRecords`, and `billing`, the one `Billing` of the hosted organizations. The composition gives the routes `OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing })`. `accountFailureReporter(logger)` writes each report as one error line: `An account request failed unexpectedly for <path>: <cause>`. When the cause or a cause of it carries the facts of a provider answer, as the errors of the pinned WorkOS SDK do, the line ends with them, for example `(status 503, code server_error, request ID <ID>)`. The status of an answer that is not JSON comes from `rawStatus`, because the parse error of the SDK always has the status 500. Only short tokens are copied, and none of these facts is a credential. `accountChangeRecorder(logger)` writes each change record as one info line, `Account change record: <JSON>`, in the operator log, until hosted storage exists. Other paths give `404`. `composeHostedApplication()` creates no `Billing`. `composeWorkOSApplication()` in `src/hosted-workos-application.ts` creates a `BillingFree` and gives it as `billing` to `composeHostedApplication()`, until AUTH-11 replaces it with the provider implementation. |
@@ -336,8 +348,10 @@ AUTH-06 composes the hosted edition with the WorkOS provider.
 `createApplication(config, logger, environment)` loads
 `src/hosted-workos-application.ts` only for the hosted edition, as it loads the
 Better Auth runtime only for the self-hosted edition. `openWorkOSApplication()`
-there loads the [WorkOS settings](#configuration-and-composition) and makes one
-WorkOS SDK client and one AuthKit key set:
+there calls `openWorkOSConnection(config, logger, environment)`. That call
+makes the connection: it loads the
+[WorkOS settings](#configuration-and-composition), makes one WorkOS SDK client
+and one AuthKit key set, and writes the operator line below:
 
 - The SDK client has the API key, the client ID, the browser-session issuer
   `https://api.workos.com/user_management/<client ID>`, no retry, and a
@@ -346,8 +360,33 @@ WorkOS SDK client and one AuthKit key set:
   with a 5-second timeout. jose reads it at the first Connect token, so the
   start makes no network call.
 
-`composeWorkOSApplication(config, connection, logger)` makes the parts. A test
-can give it a connection to a local fake of the WorkOS API:
+`composeWorkOSApplication(config, connection, parts)` makes the parts. Since
+2026-10-15, its third argument is the parts record with `logger`, optional
+`buildServer`, optional slice `onboarding`, and an optional
+`mfaEvidence: "unproven"` override. The override can discard evidence; only
+`connection.settings.mfaPolicy` can select the explicit Required contract
+(decision D6 of the
+[auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)).
+[RHD-01](../implementation/rhd-01.md) makes
+`openWorkOSApplication()` read trusted `AD_RULES_FILE`, create the production
+fetch operation, and supply `fetchToolServers` as `buildServer`. One shared slot
+covers DNS, rendering, cleaning, and cleanup until settlement. Excess calls
+return a safe `busy` result without a queue.
+[RHD-02](../implementation/rhd-02.md) adds the public portal and local health to
+this production opener. The hosted public base path must be `/`. Before
+listening, startup validates the portal build and runs a bounded version check
+of the pinned Lightpanda 1.0.0. `GET` and `HEAD /healthz` give constant `200`
+after local initialization; other methods give `405`. Health makes no WorkOS
+call and renders no page.
+
+Every hosted request at the exact MCP path checks `Origin` before
+authentication. An absent header permits native clients. A present header must
+equal the serialized public origin exactly; foreign, malformed, opaque `null`,
+and noncanonical forms give `403`. Metadata remains public. Browser CSRF checks
+keep their separate rules. The [portal guide](../user-portal.md#deployment)
+gives static routes and CSP.
+
+A test can give the composition a connection to a local fake of the WorkOS API:
 
 - `WorkOSAuthProvider` is the MCP verifier and the access resolver of both
   transports. It reads the grants for each request through
@@ -362,7 +401,22 @@ can give it a connection to a local fake of the WorkOS API:
   in front of it. The endpoint answers `GET` and `HEAD` of both
   protected-resource metadata paths with the MCP resource and the AuthKit
   issuer as its only authorization server, and gives each other request to
-  the `MCPServer`.
+  the `MCPServer`. The `MCPServer` gets the `buildServer` of the parts:
+  the RHD-01 production opener supplies the protected fetch tool, while the
+  [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+  supplies its own development composition and logging. The slice also opts in to a Google
+  onboarding policy at the browser code exchange. A trusted WorkOS
+  `GoogleOAuth` result with `emailVerified: true` and an exact `thermus.ai`
+  email domain can create an absent membership with the explicit role `user`
+  in `THERMUS_SLICE_ORGANIZATION_ID`, then select it in the sealed browser
+  session. Existing roles and active, pending, or inactive status remain
+  unchanged. Normal hosted startup supplies no policy, keeps the `member`
+  default role, and enables no production onboarding. The slice serializes
+  callbacks in one process and reconciles an ambiguous create by read; it
+  does not blindly repeat that write. Concurrent external writes remain
+  outside that serialization, and a hard-deleted membership can enroll again.
+  The [slice plan](../implementation/auth-workos-mcp-url-fetch-plan.md)
+  gives the restrictions and the required browser-first live proof.
 - The account operation is `portalAccessOperation()`, the protected portal
   request `<base>portal/access`. It needs `product:access` and gives the
   organization and the roles of the grants that give a permission;
@@ -400,7 +454,7 @@ can give it a connection to a local fake of the WorkOS API:
 
 The routes answer in this order: the MCP resource and both protected-resource
 metadata paths, the browser routes of the provider, the account routes under
-the public base path, and `404` for each other path. The start writes one
+the public base path, and `404` for each other path. The connection writes one
 operator line that names the client ID and the issuer, but no secret:
 `Hosted authentication uses WorkOS: the client <client ID> and the AuthKit issuer <issuer>.`
 
@@ -846,6 +900,16 @@ session revocation.
 
 ## Hosted authentication and access
 
+Hosted early access uses the [operator-managed onboarding procedure](../implementation/hosted-user-onboarding.md)
+to record express terms acceptance before an explicit User grant. This is an
+operating requirement; the application still resolves access from current WorkOS
+grants and does not store or check acceptance. Do not use User-role invitations
+or automatic Google enrollment for this procedure. Native MCP users follow the
+same private agreement process. The [deletion runbook](../implementation/hosted-account-deletion.md)
+separates organization access removal, session/client revocation, and record
+deletion. Neither procedure publishes policy pages or changes current accounts
+by itself.
+
 Configure AuthKit/Connect as the MCP authorization server. It owns MCP consent
 and token endpoints. Register the exact MCP URL as the resource indicator and
 serve hosted protected-resource metadata through the SDK helpers. The separate
@@ -875,8 +939,17 @@ timeouts. A failed lookup fails closed. This keeps revocation of membership
 separate from token expiration. The resulting hosted availability depends on
 WorkOS, which is acceptable for this initial design.
 
-Enable only the intended hosted password/social login methods, configure
-required AuthKit MFA, and verify the completed challenge in the real flow.
+Enable only the intended hosted password/social login methods. The default
+`WORKOS_MFA_POLICY=optional` gives no MFA evidence for any sign-in method.
+Product and MCP access remain available with the current User grant;
+administration pages and changes remain refused without evidence. Optional
+does not add a step-up UI and does not establish actual MFA completion.
+
+Use `WORKOS_MFA_POLICY=required` only as an explicit contract with a WorkOS
+environment that requires MFA for password sign-ins. Confirm the configuration
+and completed challenge through the Required live profile before depending
+on Password as evidence. Enum validation does not read or change provider MFA
+settings at runtime. A Password method alone is not MFA evidence in Optional.
 Do not enable future SSO methods accidentally. AuthKit's MFA requirement does
 not apply to SSO users; that milestone must define its own assurance policy.
 Enrollment alone does not prove that authentication completed MFA.
@@ -887,6 +960,13 @@ consent revocation immediately invalidate every issued token. Record and test
 the actual maximum token lifetime, refresh behavior, and revocation behavior
 before production release. The accepted delay is bounded by verified expiration.
 Do not use Connect `sid` to query an unrelated browser session.
+
+The work slice always selects unproven MFA evidence, even if its WorkOS
+settings say Required. Normal hosted composition selects the Required
+inference only from the explicit provider policy. Optional and the slice mask
+prior cookie evidence before reads, refreshes, or organization switches and
+write replacement cookies without it. This change does not weaken the
+administration checks.
 
 ### Hosted role mapping
 
@@ -970,7 +1050,7 @@ already had jose 6.2.12 through Better Auth.
 
 `test/interface/auth/workos.test.ts` proves the SDK side of each hosted
 contract offline. A local fake of the WorkOS API,
-`test/support/workos-fake-api.ts`, records each request and gives scripted
+`test/support/doubles/workos/workos-fake-api.ts`, records each request and gives scripted
 answers and key sets. A replaced `fetch` records no request that leaves the
 machine. These proofs show what the pinned SDK sends, how it reads answers, and
 how it reports failures. They do not show what the WorkOS service does; the
@@ -1029,7 +1109,7 @@ staging environment already has:
 - Onboarding: a signed-in user without an active membership gets no tenant
   access.
 
-The provider proofs ran on 2026-10-14 (runs r4 and r5) through
+The historical Required-profile provider proofs ran on 2026-10-14 (runs r4 and r5) through
 `npm run test:hosted-live` and the staging launcher. Playwright 1.64.0 with
 headless Chromium completes the hosted AuthKit pages: the email, the password,
 the TOTP enrollment or verification, the organization choice, and the Connect
@@ -1043,10 +1123,10 @@ Thermus server are separate.
 | Contract | Live result | Consequence for the hosted implementation |
 | --- | --- | --- |
 | Saved configuration | Redirect URI `https://localhost:46443/callback` (the default), MCP resource indicator `https://localhost:46443/mcp`, no CORS origin, roles `user`, `admin`, `super-admin`, and `member` exactly as in the [hosted role mapping](#hosted-role-mapping), MFA required, password sign-in on, passkeys off. The run r3 saved the redirect URI and the resource indicator through the WorkOS API. | The local HTTPS test server at `https://localhost:46443/` is the documented deployment of the live gate. |
-| Dashboard configuration | Run r5, after the owner saved the three dashboard settings: the sign-in page offers only "Continue with email" and no social provider; the default Sign-out URI is `https://localhost:46443/`; the Initiate login URI is `https://localhost:46443/login`. Run r4 found Google, Microsoft, GitHub, and Apple on, no Sign-out URI (the logout landed on `error.workos.com/user_management/app-homepage-url-not-found`), and no Initiate login URI. The WorkOS API has no endpoint for these three settings. | The owner keeps them in the WorkOS dashboard. The proofs read them back through the sign-in page and the redirects of the logout and of a direct AuthKit visit. |
-| AuthKit metadata | Exact issuer; `jwks_uri` `<issuer>/oauth2/jwks`; grants `authorization_code`, `refresh_token`, and the device code; client authentication `none`, `client_secret_post`, and `client_secret_basic`; scopes `openid`, `profile`, `email`, and `offline_access`; no `registration_endpoint` and no client ID metadata document support. | Dynamic registration and client ID metadata documents are off. An MCP client must be a Connect application. The live proofs make a third-party OAuth application with PKCE through the API. |
+| Dashboard configuration | Run r5, after the owner saved the three dashboard settings: the sign-in page offers only "Continue with email" and no social provider; the default Sign-out URI is `https://localhost:46443/`; the Initiate login URI is `https://localhost:46443/login`. Run r4 found Google, Microsoft, GitHub, and Apple on, no Sign-out URI (the logout landed on `error.workos.com/user_management/app-homepage-url-not-found`), and no Initiate login URI. The WorkOS API has no endpoint for these three settings. On 2026-10-14, the owner turned Google sign-in on in Staging for the auth WorkOS MCP URL fetch work slice (decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The sign-in uses the built-in Google credentials of WorkOS. The WorkOS connector made the change with `updateAuthkitSettings`. The sign-in page now offers "Continue with email" and "Continue with Google". The configuration proof now requires exactly Google as the only social provider. | The owner keeps them in the WorkOS dashboard. The WorkOS connector can also change the social providers. The proofs read them back through the sign-in page and the redirects of the logout and of a direct AuthKit visit. The hosted role of the MFA evidence does not change: a Google sign-in gives none, as the row "Browser sign-in and MFA" gives, so its session cannot open the administration pages. |
+| AuthKit metadata | Exact issuer; `jwks_uri` `<issuer>/oauth2/jwks`; grants `authorization_code`, `refresh_token`, and the device code; client authentication `none`, `client_secret_post`, and `client_secret_basic`; scopes `openid`, `profile`, `email`, and `offline_access`. Until 2026-10-14, the metadata had no `registration_endpoint` and no client ID metadata document support. Since 2026-10-14, Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD) are on in Staging, for the auth WorkOS MCP URL fetch work slice (decision D1): the metadata has the `registration_endpoint` `<issuer>/oauth2/register` and `client_id_metadata_document_supported: true`, and the proof asserts both. | An MCP client such as Claude Code registers itself at AuthKit, with DCR or a client ID metadata document. A Connect application also works: the live proofs make a third-party OAuth application with PKCE through the API. |
 | Key sets | The AuthKit key set and the browser-session key set each hold the same one RS256 key. | The signature of a browser token verifies with the AuthKit key set. The MCP verifier must refuse it by its issuer and its audience. WorkOS did not rotate a key during the proofs; the [offline proofs](#pinned-workos-sdk-proof) show the jose rotation behavior. |
-| Browser sign-in and MFA | A new user: email, password, `/mfa/enrollment` (a TOTP enrollment with a code), then the callback. A later sign-in: `/mfa/verification` instead. A user with two memberships also gets `/organization-selection`. No callback comes before the TOTP step. The code exchange gives `authenticationMethod` `Password`. | Required MFA completes in the real flow. WorkOS gives no MFA claim, so a session counts as MFA-completed only when its sign-in method is `Password` in this environment, which requires MFA for password sign-ins. Any other method gives no MFA evidence. |
+| Browser sign-in and MFA | A new user: email, password, `/mfa/enrollment` (a TOTP enrollment with a code), then the callback. A later sign-in: `/mfa/verification` instead. A user with two memberships also gets `/organization-selection`. No callback comes before the TOTP step. The code exchange gives `authenticationMethod` `Password`. | This Required-profile flow supports Password inference only with explicit `WORKOS_MFA_POLICY=required` and a matching provider requirement. The default Optional profile treats every method as unproven, even if a user enrolled a factor. Any other method gives no MFA evidence. |
 | Browser access token | RS256; `iss` `https://api.workos.com/user_management/<client ID>`; `sid` `session_…`; `client_id` the environment client; no `aud`; 300-second lifetime; `org_id`, `role`, `roles`, and `permissions` only with an organization. A user without a membership gets no `org_id`. The sealed session has 1,980 characters. | The session check sets the browser issuer. Access never comes from the token claims; the access resolver reads the memberships for each request. |
 | Organization switch | A refresh with another organization ID gives that `org_id` in the same session (same `sid`). A refresh for an organization without a membership throws `OauthException` 400 `organization_membership_not_found`, and the session still refreshes after it. | `selectOrganization()` is a refresh with the organization. That refusal changes no cookie. |
 | Browser refresh | WorkOS did not rotate the browser refresh token. A replay at once gave the same new refresh token, and the old token still worked after 31 seconds. | Each refresh stores the new seal anyway, so a later rotation also works. |
@@ -1348,10 +1428,12 @@ tests with the pinned SDK show point 12.
     throws `RateLimitExceededException`, so the directory refuses nothing
     itself, and the send fails: the change record is `unknown`, and the page is
     the `500` failure page. WorkOS documents no fixed quota for the default
-    provider; its limits follow the sending history of the environment, and a
-    custom email provider has none of them. Each run of the hosted live gate
-    makes eight invitation sends and resends, so the quota limits the number
-    of runs (see
+    provider; its limits follow the sending history of the environment. A
+    custom email provider does not use those shared-provider limits; other
+    sending safeguards still apply (see the [WorkOS rate limits](https://workos.com/docs/reference/rate-limits)).
+    A complete hosted live run makes
+    seven invitation sends and resends with Optional MFA, or eight with
+    Required MFA, so the quota limits the number of runs (see
     the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)).
 12. **The errors of the pinned SDK carry the facts of the answer.** An error for
     a WorkOS answer has its `status` and its `requestID`, and most also have the
@@ -1363,6 +1445,20 @@ tests with the pinned SDK show point 12.
     `OauthException` with the status 408 and the text "Request timeout". The
     operator report of a failed account request names these facts, so that a
     failed page read shows which WorkOS answer stopped it.
+
+The hosted live command now has two explicit MFA profiles. With
+`WORKOS_MFA_POLICY=optional` (or omitted), its provider preflight requires MFA
+enabled but not required, verifies normal browser/Connect behavior, and proves
+administration refusal. With `WORKOS_MFA_POLICY=required`, preflight requires
+provider MFA Required and the profile retains the positive administration
+proofs. Operator/API administration contract proofs run in both profiles and
+are separate from browser-session authority. Both profiles register 79 cases,
+including the two FS-02 signup cases, and use the same complete command. A mismatched provider setting
+fails before login; a pass of one profile is not a pass of the other. The
+[test gate policy](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+gives the commands, and the
+[slice validation record](../implementation/auth-workos-mcp-url-fetch-validation.md)
+separates historical results from the pending revised candidate checks.
 
 ## Hosted browser sessions
 
@@ -1408,6 +1504,24 @@ browser credentials separate from MCP bearer handling.
 
 ### Browser session of AUTH-06
 
+FS-01 adds `/signup` before the organization-gated account routes. It uses the
+same identity session and requires a fresh WorkOS `emailVerified` result, but
+needs no existing membership. The default-off switch controls new activation
+only. Approved document bytes, one explicit agreement, origin and CSRF checks,
+and a confirmed new personal-organization creation precede the initial User
+grant. The organization retains the acceptance record and prevents grant replay.
+The [FS-01 implementation record](../implementation/fs-01.md) gives the retry,
+concurrency, revocation, and release limits. No production legal bundle ships yet.
+
+FS-02 adds a read-only signup inspection. Existing product users can continue
+without another agreement. A retained personal record with missing, pending,
+inactive, or inconsistent access requires support; another authorized workspace
+can still be selected. A provider failure never becomes signup eligibility.
+Only the activation POST can create a workspace or grant. It still requires a
+fresh verified-email read. Both successful activation and Continue use the
+existing organization selector with a server-built return path to the portal.
+See the [FS-02 record](../implementation/fs-02.md).
+
 The owner selected a server-owned session on 2026-10-14: the server signs in,
 keeps the session, and signs out, and the portal is on the same origin.
 
@@ -1422,18 +1536,26 @@ callback. The cookie value is a sealed envelope of the server, in
 additional data. The envelope holds the sealed WorkOS session, the CSRF token
 of the session, and the MFA evidence of the sign-in. A refresh replaces only
 the WorkOS session, so the CSRF token and the MFA evidence stay the same for
-the whole session, also after a refresh or an organization switch. A value
-that does not open, for example after a change of the cookie password, is no
+the whole session in the Required profile, also after a refresh or an
+organization switch. Optional and the slice mask any prior true value and
+write replacement cookies with false. A value that does not open, for example after a change of the cookie password, is no
 session.
 
 - The CSRF token is a random secret of 32 bytes that the sign-in makes. The
   account forms and the sign-out form send it back.
-- The MFA evidence is true only when the code exchange of the sign-in reported
-  the method `Password`. The live proofs show that the WorkOS environment
-  requires MFA for each password sign-in before the callback. WorkOS gives no
-  MFA claim, so each other method, such as social sign-in, SSO, a passkey, or
-  impersonation, gives no MFA evidence. The environment must keep MFA
-  required; the live gate checks it.
+- `WORKOS_MFA_POLICY=optional` is the default. Every method has false MFA
+  evidence, including Password. Prior cookie evidence is ignored on session
+  reads and stays false in replacement cookies after refresh or selection.
+  The application adds no step-up UI and does not claim actual MFA completion.
+- With the explicit `required` policy, the code exchange method `Password`
+  can supply evidence only under the provider contract that WorkOS requires
+  MFA before that callback. The Required live profile checks the provider
+  setting and the completed password challenge. Google, SSO, passkeys, and
+  other methods give no such evidence. Runtime enum validation does not
+  verify provider configuration by itself.
+- The work slice always uses unproven evidence, even with Required settings.
+  Product access and MCP still need User, while members, invitations, billing,
+  and administration writes remain refused without MFA evidence.
 - `authenticate(cookieHeader)` checks the WorkOS session with the browser key
   set and the browser issuer. An expired access token, or a token with a new
   key, gives one refresh. A successful refresh sends one new session cookie.
@@ -1476,6 +1598,13 @@ signed-in session:
 The [user portal](../user-portal.md) uses these routes and the protected portal
 request `<base>portal/access`. It keeps no session or token of its own and no
 longer uses the AuthKit JavaScript SDK.
+
+The protected response includes the free plan and the configured MCP endpoint.
+The portal shows native client connection steps and explains that each client
+chooses its own workspace at Connect consent. A browser selection cannot
+retarget an MCP token. An authenticated MCP request without product access gets
+the same HTTP 403 OAuth denial, with a trusted signup link and advice to
+reauthorize for the intended workspace. This guidance grants no access.
 
 ## Organization administration
 
@@ -1557,9 +1686,10 @@ guidance:
   the organization name, with "(selected)" for the selected organization.
   Without an authorized organization, the answer is the onboarding guidance
   page (`200`): the account has no active access to an organization; accept
-  the invitation in the email; with no invitation, contact the operator of
-  this Thermus service, because only the operator can set up a new
-  organization. This page has no form. Other methods give `405` with
+  the invitation in the email; or contact the operator of this Thermus service.
+  The WorkOS composition also links to signup availability. When signup is off,
+  that link shows the closed notice. Other compositions without signup retain
+  the operator setup guidance. This page has no form. Other methods give `405` with
   `Allow: GET, HEAD`.
 - `POST <base>/organizations/select` checks the post in this order. The
   `Origin` header must equal the public origin, before the body is read (else
@@ -2103,7 +2233,8 @@ shows a separate role, invariant, or lifecycle.
 | `src/hosted-admin/account-form.ts` | Implemented in AUTH-07: the form input boundary of the account routes. It reads a form body of at most 16 KiB, and stops the reading and cancels the body when the client disconnects. It checks the CSRF token first, in a constant-time comparison, then accepts only the named fields of the form, each one time, and checks each return destination. AUTH-08 added the grant change, invitation, and invitation change forms; one field check serves the selection and these forms. An email address has at most 254 characters, one `@` between two parts, and no space or control character; each other value has 1 to 256 visible ASCII characters. | AUTH-07, AUTH-08 |
 | `src/hosted-admin/account-pages.ts` | Render operator/invitation guidance, authorized selection, grant, invitation, and seat forms. Implemented in AUTH-12: the notice pages. Implemented in AUTH-07: the operator and invitation guidance, the authorized selection forms with escaped provider values, the refusal and failure notices, and the link from the `403` access denial page to the organization page. Implemented in AUTH-08: the notices of the administration routes. AUTH-08W added the notice of an address in use. | 3–4 |
 | `src/hosted-admin/administration-pages.ts` | Implemented in AUTH-08: the members page, with the User seat count and the grant forms, and the invitations page, with the identity policy and the invitation forms. AUTH-08W added the text about the role of a pending invitation and of the other invitations. | AUTH-08 |
-| `src/hosted-admin/page-html.ts` | Implemented in AUTH-08: the shared HTML parts, the page headers, and the escaping of the account pages. | AUTH-08 |
+| `src/hosted-admin/page-html.ts` | Implemented in AUTH-08: the shared HTML parts, the page headers, and the escaping of the account pages. The DRY3 cleanup moved the escaping to `src/html/html-escape.ts`. | AUTH-08 |
+| `src/html/html-escape.ts` | `escapeHtml()`, the one HTML escape of the product pages: the WorkOS notice pages (`workos-session-pages.ts`), the bundled local pages (`local-auth-page-html.ts`), and the account pages. It replaced three identical copies (DRY3). Its five entities are the five that `decodeHtml()` of the test browsers, `test/support/drivers/browser/html-entities.ts`, decodes. | DRY3 cleanup |
 | `docs/implementation/hosted-organization-setup.md` | Document external operator setup, Super Admin replacement/recovery, MFA, and change records. Written in AUTH-07W: the [operator runbook](../implementation/hosted-organization-setup.md). The hosted live gate runs its steps through the test-support driver `test/support/hosted-live/operator-runbook.ts`; these proofs passed in run r2 of AUTH-07W. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed its Super Admin steps to single-role writes on the organization resource; the proofs passed again in its run r1. | 4 |
 | `src/application.ts` | Add `createApplication()` and selected-provider lifecycle. Implemented for the self-hosted edition: the composition and the routing of the MCP path, the public provider routes, and the bundled pages. Implemented for the hosted edition: `composeHostedApplication()`, `accountFailureReporter()`, `accountChangeRecorder()`, and `routeHostedRequests()`; AUTH-06 replaced the placeholder shell with the WorkOS composition and routes the browser routes of the provider before the account routes. | 2–3 |
 | `src/hosted-workos-application.ts` | Implemented in AUTH-06: the composition root of the hosted edition with WorkOS, `openWorkOSApplication()` and `composeWorkOSApplication()`, which `createApplication()` loads only for the hosted edition. Since AUTH-07W, it gives one `WorkOSOrganizations` to the access resolution and to the account routes. Since AUTH-08W, that directory also gets the organizations part of the SDK client (`workos.organizations`), for the organization read before each role write. | 3–4 |
@@ -2115,18 +2246,18 @@ shows a separate role, invariant, or lifecycle.
 | `package.json`, `pnpm-lock.yaml`, `.env.example` | Pinned dependencies, commands, and documented settings. | 1–5 |
 | `Dockerfile`, `compose.yaml`, `.dockerignore` | Implemented: the offline evaluation image, its Compose service with one persistent data volume, and the allowlist of the build context. | 5 |
 
-Keep `IdentityVerifierMock` at
-`test/unit/mcp/fixtures/identity-verifier-mock.ts`; extend its configurable claims
-and failures. Add `access-resolver-mock.ts` beside it with configured decisions,
+Keep `IdentityVerifierSpy` at
+`test/support/doubles/auth/identity-verifier-spy.ts`; extend its configurable claims
+and failures. Add `access-resolver-spy.ts` beside it with configured decisions,
 errors, and call records. Each test creates fresh instances. No production
-module imports either mock. Organization and browser unit tests add their own
+module imports either spy. Organization and browser unit tests add their own
 narrow directory and session doubles under `test/unit/`, importing shared
 contracts as types only. `BrowserSessionDouble`, in
-`test/unit/hosted-admin/fixtures/browser-session-double.ts`, gives configured
+`test/support/doubles/auth/browser-session-double.ts`, gives configured
 session states. `SignedInSessionDouble`, in the same file, gives a signed-in
 session with its MFA evidence and a configured switch answer, and records each
 switch. `OrganizationDirectoryDouble`, in
-`test/unit/organizations/fixtures/organization-directory-double.ts`, is a
+`test/support/doubles/organizations/organization-directory-double.ts`, is a
 stateful double of the whole `OrganizationDirectory` contract: a change takes
 effect in the later reads, each grant change needs the current revision of the
 membership, and an acceptance activates only the role of the invitation. A
@@ -2140,7 +2271,7 @@ gives configured organizations, overviews, and change results, or a
 configured failure, and records each call. The integration tests of the hosted
 composition add `MembershipDirectoryDouble`, which extends
 `OrganizationDirectoryDouble` with an `AccessResolver` that reads the same
-memberships, and `AccountOperationProbe`, a test-only protected operation. The
+memberships, and `AccountOperationSpy`, a test-only protected operation. The
 organization tests also use `BrowserSessionStore`, a stateful browser session
 whose cookie key changes at each refresh, as with rotating refresh tokens, and
 which keeps the MFA evidence of each session at a refresh and a switch, and
@@ -2148,16 +2279,18 @@ which keeps the MFA evidence of each session at a refresh and a switch, and
 `hosted-organization-site.ts` is the shared site of the organization and
 administration integration and acceptance tests: the real hosted composition,
 routes, `OrganizationAdministration`, access contracts, and MCPServer with
-`BrowserSessionStore`, `MembershipDirectoryDouble`, `IdentityVerifierMock`, and
-`AccountOperationProbe` destinations, in the test process
+`BrowserSessionStore`, `MembershipDirectoryDouble`, `IdentityVerifierSpy`, and
+`AccountOperationSpy` destinations, in the test process
 (`openOrganizationSite()`) or behind the real HTTP server on a loopback port
 (`serveOrganizationSite()`). A setup can give the memberships, more MCP tokens,
 and a change recorder; the site keeps each change record, and `browserOf()`
-can sign in a session without MFA. `hosted-administration.ts` gives the
-memberships, `serveAdministrationSite()`, and the page helpers of the AUTH-08
-tests. The site,
-`hosted-administration.ts`, `MembershipDirectoryDouble`,
-`AccountOperationProbe`, `BrowserSessionStore`, and `HostedBrowser` are in
+can sign in a session without MFA. `hosted-members.ts` gives the users and
+the memberships of these tests. `hosted-access.ts` gives the steps that read
+which pages a browser can open and the request context of a page.
+`hosted-administration.ts` gives `serveAdministrationSite()` and the page
+helpers of the AUTH-08 tests. The site, `hosted-members.ts`,
+`hosted-access.ts`, `hosted-administration.ts`, `MembershipDirectoryDouble`,
+`AccountOperationSpy`, `BrowserSessionStore`, and `HostedBrowser` are in
 `test/support/`. The unit tests of the organization routes share
 `serveAnn()`, the form helpers, and the session cookies of
 `test/unit/hosted-admin/fixtures/organization-routes-fixtures.ts`. The unit
@@ -2173,13 +2306,19 @@ the SDK client of the directory that answers from the records of a test,
 records each call in order, and changes the roles and the update time of a
 membership at a role write, as WorkOS does. Its organization reads give Acme
 an external ID and Globex none. The local fake of the WorkOS API in
-`test/support/workos-world.ts` keeps organizations with their external IDs,
+`test/support/doubles/workos/workos-fake.ts` keeps organizations with their external IDs,
 users, the roles of each membership as single-role assignments, and
 invitations, as the probes of WorkOS staging showed. It accepts a role write
 only on the resource of the organization of the membership, named by the
 external ID of the organization, or by the organization ID when the
 organization has none. A test can repeat a membership on the next page and
-make the later member pages or the invitation reads fail.
+make the later member pages or the invitation reads fail. `workos-fake.ts`
+keeps this state and the public API of the fake, and four parts in the same
+folder hold the rest: `workos-fake-wire.ts` the JSON shapes and the list and
+error answers, `workos-fake-directory.ts` the membership, user, organization,
+and role-assignment routes, `workos-fake-invitations.ts` the invitation routes,
+and `workos-fake-sessions.ts` the codes, the refreshes, and the browser and
+Connect tokens.
 
 ## Implementation slices
 
@@ -2262,7 +2401,7 @@ behavior.
 | `test/integration/auth/hosted-administration.test.ts` | Implemented, in the test process through `openOrganizationSite()` with the AUTH-08 memberships: direct service calls on the directory of the site follow the rules of the forms, and the next MCP and account requests use the current grants; two changes from the same revision at the same time give one change and one out-of-date answer; a directory change that fails after its effect gives the failure page with the refreshed session cookie, an operator log line, and an `unknown` record, and its retry is out of date; `unsupported` answers change nothing; the change records reach the operator log without a credential; a member page outage gives no partial count; and the production hosted application with the WorkOS provider gives the member and invitation pages and their changes with the session cookie, form token, and values of the doubles a `401` sign-in request without a cookie or a form, and records nothing. |
 | `test/integration/auth/hosted-organizations.test.ts` | Implemented, in the test process through `openOrganizationSite()`: the real hosted composition, account routes, `OrganizationAdministration`, access contracts, and MCPServer, with doubles only for the browser session, the membership directory, and the MCP token verifier. Onboarding guidance without an authorized membership while each tenant page stays refused; selection decided by a current read; a browser switch that changes no MCP token and no other browser session; no selection of another user's organization, also with forged values; independent permissions of each destination and the MCP tool; the failure page with the refreshed session cookie and an operator log line during an outage; and the production hosted application with the WorkOS provider, which gives the organization page, a selection, and the portal with the session cookie, form token, and organization values of the doubles a `401` sign-in request without a cookie, and selects and reports nothing. |
 | `test/acceptance/auth/hosted-placeholder.test.ts` | Implemented in AUTH-12 and replaced in AUTH-06 by `hosted-startup.test.ts`, because the production composition no longer uses the placeholder. |
-| `test/acceptance/auth/hosted-organizations.test.ts` | Implemented, behind the real HTTP server on a loopback port through `serveOrganizationSite()`: the real hosted composition with `BrowserSessionStore`, `MembershipDirectoryDouble`, `HostedBrowser`, `AccountOperationProbe` destinations, and a real MCPServer with `IdentityVerifierMock`. Onboarding guidance without an authorized active organization, and a `403` tenant page that links to the organization page; selection of an authorized organization with a new session cookie; refused selections without a switch; and Super Admin alone without inferred Admin or User grants. These tests prove application policy, not WorkOS behavior. |
+| `test/acceptance/auth/hosted-organizations.test.ts` | Implemented, behind the real HTTP server on a loopback port through `serveOrganizationSite()`: the real hosted composition with `BrowserSessionStore`, `MembershipDirectoryDouble`, `HostedBrowser`, `AccountOperationSpy` destinations, and a real MCPServer with `IdentityVerifierSpy`. Onboarding guidance without an authorized active organization, and a `403` tenant page that links to the organization page; selection of an authorized organization with a new session cookie; refused selections without a switch; and Super Admin alone without inferred Admin or User grants. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/hosted-organization-requests.test.ts` | Implemented, with the same site behind the real HTTP server: cross-site, token, destination, and extra-field refusals that still give the refreshed session cookie; an ended session and a session lookup outage; and, after a selection, no route that creates, resumes, renames, or changes the settings of an organization. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/hosted-grants.test.ts` | Implemented, with the same site behind the real HTTP server through `serveAdministrationSite()` and the AUTH-08 memberships: Super Admin self-grants of Admin and then User without another person; a revoked Admin grant that refuses the next Admin request of an existing session while User and MCP access stay; a revoke of the own User grant; an Admin regrant through a retained Super Admin grant; and the removal of the last application grant, which denies only that organization. These tests prove application policy, not WorkOS behavior. |
 | `test/acceptance/auth/hosted-grant-refusals.test.ts` | Implemented, with the same site: forged grant, revoke, disable, deactivate, and reset forms of an Admin; a form that names a member of another organization; a sign-in without MFA; and origin, form token, and organization checks that still give the refreshed session cookie. These tests prove application policy, not WorkOS behavior. |
@@ -2273,7 +2412,7 @@ behavior.
 | `test/acceptance/auth/hosted.live.ts` | Real login/MFA, no-org onboarding, cookie rotation, organization switching, operator setup/recovery, explicit grants, invitations, User seat summary, privileged change records, and revocation limits. Implemented: the setup gate, which `test/acceptance/auth/hosted-live-setup.test.ts` specifies offline; the provider proofs in `test/acceptance/auth/hosted-live/`; and the AUTH-06 cases of the hosted server in `hosted-live/hosted-server.ts`, with the local HTTPS test server of `test/support/hosted-live/`. AUTH-07W added its provider proofs in `hosted-live/operator-setup.ts`, which run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) through `test/support/hosted-live/operator-runbook.ts`, and its cases of the hosted server in `hosted-live/organization-server.ts`; they passed in run r2 of AUTH-07W. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; the complete command passed in its run r1. AUTH-08W added its provider proofs in `hosted-live/administration-proofs.ts` and its cases of the hosted server in `hosted-live/administration-server.ts`, with organizations C and D and their users from `test/support/hosted-live/administration-fixtures.ts` and the acceptance of an invitation through AuthKit in `test/support/hosted-live/portal-visit.ts`. C, the organization of the cases, has an external ID, as each customer organization of the runbook has one; D, the organization of the proofs, has none. The third complete run of AUTH-08W run r3 passed each of the 77 tests of the command. |
 | `test/unit/auth-workos/` | Implemented in AUTH-06: the WorkOS settings, the grant reads with an SDK double, the sealed cookies, the browser session, and the session routes with narrow doubles. AUTH-07W added `workos-organizations-memberships.test.ts`: the paged membership reads of a user with the organization names and grants, and each refused answer. AUTH-08W added `workos-organizations-members.test.ts`, `workos-organizations-grants.test.ts`, and `workos-organizations-invitations.test.ts` with `WorkOSOrganizationsDouble`: the member pages and the revision, the single-role grant writes on the resource that the organization read names and their refusals, and the invitation reads and changes. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added `operator-runbook.test.ts`: the decisions of the test-support driver of the operator runbook with an SDK double. |
 | `test/integration/auth/workos-provider-verification.test.ts`, `workos-provider-access.test.ts`, `workos-provider-directory.test.ts`, and `workos-browser-session.test.ts` | Implemented in AUTH-06: the Connect verification with the real rejection class, the access resolution with real context creation, and the provider and the browser session with the pinned SDK against the local fake WorkOS API. |
-| `test/integration/auth/workos-provider-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS session, organization directory, and access resolver with the pinned SDK against the local fake WorkOS API, together with the real `OrganizationAdministration`, account routes, and MCPServer, and `AccountOperationProbe` destinations. Super Admin alone without an inferred Admin or User grant; each destination, also the billing page, in the selected organization only; the exact WorkOS reads of the organization page and a selection; the organization service over the WorkOS reads; and the `500` failure page for a WorkOS answer that the read refuses. These tests prove the application side, not WorkOS behavior. |
+| `test/integration/auth/workos-provider-organizations.test.ts` | Implemented in AUTH-07W: the real WorkOS session, organization directory, and access resolver with the pinned SDK against the local fake WorkOS API, together with the real `OrganizationAdministration`, account routes, and MCPServer, and `AccountOperationSpy` destinations. Super Admin alone without an inferred Admin or User grant; each destination, also the billing page, in the selected organization only; the exact WorkOS reads of the organization page and a selection; the organization service over the WorkOS reads; and the `500` failure page for a WorkOS answer that the read refuses. These tests prove the application side, not WorkOS behavior. |
 | `test/integration/auth/workos-provider-administration.test.ts` | Implemented in AUTH-08W: the real `WorkOSOrganizations` and `WorkOSAuthProvider` with the pinned SDK against the local fake WorkOS API, which keeps organizations with their external IDs, users, single-role assignments, and invitations, together with the real `OrganizationAdministration`, called as a service, and the access resolution of Connect tokens. Self-grants, selective revocation, and the removal of the last grant through single-role writes, on the resource of Acme by its external ID and on the resource of Globex, without an external ID, by its organization ID; forged and foreign targets; actors without MFA or of another authority without any WorkOS request; unknown outcomes, retries, and concurrent and stale changes; an inactive membership, invitations, and an acceptance; the paged member reads and the seat updates of billing; and outages without a partial result. These tests prove the application side, not WorkOS behavior. |
 | `test/integration/mcp/required-permission.test.ts` and `test/integration/auth/portal-access.test.ts` | Implemented in AUTH-06: the MCP access check with a required permission, and the protected portal request with the real permission check. |
 | `test/acceptance/auth/hosted-startup.test.ts` and `hosted-workos.test.ts` | Implemented in AUTH-06. `hosted-startup` replaces the placeholder specification: the built server stops without valid WorkOS settings, and with them it refuses forged credentials without a network call. `hosted-workos` runs the real WorkOS composition behind the real HTTP server with the local fake WorkOS API: sign-in, callback, the session cookie, the portal session, product access of each grant set, refresh, ended sessions, outages, sign-out, Connect tokens at the MCP endpoint, and the organization of each credential. These tests prove the application side, not WorkOS behavior. |

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { createPipeline } from './helpers/css-pipeline.ts';
-import { assertWorkPassesInChild } from './helpers/pipeline-child.ts';
+import { createPipeline } from './fixtures/css-pipeline.ts';
+import { assertWorkPassesInChild } from './fixtures/pipeline-child.ts';
 
 const selectorWorkTimeLimitMs = 3000;
 

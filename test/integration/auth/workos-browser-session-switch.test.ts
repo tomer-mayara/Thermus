@@ -9,9 +9,9 @@ import {
   grantsSent,
   signedIn,
   signIn,
-  startWorld,
+  startSessionFixture,
   tokenAnswer,
-} from './fixtures/workos-session-world.ts';
+} from './fixtures/workos-session-fixtures.ts';
 
 // The real browser session with the pinned WorkOS SDK, pointed at a local fake of the WorkOS API. These tests show
 // the collaboration with the SDK, not the behavior of the WorkOS service.
@@ -20,7 +20,7 @@ describe('WorkOSBrowserSession with the pinned WorkOS SDK: organization switch a
   allowOnlyLoopbackRequests();
 
   test('Given a signed-in session, when it selects another organization, then the SDK refreshes with that organization ID, and the new cookie authenticates in that organization with the same CSRF token', async (t) => {
-    const world = await startWorld(t);
+    const world = await startSessionFixture(t);
     const session = signedIn(await world.session.authenticate(await signIn(world, await accessToken(world, 'org_01ACME'))));
     world.fake.answer(authenticateRoute, tokenAnswer(await accessToken(world, 'org_02GLOBEX'), 'refresh-2'));
 
@@ -34,7 +34,7 @@ describe('WorkOSBrowserSession with the pinned WorkOS SDK: organization switch a
   });
 
   test('Given an organization without a membership of the user, when the session selects it and WorkOS answers 400 organization_membership_not_found, then the switch is refused without a cookie change, and the session still authenticates', async (t) => {
-    const world = await startWorld(t);
+    const world = await startSessionFixture(t);
     const cookie = await signIn(world, await accessToken(world, 'org_01ACME'));
     const session = signedIn(await world.session.authenticate(cookie));
     world.fake.answer(authenticateRoute, { status: 400, body: { error: 'organization_membership_not_found', error_description: 'The user is not a member of the organization.' } });
@@ -47,7 +47,7 @@ describe('WorkOSBrowserSession with the pinned WorkOS SDK: organization switch a
 
 
   test('Given a session cookie whose access token expired, when the session ends, then the logout URL names the sid from the seal without a request to WorkOS, and the session cookie is cleared', async (t) => {
-    const world = await startWorld(t);
+    const world = await startSessionFixture(t);
     const cookie = await signIn(world, await accessToken(world, 'org_01ACME', true));
 
     const end = await world.session.endSession(cookie);

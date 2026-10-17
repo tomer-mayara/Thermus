@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { cleanBody, createPipeline } from './helpers/css-pipeline.ts';
+import { cleanBody, createPipeline } from './fixtures/css-pipeline.ts';
 
 describe('HTML root transforms with unresolved display', () => {
   for (const display of ['inherit', 'revert', 'var(--missing,inline)', 'var(--missing,none)']) {

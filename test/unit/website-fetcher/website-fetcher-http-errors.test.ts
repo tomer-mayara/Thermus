@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
 import { test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
+import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 const url = 'https://example.com/';
 
@@ -21,11 +21,7 @@ function stubProcess(context: TestContext, error: ExecFileException, stdout: str
     return new RendererChildDouble();
   });
   context.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
-  syncBuiltinESMExports();
-  context.after(() => {
-    context.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(context);
 }
 
 for (const [status, rendererError] of [[403, 'BotChallenge'], [429, 'BotChallenge'], [500, 'ServerError']] as const) {

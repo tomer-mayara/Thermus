@@ -1,42 +1,6 @@
 import assert from 'node:assert/strict';
-import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
-import { ESLint } from 'eslint';
-
-const eslint = new ESLint({ overrideConfigFile: resolve('.habit-hooks/eslint.config.mjs') });
-
-const forbiddenForms = [
-  ['static import', (path: string) => `import { feature } from '${path}'; export { feature };`],
-  ['type import', (path: string) => `import type { Feature } from '${path}'; export type { Feature };`],
-  ['inline type import', (path: string) => `import { type Feature } from '${path}'; export type { Feature };`],
-  ['named re-export', (path: string) => `export { feature } from '${path}';`],
-  ['type re-export', (path: string) => `export type { Feature } from '${path}';`],
-  ['star re-export', (path: string) => `export * from '${path}';`],
-  ['namespace re-export', (path: string) => `export * as features from '${path}';`],
-  ['literal dynamic import', (path: string) => `export const load = () => import('${path}');`],
-] as const;
-
-async function assertForbidden(filePath: string, paths: readonly string[]): Promise<void> {
-  for (const path of paths) {
-    for (const [name, source] of forbiddenForms) {
-      const [result] = await eslint.lintText(source(path), { filePath });
-      const rule = name === 'literal dynamic import' ? 'no-restricted-syntax' : 'no-restricted-imports';
-      assert.ok(
-        result.messages.some((message) => message.ruleId === rule && message.severity === 2),
-        `${filePath}: ${name} of ${path} must fail ${rule}; got ${JSON.stringify(result.messages)}`,
-      );
-    }
-  }
-}
-
-async function assertAllowed(filePath: string, paths: readonly string[]): Promise<void> {
-  for (const path of paths) {
-    for (const [name, source] of forbiddenForms) {
-      const [result] = await eslint.lintText(source(path), { filePath });
-      assert.equal(result.errorCount, 0, `${filePath}: ${name} of ${path}: ${JSON.stringify(result.messages)}`);
-    }
-  }
-}
+import { assertAllowed, assertForbidden, eslint } from './fixtures/import-guards.ts';
 
 describe('Given the configured direct auth import boundaries', () => {
   for (const filePath of ['src/auth/access-context.ts', 'src/auth/identity-verifier.ts']) {
@@ -120,6 +84,7 @@ describe('Given the configured direct auth import boundaries', () => {
         '../auth/hosted-auth/browser-session.js',
         '../organizations/organization-administration.ts',
         '../http/client-address.ts',
+        '../html/html-escape.ts',
         './identity-verifier-sdk-adapter.ts',
         './account-pages.ts',
         '@modelcontextprotocol/server',
@@ -135,6 +100,7 @@ describe('Given the configured direct auth import boundaries', () => {
         './local-auth-page-html.ts',
         '../local-user-administration.ts',
         '../../../http/client-address.ts',
+        '../../../html/html-escape.ts',
         'better-auth',
         'better-auth/cookies',
         '@better-auth/mcp',
@@ -148,6 +114,7 @@ describe('Given the configured direct auth import boundaries', () => {
         '../../access-context.ts',
         '../../identity-verifier.ts',
         '../../../organizations/organization-directory.ts',
+        '../../../html/html-escape.ts',
         '@workos-inc/node',
         'jose',
       ]);

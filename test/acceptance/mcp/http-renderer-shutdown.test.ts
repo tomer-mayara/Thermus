@@ -2,23 +2,24 @@ import assert from 'node:assert/strict';
 import { getEventListeners } from 'node:events';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
-import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
 import { composeApplication } from '../../../src/application.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
-import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
-import { mockRenderer } from '../../support/renderer-process-double.ts';
+import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
+import { validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
+import { controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given a running renderer through ${era} HTTP, when shutdown starts, then its child, timer, and abort listener close once before provider release`, { timeout: 5_000 }, async (t) => {
     const resource = new URL('https://thermus.example/mcp');
     const provider = new NoAuthProvider(resource);
-    const renderer = mockRenderer(t);
+    const renderer = controlledRenderer(t);
 
     const fetcher = new WebsiteFetcherLightpanda();
     const signals: AbortSignal[] = [];
@@ -47,18 +48,15 @@ for (const era of mcpProtocolEras) {
     providers.defer(() => { events.push('provider closed'); });
     const application = composeApplication((request) => server.fetch(request), server, providers);
     const listener = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href });
-    const client = new Client({ name: 'renderer-shutdown-acceptance', version: '0.0.0' }, {
-      versionNegotiation: eraNegotiation(era),
-    });
+    let client: Client | undefined = undefined;
     let finish: typeof renderer.finish | undefined;
     t.after(async () => {
       finish?.(new Error('Test cleanup'), '', '');
       finish = undefined;
-      await client.close();
+      await client?.close();
       await application.close(listener.close());
     });
-    await client.connect(new StreamableHTTPClientTransport(new URL('mcp', listener.url), { authProvider: { token: async () => 'test-token' } }), { signal: t.signal, timeout: 5_000 });
-    assert.equal(client.getNegotiatedProtocolVersion(), era);
+    client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL('mcp', listener.url), { authProvider: { token: async () => 'test-token' } }), { era });
     t.mock.timers.enable({ apis: ['setTimeout'] });
     const scheduled = t.mock.method(globalThis, 'setTimeout');
     const cleared = t.mock.method(globalThis, 'clearTimeout');
@@ -69,7 +67,7 @@ for (const era of mcpProtocolEras) {
     assert.ok(signal);
     assert.equal(getEventListeners(signal, 'abort').length, 1);
     const removeListener = t.mock.method(signal, 'removeEventListener');
-    const readinessTimers = scheduled.mock.calls.filter(({ arguments: args }) => args[1] === 5_000);
+    const readinessTimers = scheduled.mock.calls.filter(({ arguments: args }) => args[1] === 20_000);
     assert.equal(readinessTimers.length, 1);
     const readinessTimer = readinessTimers[0]?.result;
     assert.ok(readinessTimer);

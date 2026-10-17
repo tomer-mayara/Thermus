@@ -6,9 +6,10 @@ import {
   type Actor,
   type GrantChangeRequest,
 } from '../../../../src/organizations/organization-administration.ts';
+import { membershipIdOf, type MemberSeed } from '../../../support/doubles/organizations/directory-double-records.ts';
+import { OrganizationDirectoryDouble } from '../../../support/doubles/organizations/organization-directory-double.ts';
+import { memberRole } from '../../../support/fixtures/hosted-roles.ts';
 import { BillingDouble } from './billing-double.ts';
-import { memberRole, membershipIdOf, type MemberSeed } from './directory-double-records.ts';
-import { OrganizationDirectoryDouble } from './organization-directory-double.ts';
 
 export const authority = 'hosted-provider-double';
 export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };

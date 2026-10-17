@@ -1,53 +1,30 @@
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createServer, type Server } from 'node:https';
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import { tmpdir } from 'node:os';
-import { extname, join } from 'node:path';
-import { Readable } from 'node:stream';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { promisify } from 'node:util';
-import { createApplication, type Application } from '../../../src/application.ts';
+import type { SignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
+import { createApplication, type Application, type ApplicationLogger } from '../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
+import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
+import { portalBuild } from '../processes/module-paths.ts';
+import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
+import { answer, portalFiles, portalHeaders, type PortalSite } from './portal-front.ts';
 import { browserRedirectUri, localOrigin, type HostedLiveSettings } from './settings.ts';
 
-interface PortalFile {
-  readonly body: Buffer;
-  readonly type: string;
+interface TlsCertificate {
+  readonly key: Buffer | string;
+  readonly cert: Buffer | string;
 }
 
-interface PortalSite {
-  readonly files: Map<string, PortalFile>;
-  readonly headers: Readonly<Record<string, string>>;
-  readonly thermus: URL;
-}
-
-const portalBuild = fileURLToPath(new URL('../../../../src/user-portal/dist/', import.meta.url));
+const publicBaseUrl = `${localOrigin}/`;
 const listenAddresses = ['127.0.0.1', '::1'];
-const contentTypes: Readonly<Record<string, string>> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
-const hopHeaders = new Set(['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'host', 'content-length', 'proxy-connection']);
-// The portal posts its sign-out form to the server. Chrome applies form-action also to each redirect after the post:
-// the server sends the browser to the WorkOS logout URL, WorkOS sends it to the logout of the AuthKit domain, and
-// AuthKit sends it to the Sign-out URI of the portal.
-function portalHeaders(authkitIssuer: string): Readonly<Record<string, string>> {
-  return {
-    'Cache-Control': 'no-store',
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'Content-Security-Policy': `default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com ${new URL(authkitIssuer).origin}`,
-  };
-}
-
-class LogLines {
-  readonly lines: string[] = [];
-  readonly info = (message: string): void => { this.lines.push(`INFO ${message}`); };
-  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
-}
-
-async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
+// Writes key.pem and cert.pem into the directory and gives their PEM contents.
+export async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; cert: Buffer }> {
   const key = join(directory, 'key.pem');
   const cert = join(directory, 'cert.pem');
   await promisify(execFile)('openssl', [
@@ -57,35 +34,38 @@ async function selfSignedCertificate(directory: string): Promise<{ key: Buffer; 
   return { key: await readFile(key), cert: await readFile(cert) };
 }
 
-async function portalFiles(): Promise<Map<string, PortalFile>> {
-  const files = new Map<string, PortalFile>();
-  const read = async (path: string, file: string): Promise<void> => {
-    files.set(path, { body: await readFile(join(portalBuild, file)), type: contentTypes[extname(file)] ?? 'application/octet-stream' });
-  };
-  try {
-    await read('/', 'index.html');
-    for (const name of await readdir(join(portalBuild, 'assets'))) await read(`/assets/${name}`, join('assets', name));
-  } catch {
-    throw new Error('The local HTTPS site has no portal build. Run npm run build:user-portal first; npm run test:hosted-live does it.');
-  }
-  return files;
+function closeFront(front: Server): Promise<void> {
+  front.closeAllConnections();
+  return new Promise<void>((resolve) => front.close(() => resolve()));
 }
 
-// The local HTTPS test server of the hosted live gate, at https://localhost:46443/. It is the documented deployment
-// of the gate: it serves the built portal at / and /assets/, and it sends each other request to the real hosted
-// composition of Thermus with the WorkOS staging settings. The certificate is a new self-signed one for each run.
-export class LocalHttpsSite {
-  readonly log: LogLines;
-  readonly #application: Application;
-  readonly #thermus: HttpServer;
-  readonly #fronts: readonly Server[];
-  readonly #directory: string;
+interface LocalHttpsSiteOptions {
+  readonly signupDocuments?: SignupDocuments;
+  // Only a custom application uses the static front. Its default portal build is src/user-portal/dist/.
+  readonly portalBuild?: string;
+  // The default application checks this executable. The live gate uses LIGHTPANDA_BIN from its environment.
+  readonly rendererExecutable?: string;
+  // The TLS key and certificate in PEM. The default is a new self-signed certificate for this run.
+  readonly certificate?: TlsCertificate;
+  // The logger of the Thermus listener and of the default application. With this option, the log of the site stays
+  // empty.
+  readonly logger?: ApplicationLogger;
+  // Opens the application behind the front. It gets the logger option, or else the log of the site. The default is the
+  // hosted composition with the staging settings, the trusted rules fixture, and a random cookie password.
+  readonly application?: (logger: ApplicationLogger) => Promise<Application>;
+}
 
-  private constructor(parts: { application: Application; thermus: HttpServer; fronts: readonly Server[]; directory: string; log: LogLines }) {
-    this.#application = parts.application;
+// The HTTPS front sends every live gate request to the production application, including portal and health requests.
+// A work slice with a custom application keeps the static portal front. Failed starts release their resources.
+export class LocalHttpsSite {
+  readonly log: OperatorLogSpy;
+  readonly #thermus: HttpServer;
+  // The fronts close first. Then listener drain starts, application work stops, and the drain completes.
+  readonly #resources: AsyncDisposableStack;
+
+  private constructor(parts: { thermus: HttpServer; resources: AsyncDisposableStack; log: OperatorLogSpy }) {
     this.#thermus = parts.thermus;
-    this.#fronts = parts.fronts;
-    this.#directory = parts.directory;
+    this.#resources = parts.resources;
     this.log = parts.log;
   }
 
@@ -94,84 +74,83 @@ export class LocalHttpsSite {
     return this.#thermus.url;
   }
 
-  static async start(settings: HostedLiveSettings): Promise<LocalHttpsSite> {
-    const directory = await mkdtemp(join(tmpdir(), 'thermus-hosted-live-'));
-    const log = new LogLines();
-    const environment = {
-      DEPLOYMENT: 'hosted',
-      PUBLIC_BASE_URL: `${localOrigin}/`,
-      WORKOS_API_KEY: settings.apiKey,
-      WORKOS_CLIENT_ID: settings.clientId,
-      WORKOS_AUTHKIT_ISSUER: settings.authkitIssuer,
-      WORKOS_REDIRECT_URI: browserRedirectUri,
-      WORKOS_COOKIE_PASSWORD: randomBytes(32).toString('base64url'),
-    };
-    const config = loadDeploymentConfig(environment, 'http');
-    const application = await createApplication(config, log, environment);
-    const thermus = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-    const site: PortalSite = { files: await portalFiles(), headers: portalHeaders(settings.authkitIssuer), thermus: thermus.url };
-    const tls = await selfSignedCertificate(directory);
-    const fronts = await Promise.all(listenAddresses.map(async (host) => {
+  static async start(settings: HostedLiveSettings, options: LocalHttpsSiteOptions = {}): Promise<LocalHttpsSite> {
+    const files = await frontFiles(options);
+    await using owned = new AsyncDisposableStack();
+    const certificateDirectory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
+    const log = new OperatorLogSpy();
+    const logger = options.logger ?? log;
+    const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger, options));
+    let listenerDrain: Promise<void> | undefined;
+    let drained = Promise.resolve<PromiseSettledResult<void>>({ status: 'fulfilled', value: undefined });
+    // The site owns the listener even when custom application cleanup ignores its drain or fails.
+    owned.defer(async () => {
+      const result = await drained;
+      if (result.status === 'rejected') throw result.reason;
+    });
+    const application = owned.adopt(await openApplication(logger), (opened) => opened.close(listenerDrain));
+    const thermus = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl, logger });
+    owned.defer(() => {
+      listenerDrain = thermus.close();
+      // Observe a rejection now; application cleanup can take longer than the listener drain.
+      drained = listenerDrain.then(
+        (value) => ({ status: 'fulfilled', value }),
+        (reason: unknown) => ({ status: 'rejected', reason }),
+      );
+    });
+    const site: PortalSite = { files, headers: options.application === undefined ? {} : portalHeaders(settings.authkitIssuer), thermus: thermus.url };
+    const tls = options.certificate ?? await selfSignedCertificate(certificateDirectory);
+    // One front after the other: when a listen fails, the stack already owns each front that listens.
+    for (const host of listenAddresses) {
       const front = createServer(tls, (request, response) => void answer(request, response, site));
       front.listen({ host, port: Number(new URL(localOrigin).port) });
       await once(front, 'listening');
-      return front;
-    }));
-    return new LocalHttpsSite({ application, thermus, fronts, directory, log });
+      owned.adopt(front, closeFront);
+    }
+    return new LocalHttpsSite({ thermus, resources: owned.move(), log });
   }
 
   async close(): Promise<void> {
-    for (const front of this.#fronts) {
-      front.closeAllConnections();
-      await new Promise<void>((resolve) => front.close(() => resolve()));
-    }
-    await this.#thermus.close();
-    await this.#application.close();
-    await rm(this.#directory, { recursive: true, force: true });
+    await this.#resources.disposeAsync();
   }
 }
 
-async function answer(request: IncomingMessage, response: ServerResponse, site: PortalSite): Promise<void> {
-  const path = request.url ?? '/';
-  const file = request.method === 'GET' || request.method === 'HEAD' ? site.files.get(path) : undefined;
-  try {
-    if (file) {
-      response.writeHead(200, { ...site.headers, 'Content-Type': file.type }).end(request.method === 'HEAD' ? undefined : file.body);
-      return;
-    }
-    await forward(request, response, new URL(path, site.thermus));
-  } catch {
-    if (!response.headersSent) response.writeHead(502);
-    response.end();
-  }
+async function stagingApplication(settings: HostedLiveSettings, logger: ApplicationLogger, options: Pick<LocalHttpsSiteOptions, 'rendererExecutable' | 'signupDocuments'>): Promise<Application> {
+  const executable = options.rendererExecutable ?? process.env.LIGHTPANDA_BIN;
+  const documents = options.signupDocuments;
+  const environment = {
+    DEPLOYMENT: 'hosted',
+    PUBLIC_BASE_URL: publicBaseUrl,
+    AD_RULES_FILE: trustedAdRulesFile,
+    LIGHTPANDA_BIN: executable,
+    WORKOS_API_KEY: settings.apiKey,
+    WORKOS_MFA_POLICY: settings.mfaPolicy,
+    WORKOS_CLIENT_ID: settings.clientId,
+    WORKOS_AUTHKIT_ISSUER: settings.authkitIssuer,
+    WORKOS_REDIRECT_URI: browserRedirectUri,
+    WORKOS_COOKIE_PASSWORD: randomBytes(32).toString('base64url'),
+  };
+  const config = loadDeploymentConfig(environment, 'http');
+  if (documents === undefined) return createApplication(config, logger, environment);
+  const { composeWorkOSApplication, openWorkOSConnection } = await import('../../../src/hosted-workos-application.ts');
+  const { createFetchOperation, fetchToolServers } = await import('../../../src/fetch-tool.ts');
+  const { singleFetchOperation } = await import('../../../src/mcp/single-fetch-operation.ts');
+  const { assertHostedRenderer } = await import('../../../src/hosted-renderer-startup.ts');
+  const { HostedPortal } = await import('../../../src/hosted-portal.ts');
+  await assertHostedRenderer(executable);
+  const connection = await openWorkOSConnection(config, logger, environment);
+  const portal = await HostedPortal.load(settings.authkitIssuer);
+  const application = await composeWorkOSApplication(config, connection, {
+    logger, buildServer: fetchToolServers(singleFetchOperation(createFetchOperation(environment, logger)), logger),
+    signup: { enabled: true, documents },
+  });
+  return portal.withApplication(application);
 }
 
-async function forward(request: IncomingMessage, response: ServerResponse, target: URL): Promise<void> {
-  const method = request.method ?? 'GET';
-  const body = method === 'GET' || method === 'HEAD' ? {} : { body: Readable.toWeb(request) as ReadableStream, duplex: 'half' as const };
-  const answer = await fetch(target, { method, headers: forwardedHeaders(request), redirect: 'manual', ...body });
-  response.writeHead(answer.status, answerHeaders(answer));
-  if (answer.body !== null) {
-    for await (const chunk of answer.body) response.write(chunk);
+async function frontFiles(options: LocalHttpsSiteOptions): ReturnType<typeof portalFiles> {
+  if (options.application === undefined) {
+    if (options.portalBuild !== undefined) throw new Error('portalBuild requires a custom application; the production application owns its portal.');
+    return new Map();
   }
-  response.end();
-}
-
-function forwardedHeaders(request: IncomingMessage): Headers {
-  const headers = new Headers();
-  for (const [name, value] of Object.entries(request.headers)) {
-    if (value === undefined || hopHeaders.has(name)) continue;
-    for (const item of Array.isArray(value) ? value : [value]) headers.append(name, item);
-  }
-  return headers;
-}
-
-// A flat list keeps each Set-Cookie header separate.
-function answerHeaders(answer: Response): string[] {
-  const outgoing: string[] = [];
-  for (const [name, value] of answer.headers) {
-    if (name !== 'set-cookie' && !hopHeaders.has(name)) outgoing.push(name, value);
-  }
-  for (const cookie of answer.headers.getSetCookie()) outgoing.push('set-cookie', cookie);
-  return outgoing;
+  return portalFiles(options.portalBuild ?? portalBuild);
 }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { after, before, describe, test, type TestContext } from 'node:test';
+import { describe, test, type TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import {
   BadRequestException,
@@ -9,13 +9,14 @@ import {
   OauthException,
   UnauthorizedException,
   type OrganizationMembership,
+  type CreateOrganizationMembershipOptions,
   type RefreshSessionResponse,
   type SendInvitationOptions,
   type UpdateOrganizationMembershipOptions,
   type WorkOS,
 } from '@workos-inc/node';
 import { createRemoteJWKSet, decodeJwt, errors, jwtVerify, SignJWT, type JWTPayload, type RemoteJWKSetOptions } from 'jose';
-import { nowInSeconds, SigningKey, type TokenSettings } from '../../support/jwt-signing-key.ts';
+import { nowInSeconds, SigningKey, type TokenSettings } from '../../support/doubles/workos/jwt-signing-key.ts';
 import {
   cookiePassword,
   fakeApiKey,
@@ -25,7 +26,8 @@ import {
   workosClientFor,
   type FakeAnswer,
   type FakeClientSettings,
-} from '../../support/workos-fake-api.ts';
+} from '../../support/doubles/workos/workos-fake-api.ts';
+import { guardOutboundFetch } from '../../support/isolation/outbound-fetch-guard.ts';
 
 // These proofs show the pinned SDK side of each contract: what it sends, how it reads answers, and how it
 // classifies failures. The answers come from a local fake, so they do not show what the real WorkOS API sends.
@@ -39,6 +41,7 @@ const authenticateRoute = 'POST /user_management/authenticate';
 const internalError: FakeAnswer = { status: 500, body: { message: 'Internal error' } };
 
 // The build fails if a pinned option type gains or loses a field, for example a version for a conditional update.
+const createOptionFields: Record<keyof CreateOrganizationMembershipOptions, true> = { organizationId: true, userId: true, roleSlug: true, roleSlugs: true };
 const updateOptionFields: Record<keyof UpdateOrganizationMembershipOptions, true> = { roleSlug: true, roleSlugs: true };
 const invitationOptionFields: Record<keyof SendInvitationOptions, true> = {
   email: true,
@@ -290,21 +293,10 @@ function connectToken(world: ConnectWorld, key = world.authkitKey, settings: Par
 }
 
 describe('Pinned WorkOS SDK and jose contracts against a local fake WorkOS API', () => {
-  const realFetch = globalThis.fetch;
-  const outboundRequests: string[] = [];
-
-  before(() => {
-    globalThis.fetch = async (input, init) => {
-      const url = new URL(input instanceof Request ? input.url : String(input));
-      if (url.hostname === '127.0.0.1') return realFetch(input, init);
-      outboundRequests.push(url.href);
-      throw new Error('Outbound network access is not allowed in the WorkOS proofs');
-    };
-  });
-
-  after(() => {
-    globalThis.fetch = realFetch;
-    assert.deepEqual(outboundRequests, [], 'no request left the machine');
+  guardOutboundFetch({
+    allowLoopback: true,
+    refusal: 'Outbound network access is not allowed in the WorkOS proofs',
+    finding: 'no request left the machine',
   });
 
   describe('Browser sign-in with AuthKit', () => {
@@ -355,8 +347,8 @@ describe('Pinned WorkOS SDK and jose contracts against a local fake WorkOS API',
         ifMatch: undefined,
       }]);
       assert.deepEqual(
-        { userId: result.user.id, email: result.user.email, accessToken: result.accessToken, refreshToken: result.refreshToken, method: result.authenticationMethod },
-        { userId: alice.id, email: alice.email, accessToken, refreshToken: 'refresh-1', method: 'GoogleOAuth' },
+        { userId: result.user.id, email: result.user.email, emailVerified: result.user.emailVerified, accessToken: result.accessToken, refreshToken: result.refreshToken, method: result.authenticationMethod },
+        { userId: alice.id, email: alice.email, emailVerified: true, accessToken, refreshToken: 'refresh-1', method: 'GoogleOAuth' },
       );
       const seal = result.sealedSession ?? '';
       assert.match(seal, /^Fe26\.2\*1\*[^~]+~2$/);
@@ -648,6 +640,19 @@ describe('Pinned WorkOS SDK and jose contracts against a local fake WorkOS API',
       });
 
       assert.equal(world.fake.takeRequests().length, 3);
+    });
+
+    test('Given an absent membership and maxRetries 0, when onboarding creates explicit User, then the SDK sends role_slug user with no absence precondition or idempotency key and reads the returned status and roles', async (t) => {
+      const fake = await WorkOSFakeApi.start(t);
+      const workos = workosClientFor(fake);
+      fake.answer('POST /user_management/organization_memberships', { status: 201, body: membershipJson('om_NEW', ['user']) });
+      const created = await workos.userManagement.createOrganizationMembership({ organizationId: 'org_01ACME', userId: alice.id, roleSlug: 'user' });
+      assert.deepEqual(fake.takeRequests().map(({ body, ifMatch, idempotencyKey }) => ({ body, ifMatch, idempotencyKey })), [{
+        body: { organization_id: 'org_01ACME', user_id: alice.id, role_slug: 'user' }, ifMatch: undefined, idempotencyKey: undefined,
+      }]);
+      assert.equal(created.status, 'active');
+      assert.deepEqual(created.roles, [{ slug: 'user' }]);
+      assert.deepEqual(Object.keys(createOptionFields), ['organizationId', 'userId', 'roleSlug', 'roleSlugs']);
     });
 
     test('Given the SDK default of 3 retries, when WorkOS answers every refresh attempt with 500 and Retry-After 3600, then the SDK sends 4 requests with one shared generated Idempotency-Key, waits the 60 s cap instead of 3600 s before each retry, and then gives server_error', async (t) => {

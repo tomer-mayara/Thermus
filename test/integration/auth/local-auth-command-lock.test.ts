@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { AccountCredentials } from '../../support/better-auth-local.ts';
-import { assertExit, assertRevealsNone, CommandProcess } from '../../support/command-process.ts';
-import { dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
-import { listedAccounts, operatorOn } from '../../support/local-commands.ts';
-import { selfHostedServerSettings, selfHostedSettings } from '../../support/local-runtime.ts';
-import { ServerProcess } from '../../support/server-process.ts';
+import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
+import { assertExit, assertRevealsNone, CommandProcess } from '../../support/processes/command-process.ts';
+import { dataDirectory, storedInstallationIds } from '../../support/isolation/data-directory.ts';
+import { listedAccounts, operatorOn } from '../../support/dsl/local-commands.ts';
+import { selfHostedServerSettings, selfHostedSettings } from '../../support/in-process/local-runtime.ts';
+import { ServerProcess } from '../../support/processes/server-process.ts';
 
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const bob: AccountCredentials = { email: 'bob@example.com', password: 'bob-password-1' };

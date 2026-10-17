@@ -22,7 +22,7 @@ export const clearedSignInCookie = '__Host-thermus-sign-in=; HttpOnly; Secure; S
 
 type Answer<T> = T | Error;
 
-export interface ClientCall {
+interface ClientCall {
   readonly method: string;
   readonly input: unknown;
 }
@@ -79,7 +79,7 @@ function answer<T>(configured: Answer<T>): T {
   return configured;
 }
 
-export function checked(organizationId?: string): SealCheck {
+function checked(organizationId?: string): SealCheck {
   return { authenticated: true, user: ada, ...(organizationId === undefined ? {} : { organizationId }) };
 }
 
@@ -119,7 +119,7 @@ export const cookieHeader = sessionCookieHeader(envelope);
 export const sealOptions = { sessionData: 'seal-1', cookiePassword: settings.cookiePassword };
 
 export function browserSession(client: WorkOSSessionClientDouble, clock?: () => number): WorkOSBrowserSession {
-  return new WorkOSBrowserSession({ workos: client, settings, authority, ...(clock === undefined ? {} : { clock }) });
+  return new WorkOSBrowserSession({ workos: client, settings, authority, mfaEvidence: 'password-mfa-required', ...(clock === undefined ? {} : { clock }) });
 }
 
 export function signedIn(state: WorkOSSessionState): WorkOSSignedInSession {

@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test, type TestContext } from 'node:test';
-import { Client, StreamableHTTPClientTransport, type CallToolResult } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, type CallToolResult, type Client } from '@modelcontextprotocol/client';
 import type { AccessResolver, RequestContext } from '../../../src/auth/access-context.ts';
 import { InvalidAccessTokenError, type IdentityVerifier } from '../../../src/auth/identity-verifier.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { eraNegotiation, mcpProtocolEras, type McpProtocolEra } from '../../support/mcp-protocol-eras.ts';
+import { mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 const authority = 'https://identity.example';
 const resource = new URL('https://thermus.example/mcp');
@@ -91,17 +92,13 @@ async function openSite(t: TestContext, era: McpProtocolEra) {
   });
   const url = new URL('mcp', listener.url);
   async function connect(subject: keyof typeof pages, cancelled?: AbortSignal) {
-    const client = new Client({ name: `${subject}-acceptance`, version: '0.0.0' }, {
-      versionNegotiation: eraNegotiation(era),
-    });
-    clients.push(client);
-    await client.connect(new StreamableHTTPClientTransport(url, {
+    const client = await connectMcpClient(t, new StreamableHTTPClientTransport(url, {
       authProvider: { token: async () => subject },
       fetch: cancelled === undefined ? undefined : (target, init) => fetch(target, {
         ...init, signal: AbortSignal.any([cancelled, ...(init?.signal ? [init.signal] : [])]),
       }),
-    }), { signal: t.signal, timeout: 5_000 });
-    assert.equal(client.getNegotiatedProtocolVersion(), era);
+    }), { era });
+    clients.push(client);
     return client;
   }
   return { pages, records, recorded, pipelineUrls, operationContexts, access, server, listener, connect };

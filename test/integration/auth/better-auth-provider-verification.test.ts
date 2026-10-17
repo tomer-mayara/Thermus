@@ -10,8 +10,8 @@ import {
   mcpResourceUrl,
   withChangedClaims,
   type TokenFields,
-} from '../../unit/auth-better-auth/fixtures/local-access-tokens.ts';
-import { installationId, localSettings, TokenProviderDouble } from '../../unit/auth-better-auth/fixtures/token-provider-double.ts';
+} from './fixtures/local-access-tokens.ts';
+import { installationId, localSettings, TokenProviderDouble } from './fixtures/token-provider-double.ts';
 
 function verifierWithOwnKey() {
   const signer = new AccessTokenSigner('local-key-1');

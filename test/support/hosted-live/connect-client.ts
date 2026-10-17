@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
 import { connectRedirectUri, connectScope, mcpResource, requestTimeout } from './settings.ts';
 
-export interface ConnectAuthorizationRequest {
+interface ConnectAuthorizationRequest {
   readonly url: string;
   readonly state: string;
   readonly verifier: string;
 }
 
-export interface TokenBody {
+interface TokenBody {
   readonly access_token?: string;
   readonly refresh_token?: string;
   readonly id_token?: string;
@@ -19,7 +19,7 @@ export interface TokenBody {
   readonly error_description?: string;
 }
 
-export interface TokenAnswer {
+interface TokenAnswer {
   readonly status: number;
   readonly body: TokenBody;
 }
@@ -30,13 +30,13 @@ export interface IssuedTokens {
   readonly body: TokenBody;
 }
 
-export interface CodeGrant {
+interface CodeGrant {
   readonly code: string;
   readonly verifier: string;
   readonly resource?: string;
 }
 
-export interface ClientCredentials {
+interface ClientCredentials {
   readonly clientId: string;
   readonly clientSecret: string;
 }

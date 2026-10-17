@@ -1,27 +1,23 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/hosted-browser.ts';
-import { signInThroughServer, type WorkOSServerSite } from '../../support/workos-sign-in.ts';
-import type { FakeAnswer } from '../../support/workos-fake-api.ts';
-import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
-import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
+import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
+import type { FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 
 // The real hosted composition with the WorkOS provider and the WorkOS organization administration, behind the real HTTP
 // server on a loopback port. A local fake of the WorkOS API stands in for WorkOS: it keeps the roles of each membership
 // as single-role assignments, the invitations, and the users, as the probes of WorkOS staging showed. These
 // specifications prove the application side only. The hosted live gate proves the same flows against WorkOS.
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
 const organizationNames = { [acme]: 'Acme', [globex]: 'Globex' };
 // Acme has an external ID, as each customer organization of the operator runbook has one.
 const acmeExternalId = 'customer-acme';
 
-function person(name: string): WorldUser {
+function person(name: string): FakeUser {
   return { id: `user_01${name.toUpperCase()}`, email: `${name}@example.com`, firstName: `${name.charAt(0).toUpperCase()}${name.slice(1)}` };
 }
 
@@ -38,7 +34,7 @@ const pia = person('pia');
 // Acme: Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only
 // User, Gus only the default role, and Eve an inactive membership that had User and Admin. Globex: Bea and Pia have
 // User. Thus Acme has three active User seats: Ada, Bea, and Hal.
-const memberships: readonly WorldMembership[] = [
+const memberships: readonly FakeMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
   { userId: dan.id, organizationId: acme, roles: ['super-admin', 'admin'] },
   { userId: cal.id, organizationId: acme, roles: ['admin'] },
@@ -51,39 +47,24 @@ const memberships: readonly WorldMembership[] = [
   { userId: pia.id, organizationId: globex, roles: ['user'] },
 ];
 
-class LogLines {
-  readonly lines: string[] = [];
-  readonly info = (message: string): void => { this.lines.push(`INFO ${message}`); };
-  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
-}
-
-interface Site extends WorkOSServerSite {
-  readonly log: LogLines;
-}
-
 interface WorkOSChange {
   readonly method: string;
   readonly path: string;
   readonly body: unknown;
 }
 
-async function openSite(t: TestContext): Promise<Site> {
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, Object.keys(organizationNames));
-  world.memberships = memberships;
-  world.organizationNames = organizationNames;
-  world.organizationExternalIds = { [acme]: acmeExternalId };
-  world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
-  const log = new LogLines();
-  const application = await composeWorkOSApplication(config, world.connection(), log);
-  const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-  t.after(async () => {
-    await server.close();
-    await application.close();
-  });
-  return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
-}
+const openSite = (t: TestContext) => serveWorkOSSite(t, {
+  organizations: Object.keys(organizationNames),
+  mfaPolicy: 'required',
+  setUp: (world) => {
+    world.memberships = memberships;
+    world.organizationNames = organizationNames;
+    world.organizationExternalIds = { [acme]: acmeExternalId };
+    world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
+  },
+});
 
-async function signIn(site: Site, user: WorldUser, organizationId = acme): Promise<HostedBrowser> {
+async function signIn(site: WorkOSSite, user: FakeUser, organizationId = acme): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -93,12 +74,6 @@ async function pageOf(browser: HostedBrowser, path: string): Promise<{ readonly 
   const answer = await browser.open(path);
   assert.equal(answer.status, 200, `${path}: ${answer.body}`);
   return { body: answer.body, forms: formsIn(answer.body) };
-}
-
-function formNamed(forms: readonly PageForm[], label: string): PageForm {
-  const form = forms.find((candidate) => candidate.label === label);
-  assert.ok(form, `The page offers no form "${label}": ${JSON.stringify(forms.map((candidate) => candidate.label))}`);
-  return form;
 }
 
 function labelsOf(forms: readonly PageForm[]): string[] {
@@ -134,7 +109,7 @@ function assertNotice(answer: BrowserAnswer, status: number, text: RegExp): void
 
 // The WorkOS requests that change roles, memberships, or invitations, since the last call. A sign-in or a refresh
 // changes nothing.
-function changesIn(site: Site): WorkOSChange[] {
+function changesIn(site: WorkOSSite): WorkOSChange[] {
   return site.world.fake.takeRequests()
     .filter(({ method, path }) => method !== 'GET' && !path.startsWith('/user_management/authenticate'))
     .map(({ method, path, body }) => ({ method, path: path.split('?')[0] ?? path, body }));
@@ -150,29 +125,29 @@ function roleWrite(method: 'POST' | 'DELETE', membershipId: string, role: string
   };
 }
 
-function changeRecords(site: Site): Readonly<Record<string, unknown>>[] {
+function changeRecords(site: WorkOSSite): Readonly<Record<string, unknown>>[] {
   const prefix = 'INFO Account change record: ';
   return site.log.lines.filter((line) => line.startsWith(prefix)).map((line) => JSON.parse(line.slice(prefix.length)) as Readonly<Record<string, unknown>>);
 }
 
-function recordSummaries(site: Site): string[] {
+function recordSummaries(site: WorkOSSite): string[] {
   return changeRecords(site).map((record) => {
     const actor = record.actor as { subject: string };
     return `${actor.subject} ${String(record.action)} ${String(record.role)} in ${String(record.organizationId)}: ${String(record.outcome)}`;
   });
 }
 
-async function mcpStatusWith(site: Site, token: string): Promise<number> {
-  return (await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', token }))).status;
+async function mcpStatusWith(site: WorkOSSite, token: string): Promise<number> {
+  return (await site.discover(token)).status;
 }
 
-async function mcpStatus(site: Site, user: WorldUser, organizationId: string): Promise<number> {
+async function mcpStatus(site: WorkOSSite, user: FakeUser, organizationId: string): Promise<number> {
   return mcpStatusWith(site, await site.world.connectToken(user, { org_id: organizationId }));
 }
 
 // The reads of the members of an organization. Access resolution reads the memberships of the session user, with its
 // user ID, so those reads are not member reads.
-function memberReadsIn(site: Site): string[] {
+function memberReadsIn(site: WorkOSSite): string[] {
   return site.world.fake.takeRequests()
     .map(({ path }) => decodeURIComponent(path))
     .filter((path) => path.startsWith('/user_management/organization_memberships?') && !path.includes('user_id='));
@@ -185,9 +160,9 @@ describe('Hosted WorkOS edition: grant changes through single-role WorkOS writes
     const first = await pageOf(browser, 'members');
     changesIn(site);
 
-    const adminGrant = await browser.submit(formNamed(first.forms, 'Grant Admin to sam@example.com'));
+    const adminGrant = await browser.submit(formLabelled(first.forms, 'Grant Admin to sam@example.com'));
     const second = await pageOf(browser, 'members');
-    const userGrant = await browser.submit(formNamed(second.forms, 'Grant User to sam@example.com'));
+    const userGrant = await browser.submit(formLabelled(second.forms, 'Grant User to sam@example.com'));
     const third = await pageOf(browser, 'members');
     const samMembership = site.world.membershipId(sam, acme);
 
@@ -212,15 +187,15 @@ describe('Hosted WorkOS edition: grant changes through single-role WorkOS writes
     const calBrowser = await signIn(site, cal);
     const samBrowser = await signIn(site, sam);
     const danBrowser = await signIn(site, dan);
-    const calForm = formNamed((await pageOf(calBrowser, 'members')).forms, 'Grant User to sam@example.com');
-    const samForm = formNamed((await pageOf(samBrowser, 'members')).forms, 'Grant Admin to bea@example.com');
+    const calForm = formLabelled((await pageOf(calBrowser, 'members')).forms, 'Grant User to sam@example.com');
+    const samForm = formLabelled((await pageOf(samBrowser, 'members')).forms, 'Grant Admin to bea@example.com');
     const danForms = (await pageOf(danBrowser, 'members')).forms;
     changesIn(site);
 
     const calRefusal = await calBrowser.submit({ ...calForm, fields: { ...calForm.fields, role: 'admin' } });
     const samRefusal = await samBrowser.submit({ ...samForm, fields: { ...samForm.fields, role: 'user' } });
     const refusedWrites = changesIn(site);
-    const danGrant = await danBrowser.submit(formNamed(danForms, 'Grant Admin to bea@example.com'));
+    const danGrant = await danBrowser.submit(formLabelled(danForms, 'Grant Admin to bea@example.com'));
 
     assert.ok(labelsOf((await pageOf(calBrowser, 'members')).forms).every((label) => !/ Admin (to|from) /.test(label)), 'Admin alone may not manage Admin.');
     assertNotice(calRefusal, 403, /Your account cannot make this change in the selected organization\. Nothing changed\./);
@@ -238,9 +213,9 @@ describe('Hosted WorkOS edition: grant changes through single-role WorkOS writes
     const before = await pageOf(browser, 'members');
     changesIn(site);
 
-    const revoked = await browser.submit(formNamed(before.forms, 'Revoke Admin from dan@example.com'));
+    const revoked = await browser.submit(formLabelled(before.forms, 'Revoke Admin from dan@example.com'));
     const between = await pageOf(browser, 'members');
-    const regranted = await browser.submit(formNamed(between.forms, 'Grant Admin to dan@example.com'));
+    const regranted = await browser.submit(formLabelled(between.forms, 'Grant Admin to dan@example.com'));
     const after = await pageOf(browser, 'members');
     const danMembership = site.world.membershipId(dan, acme);
 
@@ -265,8 +240,8 @@ describe('Hosted WorkOS edition: independent grants and revocation at the next r
     assert.deepEqual([(await adaBrowser.open('members')).status, await mcpStatusWith(site, adaToken), (await halBrowser.open('members')).status, await mcpStatusWith(site, halToken)], [200, 200, 200, 200]);
 
     const forms = (await pageOf(danBrowser, 'members')).forms;
-    assertRedirectTo(await danBrowser.submit(formNamed(forms, 'Revoke Admin from ada@example.com')), 'members');
-    assertRedirectTo(await danBrowser.submit(formNamed(forms, 'Revoke User from hal@example.com')), 'members');
+    assertRedirectTo(await danBrowser.submit(formLabelled(forms, 'Revoke Admin from ada@example.com')), 'members');
+    assertRedirectTo(await danBrowser.submit(formLabelled(forms, 'Revoke User from hal@example.com')), 'members');
 
     assert.deepEqual(site.world.rolesOf(ada, acme), ['user']);
     assert.deepEqual(site.world.rolesOf(hal, acme), ['admin']);
@@ -284,7 +259,7 @@ describe('Hosted WorkOS edition: independent grants and revocation at the next r
     const globexToken = await site.world.connectToken(bea, { org_id: globex });
     assert.deepEqual([(await beaBrowser.open('portal/access')).status, await mcpStatusWith(site, acmeToken)], [200, 200]);
 
-    const revoked = await halBrowser.submit(formNamed((await pageOf(halBrowser, 'members')).forms, 'Revoke User from bea@example.com'));
+    const revoked = await halBrowser.submit(formLabelled((await pageOf(halBrowser, 'members')).forms, 'Revoke User from bea@example.com'));
     const members = await pageOf(halBrowser, 'members');
     const organizations = await pageOf(beaBrowser, 'organizations');
 
@@ -309,11 +284,11 @@ describe('Hosted WorkOS edition: changes on stale, inactive, foreign, and forged
 
     site.world.setRoles(bea, acme, ['user', 'admin']);
     changesIn(site);
-    const stale = await browser.submit(formNamed(shown, 'Grant Admin to bea@example.com'));
+    const stale = await browser.submit(formLabelled(shown, 'Grant Admin to bea@example.com'));
     const staleWrites = changesIn(site);
-    const grantForm = formNamed((await pageOf(browser, 'members')).forms, 'Grant Admin to gus@example.com');
+    const grantForm = formLabelled((await pageOf(browser, 'members')).forms, 'Grant Admin to gus@example.com');
     assertRedirectTo(await browser.submit(grantForm), 'members');
-    assertRedirectTo(await browser.submit(formNamed((await pageOf(browser, 'members')).forms, 'Revoke Admin from gus@example.com')), 'members');
+    assertRedirectTo(await browser.submit(formLabelled((await pageOf(browser, 'members')).forms, 'Revoke Admin from gus@example.com')), 'members');
     changesIn(site);
     const repeated = await browser.submit(grantForm);
 
@@ -329,7 +304,7 @@ describe('Hosted WorkOS edition: changes on stale, inactive, foreign, and forged
     const site = await openSite(t);
     const browser = await signIn(site, dan);
     const page = await pageOf(browser, 'members');
-    const template = formNamed(page.forms, 'Grant Admin to bea@example.com');
+    const template = formLabelled(page.forms, 'Grant Admin to bea@example.com');
     changesIn(site);
 
     const forged: Readonly<Record<string, string>>[] = [
@@ -380,7 +355,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const browser = await signIn(site, dan);
     const first = await pageOf(browser, 'invitations');
     const invite = (role: 'User' | 'Admin', email: string) => {
-      const form = formNamed(first.forms, `Invite as ${role}`);
+      const form = formLabelled(first.forms, `Invite as ${role}`);
       return browser.submit({ ...form, fields: { ...form.fields, email } });
     };
     changesIn(site);
@@ -390,12 +365,12 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const asAdmin = await invite('Admin', 'new@example.com');
     const member = await invite('Admin', 'ada@example.com');
     const pending = await pageOf(browser, 'invitations');
-    const resent = await browser.submit(formNamed(pending.forms, 'Resend the invitation to new@example.com'));
-    const revoked = await browser.submit(formNamed(pending.forms, 'Revoke the invitation to new@example.com'));
+    const resent = await browser.submit(formLabelled(pending.forms, 'Resend the invitation to new@example.com'));
+    const revoked = await browser.submit(formLabelled(pending.forms, 'Revoke the invitation to new@example.com'));
     const after = await pageOf(browser, 'invitations');
     const invitation = site.world.invitations.find(({ email }) => email === 'new@example.com');
     assert.ok(invitation, 'WorkOS has no invitation for new@example.com.');
-    const { token, acceptInvitationUrl } = await site.world.connection().workos.userManagement.getInvitation(invitation.id);
+    const { token, acceptInvitationUrl } = await site.world.connection('required').workos.userManagement.getInvitation(invitation.id);
 
     assert.deepEqual(labelsOf(first.forms), ['Invite as User', 'Invite as Admin']);
     assert.match(first.body, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);
@@ -432,7 +407,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
   test('Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, the invitations page shows the acceptance, and the User seats count Eve', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, hal);
-    const form = formNamed((await pageOf(browser, 'invitations')).forms, 'Invite as User');
+    const form = formLabelled((await pageOf(browser, 'invitations')).forms, 'Invite as User');
 
     assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'eve@example.com' } }), 'invitations');
     const pendingMembers = await pageOf(browser, 'members');
@@ -463,7 +438,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const page = await pageOf(browser, 'invitations');
     changesIn(site);
 
-    const userForm = formNamed(page.forms, 'Invite as User');
+    const userForm = formLabelled(page.forms, 'Invite as User');
     const adminInvite = await browser.submit({ ...userForm, fields: { ...userForm.fields, role: 'admin', email: 'x@example.com' } });
     const resend = await browser.post('invitations/resend', { csrf_token: userForm.fields.csrf_token ?? '', organization_id: acme, invitation_id: 'invitation_01OLD' });
 
@@ -483,7 +458,7 @@ describe('Hosted WorkOS edition: the User seat summary from every WorkOS page', 
     site.world.membershipPageOverlap = 1;
     site.world.invitations = [];
     const browser = await signIn(site, dan);
-    const form = formNamed((await pageOf(browser, 'invitations')).forms, 'Invite as User');
+    const form = formLabelled((await pageOf(browser, 'invitations')).forms, 'Invite as User');
     assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'newcomer@example.com' } }), 'invitations');
     site.world.fake.takeRequests();
 
@@ -505,7 +480,7 @@ describe('Hosted WorkOS edition: the User seat summary from every WorkOS page', 
     site.world.laterMembershipPageOutage = { status: 500, body: { message: 'Internal error' } };
 
     const page = await browser.open('members');
-    const grant = await browser.submit(formNamed(forms, 'Grant User to gus@example.com'));
+    const grant = await browser.submit(formLabelled(forms, 'Grant User to gus@example.com'));
 
     for (const answer of [page, grant]) {
       assert.equal(answer.status, 500, answer.body);
@@ -539,7 +514,7 @@ const unavoidableAnswers: readonly { readonly label: string; readonly answer: Fa
   { label: 'a closed WorkOS connection', answer: 'close', cause: /^Error: Unexpected error: TypeError: fetch failed \(code UND_ERR_SOCKET\)$/ },
 ];
 
-function failureReportsIn(site: Site, path: string): string[] {
+function failureReportsIn(site: WorkOSSite, path: string): string[] {
   const prefix = `ERROR An account request failed unexpectedly for /team/${path}: `;
   return site.log.lines.filter((line) => line.startsWith('ERROR ')).map((line) => (line.startsWith(prefix) ? line.slice(prefix.length) : line));
 }

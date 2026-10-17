@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage, toolOutcome } from '../../support/hosted-administration.ts';
-import { formsIn } from '../../support/hosted-browser.ts';
-import { formFor, statusesOf, userOf } from '../../support/hosted-organization-site.ts';
+import { statusesOf } from '../../support/dsl/hosted-access.ts';
+import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
+import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { userOf } from '../../support/fixtures/hosted-members.ts';
 
 const membersPage = 'https://thermus.example/team/members';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
@@ -42,7 +43,7 @@ describe('Hosted grant management through the public routes, with session and di
     const shownBefore = await shownPage(cy, 'members');
 
     const revoked = await submitOnPage(site.browserOf(userOf('user-sam', 'org-a')), 'members', 'Revoke Admin from cy@example.com');
-    const oldForm = await cy.submit(formFor(shownBefore.forms, 'Revoke User from una@example.com'));
+    const oldForm = await cy.submit(formLabelled(shownBefore.forms, 'Revoke User from una@example.com'));
     const after = {
       members: (await cy.open('members')).status,
       portal: (await cy.open('portal')).status,
@@ -104,7 +105,7 @@ describe('Hosted grant management through the public routes, with session and di
     const revoked = await submitOnPage(site.browserOf(userOf('user-eve', 'org-a')), 'members', 'Revoke User from una@example.com');
     const after = { portal: (await una.open('portal')).status, tool: await toolOutcome(site, 'user-una-token'), globexTool: await toolOutcome(site, 'user-una-globex-token') };
     const organizations = formsIn((await una.open('organizations')).body);
-    const selected = await una.submit(formFor(organizations, 'Globex'));
+    const selected = await una.submit(formLabelled(organizations, 'Globex'));
     const globexPortal = await una.open('portal');
 
     assert.deepEqual(before, { portal: 200, tool: 'done' });

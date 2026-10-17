@@ -3,7 +3,9 @@
 MCP-P01 adds `getURLAsMarkdown(url, reason)` with dependencies supplied by test
 initialization. MCP-P02 adds shutdown cancellation and request isolation. MCP-P03
 registers the tool in the self-hosted server with trusted rules and the local
-renderer; see [production composition](#production-composition). There is no
+renderer. [RHD-01](../implementation/rhd-01.md) adds protected
+hosted fetch and bounded request waits.
+See [production composition](#production-composition). There is no
 POST tool or new stdio tool.
 
 ## Request and result
@@ -42,6 +44,7 @@ The operation also requires `product:access` before it fetches the page.
 | Unknown tool | Safe InvalidParams error, code `-32602` |
 | Invalid named arguments | `isError: true`, `Invalid tool arguments` |
 | Missing product permission | `isError: true`, `Access denied` |
+| Hosted capacity occupied | `isError: true`, `Server busy. Try again later.`; completion status `busy` |
 | Fetch failure | `isError: true`, `Page fetch failed`; no pipeline work |
 | Oversized HTML, thrown pipeline failure, or absent/nonstring Markdown | `isError: true`, `Page processing failed`; no partial output |
 | Observed per-call cancellation | Work stops; no successful result |
@@ -68,8 +71,9 @@ time. Then it makes these parts one time:
   order;
 - one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
 - one operation, `createGetURLAsMarkdown({ fetcher, pipeline,
-  reportRendererSetupFailure })`, with the
-  [renderer setup report](#renderer-setup-report) of the application logger.
+  reportRendererSetupFailure, reportRendererReadinessTimeout })`, with the
+  [renderer setup report](#renderer-setup-report) and
+  [readiness report](#renderer-readiness-report) of the application logger.
 
 `createFetchOperation` returns the operation. Then the branch calls
 `fetchToolServers(operation, logger)`, which returns the `buildServer` function
@@ -85,7 +89,7 @@ user that `users disable` disabled get HTTP 401. A banned user with a live
 session gets HTTP 403. These refusals happen before any fetch or cleaning and
 write no completion record.
 
-Startup does not run or check the renderer. Without a usable renderer, each page
+Self-hosted startup does not run or check the renderer. Without a usable renderer, each page
 fetch fails with `Page fetch failed` and a `fetch_failed` record. The tool does
 not pass on the fetcher error. The operator log gets a
 [renderer setup report](#renderer-setup-report) instead. The container image
@@ -93,10 +97,17 @@ holds the pinned renderer, as the
 [runtime guide](../lightpanda-runtime.md#container-image) tells, so a server
 container renders pages with the same fetcher options.
 
-The hosted edition does not register the tool. Since AUTH-06, its MCP resource
-checks WorkOS Connect tokens, and its MCP server has no tool. P03 adds no POST
-tool, stdio tool, cache, OAuth provider, rule subscription, rule updater, or
-exporter setup.
+The RHD-01 hosted opener uses the same `createFetchOperation` and
+`fetchToolServers`, with one shared capacity slot around the full operation.
+WorkOS Connect tokens and the current User grant protect each request. Missing
+or revoked access is refused before fetching. The slot covers DNS, rendering,
+cleaning, and cleanup across requests; there is no queue or capacity setting.
+An abort does not free the slot before settlement. A busy call writes its own
+safe completion record with status `busy`. RHD-01 adds no onboarding or
+deployment. [RHD-02](../implementation/rhd-02.md) adds portal serving, local
+health, startup checks, and hosted MCP Origin validation. Hosted startup checks
+the pinned renderer before listening; self-hosted startup keeps its deferred
+renderer failure behavior. Test fixtures do not select production ad rules.
 
 ## Renderer setup report
 
@@ -110,7 +121,7 @@ and its cause stay out of the report, because the cause holds the renderer
 arguments with the URL. A reporter that throws does not change the tool result.
 A cancelled call gives no report.
 
-The self-hosted server writes the report as one `ERROR` line of the application
+The server writes the report as one `ERROR` line of the application
 logger:
 
 ```text
@@ -131,8 +142,32 @@ it at startup. After a correction, a recurrence of a reported code writes no new
 line until the next server start. The client result stays `Page fetch failed`,
 and the completion record stays `fetch_failed`. Other fetch failures, such as
 HTTP errors, timeouts, signals, DNS failures, blocked destinations, and system
-limits such as `EMFILE`, write no report. The local commands and the hosted
-edition load no renderer and write no report.
+limits such as `EMFILE`, write no renderer setup report. The local commands
+load no renderer and write no report. The hosted server uses the same safe
+reports as the self-hosted server.
+
+## Renderer readiness report
+
+The renderer has a fixed 20-second readiness allowance, including navigation.
+When it stays active at the deadline, the fetcher stops the child and waits for
+its completion. The client gets `Page fetch failed`, no partial Markdown, and
+one completion record with `fetch_failed`.
+
+The operation gives the optional `reportRendererReadinessTimeout` dependency
+only `{ category: 'readiness_timeout', budgetMs: 20000 }`. The application
+logger writes this safe `ERROR` record for each readiness timeout:
+
+```json
+{"event":"renderer.fetch.failed","category":"readiness_timeout","budgetMs":20000}
+```
+
+The report contains only these fixed fields. It contains no URL, reason,
+credentials, renderer arguments, stderr, or raw error cause. A logging failure
+does not change the client result. Cancellation takes priority and writes no
+readiness report. HTTP errors, process timeouts, output limits, and renderer
+launch failures keep their separate behavior. See the
+[runtime guide](../lightpanda-runtime.md#renderer-readiness-report) for operator
+steps.
 
 ## Completion records
 
@@ -178,9 +213,13 @@ cancel a peer. Shutdown cancels every active request in both protocol eras.
 The entry point starts `listener.close()` to refuse new connections, then calls
 `application.close(listenerDrain)` without first awaiting the listener. The
 application starts MCP cancellation, awaits active work and listener drain, and
-then releases provider resources. Authentication already in progress is awaited;
-shutdown prevents it from starting the next stage. The request body remains a
-stream with the SDK as its only parser; abort also cancels an incomplete body.
+then releases provider resources. RHD-01 connects request and shutdown signals
+before token verification and access resolution. Cancellation ends those waits
+and prevents a late result from starting a tool server. Provider calls without
+a cancellation API can settle later, with their rejection still observed.
+Tool handlers retain ownership of their real cleanup until it settles. The
+request body remains a stream with the SDK as its only parser; abort also
+cancels an incomplete body.
 MCPServer awaits body-transfer cleanup and retains a failure to cancel the body.
 
 `listener.close()` ends idle keep-alive connections at once. It also ends each
@@ -199,8 +238,9 @@ of the cancelled call closes when the client aborts it. A connection with a
 request in progress keeps the drain and the grace period, 5 seconds by default.
 
 When shutdown starts while a request is still in authentication, MCPServer
-refuses the request after that step, and the client gets a generic `500`. The
-SDK has not read the request body. Node counts a connection as idle only after
+ends the wait without waiting for the identity result. No tool server starts
+from a late result. A connected client can get a generic `500`; a disconnected
+client can get no response. The SDK has not read the request body. Node counts a connection as idle only after
 it has read the complete request, and the response can finish before that:
 Node stops reading an unread body at its buffer limit and discards the rest
 after the response, and a handler can answer while Node still reads the body.
@@ -211,6 +251,15 @@ keeps its connection until it sends the rest, up to the grace period. To end
 the connection earlier can reset it, and the client can then lose the
 response.
 
+The hosted CLI starts a fixed 10-second deadline on `SIGINT` or `SIGTERM`.
+Normal cleanup allows a clean process exit. If cleanup stalls or a library
+handle keeps the process alive, the deadline writes
+`Hosted shutdown exceeded 10000 ms` and exits with status 1. The timer stays
+referenced while `serve()` waits for cleanup, so a stalled wait reaches the
+explicit deadline. After `serve()` exits, the timer is unreferenced: a clean
+process can exit, while a residual handle still reaches the deadline. Self-hosted operation
+has no new deadline. This is a failure bound, not proof of graceful cleanup.
+
 The first application close call supplies the listener drain promise. Repeated
 and concurrent close calls share cleanup. Owned transports and request servers
 close once, and cleanup failures remain visible even when the SDK catches them.
@@ -218,8 +267,8 @@ Startup failure releases resources that already opened and preserves the
 startup error. A cancelled call records `cancelled`, not a fetch failure, and
 cannot publish success. A disconnected client might receive no response.
 
-`NoAuthProvider` exists only in `test/support/auth/no-auth-provider.ts`. The
-tests and the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/README.md)
+`NoAuthProvider` exists only in `test/support/doubles/auth/no-auth-provider.ts`. The
+tests and the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
 inject it as both `IdentityVerifier` and `AccessResolver`. It accepts supplied
 token contents and returns a fixed synthetic identity and workspace, only
 `product:access`, a distinct client ID, a synthetic issuer, the configured
@@ -227,6 +276,13 @@ resource, current finite times, and empty scopes. It does not bypass Bearer
 syntax checks. Production retains Better Auth and the hosted WorkOS provider.
 The work slice is a development script outside `src/`; no server setting
 selects the provider.
+
+The [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
+supplies its own `buildServer` to `composeWorkOSApplication()` for a local run.
+The real WorkOS provider checks each Connect token and the current grant before
+the tool runs. The completion record has the WorkOS identity. The slice remains
+a development script outside `src/`, with its own onboarding and Axiom logging.
+Production RHD-01 does not enable those slice policies.
 
 The P01 and P02 HTTP acceptance cases use the real SDK client and production
 HTTP bridge with fetcher and pipeline doubles. The P03 offline fetch tool

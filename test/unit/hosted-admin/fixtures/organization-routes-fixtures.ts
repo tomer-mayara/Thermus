@@ -1,5 +1,5 @@
+import type { SignedInSetup } from '../../../support/doubles/auth/browser-session-double.ts';
 import { ann, organization, postForm, serve, signedIn, type Setup } from './account-routes-fixtures.ts';
-import type { SignedInSetup } from './browser-session-double.ts';
 
 export const sessionCookies = ['session=refreshed; Path=/; Secure; HttpOnly; SameSite=Lax'];
 export const switchCookies = ['session=switched; Path=/; Secure; HttpOnly; SameSite=Lax'];

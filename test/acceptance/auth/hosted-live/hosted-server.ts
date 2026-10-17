@@ -11,7 +11,7 @@ import { nextNavigation, originAndPath, recordNavigations } from '../../../suppo
 import { initiateLoginUri, localOrigin, mcpResource, signOutUri } from '../../../support/hosted-live/settings.ts';
 import { readToken, secondsLeft } from '../../../support/hosted-live/tokens.ts';
 import { deleteWorkOSResource } from '../../../support/hosted-live/workos-api.ts';
-import { mcpRequest } from '../../../unit/mcp/fixtures/mcp-http-request.ts';
+import { mcpRequest } from '../../../support/drivers/mcp/mcp-http-request.ts';
 
 const signInOptions = { timeout: 240_000 };
 const expiryOptions = { timeout: 600_000 };
@@ -23,6 +23,7 @@ const tokenLifetimeWait = 305_000;
 
 export function describeHostedServerCases(run: LiveRun): void {
   const { settings } = run;
+  const requiredMfa = settings.mfaPolicy === 'required';
   const authkitHost = new URL(settings.authkitIssuer).host;
 
   async function mcpStatus(token: string | undefined): Promise<{ status: number; challenge: string | null; body: string }> {
@@ -41,7 +42,7 @@ export function describeHostedServerCases(run: LiveRun): void {
   });
 
   describe('Hosted live gate (AUTH-06): the hosted server at https://localhost:46443/ with WorkOS', () => {
-    test('Given a member with User and Admin in organization A, when the member signs in through the portal and chooses A, then MFA completes before the callback, the server keeps the session in a sealed __Host- cookie that is HttpOnly, Secure, and SameSite=Lax, and the portal shows the product access of A from a current grant read', signInOptions, async (t) => {
+    test(`Given a member with User and Admin in organization A and the ${requiredMfa ? 'Required' : 'Optional'} MFA profile, when the member signs in and chooses A, then ${requiredMfa ? 'MFA completes' : 'no MFA is demanded'} before the callback, the sealed cookie is HttpOnly, Secure, and SameSite=Lax, the session has MFA evidence ${requiredMfa}, and the portal shows current product access in A`, signInOptions, async (t) => {
       const { organizationA } = await run.fixtures();
       const { page, pages } = await admin();
       const cookies = await page.context().cookies(localOrigin);
@@ -49,13 +50,13 @@ export function describeHostedServerCases(run: LiveRun): void {
       t.diagnostic(`AuthKit pages: ${pages.join(' > ')}`);
       t.diagnostic(`cookies: ${cookies.map(({ name, httpOnly, secure, sameSite, path, value }) => `${name} (${value.length} characters, HttpOnly ${httpOnly}, Secure ${secure}, SameSite ${sameSite}, Path ${path})`).join(', ')}`);
 
-      assert.ok(pages.some((path) => path.startsWith('/mfa/')), 'AuthKit did not ask for the MFA step.');
+      assert.equal(pages.some((path) => path.startsWith('/mfa/')), requiredMfa, 'AuthKit MFA pages do not match the selected profile.');
       assert.ok(session, 'The server set no session cookie.');
       assert.deepEqual([session.httpOnly, session.secure, session.sameSite, session.path], [true, true, 'Lax', '/']);
       assert.equal(cookies.some(({ name }) => name === signInCookie), false, 'The sign-in cookie stayed after the callback.');
-      assert.match(await page.locator('.product-access').innerText(), new RegExp(`You have product access in organization ${organizationA.id}\\. Roles: admin, user\\.`));
+      assert.match(await page.locator('.product-access').textContent() ?? '', new RegExp(`You have product access in organization ${organizationA.id}\\. Roles: admin, user\\.`));
       const json = await sessionJson(page);
-      assert.equal(json.mfaCompleted, true, 'The session of a password sign-in with required MFA has no MFA evidence.');
+      assert.equal(json.mfaCompleted, requiredMfa, 'The password session MFA evidence does not match the configured and read-back policy.');
       assert.equal(json.organizationId, organizationA.id);
     });
 
@@ -148,7 +149,7 @@ export function describeHostedServerCases(run: LiveRun): void {
         `A direct visit to ${settings.authkitIssuer}/ did not reach the Initiate login URI ${initiateLoginUri}.`,
         `The owner must set the Initiate login URI of the staging environment to ${initiateLoginUri} in the WorkOS dashboard.`,
       ].join(' '));
-      await completeAuthKit(page, { user: connectUser, authkitHost });
+      await completeAuthKit(page, { user: connectUser, authkitHost, mfaPolicy: settings.mfaPolicy });
       await page.waitForURL(`${localOrigin}/`);
       await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
       await page.context().close();
@@ -178,7 +179,7 @@ export function describeHostedServerCases(run: LiveRun): void {
         `The owner must set the default Sign-out URI of the staging environment to ${signOutUri} in the WorkOS dashboard.`,
         'The portal allows a form redirect only to its own origin, to api.workos.com, and to the AuthKit domain.',
       ].join(' '));
-      await page.getByRole('button', { name: 'Sign In' }).waitFor();
+      await page.getByRole('link', { name: 'Sign in', exact: true }).waitFor();
       await page.context().close();
     });
 
@@ -211,6 +212,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       assert.equal(refreshed.status, 200);
       assert.equal(refreshed.setCookies.filter((cookie) => cookie.startsWith(`${sessionCookie}=`) && !/Max-Age=0/i.test(cookie)).length, 1, 'The refresh sent no new session cookie.');
       assert.equal(afterExpiry.csrfToken, before.csrfToken, 'The form token changed at the refresh.');
+      assert.equal(afterExpiry.mfaCompleted, requiredMfa, 'A refresh changed the selected MFA evidence policy.');
       assert.equal(endedAfterExpiry.status, 401);
       assert.ok(endedAfterExpiry.setCookies.some((cookie) => cookie.startsWith(`${sessionCookie}=`) && /Max-Age=0/i.test(cookie)), 'The ended session kept its cookie.');
       assert.equal(revokedAfterExpiry.status, 401);

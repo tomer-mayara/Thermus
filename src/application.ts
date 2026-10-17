@@ -55,6 +55,7 @@ export interface HostedAccountParts {
   // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.
   readonly billing: Billing;
   readonly operation?: AccountOperation;
+  readonly signupUrl?: string;
 }
 
 export interface Application {
@@ -155,20 +156,35 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     organizations: new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing }),
     reportFailure: account.reportFailure,
     operation: account.operation,
+    signupUrl: account.signupUrl,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
-  return composeApplication(handle, parts.mcp);
+  const shutdown = new AbortController();
+  return composeApplication((request) => {
+    const signal = AbortSignal.any([request.signal, shutdown.signal]);
+    signal.throwIfAborted();
+    return handle(new Request(request, { signal }));
+  }, { close: () => {
+    shutdown.abort(new DOMException('The hosted application is shutting down', 'AbortError'));
+    return parts.mcp.close();
+  } });
 }
 
 export function routeHostedRequests(config: RouteConfig, handlers: HostedRequestHandlers): FetchHandler {
-  const basePath = new URL(config.publicBaseUrl).pathname;
+  const publicUrl = new URL(config.publicBaseUrl);
+  const basePath = publicUrl.pathname;
+  const mcpPath = new URL(config.mcpResourceUrl).pathname;
   const mcpPaths = new Set([
-    new URL(config.mcpResourceUrl).pathname,
+    mcpPath,
     '/.well-known/oauth-protected-resource',
     new URL(config.resourceMetadataUrl).pathname,
   ]);
   return async (request) => {
     const pathname = new URL(request.url).pathname;
+    if (pathname === mcpPath) {
+      const origin = request.headers.get('Origin');
+      if (origin !== null && origin !== publicUrl.origin) return new Response('Forbidden', { status: 403 });
+    }
     if (mcpPaths.has(pathname)) return handlers.mcp(request);
     if (handlers.browser?.handles(pathname)) return handlers.browser.handle(request);
     if (pathname.startsWith(basePath)) return handlers.account(request);

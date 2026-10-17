@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { cleanBody } from './helpers/css-pipeline.ts';
+import { cleanBody } from './fixtures/css-pipeline.ts';
 
 describe('zero-font input values', () => {
   for (const type of [undefined, 'TEXT', 'invalid-type', 'search', 'tel', 'url', 'email', 'password']) {

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { BillingRecorder } from '../../support/billing-recorder.ts';
-import { recordLines, rolesOf, seatsIn, serveAdministrationSite, shownPage, submitOnPage } from '../../support/hosted-administration.ts';
-import { formsIn } from '../../support/hosted-browser.ts';
-import { formFor, userOf } from '../../support/hosted-organization-site.ts';
+import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
+import { recordLines, rolesOf, seatsIn, serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
+import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { userOf } from '../../support/fixtures/hosted-members.ts';
 
 const failurePage = /The request failed\. Try again later\./;
 const mfaNotice = /Multi-factor authentication required/;
@@ -110,7 +110,7 @@ describe('Hosted billing with BillingFree through the public routes, with sessio
     const { forms } = await shownPage(fay, 'members');
     site.directory.memberPageLayout = (members) => [members.slice(0, 2), new Error('member page 2 timed out'), members.slice(4)];
 
-    const failed = await fay.submit(formFor(forms, 'Grant User to eve@example.com'));
+    const failed = await fay.submit(formLabelled(forms, 'Grant User to eve@example.com'));
     const updatesAfterFailure = [...site.billing.updates];
     site.directory.memberPageLayout = undefined;
     const later = await submitOnPage(site.browserOf(userOf('user-otto', 'org-a')), 'members', 'Revoke User from una@example.com');

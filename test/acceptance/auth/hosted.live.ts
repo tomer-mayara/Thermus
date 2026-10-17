@@ -1,18 +1,21 @@
 import assert from 'node:assert/strict';
-import { after, describe, test, type TestContext } from 'node:test';
+import { after, before, describe, test, type TestContext } from 'node:test';
 import { createLocalJWKSet, type JSONWebKeySet } from 'jose';
+import { hostedMfaPolicy } from '../../support/hosted-live/mfa-profile.ts';
 import { LiveRun } from '../../support/hosted-live/live-run.ts';
 import { authkitKeySetUrl, requestTimeout, workosClient, type HostedLiveSettings } from '../../support/hosted-live/settings.ts';
 import { describeAdministrationProofs } from './hosted-live/administration-proofs.ts';
 import { describeAdministrationServerCases } from './hosted-live/administration-server.ts';
 import { describeBrowserSignInProofs } from './hosted-live/browser-sign-in.ts';
-import { describeConfigurationProofs } from './hosted-live/configuration.ts';
+import { assertMfaProfileBeforeLiveProofs, describeConfigurationProofs } from './hosted-live/configuration.ts';
 import { describeConnectAuthorizationProofs } from './hosted-live/connect-authorization.ts';
 import { describeConnectTokenProofs } from './hosted-live/connect-tokens.ts';
 import { describeHostedServerCases } from './hosted-live/hosted-server.ts';
 import { describeMembershipProofs } from './hosted-live/memberships.ts';
 import { describeOperatorSetupProofs } from './hosted-live/operator-setup.ts';
+import { describeOptionalAdministrationServerCases } from './hosted-live/optional-administration-server.ts';
 import { describeOrganizationServerCases } from './hosted-live/organization-server.ts';
+import { describeSignupServerCases } from './hosted-live/signup-server.ts';
 import { describeSessionEndingProofs } from './hosted-live/session-ending.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -59,12 +62,16 @@ function hostedLiveSetup(environment: Environment): HostedLiveSetup {
     if (problem !== undefined) problems.push(problem);
     return value;
   };
-  const settings: HostedLiveSettings = {
-    apiKey: read('WORKOS_API_KEY', stagingKeyRefusal),
-    clientId: read('WORKOS_CLIENT_ID'),
-    authkitIssuer: read('WORKOS_AUTHKIT_ISSUER', issuerRefusal),
-  };
-  return problems.length === 0 ? { settings } : { problems };
+  const apiKey = read('WORKOS_API_KEY', stagingKeyRefusal);
+  const clientId = read('WORKOS_CLIENT_ID');
+  const authkitIssuer = read('WORKOS_AUTHKIT_ISSUER', issuerRefusal);
+  try {
+    const settings: HostedLiveSettings = { apiKey, clientId, authkitIssuer, mfaPolicy: hostedMfaPolicy(environment.WORKOS_MFA_POLICY) };
+    return problems.length === 0 ? { settings } : { problems };
+  } catch (error) {
+    problems.push(error instanceof Error ? error.message : 'WORKOS_MFA_POLICY is refused.');
+    return { problems };
+  }
 }
 
 function setupError(problems: readonly string[]): Error {
@@ -123,7 +130,7 @@ function describeAuthKitAuthorizationServer(settings: HostedLiveSettings): void 
   const { authkitIssuer } = settings;
 
   describe('Hosted live proofs: the AuthKit authorization server of Connect', () => {
-    test('Given the AuthKit issuer, when its authorization-server metadata is read, then it names the exact issuer, the AuthKit key set, the authorization code grant, and S256 PKCE', proofOptions, async (t) => {
+    test('Given the AuthKit issuer, when its authorization-server metadata is read, then it names the exact issuer, the AuthKit key set, the authorization code grant, S256 PKCE, the client registration endpoint, and client ID metadata documents', proofOptions, async (t) => {
       const metadata = await readJson(`${authkitIssuer}/.well-known/oauth-authorization-server`);
       assert.ok(isJsonObject(metadata), 'The authorization-server metadata is not a JSON object.');
       recordMetadata(t, metadata);
@@ -132,6 +139,8 @@ function describeAuthKitAuthorizationServer(settings: HostedLiveSettings): void 
       assert.equal(metadata.jwks_uri, authkitKeySetUrl(authkitIssuer));
       assert.ok(includes(metadata.grant_types_supported, 'authorization_code'), 'grant_types_supported does not include authorization_code.');
       assert.ok(includes(metadata.code_challenge_methods_supported, 'S256'), 'code_challenge_methods_supported does not include S256.');
+      assert.equal(metadata.registration_endpoint, `${authkitIssuer}/oauth2/register`, 'registration_endpoint is not <issuer>/oauth2/register. MCP clients such as Claude Code register themselves at AuthKit, so Dynamic Client Registration must be on in the staging environment.');
+      assert.equal(metadata.client_id_metadata_document_supported, true, 'client_id_metadata_document_supported is not true. MCP clients such as Claude Code register themselves at AuthKit, so Client ID Metadata Documents must be on in the staging environment.');
     });
 
     test('Given the AuthKit key set, when it is read, then it has signing keys with key IDs, and jose accepts the set', proofOptions, async (t) => {
@@ -162,6 +171,10 @@ if ('problems' in setup) {
   describeWorkOSApi(setup.settings);
   const run = new LiveRun(setup.settings);
   after(() => run.end());
+  before(async (t) => {
+    t.diagnostic(`Hosted live MFA profile: ${setup.settings.mfaPolicy}.`);
+    await assertMfaProfileBeforeLiveProofs(run);
+  });
   describeConfigurationProofs(run);
   describeBrowserSignInProofs(run);
   describeSessionEndingProofs(run);
@@ -173,7 +186,9 @@ if ('problems' in setup) {
   // The AUTH-07W cases come before the AUTH-06 cases, so that the 300-second wait of the AUTH-06 cases also lets the
   // access token of the AUTH-07W selection session expire before its expiry case. The AUTH-08W cases come between them.
   const describeExpiredSelectionCase = describeOrganizationServerCases(run);
-  describeAdministrationServerCases(run);
+  if (setup.settings.mfaPolicy === 'required') describeAdministrationServerCases(run);
+  else describeOptionalAdministrationServerCases(run);
   describeHostedServerCases(run);
   describeExpiredSelectionCase();
+  describeSignupServerCases(run);
 }

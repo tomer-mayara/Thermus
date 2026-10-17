@@ -36,7 +36,7 @@ const rules = readFileSync('/etc/thermus/ad-rules.txt', 'utf8');
 const ads = new CleanHtmlAdsAdblockRs(rules);
 ```
 
-Choose and validate that path in application configuration. If the file cannot be read, `readFileSync` throws before the cleaner is constructed. The caller owns the failure policy. The cleaner does not download rules or make network requests. This step applies cosmetic rules to supplied HTML. It does not block network requests. Test fixture rule lists are supplied by tests only. The self-hosted server reads its rules from `AD_RULES_FILE`; the [server rules file](#server-rules-file) section gives its policy.
+Choose and validate that path in application configuration. If the file cannot be read, `readFileSync` throws before the cleaner is constructed. The caller owns the failure policy. The cleaner does not download rules or make network requests. This step applies cosmetic rules to supplied HTML. It does not block network requests. Test fixture rule lists are supplied by tests only. The self-hosted and hosted servers read their rules from `AD_RULES_FILE`; the [server rules file](#server-rules-file) section gives its policy.
 
 If you used `new CleanHtmlAdsAdblockRs()` before, pass the intended rules string instead. For a deliberate no-op, pass `''`.
 
@@ -56,7 +56,7 @@ The test uses 32, 128, and 512 matches on short lines, in minified source, and i
 
 ## Server rules file
 
-The self-hosted server reads its trusted rules from the file that `AD_RULES_FILE` names. [`readAdRulesFile(environment)`](../../src/config/ad-rules-file.ts) reads the setting from the server environment. [`createFetchOperation()`](../../src/fetch-tool.ts) gives the text to one `CleanHtmlAdsAdblockRs` when the server starts.
+Both production server compositions use the trusted rules file that `AD_RULES_FILE` names. [`readAdRulesFile(environment)`](../../src/config/ad-rules-file.ts) reads the setting from the server environment. [`createFetchOperation()`](../../src/fetch-tool.ts) gives the text to one `CleanHtmlAdsAdblockRs` when the server starts.
 
 - The value must be the absolute path of a trusted file.
 - The server reads the file one time, with one `readFileSync` call. There is no check before the read, so the file cannot change between a check and the read.
@@ -65,7 +65,7 @@ The self-hosted server reads its trusted rules from the file that `AD_RULES_FILE
 - There is no syntax check. The native parser ignores lines that it cannot parse. An empty file, or a file with only comments, makes the cleaner a no-op. The other pipeline steps still run.
 - There is no updater. The server keeps the rules that it read at startup. A changed file takes effect at the next server start.
 
-Only the server reads `AD_RULES_FILE`. `loadDeploymentConfig` does not read it. The local account and client commands share that loader and never read the rules. The commands and the hosted edition load no rules reader, renderer, cleaning pipeline, or adblock-rs module.
+Only the server reads `AD_RULES_FILE`. `loadDeploymentConfig` does not read it. The local account and client commands share that loader and never read the rules. The commands load no rules reader, renderer, cleaning pipeline, or adblock-rs module. The hosted server loads these modules for its protected fetch tool.
 
 A rules failure stops startup before the server opens the data directory and before it listens. The server writes one `FATAL` line and exits with status 1:
 
@@ -79,4 +79,22 @@ A rules failure stops startup before the server opens the data directory and bef
 
 No message shows the path or the file contents. A read, decoder, or parser failure keeps the original error as `cause`, but the `FATAL` line shows only the message. The parser message is not shown, because it can repeat rule text.
 
-The container image sets `AD_RULES_FILE=/etc/thermus/ad-rules.txt`, but it has no rules file. The [container installation](../../README.md#container-installation) tells how to supply one.
+The self-hosted container image sets `AD_RULES_FILE=/etc/thermus/ad-rules.txt`, but it has no rules file. The [container installation](../../README.md#container-installation) tells how to supply one.
+
+## Hosted image policy
+
+The hosted image copies [`docker/hosted-ad-rules.txt`](../../docker/hosted-ad-rules.txt) to `/etc/thermus/ad-rules.txt` and sets `AD_RULES_FILE` to that absolute path. The owner selected a pinned EasyList snapshot. The file is an unchanged copy of the full official list, including its header, notices, network rules, and cosmetic rules.
+
+The snapshot is EasyList version `202610152217`, last modified `15 Oct 2026 22:17 UTC`, from upstream commit [`5e35cb4f3e2ebe95c8e20f7ec54fd328299a442a`](https://github.com/easylist/easylist/commit/5e35cb4f3e2ebe95c8e20f7ec54fd328299a442a). Its SHA-256 is `f94c74712aa8a31bbec68640ea7dba93bf3427bbd6bbff55b716e4cd14b16549`. The [source notice](../../docker/hosted-ad-rules.SOURCE.md) records the download URL, retrieval date, byte count, attribution, license, and update steps.
+
+EasyList is by The EasyList authors (https://easylist.to/). Its [official license notice](https://easylist.to/pages/licence.html) allows either GNU GPL version 3 or later, or Creative Commons Attribution-ShareAlike 3.0 Unported or later. Thermus distributes this unchanged snapshot under CC BY-SA 3.0 Unported. The [full license](../../docker/hosted-ad-rules.LICENSE.txt) and source notice are copied beside the rules as `/etc/thermus/hosted-ad-rules.LICENSE.txt` and `/etc/thermus/hosted-ad-rules.SOURCE.md`. Keep these files and all upstream notices with copies of the list. This attribution does not imply endorsement by the EasyList authors.
+
+The cleaner applies supported cosmetic selectors to the supplied HTML. It uses domain rules and exceptions for the final URL after redirects. It does not apply the list's network blocking rules or block browser requests. The native parser can ignore unsupported rule syntax. Full EasyList coverage and every browser ad-blocking feature are not promised. The acceptance test checks that the pinned list removes a matching ad banner and preserves ordinary article content and a similar class name.
+
+The image build uses the versioned file in this repository. It does not fetch the list. Startup makes no rules download, and no background process refreshes the rules, even after the upstream `Expires` period. Updates require a reviewed replacement snapshot with new source metadata and checksum, the policy acceptance test, the hosted image gate, and a new image build. A running server keeps its startup snapshot until it restarts with the new file. A missing or unreadable file stops startup under the server rules above; it never selects an empty fallback.
+
+Run the policy acceptance test after a build:
+
+```sh
+node --test dist/test/acceptance/hosted-ad-policy.test.js
+```

@@ -8,7 +8,7 @@ import {
   openLocalInstallation,
   type LocalInstallation,
 } from '../../../src/auth/local-auth/better-auth/local-installation.ts';
-import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/data-directory.ts';
+import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/isolation/data-directory.ts';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const generatedSecret = /^[A-Za-z0-9_-]{43}$/;

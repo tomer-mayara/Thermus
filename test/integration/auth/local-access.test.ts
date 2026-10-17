@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
 import { inspect } from 'node:util';
-import { after, before, describe, test, type TestContext } from 'node:test';
+import { describe, test, type TestContext } from 'node:test';
 import { BetterAuthProvider, LOCAL_USER_GRANT } from '../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
 import {
   openBetterAuthRuntime,
@@ -17,17 +17,18 @@ import {
   loopbackRedirectUri,
   PreRegisteredNativeClient,
   type TokenResponse,
-} from '../../support/better-auth-agents.ts';
-import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/better-auth-local.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
-import { resourceServerClient, userGrant, type UserGrant } from '../../support/local-commands.ts';
-import { addAccount, passwordOf, selfHostedConfig } from '../../support/local-runtime.ts';
-import { RequestContextProbe, type ProbeReport } from '../../support/request-context-probe.ts';
-import { FailureReporterMock } from '../../unit/mcp/fixtures/failure-reporter-mock.ts';
-import { mcpRequest, toolJson } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+} from '../../support/drivers/browser/better-auth-agents.ts';
+import { authIssuer, mcpResourceUrl, withRegistrationSession, type AccountCredentials, type LocalAuth } from '../../support/in-process/better-auth-local.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
+import { guardOutboundFetch } from '../../support/isolation/outbound-fetch-guard.ts';
+import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
+import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { resourceServerClient, userGrant, type UserGrant } from '../../support/dsl/local-commands.ts';
+import { addAccount, passwordOf, selfHostedConfig } from '../../support/in-process/local-runtime.ts';
+import { ProtectedToolSpy, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
 const resourceMetadataUrl = 'http://localhost:8080/.well-known/oauth-protected-resource/mcp';
-const productAccess = RequestContextProbe.requiredPermission;
+const productAccess = ProtectedToolSpy.requiredPermission;
 const alice: AccountCredentials = { email: 'alice@example.com', password: passwordOf('alice@example.com') };
 const bob: AccountCredentials = { email: 'bob@example.com', password: passwordOf('bob@example.com') };
 const carol: AccountCredentials = { email: 'carol@example.com', password: passwordOf('carol@example.com') };
@@ -41,8 +42,8 @@ interface LocalInstallationUnderTest {
 
 interface McpServerUnderTest {
   readonly server: MCPServer;
-  readonly probe: RequestContextProbe;
-  readonly reporter: FailureReporterMock;
+  readonly probe: ProtectedToolSpy;
+  readonly reporter: FailureReporterSpy;
 }
 
 async function openRuntime(t: TestContext, directory: string): Promise<BetterAuthRuntime> {
@@ -84,8 +85,8 @@ function providerFor(runtime: BetterAuthRuntime, resourceServer: ResourceServerC
 }
 
 function mcpServer(t: TestContext, provider: BetterAuthProvider, requiredScopes?: readonly string[]): McpServerUnderTest {
-  const probe = new RequestContextProbe();
-  const reporter = new FailureReporterMock();
+  const probe = new ProtectedToolSpy();
+  const reporter = new FailureReporterSpy();
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl, expectedResource: new URL(mcpResourceUrl), requiredScopes },
     buildServer: probe.buildServer,
@@ -100,7 +101,7 @@ function callProbe(t: TestContext, token: string, url = 'https://example.com/pag
     url: mcpResourceUrl,
     method: 'tools/call',
     token,
-    params: { name: RequestContextProbe.toolName, arguments: { url } },
+    params: { name: ProtectedToolSpy.toolName, arguments: { url } },
     signal: t.signal,
   });
 }
@@ -149,19 +150,9 @@ async function assertRefused(server: McpServerUnderTest, { response, status, lab
 }
 
 describe('Local MCP access with the real Better Auth provider and SQLite', () => {
-  const realFetch = globalThis.fetch;
-  const outboundRequests: string[] = [];
-
-  before(() => {
-    globalThis.fetch = async (input) => {
-      outboundRequests.push(input instanceof Request ? input.url : String(input));
-      throw new Error('Outbound network access is not allowed in the local access tests');
-    };
-  });
-
-  after(() => {
-    globalThis.fetch = realFetch;
-    assert.deepEqual(outboundRequests, [], 'the local provider and the MCP verifier made no outbound request');
+  guardOutboundFetch({
+    refusal: 'Outbound network access is not allowed in the local access tests',
+    finding: 'the local provider and the MCP verifier made no outbound request',
   });
 
   test('Given two local users with session-bound MCP tokens, when each calls the protected tool, then each request works with its own user subject in the one installation tenant, both have the same evaluation grant, and the verified claims name the local issuer, the approved client, and the MCP resource', { timeout: 60_000 }, async (t) => {

@@ -4,23 +4,22 @@ import type { Invitation, OrganizationMembership } from '@workos-inc/node';
 import type { Page } from 'playwright';
 import { workosAuthority } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import type { ChangeRecord } from '../../../../src/organizations/change-records.ts';
-import { labelsOf, seatsIn } from '../../../support/hosted-administration.ts';
-import { formsIn, type PageForm } from '../../../support/hosted-browser.ts';
+import { mcpRequest } from '../../../support/drivers/mcp/mcp-http-request.ts';
+import { labelsOf, seatsIn } from '../../../support/dsl/hosted-administration.ts';
+import { formLabelled, formsIn, type PageForm } from '../../../support/drivers/browser/hosted-browser.ts';
 import { authorizeWithConnect } from '../../../support/hosted-live/connect-grant.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf } from '../../../support/hosted-live/operator-runbook.ts';
 import {
   acceptInvitationThroughPortal,
-  formNamed,
   serverGet,
   serverPost,
   sessionJson,
   signInThroughPortal,
   type ServerAnswer,
 } from '../../../support/hosted-live/portal-visit.ts';
-import { localOrigin } from '../../../support/hosted-live/settings.ts';
+import { localOrigin, mcpResource } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
-import { mcpRequest } from '../../../unit/mcp/fixtures/mcp-http-request.ts';
 
 interface ShownPage {
   readonly body: string;
@@ -100,7 +99,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
 
   // A person opens the page and submits the form with this button.
   async function submitFrom(page: Page, path: string, label: string): Promise<ServerAnswer> {
-    return submit(page, formNamed((await shownPage(run, page, path)).forms, label));
+    return submit(page, formLabelled((await shownPage(run, page, path)).forms, label));
   }
 
   async function membershipState(membershipId: string): Promise<MembershipState> {
@@ -158,7 +157,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const shown = await shownPage(run, page, 'members');
       const before = await membershipState(memberships.superAdminInC);
 
-      const forged = await submit(page, formNamed(shown.forms, `Grant User to ${users['c-super-admin'].email}`), { role: 'admin' });
+      const forged = await submit(page, formLabelled(shown.forms, `Grant User to ${users['c-super-admin'].email}`), { role: 'admin' });
       const after = await membershipState(memberships.superAdminInC);
       const records = (await changeRecordsOf(actor)).map(recordLine);
       t.diagnostic(`forged Admin grant: ${forged.status}; records of the Admin-only member: ${JSON.stringify(records)}`);
@@ -179,9 +178,9 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const session = await sessionJson(page);
 
       const first = await shownPage(run, page, 'members');
-      const adminGrant = await submit(page, formNamed(first.forms, `Grant Admin to ${user.email}`));
+      const adminGrant = await submit(page, formLabelled(first.forms, `Grant Admin to ${user.email}`));
       const second = await shownPage(run, page, 'members');
-      const userGrant = await submit(page, formNamed(second.forms, `Grant User to ${user.email}`));
+      const userGrant = await submit(page, formLabelled(second.forms, `Grant User to ${user.email}`));
       const third = await shownPage(run, page, 'members');
       const { roles } = await membershipState(membershipId);
       const records = await changeRecordsOf(user);
@@ -214,7 +213,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const revoked = await submitFrom(page, 'members', `Revoke Admin from ${user.email}`);
       const between = await shownPage(run, page, 'members');
       const rolesBetween = (await membershipState(memberships.superAdminInC)).roles;
-      const regranted = await submit(page, formNamed(between.forms, `Grant Admin to ${user.email}`));
+      const regranted = await submit(page, formLabelled(between.forms, `Grant Admin to ${user.email}`));
       const after = await shownPage(run, page, 'members');
       const rolesAfter = (await membershipState(memberships.superAdminInC)).roles;
       t.diagnostic(`roles ${JSON.stringify(rolesBetween)} > ${JSON.stringify(rolesAfter)}`);
@@ -274,7 +273,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       t.diagnostic(`portal ${portalBefore.status} > ${portalAfter.status}; offered ${JSON.stringify(offered)}; C: ${inC.status} ${JSON.stringify(inC.roles)}; B: ${inB.status} ${JSON.stringify(inB.roles)}`);
 
       assert.equal(portalBefore.status, 200, portalBefore.body);
-      assert.deepEqual(JSON.parse(portalBefore.body), { organizationId: organizationC.id, roles: ['user'] });
+      assert.deepEqual(JSON.parse(portalBefore.body), { organizationId: organizationC.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       assertSeeOther(revoked, 'members');
       assert.equal(portalAfter.status, 403);
       assert.deepEqual(offered, [organizationB.name]);
@@ -289,7 +288,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const { organizationC, users, memberships } = await run.administrationFixtures();
       const { page } = await administrator();
       const shown = await shownPage(run, page, 'members');
-      const template = formNamed(shown.forms, `Grant Admin to ${users['c-target'].email}`);
+      const template = formLabelled(shown.forms, `Grant Admin to ${users['c-target'].email}`);
       const watched = [memberships.targetInC, memberships.inactiveInC, staging.userAndAdminInA];
       const before = await Promise.all(watched.map((id) => membershipState(id)));
       const forgedFields: readonly Readonly<Record<string, string>>[] = [
@@ -304,7 +303,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const forged: ServerAnswer[] = [];
       for (const fields of forgedFields) forged.push(await submit(page, template, fields));
       const after = await Promise.all(watched.map((id) => membershipState(id)));
-      const shownBeforeChange = formNamed((await shownPage(run, page, 'members')).forms, `Revoke User from ${users['c-target'].email}`);
+      const shownBeforeChange = formLabelled((await shownPage(run, page, 'members')).forms, `Revoke User from ${users['c-target'].email}`);
       // Another administrator changes the membership in WorkOS after the page was shown. WorkOS names the authorization
       // resource of C by the external ID of C.
       const resourceOfC = organizationC.externalId;
@@ -332,12 +331,12 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const [inviteeUser, inviteeAdmin, inviteeRevoked] = [users['c-invitee-user'], users['c-invitee-admin'], users['c-invitee-revoked']];
       const { page } = await administrator();
       const first = await shownPage(run, page, 'invitations');
-      const invite = (role: 'User' | 'Admin', email: string) => submit(page, formNamed(first.forms, `Invite as ${role}`), { email });
+      const invite = (role: 'User' | 'Admin', email: string) => submit(page, formLabelled(first.forms, `Invite as ${role}`), { email });
 
       const sent = [await invite('User', inviteeUser.email), await invite('Admin', inviteeAdmin.email), await invite('User', inviteeUser.email)];
       const refused = [await invite('Admin', inviteeUser.email), await invite('User', actor.email)];
       const pending = await shownPage(run, page, 'invitations');
-      const resent = await submit(page, formNamed(pending.forms, `Resend the invitation to ${inviteeUser.email}`));
+      const resent = await submit(page, formLabelled(pending.forms, `Resend the invitation to ${inviteeUser.email}`));
       const third = await invite('User', inviteeRevoked.email);
       const revoked = await submitFrom(page, 'invitations', `Revoke the invitation to ${inviteeRevoked.email}`);
       const after = await shownPage(run, page, 'invitations');
@@ -397,7 +396,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       assert.ok([userVisit, adminVisit].every(({ pages }) => pages.some((path) => path.startsWith('/mfa/'))), 'AuthKit did not ask for the MFA step in an acceptance.');
       assert.deepEqual([userMembership.status, userMembership.roles], ['active', ['user']]);
       assert.equal(userPortal.status, 200, userPortal.body);
-      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, roles: ['user'] });
+      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       assert.deepEqual([adminMembership.status, adminMembership.roles], ['active', ['admin']]);
       assert.equal(adminPortal.status, 403);
       assert.equal(adminMembers.status, 200, 'The Admin invitee cannot open the members page.');

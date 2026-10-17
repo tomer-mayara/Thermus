@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
-import { syncBuiltinESMExports } from 'node:module';
 import { describe, test, type TestContext } from 'node:test';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
-import { RendererChildDouble } from '../../support/renderer-process-double.ts';
+import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
+import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 const url = 'https://example.com/';
 const html = '<html><body>Rendered page</body></html>';
@@ -25,11 +25,7 @@ function stubProcess(
     return new RendererChildDouble();
   });
   context.mock.method(dns, 'lookup', async () => [{ address: '1.1.1.1', family: 4 }]);
-  syncBuiltinESMExports();
-  context.after(() => {
-    context.mock.restoreAll();
-    syncBuiltinESMExports();
-  });
+  syncBuiltinMocks(context);
   return stub;
 }
 

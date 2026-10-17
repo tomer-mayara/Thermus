@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { programEntry } from '../../support/processes/module-paths.ts';
 
-const entry = fileURLToPath(new URL('../../../src/index.js', import.meta.url));
 const blocked = 'The test blocked a provider module';
 const guard = `import { registerHooks } from 'node:module';
 registerHooks({ resolve(specifier, context, nextResolve) {
@@ -23,13 +22,13 @@ test('Given a provider import guard, when syntax, configuration, or the edition 
     { args: ['users', 'list'], environment: { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example' }, code: 1, message: /only for DEPLOYMENT=self-hosted/ },
   ];
   for (const { args, environment, code, message } of cases) {
-    const result = spawnSync(process.execPath, ['--import', preload, entry, ...args], { env: environment, encoding: 'utf8', timeout: 10_000 });
+    const result = spawnSync(process.execPath, ['--import', preload, programEntry, ...args], { env: environment, encoding: 'utf8', timeout: 10_000 });
     assert.equal(result.status, code, result.stderr);
     assert.match(result.stderr, message);
     assert.doesNotMatch(result.stderr, new RegExp(blocked));
     assert.equal(result.stdout, '');
   }
-  const control = spawnSync(process.execPath, ['--import', preload, entry, 'users', 'list'], { env: local, encoding: 'utf8', timeout: 10_000 });
+  const control = spawnSync(process.execPath, ['--import', preload, programEntry, 'users', 'list'], { env: local, encoding: 'utf8', timeout: 10_000 });
   assert.equal(control.status, 1, control.stderr);
   assert.match(control.stderr, new RegExp(blocked));
 });

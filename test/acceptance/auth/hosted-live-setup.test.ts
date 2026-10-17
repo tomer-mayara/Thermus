@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { matchesGlob } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { networkBlocker, repositoryRoot } from '../../support/processes/module-paths.ts';
 
 type GateSettings = Readonly<Record<string, string>>;
 type PackageScripts = Readonly<Record<string, string>>;
@@ -18,9 +19,6 @@ interface GateRun {
 }
 
 const liveFile = fileURLToPath(new URL('./hosted.live.js', import.meta.url));
-// With --import before --test, the blocker loads in the process that runs the test file. There, each outbound attempt fails and writes a line to the report.
-const networkBlocker = new URL('../../support/deny-network.js', import.meta.url).href;
-const repositoryRoot = new URL('../../../../', import.meta.url);
 const liveCommand = 'npm run build && npm run build:user-portal && node --test dist/test/acceptance/auth/hosted.live.js';
 const liveSource = 'test/acceptance/auth/hosted.live.ts';
 const liveOutput = 'dist/test/acceptance/auth/hosted.live.js';
@@ -60,6 +58,7 @@ function gateEnvironment(settings: GateSettings): NodeJS.ProcessEnv {
 }
 
 async function runGate(t: TestContext, settings: GateSettings): Promise<GateRun> {
+  // With --import before --test, the blocker loads in the process that runs the test file. There, each outbound attempt fails and writes a line to the report.
   const args = ['--import', networkBlocker, '--test', '--test-reporter=tap', liveFile];
   const child = spawn(process.execPath, args, { env: gateEnvironment(settings), stdio: ['ignore', 'pipe', 'pipe'], timeout: gateTimeout });
   t.after(() => {
@@ -171,7 +170,7 @@ describe('Setup gate of the hosted live command', () => {
     }
   });
 
-  test('Given staging settings and outbound access denied, when the hosted live gate runs, then its live proofs run, try the network, and fail; no test passes or is skipped, and the output never shows the API key', caseOptions, async (t) => {
+  test('Given staging settings and outbound access denied, when the global MFA preflight reaches the network blocker, then the gate exits 1 with all 79 planned proofs cancelled, no pass, skip, or todo, and a visible preflight failure before browser or provider work; the API key stays private', caseOptions, async (t) => {
     const settings = stagingSettings();
 
     const run = await runGate(t, settings);
@@ -179,9 +178,14 @@ describe('Setup gate of the hosted live command', () => {
 
     const output = outputOf(run);
     assertExitOne(run);
-    assert.ok((summary.tests ?? 0) > 1, output);
-    assert.deepEqual(summary, { tests: summary.tests, pass: 0, fail: summary.tests, cancelled: 0, skipped: 0, todo: 0 }, output);
+    assert.deepEqual(summary, { tests: 79, pass: 0, fail: 0, cancelled: 79, skipped: 0, todo: 0 }, output);
+    assert.match(output, /# Hosted live MFA profile: optional\./);
+    assert.match(output, /failureType: 'hookFailed'/);
+    assert.match(output, /failureType: 'cancelledByParent'/);
+    assert.match(output, /assertMfaProfileBeforeLiveProofs/);
     assert.match(output, outboundAttempt);
+    assert.match(output, /Outbound network access is not allowed/);
+    assert.doesNotMatch(output, /AuthKit pages before the callback:|authentication method:|callback:/);
     assert.doesNotMatch(output, /Hosted live setup error/);
     assertShowsNoValue(run, { WORKOS_API_KEY: settings.WORKOS_API_KEY });
   });

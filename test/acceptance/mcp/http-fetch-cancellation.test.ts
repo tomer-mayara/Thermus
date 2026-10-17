@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { openFetchSite, validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 for (const era of mcpProtocolEras) {
   for (const stage of ['fetch-rejection', 'after-fetch', 'after-pipeline'] as const) {
@@ -74,9 +75,8 @@ for (const era of mcpProtocolEras) {
         return { requestedUrl: url, finalUrl: url, html: '<p>Source</p>' };
       } },
     });
-    const otherClient = new Client({ name: 'independent-call', version: '0.0.0' }, { versionNegotiation: eraNegotiation(era) });
+    const otherClient = await connectMcpClient(t, new StreamableHTTPClientTransport(site.url, { authProvider: { token: async () => 'another-token' } }), { era, checkEra: false });
     t.after(() => otherClient.close());
-    await otherClient.connect(new StreamableHTTPClientTransport(site.url, { authProvider: { token: async () => 'another-token' } }), { signal: t.signal, timeout: 5_000 });
     const first = site.client.callTool({ name: 'getURLAsMarkdown', arguments: { ...validFetchArguments, url: 'https://example.com/cancel' } }, { signal: cancelled.signal });
     const firstRejected = assert.rejects(first);
     const second = otherClient.callTool({ name: 'getURLAsMarkdown', arguments: { ...validFetchArguments, url: 'https://example.com/complete' } });

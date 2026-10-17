@@ -10,7 +10,7 @@ import {
   DataDirectoryUnavailableError,
   lockDataDirectory,
 } from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
-import { dataDirectory } from '../../support/data-directory.ts';
+import { dataDirectory } from '../../support/isolation/data-directory.ts';
 
 const moduleExtension = import.meta.url.endsWith('.ts') ? 'ts' : 'js';
 const lockModule = new URL(`../../../src/auth/local-auth/better-auth/data-directory-lock.${moduleExtension}`, import.meta.url).href;

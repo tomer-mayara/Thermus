@@ -11,7 +11,8 @@
     ".habit-hooks"
   ],
   "imports": {
-    "#auth-local-migrations/*": "./migrations/auth-local/*"
+    "#auth-local-migrations/*": "./migrations/auth-local/*",
+    "#hosted-portal/*": "./src/user-portal/dist/*"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -19,22 +20,26 @@
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit && npm run typecheck:user-portal",
     "check": "npm run typecheck && npm run test:unit && npm run test:build && node --test \"test/acceptance/user-portal/**/*.test.ts\" && npm run build:user-portal",
-    "test": "npm run build && node --test \"dist/test/**/*.test.js\" && npm run test:user-portal",
-    "test:unit": "npm run build && node --test \"dist/test/unit/**/*.test.js\" && node --test \"test/unit/user-portal/**/*.test.ts\"",
+    "test": "npm run build && node --test \"dist/test/**/!(hosted-image).test.js\" && npm run test:user-portal",
+    "test:unit": "npm run build && node --test --test-concurrency=1 \"dist/test/unit/**/*.test.js\" && node --test \"test/unit/user-portal/**/*.test.ts\"",
     "test:interface": "npm run build && node --test \"dist/test/interface/**/*.test.js\"",
+    "test:interface:workos-signup": "npm run build && node --test dist/test/interface/auth/workos-signup.live.js",
     "test:interface:axiom": "npm run build && node --test dist/test/interface/logging/otel-logger-axiom.live.js",
     "test:integration": "npm run build && node --test \"dist/test/integration/**/*.test.js\"",
-    "test:acceptance": "npm run build && node --test \"dist/test/acceptance/**/*.test.js\" && node --test \"test/acceptance/user-portal/**/*.test.ts\"",
+    "test:acceptance": "npm run build && node --test \"dist/test/acceptance/**/!(hosted-image).test.js\" && node --test \"test/acceptance/user-portal/**/*.test.ts\"",
     "test:container": "npm run build && THERMUS_CONTAINER_GATE=1 node --test dist/test/acceptance/auth/self-hosted-container.test.js",
     "test:hosted-live": "npm run build && npm run build:user-portal && node --test dist/test/acceptance/auth/hosted.live.js",
     "test:mcp:renderer": "npm run build && node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js",
-    "work-slice:basic-mcp-url-fetch": "tsx test/acceptance/work-slice/basic-mcp-url-fetch.ts",
+    "work-slice:basic-mcp-url-fetch": "tsx test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts",
+    "work-slice:auth-workos-mcp-url-fetch": "tsx test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
     "test:build": "node --test test/unit/build-output.test.ts",
     "dev:user-portal": "vite --config src/user-portal/vite.config.ts",
     "build:user-portal": "npm run typecheck:user-portal && vite build --config src/user-portal/vite.config.ts",
     "preview:user-portal": "vite preview --config src/user-portal/vite.config.ts",
     "typecheck:user-portal": "tsc --project tsconfig.user-portal.json",
-    "test:user-portal": "node --test \"test/unit/user-portal/**/*.test.ts\" \"test/acceptance/user-portal/**/*.test.ts\""
+    "test:user-portal": "node --test \"test/unit/user-portal/**/*.test.ts\" \"test/acceptance/user-portal/**/*.test.ts\"",
+    "build:hosted": "npm run check && node --test \"dist/test/integration/**/*.test.js\" && node --test \"dist/test/acceptance/architecture/*.test.js\" dist/test/acceptance/hosted-ad-policy.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-portal.test.js dist/test/acceptance/auth/hosted-mcp-origin.test.js dist/test/acceptance/auth/hosted-workos-signup.test.js dist/test/acceptance/auth/hosted-signup-restart.test.js dist/test/acceptance/auth/hosted-signup-guidance.test.js dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js dist/test/acceptance/mcp/hosted-fetch-tool.test.js dist/test/acceptance/mcp/hosted-process-shutdown.test.js dist/test/acceptance/mcp/server-only-modules.test.js dist/test/interface/hosted-renderer-startup.test.js && node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js",
+    "test:container:hosted": "npm run build && node --test dist/test/acceptance/auth/hosted-image.test.js"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "2.3.1",
@@ -69,6 +74,8 @@
     "htmlparser2": "^12.0.0",
     "jose": "6.2.12",
     "linkedom": "^0.18.13",
+    "micromark": "4.0.3",
+    "micromark-extension-gfm": "3.0.0",
     "parse5": "8.0.1",
     "parse5-htmlparser2-tree-adapter": "8.0.1"
   },

@@ -7,8 +7,8 @@ import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-
 import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
 import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { nowInSeconds, SigningKey } from '../../support/jwt-signing-key.ts';
-import { fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from '../../support/workos-fake-api.ts';
+import { nowInSeconds, SigningKey } from '../../support/doubles/workos/jwt-signing-key.ts';
+import { fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 
 // The real provider and organization reads with the pinned SDK client. The answers come from a local fake in the
 // WorkOS wire format, so these tests do not show what the WorkOS service sends.

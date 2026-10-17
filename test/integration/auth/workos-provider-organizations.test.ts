@@ -7,27 +7,26 @@ import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-
 import { WorkOSBrowserSession } from '../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
 import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
 import { WorkOSSessionRoutes } from '../../../src/auth/hosted-auth/workos/workos-session-routes.ts';
-import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { workosAuthority, type WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { PRODUCT_ACCESS } from '../../../src/hosted-admin/portal-access.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
-import { AccountOperationProbe } from '../../support/account-operation-probe.ts';
-import { formsIn, type HostedBrowser } from '../../support/hosted-browser.ts';
-import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/hosted-organization-site.ts';
-import { RequestContextProbe } from '../../support/request-context-probe.ts';
-import { fakeClientId } from '../../support/workos-fake-api.ts';
-import { signInThroughServer } from '../../support/workos-sign-in.ts';
-import { WorkOSWorld, type WorldMembership, type WorldUser } from '../../support/workos-world.ts';
-import { mcpRequest } from '../../unit/mcp/fixtures/mcp-http-request.ts';
+import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
+import { formLabelled, formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { ProtectedToolSpy } from '../../support/doubles/mcp/protected-tool-spy.ts';
+import { fakeClientId } from '../../support/doubles/workos/workos-fake-api.ts';
+import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
+import { adminGrant, superAdminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 
 // The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the
 // WorkOS API, together with the real OrganizationAdministration, account routes, and MCP server. A probe stands in for
 // the destinations of the account pages, each with its permission, so that the administration access of each role
 // shows. These tests do not show what the WorkOS service sends; the hosted live gate does.
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const authority = workosAuthority(fakeClientId);
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
@@ -43,13 +42,13 @@ const destinations = new Map([
 ]);
 const membershipsRoute = 'GET /user_management/organization_memberships';
 
-const mia: WorldUser = { id: 'user_01MIA', email: 'mia@example.com', firstName: 'Mia' };
-const otto: WorldUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
-const sam: WorldUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
+const mia: FakeUser = { id: 'user_01MIA', email: 'mia@example.com', firstName: 'Mia' };
+const otto: FakeUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName: 'Otto' };
+const sam: FakeUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
 
 // Mia: User in Acme, Admin in Globex, inactive in Initech, and only the default role in Umbrella. Otto: every role in
 // Hooli. Sam: only Super Admin in Acme.
-const memberships: readonly WorldMembership[] = [
+const memberships: readonly FakeMembership[] = [
   { userId: mia.id, organizationId: acme, roles: ['user'] },
   { userId: mia.id, organizationId: globex, roles: ['admin'] },
   { userId: mia.id, organizationId: initech, roles: ['user', 'admin'], status: 'inactive' },
@@ -58,37 +57,37 @@ const memberships: readonly WorldMembership[] = [
   { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
 ];
 
-async function openSite(t: TestContext) {
-  const world = await WorkOSWorld.start(t, config.publicBaseUrl, Object.keys(organizationNames));
+async function openSite(t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional') {
+  const world = await WorkOSFake.start(t, hostedConfig.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
-  const { settings, workos, authkitKeySet } = world.connection();
+  const { settings, workos, authkitKeySet } = world.connection(mfaPolicy);
   const failures: AccountFailureReport[] = [];
   const reportFailure = (report: AccountFailureReport): void => { failures.push(report); };
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
-  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
-  const session = new WorkOSBrowserSession({ workos, settings, authority });
-  const pages = new AccountOperationProbe(destinations);
-  const tools = new RequestContextProbe();
+  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: hostedConfig.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
+  const session = new WorkOSBrowserSession({ workos, settings, authority, mfaEvidence: settings.mfaPolicy === 'required' ? 'password-mfa-required' : 'unproven' });
+  const pages = new AccountOperationSpy(destinations);
+  const tools = new ProtectedToolSpy();
   const mcp = new MCPServer({
-    auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
+    auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: hostedConfig.resourceMetadataUrl, expectedResource: new URL(hostedConfig.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
     buildServer: tools.buildServer,
     reportFailure: () => {},
   });
-  const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure });
+  const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: hostedConfig.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure });
   const application = composeHostedApplication(
-    config,
+    hostedConfig,
     { session, accessResolver: provider, organizations, mcp, browserRoutes },
     { reportFailure, changeRecords: { record: () => {} }, billing: new BillingFree(), operation: pages.operation },
   );
   t.after(() => application.close());
   const transport = (request: Request): Promise<Response> => application.handle(request);
-  return { world, organizations, pages, tools, failures, transport, publicBaseUrl: config.publicBaseUrl };
+  return { world, organizations, pages, tools, failures, transport, publicBaseUrl: hostedConfig.publicBaseUrl };
 }
 
 type Site = Awaited<ReturnType<typeof openSite>>;
 
-async function signIn(site: Site, user: WorldUser, organizationId?: string): Promise<HostedBrowser> {
+async function signIn(site: Site, user: FakeUser, organizationId?: string): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -96,7 +95,7 @@ async function signIn(site: Site, user: WorldUser, organizationId?: string): Pro
 
 async function select(browser: HostedBrowser, label: string, returnTo: string) {
   const forms = formsIn((await browser.open(`organizations?return_to=${returnTo}`)).body);
-  return browser.submit(formFor(forms, label));
+  return browser.submit(formLabelled(forms, label));
 }
 
 async function contextAt(browser: HostedBrowser, path: string): Promise<RequestContext> {
@@ -111,8 +110,8 @@ function workosRequests(site: Site): string[] {
 }
 
 describe('WorkOS organization reads with the real session, organization service, and account routes', () => {
-  test('Given a member with only Super Admin in Acme, when it selects Acme for the billing page, then the billing page of the organization service and the Admin-grant destination accept it from a current WorkOS read with exactly the super-admin grant, and the product page, the User administration, and the MCP tool refuse it: no Admin or User grant is inferred', async (t) => {
-    const site = await openSite(t);
+  test('Given a member with only Super Admin in Acme and an explicit Required MFA profile, when it selects Acme for the billing page, then the billing page of the organization service and the Admin-grant destination accept it from a current WorkOS read with exactly the super-admin grant, and the product page, the User administration, and the MCP tool refuse it: no Admin or User grant is inferred', async (t) => {
+    const site = await openSite(t, 'required');
     const browser = await signIn(site, sam);
 
     const selected = await select(browser, 'Acme', '/team/billing');
@@ -120,7 +119,7 @@ describe('WorkOS organization reads with the real session, organization service,
     const admins = await contextAt(browser, 'administration/admins');
     const refusals = [(await browser.open('portal')).status, (await browser.open('administration/users')).status];
     const token = await site.world.connectToken(sam, { org_id: acme });
-    const tool = await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params: { name: RequestContextProbe.toolName, arguments: { url: 'https://example.com/' } } }));
+    const tool = await site.transport(mcpRequest({ url: hostedConfig.mcpResourceUrl, method: 'tools/call', token, params: { name: ProtectedToolSpy.toolName, arguments: { url: 'https://example.com/' } } }));
 
     assert.equal(selected.location?.href, 'https://thermus.example/team/billing');
     assert.equal(billing.status, 200, billing.body);
@@ -164,7 +163,7 @@ describe('WorkOS organization reads with the real session, organization service,
 
     const forms = formsIn((await browser.open('organizations')).body);
     const pageRequests = workosRequests(site);
-    await browser.submit(formFor(forms, 'Globex'));
+    await browser.submit(formLabelled(forms, 'Globex'));
     const selectionRequests = workosRequests(site);
 
     assert.deepEqual(pageRequests, reads);
@@ -192,14 +191,14 @@ describe('WorkOS organization reads with the real session, organization service,
   });
 
   for (const { label, change } of [
-    { label: 'the membership of another user', change: (world: WorkOSWorld) => world.fake.answer(membershipsRoute, membershipAnswerOf(otto.id, hooli, 'active')) },
-    { label: 'an inactive membership', change: (world: WorkOSWorld) => world.fake.answer(membershipsRoute, membershipAnswerOf(mia.id, initech, 'inactive')) },
-    { label: 'a default role that gives product:access', change: (world: WorkOSWorld) => world.fake.answer(`GET /authorization/organizations/${acme}/roles`, permissiveDefaultRoles()) },
+    { label: 'the membership of another user', change: (world: WorkOSFake) => world.fake.answer(membershipsRoute, membershipAnswerOf(otto.id, hooli, 'active')) },
+    { label: 'an inactive membership', change: (world: WorkOSFake) => world.fake.answer(membershipsRoute, membershipAnswerOf(mia.id, initech, 'inactive')) },
+    { label: 'a default role that gives product:access', change: (world: WorkOSFake) => world.fake.answer(`GET /authorization/organizations/${acme}/roles`, permissiveDefaultRoles()) },
   ]) {
     test(`Given WorkOS answers ${label}, when the organization page opens and a selection is posted, then each fails with 500 and an operator report, shows neither an organization nor the onboarding guidance, and switches nothing`, async (t) => {
       const site = await openSite(t);
       const browser = await signIn(site, mia, acme);
-      const acmeForm = formFor(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
+      const acmeForm = formLabelled(formsIn((await browser.open('organizations')).body), 'Acme (selected)');
       change(site.world);
       workosRequests(site);
 

@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
-import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
 import { composeApplication } from '../../../src/application.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { NoAuthProvider } from '../../support/auth/no-auth-provider.ts';
-import { validFetchArguments } from '../../support/mcp-fetch-site.ts';
-import { eraNegotiation, mcpProtocolEras } from '../../support/mcp-protocol-eras.ts';
+import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
+import { validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given active ${era} HTTP fetch work, when shutdown starts, then cancellation precedes listener drain and provider close waits for cleanup`, { timeout: 5_000 }, async (t) => {
@@ -50,18 +51,15 @@ for (const era of mcpProtocolEras) {
     const listener = await startHttpServer((request) => application.handle(request), {
       listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href, shutdownGraceMs: 1_000,
     });
-    const client = new Client({ name: 'shutdown-acceptance', version: '0.0.0' }, {
-      versionNegotiation: eraNegotiation(era),
-    });
+    let client: Client | undefined = undefined;
     t.after(async () => {
       emergencyStop.abort();
       cleanup.resolve();
-      await client.close();
+      await client?.close();
       await application.close(listener.close());
     });
     const url = new URL('mcp', listener.url);
-    await client.connect(new StreamableHTTPClientTransport(url, { authProvider: { token: async () => 'test-token' } }), { signal: t.signal, timeout: 5_000 });
-    assert.equal(client.getNegotiatedProtocolVersion(), era);
+    client = await connectMcpClient(t, new StreamableHTTPClientTransport(url, { authProvider: { token: async () => 'test-token' } }), { era });
     const response = client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments }).then((result) => result, () => undefined);
     const signal = await started.promise;
 
@@ -123,17 +121,15 @@ for (const era of mcpProtocolEras) {
     const listener = await startHttpServer(application.handle, {
       listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href, shutdownGraceMs: 3_000, logger: { error: (message) => failures.push(message) },
     });
-    const client = new Client({ name: 'authentication-shutdown-acceptance', version: '0.0.0' }, {
-      versionNegotiation: eraNegotiation(era),
-    });
+    let client: Client | undefined = undefined;
     t.after(async () => {
       stopping.resolve();
-      await client.close();
+      await client?.close();
       await application.close(listener.close());
     });
-    await client.connect(new StreamableHTTPClientTransport(new URL('mcp', listener.url), {
+    client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL('mcp', listener.url), {
       authProvider: { token: async () => 'test-token' }, fetch: sendToolCallWith(heldToken),
-    }), { signal: t.signal, timeout: 5_000 });
+    }), { era, checkEra: false });
     const refused = assert.rejects(client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments }), {
       name: 'SdkHttpError', data: { status: 500, statusText: 'Internal Server Error', text: 'Internal Server Error' },
     });
@@ -147,7 +143,7 @@ for (const era of mcpProtocolEras) {
 
     await refused;
     assert.ok(elapsedMs < 1_000, `server stop took ${elapsedMs.toFixed(1)} ms`);
-    assert.deepEqual(failures, ['The HTTP handler failed for POST /mcp: Error']);
+    assert.deepEqual(failures, ['The HTTP handler failed for POST /mcp: AbortError']);
     assert.deepEqual(operationCalls, []);
     assert.deepEqual(records, []);
   });

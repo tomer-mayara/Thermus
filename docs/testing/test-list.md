@@ -7,6 +7,112 @@
 
 # Tests
 
+## MCP fetch debug command
+
+`test/unit/script/fetch-url.test.ts` checks CLI input, help, credential input,
+and the stdin deadline. `test/acceptance/script/fetch-url.test.ts` runs the actual
+script against an MCP SDK server through the production HTTP bridge. It checks
+exact and empty Markdown, the `getURLAsMarkdown` arguments, environment and stdin
+credentials, modern JSON and SSE, legacy negotiation, refused authentication,
+HTTP failures, failed and unexpected tool results, invalid protocol data,
+connection failures, redirects, and cancellation of hung requests. All use local
+fake credentials and need no live provider or renderer.
+
+```sh
+npm run build && node --test dist/test/unit/script/fetch-url.test.js dist/test/acceptance/script/fetch-url.test.js
+```
+
+See [the script guide](../../script/README.md) for use and the current hosted
+authentication limit.
+
+## Free hosted signup (FS-01)
+
+The [FS-01 record](../implementation/fs-01.md) keeps the complete-candidate
+results. The original FS-01 cases use test document text. FS-04 adds the
+production document proofs below.
+
+- Unit: `test/unit/auth-workos/workos-signup*.test.ts` covers current verified
+  identity, acceptance metadata in the initial create, one User grant, concurrency,
+  unknown writes, restart, revocation, strict form fields, and frozen documents.
+  Current-user read tests distinguish a deleted user (404) from provider failures
+  (401, 403, 429, and 503) during inspection and activation.
+- Integration: `test/integration/auth/workos-signup-routes.test.ts` covers HTTP
+  responses, cookies, request limits, and cancellation;
+  `test/integration/auth/workos-connection.test.ts` checks the real production
+  SDK connection's retry and timeout settings with a local transport double.
+- Acceptance: `test/acceptance/auth/hosted-workos-signup.test.ts` drives the
+  composed application through HTTP with the WorkOS API fake.
+  `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it
+  with the signup fake. It checks closed signup, the notice and agreement,
+  personal User access, revoked access, existing roles, and fresh email
+  verification. Deleted-user GET and POST offer fresh sign-in with the full
+  notice and no activation writes. Signed-out old forms return 401 with a usable
+  sign-in link. A fresh sign-in can activate for its new subject. Current-user
+  outages remain 503.
+- Interface: `test/interface/auth/workos-signup.test.ts` checks single-attempt
+  writes after provider faults. `test/interface/auth/workos-signup.live.ts`
+  checks concurrent creation and acceptance metadata in disposable Staging
+  organizations. Only `npm run test:interface:workos-signup` selects the live file.
+
+### Approved production documents (FS-04)
+
+The [FS-04 record](../implementation/fs-04.md) tracks the complete candidate.
+Signup remains off by default. The source-owned bundle preserves the exact
+FS-03 bytes and versions under the separate owner implementation approval.
+The frozen private manifest keeps its historical review status.
+
+[V] Real production startup with signup omitted keeps GET, HEAD, and old POST closed, sends no policy bytes, and makes no provider request
+[V] Real production startup with signup enabled only in a test shows the complete notice before sign-in, the complete terms and notice after sign-in, and the exact unchecked agreement; byte hashes and lengths match the frozen source, and acceptance retains its version IDs and hashes
+[V] Corrupt approved terms or notice bytes and hashes fail composition before any provider request
+[V] Literal policy markup remains escaped text before and after sign-in; scoped wrapping CSS has its exact CSP hash, scripts remain denied, and the form remains same-origin
+
+Focused command after a clean build:
+
+```sh
+node --test dist/test/acceptance/auth/hosted-workos-signup.test.js dist/test/integration/auth/workos-signup-routes.test.js dist/test/unit/auth-workos/workos-signup-documents.test.js
+```
+
+### Portal and MCP handoff (FS-02)
+
+The [FS-02 record](../implementation/fs-02.md) keeps its validation results.
+
+- Unit inspection cases cover existing access without another agreement,
+  retained records, other workspaces, failures, and cancellation with no writes.
+  Cleanup tests limit personal-record recovery to fixture-owned users.
+- Signup route integration and composed acceptance cover Continue, the portal
+  return path, retained-record support, cookies, and provider failures.
+- Portal acceptance covers free access, the configured MCP endpoint, native
+  client steps, and separate browser workspace selection. Account guidance
+  acceptance keeps signup closed while offering signup, invitation, and support
+  paths. MCP acceptance keeps 401/403/500 behavior and proves guidance never
+  grants access or runs a denied tool.
+- The hosted live gate adds two Staging cases. They use a TEST ONLY agreement,
+  a real browser, Connect PKCE, and an MCP SDK client. They check new activation,
+  exact acceptance fields, User-only access, the actual token workspace,
+  browser-B/token-A isolation, revoked A refusal, and continued B access.
+  The SDK uses the gate's loopback HTTP listener behind its HTTPS front.
+  The fetched public reference page is `https://example.com/`.
+  Pending and retained-without-membership cases remain offline proofs.
+
+### Signup close and reopen (FS-05)
+
+`test/acceptance/auth/hosted-signup-restart.test.ts` uses test documents and
+the local WorkOS API fake. It closes the listener and application, then starts
+new application instances with the same provider state and browser cookie.
+The case checks that closed signup refuses the original form without a provider
+request while existing browser and MCP access still work. After another stop
+and membership revocation, reopened signup requires support, keeps the retained
+marker, and cannot replay the grant. The personal workspace stays denied while
+another authorized workspace remains usable through the browser and MCP.
+This is local acceptance coverage. It does not open production signup or replace
+the separately authorized deployed checks in [FS-05](../implementation/fs-05.md).
+
+Focused command after a clean build:
+
+```sh
+node --test dist/test/acceptance/auth/hosted-signup-restart.test.js
+```
+
 ## Unit
 
 **MCP Server**
@@ -104,6 +210,23 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 [V] Creates and clears the close deadline once; repeated failed closes retain the same error
 [V] Startup failure after listen closes the listener once and preserves both startup and cleanup errors
 
+**HTML escape of the product pages** (`test/unit/html/html-escape.test.ts`)
+
+The three escapes of the WorkOS notice pages, the bundled local pages, and the account pages were the same table and the same regex. `escapeHtml()` in `src/html/html-escape.ts` is the one copy. The test browsers decode the same five entities.
+
+[V] Escapes each of the five characters `&`, `<`, `>`, `"`, and `'` to its entity: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
+[V] Escapes several characters in one text and keeps the other text
+[V] Escapes an entity again: `&lt;` gives `&amp;lt;`. The escape does not look for entities, so each caller escapes a value one time only
+[V] Keeps plain text unchanged, also text with a slash, a backtick, an equals sign, or a non-ASCII character such as `é` or an emoji
+[V] Gives the empty string for the empty string
+[V] Escapes a text with all five characters so that `decodeHtml()` of the test browsers gives the input again
+
+Run the focused test:
+
+```sh
+npm run build && node --test dist/test/unit/html/html-escape.test.js
+```
+
 **Application lifecycle** (`test/unit/application-lifecycle.test.ts`)
 
 MCP and provider resources are public collaborator doubles; listener drain is a
@@ -112,6 +235,32 @@ controlled promise. Real listener/provider order is integration coverage below.
 [V] Starts MCP cleanup while listener drain is pending and waits for both before closing providers
 [V] Shares cleanup across concurrent and later close calls
 [V] Closes each resource once and preserves MCP, listener, and provider cleanup errors
+
+**Stop-signal wait** (`test/unit/stop-signal.test.ts`)
+
+Since 2026-10-15, `src/index.ts` exports `stopSignal()`. An `EventEmitter` is the double for process signals. This helper removes its handlers on the first signal. The auth WorkOS MCP URL fetch slice now uses its own stop wait below so repeated forwarded signals cannot interrupt its later cleanup. The production entry and `test/integration/server-stop-signals.test.ts` keep their existing contract.
+
+[V] Given a double for the process signals, the wait registers `SIGINT` and `SIGTERM`; when it gets `SIGTERM`, it gives `SIGTERM` and removes both listeners
+[V] Given a wait that is disposed before any signal, a later signal finds no listener, and the wait gives nothing
+
+```sh
+npm run build && node --test dist/test/unit/stop-signal.test.js
+```
+
+**Work slice stop wait** (`test/unit/test-support/stop-signal.test.ts`)
+
+Three source cases passed in the reviewed 20-case shutdown focus. An
+`EventEmitter` replaces process signals at the public helper interface. The
+slice installs `test/support/processes/stop-signal.ts` before asynchronous
+startup and keeps its signal handlers until the site closes and logging flushes.
+
+[V] Captures a startup signal and retains both handlers until disposal
+[V] Keeps the first signal when repeated SIGINT and SIGTERM arrive during cleanup
+[V] Disposes twice after failed startup without removing another owner's handler or resolving a stop result
+
+```sh
+npm run build && node --test dist/test/unit/test-support/stop-signal.test.js
+```
 
 **Better Auth runtime lifecycle** (`test/unit/auth-better-auth/better-auth-runtime.test.ts`)
 
@@ -235,7 +384,7 @@ npm run build && node --test dist/test/unit/application-operator-log.test.js
 
 **Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
 
-`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its MFA evidence (completed by default), its cookie effects, and a configured answer to an organization switch. `AccessResolverMock` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
+`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its MFA evidence (completed by default), its cookie effects, and a configured answer to an organization switch. `AccessResolverSpy` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
 
 [V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
 [V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
@@ -258,7 +407,7 @@ npm run build && node --test dist/test/unit/application-operator-log.test.js
 
 **Hosted organization page** (`test/unit/hosted-admin/account-routes-organization-page.test.ts`)
 
-This file and the two selection files below also use `fixtures/organization-routes-fixtures.ts`: `serveAnn()`, the session and switch cookies, the form token, and the selection post. `OrganizationAdministrationDouble` gives the configured authorized organizations of each user subject, or a configured failure, and records each list and each selection check. `SignedInSessionDouble` records each organization switch and gives a configured switch answer or failure. `formsIn()` from `test/support/hosted-browser.ts` reads the forms of a page.
+This file and the two selection files below also use `fixtures/organization-routes-fixtures.ts`: `serveAnn()`, the session and switch cookies, the form token, and the selection post. `OrganizationAdministrationDouble` gives the configured authorized organizations of each user subject, or a configured failure, and records each list and each selection check. `SignedInSessionDouble` records each organization switch and gives a configured switch answer or failure. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
 
 [V] For a GET and a HEAD request, lists each authorized organization of a signed-in user with a selection form that posts the form token of the session, the organization ID, and the return destination; marks the selected organization; sends the session cookies, `form-action 'self'`, and the other page headers, and no script, style, or other resource; runs no access resolution or operation
 [V] Shows organization names and IDs with HTML characters as text
@@ -290,7 +439,7 @@ Each refusal comes before an organization check and a session switch.
 
 **Member and invitation pages** (`test/unit/hosted-admin/account-routes-administration-pages.test.ts`)
 
-This file and the two files below also use `fixtures/administration-routes-fixtures.ts`. `serveAdministration()` serves the routes for Ann: a signed-in session with a refreshed session cookie, a form token, and MFA evidence, and allowed access to Acme with User and Admin. The fixtures also give member and invitation overviews and one valid post for each change. `OrganizationAdministrationDouble` gives the configured overview, refusal, change result, or failure, and records each call with its actor and its request. A setup can give a session whose sign-in did not complete MFA, a session without a form token, another access decision, or another public URL. `formsIn()` from `test/support/hosted-browser.ts` reads the forms of a page.
+This file and the two files below also use `fixtures/administration-routes-fixtures.ts`. `serveAdministration()` serves the routes for Ann: a signed-in session with a refreshed session cookie, a form token, and MFA evidence, and allowed access to Acme with User and Admin. The fixtures also give member and invitation overviews and one valid post for each change. `OrganizationAdministrationDouble` gives the configured overview, refusal, change result, or failure, and records each call with its actor and its request. A setup can give a session whose sign-in did not complete MFA, a session without a form token, another access decision, or another public URL. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
 
 [V] For a GET and a HEAD request with forged organization values in the query and headers, gives the service the user of the decided context with the MFA evidence of the session and the organization of the context; the members page shows the seat count, each member with its status and roles, a link to the invitations page, and one form for each change with the form token, the organization, the membership, its revision, the role, and the action; sends the session cookies and the page headers with `form-action 'self'`, and no script, style, or other resource
 [V] For each identity policy, the invitations page has a send form with an email field for each role that the actor can invite, a resend and a revoke form for each pending invitation of a role of the actor, each invitation with its role and state, a link to the members page, and the policy text of the directory
@@ -362,7 +511,7 @@ npm run build && node --test dist/test/unit/hosted-admin/account-routes-administ
 
 **Grant authority** (`test/unit/organizations/organization-administration-grants.test.ts`)
 
-This file and the five files below use `fixtures/administration-fixtures.ts`. It gives the memberships of two organizations: in Acme, members with Super Admin alone, all three roles, User plus Admin, Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. `invitationsWith()` adds a pending, an accepted, a revoked, and an expired User invitation and a pending Admin invitation in Acme, and a pending User invitation in Globex. Each actor completed MFA unless a test says otherwise, and its session selected Globex, so that only the organization of the request can decide. The service gets a fixed clock and a recorder that keeps each change record; `recordLines()` checks that each record is frozen and has only the fields of the contract. `OrganizationDirectoryDouble`, in `fixtures/organization-directory-double.ts`, is a stateful double of the whole `OrganizationDirectory` contract: a change takes effect in the later reads, each grant change needs the current revision of the membership, and an acceptance activates only the role of the invitation. A test can lay out the pages of each read, make a page fail, queue a result or a failure (before or after the effect) for the next change, hold the changes to run them at the same time, and accept or expire an invitation as the provider does. `fixtures/change-answers.ts` keeps the queued answers and the held changes, and `fixtures/directory-double-records.ts` the seeds and the record helpers of the double. Each invitation of the double has a token, as a provider record has it, so that a test can show that no token reaches an overview or a record. The double records each read and change. The tests import the access contracts as types only.
+This file and the five files below use `fixtures/administration-fixtures.ts`. It gives the memberships of two organizations: in Acme, members with Super Admin alone, all three roles, User plus Admin, Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. `invitationsWith()` adds a pending, an accepted, a revoked, and an expired User invitation and a pending Admin invitation in Acme, and a pending User invitation in Globex. Each actor completed MFA unless a test says otherwise, and its session selected Globex, so that only the organization of the request can decide. The service gets a fixed clock and a recorder that keeps each change record; `recordLines()` checks that each record is frozen and has only the fields of the contract. `OrganizationDirectoryDouble`, in `test/support/doubles/organizations/organization-directory-double.ts`, is a stateful double of the whole `OrganizationDirectory` contract: a change takes effect in the later reads, each grant change needs the current revision of the membership, and an acceptance activates only the role of the invitation. A test can lay out the pages of each read, make a page fail, queue a result or a failure (before or after the effect) for the next change, hold the changes to run them at the same time, and accept or expire an invitation as the provider does. `test/support/doubles/organizations/change-answers.ts` keeps the queued answers and the held changes, and `test/support/doubles/organizations/directory-double-records.ts` the seeds and the record helpers of the double. Each invitation of the double has a token, as a provider record has it, so that a test can show that no token reaches an overview or a record. The double records each read and change. The tests import the access contracts as types only.
 
 [V] Super Admin alone grants Admin to itself and then, with that Admin authority, User to itself, without another person; a User grant before the Admin grant is denied, and each request is recorded
 [V] Denies each grant and revoke for the actor itself and for other members, with no directory change and one record for each request: User changes by Super Admin alone, Admin changes by Admin alone, User and Admin changes by User alone, and Super Admin changes by a member with all three roles and by Admin alone
@@ -496,9 +645,33 @@ A narrow double of the SDK part (`test/unit/auth-workos/fixtures/workos-session-
 [V] A terminal refresh refusal signs out with the cleared cookie; a retryable refresh failure or a thrown SDK error rejects, so a recoverable session is not erased
 [V] An organization switch refreshes the newest seal into the organization and sends one new cookie; a 4xx refusal changes no cookie; a refresh into another organization is refused but keeps the new seal; an ended session signs out; an outage rejects
 [V] A sign-in start makes the AuthKit URL with PKCE for the redirect URI and the client ID, and a sign-in cookie with the state, the verifier, the return path, and a 10-minute expiry
-[V] A callback with the same state exchanges the code with the verifier, clears the sign-in cookie, and sets a session cookie with a new CSRF token; only a `Password` sign-in gives MFA evidence; two sign-ins get two CSRF tokens
+[V] A callback with the same state exchanges the code with the verifier, clears the sign-in cookie, and sets a session cookie with a new CSRF token; only a `Password` sign-in under explicit Required policy gives MFA evidence; two sign-ins get two CSRF tokens
 [V] A missing, unopenable, or expired sign-in cookie, an AuthKit error, a missing, empty, or repeated code or state, and another state refuse the sign-in with the cleared sign-in cookie and no exchange; a 4xx refusal of the code is `code-refused`; another exchange failure rejects
 [V] The end of a session gives the WorkOS logout URL of the `sid` in the seal, also after the access token expired, and the cleared cookie; without a usable seal, it gives only the cleared cookie; the logout route reads the CSRF token without a WorkOS call
+
+**WorkOS session MFA evidence policy** (`test/unit/auth-workos/workos-browser-session-mfa.test.ts`)
+
+These six unit cases use the session-client double to isolate the WorkOS session package. All six passed in the final candidate check.
+
+[V] The default unproven mode gives a new Password session no MFA evidence
+[V] Explicit unproven mode gives Password and Google callback cookies false evidence
+[V] Reading a prior true cookie masks its evidence and preserves identity and CSRF
+[V] Refresh and organization selection keep both session and replacement-cookie evidence false
+
+```sh
+npm run build && node --test dist/test/unit/auth-workos/workos-browser-session-mfa.test.js
+```
+
+**WorkOS callback onboarding seam** (`test/unit/auth-workos/workos-sign-in-onboarding.test.ts`)
+
+The two source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These unit specifications use the session-client double and an onboarding policy double. They keep the policy call after the trusted code exchange and before the browser cookie. They do not use real WorkOS.
+
+[V] Given an opt-in policy and a trusted Google exchange, the policy receives the exchange before its returned seal enters the cookie, and the cookie has no MFA evidence
+[V] Given an exchange without a sealed session, sign-in fails before onboarding can create a grant
+
+```sh
+npm run build && node --test dist/test/unit/auth-workos/workos-sign-in-onboarding.test.js
+```
 
 **WorkOS session routes** (`test/unit/auth-workos/workos-session-routes.test.ts`, `workos-session-routes-sign-in.test.ts`, and `workos-session-routes-logout.test.ts`)
 
@@ -872,7 +1045,8 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Gives a `WebsiteFetchLaunchError` for a missing executable that keeps the cause, reports the selected path and runtime setup document without the requested URL, and does not fall back to another executable
 [V] Passes the supported readiness options and keeps the 60000 ms timeout and 32 MiB output limit
 [V] Returns HTML with the requested and final URLs on immediate success
-[V] Stops the child at the five-second readiness deadline, waits for its callback, then rejects with `Lightpanda readiness limit exceeded after 5000 ms` and no partial HTML
+[V] Returns complete HTML after 6.5 seconds without killing a renderer that completes before the 20-second deadline (`test/unit/website-fetcher/website-fetcher-lightpanda-deadline.test.ts`)
+[V] Stops the child at the 20-second readiness deadline, waits for its callback, then rejects with `WebsiteFetchReadinessTimeoutError`, budget `20000`, message `Lightpanda readiness limit exceeded after 20000 ms`, and no partial HTML
 [V] Preserves a child result or error when the child has already exited at the deadline, and rejects a late success when the child was still running at the deadline
 [V] Cancels the readiness timer after success or a process error
 [V] Preserves process timeout and output limit errors, reports a missing executable (ENOENT) and a permission error (EACCES) with their launch error messages, and keeps a synchronous launch failure without a system error code
@@ -906,17 +1080,183 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 
 [V] One fetcher with a configured executable runs two concurrent calls with the same executable, arguments, and process options, each with its own URL; each call gets its own result
 
-**Local renderer fixture launcher** (`test/unit/website-fetcher/network-fixture.test.ts`)
+**Local renderer fixture launcher** (`test/unit/test-support/network-fixture.test.ts`)
 
 [V] Uses the selected executable for default, empty, and configured LIGHTPANDA_BIN values, including a path with spaces
 [V] Permits only the trusted localhost fetch scope and keeps the launch options of the fetcher, also its renderer environment
 [V] Rejects another executable or a public-site fetch through the fixture launcher
 
-**Renderer process double** (`test/unit/website-fetcher/renderer-process-double.test.ts`)
+**Renderer process double** (`test/unit/test-support/renderer-process-double.test.ts`)
 
-`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double. The offline acceptance tests get one for each launch from `RendererProcessDouble`. The renderer setup report test of the server composition and the renderer shutdown cases also give this double as the renderer child.
+`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/doubles/website-fetcher/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double. The offline acceptance tests get one for each launch from `RendererProcessDouble`. The renderer setup report test of the server composition and the renderer shutdown cases also give this double as the renderer child.
 
 [V] Records `SIGKILL` and sends no signal to a process when the readiness deadline or a cancellation of a running fetch requests a kill
+
+**Outbound fetch guard** (`test/unit/test-support/outbound-fetch-guard.test.ts`)
+
+The WorkOS SDK proofs, the Better Auth proofs, the local MCP access tests, and the fixtures of the WorkOS browser session had the same guard. Each replaced `globalThis.fetch` in a `before` hook and put the real fetch back in an `after` hook. `guardOutboundFetch()` in `test/support/isolation/outbound-fetch-guard.ts` is the one copy. Its `before` hook installs the guard of `outboundFetchGuard()`, and its `after` hook releases the guard. `guardOutboundFetch()` also gives the record of the refused requests. The Better Auth telemetry proof checks this record before the end of its block. Each caller keeps its own refusal and finding; the two WorkOS callers let requests to `127.0.0.1` through to the local fake. `deny-network.ts` and `foreign-origin-probe.ts` block `fetch` for a whole child process and stay as they are.
+
+[V] Refuses a request to a public URL with an `Error` that has the refusal message, and adds the URL to the record of the guard at once; the release puts the real fetch back and then fails with the finding, which lists the URL
+[V] Records the URL of a refused `Request` object and of a refused `URL` object
+[V] With `allowLoopback`, sends a POST with a body and a `Request` object through the real fetch to a local server on `127.0.0.1`, with their method and body; the answers come back, and the release passes and puts the real fetch back
+[V] With `allowLoopback`, still refuses and records a request to a public URL and a request to `localhost`
+[V] `guardOutboundFetch()` in a describe block replaces the real fetch for the tests of the block and puts it back after them; the record that it gives is empty while no request was refused
+
+**HTML entities of the test browsers** (`test/unit/test-support/html-entities.test.ts`)
+
+The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page fixtures were the same table and the same regex. `decodeHtml()` in `test/support/drivers/browser/html-entities.ts` is the one copy.
+
+[V] Decodes each of the five entities that the product pages write: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
+[V] Decodes several entities in one text and keeps the other text
+[V] Decodes one time only: `&amp;lt;` gives `&lt;`
+[V] Keeps plain text, an unknown named entity such as `&eacute;`, and a numeric entity other than `&#39;` such as `&#40;` unchanged
+[V] Gives the empty string for the empty string
+
+**Operator log reader of the server sites** (`test/unit/test-support/operator-log.test.ts`)
+
+`ServerProcess`, `ServerContainer`, and `InProcessServer` each parsed the listening line and the tenant line of the operator log. `ServerContainer` and `InProcessServer` also parsed the completion records. `HostedImageServer` of `test/support/container/hosted-image-gate.ts` waited for the listening line with its own text of the line. `listeningUrlIn()`, `tenantIn()`, `completionLinesIn()`, and `completionRecordsIn()` in `test/support/drivers/operator-log.ts` are the one copy; each site keeps the log in its own form: the text of the child process, the text of `docker start --attach`, or the messages of its logger.
+
+[V] Gives no listening URL before the `Listening on` line arrives, and the URL of that line when other lines are around it
+[V] Gives the local tenant of the tenant line; gives none without that line or before the full stop of that line arrives, so it gives only a complete ID
+[V] Gives the completion records of an output in their order, also when other lines and a JSON line of another event are between them and when the console logger writes the time, the level, and the call site before each record; an output without a record gives none
+[V] Gives the same URL, tenant, and records for the messages of the in-process logger, joined with line breaks, as for the console text of the same messages
+
+**Cookie jar of the test browsers** (`test/unit/test-support/cookie-jar.test.ts`)
+
+`HttpAgent`, `LocalBrowser`, and `HostedBrowser` each parsed the Set-Cookie lines of an answer and made the Cookie header. `keepCookies()` and `cookieHeaderOf()` in `test/support/drivers/browser/cookie-jar.ts` are the one copy; each browser keeps its own `Map` and its own transport.
+
+[V] Keeps a new cookie from a Set-Cookie line by its name, without its attributes
+[V] Replaces the value of a cookie with the same name and keeps its place in the jar
+[V] Applies several lines for one cookie in their order, so the last line wins
+[V] Drops a cookie on `Max-Age=0` in any letter case and at any position in the line; the other cookies stay
+[V] Drops a cookie whose value is empty (`name=; Path=/`)
+[V] Skips a line without a cookie name; the jar does not change
+[V] Removes the spaces around the name and the value
+[V] Gives no Cookie header for an empty jar
+[V] Gives the `name=value` pairs in the order that the jar got them, joined by `; `
+[V] Seeds a jar from the pairs of a Cookie header, and the jar gives the same header
+
+**Hosted live SDK errors** (`test/unit/test-support/sdk-errors.test.ts`)
+
+The fixture registry, the operator runbook driver, and the operator setup proofs had the same `statusOf()` helper. `test/support/hosted-live/sdk-errors.ts` is the one copy.
+
+[V] Gives the numeric status of an object, also of an error of a refused SDK call
+[V] Gives a status of another type (a string, null, or an object) unchanged
+[V] Gives undefined for an Error without a status
+[V] Gives undefined for null, undefined, and a string
+
+**Built-in mock sync** (`test/unit/test-support/builtin-mocks.test.ts`)
+
+`controlledRenderer()`, `RendererProcessDouble.install()`, and `permitIPv4Fixture()` had the same sequence after their mocks of Node built-in modules. `syncBuiltinMocks()` in `test/support/doubles/website-fetcher/builtin-mocks.ts` is the one copy: it syncs the ESM exports, and at the end of the test it restores all mocks of the test and syncs again. Nine test files outside `test/support` call it too, after their mocks of `execFile`, `lookup`, or `readFileSync`.
+
+[V] After a mock of `lookup` of `node:dns/promises`, the named ESM export `lookup` is the mock in the test; at the end of the test the named export and the module property are the original function again
+[V] Mocks of two built-in modules, `node:dns/promises` and `node:child_process`, made before one sync, are both restored at the same end of the test, in the named exports and in the module properties
+
+**Axiom export headers** (`test/unit/test-support/axiom-test-export.test.ts`)
+
+`openAxiomLogging()`, `createOtlpFixture()`, and the live Axiom interface test each wrote the two headers of their OTLP exporter. `axiomExportHeaders()` in `test/support/in-process/axiom-test-export.ts` is the one copy; each exporter keeps its own timeout.
+
+[V] Builds exactly the `Authorization` header with the API key as a bearer token and the `X-Axiom-Dataset` header with the dataset
+
+**Operator log spy** (`test/unit/test-support/operator-log-spy.test.ts`)
+
+The three hosted WorkOS acceptance specifications, `LocalHttpsSite` of the hosted live gate, and the hosted organization and administration integration tests each had the same class that recorded the operator log lines with the prefix `INFO` or `ERROR`. `OperatorLogSpy` in `test/support/doubles/application/operator-log-spy.ts` is the one copy. The operator log lines unit test and the local installation integration test keep their own logger, because it records each message without a prefix.
+
+[V] Records `info` and `error` calls in turn as `INFO <message>` and `ERROR <message>` lines, in the order of the calls
+[V] Records the lines in the same spy when `info` and `error` are taken off the spy and called without it
+[V] Keeps the lines of each spy apart: each of two spies has only its own line
+
+**Hosted test configuration** (`test/unit/test-support/hosted-config.test.ts`)
+
+Eight files loaded the same hosted test configuration: the three hosted WorkOS acceptance specifications, the hosted MCP access guidance specification, three integration tests, and `test/support/in-process/hosted-organization-site.ts`. The integration tests are the tests of the WorkOS organization reads, of the hosted account routes, and of the origin check at the hosted MCP endpoint. The access guidance specification wrote the public base URL with the slash at the end; the loader gives the same configuration for both forms. `hostedConfig` in `test/support/fixtures/hosted-config.ts` is the one copy: the hosted edition at the public base URL `https://thermus.example/team`. Ten more files loaded the hosted edition at the root of the host, `https://thermus.example/` or the same URL without the slash: the hosted signup and MFA policy specifications, the onboarding and MFA specifications of the auth WorkOS work slice, the integration tests of the hosted administration, the hosted organizations, the local installation, and the WorkOS connection, and the hosted signup and fetch sites. `hostedRootConfig` in the same module is the one copy of it. Each is a test setting of the hosted environment, not literal test data. A settings record that a test gives to a process or to the loader stays in its test.
+
+[V] Is the hosted edition at the public base URL `https://thermus.example/team/`, with the slash that the loader adds
+[V] Has the MCP resource URL `https://thermus.example/team/mcp` and a resource metadata URL on the same origin
+[V] Has, at the root of the host, the public base URL `https://thermus.example/` and the MCP resource URL `https://thermus.example/mcp`; the origin without the slash loads the same values
+
+**Hosted WorkOS site** (`test/unit/test-support/workos-site.test.ts`)
+
+The three hosted WorkOS acceptance specifications and the hosted MCP access guidance specification each composed the same site in their own `openSite()`. The three specifications also had the same call of `server/discover` at the MCP endpoint. A second site in `test/support/in-process/` composed the same site with the signup fake for the hosted signup and account guidance specifications. The hosted MFA policy specification and the onboarding specification of the auth WorkOS work slice composed the application themselves. `serveWorkOSSite()` in `test/support/in-process/workos-site.ts` is the one copy. It starts the WorkOS fake with the organizations of the test. When the test asks for it, it adds the signup fake of `test/support/doubles/workos/workos-signup-fake.ts`. Then it gives the fake to the set-up function of the test. It serves the real hosted composition with the WorkOS provider, `composeWorkOSApplication()`, behind the real HTTP server on a loopback port. A test can give the hosted configuration, the MFA policy of the connection, the MCP tool server of the composition, `buildServer`, and the signup setting. Without a configuration, the site uses `hostedConfig`. Without an MFA policy, the fake gives its own policy, Optional. Without a `buildServer`, the MCP server of the composition has no tools. Without a signup setting, signup is closed. The site gives the fake, the transport, the public base URL, an `OperatorLogSpy`, `discover()`, and, when the test asked for it, the signup fake. `composeApplicationWithWorkOSFake()` in the same module is the one place that composes the real hosted application against the fake. The MCP cases of the local HTTPS test server give that application to `LocalHttpsSite`. `WorkOSServerSite`, the site type of `signInThroughServer()`, is in the same module.
+
+[V] Answers `server/discover` at the MCP endpoint with 401 without a token, with 200 for the Connect token of a User, and with 403 for the Connect token of a member with only Admin; the operator log of the site has no `ERROR` line
+[V] Writes an `ERROR` line of the application to the operator log of the site when a membership read outage gives 500 at the MCP endpoint
+[V] With a `buildServer` that gives a test-only tool, the Connect token of a User lists that tool; without a `buildServer`, `tools/list` gets HTTP 404 with the JSON-RPC error -32601 "Method not found"
+[V] With the Required MFA policy, a password sign-in through the server gives the portal session the MFA evidence; without an MFA policy, the session has no MFA evidence
+[V] With the signup fake and signup with the test documents, the signup page gives 200 with the full notice, and the signup fake has no personal organization
+[V] With signup but without approved documents, `serveWorkOSSite()` rejects with the document error of the composition
+[V] With the hosted configuration at the root of the host, the site has the public base URL `https://thermus.example/`, and `server/discover` without a token gets 401 with the resource metadata of the root
+[V] Has the public base URL of the hosted test configuration and a fake without memberships when the test gives no set-up
+[V] Closes its server when the test that opened it ends, so that a later request to the site fails
+
+**Hosted role catalog** (`test/unit/test-support/hosted-roles.test.ts`)
+
+Three support modules had the role catalog of the hosted edition. The WorkOS fake had it as `environmentRoles`, and `test/support/hosted-live/settings.ts` of the hosted live gate as `hostedRolePermissions`. `test/support/in-process/hosted-organization-site.ts` had it as its grants. `memberRole` was in that site and in `test/support/doubles/organizations/directory-double-records.ts`. The signup fake, `test/support/doubles/workos/workos-signup-fake.ts`, had the catalog too, for the personal organizations of signup. `test/support/fixtures/hosted-roles.ts` is the one copy. `hostedRolePermissions` gives each environment role with its application permissions, as the WorkOS staging environment defines them. `user` has `product:access`, `admin` has `user-grants:manage`, `super-admin` has `admin-grants:manage` and `billing:manage`, and `member` has no permission. `userGrant`, `adminGrant`, `superAdminGrant`, and `memberRole` are the grants of these roles. The fake answers with the catalog, the live gate checks the staging environment against it, and the organization site grants from it. Thus the fake and the live gate cannot drift apart. The signup fake gives each personal organization the organization JSON and the role JSON of the WorkOS fake. Thus a personal organization also lists its roles in the order of the catalog. The unit tests of `OrganizationAdministration` keep their own User, Admin, and Super Admin grants. The unit tests of `WorkOSSignup` keep their own role list. The hosted account integration test keeps its own grants too. Each test shows its data. `roleGrantOf()` of the directory double keeps its own map of User and Admin, because it refuses each other role.
+
+[V] Lists the roles `user`, `admin`, `super-admin`, and `member` in this order, the order in which the WorkOS fake lists the roles of an organization
+[V] Gives each of `userGrant`, `adminGrant`, `superAdminGrant`, and `memberRole` the name of its role and exactly the permissions of that role in the catalog
+[V] Gives the role `member` no permission
+[V] Has no permission in two roles
+
+**Form by label of the hosted browser** (`test/unit/test-support/form-labelled.test.ts`)
+
+Three functions found the form of a page by its button text. They were `formFor()` in `test/support/in-process/hosted-organization-site.ts`, `formNamed()` in `test/support/hosted-live/portal-visit.ts` of the hosted live gate, and a local `formNamed()` in `test/acceptance/auth/hosted-workos-administration.test.ts`. `formLabelled()` in `test/support/drivers/browser/hosted-browser.ts`, next to `formsIn()`, is the one copy. When no form has the button text, `formLabelled()` fails with the message of the two `formNamed()` copies. This message gives only the button texts of the page, because the fields hold the form token of the session. The message of `formFor()` also gave the fields of each form.
+
+[V] Gives the form with the button text, with its action and its hidden fields, from the forms that `formsIn()` reads from a page
+[V] Fails with an `AssertionError` when no form has the button text; the message names the text and lists the button texts of the page, without a field value such as the form token
+[V] Fails with a message that names the text and lists no button text, `[]`, when there is no form
+
+**Hosted members of the organization tests** (`test/unit/test-support/hosted-members.test.ts`)
+
+`test/support/in-process/hosted-organization-site.ts` had three layers: the site, its fixture data, and DSL steps. Step 7b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md) split it. `test/support/fixtures/hosted-members.ts` has the fixture data. `authority` is the authority of the provider double, `hosted-provider-double`. `userOf()` makes a user, and `member()` makes a membership. `members` has the memberships of the organization tests, and `administrationMembers` has the memberships of the administration tests. Before, `administrationMembers` was in `test/support/dsl/hosted-administration.ts`. The site keeps the composition. It gives `authority` to the directory double and to the MCP identities. When a test gives no memberships, the site uses `members`.
+
+[V] Gives a membership in each of the five organizations of the tests, `org-a` to `org-e`, the name of that organization: Acme, Globex, Initech, Umbrella, or Hooli; the membership is active and has the given grants
+[V] Gives a membership in another organization the organization ID as its name
+[V] Gives a user without an organization the authority `hosted-provider-double` and no `selectedOrganizationId`
+[V] Gives a user with an organization that organization as `selectedOrganizationId`
+[V] In `members`, nora has no membership; mia is a User in Acme, an Admin in Globex, and inactive in Initech; and otto is the only member of Umbrella
+[V] In `administrationMembers`, Acme has four active memberships with User: otto, cy, fay, and una, and Globex has three: cy, una, and ben; the User grants of ivy, which is inactive, and of pia, which is pending, do not count
+
+**Access steps of the hosted organization tests** (`test/unit/test-support/hosted-access.test.ts`)
+
+Step 7b also moved the DSL steps of the site to `test/support/dsl/hosted-access.ts`. `statusesOf()` gives the status of each page that a browser opens, and `contextAt()` gives the request context of a page. `destinationPaths`, the four destinations of the site, is the default of `statusesOf()`. Each step takes a browser that can open a path, `Pick<HostedBrowser, 'open'>`. Thus the test gives a stub browser that answers by path.
+
+[V] `statusesOf()` gives the status of each path, in the order of the paths
+[V] Without paths, `statusesOf()` opens the four destinations `portal`, `administration/users`, `administration/admins`, and `billing`
+[V] `contextAt()` gives the request context of a page that answers 200 with the context in JSON
+[V] `contextAt()` fails with an `AssertionError` when the page answers 403; the message begins with the body of the answer
+
+**Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
+
+`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads `lingeringHostedHandle`, `heldHostedIdentity`, and `heldHostedCleanup`, the hosted portal fixture and its preload `hostedPortalPreload`, the Lightpanda stub `lightpandaStub`, the three container scripts `containerEdgeScript`, `containerPageScript`, and `containerProbeScript` of `test/support/container/`, the identity preload `hostedImageIdentity` of the hosted image gate, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, the local HTTPS site, the container gate, and the hosted image gate read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. Before Step 9b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md), `container-gate.ts` and `container-site.ts` computed the paths of the three container scripts. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts` and `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`.
+
+[V] Given a build, each of the program entry, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads, the hosted portal preload and the index page of the hosted portal fixture, the Lightpanda stub, the identity preload of the hosted image gate, the failing ad cleaner preload, the trusted ad rules file, and the three container scripts names a file that exists
+[V] Given the repository, the portal build is the `dist/` folder of the portal source `src/user-portal/`, and that source folder exists; the build itself exists only after `npm run build:user-portal`, which `npm run check` runs after the unit tests
+[V] Given a build, the repository root is the folder of `package.json`
+
+The matrix has 17 file paths and two structural cases, or 19 tests. When
+the work-slice shutdown probe came, it added one generated file-existence
+case, and the matrix had ten file paths and two structural cases, or twelve
+tests. That new path case and both real launcher-chain cases passed from
+source: 3/3 in 1 suite, with zero failures, cancellations, skips, or todo
+cases. Log:
+`/tmp/thermus-pr108-path-refactor-focused.log`. The final complete check, integration, acceptance, and container commands
+also passed after this test-only path correction.
+
+```sh
+npm run build && node --test dist/test/unit/test-support-paths.test.js
+```
+
+**MCP SDK client driver** (`test/unit/test-support/mcp-sdk-client.test.ts`)
+
+Sixteen setups in fifteen files built an SDK `Client` with a `versionNegotiation` option and connected it. They were in `LocalMcpUser`, `openFetchSite()`, the two work-slice acceptance tests, the SDK HTTP contract test, the MCP access and failure report tests, the HTTP fetch refusal, fetch cancellation, DNS cancellation, request isolation, and renderer shutdown tests, the two cases of the HTTP shutdown test, the MCP discovery unit test, and the signup cases of the hosted live gate. `connectMcpClient()` in `test/support/drivers/mcp/mcp-sdk-client.ts` is the one copy. Each caller keeps its own transport, because the auth and the fetch differ. Each caller closes the client itself. If the connection or the era check fails, the driver closes the client.
+
+[V] Connects to an SDK server with the defaults in protocol version 2026-07-28; the client lists the tools of the server
+[V] Connects in the era 2025-11-25 through the legacy negotiation of the SDK; the client lists the tools of the server
+[V] Stops the version probe of a server that does not answer after the default connect timeout of 5,000 ms
+[V] Stops the version probe after a connect timeout of 10,000 ms
+[V] Stops the version probe after its own 5,000 ms with `probe: true`, also when the connect timeout is 10,000 ms
+[V] Fails the era check when an SDK server offers only protocol version 2025-06-18 to a connection in the era 2025-11-25, and closes the client
+[V] Gives the client of that connection with `checkEra: false`; the client uses protocol version 2025-06-18
 
 **Image build: Lightpanda digest check** (`test/unit/image/check-lightpanda-digest.test.ts`)
 
@@ -930,17 +1270,51 @@ The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` doubl
 npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
 ```
 
-**Work slice: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch.test.ts`)
+**Work slice fetch lines** (`test/unit/test-support/fetch-operation-spy.test.ts`)
 
-A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
+`fetchOperationSpy()` and `MARKDOWN_LOG_LIMIT` write the fetch lines of both work slices. They are in `test/support/doubles/mcp/fetch-operation-spy.ts`, and the test imports them from there. Before 2026-10-15, they were private to the entry point of the basic slice, and the test was `test/unit/work-slice/basic-mcp-url-fetch.test.ts`. The cases did not change. A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
 
-[V] `observeFetches()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
+[V] `fetchOperationSpy()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
 [V] Counts code points, not UTF-16 units; above the limit, the completed line keeps the first code points without a split surrogate pair and ends with `[cut: <n> more characters]`, and the caller still gets the whole Markdown; the default limit is 65,536 code points
 [V] When the operation fails with an `Error`, a cancellation `DOMException`, or a value that is not an `Error`, writes one ERROR line with the message and throws the same value again
 [V] Gives the operation the same URL, request context, and signal
 
 ```sh
-npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch.test.js
+npm run build && node --test dist/test/unit/test-support/fetch-operation-spy.test.js
+```
+
+**Work slice launcher script: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
+
+The test runs `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the five settings, and whether `AXIOM_API_KEY` is set, but never the value of the key. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no `ad-rules.txt` of the repository, and no renderer.
+
+[V] Given only `AD_RULES_FILE` with an empty file and `AXIOM_API_KEY`, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other four settings and the key; stderr lists the five settings, and no output shows the key
+[V] Given each of the five settings with a custom value, pnpm gets each value unchanged, and stderr lists these values
+[V] Given extra arguments, pnpm exec gets them after the entry point
+[V] Given an `AD_RULES_FILE` that does not exist, the script exits with status 1 and a message that names `AD_RULES_FILE` and the `touch` command, and pnpm does not run
+[V] Given a pnpm that exits with status 3, the script exits with status 3
+
+```sh
+npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch-script.test.js
+```
+
+**Work slice launcher script: auth WorkOS MCP URL fetch** (`test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`)
+
+The 13 source and compiled cases passed on 2026-10-15 with the slice organization default and override checks. The harness `test/unit/work-slice/fixtures/auth-workos-mcp-url-fetch-script-harness.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the eleven settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The settings include `THERMUS_SLICE_ORGANIZATION_ID`: the staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, and a custom organization is passed unchanged. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
+
+[V] Given only the three WorkOS settings and `AXIOM_API_KEY`, when the script runs from another directory, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from `openssl rand`, and the keys; stderr lists the eleven settings after the certificate line, and no output shows a secret
+[V] Given each setting with a custom value, a cookie password, and a TLS directory with both files, pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the eleven values without the secrets
+[V] Given a `PUBLIC_BASE_URL` with a final slash and no `WORKOS_REDIRECT_URI`, the redirect URI is the callback on that base without a double slash
+[V] Given no `WORKOS_API_KEY`, no `WORKOS_CLIENT_ID`, or no `WORKOS_AUTHKIT_ISSUER` (three cases), the script exits with status 1 and a message that names the missing setting and the staging launcher and shows no value, and neither openssl nor pnpm runs
+[V] Given the three WorkOS settings with empty values, the script exits with status 1, and the message names the three settings
+[V] Given no certificate files, the first of two runs makes `key.pem` and `cert.pem` with `openssl req` in the default TLS directory, which only the owner can read (the directory `0700`, the key `0600`), and says so on stderr; the second run calls no `openssl req` and keeps the files
+[V] Given a TLS directory with `cert.pem` only, the script makes a new `key.pem` and `cert.pem`
+[V] Given an `AD_RULES_FILE` that does not exist, the script exits with status 1 and a message that names `AD_RULES_FILE` and the `touch` command; it makes no certificate, and pnpm does not run
+[V] Given a repository root without the portal build, the script exits with status 1 and a message that names the missing `index.html` and `npm run build:user-portal`; it makes no certificate, and pnpm does not run
+[V] Given extra arguments, pnpm exec gets them after the entry point
+[V] Given a pnpm that exits with status 3, the script exits with status 3
+
+```sh
+npm run build && node --test dist/test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.js
 ```
 
 ### Planned Cache Key Tests
@@ -954,6 +1328,31 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 [V] Registers stop handlers before the listening log and removes them after SIGINT or SIGTERM
 [V] Starts MCP cleanup before real listener drain, refuses new connections, and keeps the real provider lock until both finish
 [V] Releases the provider lock and listener after startup logging fails, removes signal listeners, and retains a simultaneous MCP cleanup failure
+
+**Work slice signals through the real launcher chain** (`test/integration/work-slice/shutdown-signals.test.ts`)
+
+Two source cases passed in the reviewed 20-case shutdown focus. The child
+script `test/support/processes/work-slice-shutdown-probe.ts` runs real `pnpm`
+and `tsx` with an outer signal forwarder and the slice stop helper. It uses
+no WorkOS, renderer, or Axiom connection. This collaboration across the real
+child-process/launcher boundary is integration coverage. The source pass does
+not prove real Axiom delivery.
+
+Each signal case now uses its own offline local-dependency fixture without
+install-state metadata. This reproduced the Render failure: pnpm installed
+before the probe ran and wrote to stderr. The probe disables dependency
+verification only for its own pnpm invocation. The required frozen install still
+runs before tests; missing Node or tsx still fails startup. This signal check must
+not reinstall dependencies beside other tests that import them. Both regression
+cases failed before the change and pass with the invocation setting.
+
+[V] SIGINT sent to the process group and forwarded again during asynchronous cleanup preserves the first signal, reaches the flush marker, and exits the whole chain with 0
+[V] The same process-chain behavior holds for SIGTERM
+[V] Both signal cases retain empty stderr, the exact pinned runtime, and unchanged fixture and dependency-tree entries even when dependency install state is missing
+
+```sh
+npm run build && node --test dist/test/integration/work-slice/shutdown-signals.test.js
+```
 
 **MCP SDK HTTP contract** (`test/integration/mcp/sdk-http.test.ts`)
 
@@ -986,16 +1385,22 @@ No cache key helper exists yet. The required unit test inputs and expected resul
 
 The operation runs with the real permission helper and with fetcher, pipeline, and reporter doubles. The last case adds the real tool server and an SDK client.
 
+[V] Gives only the fixed `readiness_timeout` category and `20000` budget to the readiness reporter, without the private cause or stderr; the client gets only `Page fetch failed`, and no pipeline work starts
+[V] Keeps the safe client failure if the readiness reporter throws
+[V] Gives no readiness report for an untyped error whose message copies the readiness timeout text
+[V] Gives cancellation priority over a readiness timeout and writes no readiness report
 [V] Gives a renderer launch failure (`ENOENT` or `EACCES`) to the operator reporter one time with only the failure class and the code; the client still gets only `Page fetch failed` without a cause, and no processing starts
-[V] Gives no operator report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination
+[V] Gives no renderer setup report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination
 [V] Keeps the safe fetch error when the reporter throws, and gives only the cancellation and no report for a call that is cancelled when the renderer cannot start
-[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure and an HTTP error; only the launch failure gives one operator report
+[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure, an HTTP error, and a readiness timeout; only the launch failure gives a setup report, and only the readiness timeout gives a readiness report
 
 **Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
 
 `createFetchOperation` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
 
 [V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets exactly one line for each code, in order, with the exact report text
+
+[V] Given two readiness timeouts with private causes, each call gets the safe fetch failure and each timeout sends one fixed JSON readiness report; this remains true when the application logger throws
 
 Focused commands:
 
@@ -1005,14 +1410,14 @@ npm run build && node --test dist/test/integration/mcp/sdk-http.test.js dist/tes
 
 **MCP Authentication**
 
-HTTP request integration tests use `IdentityVerifierMock` and `AccessResolverMock` from `test/unit/mcp/fixtures/`. The verifier mock supplies configured claims or errors and rejects unknown tokens. Its claims can be incomplete, so that tests reach the boundary checks. The resolver mock gives a configured decision, failure, or delayed decision for each user subject, records its calls, and denies an unknown user. `FailureReporterMock` records each failure report that MCPServer gives to the operator callback. Test-only factory tools report the context that MCPServer binds to each request; production code registers no such tool. MCPServer adapts the verifier to the SDK's OAuthTokenVerifier. These tests run the real SDK middleware and the canonical shared-auth rejection class. This collaboration makes them integration tests, even with verifier and resolver doubles.
+HTTP request integration tests use `IdentityVerifierSpy` and `AccessResolverSpy` from `test/support/doubles/auth/`, and `FailureReporterSpy` and the test-only factory tools from `test/support/doubles/mcp/`. The verifier spy supplies configured claims or errors and rejects unknown tokens. Its claims can be incomplete, so that tests reach the boundary checks. The resolver spy gives a configured decision, failure, or delayed decision for each user subject, records its calls, and denies an unknown user. `FailureReporterSpy` records each failure report that MCPServer gives to the operator callback. Test-only factory tools report the context that MCPServer binds to each request; production code registers no such tool. MCPServer adapts the verifier to the SDK's OAuthTokenVerifier. These tests run the real SDK middleware and the canonical shared-auth rejection class. This collaboration makes them integration tests, even with verifier and resolver doubles.
 
 [V] Maps IdentityVerifier claims to SDK auth information, supplies the original token, and keeps changes to SDK scopes separate from verifier claims (`test/integration/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Puts frozen copies of the actual user, issuer, client, scope, issue time, expiration, and audience claims in `AuthInfo.extra` (`test/integration/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Rejects an identity without a user, issuer, client ID, issue time, expiration, or audience, or with the client ID as the user subject, as `invalid_token` (`test/integration/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Reports a provider rejection only as `invalid_token` and passes an unexpected provider failure on as a failure (`test/integration/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Gives the cause of an unexpected provider failure one time to the adapter's failure callback; an accepted token, a provider rejection, and an identity without a usable user give nothing (`test/integration/mcp/identity-verifier-sdk-adapter.test.ts`)
-[V] IdentityVerifierMock rejects unknown tokens and keeps verification call records separate between instances (`test/integration/mcp/identity-verifier-sdk-adapter.test.ts`)
+[V] IdentityVerifierSpy rejects unknown tokens and keeps verification call records separate between instances (`test/integration/mcp/identity-verifier-sdk-adapter.test.ts`)
 [V] Requires a Bearer token for server/discover, tools/list, and tools/call; missing tokens return HTTP 401 with a Bearer challenge and the protected-resource metadata URL (`test/integration/mcp/auth.test.ts`)
 [V] Rejects a missing Authorization header with HTTP 401 before token verification or MCP dispatch (`test/integration/mcp/auth.test.ts`)
 [V] Rejects a malformed Authorization header with HTTP 401 before token verification or MCP dispatch (`test/integration/mcp/auth.test.ts`)
@@ -1094,7 +1499,7 @@ npm run build && node --test dist/test/integration/application-ad-rules.test.js
 
 **Hosted account routes with doubles** (`test/integration/auth/hosted-account.test.ts`)
 
-These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit signed-in sessions, `SignedInSessionDouble`, with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationProbe` checks one permission for each operation and records its work in the trusted context. An MCP endpoint double stands in for the replaceable MCP part. The failure reporter and the change recorder of the composition keep nothing.
+These tests run the real hosted composition, `composeHostedApplication()`, with the real account routes and access contracts. No WorkOS setting, SDK, or credential exists. `BrowserSessionDouble` gives explicit signed-in sessions, `SignedInSessionDouble`, with the organization that each session selected. `MembershipDirectoryDouble` resolves access from configured memberships with `createRequestContext()`. The test-only `AccountOperationSpy` checks one permission for each operation and records its work in the trusted context. An MCP endpoint double stands in for the replaceable MCP part. The failure reporter and the change recorder of the composition keep nothing.
 
 [V] Members of two organizations and one user with a session in each organization overlap and resolve in reverse order; each operation works only in the organization of its own session, also with forged organization IDs in the query, headers, and form
 [V] Independent Super Admin, Admin, and User plus Admin grants give each context every grant and only the union of their explicit permissions; Super Admin alone gives no product access, and Admin alone gives no billing; each refusal is the operation's `permission-required`
@@ -1109,7 +1514,7 @@ npm run build && node --test dist/test/integration/auth/hosted-account.test.js
 
 **Hosted organization onboarding and selection with doubles** (`test/integration/auth/hosted-organizations.test.ts`)
 
-These tests open the shared site of `test/support/hosted-organization-site.ts` in one process with `openOrganizationSite()`: the real hosted composition, `composeHostedApplication()`, with the real account routes, `OrganizationAdministration`, access contracts, and MCPServer, and one set of memberships. Doubles stand only at the provider boundaries: `BrowserSessionStore` for the browser session, `MembershipDirectoryDouble` for the membership directory, and `IdentityVerifierMock` for the MCP token verifier. `HostedBrowser` keeps the cookies of each answer, as a browser does. The test-only `AccountOperationProbe` gives the destinations, which each check one permission, and a test-only MCP tool records its context. `accountFailureReporter()` writes to a recording logger. No WorkOS setting, SDK, or credential exists.
+These tests open the shared site of `test/support/in-process/hosted-organization-site.ts` in one process with `openOrganizationSite()`: the real hosted composition, `composeHostedApplication()`, with the real account routes, `OrganizationAdministration`, access contracts, and MCPServer, and one set of memberships. Doubles stand only at the provider boundaries: `BrowserSessionStore` for the browser session, `MembershipDirectoryDouble` for the membership directory, and `IdentityVerifierSpy` for the MCP token verifier. `HostedBrowser` keeps the cookies of each answer, as a browser does. The test-only `AccountOperationSpy` gives the destinations, which each check one permission, and a test-only MCP tool records its context. `accountFailureReporter()` writes to an `OperatorLogSpy` (`test/support/doubles/application/operator-log-spy.ts`). No WorkOS setting, SDK, or credential exists.
 
 [V] A session that selected an organization where its membership is inactive gets the onboarding guidance from a directory read of the session user only, also with forged organization values; each tenant page gets 403 from current access resolution, with no context, tenant, or role
 [V] Memberships change after the page was shown: the current read refuses the deactivated organization without a switch and selects the new one; the destination then works in that organization with its current permission
@@ -1127,7 +1532,7 @@ npm run build && node --test dist/test/integration/auth/hosted-organizations.tes
 
 **Hosted organization administration with doubles** (`test/integration/auth/hosted-administration.test.ts`)
 
-These tests open the shared site of `test/support/hosted-organization-site.ts` in one process with `openOrganizationSite()`, with the memberships of `test/support/hosted-administration.ts`. In Acme, these are members with Super Admin alone, all three roles, User plus Admin (two members), Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. The real hosted composition, account routes, `AdministrationRoutes`, `OrganizationAdministration`, access contracts, and MCPServer run with doubles only at the provider boundaries. `BrowserSessionStore` keeps the MFA evidence of each session. `MembershipDirectoryDouble` extends `OrganizationDirectoryDouble`, so that one stateful set of memberships, grants, revisions, and invitations gives the access resolution and the organization work, and a grant change takes effect in the next access resolution. `IdentityVerifierMock` verifies the MCP tokens. The site keeps each change record. `HostedBrowser` opens the pages and submits their forms, as a person does. `accountFailureReporter()` writes to a recording logger. No WorkOS setting, SDK, or credential exists. These tests prove application policy with doubles, not WorkOS behavior.
+These tests open the shared site of `test/support/in-process/hosted-organization-site.ts` in one process with `openOrganizationSite()`, with the memberships of `administrationMembers` in `test/support/fixtures/hosted-members.ts`. In Acme, these are members with Super Admin alone, all three roles, User plus Admin (two members), Admin alone, User alone, and only the default role, an inactive member, and a pending member; in Globex, User memberships of two of these users and a member with User plus Admin. The real hosted composition, account routes, `AdministrationRoutes`, `OrganizationAdministration`, access contracts, and MCPServer run with doubles only at the provider boundaries. `BrowserSessionStore` keeps the MFA evidence of each session. `MembershipDirectoryDouble` extends `OrganizationDirectoryDouble`, so that one stateful set of memberships, grants, revisions, and invitations gives the access resolution and the organization work, and a grant change takes effect in the next access resolution. `IdentityVerifierSpy` verifies the MCP tokens. The site keeps each change record. `HostedBrowser` opens the pages and submits their forms, as a person does. `accountFailureReporter()` writes to an `OperatorLogSpy` (`test/support/doubles/application/operator-log-spy.ts`). No WorkOS setting, SDK, or credential exists. These tests prove application policy with doubles, not WorkOS behavior.
 
 [V] Direct service calls on the directory of the site follow the rules of the forms: a Super Admin grants Admin and then User to itself, an Admin cannot grant Admin, and a User plus Admin member revokes its own User grant; the next MCP requests use the current grants, the members page of that member still works, its other organization keeps its grants, and each call is recorded
 [V] An Admin and a Super Admin post changes of the same member from pages with the same revision, and the directory runs both at the same time: one gets 303, the other 409 with the out-of-date notice, and the grant that the second actor wanted to revoke stays; the records say `applied` and `stale`
@@ -1163,7 +1568,7 @@ npm run build && node --test dist/test/integration/auth/hosted-administration.te
 
 **WorkOS browser session with the pinned SDK** (`test/integration/auth/workos-browser-session.test.ts` and `workos-browser-session-switch.test.ts`)
 
-The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-world.ts`).
+The real `WorkOSBrowserSession` runs with the pinned SDK against the local fake WorkOS API (`test/integration/auth/fixtures/workos-session-fixtures.ts`). `allowOnlyLoopbackRequests()` of that file calls `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`. Thus a replaced `fetch` lets only requests to `127.0.0.1` through and records no request that leaves the machine.
 
 [V] A completed AuthKit sign-in exchanges the code with the verifier of the AuthKit URL, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in
 [V] A valid access token is checked against the browser key set without a refresh or a cookie change
@@ -1183,7 +1588,7 @@ The real `WorkOSOrganizations` and `WorkOSAuthProvider` run with the pinned SDK 
 
 **WorkOS organization reads with the real organization service and routes** (`test/integration/auth/workos-provider-organizations.test.ts`)
 
-AUTH-07W added these tests. The real `WorkOSBrowserSession`, `WorkOSOrganizations`, and `WorkOSAuthProvider` run with the pinned SDK against the local fake WorkOS API of `test/support/workos-world.ts`, in the test process, together with the real `OrganizationAdministration`, account routes (`composeHostedApplication()`), and MCPServer. `AccountOperationProbe` gives the destinations of the product and of the User and Admin administration, each with its permission; the billing page is the real page of the routes. These tests do not show what the WorkOS service sends; the hosted live gate does.
+AUTH-07W added these tests. The real `WorkOSBrowserSession`, `WorkOSOrganizations`, and `WorkOSAuthProvider` run with the pinned SDK against the local fake WorkOS API of `test/support/doubles/workos/workos-fake.ts`, in the test process, together with the real `OrganizationAdministration`, account routes (`composeHostedApplication()`), and MCPServer. `AccountOperationSpy` gives the destinations of the product and of the User and Admin administration, each with its permission; the billing page is the real page of the routes. These tests do not show what the WorkOS service sends; the hosted live gate does.
 
 [V] A member with only Super Admin selects its organization for the billing page: the billing page with the Free plan and the Admin-grant destination accept it with exactly the `super-admin` grant from a current WorkOS read; the product page, the User administration, and the MCP tool refuse it, so no Admin or User grant is inferred
 [V] A member with User in one organization, Admin in a second, an inactive membership in a third, and only the default role in a fourth is offered only the first two; each destination, also the billing page, checks the permission of the selected organization only
@@ -1193,7 +1598,7 @@ AUTH-07W added these tests. The real `WorkOSBrowserSession`, `WorkOSOrganization
 
 **WorkOS organization administration with the real organization service** (`test/integration/auth/workos-provider-administration.test.ts`)
 
-AUTH-08W added these tests. The real `WorkOSOrganizations` and `WorkOSAuthProvider` run with the pinned SDK against the local fake WorkOS API of `test/support/workos-world.ts`, in the test process, together with the real `OrganizationAdministration`, called directly as a service, and the real access resolution of Connect tokens. The fake keeps organizations, users, the roles of each membership as single-role assignments, and invitations, as the probes of WorkOS staging showed. Acme has the external ID `customer-acme`, as each customer organization of the operator runbook has one, and Globex has none. As WorkOS does, the fake accepts a role write only on the resource of the organization of the membership, named by the external ID of the organization, or by the organization ID when the organization has none. In Acme, Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only User, Eve an inactive membership that had User and Admin, and Gus only the default role; in Globex, Bea and Pia have User. `BillingRecorder` keeps each seat update. Each test checks the result, the change records, and the WorkOS requests that change something. These tests do not show what the WorkOS service sends; the hosted live gate does.
+AUTH-08W added these tests. The real `WorkOSOrganizations` and `WorkOSAuthProvider` run with the pinned SDK against the local fake WorkOS API of `test/support/doubles/workos/workos-fake.ts`, in the test process, together with the real `OrganizationAdministration`, called directly as a service, and the real access resolution of Connect tokens. The fake keeps organizations, users, the roles of each membership as single-role assignments, and invitations, as the probes of WorkOS staging showed. Acme has the external ID `customer-acme`, as each customer organization of the operator runbook has one, and Globex has none. As WorkOS does, the fake accepts a role write only on the resource of the organization of the membership, named by the external ID of the organization, or by the organization ID when the organization has none. In Acme, Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only User, Eve an inactive membership that had User and Admin, and Gus only the default role; in Globex, Bea and Pia have User. `BillingRecorder` keeps each seat update. Each test checks the result, the change records, and the WorkOS requests that change something. These tests do not show what the WorkOS service sends; the hosted live gate does.
 
 [V] Sam with only Super Admin cannot change User, grants Admin and then User to itself, and grants Admin again after it revoked it; Cal with only Admin cannot grant Admin; Dan grants Admin to Bea; each applied change is one single-role WorkOS write on the resource of Acme, named by its external ID, no other membership changes, and billing gets one seat count
 [V] After Dan revokes Admin from Ada and Cal revokes User from Hal, the Connect token of Ada from before the changes keeps product access while each administration operation of Ada is denied, and the token of Hal gives no product access while Hal still manages User and grants it to itself again
@@ -1286,7 +1691,7 @@ npm run build && node --test dist/test/integration/auth/local-auth-command*.test
 
 **Local MCP access** (`test/integration/auth/local-access.test.ts`)
 
-These tests run `BetterAuthProvider` as the verifier and the access resolver of a real MCPServer with the real Better Auth provider and SQLite files in temporary data directories. A test-only protected tool records its trusted context and its fetch and clean steps. Sign-in, consent, and the code exchange run through the provider handler. The test process refuses outbound `fetch` calls and records each attempt.
+These tests run `BetterAuthProvider` as the verifier and the access resolver of a real MCPServer with the real Better Auth provider and SQLite files in temporary data directories. A test-only protected tool records its trusted context and its fetch and clean steps. Sign-in, consent, and the code exchange run through the provider handler. With `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`, the test process refuses outbound `fetch` calls and records each attempt.
 
 [V] Two local users each call the protected tool with their own session-bound token: each request has its own user subject in the one `local:<installation-id>` tenant with the same `user` grant and `product:access` permission, and the verified claims name the local issuer, the approved client, and the MCP resource
 [V] A user disabled while its session and token stay valid gets 403 `access_denied` after token verification, a deleted user gets 401, no tool runs for them, and the peer still works
@@ -1319,13 +1724,65 @@ Run only these tests:
 npm run build && node --test dist/test/integration/server-stop-signals.test.js
 ```
 
+**WorkOS MFA evidence with the pinned SDK** (`test/integration/auth/workos-browser-session-mfa.test.ts`)
+
+These two integration cases connect the real browser session to the pinned SDK and a local WorkOS API fake. They establish the downgrade of existing cookie evidence, not actual MFA completion. Both cases passed in the final complete integration command.
+
+[V] Reading a real SDK session cookie with prior MFA evidence masks it in unproven mode, for both a current and an expired access token
+[V] Organization selection preserves identity and emits only replacement cookies without MFA evidence
+
+```sh
+npm run build && node --test dist/test/integration/auth/workos-browser-session-mfa.test.js
+```
+
+**Slice Google onboarding with WorkOS and organization services** (`test/integration/auth/workos-google-onboarding.test.ts`)
+
+The 34 source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These integration specifications connect the opt-in policy to the real organization directory, change recording, and pinned WorkOS SDK against a local API fake. They establish application collaboration, not real Google or WorkOS service behavior. The policy remains absent from normal hosted composition.
+
+[V] Concurrent eligible callbacks create one explicit User membership, select its organization in each session, and update seats once; repeated callbacks do not rewrite roles
+[V] Existing active non-User, pending, and inactive memberships retain roles and status without a new organization session
+[V] Other domains, subdomains, suffix domains, malformed addresses, unverified email, and non-Google methods read and change no membership
+[V] An existing active User with other roles selects the target organization without a role write; domain normalization accepts surrounding whitespace and uppercase letters
+[V] Role removal is not restored on another sign-in; hard deletion permits a later new enrollment
+[V] An ambiguous create is recorded as unknown and is not blindly repeated; a read-back of the created active User can reconcile the session
+[V] Refresh failure rejects the callback; a later callback selects the existing User without another create
+[V] A refresh with another user, another organization, no seal, or a refusal returns no session
+[V] Membership read outages or results outside the requested user, organization, and role contract fail before create
+
+```sh
+npm run build && node --test dist/test/integration/auth/workos-google-onboarding.test.js
+```
+
+**Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
+
+The earlier eleven source and compiled cases passed on 2026-10-15 with the RHD-01 complete-candidate gates. RHD-02 changes the default front to forward the portal to production and adds the pinned renderer startup prerequisite; its results are pending in the [RHD-02 record](../implementation/rhd-02.md#verification). These integration cases start `LocalHttpsSite` with the real HTTP server. The failed-start and certificate cases stay in the entry file. The sibling test-case modules `hosted-live-site/mcp.ts` and `hosted-live-site/cancellation.ts` add the MCP and lifecycle cases. Their fixture data is in `test/integration/auth/fixtures/https-site-fixtures.ts`. The entry file and the sibling modules send each HTTPS request through one protocol driver, `test/support/drivers/browser/https-client.ts`. The MCP cases connect the real hosted composition and fetch server to the pinned SDK against a local WorkOS fake, with a fetch-operation double. `composeApplicationWithWorkOSFake()` of `test/support/in-process/workos-site.ts` composes that application. They prove HTTP and application collaboration, not real Google or renderer behavior. The complete-site cases listen on port 46443, so the hosted live gate and the manual slice must be stopped first.
+
+[V] Given a missing portal build, start rejects with a setup message and file-system cause and leaves no listener
+[V] Given no OpenSSL, start rejects with the spawn error, closes the default application, and leaves no listener
+[V] Given certificate files, a logger, and an application function, the HTTPS front serves that certificate and portal, forwards requests, reports handler failure, and closes the application once
+[V] An authenticated MCP POST forwards the body and verified identity and returns the result; missing or invalid token and current User-role removal start no protected work
+[V] Disconnecting an authenticated MCP client cancels active fetch work and records no success
+[V] A client disconnect before response headers cancels its backend request
+[V] Streaming headers reach the client before the first chunk; disconnecting after a chunk cancels the upstream stream
+[V] A backend failure after a chunk fails the HTTPS response instead of completing with truncated content
+[V] Closing with active backend work cancels through application cleanup before the listener deadline and waits for the request to drain
+
+[V] A custom application that ignores the drain argument still keeps site close pending until the response drains
+[V] A custom application whose cleanup throws still drains the response before site close reports that failure
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/auth/hosted-live-site.test.js
+```
+
 Run the integration suite with `npm run test:integration`. `npm run check` does not select it.
 
 ## Interface
 
 **Better Auth local provider** (`test/interface/auth/better-auth.test.ts`)
 
-These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts. The `NODE_ENV` and `TEST` proofs run `dist/test/support/foreign-origin-probe.js` in a new Node process with only that variable. The `NODE_ENV` proof needs the new process, because the provider reads `NODE_ENV` when its modules load. That process also blocks `fetch` and reports its outbound requests.
+These proofs run the pinned Better Auth 1.7.7 packages with an in-memory `node:sqlite` database. They use the provider's HTTP handler and server APIs. They need no renderer or network access; with `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`, a blocked `fetch` records no outbound request. The [authentication plan](../design/authentication-design.md#pinned-provider-proof) records the proven contracts. The `NODE_ENV` and `TEST` proofs run `dist/test/support/processes/foreign-origin-probe.js` in a new Node process with only that variable. The `NODE_ENV` proof needs the new process, because the provider reads `NODE_ENV` when its modules load. That process also blocks `fetch` and reports its outbound requests.
 
 [V] Rejects public signup over HTTP and from the server API, and rejects email password reset; no account exists
 [V] Rejects a duplicate email in another letter case through the private create operation and keeps the original account
@@ -1356,7 +1813,7 @@ npm run build && node --test dist/test/interface/auth/better-auth.test.js
 
 **WorkOS SDK** (`test/interface/auth/workos.test.ts`)
 
-These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/workos-fake-api.ts`) and local signing keys (`test/support/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
+The 38 source and compiled cases passed on 2026-10-15 after the explicit User-create proof was added; the final complete-candidate gates also passed. These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; with `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`, a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
 
 [V] Gives an AuthKit sign-in URL with the client ID, the exact redirect URI, `response_type=code`, `provider=authkit`, an S256 challenge, and a fresh state and verifier for each call; an organization ID adds `organization_id`
 [V] Exchanges a code with the verifier and the API key as `client_secret`, and returns the user, both tokens, and an iron seal that hides the tokens; a refused code throws `OauthException` with `invalid_grant`
@@ -1378,6 +1835,7 @@ These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against 
 [V] Pages memberships with the `after` cursor; `autoPagination()` returns only the first page after a limit, and reads the first page again and waits 350 ms between pages without one
 [V] Lists the roles of an organization with their permissions in one unpaged request
 [V] Writes the complete role set with `PUT`, and creates, deactivates, and reactivates memberships, with no `If-Match`, no version, and no `Idempotency-Key` with `maxRetries: 0`
+[V] An explicit User membership create sends `role_slug: user` with `maxRetries: 0`, no absence precondition, and no idempotency key, and reads the returned active status and role set
 [V] With the default retries, gives each membership create one generated `Idempotency-Key` and each role-set update none
 [V] Loses one of two concurrent role-set updates that start from the same read
 [V] Sends one role for each invitation and drops a role set
@@ -1444,7 +1902,7 @@ Use the pinned runtime for the local renderer interface tests. [Runtime setup](.
 **Website Fetcher Readiness** (`test/interface/website-fetcher-readiness.test.ts`)
 
 [V] Returns the completed asynchronous DOM after its 500 ms request delay, before the full wait budget
-[V] Rejects when overlapping requests prevent network idle, kills the child at five seconds, waits for child completion, and returns no partial HTML
+[V] Rejects when overlapping requests prevent network idle, kills the child at 20 seconds, waits for child completion, and returns no partial HTML
 
 **Website fetcher cancellation** (`test/interface/website-fetcher-cancellation.test.ts`)
 
@@ -1459,7 +1917,7 @@ npm run build && node --test dist/test/interface/website-fetcher-cancellation.te
 
 **Axiom logging** (`test/interface/logging/axiom-logging.test.ts`)
 
-`openAxiomLogging()` of `test/support/axiom-test-export.ts` runs with the production `OtelLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access. The closed-port case takes about 9 seconds, because the exporter retries a refused connection until its deadline.
+`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access. The closed-port case takes about 9 seconds, because the exporter retries a refused connection until its deadline.
 
 [V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets no line
 [V] Given a receiver that refuses the export with HTTP 401, the console gets one failure line with the error name and the HTTP status, without the error message or the response body; `close()` rejects with the count, `1 log export`
@@ -1499,7 +1957,7 @@ identity/access collaborators are supplied through public interfaces. These
 cases stay offline and use no renderer.
 
 The renderer shutdown cases use the real fetcher with the process and DNS
-doubles of `mockRenderer`. The renderer child is a `RendererChildDouble`, and
+doubles of `controlledRenderer`. The renderer child is a `RendererChildDouble`, and
 the cases check the signals that it records. No renderer executable runs. They
 observe the child, readiness timer, abort listener, and delayed process
 callback through the real MCP HTTP path.
@@ -1512,10 +1970,67 @@ callback through the real MCP HTTP path.
 [V] Waits for both independent cleanup tasks even when one finishes first
 [V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
 [V] After a client cancels a call while the fetcher waits, the server stop that follows the `cancelled` record does not wait for the client connections
-[V] A call that is still in authentication when the server stops gets a generic `500`, does not start the fetch tool, and does not make the server stop wait for the grace period
+[V] RHD-01: a request cancelled during token verification or access resolution stops waiting before the identity call settles and cannot start a tool server after its late result
 
 ```sh
 npm run build && node --test "dist/test/acceptance/mcp/*.test.js"
+```
+
+**RHD-01 protected hosted fetch and bounded waits**
+
+The production hosted opener uses the real WorkOS adapter against a local fake,
+trusted test rules, the real cleaning pipeline, the HTTP bridge, and a renderer
+process double. The cancellation cases use request and provider doubles at
+public boundaries. The CLI deadline cases start the built hosted process with
+preloads for stalled cleanup and a residual library handle. Identity-wait cases
+prove clean CLI exit before the deadline. These are offline proofs; they
+are not WorkOS, real-renderer, image, or Render deployment proofs.
+
+[V] `test/acceptance/mcp/hosted-fetch-tool.test.ts`: a current Connect User lists and calls the tool, gets cleaned Markdown and a safe record, and missing or revoked access is refused before rendering
+[V] The same file: an overlapping call gets the safe busy result and a `busy` record; success, failure, and cancellation release the shared slot only after settlement
+[V] `test/acceptance/mcp/http-dns-cancellation.test.ts`: client cancellation and shutdown in both protocol eras end the wait before DNS answers and prevent renderer startup
+[V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
+[V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
+[V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: stalled cleanup or a residual handle causes an error exit at the fixed 10-second hosted CLI deadline, while shutdown during MCP/account/session identity waits exits cleanly
+[V] `test/unit/mcp/single-fetch-operation.test.ts`: one shared slot refuses overlap without queuing and returns capacity only after settlement
+[V] `test/unit/website-fetcher/website-fetcher-dns-wait.test.ts`: the five-second wait, abort, late completion, residual lookup ownership, and recovery do not change the resolver policy or start late rendering
+[V] `test/unit/http/request-cancellation.test.ts`, `test/unit/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/unit/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
+
+The [RHD-01 record](../implementation/rhd-01.md#verification) gives focused
+commands, recorded red steps, and the gate results.
+
+**RHD-02 hosted portal, startup, health, and MCP Origin**
+
+These specifications use the production opener, a static portal fixture, trusted
+rules, and a version-command fixture or child-process double. They need no
+WorkOS network call. The manager-confirmed focused run passed all 151 cases
+across 19 new or changed emitted test files, and the complete acceptance
+rerun passed 333 backend and four portal cases. The dedicated container gate
+passed all 13 cases and covers the 20th changed test file on local Linux
+ARM64. Implementation and verification are complete: the Optional MFA
+hosted-live profile passed 77/77 in 16 suites, including the production portal
+CSP and sign-out. The [RHD-02 record](../implementation/rhd-02.md#verification)
+gives the results. PR #116 is stacked on PR #115; both await owner review.
+
+[V] `test/acceptance/auth/hosted-portal.test.ts`: the public root and built JavaScript load with the production CSP; health is constant; account and MCP still require sign-in
+[V] `test/unit/hosted-portal/hosted-portal.test.ts`: startup refuses missing, invalid, symlinked, or empty assets and absent build references; GET/HEAD use the preloaded files, safe missing paths give 404, and other requests retain body, signal, and cleanup
+[V] `test/acceptance/auth/hosted-startup.test.ts`: missing renderer, missing or invalid portal, and non-root hosted base prevent listening with safe failures; the public root needs no sign-in, while protected routes retain their refusals
+[V] `test/unit/hosted-renderer-startup.test.ts` and `test/interface/hosted-renderer-startup.test.ts`: absolute executable, exact version, fixed timeout and output bounds, safe failure, and telemetry-off behavior
+[V] `test/acceptance/auth/hosted-mcp-origin.test.ts`: absent/exact origins keep protected MCP behavior; foreign, malformed, and opaque origins get 403 before WorkOS; metadata stays public
+[V] `test/integration/auth/hosted-mcp-origin.test.ts` and `test/unit/application.test.ts`: all MCP methods, repeated/invalid origins, configured port authority, no authentication work on refusal, and unchanged metadata/browser/account/self-hosted delegation
+
+[V] `test/unit/test-support/server-preloads.test.ts`: adding a preload retains existing settings, preserves both preloads in order, and leaves the supplied settings unchanged (two cases, covered by the manager-confirmed unit run)
+
+[V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: the three held-identity cases retain shutdown under one second, clean exit, and no deadline error, with a 15-second total test allowance and timeout-phase diagnostics
+
+Build before these focused commands. The portal acceptance uses the explicit
+fixture mapping; it does not establish the packaged image contract.
+
+```sh
+npm run build
+node --test dist/test/unit/hosted-portal/hosted-portal.test.js dist/test/unit/hosted-renderer-startup.test.js dist/test/unit/application.test.js dist/test/unit/test-support/server-preloads.test.js
+node --test dist/test/interface/hosted-renderer-startup.test.js dist/test/integration/auth/hosted-mcp-origin.test.js
+node --test dist/test/acceptance/auth/hosted-portal.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-mcp-origin.test.js
 ```
 
 **Self-hosted fetch tool with real Better Auth** (`test/acceptance/mcp/self-hosted-fetch-tool.test.ts`)
@@ -1555,10 +2070,10 @@ Each test starts the built server, `dist/src/index.js`, as a separate Node proce
 
 **Server-only modules** (`test/acceptance/mcp/server-only-modules.test.ts`)
 
-The built entry point runs in separate processes with an import hook that blocks the rules reader, the renderer, the cleaning pipeline, and adblock-rs. The rules file and the renderer are missing.
+The built entry point runs in separate processes with an import hook that blocks the rules reader, the renderer, the cleaning pipeline, and adblock-rs. Operator commands must remain isolated from those modules. Both production server branches must load the protected fetch composition. RHD-01 focused verification passed.
 
 [V] Given the guard, the operator adds two users, lists them, registers a client, resets a password, and disables a user; each command exits with status 0, loads no server-only module, and writes no renderer setup report
-[V] Given the guard and the WorkOS settings, the hosted edition listens, asks for a sign-in on the account page, and answers an MCP tool call with a Bearer token and a session cookie with 401 and a Bearer challenge; it loads no server-only module, writes no renderer setup report, uses no network, stops with status 0 after `SIGTERM`, and creates no data
+[V] Given the guard, WorkOS settings, and trusted rules, hosted startup fails before listening because it must load the fetch composition; without the guard, missing trusted rules stop hosted startup before listening
 [V] Given the guard and trusted rules, the self-hosted server stops with status 1 before it listens, and its `FATAL` line shows the guard message, so the guard sees the modules that the server loads
 
 ```sh
@@ -1583,6 +2098,8 @@ The production `serve()` runs in the test process with real Better Auth, the rea
 [V] Given a local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY`, with a new `HOME`, the client gets exact cleaned Markdown from a local JavaScript page, and the renderer run has telemetry off: it writes no telemetry install ID (`iid`) in its data directory, so it starts no telemetry sender and tries no connection to `telemetry.lightpanda.io`
 [V] Given a redirect that changes the host and the path, `requestedUrl` keeps the accepted spelling, and the final URL selects the ad rules and resolves the relative links
 [V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed` and `Page processing failed` without partial Markdown; the server writes no renderer setup report
+[V] Given a page whose script completes after 6.5 seconds, the client gets the rendered Markdown within the fixed 20-second readiness allowance
+[V] Given a page that never reaches network idle, the child stops before the fetch completes, the client gets `Page fetch failed` without partial Markdown, and the server writes one safe `readiness_timeout` report and one `fetch_failed` completion record
 [V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
 [V] Given a legacy call that keeps the renderer waiting, server shutdown cancels it; the renderer child stops before the server finishes stopping, and the server writes one `cancelled` record
 
@@ -1592,17 +2109,66 @@ Run the renderer gate with the pinned runtime. The `.runtime.ts` name keeps the 
 npm run test:mcp:renderer
 ```
 
-**Work slice: basic MCP URL fetch** (`test/acceptance/work-slice/basic-mcp-url-fetch.test.ts`)
+**Work slice: basic MCP URL fetch** (`test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts`)
 
 `createWorkSliceApplication()` composes the production parts with the mock provider and the trusted rules fixture, `test/support/fixtures/trusted-ad-rules.txt`. The entry point `basic-mcp-url-fetch.ts` exports `createWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free.
 
 [V] Given the work-slice application with the mock provider, the trusted rules fixture, and a renderer double that serves `https://news.example/story`, when an MCP client in each protocol era with the token `any-token` lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the fixture rule for `news.example` removes, the log has the started line, the completed line, and one completion record, and `close()` stops the application
 [V] Given the work-slice application, when a request has no `Authorization` header, then it gets 401 with a Bearer challenge, a request to another path gets 404, no renderer starts, and the log has no fetch line
 
-The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test, and the [work slice guide](../../test/acceptance/work-slice/README.md) describes it.
+The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test, and the [README of the slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md) describes it.
 
 ```sh
-npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch.test.js
+npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.js
+```
+
+**Work slice: auth WorkOS MCP URL fetch** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts`)
+
+`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `fetchOperationSpy()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSFake` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run must separately show Google sign-in, Claude Code registration and browser consent, the real renderer, and Axiom delivery. The separate real Google/client/Axiom manual walk passed; the validation record states its evidence limits. The file has five cases: the first case runs in each protocol era.
+
+[V] Given the slice application, Ada with the role `user` in Acme, and a renderer double that serves `https://news.example/story`, when Ada signs in with Google through the server, then her session is signed in to Acme with `mfaCompleted: false`, and her portal access names Acme and the role `user`; when an MCP client in each protocol era with her Connect token for Acme lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the rules remove, the log has the started line, the completed line, and one completion record with the authority `workos:client_test`, the subject `user_01ADA`, the tenant `workos:client_test:org_01ACME`, and the status `success`, and `close()` stops the application
+[V] Given Dee with a non-`thermus.ai` Google address and no membership, sign-in creates no automatic membership, portal access is refused, and the organization page gives onboarding guidance; her Connect token for Acme gets 403 `access_denied` without a renderer or fetch line; after an external change gives her a User membership, the next MCP request returns Markdown and records her WorkOS identity
+[V] Given no token, a browser token of Ada, and a Connect token for another resource, each call of `getURLAsMarkdown` gets 401 with a Bearer challenge that names the protected-resource metadata, no renderer starts, and the log has no fetch line; the metadata names the MCP resource and the AuthKit issuer of the world as its only authorization server
+[V] Given Ben with Admin only in Acme, his Connect token gets 403 `access_denied` at the tool, no renderer starts, and the log has no fetch line
+
+The manual entry point `auth-workos-mcp-url-fetch.ts` next to this file is not a test, and the [README of the slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md) describes it.
+
+```sh
+npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.js
+```
+
+**Slice sessions always have unproven MFA** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mfa.test.ts`)
+
+These two offline acceptance cases exercise the slice composition with the real HTTP-facing application and a WorkOS API fake. The slice remains unproven even when provider settings explicitly select Required. These cases passed in the final complete acceptance command.
+
+[V] Password and Google sign-ins with User, Admin, and Super Admin keep product access and false session MFA evidence
+[V] Members, invitations, billing, and a grant POST are refused without changing memberships
+
+```sh
+npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mfa.test.js
+```
+
+**Hosted WorkOS Optional and Required MFA contracts** (`test/acceptance/auth/hosted-workos-mfa-policy.test.ts`)
+
+These three offline acceptance cases verify the provider setting through normal hosted composition. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` serves it behind the real HTTP server on a loopback port. The Optional behavior is the default; only explicit Required settings can use the password-MFA contract. These cases passed in the final complete acceptance command.
+
+[V] Omitted and explicit Optional policy give Password sessions no MFA evidence and refuse the members page
+[V] Explicit Required policy preserves positive administration behavior for the password-MFA contract
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-workos-mfa-policy.test.js
+```
+
+**Automatic slice Google onboarding** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts`)
+
+The three source and compiled cases passed on 2026-10-15; the final complete-candidate gates also passed. These three offline acceptance specifications use the real hosted composition; the slice case starts its HTTP server with a WorkOS API fake and renderer double. The case of the normal hosted composition starts it with `serveWorkOSSite()` of `test/support/in-process/workos-site.ts`. A trusted Google result enters through the browser callback before a separately minted Connect token calls MCP. It does not complete the real client OAuth flow.
+
+[V] Given a new verified `thermus.ai` Google user without a membership, the callback grants explicit User access and selects the slice organization; `/session` has that organization without MFA evidence, portal access succeeds, and a separate organization Connect token returns Markdown; a Connect token without an organization is refused
+[V] Normal hosted composition without a policy signs in the same eligible user without creating a membership or granting portal access
+[V] Missing `THERMUS_SLICE_ORGANIZATION_ID` stops slice composition before any enrollment request
+
+```sh
+npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.js
 ```
 
 **Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)
@@ -1622,6 +2188,54 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/architecture/auth-boundaries.test.js
+```
+
+**Test type boundaries** (`test/acceptance/architecture/test-type-boundaries.test.ts`)
+
+The tests use the same ESLint configuration against source snippets at example
+paths under `test/`. They check the rules D2 and D3 of the
+[test code layout](test-code-layout.md#dependency-rules): the rules of the test
+type axis. The three architecture specifications share the import forms and the
+assertions of `test/acceptance/architecture/fixtures/import-guards.ts`. Computed
+imports and transitive dependencies are outside this check.
+
+Since 2026-10-15, rule D2 has no exception. The unit test of the work-slice
+fetch lines imports them from test support. Thus the lint block of the
+exception and its three cases are gone. One case shows that the former
+exception is refused.
+
+[V] D2: refuses an import of another test type from each of the four test types; allows support code, own fixtures, the same type, `src`, and packages
+[V] D2, the former exception: `test/unit/test-support/fetch-operation-spy.test.ts` may not import the entry point of either work slice; it may import `test/support/doubles/mcp/fetch-operation-spy.ts`
+[V] D3: refuses the fixtures of another unit package, also from a fixture file; allows own fixtures, shared support fixtures and doubles, and the package fixtures from a nested folder
+[V] Checks exact path segments without refusing names that only resemble a test type folder
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/architecture/test-type-boundaries.test.js
+```
+
+**Test support boundaries** (`test/acceptance/architecture/test-support-boundaries.test.ts`)
+
+The tests use the same ESLint configuration and the same import forms against
+source snippets at example paths under `test/`, most of them under
+`test/support/`. They check the rules D1 and D4 to D7 of the
+[test code layout](test-code-layout.md#dependency-rules): the rules of the
+support layer axis. Computed imports and transitive dependencies are outside
+this check.
+
+[V] D1: refuses an import of a test type folder from `test/support/`, also through `test/`; allows `src`, packages, and support code
+[V] D4: refuses an import of `test/support/dsl/` from `test/support/drivers/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
+[V] D5: refuses an import of `test/support/dsl/` or `test/support/drivers/` from `test/support/doubles/` and `test/support/fixtures/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
+[V] D6: takes the scripts that the sites send into containers from `test/support/processes/module-paths.ts`, today the three container scripts in `test/support/container/`; D6 covers each one, refuses each of its imports that is not a `node:` module, and allows `node:` modules; a new script path in `module-paths.ts` without a D6 entry in the ESLint configuration fails the specification
+[V] D6, the identity preload: `test/support/container/hosted-image-identity.ts` runs in the server process of the hosted image, not alone in a container, so D6 does not cover it, and D1 allows its imports of `src`
+[V] D7: refuses each `*.test.ts` file under `test/support/` as a whole, also in `drivers/` and `doubles/`; allows a test of support code in `test/unit/test-support/`
+[V] Checks exact path segments without refusing names that only resemble a test type folder or a support folder
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/architecture/test-support-boundaries.test.js
 ```
 
 **MCP access context** (`test/acceptance/auth/mcp-access.test.ts`)
@@ -1655,8 +2269,9 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 
 **Hosted startup with WorkOS** (`test/acceptance/auth/hosted-startup.test.ts`)
 
-AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass.
+AUTH-06 replaced the placeholder specification, `hosted-placeholder.test.ts`. Each test starts the built server, `dist/src/index.js`, as a separate Node process with hosted settings. The process refuses outbound network access and reports each attempt. These offline tests are no proof of WorkOS behavior and no hosted live gate pass. RHD-01 supplies trusted fixture rules for normal hosted startup and adds a missing-rules refusal case; focused verification passed.
 
+[V] With valid WorkOS settings but no trusted rules file, startup stops before listening with the safe `AD_RULES_FILE` error
 [V] Without WorkOS settings, startup stops before it listens with a `FATAL` line that names each missing WorkOS setting, and the server uses no network
 [V] With refused WorkOS values, startup stops before it listens; the line names each setting and its rule but not the value
 [V] With valid WorkOS settings, forged bearer tokens, cookies, organization IDs, and form input give no access or session: MCP gets 401 with the Bearer challenge of the metadata, each account, organization, member, invitation, and billing path gets 401, a forged callback gets 400, a forged session cookie is only cleared, the output shows no secret or tenant, and the server uses no network
@@ -1672,7 +2287,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-startup.test.js
 
 **Hosted WorkOS composition** (`test/acceptance/auth/hosted-workos.test.ts`)
 
-The real hosted composition with the WorkOS provider runs behind the real HTTP server on a loopback port. `test/support/workos-world.ts` gives the pinned SDK a local fake of the WorkOS API with users, memberships, the hosted roles, sign-ins, refreshes, and AuthKit-signed Connect tokens. `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the flows against WorkOS.
+The real hosted composition with the WorkOS provider runs behind the real HTTP server on a loopback port. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it. `test/support/doubles/workos/workos-fake.ts` gives the pinned SDK a local fake of the WorkOS API with users, memberships, the hosted roles, sign-ins, refreshes, and AuthKit-signed Connect tokens. The hosted roles are the role catalog of `test/support/fixtures/hosted-roles.ts`. `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the flows against WorkOS.
 
 [V] A sign-in through the server and the callback give one sealed `HttpOnly`, `Secure`, `SameSite=Lax` session cookie, clear the sign-in cookie, and give the portal session the profile, the organization, the MFA evidence of the password sign-in, and a form token
 [V] A callback with another state, without the sign-in cookie, with an AuthKit error, or with a refused code gives 400 and no session
@@ -1686,6 +2301,10 @@ The real hosted composition with the WorkOS provider runs behind the real HTTP s
 [V] The protected-resource metadata names the MCP resource and the AuthKit issuer
 [V] A browser session in one organization and an MCP token in another each keep their own organization
 [V] A membership read outage gives 500 without protected work at the MCP endpoint and the portal request, and operator reports without the token
+[V] With a `buildServer` in the parts of `composeWorkOSApplication()` that gives a test-only tool, the Connect token of a User lists that tool; without a `buildServer` in the lower-level test composition, the endpoint has no tool list: `tools/list` gets HTTP 404 with the JSON-RPC error -32601 "Method not found"
+[V] `openWorkOSConnection()` gives the WorkOS settings of the environment and writes one operator line that names the client and the AuthKit issuer; without WorkOS settings, it rejects with the settings error and writes no line
+
+Since 2026-10-15, `composeWorkOSApplication()` takes the parts record `{ logger, buildServer? }` as its third argument. `openWorkOSConnection()` is its own export (decision D6 of the [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)). The last two cases cover these seams. The RHD-01 acceptance file `test/acceptance/mcp/hosted-fetch-tool.test.ts` covers the production opener; the development work-slice test covers its separate composition.
 
 Run only these tests:
 
@@ -1695,7 +2314,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-workos.test.js
 
 **Hosted WorkOS organization onboarding and selection** (`test/acceptance/auth/hosted-workos-organizations.test.ts`)
 
-AUTH-07W added these specifications. The real hosted composition with the WorkOS provider and the WorkOS organization reads, `composeWorkOSApplication()`, runs behind the real HTTP server on a loopback port. The local fake WorkOS API of `test/support/workos-world.ts` answers the membership reads of a user with the explicit statuses, in pages by the `after` cursor (`membershipPageSize`), and with the organization names (`organizationNames`). The browser signs in through the server with `signInThroughServer()` of `test/support/workos-sign-in.ts`, which `hosted-workos.test.ts` uses too, and `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the same flows against WorkOS.
+AUTH-07W added these specifications. The real hosted composition with the WorkOS provider and the WorkOS organization reads, `composeWorkOSApplication()`, runs behind the real HTTP server on a loopback port. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it. The local fake WorkOS API of `test/support/doubles/workos/workos-fake.ts` answers the membership reads of a user with the explicit statuses, in pages by the `after` cursor (`membershipPageSize`), and with the organization names (`organizationNames`). The browser signs in through the server with `signInThroughServer()` of `test/support/dsl/workos-sign-in.ts`, which `hosted-workos.test.ts` uses too, and `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the same flows against WorkOS.
 
 [V] Given signed-in users without an authorized active organization in WorkOS (no membership, only an inactive membership, or only the default role), each gets the invitation and operator guidance without an organization or a form, and the protected portal request, the member and invitation pages, and the MCP endpoint refuse each of them, with no default tenant or role
 [V] Given a member whose memberships WorkOS gives on several pages, with User and Admin in one organization, User in a second, an inactive membership in a third, and only the default role in a fourth, only the first two are offered, with their WorkOS names; the selection of the second gives 303 to the portal with a new session cookie, and the portal and the billing page check the current grants there
@@ -1713,7 +2332,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-workos-organizatio
 
 **Hosted WorkOS organization administration** (`test/acceptance/auth/hosted-workos-administration.test.ts`)
 
-AUTH-08W added these specifications. The real hosted composition with the WorkOS provider and the WorkOS organization administration, `composeWorkOSApplication()`, runs behind the real HTTP server on a loopback port. The local fake WorkOS API of `test/support/workos-world.ts` keeps organizations, users, the roles of each membership as single-role assignments, and invitations, as the probes of WorkOS staging showed. A test can repeat a membership on the next page (`membershipPageOverlap`) and make the later member pages fail (`laterMembershipPageOutage`) or the invitation reads (`invitationOutage`), with any answer of the fake, also no answer. The memberships of Acme and Globex are the same as in `test/integration/auth/workos-provider-administration.test.ts`. Acme has the external ID `customer-acme`, as each customer organization of the operator runbook has one, and the fake accepts a role write on Acme only when it names the resource of Acme by that external ID. The browser signs in through the server with `signInThroughServer()`, and `HostedBrowser` opens the pages and submits their forms. The operator log keeps the change records. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the same flows against WorkOS.
+AUTH-08W added these specifications. The real hosted composition with the WorkOS provider and the WorkOS organization administration, `composeWorkOSApplication()`, runs behind the real HTTP server on a loopback port. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it. The local fake WorkOS API of `test/support/doubles/workos/workos-fake.ts` keeps organizations, users, the roles of each membership as single-role assignments, and invitations, as the probes of WorkOS staging showed. A test can repeat a membership on the next page (`membershipPageOverlap`) and make the later member pages fail (`laterMembershipPageOutage`) or the invitation reads (`invitationOutage`), with any answer of the fake, also no answer. The memberships of Acme and Globex are the same as in `test/integration/auth/workos-provider-administration.test.ts`. Acme has the external ID `customer-acme`, as each customer organization of the operator runbook has one, and the fake accepts a role write on Acme only when it names the resource of Acme by that external ID. The browser signs in through the server with `signInThroughServer()`, and `HostedBrowser` opens the pages and submits their forms. The operator log keeps the change records. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the same flows against WorkOS.
 
 [V] Given Sam with only Super Admin and a sign-in with MFA, its members page offers no User change; Sam grants Admin to itself and then User, each with 303 and one single-role assignment on the resource of Acme, named by its external ID; the User seats go from 3 to 4, and each change has one record without a credential
 [V] Given Cal with only Admin, Sam with only Super Admin, and Dan with both, a forged Admin grant of Cal and a forged User grant of Sam get 403 without a WorkOS write, and the Admin grant of Dan to Bea is applied
@@ -1738,7 +2357,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-workos-administrat
 
 **Hosted organization onboarding and selection** (`test/acceptance/auth/hosted-organizations.test.ts`)
 
-Each test starts the shared site of `test/support/hosted-organization-site.ts` with `serveOrganizationSite()`: the real hosted composition behind the real HTTP server, `startHttpServer()`, on a loopback port. `HostedBrowser` sends each request with `node:http` and keeps the cookies of each answer, as a browser does. Doubles stand only at the provider boundaries. `BrowserSessionStore` is a stateful browser session whose cookie key changes at each refresh, as with rotating refresh tokens, so a browser that does not get the new cookie is signed out. `MembershipDirectoryDouble` reads one configured set of memberships for access resolution and for the organization list. A real MCPServer verifies tokens with `IdentityVerifierMock` and runs a test-only tool. `AccountOperationProbe` gives the selection destinations, which each check their own permission. No account request may fail: a failure report fails the test. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy, not WorkOS behavior, and are no hosted live gate pass.
+Each test starts the shared site of `test/support/in-process/hosted-organization-site.ts` with `serveOrganizationSite()`: the real hosted composition behind the real HTTP server, `startHttpServer()`, on a loopback port. `HostedBrowser` sends each request with `node:http` and keeps the cookies of each answer, as a browser does. Doubles stand only at the provider boundaries. `BrowserSessionStore` is a stateful browser session whose cookie key changes at each refresh, as with rotating refresh tokens, so a browser that does not get the new cookie is signed out. `MembershipDirectoryDouble` reads one configured set of memberships for access resolution and for the organization list. A real MCPServer verifies tokens with `IdentityVerifierSpy` and runs a test-only tool. `AccountOperationSpy` gives the selection destinations, which each check their own permission. No account request may fail: a failure report fails the test. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy, not WorkOS behavior, and are no hosted live gate pass.
 
 [V] Given signed-in users with no membership, an inactive membership, or only a role without an application permission, the organization page tells them to accept an invitation or to contact the operator and offers no organization; each tenant page gets 403, with no default tenant or role, and the 403 page links to the organization page
 [V] Given User access in one organization, Admin access in a second, and an inactive membership in a third, only the two active organizations are offered; the selection of the second gives 303 with a new session cookie to the User administration page, where only that organization and its own permissions apply, and the page then marks it as selected
@@ -1767,7 +2386,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-organization-reque
 
 **Hosted grant management** (`test/acceptance/auth/hosted-grants.test.ts`)
 
-Each test of this file and the three files below starts the shared site behind the real HTTP server on a loopback port with `serveAdministrationSite()` from `test/support/hosted-administration.ts`. The site has the memberships of the AUTH-08 tests, the MCP token of five Acme members for Acme and of two of them also for Globex, and a failure reporter that records each report. `HostedBrowser` opens the members and invitations pages and submits their forms, as a person does. The doubles are the doubles of the organization tests: `BrowserSessionStore`, which also keeps the MFA evidence of each session; `MembershipDirectoryDouble`, one stateful directory of memberships, grants, revisions, and invitations that also resolves access; and `IdentityVerifierMock` for the real MCPServer with a test-only tool. `AccountOperationProbe` gives the product page. The site keeps each change record. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy with doubles, not WorkOS behavior, and are no hosted live gate pass.
+Each test of this file and the three files below starts the shared site behind the real HTTP server on a loopback port with `serveAdministrationSite()` from `test/support/dsl/hosted-administration.ts`. The site has the memberships of the AUTH-08 tests, the MCP token of five Acme members for Acme and of two of them also for Globex, and a failure reporter that records each report. `HostedBrowser` opens the members and invitations pages and submits their forms, as a person does. The doubles are the doubles of the organization tests: `BrowserSessionStore`, which also keeps the MFA evidence of each session; `MembershipDirectoryDouble`, one stateful directory of memberships, grants, revisions, and invitations that also resolves access; and `IdentityVerifierSpy` for the real MCPServer with a test-only tool. `AccountOperationSpy` gives the product page. The site keeps each change record. No WorkOS setting, SDK, or credential exists. These offline tests prove application policy with doubles, not WorkOS behavior, and are no hosted live gate pass.
 
 [V] Given a Super Admin with no other grant, the members page offers no User change; it grants Admin to itself and then, with that Admin authority, User to itself, each with 303 to the members page and without another person; the product page and the MCP tool stay refused until the User grant, also with Admin, and then both work; both grants are recorded
 [V] Given User plus Admin with a browser session and MCP tokens in two organizations, after a Super Admin revokes the Admin grant, the next members page and a form shown before are refused, while the product page and the MCP tool still work; the other organization keeps its grants and its MCP access, and the revoke and the refused change are recorded
@@ -1909,7 +2528,7 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.j
 
 **Self-hosted evaluation container** (`test/acceptance/auth/self-hosted-container.test.ts`)
 
-The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image holds the pinned Lightpanda 1.0.0. In the two renderer cases, `NODE_OPTIONS` loads the test-only page seam `test/support/container-page.ts` into the server. The seam serves a JavaScript page on port 8090 of the container, gives the lookup of `localhost` a public address, and logs each renderer launch and each connection and request of the page. With `CONTAINER_GATE_PAGE=permitted`, it lets the renderer reach `127.0.0.1` for the page; with `blocked`, the renderer starts with the production options. The seam keeps the telemetry settings of the image and the fetcher. The suite does not reach a public page, and it is not a renderer gate pass.
+The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image holds the pinned Lightpanda 1.0.0. In the two renderer cases, `NODE_OPTIONS` loads the test-only page seam `test/support/container/container-page.ts` into the server. The seam serves a JavaScript page on port 8090 of the container, gives the lookup of `localhost` a public address, and logs each renderer launch and each connection and request of the page. With `CONTAINER_GATE_PAGE=permitted`, it lets the renderer reach `127.0.0.1` for the page; with `blocked`, the renderer starts with the production options. The hosted image acceptance specification loads the same seam with the third mode, `hosted`. The seam keeps the telemetry settings of the image and the fetcher. The suite does not reach a public page, and it is not a renderer gate pass.
 
 [V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed` and a `fetch_failed` record, because the container has no route out, and the server log gets no renderer setup report; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
 [V] Given two users with tokens and consents, a restart, a new container, and a container of the rebuilt image on the same volume each keep the tenant, the user IDs, the clients, the signing keys, the sessions, the consents, and the tokens of both users usable
@@ -1921,7 +2540,7 @@ The suite builds the image of the current candidate two times; the second build 
 [V] Given two users with tokens, a stopped-server password reset of one user ends only its token and old password, and the user signs in again without a new consent; a later disable of the other user ends only its token and sign-in; the peer keeps working each time
 [V] Given a live server container, one-off command containers on the same volume and a command in the server container fail with the lock error, ask for no password, and change no account
 [V] Given an installation that starts with zero accounts and later has only a disabled account, a command container that adds an account while the server is stopped gives MCP access through the installation client, and the tenant stays the same
-[V] Given a signed-in browser session, the hosted, paid, and private provider paths give 404 and add no account, and the MCP session lists only `getURLAsMarkdown`; a container with `DEPLOYMENT=hosted` and placeholder WorkOS settings then gives that session and its token no access: each account path gets 401, the forged callback gets 400 with a cleared sign-in cookie, MCP gets 401 with a Bearer challenge, nothing calls WorkOS, no tenant is reported, the container stops with status 0, and nothing is written to its volume
+[V] Given a signed-in local user, hosted, paid, and private-provider paths give 404 and add no account, and MCP lists only `getURLAsMarkdown`; starting the self-hosted image with `DEPLOYMENT=hosted`, valid WorkOS settings, trusted rules, and its pinned renderer stops before listening because the portal build is absent, with safe FATAL output, exit code 1, no local tenant or fresh-volume data, and no outbound calls (RHD-02 dedicated gate: 13/13 passed)
 [V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, the pinned production packages with a working native ad blocker, and the pinned Lightpanda 1.0.0 at `LIGHTPANDA_BIN=/opt/lightpanda/1.0.0/lightpanda`, which root owns with mode `0755`, which the `node` user cannot change, and which loads the CA certificates of the image, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting except `LIGHTPANDA_DISABLE_TELEMETRY=true`, a `0700` data directory, and `AD_RULES_FILE=/etc/thermus/ad-rules.txt`, but no rules file; the compose service mounts only that volume and the operator's `ad-rules.txt` read-only, which Compose must not make, starts with an init process, and publishes port 8080 on `127.0.0.1`
 
 Run the container gate. It needs Docker Engine with Buildx and Compose:
@@ -1932,9 +2551,74 @@ npm run test:container
 
 `npm test` and `npm run test:acceptance` select this file but skip its suite. Only `npm run test:container` is a container gate pass.
 
+**Hosted image acceptance** (`test/acceptance/auth/hosted-image.test.ts`)
+
+This dedicated acceptance specification builds and runs the final hosted image
+for Linux AMD64. The ordinary `test` and `test:acceptance` command globs
+explicitly exclude `hosted-image.test.js`. It needs Docker Engine with Buildx and an AMD64 builder/runtime,
+native or emulated. Image build downloads need network access or cached pinned
+inputs; the renderer needs public HTTPS egress to `https://example.com/`.
+The tests use no live WorkOS or Axiom credential. The
+[hosted image gate](../implementation/test-gate-policy.md#hosted-image-gate)
+gives the command and prerequisites. The final Linux AMD64 gate passed
+8/8 tests under bundled Linux Rosetta, with zero failures, cancellations,
+skips, or todo cases. [RHD-03](../implementation/rhd-03.md) records the result.
+
+The real CLI case uses the image unchanged with placeholder runtime settings.
+The fetch cases mount two test-only seams: the provider seam
+`test/support/container/hosted-image-identity.ts` and the page seam
+`test/support/container/container-page.ts` with `CONTAINER_GATE_PAGE=hosted`.
+These seams supply a fixed Connect User and permit the local JavaScript fixture. They keep
+the final image's real cleaner, renderer, production dependencies, and production
+entry point. The image case reads the files of the image with the `hosted-image`
+probe of `test/support/container/container-probe.ts`. The gate sends the probe
+on standard input, so the image holds no test file.
+The public HTTPS case uses the renderer's normal TLS verification.
+This proves packaged application behavior and does not prove WorkOS behavior.
+The gate has a 60-minute total allowance for the build and image cases. Its
+failed-check case injects a failure into an existing unit file, before the
+later suites. Production readiness and shutdown bounds stay unchanged.
+
+[V] Given the final image, its metadata and files show Linux AMD64, the checked portal, production packages, working native cleaner and shipped rules, Lightpanda 1.0.0, CA certificates, non-root execution, and no development tools or test output
+[V] Given the unmodified image and placeholder runtime settings, the real CLI serves portal assets and CSP, responds to health, requires MCP authentication, and refuses a foreign Origin
+[V] Given the unmodified image and placeholder credentials with signup enabled only in the test, a visitor sees the complete byte-exact approved notice before sign-in and no activation form
+[V] Given the provider seam's Connect User, the real renderer fetches public HTTPS with verified TLS and returns the controlled page's JavaScript output after the native cleaner applies the shipped policy
+[V] Given private targets, overload, disconnect, and active-renderer SIGTERM, private calls fail before rendering, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
+[V] Given missing rules, a missing renderer, an empty cookie password, or an HTTP public base URL, the real CLI exits with status 1 before listening and shows no secret
+[V] Given a final image with its portal hidden by an empty mount, startup fails before listening with a safe portal error
+[V] Given a copied context with an injected failing offline test, the final-target build fails and creates no runtime image
+
+Run the dedicated final Linux AMD64 gate:
+
+```sh
+npm run test:container:hosted
+```
+
+**Hosted rules policy** (`test/acceptance/hosted-ad-policy.test.ts`)
+
+The owner selected a pinned EasyList snapshot for the hosted rules. The
+candidate includes the snapshot, provenance, and license. The specification
+loads it through the real native cleaner and public cleaning pipeline. It is
+included in `build:hosted` and the normal acceptance selection. The worker
+reported a red source run before replacement and a green 1/1 source run after
+replacement. The final host offline selection passed 90/90 and the full
+acceptance command passed 334 backend cases plus four portal cases, including
+the emitted policy test. The final Linux AMD64 image gate also passed 8/8. The
+[RHD-03 record](../implementation/rhd-03.md)
+tracks the final candidate results. The [rules reference](../reference/ad-rules.md#hosted-image-policy)
+links the pinned source, license, scope, and update process.
+
+[V] Given the pinned EasyList snapshot and an `aside` with class `ad-banner-container`, the native cleaner removes that element and preserves ordinary article content and the similar class `ad-banner-container-story`
+
+Run the emitted specification after a clean build:
+
+```sh
+npm run build && node --test dist/test/acceptance/hosted-ad-policy.test.js
+```
+
 **Hosted live gate setup** (`test/acceptance/auth/hosted-live-setup.test.ts`)
 
-These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied.
+These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied. They need no portal build. Without it, the local HTTPS test server of the gate starts nothing and rejects at once with the message that names `npm run build:user-portal`. The gate process then exits.
 
 [V] Without WorkOS settings, the gate exits 1 with one failed test, no passed, skipped, or todo test, a setup error that names each missing setting, and no outbound network attempt
 [V] Refuses a production API key and requires a staging key; the output shows no setting value
@@ -1949,20 +2633,33 @@ npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
 
 **Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
 
-These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. On 2026-10-15, the auth WorkOS MCP URL fetch work slice changed two AUTH-06 provider proofs for decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md). Now the sign-in page must offer Google as its only social provider. The AuthKit metadata must name the registration endpoint and support client ID metadata documents. The historical Required-profile candidate passed both changed proofs on 2026-10-15: exit 0, 77/77 tests in 17 suites, with zero failures, cancellations, skips, and todo cases. The [slice validation record](../implementation/auth-workos-mcp-url-fetch-validation.md) gives the result; the resumed fresh-account Google/client/Axiom manual walk also passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
+
+The MFA-policy revision has two 77-case profiles under the same complete command. Optional is selected by omitted or `optional` `WORKOS_MFA_POLICY`; explicit `required` selects Required. The entries marked `[V]` above preserve historical Required-profile evidence. Both revised profiles passed on 2026-10-15: Optional 77/77 in 16 suites and Required 77/77 in 17 suites, each exit 0 with zero failures, cancellations, skips, or todo cases. Shared Staging Optional was restored and verified.
+
+[V] Provider preflight requires `mfaEnabled: true` and `mfaRequired` matching the selected profile before live tests or login; a mismatch fails the run
+[V] Optional keeps normal browser, Connect, refresh, revocation, and organization flows with no application MFA evidence, including refreshed and switched sessions
+[V] Optional replaces eight positive administration cases with refusal and invitation-acceptance counterparts; administration GETs and writes get 403 without effects
+[V] Required retains the eight positive administration cases under explicit runtime Required and provider Required settings
+[V] Both profiles retain operator/API administration contract proofs, which do not authorize Optional browser sessions
+
+```sh
+node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+WORKOS_MFA_POLICY=required node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+```
 
 AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
 
-[V] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, and S256 PKCE
+[V] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, S256 PKCE, the client registration endpoint `<issuer>/oauth2/register`, and `client_id_metadata_document_supported: true` (changed and passed in the complete gate on 2026-10-15)
 [V] The AuthKit key set and the browser-session key set have signing keys with key IDs, and jose accepts them
 [V] WorkOS accepts the staging API key for a read of organizations
 [V] The saved redirect URI is exactly `https://localhost:46443/callback`, the default; no CORS origin is saved; the MCP resource indicator `https://localhost:46443/mcp` is saved
-[V] The environment roles have exactly the permissions of the hosted role mapping, and no other role has an application permission
-[V] The authentication settings require MFA, allow password sign-in, and refuse passkeys
-[V] The hosted sign-in page offers only email sign-in and no social provider
-[V] A new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
+[V] The environment roles have exactly the permissions of the hosted role mapping, as the role catalog of `test/support/fixtures/hosted-roles.ts` gives them, and no other role has an application permission
+[V] Provider preflight checks MFA against the selected Optional or Required profile, allows password sign-in, and refuses passkeys
+[V] The hosted sign-in page offers email sign-in and Google as its only social provider (changed for decision D1 and passed in the complete gate on 2026-10-15)
+[V] In the Required profile, a new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
 [V] The browser access token is an RS256 token of the environment client with a `session_` sid, no audience, no organization, and a 300-second lifetime; the sealed session is shorter than 3,800 characters
-[V] A later sign-in asks for the TOTP code, not a new enrollment
+[V] In the Required profile, a later sign-in asks for the TOTP code, not a new enrollment
 [V] A user with two memberships chooses the organization at AuthKit; the token has its `org_id`, both roles, and their combined permissions
 [V] A refresh switches the organization in the same session; an organization without a membership gives `organization_membership_not_found`, and the session still refreshes
 [V] The browser refresh token is not rotated in staging; a replay works at once and after 31 seconds
@@ -2156,6 +2853,11 @@ npm run build && node --test dist/test/acceptance/pipeline-counters.test.js
 [V] Applies offset error bounds through the independent public hidden-element check
 
 **Build output** (`test/unit/build-output.test.ts`, `pnpm test:build`)
+
+The real npm commands also prove that ordinary suites exclude the standard-named
+hosted image test, keep ordinary tests and a similarly named neighbor, and that
+the dedicated hosted image command selects only the image gate. The fixture
+image test performs no Docker operation.
 
 [V] All test commands exclude output from renamed and deleted tests
 [V] Unit, integration, acceptance, and interface commands keep their suite selection

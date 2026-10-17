@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { after, before, describe, test, type TestContext } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { describe, test, type TestContext } from 'node:test';
 import { promisify } from 'node:util';
 import { auth as runMcpAuthorization } from '@modelcontextprotocol/client';
 import { ProviderEnvironmentError } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
@@ -13,7 +12,7 @@ import {
   loopbackRedirectUri,
   PreRegisteredNativeClient,
   ResourceServerClient,
-} from '../../support/better-auth-agents.ts';
+} from '../../support/drivers/browser/better-auth-agents.ts';
 import {
   authIssuer,
   localInstallationId,
@@ -22,15 +21,16 @@ import {
   withRegistrationSession,
   type AccountCredentials,
   type LocalAuth,
-} from '../../support/better-auth-local.ts';
-import { PreRegisteredSdkClient, sdkFetch } from '../../support/mcp-sdk-oauth-client.ts';
-import { setProcessEnvironment } from '../../support/process-environment.ts';
+} from '../../support/in-process/better-auth-local.ts';
+import { PreRegisteredSdkClient, sdkFetch } from '../../support/drivers/mcp/mcp-sdk-oauth-client.ts';
+import { guardOutboundFetch } from '../../support/isolation/outbound-fetch-guard.ts';
+import { setProcessEnvironment } from '../../support/isolation/process-environment.ts';
+import { foreignOriginProbe } from '../../support/processes/module-paths.ts';
 
 type UserWithAccountStatus = { readonly id: string; readonly email: string; readonly banned?: boolean | null };
 
 const alicesAccount: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const execFileAsync = promisify(execFile);
-const foreignOriginProbe = fileURLToPath(new URL('../../support/foreign-origin-probe.js', import.meta.url));
 
 function nativeClientMetadata() {
   return {
@@ -123,19 +123,9 @@ async function foreignOriginSignInInNewProcess(environment: Readonly<Record<stri
 }
 
 describe('Pinned Better Auth local provider contracts', () => {
-  const realFetch = globalThis.fetch;
-  const outboundRequests: string[] = [];
-
-  before(() => {
-    globalThis.fetch = async (input) => {
-      outboundRequests.push(input instanceof Request ? input.url : String(input));
-      throw new Error('Outbound network access is not allowed in the local provider');
-    };
-  });
-
-  after(() => {
-    globalThis.fetch = realFetch;
-    assert.deepEqual(outboundRequests, [], 'the local provider made no outbound request');
+  const outboundRequests = guardOutboundFetch({
+    refusal: 'Outbound network access is not allowed in the local provider',
+    finding: 'the local provider made no outbound request',
   });
 
   describe('Private account operations', () => {

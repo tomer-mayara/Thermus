@@ -83,7 +83,7 @@ test('Given an unknown tool, when dispatched, then InvalidParams and the complet
   assert.doesNotMatch(info[0], /secret-unknown-name/);
 });
 
-for (const [message, status] of [['Access denied', 'access_denied'], ['Page fetch failed', 'fetch_failed'], ['Page processing failed', 'processing_failed'], ['secret-cause', 'processing_failed']] as const) {
+for (const [message, status] of [['Access denied', 'access_denied'], ['Server busy. Try again later.', 'busy'], ['Page fetch failed', 'fetch_failed'], ['Page processing failed', 'processing_failed'], ['secret-cause', 'processing_failed']] as const) {
   test(`Given operation failure ${status}, when called and both log methods fail, then the safe result is unchanged and the operation runs once`, async (t) => {
     const { client, calls, info, errors } = await connect(t, { operation: async () => { throw new Error(message); }, infoFails: true, errorFails: true });
     const result = await client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs });

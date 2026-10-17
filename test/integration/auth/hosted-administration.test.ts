@@ -1,26 +1,24 @@
 import assert from 'node:assert/strict';
+import '../../support/processes/use-hosted-portal-fixture.ts';
 import { describe, test, type TestContext } from 'node:test';
 import { accountChangeRecorder, accountFailureReporter, createApplication } from '../../../src/application.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
 import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
+import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import {
   OrganizationAdministration,
   type Actor,
   type GrantChangeRequest,
 } from '../../../src/organizations/organization-administration.ts';
-import { BrowserSessionStore } from '../../support/browser-session-store.ts';
-import { administrationMembers, recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/hosted-administration.ts';
-import { formsIn, HostedBrowser } from '../../support/hosted-browser.ts';
-import { hostedStartupLine, workOSSettingsFor } from '../../support/hosted-placeholder.ts';
-import { formFor, hostedConfig, openOrganizationSite, userOf, type OrganizationSite } from '../../support/hosted-organization-site.ts';
+import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
+import { recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
+import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
+import { administrationMembers, userOf } from '../../support/fixtures/hosted-members.ts';
+import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
+import { openOrganizationSite, type OrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
-class RecordingLogger {
-  readonly lines: string[] = [];
-  readonly info = (message: string): void => { this.lines.push(`INFO ${message}`); };
-  readonly error = (message: string): void => { this.lines.push(`ERROR ${message}`); };
-}
-
-function open(t: TestContext, logger = new RecordingLogger()) {
+function open(t: TestContext, logger = new OperatorLogSpy()) {
   const site = openOrganizationSite(t, {
     reportFailure: accountFailureReporter(logger),
     memberships: administrationMembers,
@@ -67,8 +65,8 @@ describe('Hosted grant management with the real composition, routes, service, an
     const site = open(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const sam = site.browserOf(userOf('user-sam', 'org-a'));
-    const eveForm = formFor((await shownPage(eve, 'members')).forms, 'Revoke User from cy@example.com');
-    const samForm = formFor((await shownPage(sam, 'members')).forms, 'Revoke Admin from cy@example.com');
+    const eveForm = formLabelled((await shownPage(eve, 'members')).forms, 'Revoke User from cy@example.com');
+    const samForm = formLabelled((await shownPage(sam, 'members')).forms, 'Revoke Admin from cy@example.com');
 
     const release = site.directory.holdChanges();
     const answers = Promise.all([eve.submit(eveForm), sam.submit(samForm)]);
@@ -88,7 +86,7 @@ describe('Hosted grant management with the real composition, routes, service, an
   test('Given a directory change that fails after its effect, when an Admin posts a grant after the provider refreshed the session, then the browser gets the failure page with the refreshed cookie, the operator log names the path and the cause, the record says unknown, and a retry of the same form is out of date and changes nothing again', async (t) => {
     const site = open(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const form = formFor((await shownPage(eve, 'members')).forms, 'Grant User to dora@example.com');
+    const form = formLabelled((await shownPage(eve, 'members')).forms, 'Grant User to dora@example.com');
     site.directory.queue('changeGrant', { error: new Error('directory change timed out'), afterChange: true });
 
     site.sessions.expireAccessToken(eve.cookieHeader);
@@ -129,7 +127,7 @@ describe('Hosted grant management with the real composition, routes, service, an
   });
 
   test('Given the change recorder of the hosted edition, when an Admin changes a grant and sends an invitation, then the operator log gets one info line with each record, and no line holds the form token, the session cookie, or an invitation token', async (t) => {
-    const logger = new RecordingLogger();
+    const logger = new OperatorLogSpy();
     const site = openOrganizationSite(t, { reportFailure: accountFailureReporter(logger), memberships: administrationMembers, changeRecords: accountChangeRecorder(logger) });
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const token = formsIn((await eve.open('members')).body)[0]?.fields.csrf_token ?? '';
@@ -160,9 +158,9 @@ describe('Hosted grant management with the real composition, routes, service, an
   });
 
   test('Given the production hosted application with the WorkOS provider, when the member and invitation pages and their changes arrive with the session cookie, form token, and values of the doubles, then each asks for a sign-in without a cookie or a form, and nothing is recorded', async () => {
-    const logger = new RecordingLogger();
-    const application = await createApplication(hostedConfig, logger, workOSSettingsFor(hostedConfig.publicBaseUrl));
-    const browser = new HostedBrowser(application.handle, hostedConfig.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-eve', 'org-a')));
+    const logger = new OperatorLogSpy();
+    const application = await createApplication(hostedRootConfig, logger, { ...workOSSettingsFor(hostedRootConfig.publicBaseUrl), ...hostedFetchSettings });
+    const browser = new HostedBrowser(application.handle, hostedRootConfig.publicBaseUrl, new BrowserSessionStore().signIn(userOf('user-eve', 'org-a')));
     const form = { csrf_token: 'forged-token', organization_id: 'org-a' };
 
     const answers = [
