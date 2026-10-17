@@ -2180,7 +2180,8 @@ this check.
 [V] D1: refuses an import of a test type folder from `test/support/`, also through `test/`; allows `src`, packages, and support code
 [V] D4: refuses an import of `test/support/dsl/` from `test/support/drivers/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
 [V] D5: refuses an import of `test/support/dsl/` or `test/support/drivers/` from `test/support/doubles/` and `test/support/fixtures/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
-[V] D6: refuses each import that is not a `node:` module in the three container scripts in `test/support/container/`
+[V] D6: takes the scripts that the sites send into containers from `test/support/processes/module-paths.ts`, today the three container scripts in `test/support/container/`; D6 covers each one, refuses each of its imports that is not a `node:` module, and allows `node:` modules; a new script path in `module-paths.ts` without a D6 entry in the ESLint configuration fails the specification
+[V] D6, the identity preload: `test/support/container/hosted-image-identity.ts` runs in the server process of the hosted image, not alone in a container, so D6 does not cover it, and D1 allows its imports of `src`
 [V] D7: refuses each `*.test.ts` file under `test/support/` as a whole, also in `drivers/` and `doubles/`; allows a test of support code in `test/unit/test-support/`
 [V] Checks exact path segments without refusing names that only resemble a test type folder or a support folder
 
