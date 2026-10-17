@@ -11,7 +11,7 @@ Thermus is free. There is no payment card, billing, or automatic charge. The sub
 3. Enter `true` to turn activation on, or `false` to turn it off. Use lower-case text without quote marks.
 4. Select **Save and deploy**. This reuses the existing build. **Save, rebuild, and deploy** also works, but a rebuild is unnecessary. **Save only** does not change the running service. See [Render's save options](https://render.com/docs/configure-environment-variables).
 5. Wait until the new deployment is **Live**.
-6. Open [the signup page](https://thermus.onrender.com/signup) in a private browser window. With activation on, the heading is **Start free access**. With activation off, it is **Activation is closed**.
+6. Open [the signup page](https://app.thermus.ai/signup) in a private browser window. With activation on, the heading is **Start free access**. With activation off, it is **Activation is closed**.
 
 The **Start Subscription** link at [thermus.ai](https://thermus.ai) opens this signup page.
 
@@ -20,7 +20,7 @@ The **Start Subscription** link at [thermus.ai](https://thermus.ai) opens this s
 Keep activation on for this test.
 
 1. Use a Google account that has no existing Thermus access.
-2. Open [the signup page](https://thermus.onrender.com/signup) and sign in with that account.
+2. Open [the signup page](https://app.thermus.ai/signup) and sign in with that account.
 3. Read the agreement shown on the page. Select its checkbox, then select **Activate free access**.
 4. Select the personal workspace if prompted.
 5. Confirm that the portal shows product access and **Connect your MCP client**.
@@ -30,6 +30,8 @@ An existing user sees **Your access is ready** and **Continue**. That does not t
 ## 3. Connect Claude Code
 
 Use the Claude Code terminal app. Its own account sign-in is separate from the Thermus connection. Claude Code obtains, stores, and refreshes the Thermus OAuth token; you do not copy a token or API key.
+
+If you used the previous endpoint, follow [Disconnect Claude Code](#5-disconnect-claude-code) to remove the local entry. Then add the new endpoint and sign in again. The old authorization does not apply to the new endpoint.
 
 1. Open a terminal in your Thermus checkout folder. Replace `/path/to/Thermus` with its actual path:
 
@@ -43,10 +45,10 @@ Use the Claude Code terminal app. Its own account sign-in is separate from the T
    claude mcp get thermus-production
    ```
 
-   If this server already exists, confirm that its URL is `https://thermus.onrender.com/mcp`, then skip the add command. If the URL differs, stop and check the configuration. If the server is absent, run:
+   If this server already exists, confirm that its URL is `https://app.thermus.ai/mcp`, then skip the add command. If the URL differs, stop and check the configuration. If the server is absent, run:
 
    ```sh
-   claude mcp add-json --scope local thermus-production '{"type":"http","url":"https://thermus.onrender.com/mcp","oauth":{"scopes":"openid profile email offline_access"}}'
+   claude mcp add-json --scope local thermus-production '{"type":"http","url":"https://app.thermus.ai/mcp","oauth":{"scopes":"openid profile email offline_access"}}'
    ```
 
    Run all commands and start Claude from the same folder: [local scope belongs to that project](https://code.claude.com/docs/en/mcp#local-scope). The JSON sets the [OAuth scopes](https://code.claude.com/docs/en/mcp#restrict-oauth-scopes).
@@ -57,7 +59,7 @@ Use the Claude Code terminal app. Its own account sign-in is separate from the T
    claude mcp logout thermus-production
    ```
 
-   Open [the Thermus portal](https://thermus.onrender.com/) and select **Sign Out**. Stored credentials can let the login command skip new authorization. Selecting a workspace in the portal does not change an existing MCP token.
+   Open [the Thermus portal](https://app.thermus.ai/) and select **Sign Out**. Stored credentials can let the login command skip new authorization. Selecting a workspace in the portal does not change an existing MCP token.
 
 4. Start the Thermus login:
 
