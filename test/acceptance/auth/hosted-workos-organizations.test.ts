@@ -3,7 +3,7 @@ import { describe, test, type TestContext } from 'node:test';
 import type { WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
-import { statusesOf } from '../../support/in-process/hosted-organization-site.ts';
+import { statusesOf } from '../../support/dsl/hosted-access.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';

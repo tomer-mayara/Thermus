@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
 import { test } from 'node:test';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
-import { openOrganizationSite, userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { userOf } from '../../support/fixtures/hosted-members.ts';
+import { openOrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 for (const stage of ['session', 'access'] as const) {
   for (const stop of ['disconnect', 'shutdown'] as const) {
