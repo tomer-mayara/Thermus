@@ -102,8 +102,8 @@ Linux AMD64 builder and runtime, plus public HTTPS egress to `https://example.co
 npm run test:container:hosted
 ```
 
-The gate uses the final image and its real packaged renderer; its `.runtime.ts`
-file is outside normal suite discovery. The [hosted image gate](implementation/test-gate-policy.md#hosted-image-gate)
+The gate uses the final image and its real packaged renderer. Ordinary suite
+commands explicitly exclude `hosted-image.test.js` from their globs. The [hosted image gate](implementation/test-gate-policy.md#hosted-image-gate)
 gives the prerequisites and evidence rules. The [RHD-03 record](implementation/rhd-03.md)
 tracks the AMD64 result. Digest or version evidence, a successful build, and
 an ARM64 rendering pass do not establish that result. WorkOS live behavior

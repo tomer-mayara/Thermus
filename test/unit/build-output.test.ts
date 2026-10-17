@@ -142,3 +142,30 @@ test('Given existing output, typecheck does not emit or clear it', (t) => {
   assert.equal(readFileSync(join(dir, 'dist/keep.txt'), 'utf8'), 'existing output');
   assert.equal(existsSync(join(dir, 'dist/src')), false);
 });
+
+for (const command of ['test', 'test:acceptance', 'test:container:hosted']) {
+  const dedicated = command === 'test:container:hosted';
+  test(`Given the hosted image acceptance has a standard test name, when ${command} runs, then it ${dedicated ? 'selects only the image gate' : 'excludes the image gate and keeps ordinary tests'}`, (t) => {
+    const dir = fixture(t);
+    mkdirSync(join(dir, 'test/acceptance/auth'));
+    writeFileSync(join(dir, 'test/acceptance/auth/hosted-image.test.ts'), "import { test } from 'node:test';\ntest('dedicated image gate sentinel', () => {});\n");
+    writeFileSync(join(dir, 'test/acceptance/auth/hosted-image-neighbor.test.ts'), "import { test } from 'node:test';\ntest('ordinary image neighbor sentinel', () => {});\n");
+
+    const result = run(dir, command);
+
+    passes(result);
+    if (dedicated) {
+      assert.match(result.stdout, /dedicated image gate sentinel/);
+      assert.doesNotMatch(result.stdout, /ordinary image neighbor sentinel|(?:unit|integration|acceptance|interface) current/);
+    } else {
+      assert.doesNotMatch(result.stdout, /dedicated image gate sentinel/);
+      assert.match(result.stdout, /ordinary image neighbor sentinel/);
+      assert.match(result.stdout, /acceptance current/);
+      for (const suite of ['unit', 'integration', 'interface']) {
+        if (command === 'test') assert.match(result.stdout, new RegExp(`${suite} current`));
+        else assert.doesNotMatch(result.stdout, new RegExp(`${suite} current`));
+      }
+    }
+    assert.match(result.stdout, /(?:#|ℹ) skipped 0/);
+  });
+}

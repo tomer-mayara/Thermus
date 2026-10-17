@@ -2392,11 +2392,11 @@ npm run test:container
 
 `npm test` and `npm run test:acceptance` select this file but skip its suite. Only `npm run test:container` is a container gate pass.
 
-**Hosted image acceptance** (`test/acceptance/auth/hosted-image.runtime.ts`)
+**Hosted image acceptance** (`test/acceptance/auth/hosted-image.test.ts`)
 
 This dedicated acceptance specification builds and runs the final hosted image
-for Linux AMD64. Its `.runtime.ts` name keeps it outside normal `*.test.js`
-discovery. It needs Docker Engine with Buildx and an AMD64 builder/runtime,
+for Linux AMD64. The ordinary `test` and `test:acceptance` command globs
+explicitly exclude `hosted-image.test.js`. It needs Docker Engine with Buildx and an AMD64 builder/runtime,
 native or emulated. Image build downloads need network access or cached pinned
 inputs; the renderer needs public HTTPS egress to `https://example.com/`.
 The tests use no live WorkOS or Axiom credential. The
@@ -2689,6 +2689,11 @@ npm run build && node --test dist/test/acceptance/pipeline-counters.test.js
 [V] Applies offset error bounds through the independent public hidden-element check
 
 **Build output** (`test/unit/build-output.test.ts`, `pnpm test:build`)
+
+The real npm commands also prove that ordinary suites exclude the standard-named
+hosted image test, keep ordinary tests and a similarly named neighbor, and that
+the dedicated hosted image command selects only the image gate. The fixture
+image test performs no Docker operation.
 
 [V] All test commands exclude output from renamed and deleted tests
 [V] Unit, integration, acceptance, and interface commands keep their suite selection

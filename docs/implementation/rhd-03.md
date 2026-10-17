@@ -14,6 +14,11 @@ health contracts. The self-hosted image and Compose installation keep their
 own contract and container gate. No Render service, production identity
 configuration, deployment, or release is recorded.
 
+Naming update, October 16, 2026: FS-04 renamed the hosted image test to
+`hosted-image.test.ts` and added explicit ordinary-suite exclusions. Commands
+below retain the names used for their recorded runs. Use
+`npm run test:container:hosted` for a new run.
+
 ## Build and runtime contract
 
 The hosted build uses `Dockerfile.hosted` and its adjacent

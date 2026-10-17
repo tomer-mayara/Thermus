@@ -20,15 +20,15 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. No renderer. |
 | Build | `npm run test:build` | `test/unit/build-output.test.ts`, from source | Offline. It builds temporary projects with the real compiler. |
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
-| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/*.test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
+| Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
 | Signup provider contract | `npm run test:interface:workos-signup` | `dist/test/interface/auth/workos-signup.live.js` | Configured Thermus WorkOS Staging key and client, and public network access. Creates and deletes disposable organizations only. Production keys are refused. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
-| All | `npm test` | `dist/test/**/*.test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
+| All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
 | Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, OpenSSL, free local port 46443, and local loopback access. The Docker build supplies the renderer. |
-| Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.runtime.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
+| Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
@@ -41,8 +41,10 @@ process isolation, assertions, and deadlines stay unchanged.
 It does not run the full integration, acceptance, interface, or container suites,
 the hosted image gate, or the renderer gate. `npm test` does not run the build test, because `tsconfig.build.json`
 excludes it from `dist/`. Only `npm run test:hosted-live` runs the hosted live file.
-The hosted image file uses `.runtime.ts`, so the normal `*.test.js` globs do not
-select it. Only `npm run test:container:hosted` runs that gate.
+The ordinary `test` and `test:acceptance` commands use the quoted Node glob
+`**/!(hosted-image).test.js` to exclude the hosted image test by basename.
+Node 24.20.0 supports this exclusion. Only `npm run test:container:hosted` runs
+that gate; the ordinary commands do not register it as a skipped test.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
 Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
@@ -359,13 +361,18 @@ failed build is the initial regression evidence; it is not a gate pass.
 ## Hosted image gate
 
 `npm run test:container:hosted` makes a clean backend build and runs only
-`test/acceptance/auth/hosted-image.runtime.ts` as emitted JavaScript. This
-acceptance file has the `.runtime.ts` name so the normal test globs do not
-select it. The command is also the focused command for that file:
+`test/acceptance/auth/hosted-image.test.ts` as emitted JavaScript. The ordinary
+`test` and `test:acceptance` command globs explicitly exclude this basename.
+The command is also the focused command for that file:
 
 ```sh
 npm run test:container:hosted
 ```
+
+FS-04 renamed this file from `hosted-image.runtime.ts` to `hosted-image.test.ts`
+on October 16, 2026. Earlier validation records keep the command and filename
+used for those runs. Use the current dedicated command for a new run. The
+renderer and live gate names did not change.
 
 The gate must build and run the final `Dockerfile.hosted` image for
 `linux/amd64`. It needs Docker Engine with Buildx and a native or emulated
