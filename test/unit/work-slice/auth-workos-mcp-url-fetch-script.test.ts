@@ -3,7 +3,7 @@ import type { SpawnSyncReturns } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { commands, defaults, launcherCase, pnpmCall, randomPassword, settingLines, workos, type Settings } from './fixtures/launcher-case.ts';
+import { commands, defaults, launcherCase, pnpmCall, randomPassword, settingLines, workos, type Settings } from './fixtures/auth-workos-mcp-url-fetch-script-harness.ts';
 
 const entryArguments = ['exec', 'node', '--import', 'tsx', 'test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts'];
 const axiomApiKey = 'private-axiom-key';
