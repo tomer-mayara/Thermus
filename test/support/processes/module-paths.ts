@@ -50,3 +50,6 @@ export const containerProbeScript = containerModule('container-probe');
 
 // The identity preload that the hosted-image gate mounts. It is not copied into the final image.
 export const hostedImageIdentity = containerModule('hosted-image-identity');
+
+// The debug command runs directly from source; no build copies the script.
+export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url.mjs', repositoryRoot));

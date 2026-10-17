@@ -7,6 +7,24 @@
 
 # Tests
 
+## MCP fetch debug command
+
+`test/unit/script/fetch-url.test.ts` checks CLI input, help, credential input,
+and the stdin deadline. `test/acceptance/script/fetch-url.test.ts` runs the actual
+script against an MCP SDK server through the production HTTP bridge. It checks
+exact and empty Markdown, the `getURLAsMarkdown` arguments, environment and stdin
+credentials, modern JSON and SSE, legacy negotiation, refused authentication,
+HTTP failures, failed and unexpected tool results, invalid protocol data,
+connection failures, redirects, and cancellation of hung requests. All use local
+fake credentials and need no live provider or renderer.
+
+```sh
+npm run build && node --test dist/test/unit/script/fetch-url.test.js dist/test/acceptance/script/fetch-url.test.js
+```
+
+See [the script guide](../../script/README.md) for use and the current hosted
+authentication limit.
+
 ## Free hosted signup (FS-01)
 
 The [FS-01 record](../implementation/fs-01.md) keeps the complete-candidate
