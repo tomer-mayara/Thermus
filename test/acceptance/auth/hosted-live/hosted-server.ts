@@ -149,7 +149,7 @@ export function describeHostedServerCases(run: LiveRun): void {
         `A direct visit to ${settings.authkitIssuer}/ did not reach the Initiate login URI ${initiateLoginUri}.`,
         `The owner must set the Initiate login URI of the staging environment to ${initiateLoginUri} in the WorkOS dashboard.`,
       ].join(' '));
-      await completeAuthKit(page, { user: connectUser, authkitHost, mfaPolicy: settings.mfaPolicy ?? 'optional' });
+      await completeAuthKit(page, { user: connectUser, authkitHost, mfaPolicy: settings.mfaPolicy });
       await page.waitForURL(`${localOrigin}/`);
       await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
       await page.context().close();

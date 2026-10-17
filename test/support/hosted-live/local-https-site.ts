@@ -124,7 +124,7 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
     AD_RULES_FILE: trustedAdRulesFile,
     LIGHTPANDA_BIN: executable,
     WORKOS_API_KEY: settings.apiKey,
-    WORKOS_MFA_POLICY: settings.mfaPolicy ?? 'optional',
+    WORKOS_MFA_POLICY: settings.mfaPolicy,
     WORKOS_CLIENT_ID: settings.clientId,
     WORKOS_AUTHKIT_ISSUER: settings.authkitIssuer,
     WORKOS_REDIRECT_URI: browserRedirectUri,

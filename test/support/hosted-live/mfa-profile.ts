@@ -1,9 +1,8 @@
 export type HostedMfaPolicy = 'optional' | 'required';
 
-export function hostedMfaPolicy(value: string | undefined): HostedMfaPolicy {
-  const policy = value ?? 'optional';
-  if (policy !== 'optional' && policy !== 'required') throw new Error('WORKOS_MFA_POLICY must be optional or required.');
-  return policy;
+export function hostedMfaPolicy(value = 'optional'): HostedMfaPolicy {
+  if (value !== 'optional' && value !== 'required') throw new Error('WORKOS_MFA_POLICY must be optional or required.');
+  return value;
 }
 
 export function assertProviderMfaProfile(policy: HostedMfaPolicy, settings: Readonly<Record<string, unknown>>): void {

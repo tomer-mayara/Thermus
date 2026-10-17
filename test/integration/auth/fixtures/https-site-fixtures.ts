@@ -4,12 +4,14 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { workOSSettings } from '../../../support/fixtures/hosted-placeholder.ts';
+import type { HostedLiveSettings } from '../../../support/hosted-live/settings.ts';
 
 // These settings reach no WorkOS environment.
-export const httpsSettings = {
+export const httpsSettings: HostedLiveSettings = {
   apiKey: workOSSettings.WORKOS_API_KEY,
   clientId: workOSSettings.WORKOS_CLIENT_ID,
   authkitIssuer: workOSSettings.WORKOS_AUTHKIT_ISSUER,
+  mfaPolicy: 'optional',
 };
 export const portalPage = '<!doctype html><title>Portal</title>';
 

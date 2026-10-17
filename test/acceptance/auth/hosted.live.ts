@@ -62,15 +62,12 @@ function hostedLiveSetup(environment: Environment): HostedLiveSetup {
     if (problem !== undefined) problems.push(problem);
     return value;
   };
-  const settings: HostedLiveSettings = {
-    apiKey: read('WORKOS_API_KEY', stagingKeyRefusal),
-    clientId: read('WORKOS_CLIENT_ID'),
-    authkitIssuer: read('WORKOS_AUTHKIT_ISSUER', issuerRefusal),
-    mfaPolicy: 'optional',
-  };
+  const apiKey = read('WORKOS_API_KEY', stagingKeyRefusal);
+  const clientId = read('WORKOS_CLIENT_ID');
+  const authkitIssuer = read('WORKOS_AUTHKIT_ISSUER', issuerRefusal);
   try {
-    const mfaPolicy = hostedMfaPolicy(environment.WORKOS_MFA_POLICY);
-    return problems.length === 0 ? { settings: { ...settings, mfaPolicy } } : { problems };
+    const settings: HostedLiveSettings = { apiKey, clientId, authkitIssuer, mfaPolicy: hostedMfaPolicy(environment.WORKOS_MFA_POLICY) };
+    return problems.length === 0 ? { settings } : { problems };
   } catch (error) {
     problems.push(error instanceof Error ? error.message : 'WORKOS_MFA_POLICY is refused.');
     return { problems };
