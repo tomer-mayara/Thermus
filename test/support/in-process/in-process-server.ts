@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import type { TestContext } from 'node:test';
 import { serve } from '../../../src/index.ts';
+import { completionLinesIn, completionRecordsIn, listeningUrlIn, tenantIn } from '../drivers/operator-log.ts';
 
 type Settings = Readonly<Record<string, string | undefined>>;
 
@@ -35,8 +36,8 @@ export class InProcessServer {
     const logger = {
       info: (message: string): void => {
         this.lines.push(message);
-        const address = /^Listening on (\S+)$/.exec(message)?.[1];
-        if (address !== undefined) listening.resolve(new URL(address));
+        const url = listeningUrlIn(message);
+        if (url !== undefined) listening.resolve(url);
       },
       error: (message: string): void => { this.lines.push(`ERROR ${message}`); },
     };
@@ -54,20 +55,24 @@ export class InProcessServer {
   }
 
   tenant(): string {
-    const tenant = this.lines.map((line) => /tenant (local:[0-9a-f-]+)\./.exec(line)?.[1]).find((match) => match !== undefined);
-    assert.ok(tenant, `the server reported no local tenant:\n${this.lines.join('\n')}`);
+    const tenant = tenantIn(this.output);
+    assert.ok(tenant, `the server reported no local tenant:\n${this.output}`);
     return tenant;
   }
 
   completionRecords(): Record<string, unknown>[] {
-    return this.completionLines().map((line) => JSON.parse(line) as Record<string, unknown>);
+    return completionRecordsIn(this.output);
   }
 
   completionLines(): string[] {
-    return this.lines.filter((line) => line.startsWith('{"event":"mcp.tool.completed"'));
+    return completionLinesIn(this.output);
   }
 
   errorLines(): string[] {
     return this.lines.filter((line) => line.startsWith('ERROR ')).map((line) => line.slice('ERROR '.length));
+  }
+
+  private get output(): string {
+    return this.lines.join('\n');
   }
 }

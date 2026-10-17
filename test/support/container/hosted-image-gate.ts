@@ -6,6 +6,7 @@ import { basename, join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
+import { listeningUrlIn } from '../drivers/operator-log.ts';
 import { workOSSettingsFor } from '../fixtures/hosted-placeholder.ts';
 import { hostedImageIdentity, hostedImagePage, hostedImageProbe, repositoryRoot } from '../processes/module-paths.ts';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
@@ -123,13 +124,17 @@ export class HostedImageServer {
   }
 
   async waitForLog(text: string, count = 1): Promise<void> {
-    const signal = AbortSignal.any([this.signal, AbortSignal.timeout(30_000)]);
-    while ((await this.logs(signal)).split(text).length - 1 < count) await delay(50, undefined, { signal });
+    await this.waitForLogs((logs) => logs.split(text).length - 1 >= count);
   }
 
   async started(): Promise<void> {
-    await this.waitForLog('Listening on http://');
+    await this.waitForLogs((logs) => listeningUrlIn(logs) !== undefined);
     assert.equal((await fetch(new URL('/healthz', this.url), { signal: this.signal })).status, 200);
+  }
+
+  private async waitForLogs(found: (logs: string) => boolean): Promise<void> {
+    const signal = AbortSignal.any([this.signal, AbortSignal.timeout(30_000)]);
+    while (!found(await this.logs(signal))) await delay(50, undefined, { signal });
   }
 
   async exited(): Promise<number> {

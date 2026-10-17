@@ -3,11 +3,10 @@ import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import { once } from 'node:events';
 import type { Readable } from 'node:stream';
 import type { TestContext } from 'node:test';
+import { listeningUrlIn, tenantIn } from '../drivers/operator-log.ts';
 import { networkBlocker, programEntry } from './module-paths.ts';
 
-const listeningLine = /Listening on (http:\/\/\S+)/;
 const outboundAttempt = /Outbound network access attempted/;
-const tenantLine = /tenant (local:[0-9a-f-]+)/;
 
 export type ServerSettings = Readonly<Record<string, string>>;
 
@@ -62,7 +61,7 @@ export class ServerProcess {
   }
 
   tenant(): string {
-    const tenant = tenantLine.exec(this.text)?.[1];
+    const tenant = tenantIn(this.text);
     assert.ok(tenant, `The server reported no local tenant:\n${this.text}`);
     return tenant;
   }
@@ -76,11 +75,11 @@ export class ServerProcess {
     return this.exit;
   }
 
-  // The signal goes out in the data callback that brings the "Listening on" line, so no other callback runs between the two.
+  // The signal goes out in the data callback that gets the listening line, so no other callback runs between the two.
   async stopWhenListening(signal: NodeJS.Signals): Promise<ServerExit> {
     const streams = [this.child.stdout, this.child.stderr];
     const stopIfListening = (): void => {
-      if (!listeningLine.test(this.text)) return;
+      if (listeningUrlIn(this.text) === undefined) return;
       for (const stream of streams) stream.off('data', stopIfListening);
       this.child.kill(signal);
     };
@@ -95,8 +94,8 @@ export class ServerProcess {
 
   private record(chunk: string): void {
     this.text += chunk;
-    const address = listeningLine.exec(this.text)?.[1];
-    if (address !== undefined) this.listening.resolve(new URL(address));
+    const url = listeningUrlIn(this.text);
+    if (url !== undefined) this.listening.resolve(url);
   }
 
   private kill(): void {
