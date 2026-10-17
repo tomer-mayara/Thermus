@@ -40,8 +40,15 @@ Give the diagram a text equivalent for assistive technology.
 ## Behavior
 
 The portal must read the session before it selects a view. Keep the existing
-workspace selection, product access, MCP connection, and sign-out behavior.
+product access, MCP connection, and sign-out behavior.
 Use the current login and signup routes.
+
+For signed-in users with product access, put the organization ID, roles, and
+browser-versus-MCP workspace explanation in a native Details disclosure below
+the MCP setup steps. Start it closed. Use small gray text and wrap long IDs on
+narrow screens. Keep the profile, Sign Out, endpoint, and setup steps visible.
+Remove the organization page link from both access states. Keep the no-access
+message and Start free access recovery action visible.
 
 Signup is workspace activation after identity sign-in. Do not add account or
 payment fields. Keep all approved document text, versions, hashes, and the

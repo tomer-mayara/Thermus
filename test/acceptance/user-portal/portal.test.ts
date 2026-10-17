@@ -75,11 +75,11 @@ test('Given a signed-in user with User access, when the portal opens, then it sh
   ]);
 });
 
-test('Given a signed-in user whose current grants do not include User, when the portal opens, then it shows no product access and links to the organization page', async () => {
+test('Given a signed-in user whose current grants do not include User, when the portal opens, then it shows no product access and keeps signup visible', async () => {
   const { document } = await openPortal({ session: { ...ada, name: undefined } });
   assert.match(document.body.textContent ?? '', /Welcome, ada@example.com!/);
   assert.match(document.body.textContent ?? '', /Your account has no product access in the selected organization\./);
-  assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2F');
+  assert.ok(!document.querySelector('a[href^="organizations"]'), 'The portal must not link to the organization page');
   assert.doesNotMatch(document.body.textContent ?? '', /You have product access/);
 });
 
@@ -91,18 +91,27 @@ test('Given HTML in the profile fields of the server, when the portal shows the 
   assert.ok(document.body.textContent?.includes('<b>ada@example.com</b>'));
 });
 
-test('Given product access, when the portal opens, then it explains free access and the separate native MCP connection', async () => {
+test('Given product access, when the portal opens, then it keeps setup visible and puts technical access details in a closed disclosure below the steps', async () => {
   const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_01ACME', roles: ['user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' } });
   const text = document.body.textContent ?? '';
   assert.match(text, /Free access.*No card.*no automatic charge/s);
   assert.match(text, /https:\/\/thermus.example\/mcp/);
   assert.match(text, /remote HTTP.*Sign in.*intended workspace.*Approve.*fetch/s);
-  assert.match(text, /only affects this browser.*own consent/s);
-  assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2F');
+  const details = document.querySelector('details');
+  assert.ok(details, 'Access details must use a native disclosure');
+  assert.equal(details.hasAttribute('open'), false, 'Access details must start closed');
+  assert.equal(details.querySelector('summary')?.textContent, 'Details');
+  assert.ok(document.querySelector('ol')?.nextElementSibling === details, 'Details must follow the setup steps');
+  assert.match(details.textContent ?? '', /You have product access in organization org_01ACME\. Roles: user\./);
+  assert.match(details.textContent ?? '', /only affects this browser.*own consent/s);
+  assert.equal(details.querySelector('.product-access')?.getAttribute('role'), null, 'Closed technical details must not be announced as a status');
+  assert.ok(!document.querySelector('a[href^="organizations"]'), 'The portal must not link to the organization page');
 });
 
-test('Given no product access, when the portal opens, then signup and browser workspace selection remain available', async () => {
+test('Given no product access, when the portal opens, then signup recovery remains visible', async () => {
   const { document } = await openPortal({ session: ada });
   assert.equal(document.querySelector('a[href="signup"]')?.textContent, 'Start free access');
-  assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2F');
+  assert.equal(document.querySelector('a[href="signup"]')?.closest('details'), null);
+  assert.equal(document.querySelector('details'), null);
+  assert.ok(!document.querySelector('a[href^="organizations"]'), 'The portal must not link to the organization page');
 });
