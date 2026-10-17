@@ -4,7 +4,8 @@ import type { AccountFailureReport } from '../../../src/hosted-admin/account-rou
 import { CLEARED_SESSION_COOKIE } from '../../support/doubles/auth/browser-session-store.ts';
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
-import { serveOrganizationSite, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { userOf } from '../../support/fixtures/hosted-members.ts';
+import { serveOrganizationSite, statusesOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const mia = userOf('user-mia', 'org-a');
 

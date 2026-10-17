@@ -3,29 +3,11 @@ import type { TestContext } from 'node:test';
 import type { AccountFailureReport } from '../../../src/hosted-admin/account-routes.ts';
 import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../drivers/browser/hosted-browser.ts';
-import { adminGrant, memberRole, superAdminGrant, userGrant } from '../fixtures/hosted-roles.ts';
-import { member, serveOrganizationSite, userOf, type OrganizationSite, type SiteSetup } from '../in-process/hosted-organization-site.ts';
-import type { MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
+import { administrationMembers, userOf } from '../fixtures/hosted-members.ts';
+import { serveOrganizationSite, type OrganizationSite, type SiteSetup } from '../in-process/hosted-organization-site.ts';
 
 const isoTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const recordFields = ['action', 'actor', 'organizationId', 'outcome', 'target', 'time'];
-
-// Acme (org-a) has 4 active memberships with User: otto, cy, fay, and una. The User grants of ivy, which is inactive,
-// and of pia, which is pending, do not count. Globex (org-b) has 3: cy, una, and ben.
-export const administrationMembers: readonly MembershipRecord[] = [
-  member('user-sam', 'org-a', [superAdminGrant]),
-  member('user-otto', 'org-a', [userGrant, adminGrant, superAdminGrant]),
-  member('user-cy', 'org-a', [userGrant, adminGrant]),
-  member('user-cy', 'org-b', [userGrant]),
-  member('user-fay', 'org-a', [userGrant, adminGrant]),
-  member('user-eve', 'org-a', [adminGrant]),
-  member('user-una', 'org-a', [userGrant]),
-  member('user-una', 'org-b', [userGrant]),
-  member('user-ben', 'org-b', [userGrant, adminGrant]),
-  { ...member('user-ivy', 'org-a', [userGrant]), active: false },
-  member('user-dora', 'org-a', [memberRole]),
-  { ...member('user-pia', 'org-a', [userGrant]), active: false, status: 'pending' },
-];
 
 // The shared site behind the real HTTP server, with these memberships and a failure reporter that records each report.
 // Each Acme member below has the MCP token "<subject>-token" for Acme, and cy and una also "<subject>-globex-token".

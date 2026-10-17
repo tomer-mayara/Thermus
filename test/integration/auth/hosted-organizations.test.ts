@@ -6,16 +6,14 @@ import { OperatorLogSpy } from '../../support/doubles/application/operator-log-s
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
+import { member, members, userOf } from '../../support/fixtures/hosted-members.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { superAdminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import {
   contextAt,
   destinationPaths,
-  member,
-  members,
   openOrganizationSite,
   statusesOf,
-  userOf,
 } from '../../support/in-process/hosted-organization-site.ts';
 import type { ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 

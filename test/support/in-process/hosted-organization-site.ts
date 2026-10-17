@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { composeHostedApplication, type Application } from '../../../src/application.ts';
-import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
+import type { AuthenticatedUser, RequestContext } from '../../../src/auth/access-context.ts';
 import type { Billing } from '../../../src/billing/billing.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
 import type { AccountFailureReporter } from '../../../src/hosted-admin/account-routes.ts';
@@ -17,38 +17,16 @@ import { HostedBrowser, listenerTransport, type BrowserTransport } from '../driv
 import { MembershipDirectoryDouble, type MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
 import { ProtectedToolSpy } from '../doubles/mcp/protected-tool-spy.ts';
 import { hostedConfig } from '../fixtures/hosted-config.ts';
-import { adminGrant, memberRole, superAdminGrant, userGrant } from '../fixtures/hosted-roles.ts';
+import { authority, members } from '../fixtures/hosted-members.ts';
 
 export const destinationPaths = ['portal', 'administration/users', 'administration/admins', 'billing'];
-const authority = 'hosted-provider-double';
 const destinations = new Map([
   ['/team/portal', 'product:access'],
   ['/team/administration/users', 'user-grants:manage'],
   ['/team/administration/admins', 'admin-grants:manage'],
   ['/team/billing', 'billing:manage'],
 ]);
-const organizationNames: Readonly<Record<string, string>> = { 'org-a': 'Acme', 'org-b': 'Globex', 'org-c': 'Initech', 'org-d': 'Umbrella', 'org-e': 'Hooli' };
 const nowSeconds = Math.floor(Date.now() / 1_000);
-
-export function userOf(subject: string, selectedOrganizationId?: string): AuthenticatedUser {
-  return { authority, subject, ...(selectedOrganizationId === undefined ? {} : { selectedOrganizationId }) };
-}
-
-export function member(subject: string, organizationId: string, grants: readonly RoleGrant[]): MembershipRecord {
-  return { subject, organizationId, organizationName: organizationNames[organizationId] ?? organizationId, active: true, grants };
-}
-
-// nora has no membership. mia is a User in Acme, an Admin in Globex, and inactive in Initech. Umbrella is otto's only.
-export const members: readonly MembershipRecord[] = [
-  { ...member('user-ivy', 'org-a', [userGrant, adminGrant]), active: false },
-  member('user-dora', 'org-a', [memberRole]),
-  member('user-mia', 'org-a', [userGrant]),
-  member('user-mia', 'org-b', [adminGrant]),
-  { ...member('user-mia', 'org-c', [userGrant, adminGrant]), active: false },
-  member('user-otto', 'org-d', [userGrant, adminGrant, superAdminGrant]),
-  member('user-sam', 'org-a', [superAdminGrant]),
-  member('user-una', 'org-a', [userGrant]),
-];
 
 export interface SiteSetup {
   readonly reportFailure: AccountFailureReporter;
