@@ -4,7 +4,7 @@ import { browserSessionIssuer } from '../../../src/auth/hosted-auth/workos/worko
 import { hostedRolePermissions } from '../fixtures/hosted-roles.ts';
 
 export interface HostedLiveSettings {
-  readonly mfaPolicy?: HostedMfaPolicy;
+  readonly mfaPolicy: HostedMfaPolicy;
   readonly apiKey: string;
   readonly clientId: string;
   readonly authkitIssuer: string;
