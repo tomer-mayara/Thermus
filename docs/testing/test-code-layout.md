@@ -36,6 +36,10 @@ Path abbreviations: `S/` = `test/support/`, `U/` = `test/unit/`,
 | Isolation helper | Code that gives one test its own resource and restores shared state after it. | Test isolation | Noun of the resource; the function takes `t` and registers cleanup | `S/isolation/` |
 | Module paths | The one module that computes run-time paths from support code to other folders and to the repository root. | Information hiding | `module-paths.ts` | `S/processes/` |
 
+The hosted image acceptance test uses `hosted-image.test.ts`. Its ordinary
+suite commands explicitly exclude the emitted basename; its dedicated command
+selects it. The other runtime and live gate names stay as listed above.
+
 ## Double kinds
 
 This repository needs these kinds of test double:

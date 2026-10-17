@@ -555,8 +555,9 @@ give the exact selection and prerequisites.
 `pnpm test:container:hosted` builds and tests the final hosted image for Linux
 AMD64, with a native or emulated Docker builder/runtime and public HTTPS
 egress to `https://example.com/`. The file
-`test/acceptance/auth/hosted-image.runtime.ts` is outside the normal test
-globs. Only this command runs the [hosted image gate](docs/implementation/test-gate-policy.md#hosted-image-gate).
+`test/acceptance/auth/hosted-image.test.ts` uses the standard acceptance-test
+name. The ordinary `test` and `test:acceptance` command globs explicitly exclude
+`hosted-image.test.js`. Only this command runs the [hosted image gate](docs/implementation/test-gate-policy.md#hosted-image-gate).
 The [RHD-03 record](docs/implementation/rhd-03.md) gives the current proof
 status and the completed Linux AMD64 image proof. The image ships the
 owner-selected pinned EasyList snapshot for the hosted rules. The [hosted image policy](docs/reference/ad-rules.md#hosted-image-policy)

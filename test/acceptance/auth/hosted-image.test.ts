@@ -1,3 +1,4 @@
+import { parseHTML } from 'linkedom';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -84,6 +85,20 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.equal((await server.stop()).code, 0);
   });
 
+  await t.test('Given placeholder settings and signup enabled only in this image test, when a visitor opens signup, then the exact approved notice appears before sign-in', { timeout: 45_000 }, async (step) => {
+    const server = await gate.server({ SELF_SERVE_SIGNUP_ENABLED: 'true' }, false, step.signal);
+    await server.started();
+    const response = await fetch(new URL('/signup', server.url), { signal: step.signal });
+    assert.equal(response.status, 200);
+    const document = parseHTML(await response.text()).document;
+    const notice = document.querySelector('#privacy-notice pre')?.textContent ?? '';
+    assert.equal(Buffer.byteLength(notice, 'utf8'), 25383);
+    assert.equal(createHash('sha256').update(notice).digest('hex'), 'a56c234b9bf98f3d5a9f0e5231547a45e1cbbe0099e019c8b5326f47b5a69669');
+    assert.equal(document.querySelector('a')?.getAttribute('href'), '/login?return_to=%2Fsignup');
+    assert.equal(document.querySelectorAll('form, input').length, 0);
+    assert.equal((await server.stop()).code, 0);
+  });
+
   await t.test('Given a Connect User at the external-provider seam, when the image fetches public HTTPS and a controlled JavaScript page, then the real renderer verifies TLS and returns script output cleaned with the shipped native policy', { timeout: 180_000 }, async (step) => {
     const server = await gate.server({}, true, step.signal);
     await server.started();
@@ -138,7 +153,7 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
   });
 
   await t.test('Given invalid local startup inputs, when the image starts, then the real CLI fails before listening', { timeout: 120_000 }, async (step) => {
-    const invalidSettings: Readonly<Record<string, string>>[] = [{ AD_RULES_FILE: '/missing-rules' }, { LIGHTPANDA_BIN: '/missing-renderer' }, { WORKOS_COOKIE_PASSWORD: '' }, { PUBLIC_BASE_URL: 'http://thermus.example/' }, { SELF_SERVE_SIGNUP_ENABLED: 'true' }, { SELF_SERVE_SIGNUP_ENABLED: 'yes' }];
+    const invalidSettings: Readonly<Record<string, string>>[] = [{ AD_RULES_FILE: '/missing-rules' }, { LIGHTPANDA_BIN: '/missing-renderer' }, { WORKOS_COOKIE_PASSWORD: '' }, { PUBLIC_BASE_URL: 'http://thermus.example/' }, { SELF_SERVE_SIGNUP_ENABLED: 'yes' }];
     for (const environment of invalidSettings) {
       const { code, logs } = await gate.rejectedStartup(environment, step.signal);
       assert.equal(code, 1);

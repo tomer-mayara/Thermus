@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
+import { parseHTML } from 'linkedom';
 import type { BrowserSession, BrowserSessionState } from '../../../src/auth/hosted-auth/browser-session.ts';
 import { WorkOSSignupRoutes } from '../../../src/auth/hosted-auth/workos/workos-signup-routes.ts';
 import type { SignupActivation, SignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
@@ -239,4 +240,29 @@ test('Given a full subject limiter, when a new subject posts, then it is refused
   assert.equal(activations, 1024);
   time = 60_000;
   assert.equal((await routes.handle(post())).status, 303);
+});
+
+
+test('Given literal policy markup, when signup opens before or after sign-in, then the text stays intact and only its wrapping style is allowed', async () => {
+  const literal = '</pre><script>policy & "text"</script>';
+  const legalDocuments = { ...documents, terms: document(literal), notice: document(literal) };
+  for (const signedIn of [false, true]) {
+    const world = setup(true, signedIn);
+    const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents: legalDocuments, session: world.session, activation: world.activation, reportFailure: () => {} });
+    const response = await routes.handle(new Request('https://thermus.example/signup'));
+    const page = parseHTML(await response.text()).document;
+    assert.equal(page.querySelector('#privacy-notice pre')?.textContent, literal);
+    if (signedIn) assert.equal(page.querySelector('#terms pre')?.textContent, literal);
+    assert.equal(page.querySelectorAll('script').length, 0);
+    const css = page.querySelector('style')?.textContent;
+    assert.ok(css);
+    assert.match(css, /white-space:\s*pre-wrap/);
+    assert.match(css, /overflow-wrap:\s*anywhere/);
+    const hash = createHash('sha256').update(css).digest('base64');
+    const policy = response.headers.get('Content-Security-Policy') ?? '';
+    assert.ok(policy.includes(`style-src 'sha256-${hash}'`), policy);
+    assert.match(policy, /default-src 'none'/);
+    assert.ok(policy.includes(`form-action '${signedIn ? 'self' : 'none'}'`), policy);
+    assert.doesNotMatch(policy, /unsafe-inline|script-src/);
+  }
 });
