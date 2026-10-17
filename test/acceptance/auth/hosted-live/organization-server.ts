@@ -125,6 +125,10 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       const offered = (await organizationForms(page)).map(({ label }) => label);
       const billing = await serverGet(page, 'billing');
       const portal = await serverGet(page, 'portal/access');
+      if (portal.status !== 403) {
+        const reports = (await run.site()).log.lines.filter((line) => line.startsWith('ERROR ')).slice(-3);
+        t.diagnostic(`Unexpected portal status ${portal.status}. The last operator reports:\n${reports.join('\n')}`);
+      }
       const customerGrant = await serverPost(page, 'members/grants', { fields: {
         csrf_token: String(session.csrfToken), organization_id: operatorOrganization.id, membership_id: membership.id, revision: 'live', role: superAdminRole, action: 'grant',
       } });
