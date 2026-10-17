@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { formLabelled, formsIn, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
+import { statusesOf } from '../../support/dsl/hosted-access.ts';
 import { userOf } from '../../support/fixtures/hosted-members.ts';
 import { superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
-import { serveOrganizationSite, statusesOf } from '../../support/in-process/hosted-organization-site.ts';
+import { serveOrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 const nora = userOf('user-nora');
 const ivy = userOf('user-ivy', 'org-a');
