@@ -10,14 +10,14 @@ import { pathToFileURL } from 'node:url';
 import type { Application, ApplicationLogger, RouteConfig } from '../../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
 import { createFetchOperation, fetchToolServers } from '../../../../src/fetch-tool.ts';
+import { assertHostedRenderer } from '../../../../src/hosted-renderer-startup.ts';
 import { composeWorkOSApplication, openWorkOSConnection, type WorkOSConnection } from '../../../../src/hosted-workos-application.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { LocalHttpsSite } from '../../../support/hosted-live/local-https-site.ts';
 import { connectScope, localOrigin } from '../../../support/hosted-live/settings.ts';
-import { observeFetches } from '../../../support/work-slice/observe-fetches.ts';
-import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
-import { workSliceStopSignal } from '../../../support/work-slice/stop-signal.ts';
+import { fetchOperationSpy } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
+import { workSliceStopSignal } from '../../../support/processes/stop-signal.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -48,7 +48,7 @@ export async function composeWorkSliceApplication(parts: WorkSliceParts, logger:
   const { config, connection, environment } = parts;
   const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
   if (!organizationId) throw new Error('Set THERMUS_SLICE_ORGANIZATION_ID to the WorkOS organization of this slice');
-  const operation = observeFetches(createFetchOperation(environment, logger), logger);
+  const operation = fetchOperationSpy(createFetchOperation(environment, logger), logger);
   return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger), onboarding: { organizationId }, mfaEvidence: 'unproven' });
 }
 
@@ -67,7 +67,7 @@ async function serveWorkSlice(): Promise<void> {
   using stopped = workSliceStopSignal(process);
   const config = loadDeploymentConfig(process.env, 'http');
   assertSliceOrigin(config.publicBaseUrl);
-  await assertPinnedRenderer(process.env.LIGHTPANDA_BIN);
+  await assertHostedRenderer(process.env.LIGHTPANDA_BIN);
   const tls = await readTlsFiles(process.env.THERMUS_TLS_DIR);
   const scopeName = `thermus-work-slice-${randomUUID()}`;
   await using owned = new AsyncDisposableStack();

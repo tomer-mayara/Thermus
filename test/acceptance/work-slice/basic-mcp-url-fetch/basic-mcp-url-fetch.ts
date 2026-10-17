@@ -7,13 +7,13 @@ import { pathToFileURL } from 'node:url';
 import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application, type ApplicationLogger } from '../../../../src/application.ts';
 import { loadListenAddress, loadPublicUrls, type PublicUrls } from '../../../../src/config/deployment-config.ts';
 import { createFetchOperation, fetchToolServers } from '../../../../src/fetch-tool.ts';
+import { assertHostedRenderer } from '../../../../src/hosted-renderer-startup.ts';
 import { serveApplication } from '../../../../src/index.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
 import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../../../support/doubles/auth/no-auth-provider.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
-import { observeFetches } from '../../../support/work-slice/observe-fetches.ts';
-import { assertPinnedRenderer } from '../../../support/work-slice/pinned-renderer.ts';
+import { fetchOperationSpy } from '../../../support/doubles/mcp/fetch-operation-spy.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -28,7 +28,7 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 // slice. The slice has no OAuth provider and no pages, so their paths are not found.
 export function createWorkSliceApplication(environment: Environment, logger: ApplicationLogger): Application {
   const urls = loadPublicUrls(environment, 'self-hosted');
-  const operation = observeFetches(createFetchOperation(environment, logger), logger);
+  const operation = fetchOperationSpy(createFetchOperation(environment, logger), logger);
   const provider = new NoAuthProvider(new URL(urls.mcpResourceUrl));
   const mcp = new MCPServer({
     auth: {
@@ -64,7 +64,7 @@ async function serveWorkSlice(): Promise<void> {
     throw new Error('LISTEN_PORT must not be 0 for the work slice: the client URL must be known before the server listens.');
   }
   const urls = loadPublicUrls(process.env, 'self-hosted');
-  await assertPinnedRenderer(process.env.LIGHTPANDA_BIN);
+  await assertHostedRenderer(process.env.LIGHTPANDA_BIN);
   const axiom = axiomTestSettings();
   const scopeName = `thermus-work-slice-${randomUUID()}`;
   await using owned = new AsyncDisposableStack();

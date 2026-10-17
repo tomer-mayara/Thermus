@@ -1,3 +1,5 @@
+// stopSignal() of src/index.ts uses once. This wait uses on, because an outer launcher such as pnpm exec can forward
+// the terminal signal again. Both handlers stay until the site closes and the logging flushes.
 import type { StopSignal } from '../../../src/index.ts';
 
 interface SliceSignals {
@@ -5,7 +7,6 @@ interface SliceSignals {
   off(signal: NodeJS.Signals, listener: NodeJS.SignalsListener): unknown;
 }
 
-// An outer launcher can forward a terminal signal again. Keep both handlers until the site closes and logging flushes.
 export function workSliceStopSignal(signals: SliceSignals): StopSignal {
   const received = Promise.withResolvers<NodeJS.Signals>();
   const stop: NodeJS.SignalsListener = (signal) => { received.resolve(signal); };

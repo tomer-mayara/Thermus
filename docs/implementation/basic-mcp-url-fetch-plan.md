@@ -149,11 +149,11 @@ src/mcp/get-url-as-markdown.ts                        the FetchOperation type, n
 src/index.ts                                          serveApplication(open, options), ProcessSignals, and ServeOptions, now exported
 test/acceptance/work-slice/README.md                  The guide: what a work slice is, and the list of the slices
 test/acceptance/work-slice/basic-mcp-url-fetch/README.md   The README of the slice: the command, the settings, and the log lines
-test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entry point and the composition: createWorkSliceApplication(); it runs only when executed directly. Since 2026-10-15, observeFetches() and MARKDOWN_LOG_LIMIT are in test/support/work-slice/observe-fetches.ts, and the renderer check in test/support/work-slice/pinned-renderer.ts
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts   The entry point and the composition: createWorkSliceApplication(); it runs only when executed directly. fetchOperationSpy() and MARKDOWN_LOG_LIMIT are in test/support/doubles/mcp/fetch-operation-spy.ts. The entry point checks the renderer with assertHostedRenderer() of src/hosted-renderer-startup.ts
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts   The acceptance test
 test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh   The launcher script: the settings with their defaults, then the entry point with the pinned Node runtime of pnpm
 test/support/in-process/axiom-test-export.ts          axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
-test/unit/work-slice/observe-fetches.test.ts          observeFetches(); until 2026-10-15 basic-mcp-url-fetch.test.ts
+test/unit/work-slice/fetch-operation-spy.test.ts      fetchOperationSpy(); until 2026-10-15 basic-mcp-url-fetch.test.ts
 test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
 test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
@@ -201,7 +201,7 @@ with the mock provider, in this order:
 
 1. The public URLs: `loadPublicUrls(environment, 'self-hosted')`.
 2. The operation: `createFetchOperation(environment, logger)`, wrapped by
-   `observeFetches()`. See [Logging](#logging). `createFetchOperation()` makes
+   `fetchOperationSpy()`. See [Logging](#logging). `createFetchOperation()` makes
    the production pipeline, the fetcher with `LIGHTPANDA_BIN`, and the renderer
    setup reporter.
 3. The mock provider: `new NoAuthProvider(new URL(mcpResourceUrl))`. It is the
@@ -239,8 +239,9 @@ The scope name is `thermus-work-slice-<run id>`, with a new run ID for each
 start. The script prints it. The OTel tests use the same approach to find their
 records in Axiom.
 
-`observeFetches(operation, logger)` wraps the operation and writes the two
-lines of the slice:
+`fetchOperationSpy(operation, logger)` in
+`test/support/doubles/mcp/fetch-operation-spy.ts` wraps the operation and
+writes the two lines of the slice:
 
 ```text
 work-slice fetch started: <requested URL>
@@ -330,8 +331,8 @@ for both protocol eras of `mcpProtocolEras`.
 
 ### Unit
 
-- `test/unit/work-slice/observe-fetches.test.ts` (until 2026-10-15
-  `basic-mcp-url-fetch.test.ts`): `observeFetches()` with
+- `test/unit/work-slice/fetch-operation-spy.test.ts` (until 2026-10-15
+  `basic-mcp-url-fetch.test.ts`): `fetchOperationSpy()` with
   an operation double: the started and completed lines, the cut at the limit,
   the failed line, and the error that passes through.
 - The production seams have their own cases: the failure cases of
@@ -424,8 +425,9 @@ Done when: both unit tests pass with the focused command.
 
 ### Step 3: the composition, green
 
-1. Write `work-slice-server.test.ts` for `observeFetches()` and the route
-   function, then `work-slice-server.ts` with `startWorkSliceServer()`.
+1. Write `work-slice-server.test.ts` for `observeFetches()` (its name until
+   2026-10-16, now `fetchOperationSpy()`) and the route function, then
+   `work-slice-server.ts` with `startWorkSliceServer()`.
 2. Run the acceptance test until it passes in both eras.
 
 Done when: the acceptance test and the three unit tests pass.

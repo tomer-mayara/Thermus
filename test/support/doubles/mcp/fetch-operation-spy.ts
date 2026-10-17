@@ -1,11 +1,11 @@
-import type { ApplicationLogger } from '../../../src/application.ts';
-import { BaseLogger } from '../../../src/logging/base-logger.ts';
-import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
+import type { ApplicationLogger } from '../../../../src/application.ts';
+import { BaseLogger } from '../../../../src/logging/base-logger.ts';
+import type { FetchOperation } from '../../../../src/mcp/get-url-as-markdown.ts';
 
 // The Markdown of the completed line is cut at this many code points.
 export const MARKDOWN_LOG_LIMIT = 64 * 1024;
 
-export function observeFetches(operation: FetchOperation, logger: ApplicationLogger, limit = MARKDOWN_LOG_LIMIT): FetchOperation {
+export function fetchOperationSpy(operation: FetchOperation, logger: ApplicationLogger, limit = MARKDOWN_LOG_LIMIT): FetchOperation {
   return async (url, context, signal) => {
     logger.info(`work-slice fetch started: ${url}`);
     let markdown: string;
