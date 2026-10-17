@@ -206,3 +206,64 @@ marker path { fill: none; stroke-width: 2; }
   .footer-content { padding-inline: 20px; gap: 8px; }
   .footer-content nav { gap: 20px; }
 }
+
+.connection-widget { margin-top: 24px; min-width: 0; }
+.connection-widget label { display: block; margin-bottom: 8px; font-weight: 600; }
+.connection-widget select {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #7b7e88;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #f3f2ee;
+  background: #17181d;
+  font: inherit;
+  cursor: pointer;
+}
+.connection-guide { margin-top: 20px; border: 1px solid #43454e; border-radius: 8px; background: #17181d; overflow: hidden; }
+.guide-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #43454e;
+  color: #b4bac0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+}
+.guide-bar > :first-child { color: #e8552a; letter-spacing: 0.06em; }
+.guide-steps { list-style: none; counter-reset: guide-step; margin: 0; padding: 0 20px; }
+.auth-container .guide-steps > li { position: relative; padding: 20px 0 20px 36px; margin: 0; counter-increment: guide-step; }
+.guide-steps > li + li { border-top: 1px solid #2c2d34; }
+.guide-steps > li::before { content: '0' counter(guide-step); position: absolute; left: 0; top: 20px; color: #e8552a; font: 14px/1.6 'IBM Plex Mono', monospace; }
+.guide-steps h3 { margin: 0; font-size: 17px; line-height: 1.5; font-weight: 600; }
+.auth-container .guide-steps p { margin-top: 8px; color: #b4bac0; font-size: 15px; }
+.guide-code { margin-top: 12px; padding: 12px; border: 1px solid #43454e; border-radius: 5px; background: #212228; }
+.guide-code pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.guide-code code { font: 13px/1.65 'IBM Plex Mono', monospace; user-select: text; }
+.guide-copy {
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid #7b7e88;
+  border-radius: 5px;
+  background: transparent;
+  color: #f3f2ee;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.guide-code .guide-copy { display: block; margin-top: 12px; }
+.guide-copy:hover { background: #2c2d34; }
+.client-guide { display: flex; align-items: center; min-height: 48px; padding: 12px 20px; border-top: 1px solid #43454e; font-size: 14px; }
+.client-guide:focus-visible { outline-offset: -4px; }
+.endpoint-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.auth-container .endpoint-row p { flex: 1 1 260px; margin: 0; color: #b4bac0; font: 12px/1.6 'IBM Plex Mono', monospace; }
+.auth-container .guide-status { min-height: 22px; margin-top: 8px; color: #b4bac0; font-size: 14px; }
+@media (max-width: 540px) {
+  .guide-bar { padding-inline: 12px; }
+  .guide-steps { padding-inline: 12px; }
+  .auth-container .guide-steps > li { padding-left: 28px; }
+  .guide-code { padding: 10px; }
+  .client-guide { padding-inline: 12px; }
+}

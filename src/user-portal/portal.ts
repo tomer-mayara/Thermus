@@ -1,3 +1,4 @@
+import { renderConnectionGuide } from './connection-guide.ts';
 import { productFlow } from './product-flow.ts';
 
 // The server owns the browser session: it signs in, keeps the sealed HttpOnly cookie, and signs out. The portal only
@@ -90,21 +91,7 @@ function showConnection(container: HTMLElement, access: ProductAccess): void {
   heading.textContent = 'Connect your MCP client';
   const plan = document.createElement('p');
   plan.textContent = 'Free access. No card is required and there is no automatic charge.';
-  const endpoint = document.createElement('p');
-  endpoint.textContent = `MCP endpoint: ${access.mcpUrl}`;
-  const steps = document.createElement('ol');
-  for (const instruction of [
-    'Add the MCP endpoint as a remote HTTP server in your client.',
-    'Sign in when your client asks.',
-    'Choose the intended workspace in the client consent screen.',
-    'Approve the connection.',
-    'Ask your client to fetch a page to test access.',
-  ]) {
-    const item = document.createElement('li');
-    item.textContent = instruction;
-    steps.append(item);
-  }
-  section.append(heading, plan, endpoint, steps);
+  section.append(heading, plan, renderConnectionGuide(document, access.mcpUrl));
   container.querySelector('.auth-container')?.append(section);
 }
 
