@@ -209,7 +209,7 @@ npm run build && node --test dist/test/unit/stop-signal.test.js
 
 Three source cases passed in the reviewed 20-case shutdown focus. An
 `EventEmitter` replaces process signals at the public helper interface. The
-slice installs `test/support/work-slice/stop-signal.ts` before asynchronous
+slice installs `test/support/processes/stop-signal.ts` before asynchronous
 startup and keeps its signal handlers until the site closes and logging flushes.
 
 [V] Captures a startup signal and retains both handlers until disposal
@@ -1202,17 +1202,17 @@ The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` doubl
 npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
 ```
 
-**Work slice fetch lines** (`test/unit/work-slice/observe-fetches.test.ts`)
+**Work slice fetch lines** (`test/unit/work-slice/fetch-operation-spy.test.ts`)
 
-`observeFetches()` and `MARKDOWN_LOG_LIMIT` write the fetch lines of both work slices. Since 2026-10-15, they are in `test/support/work-slice/observe-fetches.ts`, and the test imports them from there. Before, they were private to the entry point of the basic slice, and the test was `test/unit/work-slice/basic-mcp-url-fetch.test.ts`. The cases did not change. A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
+`fetchOperationSpy()` and `MARKDOWN_LOG_LIMIT` write the fetch lines of both work slices. They are in `test/support/doubles/mcp/fetch-operation-spy.ts`, and the test imports them from there. Before 2026-10-15, they were private to the entry point of the basic slice, and the test was `test/unit/work-slice/basic-mcp-url-fetch.test.ts`. The cases did not change. A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
 
-[V] `observeFetches()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
+[V] `fetchOperationSpy()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
 [V] Counts code points, not UTF-16 units; above the limit, the completed line keeps the first code points without a split surrogate pair and ends with `[cut: <n> more characters]`, and the caller still gets the whole Markdown; the default limit is 65,536 code points
 [V] When the operation fails with an `Error`, a cancellation `DOMException`, or a value that is not an `Error`, writes one ERROR line with the message and throws the same value again
 [V] Gives the operation the same URL, request context, and signal
 
 ```sh
-npm run build && node --test dist/test/unit/work-slice/observe-fetches.test.js
+npm run build && node --test dist/test/unit/work-slice/fetch-operation-spy.test.js
 ```
 
 **Work slice launcher script: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
@@ -2047,7 +2047,7 @@ npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch
 
 **Work slice: auth WorkOS MCP URL fetch** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts`)
 
-`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `observeFetches()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSFake` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run must separately show Google sign-in, Claude Code registration and browser consent, the real renderer, and Axiom delivery. The separate real Google/client/Axiom manual walk passed; the validation record states its evidence limits. The file has five cases: the first case runs in each protocol era.
+`composeWorkSliceApplication()` composes the production hosted composition with WorkOS, `composeWorkOSApplication()`, with the fetch tool as its `buildServer`. In the test, the fetch tool uses the trusted rules fixture, and `fetchOperationSpy()` writes its fetch lines. The entry point `auth-workos-mcp-url-fetch.ts` exports `composeWorkSliceApplication()` and runs only when it is executed directly. The test starts the production HTTP bridge itself. `WorkOSFake` gives the pinned SDK a local fake of the WorkOS API with the organization `org_01ACME` (Acme) and the sign-in method `GoogleOAuth`. The browser signs in through the server with `signInThroughServer()` and `HostedBrowser`. `RendererProcessDouble` stands in for the Lightpanda process and DNS, and a recording logger stands in for the log. The real SDK HTTP client connects in modern 2026-07-28 and legacy 2025-11-25. These cases are offline and renderer-free. They prove the application side, not WorkOS behavior: the manual run must separately show Google sign-in, Claude Code registration and browser consent, the real renderer, and Axiom delivery. The separate real Google/client/Axiom manual walk passed; the validation record states its evidence limits. The file has five cases: the first case runs in each protocol era.
 
 [V] Given the slice application, Ada with the role `user` in Acme, and a renderer double that serves `https://news.example/story`, when Ada signs in with Google through the server, then her session is signed in to Acme with `mfaCompleted: false`, and her portal access names Acme and the role `user`; when an MCP client in each protocol era with her Connect token for Acme lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the rules remove, the log has the started line, the completed line, and one completion record with the authority `workos:client_test`, the subject `user_01ADA`, the tenant `workos:client_test:org_01ACME`, and the status `success`, and `close()` stops the application
 [V] Given Dee with a non-`thermus.ai` Google address and no membership, sign-in creates no automatic membership, portal access is refused, and the organization page gives onboarding guidance; her Connect token for Acme gets 403 `access_denied` without a renderer or fetch line; after an external change gives her a User membership, the next MCP request returns Markdown and records her WorkOS identity
@@ -2128,7 +2128,7 @@ exception and its three cases are gone. One case shows that the former
 exception is refused.
 
 [V] D2: refuses an import of another test type from each of the four test types; allows support code, own fixtures, the same type, `src`, and packages
-[V] D2, the former exception: `test/unit/work-slice/observe-fetches.test.ts` may not import the entry point of either work slice; it may import `test/support/work-slice/observe-fetches.ts`
+[V] D2, the former exception: `test/unit/work-slice/fetch-operation-spy.test.ts` may not import the entry point of either work slice; it may import `test/support/doubles/mcp/fetch-operation-spy.ts`
 [V] D3: refuses the fixtures of another unit package, also from a fixture file; allows own fixtures, shared support fixtures and doubles, and the package fixtures from a nested folder
 [V] Checks exact path segments without refusing names that only resemble a test type folder
 

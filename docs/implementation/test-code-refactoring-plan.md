@@ -319,9 +319,12 @@ home.
 Dependency rules:
 
 - D1. `S/**` imports only `src/**`, packages, and `S/**`.
-- D2. A file in `test/<type>/` imports no other test type. One exception:
-  `U/work-slice/basic-mcp-url-fetch.test.ts` → `A/work-slice/basic-mcp-url-fetch.ts`,
-  because the work-slice README makes the entry point export its composition.
+- D2. A file in `test/<type>/` imports no other test type. The first version
+  had one exception: the unit test of the work-slice fetch lines imported the
+  entry point of the basic slice. That exception is gone. The auth WorkOS MCP
+  URL fetch slice moved the fetch lines to test support. They are now the spy
+  `S/doubles/mcp/fetch-operation-spy.ts`, and the unit test imports them from
+  there.
 - D3. A unit test imports `fixtures/` only from its own package.
 - D4. `S/drivers/**` imports no `S/dsl/**`.
 - D5. `S/doubles/**` and `S/fixtures/**` import no `S/dsl/**` and no
