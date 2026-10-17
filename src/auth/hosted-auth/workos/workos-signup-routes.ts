@@ -4,7 +4,7 @@ import { readForm } from '../../../hosted-admin/account-form.ts';
 import { noticePage, seeOther } from './workos-session-pages.ts';
 import { validateSignupDocuments } from './workos-signup-documents.ts';
 import { signupAgreementIn } from './workos-signup-form.ts';
-import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupSignInPage } from './workos-signup-pages.ts';
+import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupRequestNotice, signupSignInPage } from './workos-signup-pages.ts';
 import type { SignupActivation, SignupDocuments, SignupResult } from './workos-signup.ts';
 
 export interface WorkOSSignupRoutesOptions {
@@ -59,8 +59,8 @@ export class WorkOSSignupRoutes {
 
   async handle(request: Request): Promise<Response> {
     request.signal.throwIfAborted();
-    if (!this.handles(new URL(request.url).pathname)) return noticePage('notFound');
-    if (!['GET', 'HEAD', 'POST'].includes(request.method)) return noticePage('methodNotAllowed', { Allow: 'GET, HEAD, POST' });
+    if (!this.handles(new URL(request.url).pathname)) return signupRequestNotice(noticePage('notFound'));
+    if (!['GET', 'HEAD', 'POST'].includes(request.method)) return signupRequestNotice(noticePage('methodNotAllowed', { Allow: 'GET, HEAD, POST' }));
     if (request.method === 'HEAD') {
       const answer = this.options.enabled ? signupFailurePage(200, 'Sign in to start free access.') : signupClosedPage();
       return new Response(null, { status: answer.status, headers: answer.headers });
@@ -71,7 +71,7 @@ export class WorkOSSignupRoutes {
 
   private async handleEnabled(request: Request): Promise<Response> {
     const post = request.method === 'POST';
-    if (post && request.headers.get('Origin') !== this.origin) return noticePage('forgedRequest');
+    if (post && request.headers.get('Origin') !== this.origin) return signupRequestNotice(noticePage('forgedRequest'));
     if (post && this.pending >= MAX_CONCURRENT_POSTS) return limited();
     if (post) this.pending++;
     let outstanding: Promise<unknown> | undefined;
@@ -127,7 +127,7 @@ export class WorkOSSignupRoutes {
     const form = await readForm(request);
     request.signal.throwIfAborted();
     const agreement = typeof form === 'string' ? form : signupAgreementIn(form, state.csrfToken, documents.version);
-    if (agreement !== 'accepted') return noticePage(agreement);
+    if (agreement !== 'accepted') return signupRequestNotice(noticePage(agreement));
     const result = await run(() => this.options.activation.activate({ user: state.user, documents, signal: request.signal }));
     request.signal.throwIfAborted();
     return this.activationAnswer(result);

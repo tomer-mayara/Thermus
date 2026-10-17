@@ -14,6 +14,37 @@ pnpm build:user-portal
 The build writes `src/user-portal/dist/`: `index.html` and the files in
 `assets/`. The portal reads no build setting and keeps no secret.
 
+## Public entry
+
+The portal reads the session before it shows the public entry or workspace.
+The public entry uses the [approved design](design/portal-design.md) and its
+exact product copy. Sign in opens `login`. Start free access opens `signup`.
+These are native links. The signup route decides whether activation is open
+and whether the user can activate access. The public page does not grant access.
+
+The desktop page shows a static flow with three nodes. Agents send Request +
+reason to Thermus, and Thermus sends Approved requests to the web. Raw pages
+return from the web to Thermus. Clean content returns from Thermus to the
+agents. The flow has an accessible text description. It describes the product;
+it does not add an approval step to the server.
+
+Below 960px, the page stacks the brand copy above the welcome card and hides
+the diagram. The copy remains complete. Each primary action is at least 48px
+high. A skip link moves keyboard focus to the main content. Links and buttons
+have a visible focus ring. Session errors retain their safe message and offer
+Try again, which reloads the entry through its normal server route.
+
+The header uses the exact Thermus dark logo. The logo opens the portal, and
+`thermus.ai` opens the marketing website. Footer links open that website's
+Privacy Notice and Terms of Service at `https://thermus.ai/privacy` and
+`https://thermus.ai/terms`. The product activation documents remain on signup.
+
+The logo, favicon, and IBM Plex Sans, Serif, and Mono font files are in
+`src/user-portal/public/assets/`. Vite copies them into the flat output asset
+directory. The fonts use the SIL Open Font License. The unmodified license is
+shipped beside them as `assets/plex-OFL.txt`. The logo and font files come from
+the existing Thermus marketing design kit. No third-party font request is made.
+
 ## Server-owned session
 
 The hosted Thermus server owns the browser session. The portal keeps no
@@ -29,7 +60,7 @@ of the server. It uses these server paths, relative to the base path:
 | --- | --- |
 | `session` | `GET` on load. `401` shows the signed-out page. `200` gives the profile, the organization of the session, the MFA evidence, and the form token of the session. |
 | `portal/access` | `GET` after a sign-in: the protected portal request. The server checks the session and reads the current grants of the selected organization. `200` gives the organization, its roles, `plan: "free"`, and the configured `mcpUrl` when the user has User. The portal shows free access, no card requirement, no automatic charge, and native MCP connection steps. `403` shows signup and organization selection links. Signup can remain closed. |
-| `login` | The Sign In button opens it. The server starts the AuthKit sign-in. |
+| `login` | The Sign in link opens it. The server starts the AuthKit sign-in. |
 | `logout` | The Sign Out button posts a form with the `csrf_token` field. The server checks the origin and the token, clears the session cookie, and sends the browser to the WorkOS logout URL. |
 | `organizations` | The organization page of the server: onboarding guidance or the organization selection. |
 
@@ -138,7 +169,10 @@ For another deployment, replace the origin in each of these settings and in
 `pnpm check` checks portal types, runs its unit and acceptance tests, and
 builds its browser bundle. `pnpm test`, `pnpm test:unit`, and
 `pnpm test:acceptance` include the applicable portal tests. These tests use a
-double of the server and a local DOM. The hosted live gate,
+double of the server and a local DOM. Public entry cases cover the exact copy,
+action and footer destinations, the flow's accessible description, native
+links, and error recovery. Existing cases cover signed-in profile display,
+access, workspace selection, safe server values, and the sign-out form. The hosted live gate,
 `npm run test:hosted-live`, builds the portal and proves the sign-in, the
 callback, the sign-out, the external sign-in through `/login`, and the
 protected portal request with WorkOS. See the

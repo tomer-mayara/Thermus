@@ -40,13 +40,13 @@ test('Given enabled signup without approved documents, when composed, then start
   assert.throws(() => new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, session: world.session, activation: world.activation, reportFailure: () => {} }));
 });
 
-test('Given signed-out signup, when opened, then the full escaped notice appears before sign-in', async () => {
+test('Given signed-out signup, when opened, then the full escaped notice appears before the sign-in action', async () => {
   const world = setup(true, false);
   const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
   const html = await answer.text();
   assert.match(html, /Test &lt;notice&gt;/);
   assert.match(html, /login\?return_to=%2Fsignup/);
-  assert.ok(html.indexOf('Test &lt;notice&gt;') < html.indexOf('Sign in'));
+  assert.ok(html.indexOf('Test &lt;notice&gt;') < html.indexOf('>Sign in to continue</a>'));
   assert.equal(world.inspections(), 0);
 });
 
@@ -54,7 +54,8 @@ test('Given signed-in signup, when opened then posted with express agreement, th
   const world = setup();
   const form = await (await world.routes.handle(new Request('https://thermus.example/signup'))).text();
   assert.match(form, /type="checkbox" name="agreement" value="accepted" required/);
-  assert.doesNotMatch(form, /checked|return_to/);
+  assert.equal(parseHTML(form).document.querySelector('input[name="agreement"]')?.hasAttribute('checked'), false);
+  assert.doesNotMatch(form, /return_to/);
   assert.match(form, /Test &lt;terms&gt;/);
   const answer = await world.routes.handle(post());
   assert.equal(answer.status, 303);
@@ -70,7 +71,7 @@ test('Given current product access, when signup is read, then it offers Continue
   const answer = await world.routes.handle(new Request('https://thermus.example/signup?return_to=https://other.example/'));
   assert.equal(answer.status, 200);
   const html = await answer.text();
-  assert.match(html, /<a href="\/organizations\?return_to=%2F">Continue<\/a>/);
+  assert.match(html, /<a[^>]* href="\/organizations\?return_to=%2F">Continue<\/a>/);
   assert.doesNotMatch(html, /checkbox|Test &lt;terms&gt;|other\.example/);
   assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
   assert.equal(world.calls(), 0);
@@ -116,11 +117,41 @@ test('Given a public-base path, when existing access continues or activation suc
 
 test('Given forged or stale signup, when posted, then no activation runs', async () => {
   const world = setup();
-  assert.equal((await world.routes.handle(post(undefined, 'https://other.example'))).status, 403);
+  const forged = await world.routes.handle(post(undefined, 'https://other.example'));
+  assert.equal(forged.status, 403);
+  const forgedPage = parseHTML(await forged.text()).document;
+  assert.equal(forgedPage.querySelector('h1')?.textContent, 'Request refused');
+  assert.equal(forgedPage.querySelector('.notice-message')?.textContent, 'The form is not from this site or is no longer valid. Nothing changed.');
+  assert.equal(forgedPage.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
+  assert.equal(forgedPage.querySelector('.primary-action')?.getAttribute('href'), '/signup');
   assert.equal(world.sessions(), 0);
-  assert.equal((await world.routes.handle(post('csrf_token=secret&document_version=old&agreement=accepted'))).status, 400);
+  const stale = await world.routes.handle(post('csrf_token=secret&document_version=old&agreement=accepted'));
+  assert.equal(stale.status, 400);
+  const stalePage = parseHTML(await stale.text()).document;
+  assert.equal(stalePage.querySelector('h1')?.textContent, 'Request not valid');
+  assert.equal(stalePage.querySelector('.notice-message')?.textContent, 'The request is not valid.');
+  assert.equal(stalePage.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
+  assert.equal(stalePage.querySelector('.primary-action')?.getAttribute('href'), '/signup');
   assert.equal(world.calls(), 0);
   assert.equal(world.inspections(), 0);
+});
+
+test('Given an unsupported signup request method, when it is refused, then the branded error keeps the Allow header and status', async () => {
+  const world = setup();
+  const response = await world.routes.handle(new Request('https://thermus.example/signup', { method: 'DELETE' }));
+  assert.equal(response.status, 405);
+  assert.equal(response.headers.get('Allow'), 'GET, HEAD, POST');
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  const page = parseHTML(await response.text()).document;
+  assert.equal(page.querySelector('h1')?.textContent, 'Method not allowed');
+  assert.equal(page.querySelector('.notice-message')?.textContent, 'This page does not accept this request method.');
+  assert.equal(page.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
+  const policy = response.headers.get('Content-Security-Policy') ?? '';
+  const styleHash = createHash('sha256').update(page.querySelector('style')?.textContent ?? '').digest('base64');
+  assert.ok(policy.includes(`style-src 'sha256-${styleHash}'`));
+  assert.equal((policy.match(/style-src /g) ?? []).length, 1);
+  assert.equal(world.sessions(), 0);
+  assert.equal(world.calls(), 0);
 });
 
 test('Given signup HEAD, when handled, then the response has no body and no session or activation work', async () => {
@@ -148,7 +179,7 @@ test('Given activation requires support, when posted, then a conflict page offer
   world.activation.activate = async () => { calls++; return { status: 'support-required' }; };
   const answer = await world.routes.handle(post());
   assert.equal(answer.status, 409);
-  assert.match(await answer.text(), /<a href="mailto:legal@thermus.ai">Contact<\/a>/);
+  assert.match(await answer.text(), /<a[^>]* href="mailto:legal@thermus.ai">Contact<\/a>/);
   assert.equal(calls, 1);
 });
 
@@ -243,7 +274,7 @@ test('Given a full subject limiter, when a new subject posts, then it is refused
 });
 
 
-test('Given literal policy markup, when signup opens before or after sign-in, then the text stays intact and only its wrapping style is allowed', async () => {
+test('Given literal policy markup, when signup opens before or after sign-in, then the text stays intact and only same-origin assets and its hashed style are allowed', async () => {
   const literal = '</pre><script>policy & "text"</script>';
   const legalDocuments = { ...documents, terms: document(literal), notice: document(literal) };
   for (const signedIn of [false, true]) {
@@ -251,8 +282,8 @@ test('Given literal policy markup, when signup opens before or after sign-in, th
     const routes = new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents: legalDocuments, session: world.session, activation: world.activation, reportFailure: () => {} });
     const response = await routes.handle(new Request('https://thermus.example/signup'));
     const page = parseHTML(await response.text()).document;
-    assert.equal(page.querySelector('#privacy-notice pre')?.textContent, literal);
-    if (signedIn) assert.equal(page.querySelector('#terms pre')?.textContent, literal);
+    assert.equal(page.querySelector('#privacy-notice .document-reader')?.textContent, literal);
+    if (signedIn) assert.equal(page.querySelector('#terms .document-reader')?.textContent, literal);
     assert.equal(page.querySelectorAll('script').length, 0);
     const css = page.querySelector('style')?.textContent;
     assert.ok(css);
@@ -263,6 +294,8 @@ test('Given literal policy markup, when signup opens before or after sign-in, th
     assert.ok(policy.includes(`style-src 'sha256-${hash}'`), policy);
     assert.match(policy, /default-src 'none'/);
     assert.ok(policy.includes(`form-action '${signedIn ? 'self' : 'none'}'`), policy);
+    assert.match(policy, /img-src 'self'/);
+    assert.match(policy, /font-src 'self'/);
     assert.doesNotMatch(policy, /unsafe-inline|script-src/);
   }
 });

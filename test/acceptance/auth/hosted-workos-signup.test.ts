@@ -27,8 +27,8 @@ describe('Hosted self-service signup is closed by default', () => {
 
     assert.equal(answer.status, 200);
     assert.match(answer.body, /activation is closed/i);
-    assert.match(answer.body, /<a href="[^"]*login[^"]*">Sign in<\/a>/);
-    assert.match(answer.body, /<a href="mailto:legal@thermus.ai">Contact<\/a>/);
+    assert.match(answer.body, /<a[^>]* href="[^"]*login[^"]*">Sign in<\/a>/);
+    assert.match(answer.body, /<a[^>]* href="mailto:legal@thermus.ai">Contact<\/a>/);
     assert.deepEqual(formsIn(answer.body), []);
     assert.equal(answer.headers.get('Cache-Control'), 'no-store');
     assert.deepEqual(site.world.fake.takeRequests(), []);
@@ -76,7 +76,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     const page = await browser.open('signup?return_to=https://other.example/');
 
     assert.equal(page.status, 200, page.body);
-    assert.match(page.body, /<a href="\/organizations\?return_to=%2F">Continue<\/a>/);
+    assert.match(page.body, /<a[^>]* href="\/organizations\?return_to=%2F">Continue<\/a>/);
     assert.deepEqual(formsIn(page.body), []);
     assert.doesNotMatch(page.body, /type="checkbox"|other\.example/);
     assert.ok(!page.body.includes(signupDocuments.terms.text));
@@ -101,7 +101,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     const form = formsIn(page.body).find(({ action }) => action === '/signup');
     assert.ok(form);
     assert.equal((page.body.match(/type="checkbox"/g) ?? []).length, 1);
-    assert.doesNotMatch(page.body, /type="checkbox"[^>]*\bchecked\b/);
+    assert.equal(parseHTML(page.body).document.querySelector('input[name="agreement"]')?.hasAttribute('checked'), false);
     site.world.fake.takeRequests();
 
     const fields = { ...form.fields, agreement: 'accepted' };
@@ -274,9 +274,17 @@ describe('FS-04 production signup documents', () => {
     const site = await openProductionSignupSite(t, true);
     const visitor = new HostedBrowser(site.transport, site.publicBaseUrl);
     const noticePage = await visitor.open('signup');
-    const notice = parseHTML(noticePage.body).document.querySelector('#privacy-notice pre')?.textContent;
+    const noticeDocument = parseHTML(noticePage.body).document;
+    const noticeReader = noticeDocument.querySelector('#privacy-notice .document-reader');
+    assert.ok(noticeReader);
+    const notice = noticeReader.textContent;
     assert.equal(noticePage.status, 200, noticePage.body);
-    assert.equal(createHash('sha256').update(notice ?? '').digest('hex'), 'a56c234b9bf98f3d5a9f0e5231547a45e1cbbe0099e019c8b5326f47b5a69669');
+    assert.equal(createHash('sha256').update(approvedSignupDocuments.notice.text).digest('hex'), 'a56c234b9bf98f3d5a9f0e5231547a45e1cbbe0099e019c8b5326f47b5a69669');
+    assert.equal(createHash('sha256').update(notice).digest('hex'), '2c285b8ae45a90dc355706f9728e8769e19b8174b4abefb8adf57ac9aa1d12f9');
+    assert.equal(noticeDocument.querySelector('#privacy-notice')?.getAttribute('data-document-version'), approvedSignupDocuments.notice.version);
+    assert.match(notice, /How Thermus handles information/);
+    assert.match(notice, /10\. Changes and contact/);
+    assert.equal(noticeDocument.querySelectorAll('#privacy-notice .document-reader table').length, 2);
     assert.match(noticePage.body, /Sign in/);
     assert.deepEqual(site.world.fake.takeRequests(), []);
 
@@ -286,15 +294,19 @@ describe('FS-04 production signup documents', () => {
     const page = await browser.open('signup');
     assert.equal(page.status, 200, page.body);
     const document = parseHTML(page.body).document;
-    const terms = document.querySelector('#terms pre')?.textContent ?? '';
-    assert.equal(Buffer.byteLength(terms, 'utf8'), 17523);
-    assert.equal(createHash('sha256').update(terms).digest('hex'), '31ec3ed48a4513f167d8e5cc49d1ff7b0e059f0c9ffe128f4c274a4e3efad15f');
-    assert.equal(document.querySelector('#privacy-notice pre')?.textContent, notice);
+    const terms = document.querySelector('#terms .document-reader')?.textContent ?? '';
+    assert.equal(Buffer.byteLength(approvedSignupDocuments.terms.text, 'utf8'), 17523);
+    assert.equal(createHash('sha256').update(approvedSignupDocuments.terms.text).digest('hex'), '31ec3ed48a4513f167d8e5cc49d1ff7b0e059f0c9ffe128f4c274a4e3efad15f');
+    assert.equal(createHash('sha256').update(terms).digest('hex'), '977453ea25207501eabca4ea288165d4b7b5a3269928bb89ec68e0eb036d8e35');
+    assert.match(terms, /Security has limits\./);
+    assert.match(terms, /12\. About these terms/);
+    assert.equal(document.querySelector('#terms')?.getAttribute('data-document-version'), approvedSignupDocuments.terms.version);
+    assert.equal(document.querySelector('#privacy-notice .document-reader')?.textContent, notice);
     const checkbox = document.querySelector('input[type="checkbox"]');
     assert.ok(checkbox);
     assert.equal(document.querySelectorAll('input[type="checkbox"]').length, 1);
     assert.equal(checkbox.hasAttribute('checked'), false);
-    const agreement = checkbox.parentElement?.textContent?.slice(1) ?? '';
+    const agreement = document.querySelector('.agreement-text')?.textContent ?? '';
     assert.equal(Buffer.byteLength(agreement), 388);
     assert.equal(createHash('sha256').update(agreement).digest('hex'), 'a55a976f413b27220d205c629243e16ae3f95a40d12008bcfb98f2bd14f70ab6');
     const form = formsIn(page.body).find(({ action }) => action === '/signup');

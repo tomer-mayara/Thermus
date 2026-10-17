@@ -1,3 +1,5 @@
+import { productFlow } from './product-flow.ts';
+
 // The server owns the browser session: it signs in, keeps the sealed HttpOnly cookie, and signs out. The portal only
 // reads the session and the product access from the server on the same origin, so no profile or organization value of
 // the browser can select a tenant or give access.
@@ -31,7 +33,7 @@ export async function initializePortal(options: PortalOptions): Promise<void> {
   if (!container) return;
   try {
     const answer = await options.fetch(paths.session, readOptions);
-    if (answer.status === 401) return renderSignedOut(container, options.navigate);
+    if (answer.status === 401) return renderSignedOut(container);
     if (answer.status !== 200) throw new Error('The session request failed');
     renderSignedIn(container, sessionView(await answer.json()));
     await showProductAccess(container, options.fetch);
@@ -112,7 +114,7 @@ function showConnection(container: HTMLElement, access: ProductAccess): void {
 }
 
 function renderSignedIn(container: HTMLElement, session: SessionView): void {
-  container.innerHTML = `
+  renderPage(container, `
     <div class="auth-container">
       <h1></h1>
       <div class="user-info"></div>
@@ -122,7 +124,7 @@ function renderSignedIn(container: HTMLElement, session: SessionView): void {
         <button type="submit" id="sign-out-btn" class="btn btn-secondary">Sign Out</button>
       </form>
     </div>
-  `;
+  `, 'workspace-page');
   const heading = container.querySelector('h1');
   const info = container.querySelector('.user-info');
   const form = container.querySelector('form');
@@ -145,19 +147,48 @@ function appendProfileField(container: Element, label: string, value: string): v
   container.append(paragraph);
 }
 
-function renderSignedOut(container: HTMLElement, navigate: (path: string) => void): void {
-  container.innerHTML = `
-    <div class="auth-container">
-      <h1>Welcome to Thermus</h1>
-      <p>Please sign in to continue.</p>
-      <button id="sign-in-btn" class="btn btn-primary">Sign In</button>
-    </div>
-  `;
-  container.querySelector('#sign-in-btn')?.addEventListener('click', () => navigate(paths.signIn));
+function renderSignedOut(container: HTMLElement): void {
+  renderPage(container, `
+    <section class="brand-panel" aria-labelledby="product-title">
+      <p class="eyebrow">MCP GATEWAY FOR AGENT WEB ACCESS</p>
+      <h1 id="product-title">Protect against prompt injection and data leaks from <span class="agent-phrase">AI agents</span></h1>
+      <p class="brand-copy">Security for organizations that are deploying organization-wide AI tools that give employees the ability to create agents.</p>
+      ${productFlow}
+    </section>
+    <section class="welcome-card" aria-labelledby="welcome-title">
+      <h2 id="welcome-title">Welcome to Thermus</h2>
+      <p>Sign in to open your workspace and connect your AI assistant.</p>
+      <a id="sign-in-btn" class="btn btn-primary" href="${paths.signIn}">Sign in</a>
+      <div class="free-access">
+        <p class="new-visitor">New to Thermus?</p>
+        <a class="btn btn-secondary" href="signup">Start free access</a>
+        <p class="helper">Free access requires no card and creates no automatic charge.</p>
+      </div>
+    </section>
+  `, 'entry-page');
 }
 
 function renderError(container: HTMLElement, message: string): void {
-  container.innerHTML = '<div class="error" role="alert"><h1>Authentication Error</h1><p></p></div>';
-  const paragraph = container.querySelector('p');
+  renderPage(container, '<div class="error" role="alert"><h1>Authentication Error</h1><p></p><a class="retry-link" href="./">Try again</a></div>', 'notice-page');
+  const paragraph = container.querySelector('main p');
   if (paragraph) paragraph.textContent = message;
+}
+
+function renderPage(container: HTMLElement, content: string, pageClass: string): void {
+  container.innerHTML = `
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+      <div class="header-content">
+        <a class="brand-home" href="./" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="Thermus" width="166" height="48"></a>
+        <a class="website-link" href="https://thermus.ai/">thermus.ai</a>
+      </div>
+    </header>
+    <main id="main-content" class="${pageClass}" tabindex="-1">${content}</main>
+    <footer class="site-footer">
+      <div class="footer-content">
+        <p>Thermus AI Inc.</p>
+        <nav aria-label="Legal"><a href="https://thermus.ai/privacy">Privacy Notice</a><a href="https://thermus.ai/terms">Terms of Service</a></nav>
+      </div>
+    </footer>
+  `;
 }

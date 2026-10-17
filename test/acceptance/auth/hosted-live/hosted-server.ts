@@ -179,7 +179,7 @@ export function describeHostedServerCases(run: LiveRun): void {
         `The owner must set the default Sign-out URI of the staging environment to ${signOutUri} in the WorkOS dashboard.`,
         'The portal allows a form redirect only to its own origin, to api.workos.com, and to the AuthKit domain.',
       ].join(' '));
-      await page.getByRole('button', { name: 'Sign In' }).waitFor();
+      await page.getByRole('link', { name: 'Sign in', exact: true }).waitFor();
       await page.context().close();
     });
 

@@ -19,14 +19,14 @@ export interface ServerAnswer {
   readonly location: string | undefined;
 }
 
-// A sign-in through the portal of the local HTTPS site: the Sign In button, /login, the AuthKit pages, and the
+// A sign-in through the portal of the local HTTPS site: the Sign in link, /login, the AuthKit pages, and the
 // callback of the server. The browser keeps the cookies of the server, as a user's browser does.
 export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string): Promise<PortalVisit> {
   await run.site();
   const authkitHost = new URL(run.settings.authkitIssuer).host;
   const page = await run.browser.newPage();
   await page.goto(`${localOrigin}/`);
-  await page.getByRole('button', { name: 'Sign In' }).click();
+  await page.getByRole('link', { name: 'Sign in', exact: true }).click();
   const pages = await completeAuthKit(page, { user, authkitHost, mfaPolicy: run.settings.mfaPolicy, ...(organizationName === undefined ? {} : { organizationName }) });
   await waitForPortal(page);
   return { page, pages, signedInAt: Date.now() };

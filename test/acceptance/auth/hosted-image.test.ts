@@ -91,10 +91,11 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     const response = await fetch(new URL('/signup', server.url), { signal: step.signal });
     assert.equal(response.status, 200);
     const document = parseHTML(await response.text()).document;
-    const notice = document.querySelector('#privacy-notice pre')?.textContent ?? '';
-    assert.equal(Buffer.byteLength(notice, 'utf8'), 25383);
-    assert.equal(createHash('sha256').update(notice).digest('hex'), 'a56c234b9bf98f3d5a9f0e5231547a45e1cbbe0099e019c8b5326f47b5a69669');
-    assert.equal(document.querySelector('a')?.getAttribute('href'), '/login?return_to=%2Fsignup');
+    const notice = document.querySelector('#privacy-notice .document-reader')?.textContent ?? '';
+    assert.equal(Buffer.byteLength(notice, 'utf8'), 24591);
+    assert.equal(createHash('sha256').update(notice).digest('hex'), '2c285b8ae45a90dc355706f9728e8769e19b8174b4abefb8adf57ac9aa1d12f9');
+    assert.equal(document.querySelector('#privacy-notice details .document-text')?.textContent, notice);
+    assert.equal(document.querySelector('.primary-action')?.getAttribute('href'), '/login?return_to=%2Fsignup');
     assert.equal(document.querySelectorAll('form, input').length, 0);
     assert.equal((await server.stop()).code, 0);
   });

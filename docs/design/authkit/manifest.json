@@ -1,0 +1,38 @@
+{
+  "status": "tested-ready-for-production-rollout-not-applied",
+  "design": "docs/design/portal-design.md",
+  "source": "https://workos.com/docs/authkit/branding",
+  "files": {
+    "fields": "branding-fields.json",
+    "signInCustomHtml": "panel.html",
+    "signInCustomCss": "panel.css",
+    "signUpCustomHtml": "panel.html",
+    "signUpCustomCss": "panel.css",
+    "elementStyles": "element-styles.json",
+    "fontFaceStylesheet": "fonts.css",
+    "authkitGlobalCss": "fonts.css",
+    "acceptanceCheck": "test/acceptance/auth/authkit-branding.test.ts"
+  },
+  "acceptanceCommand": "node --import tsx --test test/acceptance/auth/authkit-branding.test.ts",
+  "requiresBeforeApply": [
+    "Save complete previous branding for the confirmed production application and environment.",
+    "Upload the exact dark logo and favicon, then replace THERMUS_AUTHKIT_LOGO_URL with the public logo URL.",
+    "Complete the owner pull request review before production apply."
+  ],
+  "stagingVerification": {
+    "fontFamilyOnly": "IBM Plex Sans loaded from the generated Google stylesheet link.",
+    "heading": "IBM Plex Serif at 40px.",
+    "controlHeight": "Inputs and buttons are 48px.",
+    "viewportsWithoutOverflow": [1440, 1024, 390, 320],
+    "actual200PercentZoom": "Not verified: the browser tool did not expose a working page zoom control.",
+    "mobileSecondaryPanelWidth": 0,
+    "buttonKeyboardFocusVisible": true,
+    "cssHandling": "Complete rules are embedded literally inside @layer custom-elements."
+  },
+  "preserve": [
+    "Google and email sign-in methods and their order",
+    "Native identity forms, links, validation, and sequence",
+    "Authentication policy and redirects",
+    "Existing legal links and copy not specified in branding-fields.json"
+  ]
+}
