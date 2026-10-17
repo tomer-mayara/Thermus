@@ -2273,7 +2273,13 @@ invitations, as the probes of WorkOS staging showed. It accepts a role write
 only on the resource of the organization of the membership, named by the
 external ID of the organization, or by the organization ID when the
 organization has none. A test can repeat a membership on the next page and
-make the later member pages or the invitation reads fail.
+make the later member pages or the invitation reads fail. `workos-fake.ts`
+keeps this state and the public API of the fake, and four parts in the same
+folder hold the rest: `workos-fake-wire.ts` the JSON shapes and the list and
+error answers, `workos-fake-directory.ts` the membership, user, organization,
+and role-assignment routes, `workos-fake-invitations.ts` the invitation routes,
+and `workos-fake-sessions.ts` the codes, the refreshes, and the browser and
+Connect tokens.
 
 ## Implementation slices
 

@@ -1,5 +1,6 @@
 import { hostedRolePermissions } from '../../fixtures/hosted-roles.ts';
-import { roleJson, type WorkOSFake } from './workos-fake.ts';
+import type { WorkOSFake } from './workos-fake.ts';
+import { roleJson } from './workos-fake-wire.ts';
 
 // Extends the WorkOS HTTP fake with persistent personal organizations and external-ID uniqueness.
 export class WorkOSSignupFake {
