@@ -3,7 +3,7 @@ import type { SpawnSyncReturns } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { commands, defaults, launcherCase, pnpmCall, randomPassword, settingLines, workos, type Settings } from './fixtures/auth-workos-mcp-url-fetch-script-harness.ts';
+import { commands, defaults, pnpmCall, randomPassword, scriptHarness, settingLines, workos, type Settings } from './fixtures/auth-workos-mcp-url-fetch-script-harness.ts';
 
 const entryArguments = ['exec', 'node', '--import', 'tsx', 'test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts'];
 const axiomApiKey = 'private-axiom-key';
@@ -28,7 +28,7 @@ function assertNoSecret(result: SpawnSyncReturns<string>, secrets: readonly stri
 }
 
 test('Given only the three WorkOS settings and AXIOM_API_KEY, when the script runs from another directory, then pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from openssl rand, and the keys; stderr lists the eleven settings after the certificate line; and no output shows a secret', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run({ ...workos, AXIOM_API_KEY: axiomApiKey });
 
@@ -46,7 +46,7 @@ test('Given only the three WorkOS settings and AXIOM_API_KEY, when the script ru
 });
 
 test('Given each setting with a custom value, a cookie password, and a TLS directory with both files, when the script runs, then pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the eleven values without the secrets', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
   const rulesFile = join(launcher.root, 'custom rules.txt');
   const tlsDirectory = join(launcher.root, 'custom tls');
   writeFileSync(rulesFile, '');
@@ -84,7 +84,7 @@ test('Given each setting with a custom value, a cookie password, and a TLS direc
 });
 
 test('Given a PUBLIC_BASE_URL with a final slash and no WORKOS_REDIRECT_URI, when the script runs, then the redirect URI is the callback on that base without a double slash', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run({ ...workos, PUBLIC_BASE_URL: 'https://localhost:46443/' });
 
@@ -93,7 +93,7 @@ test('Given a PUBLIC_BASE_URL with a final slash and no WORKOS_REDIRECT_URI, whe
 
 for (const name of Object.keys(workos)) {
   test(`Given no ${name}, when the script runs, then it exits with status 1 and a message that names ${name} and the staging launcher and shows no value, and neither openssl nor pnpm runs`, (t) => {
-    const launcher = launcherCase(t);
+    const launcher = scriptHarness(t);
     const others = Object.fromEntries(Object.entries(workos).filter(([other]) => other !== name));
 
     const result = launcher.run({ ...others, AXIOM_API_KEY: axiomApiKey });
@@ -107,7 +107,7 @@ for (const name of Object.keys(workos)) {
 }
 
 test('Given the three WorkOS settings with empty values, when the script runs, then it exits with status 1 and the message names the three settings', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run({ WORKOS_API_KEY: '', WORKOS_CLIENT_ID: '', WORKOS_AUTHKIT_ISSUER: '' });
 
@@ -116,7 +116,7 @@ test('Given the three WorkOS settings with empty values, when the script runs, t
 });
 
 test('Given no certificate files, when the script runs two times, then the first run makes key.pem and cert.pem with openssl req in the default TLS directory, which only the owner can read, and says so on stderr; the second run calls no openssl req and keeps the files', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
   const settings = defaults(launcher.root);
   const tlsDirectory = settings.THERMUS_TLS_DIR;
 
@@ -134,7 +134,7 @@ test('Given no certificate files, when the script runs two times, then the first
 });
 
 test('Given a TLS directory with cert.pem only, when the script runs, then it makes a new key.pem and cert.pem', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
   const tlsDirectory = join(launcher.root, 'half tls');
   mkdirSync(tlsDirectory);
   writeFileSync(join(tlsDirectory, 'cert.pem'), 'old certificate\n');
@@ -147,7 +147,7 @@ test('Given a TLS directory with cert.pem only, when the script runs, then it ma
 });
 
 test('Given an AD_RULES_FILE that does not exist, when the script runs, then it exits with status 1 and a message that names AD_RULES_FILE and the touch command, it makes no certificate, and pnpm does not run', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
   const missing = join(launcher.root, 'missing-rules.txt');
 
   const result = launcher.run({ ...workos, AD_RULES_FILE: missing });
@@ -159,7 +159,7 @@ test('Given an AD_RULES_FILE that does not exist, when the script runs, then it 
 });
 
 test('Given a repository root without the portal build, when the script runs, then it exits with status 1 and a message that names the missing index.html and npm run build:user-portal, it makes no certificate, and pnpm does not run', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
   const portalBuild = join(launcher.root, 'src/user-portal/dist/index.html');
   rmSync(portalBuild);
 
@@ -172,7 +172,7 @@ test('Given a repository root without the portal build, when the script runs, th
 });
 
 test('Given extra arguments, when the script runs, then pnpm exec gets them after the entry point', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run(workos, ['--first', 'two words']);
 
@@ -180,7 +180,7 @@ test('Given extra arguments, when the script runs, then pnpm exec gets them afte
 });
 
 test('Given a pnpm that exits with status 3, when the script runs, then the script exits with status 3', (t) => {
-  const launcher = launcherCase(t);
+  const launcher = scriptHarness(t);
 
   const result = launcher.run({ ...workos, FAKE_PNPM_EXIT: '3' });
 
