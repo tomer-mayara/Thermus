@@ -2245,10 +2245,12 @@ routes, `OrganizationAdministration`, access contracts, and MCPServer with
 (`openOrganizationSite()`) or behind the real HTTP server on a loopback port
 (`serveOrganizationSite()`). A setup can give the memberships, more MCP tokens,
 and a change recorder; the site keeps each change record, and `browserOf()`
-can sign in a session without MFA. `hosted-administration.ts` gives the
-memberships, `serveAdministrationSite()`, and the page helpers of the AUTH-08
-tests. The site,
-`hosted-administration.ts`, `MembershipDirectoryDouble`,
+can sign in a session without MFA. `hosted-members.ts` gives the users and
+the memberships of these tests. `hosted-access.ts` gives the steps that read
+which pages a browser can open and the request context of a page.
+`hosted-administration.ts` gives `serveAdministrationSite()` and the page
+helpers of the AUTH-08 tests. The site, `hosted-members.ts`,
+`hosted-access.ts`, `hosted-administration.ts`, `MembershipDirectoryDouble`,
 `AccountOperationSpy`, `BrowserSessionStore`, and `HostedBrowser` are in
 `test/support/`. The unit tests of the organization routes share
 `serveAnn()`, the form helpers, and the session cookies of
