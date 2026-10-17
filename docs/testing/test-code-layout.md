@@ -118,8 +118,9 @@ test/
   support/
     dsl/                 layer 2
     drivers/             layer 3: operator-log.ts, the reader of the operator log of the server
-    drivers/browser/     layer 3: HTTP browsers, cookie jar, page forms
+    drivers/browser/     layer 3: HTTP browsers, cookie jar, page forms, HTTPS request driver
     drivers/mcp/         layer 3: MCP SDK client, raw MCP request, eras, OAuth client
+    drivers/workos/      layer 3: WorkOS REST driver of the signup contract
     in-process/          layer 4: the system composed in the test process
     processes/           layer 4: the system as a child process; CLI driver; preloads; probes; module-paths.ts
     container/           layer 4: the system in Docker; Docker driver; container scripts
@@ -127,6 +128,7 @@ test/
     doubles/<name>/      <name> = src package of the contract (auth, mcp, organizations, hosted-admin,
                          billing, application, website-fetcher, logging) or external system (workos)
     fixtures/            shared fixture data, settings, data files
+      hosted-portal/     the portal build fixture of the offline hosted tests
     isolation/           per-test isolation in the test process
 ```
 
@@ -168,8 +170,14 @@ home.
 - D4. `S/drivers/**` imports no `S/dsl/**`.
 - D5. `S/doubles/**` and `S/fixtures/**` import no `S/dsl/**` and no
   `S/drivers/**`.
-- D6. `S/container/container-{edge,page,probe}.ts` import only `node:` modules.
-  Each file runs alone in a container.
+- D6. Each script under `S/container/` that runs in a container runs there
+  alone, so it imports only `node:` modules: `container-edge.ts`,
+  `container-page.ts`, `container-probe.ts`, and, until Step 9b of the plan
+  replaces them, `hosted-image-page.ts` and `hosted-image-probe.ts`. The one
+  exception is the preload `hosted-image-identity.ts`: the hosted image gate
+  mounts it at the path of the emitted test support in the image. The preload
+  does not run alone: it runs in the server process of the image and imports
+  `src` as the image has it.
 - D7. No `*.test.ts` under `S/`. The suite globs select by test-type folder.
   The tests of support code live in `U/test-support/`, as PR #86 started.
 - D8. A run-time path from support code to another folder or to the repository
