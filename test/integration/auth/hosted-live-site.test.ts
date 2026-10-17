@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { X509Certificate } from 'node:crypto';
 import { once } from 'node:events';
-import { request as httpsRequest } from 'node:https';
 import { Server } from 'node:net';
 import { join } from 'node:path';
+import { text } from 'node:stream/consumers';
 import { describe, test, type TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { connect as tlsConnect } from 'node:tls';
@@ -11,6 +11,7 @@ import type { Application, ApplicationLogger } from '../../../src/application.ts
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { sendHttpsRequest } from '../../support/drivers/browser/https-client.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../support/hosted-live/settings.ts';
 import { lightpandaStub } from '../../support/processes/module-paths.ts';
@@ -100,17 +101,10 @@ async function frontFingerprint(): Promise<string> {
   }
 }
 
-// The request trusts only the given certificate. Without an agent, each request has its own connection, which closes
-// after the answer.
-function frontGet(path: string, ca: Buffer): Promise<FrontAnswer> {
-  const answer = Promise.withResolvers<FrontAnswer>();
-  const request = httpsRequest({ host: front.hostname, port: front.port, path, ca, agent: false }, (response) => {
-    const chunks: Buffer[] = [];
-    response.on('data', (chunk: Buffer) => chunks.push(chunk)).on('error', answer.reject)
-      .on('end', () => answer.resolve({ status: response.statusCode ?? 0, body: Buffer.concat(chunks).toString('utf8') }));
-  });
-  request.on('error', answer.reject).end();
-  return answer.promise;
+async function frontGet(path: string, ca: Buffer): Promise<FrontAnswer> {
+  const call = await sendHttpsRequest(new Request(new URL(path, front)), ca);
+  const incoming = await call.response;
+  return { status: incoming.statusCode ?? 0, body: await text(incoming) };
 }
 
 describe('Local HTTPS site of the hosted live gate (test support) with the real HTTP server', () => {
