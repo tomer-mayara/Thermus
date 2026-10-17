@@ -99,7 +99,7 @@ export class WorkOSSignupRoutes {
       cookies = state.cookies;
       const documents = this.requireDocuments();
       if (state.status === 'signed-out') {
-        const answer = request.method === 'GET' ? signupSignInPage(documents, this.login) : signupFailurePage(401, 'Sign in before you activate access.');
+        const answer = signupSignInPage(documents, this.login, request.method === 'GET' ? 200 : 401);
         return withCookies(answer, cookies);
       }
       const answer = request.method === 'GET' ? await this.inspectSignup(request, state, run) : await this.activateForm(request, state, run);
@@ -115,6 +115,7 @@ export class WorkOSSignupRoutes {
     const result = await run(() => this.options.activation.inspect({ user: state.user, signal: request.signal }));
     request.signal.throwIfAborted();
     const destination = this.destination.pathname + this.destination.search;
+    if (result.status === 'sign-in-required') return signupSignInPage(this.requireDocuments(), this.login);
     if (result.status === 'existing-access') return signupContinuePage(destination);
     if (result.status === 'eligible') return signupFormPage(this.requireDocuments(), state.csrfToken, this.path);
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.', result.canContinue ? destination : undefined);
@@ -134,6 +135,7 @@ export class WorkOSSignupRoutes {
   }
 
   private activationAnswer(result: SignupResult): Response {
+    if (result.status === 'sign-in-required') return signupSignInPage(this.requireDocuments(), this.login, 401);
     if (result.status === 'active' || result.status === 'existing-access') return seeOther(this.destination.href, []);
     if (result.status === 'unverified') return signupFailurePage(403, 'Verify your email before you activate access.');
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.');

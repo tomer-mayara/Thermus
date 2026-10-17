@@ -10,8 +10,8 @@ export function signupClosedPage(status = 200): Response {
   return answer('Activation is closed', ['<p>New account activation is closed.</p>', '<p><a href="/login">Sign in</a></p>', '<p><a href="mailto:legal@thermus.ai">Contact</a></p>'], { status });
 }
 
-export function signupSignInPage(documents: SignupDocuments, loginUrl: string): Response {
-  return answer('Start free access', [notice(documents), `<p><a href="${escapeHtml(loginUrl)}">Sign in</a> to continue.</p>`]);
+export function signupSignInPage(documents: SignupDocuments, loginUrl: string, status = 200): Response {
+  return answer('Start free access', [notice(documents), `<p><a href="${escapeHtml(loginUrl)}">Sign in</a> to continue.</p>`], { status });
 }
 
 export function signupFormPage(documents: SignupDocuments, csrfToken: string, action: string): Response {

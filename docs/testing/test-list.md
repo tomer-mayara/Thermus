@@ -16,6 +16,8 @@ production document proofs below.
 - Unit: `test/unit/auth-workos/workos-signup*.test.ts` covers current verified
   identity, acceptance metadata in the initial create, one User grant, concurrency,
   unknown writes, restart, revocation, strict form fields, and frozen documents.
+  Current-user read tests distinguish a deleted user (404) from provider failures
+  (401, 403, 429, and 503) during inspection and activation.
 - Integration: `test/integration/auth/workos-signup-routes.test.ts` covers HTTP
   responses, cookies, request limits, and cancellation;
   `test/integration/auth/workos-connection.test.ts` checks the real production
@@ -25,7 +27,10 @@ production document proofs below.
   `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it
   with the signup fake. It checks closed signup, the notice and agreement,
   personal User access, revoked access, existing roles, and fresh email
-  verification.
+  verification. Deleted-user GET and POST offer fresh sign-in with the full
+  notice and no activation writes. Signed-out old forms return 401 with a usable
+  sign-in link. A fresh sign-in can activate for its new subject. Current-user
+  outages remain 503.
 - Interface: `test/interface/auth/workos-signup.test.ts` checks single-attempt
   writes after provider faults. `test/interface/auth/workos-signup.live.ts`
   checks concurrent creation and acceptance metadata in disposable Staging
