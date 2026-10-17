@@ -9,6 +9,7 @@ import { describe, test, type TestContext } from 'node:test';
 import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
+import type { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 
 const openSignupSite = (t: TestContext, enabled = false) => serveWorkOSSite(t, {
   config: hostedRootConfig,
@@ -316,15 +317,15 @@ describe('FS-04 production signup documents', () => {
 for (const part of ['terms', 'notice'] as const) {
   for (const corruption of ['bytes', 'hash'] as const) {
     test(`Given the approved ${part} with corrupt ${corruption}, when signup is composed, then it fails before any provider read or write`, async (t) => {
-      const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/' }, 'http');
-      const world = await WorkOSFake.start(t, config.publicBaseUrl, []);
       const original = approvedSignupDocuments[part];
       const changed = corruption === 'bytes' ? { ...original, text: original.text + ' ' } : { ...original, sha256: '0'.repeat(64) };
       const documents = { ...approvedSignupDocuments, [part]: changed };
-      await assert.rejects(composeWorkOSApplication(config, world.connection(), {
-        logger: { info: () => {}, error: () => {} }, signup: { enabled: true, documents },
+      // The site starts the fake before it composes the application, so the fake can show that no request reached it.
+      let world: WorkOSFake | undefined;
+      await assert.rejects(serveWorkOSSite(t, {
+        config: hostedRootConfig, organizations: [], signup: { enabled: true, documents }, setUp: (started) => { world = started; },
       }), /document bytes or hash/);
-      assert.deepEqual(world.fake.takeRequests(), []);
+      assert.deepEqual(world?.fake.takeRequests(), []);
     });
   }
 }
