@@ -5,6 +5,7 @@ runtime guides stay current after implementation.
 
 ## Working guidance
 
+- [Free subscription guide](free-subscription-guide.md): turn signup on or off, then connect, test, and disconnect Claude Code.
 - [Coding principles](coding-principles.md): design and verification guidance.
 - [Lightpanda runtime](lightpanda-runtime.md): runtime installation and renderer checks.
 - [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the renderer gate, the hosted offline checks, the self-hosted release checks, and later release gates.
