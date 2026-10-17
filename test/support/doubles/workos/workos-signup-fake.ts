@@ -1,9 +1,5 @@
 import { hostedRolePermissions } from '../../fixtures/hosted-roles.ts';
-import type { WorkOSFake } from './workos-fake.ts';
-
-const createdAt = '2026-10-16T12:00:00.000Z';
-// The roles of a personal organization: the hosted role catalog, with the default role first, as the fake listed them.
-const roles = ['member', 'user', 'admin', 'super-admin'].map((slug) => ({ slug, permissions: hostedRolePermissions[slug] ?? [] }));
+import { roleJson, type WorkOSFake } from './workos-fake.ts';
 
 // Extends the WorkOS HTTP fake with persistent personal organizations and external-ID uniqueness.
 export class WorkOSSignupFake {
@@ -22,15 +18,12 @@ export class WorkOSSignupFake {
         return { status: 400, body: { code: 'external_id_already_used', message: 'External ID already exists' } };
       }
       const id = `org_PERSONAL${this.organizations.length + 1}`;
-      const organization = { object: 'organization', id, name: body.name, external_id: body.external_id,
-        domains: [], metadata: { ...body.metadata }, allow_profiles_outside_organization: false, created_at: createdAt, updated_at: createdAt };
-      this.organizations.push(organization);
       world.organizationNames = { ...world.organizationNames, [id]: body.name };
       world.organizationExternalIds = { ...world.organizationExternalIds, [id]: body.external_id };
+      const organization = { ...world.organizationJson(id), metadata: { ...body.metadata } };
+      this.organizations.push(organization);
       world.fake.answer(`GET /organizations/${id}`, { status: 200, body: organization });
-      world.fake.answer(`GET /authorization/organizations/${id}/roles`, { status: 200, body: { object: 'list', data: roles.map((role) => ({
-        object: 'role', id: `role_${role.slug}`, name: role.slug, ...role, type: 'EnvironmentRole', resource_type_slug: 'organization', created_at: createdAt, updated_at: createdAt,
-      })) } });
+      world.fake.answer(`GET /authorization/organizations/${id}/roles`, { status: 200, body: { object: 'list', data: Object.keys(hostedRolePermissions).map(roleJson) } });
       return { status: 201, body: organization };
     });
   }

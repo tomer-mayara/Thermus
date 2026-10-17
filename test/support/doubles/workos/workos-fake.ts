@@ -81,7 +81,7 @@ function userJson(user: FakeUser) {
   };
 }
 
-function roleJson(slug: string) {
+export function roleJson(slug: string) {
   return {
     object: 'role', id: `role_01${slug.toUpperCase().replace('-', '')}`, name: slug, slug, description: null,
     permissions: hostedRolePermissions[slug] ?? [], type: 'EnvironmentRole', resource_type_slug: 'organization',
@@ -499,7 +499,7 @@ export class WorkOSFake {
   }
 
   // The JSON of an organization, as the pinned SDK reads it.
-  private organizationJson(organizationId: string) {
+  organizationJson(organizationId: string) {
     return {
       object: 'organization', id: organizationId, name: this.organizationNames[organizationId] ?? organizationId,
       allow_profiles_outside_organization: false, domains: [], external_id: this.organizationExternalIds[organizationId] ?? null,
