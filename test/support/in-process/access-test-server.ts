@@ -41,7 +41,7 @@ export function allowed(context: RequestContext): AccessDecision {
   return { allowed: true, context };
 }
 
-export interface AccessTestServer {
+interface AccessTestServer {
   readonly server: MCPServer;
   readonly verifier: IdentityVerifierSpy;
   readonly resolver: AccessResolverSpy;

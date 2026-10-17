@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, before } from 'node:test';
 
-export interface OutboundFetchGuardOptions {
+interface OutboundFetchGuardOptions {
   // Lets a request to 127.0.0.1 through to the real fetch. The default refuses each request.
   readonly allowLoopback?: boolean;
   // The message of the error that a refused request gets.

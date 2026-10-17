@@ -23,7 +23,7 @@ export async function serveAdministrationSite(t: TestContext, setup: Pick<SiteSe
   return { ...site, failures };
 }
 
-export interface ShownPage {
+interface ShownPage {
   readonly answer: BrowserAnswer;
   readonly forms: readonly PageForm[];
 }
@@ -34,7 +34,7 @@ export async function shownPage(browser: HostedBrowser, path: string): Promise<S
 }
 
 // The button of a form and the values of its visible fields.
-export interface FilledForm {
+interface FilledForm {
   readonly label: string;
   readonly filled: Readonly<Record<string, string>>;
 }

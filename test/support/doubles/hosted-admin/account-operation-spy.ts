@@ -1,7 +1,7 @@
 import { AccessDeniedError, requirePermission } from '../../../../src/auth/access-context.ts';
 import type { AccountOperation } from '../../../../src/hosted-admin/account-routes.ts';
 
-export interface AccountWork {
+interface AccountWork {
   readonly path: string;
   readonly subject: string;
   readonly tenantId: string;

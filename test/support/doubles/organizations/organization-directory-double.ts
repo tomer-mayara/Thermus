@@ -17,7 +17,7 @@ import type {
 import { ChangeAnswers } from './change-answers.ts';
 import { chunks, memberOf, pageAt, roleGrantOf, stateOf, withoutRole, withRole, type InvitationRecord, type InvitationSeed, type MemberSeed, type MemberState, type PageLayout } from './directory-double-records.ts';
 
-export type ConfiguredMemberships = readonly OrganizationMembership[] | Error;
+type ConfiguredMemberships = readonly OrganizationMembership[] | Error;
 
 // A stateful provider directory: changes take effect in the later reads, as in the provider. Each grant change needs
 // the current revision of the membership, and an acceptance activates only the role of the invitation. A test can lay

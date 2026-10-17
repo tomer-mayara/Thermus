@@ -2,7 +2,7 @@ import { HostedBrowser, type BrowserAnswer } from '../drivers/browser/hosted-bro
 import type { FakeUser } from '../doubles/workos/workos-fake.ts';
 import type { WorkOSServerSite } from '../in-process/workos-site.ts';
 
-export interface ServerSignIn {
+interface ServerSignIn {
   readonly browser: HostedBrowser;
   readonly start: BrowserAnswer;
   readonly callback: BrowserAnswer;

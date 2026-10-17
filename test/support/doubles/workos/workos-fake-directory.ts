@@ -51,7 +51,7 @@ export function isKnownRole(slug: string | undefined): slug is string {
   return slug !== undefined && Object.hasOwn(hostedRolePermissions, slug);
 }
 
-export function indexOfId(memberships: readonly FakeMembership[], membershipId: string): number {
+function indexOfId(memberships: readonly FakeMembership[], membershipId: string): number {
   return memberships.findIndex((_membership, index) => membershipIdAt(index) === membershipId);
 }
 

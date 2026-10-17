@@ -18,7 +18,7 @@ export interface WorkOSServerSite {
   readonly publicBaseUrl: string;
 }
 
-export interface WorkOSSiteOptions {
+interface WorkOSSiteOptions {
   // The hosted configuration of the site. Without it, the site uses hostedConfig.
   readonly config?: typeof hostedConfig;
   // The organizations that a new fake knows. Each gets the environment roles.
@@ -45,7 +45,7 @@ export interface WorkOSSite extends WorkOSServerSite {
   discover(token?: string): Promise<Response>;
 }
 
-export interface WorkOSSignupSite extends WorkOSSite {
+interface WorkOSSignupSite extends WorkOSSite {
   readonly signupFake: WorkOSSignupFake;
 }
 
