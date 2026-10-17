@@ -5,6 +5,10 @@ import type { WorkOSSettings, WorkOSMfaPolicy } from '../../../../src/auth/hoste
 import { hostedRolePermissions } from '../../fixtures/hosted-roles.ts';
 import { nowInSeconds, SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type RecordedRequest } from './workos-fake-api.ts';
+import {
+  invalidGrant, invitationJson, listAnswer, membershipJson, notFound, organizationJson as organizationShape, organizationMembershipNotFound, refusal,
+  roleAssignmentJson, roleJson, userJson, type ShownInvitation, type ShownMembership,
+} from './workos-fake-wire.ts';
 
 export interface FakeUser {
   readonly id: string;
@@ -33,7 +37,7 @@ export interface FakeInvitation {
   readonly expiresAt: string;
 }
 
-type MembershipStatus = NonNullable<FakeMembership['status']>;
+export type MembershipStatus = NonNullable<FakeMembership['status']>;
 
 interface FakeSession {
   readonly user: FakeUser;
@@ -59,8 +63,6 @@ const membershipsRoute = 'GET /user_management/organization_memberships';
 const authenticateRoute = 'POST /user_management/authenticate';
 const roleAssignmentsPath = '/authorization/organization_memberships/:id/role_assignments';
 const invitationsPath = '/user_management/invitations';
-const createdAt = '2026-10-01T08:00:00.000Z';
-const firstUpdateTime = Date.parse('2026-10-13T08:00:00.000Z');
 const invitationLifetimeMs = 7 * 24 * 60 * 60 * 1_000;
 const membershipNotFound = notFound('UserOrganizationMembership not found');
 const invitationNotFound = notFound('Invite not found');
@@ -73,29 +75,8 @@ const resendRefusals: Readonly<Record<FakeInvitation['state'], FakeAnswer | unde
 };
 const mcpClientId = 'client_01MCPCLIENT';
 
-function userJson(user: FakeUser) {
-  return {
-    object: 'user', id: user.id, email: user.email, email_verified: user.emailVerified ?? true, first_name: user.firstName, last_name: 'Example',
-    profile_picture_url: null, last_sign_in_at: null, locale: null, external_id: null, metadata: {},
-    created_at: createdAt, updated_at: updateTime(0),
-  };
-}
-
-export function roleJson(slug: string) {
-  return {
-    object: 'role', id: `role_01${slug.toUpperCase().replace('-', '')}`, name: slug, slug, description: null,
-    permissions: hostedRolePermissions[slug] ?? [], type: 'EnvironmentRole', resource_type_slug: 'organization',
-    created_at: createdAt, updated_at: createdAt,
-  };
-}
-
 function matches(filter: string | null, value: string): boolean {
   return filter === null || filter === value;
-}
-
-// Each change gives a later update time: one second after the time before.
-function updateTime(changes: number): string {
-  return new Date(firstUpdateTime + changes * 1_000).toISOString();
 }
 
 function membershipIdAt(index: number): string {
@@ -137,19 +118,6 @@ function positionAfter(records: readonly { readonly index: number }[], cursorInd
 
 function queryOf(request: RecordedRequest): URLSearchParams {
   return new URL(request.path, 'http://fake').searchParams;
-}
-
-function listAnswer(data: readonly unknown[], after: string | null): FakeAnswer {
-  return { status: 200, body: { object: 'list', data, list_metadata: { before: null, after } } };
-}
-
-function notFound(message: string): FakeAnswer {
-  return { status: 404, body: { code: 'entity_not_found', message } };
-}
-
-// WorkOS gives these refusals without an errors list.
-function refusal(code: string, message: string): FakeAnswer {
-  return { status: 400, body: { code, message } };
 }
 
 // A local WorkOS environment for the offline tests of the hosted WorkOS composition: a fake WorkOS API with
@@ -350,7 +318,7 @@ export class WorkOSFake {
     const start = after === null ? 0 : Math.max(0, positionAfter(fitting, this.indexOfId(after)) - this.membershipPageOverlap);
     const end = start + Math.min(Number(query.get('limit') ?? 10), this.membershipPageSize);
     const next = end < fitting.length ? membershipIdAt(fitting[end - 1].index) : null;
-    return listAnswer(fitting.slice(start, end).map(({ index }) => this.membershipJson(index)), next);
+    return listAnswer(fitting.slice(start, end).map(({ index }) => membershipJson(this.shownMembership(index))), next);
   }
 
   // WorkOS create reactivates an inactive record. Thus callers cannot use a retry as an absence check.
@@ -362,13 +330,13 @@ export class WorkOSFake {
     if (roles.some((role) => !isKnownRole(role))) return refusal('invalid_role', 'The role is invalid.');
     if (index !== -1) this.changeMembership(index, { roles, status: 'active' });
     else this.memberships = [...this.#memberships, { userId: body.user_id, organizationId: body.organization_id, roles, status: 'active' }];
-    return { status: 201, body: this.membershipJson(index === -1 ? this.#memberships.length - 1 : index) };
+    return { status: 201, body: membershipJson(this.shownMembership(index === -1 ? this.#memberships.length - 1 : index)) };
   }
 
   private membershipAnswer(membershipId: string): FakeAnswer {
     if (this.membershipOutage) return this.membershipOutage;
     const index = this.indexOfId(membershipId);
-    return index === -1 ? membershipNotFound : { status: 200, body: this.membershipJson(index) };
+    return index === -1 ? membershipNotFound : { status: 200, body: membershipJson(this.shownMembership(index)) };
   }
 
   private userAnswer(userId: string): FakeAnswer {
@@ -406,9 +374,9 @@ export class WorkOSFake {
   // A second assignment of a role changes nothing and gives the same assignment.
   private assignRole(index: number, role: string): FakeAnswer {
     const roles = effectiveRoles(this.#memberships[index]);
-    if (roles.includes(role)) return { status: 200, body: this.roleAssignmentJson(index, role) };
+    if (roles.includes(role)) return { status: 200, body: this.roleAssignmentJsonAt(index, role) };
     this.changeMembership(index, { roles: [...roles, role] });
-    return { status: 201, body: this.roleAssignmentJson(index, role) };
+    return { status: 201, body: this.roleAssignmentJsonAt(index, role) };
   }
 
   // When the last role goes, WorkOS gives the default role. A role that the membership does not have changes nothing.
@@ -426,13 +394,13 @@ export class WorkOSFake {
     const start = fitting.findIndex(({ id }) => id === query.get('after')) + 1;
     const end = start + Math.min(Number(query.get('limit') ?? 10), this.invitationPageSize);
     const next = end < fitting.length ? fitting[end - 1].id : null;
-    return listAnswer(fitting.slice(start, end).map((invitation) => this.invitationJson(invitation)), next);
+    return listAnswer(fitting.slice(start, end).map((invitation) => invitationJson(this.shownInvitation(invitation))), next);
   }
 
   private invitationAnswer(invitationId: string): FakeAnswer {
     if (this.invitationOutage) return this.invitationOutage;
     const invitation = this.invitationWithId(invitationId);
-    return invitation === undefined ? invitationNotFound : { status: 200, body: this.invitationJson(invitation) };
+    return invitation === undefined ? invitationNotFound : { status: 200, body: invitationJson(this.shownInvitation(invitation)) };
   }
 
   // A send makes a pending membership with only the invited role: for a new address with a new unverified user, and
@@ -445,7 +413,7 @@ export class WorkOSFake {
     if (refused) return refused;
     this.putMembershipOf(invitation, { roles: [roleSlug], status: 'pending' });
     this.invitations = [...this.invitations, invitation];
-    return { status: 201, body: this.invitationJson(invitation) };
+    return { status: 201, body: invitationJson(this.shownInvitation(invitation)) };
   }
 
   // WorkOS refuses an unknown role, an address with a pending invitation of the organization in any letter case and
@@ -465,7 +433,7 @@ export class WorkOSFake {
     if (invitation === undefined) return invitationNotFound;
     const refused = resendRefusals[currentState(invitation)];
     if (refused) return refused;
-    return { status: 200, body: this.invitationJson(this.changeInvitation(invitation, {})) };
+    return { status: 200, body: invitationJson(this.shownInvitation(this.changeInvitation(invitation, {}))) };
   }
 
   // A revoke leaves the pending membership of the invitation pending.
@@ -473,51 +441,30 @@ export class WorkOSFake {
     const invitation = this.invitationWithId(invitationId);
     if (invitation === undefined) return invitationNotFound;
     if (currentState(invitation) !== 'pending') return refusal('invite_not_pending', 'Invite is not pending.');
-    return { status: 200, body: this.invitationJson(this.changeInvitation(invitation, { state: 'revoked' })) };
+    return { status: 200, body: invitationJson(this.shownInvitation(this.changeInvitation(invitation, { state: 'revoked' }))) };
   }
 
-  private membershipJson(index: number) {
+  private shownMembership(index: number): ShownMembership {
     const membership = this.#memberships[index];
-    const roles = effectiveRoles(membership);
     return {
-      object: 'organization_membership', id: membershipIdAt(index), user_id: membership.userId, organization_id: membership.organizationId,
-      organization_name: this.organizationNames[membership.organizationId] ?? membership.organizationId, status: currentStatus(membership),
-      directory_managed: membership.directoryManaged ?? false, role: { slug: roles[0] }, roles: roles.map((slug) => ({ slug })),
-      custom_attributes: {}, created_at: createdAt, updated_at: updateTime(this.changesOf(index)),
+      ...membership, id: membershipIdAt(index), roles: effectiveRoles(membership), status: currentStatus(membership),
+      organizationName: this.organizationNames[membership.organizationId] ?? membership.organizationId, changes: this.changesOf(index),
     };
   }
 
-  private roleAssignmentJson(index: number, role: string) {
-    const { organizationId } = this.#memberships[index];
-    const membershipId = membershipIdAt(index);
-    const changedAt = updateTime(this.changesOf(index));
-    return {
-      object: 'role_assignment', id: `role_assignment_${membershipId}_${role}`, organization_membership_id: membershipId, role: { slug: role },
-      resource: { id: `authz_resource_${organizationId}`, external_id: this.resourceExternalIdOf(organizationId), resource_type_slug: 'organization' },
-      source: { type: 'direct', group_role_assignment_id: null }, created_at: changedAt, updated_at: changedAt,
-    };
+  private roleAssignmentJsonAt(index: number, role: string) {
+    const membership = this.shownMembership(index);
+    return roleAssignmentJson(membership, role, this.resourceExternalIdOf(membership.organizationId));
   }
 
   // The JSON of an organization, as the pinned SDK reads it.
   organizationJson(organizationId: string) {
-    return {
-      object: 'organization', id: organizationId, name: this.organizationNames[organizationId] ?? organizationId,
-      allow_profiles_outside_organization: false, domains: [], external_id: this.organizationExternalIds[organizationId] ?? null,
-      metadata: {}, created_at: createdAt, updated_at: createdAt,
-    };
+    return organizationShape(organizationId, this.organizationNames[organizationId] ?? organizationId, this.organizationExternalIds[organizationId] ?? null);
   }
 
-  private invitationJson(invitation: FakeInvitation) {
-    const changedAt = updateTime(this.#invitationChanges.get(invitation.id) ?? 0);
-    const token = `invitation-token-${invitation.id}`;
-    return {
-      object: 'invitation', id: invitation.id, email: invitation.email, state: invitation.state,
-      accepted_at: invitation.state === 'accepted' ? changedAt : null, revoked_at: invitation.state === 'revoked' ? changedAt : null,
-      expires_at: invitation.expiresAt, organization_id: invitation.organizationId, inviter_user_id: null,
-      accepted_user_id: invitation.state === 'accepted' ? this.userWithAddress(invitation.email)?.id ?? null : null,
-      role_slug: this.roleSlugOf(invitation), token, accept_invitation_url: `https://authkit.fake.example/invite?invitation_token=${token}`,
-      created_at: createdAt, updated_at: changedAt,
-    };
+  private shownInvitation(invitation: FakeInvitation): ShownInvitation {
+    const userId = this.userWithAddress(invitation.email)?.id ?? null;
+    return { ...invitation, roleSlug: this.roleSlugOf(invitation), userId, changes: this.#invitationChanges.get(invitation.id) ?? 0 };
   }
 
   // WorkOS gives the role of an invitation from the current role of its membership. Thus only the role of a pending
@@ -598,7 +545,7 @@ export class WorkOSFake {
 
   private async codeAnswer(code: string): Promise<FakeAnswer> {
     const session = this.#codes.get(code);
-    if (session === undefined) return { status: 400, body: { error: 'invalid_grant', error_description: 'The code is not valid.' } };
+    if (session === undefined) return invalidGrant('The code is not valid.');
     this.#codes.delete(code);
     return this.sessionAnswer(session);
   }
@@ -606,11 +553,9 @@ export class WorkOSFake {
   private async refreshAnswer(body: Readonly<Record<string, string | undefined>>): Promise<FakeAnswer> {
     if (this.refreshOutage) return this.refreshOutage;
     const session = this.#sessions.get(body.refresh_token ?? '');
-    if (session === undefined || session.ended) return { status: 400, body: { error: 'invalid_grant', error_description: 'The session has ended.' } };
+    if (session === undefined || session.ended) return invalidGrant('The session has ended.');
     const organizationId = body.organization_id ?? session.organizationId;
-    if (organizationId !== undefined && !this.hasActiveMembership(session.user, organizationId)) {
-      return { status: 400, body: { error: 'organization_membership_not_found', error_description: 'No membership.' } };
-    }
+    if (organizationId !== undefined && !this.hasActiveMembership(session.user, organizationId)) return organizationMembershipNotFound;
     session.organizationId = organizationId;
     return this.sessionAnswer(session);
   }
