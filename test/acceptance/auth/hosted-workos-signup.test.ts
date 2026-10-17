@@ -3,18 +3,23 @@ import { createHash } from 'node:crypto';
 import { parseHTML } from 'linkedom';
 import { openProductionSignupSite } from '../../support/in-process/production-signup-site.ts';
 import assert from 'node:assert/strict';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
+import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
-import { describe, test } from 'node:test';
+import { describe, test, type TestContext } from 'node:test';
 import { HostedBrowser, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
-import { openWorkOSSignupSite } from '../../support/in-process/workos-signup-site.ts';
+import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
+
+const openSignupSite = (t: TestContext, enabled = false) => serveWorkOSSite(t, {
+  config: hostedRootConfig,
+  organizations: ['org_INTERNAL'],
+  signupFake: true,
+  ...(enabled ? { signup: { enabled: true, documents: signupDocuments } } : {}),
+});
 
 describe('Hosted self-service signup is closed by default', () => {
   test('Given no signup setting, when a visitor opens signup, then the page says activation is closed and offers Sign in and Contact', async (t) => {
-    const site = await openWorkOSSignupSite(t);
+    const site = await openSignupSite(t);
     const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
     site.world.fake.takeRequests();
     const answer = await browser.open('signup');
@@ -29,7 +34,7 @@ describe('Hosted self-service signup is closed by default', () => {
   });
 
   test('Given closed signup and a signed-in identity without membership, when an earlier agreement form is posted, then activation stays closed and no membership is created', async (t) => {
-    const site = await openWorkOSSignupSite(t);
+    const site = await openSignupSite(t);
     const { browser } = await signInThroughServer(site, { id: 'user_SIGNUP', email: 'person@example.com', firstName: 'Person' });
     const session = JSON.parse((await browser.open('session')).body) as { csrfToken: string };
     site.world.fake.takeRequests();
@@ -45,13 +50,11 @@ describe('Hosted self-service signup is closed by default', () => {
 
 describe('Hosted self-service signup with a test legal bundle', () => {
   test('Given signup is enabled without approved documents, when the application starts, then startup fails', async (t) => {
-    const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/' }, 'http');
-    const world = await WorkOSFake.start(t, config.publicBaseUrl, ['org_INTERNAL']);
-    await assert.rejects(composeWorkOSApplication(config, world.connection(), { logger: { info: () => {}, error: () => {} }, signup: { enabled: true } }), /document|bundle/i);
+    await assert.rejects(serveWorkOSSite(t, { config: hostedRootConfig, organizations: ['org_INTERNAL'], signup: { enabled: true } }), /document|bundle/i);
   });
 
   test('Given a visitor, when signup opens, then the full notice appears before sign in', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
     const answer = await browser.open('signup');
 
@@ -62,7 +65,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
   test('Given current User access, when signup opens, then Continue uses the selector and returns to the portal without another agreement or provider write', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const user = { id: 'user_CONTINUE', email: 'person@company.example', firstName: 'Person' };
     site.world.users = [user];
     site.world.memberships = [{ userId: user.id, organizationId: 'org_INTERNAL', roles: ['user'], status: 'active' }];
@@ -87,7 +90,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
   test('Given a verified user with no access, when the agreement is accepted again after activation and revocation, then one User grant is created and stays revoked', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const user = { id: 'user_NEW', email: 'person@gmail.com', firstName: 'Person', emailVerified: true };
     site.world.users = [user];
     const { browser } = await signInThroughServer(site, user);
@@ -142,7 +145,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
   test('Given a signed-in user, when acceptance is missing or the origin is foreign, then no provider write occurs', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const { browser } = await signInThroughServer(site, { id: 'user_INVALID', email: 'person@example.com', firstName: 'Person' });
     const page = await browser.open('signup');
     const form = formsIn(page.body).find(({ action }) => action === '/signup');
@@ -155,7 +158,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.deepEqual(site.world.fake.takeRequests().filter(({ method }) => method === 'POST'), []);
   });
   test('Given a session for a user whose current email is unverified, when signup is submitted, then activation is refused', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const user = { id: 'user_UNVERIFIED', email: 'person@gmail.com', firstName: 'Person' };
     site.world.users = [{ ...user, emailVerified: false }];
     const { browser } = await signInThroughServer(site, { ...user, emailVerified: true });
@@ -169,7 +172,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
   test('Given existing Admin access, when signup is submitted, then a separate personal workspace gets only User access', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const user = { id: 'user_EXISTING_ADMIN', email: 'person@company.example', firstName: 'Person' };
     site.world.users = [user];
     site.world.memberships = [{ userId: user.id, organizationId: 'org_INTERNAL', roles: ['admin'], status: 'active' }];
@@ -185,7 +188,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
   test('Given a signup form opened before User access was granted, when the old form is submitted, then existing access is used without another organization or grant', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const user = { id: 'user_STALE_FORM', email: 'person@company.example', firstName: 'Person' };
     site.world.users = [user];
     const { browser } = await signInThroughServer(site, user);
@@ -204,7 +207,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
   test('Given a revoked personal workspace and current access elsewhere, when signup opens, then it requires support and lets other access continue without a new agreement or repair', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const user = { id: 'user_REVOKED', email: 'person@company.example', firstName: 'Person' };
     site.world.users = [user];
     const { browser } = await signInThroughServer(site, user);
@@ -228,7 +231,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
   });
 
   test('Given the personal-record lookup fails, when signup opens, then the page reports unavailability instead of offering a new agreement', async (t) => {
-    const site = await openWorkOSSignupSite(t, true);
+    const site = await openSignupSite(t, true);
     const user = { id: 'user_OUTAGE', email: 'person@example.com', firstName: 'Person' };
     const { browser } = await signInThroughServer(site, user);
     site.signupFake.failOrganizationReads = true;

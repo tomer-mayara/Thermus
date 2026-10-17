@@ -1,39 +1,33 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { listenerTransport } from '../../support/drivers/browser/hosted-browser.ts';
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
-import type { WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
 import { ContextReportToolSpy, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';
-import { WorkOSFake, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import type { FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
+import { serveWorkOSSite, type WorkOSServerSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team/' }, 'http');
 const user: FakeUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 'Ada' };
 
-async function openSite(t: TestContext): Promise<WorkOSServerSite & { tools: ContextReportToolSpy }> {
-  const world = await WorkOSFake.start(t, config.publicBaseUrl, ['org_USER', 'org_ADMIN', 'org_INACTIVE', 'org_MEMBER']);
-  world.memberships = [
-    { userId: user.id, organizationId: 'org_USER', roles: ['user'] },
-    { userId: user.id, organizationId: 'org_ADMIN', roles: ['admin'] },
-    { userId: user.id, organizationId: 'org_INACTIVE', roles: ['user'], status: 'inactive' },
-    { userId: user.id, organizationId: 'org_MEMBER', roles: [] },
-  ];
+async function openSite(t: TestContext): Promise<WorkOSSite & { tools: ContextReportToolSpy }> {
   const tools = new ContextReportToolSpy();
-  const logger = { info: (_message: string): void => {}, error: (_message: string): void => {} };
-  const application = await composeWorkOSApplication(config, world.connection(), { logger, buildServer: tools.buildServer });
-  const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger });
-  t.after(async () => {
-    await server.close();
-    await application.close();
+  const site = await serveWorkOSSite(t, {
+    organizations: ['org_USER', 'org_ADMIN', 'org_INACTIVE', 'org_MEMBER'],
+    buildServer: tools.buildServer,
+    setUp: (world) => {
+      world.memberships = [
+        { userId: user.id, organizationId: 'org_USER', roles: ['user'] },
+        { userId: user.id, organizationId: 'org_ADMIN', roles: ['admin'] },
+        { userId: user.id, organizationId: 'org_INACTIVE', roles: ['user'], status: 'inactive' },
+        { userId: user.id, organizationId: 'org_MEMBER', roles: [] },
+      ];
+    },
   });
-  return { world, tools, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl };
+  return { ...site, tools };
 }
 
 function callTool(site: WorkOSServerSite, token?: string): Promise<Response> {
   return site.transport(mcpRequest({
-    url: config.mcpResourceUrl,
+    url: hostedConfig.mcpResourceUrl,
     method: 'tools/call',
     ...(token === undefined ? {} : { token }),
     params: { name: ContextReportToolSpy.reportTool, arguments: {} },

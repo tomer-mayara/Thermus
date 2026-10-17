@@ -9,7 +9,6 @@ import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos
 import { WorkOSSessionRoutes } from '../../../src/auth/hosted-auth/workos/workos-session-routes.ts';
 import { workosAuthority, type WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import { PRODUCT_ACCESS } from '../../../src/hosted-admin/portal-access.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
@@ -21,13 +20,13 @@ import { fakeClientId } from '../../support/doubles/workos/workos-fake-api.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 
 // The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the
 // WorkOS API, together with the real OrganizationAdministration, account routes, and MCP server. A probe stands in for
 // the destinations of the account pages, each with its permission, so that the administration access of each role
 // shows. These tests do not show what the WorkOS service sends; the hosted live gate does.
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const authority = workosAuthority(fakeClientId);
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
@@ -59,31 +58,31 @@ const memberships: readonly FakeMembership[] = [
 ];
 
 async function openSite(t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional') {
-  const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
+  const world = await WorkOSFake.start(t, hostedConfig.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
   const { settings, workos, authkitKeySet } = world.connection(mfaPolicy);
   const failures: AccountFailureReport[] = [];
   const reportFailure = (report: AccountFailureReport): void => { failures.push(report); };
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
-  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
+  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: hostedConfig.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const session = new WorkOSBrowserSession({ workos, settings, authority, mfaEvidence: settings.mfaPolicy === 'required' ? 'password-mfa-required' : 'unproven' });
   const pages = new AccountOperationSpy(destinations);
   const tools = new ProtectedToolSpy();
   const mcp = new MCPServer({
-    auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: config.resourceMetadataUrl, expectedResource: new URL(config.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
+    auth: { verifier: provider, accessResolver: provider, resourceMetadataUrl: hostedConfig.resourceMetadataUrl, expectedResource: new URL(hostedConfig.mcpResourceUrl), requiredPermission: PRODUCT_ACCESS },
     buildServer: tools.buildServer,
     reportFailure: () => {},
   });
-  const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure });
+  const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: hostedConfig.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure });
   const application = composeHostedApplication(
-    config,
+    hostedConfig,
     { session, accessResolver: provider, organizations, mcp, browserRoutes },
     { reportFailure, changeRecords: { record: () => {} }, billing: new BillingFree(), operation: pages.operation },
   );
   t.after(() => application.close());
   const transport = (request: Request): Promise<Response> => application.handle(request);
-  return { world, organizations, pages, tools, failures, transport, publicBaseUrl: config.publicBaseUrl };
+  return { world, organizations, pages, tools, failures, transport, publicBaseUrl: hostedConfig.publicBaseUrl };
 }
 
 type Site = Awaited<ReturnType<typeof openSite>>;
@@ -120,7 +119,7 @@ describe('WorkOS organization reads with the real session, organization service,
     const admins = await contextAt(browser, 'administration/admins');
     const refusals = [(await browser.open('portal')).status, (await browser.open('administration/users')).status];
     const token = await site.world.connectToken(sam, { org_id: acme });
-    const tool = await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'tools/call', token, params: { name: ProtectedToolSpy.toolName, arguments: { url: 'https://example.com/' } } }));
+    const tool = await site.transport(mcpRequest({ url: hostedConfig.mcpResourceUrl, method: 'tools/call', token, params: { name: ProtectedToolSpy.toolName, arguments: { url: 'https://example.com/' } } }));
 
     assert.equal(selected.location?.href, 'https://thermus.example/team/billing');
     assert.equal(billing.status, 200, billing.body);

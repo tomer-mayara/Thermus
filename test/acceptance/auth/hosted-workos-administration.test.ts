@@ -1,20 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { formsIn, listenerTransport, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
-import { signInThroughServer, type WorkOSServerSite } from '../../support/dsl/workos-sign-in.ts';
-import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
-import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
-import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
+import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
+import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
 // The real hosted composition with the WorkOS provider and the WorkOS organization administration, behind the real HTTP
 // server on a loopback port. A local fake of the WorkOS API stands in for WorkOS: it keeps the roles of each membership
 // as single-role assignments, the invitations, and the users, as the probes of WorkOS staging showed. These
 // specifications prove the application side only. The hosted live gate proves the same flows against WorkOS.
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const acme = 'org_01ACME';
 const globex = 'org_01GLOBEX';
 const organizationNames = { [acme]: 'Acme', [globex]: 'Globex' };
@@ -51,33 +46,24 @@ const memberships: readonly FakeMembership[] = [
   { userId: pia.id, organizationId: globex, roles: ['user'] },
 ];
 
-interface Site extends WorkOSServerSite {
-  readonly log: OperatorLogSpy;
-}
-
 interface WorkOSChange {
   readonly method: string;
   readonly path: string;
   readonly body: unknown;
 }
 
-async function openSite(t: TestContext): Promise<Site> {
-  const world = await WorkOSFake.start(t, config.publicBaseUrl, Object.keys(organizationNames));
-  world.memberships = memberships;
-  world.organizationNames = organizationNames;
-  world.organizationExternalIds = { [acme]: acmeExternalId };
-  world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
-  const log = new OperatorLogSpy();
-  const application = await composeWorkOSApplication(config, world.connection('required'), { logger: log });
-  const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-  t.after(async () => {
-    await server.close();
-    await application.close();
-  });
-  return { world, transport: listenerTransport(server.url), publicBaseUrl: config.publicBaseUrl, log };
-}
+const openSite = (t: TestContext) => serveWorkOSSite(t, {
+  organizations: Object.keys(organizationNames),
+  mfaPolicy: 'required',
+  setUp: (world) => {
+    world.memberships = memberships;
+    world.organizationNames = organizationNames;
+    world.organizationExternalIds = { [acme]: acmeExternalId };
+    world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
+  },
+});
 
-async function signIn(site: Site, user: FakeUser, organizationId = acme): Promise<HostedBrowser> {
+async function signIn(site: WorkOSSite, user: FakeUser, organizationId = acme): Promise<HostedBrowser> {
   const { browser, callback } = await signInThroughServer(site, user, organizationId);
   assert.equal(callback.status, 303, callback.body);
   return browser;
@@ -128,7 +114,7 @@ function assertNotice(answer: BrowserAnswer, status: number, text: RegExp): void
 
 // The WorkOS requests that change roles, memberships, or invitations, since the last call. A sign-in or a refresh
 // changes nothing.
-function changesIn(site: Site): WorkOSChange[] {
+function changesIn(site: WorkOSSite): WorkOSChange[] {
   return site.world.fake.takeRequests()
     .filter(({ method, path }) => method !== 'GET' && !path.startsWith('/user_management/authenticate'))
     .map(({ method, path, body }) => ({ method, path: path.split('?')[0] ?? path, body }));
@@ -144,29 +130,29 @@ function roleWrite(method: 'POST' | 'DELETE', membershipId: string, role: string
   };
 }
 
-function changeRecords(site: Site): Readonly<Record<string, unknown>>[] {
+function changeRecords(site: WorkOSSite): Readonly<Record<string, unknown>>[] {
   const prefix = 'INFO Account change record: ';
   return site.log.lines.filter((line) => line.startsWith(prefix)).map((line) => JSON.parse(line.slice(prefix.length)) as Readonly<Record<string, unknown>>);
 }
 
-function recordSummaries(site: Site): string[] {
+function recordSummaries(site: WorkOSSite): string[] {
   return changeRecords(site).map((record) => {
     const actor = record.actor as { subject: string };
     return `${actor.subject} ${String(record.action)} ${String(record.role)} in ${String(record.organizationId)}: ${String(record.outcome)}`;
   });
 }
 
-async function mcpStatusWith(site: Site, token: string): Promise<number> {
-  return (await site.transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', token }))).status;
+async function mcpStatusWith(site: WorkOSSite, token: string): Promise<number> {
+  return (await site.discover(token)).status;
 }
 
-async function mcpStatus(site: Site, user: FakeUser, organizationId: string): Promise<number> {
+async function mcpStatus(site: WorkOSSite, user: FakeUser, organizationId: string): Promise<number> {
   return mcpStatusWith(site, await site.world.connectToken(user, { org_id: organizationId }));
 }
 
 // The reads of the members of an organization. Access resolution reads the memberships of the session user, with its
 // user ID, so those reads are not member reads.
-function memberReadsIn(site: Site): string[] {
+function memberReadsIn(site: WorkOSSite): string[] {
   return site.world.fake.takeRequests()
     .map(({ path }) => decodeURIComponent(path))
     .filter((path) => path.startsWith('/user_management/organization_memberships?') && !path.includes('user_id='));

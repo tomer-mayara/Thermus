@@ -3,12 +3,12 @@ import { text } from 'node:stream/consumers';
 import { describe, test } from 'node:test';
 import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
 import { fetchToolServers } from '../../../../src/fetch-tool.ts';
-import { composeWorkOSApplication } from '../../../../src/hosted-workos-application.ts';
 import { WorkOSFake } from '../../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../../support/drivers/mcp/mcp-http-request.ts';
 import { sendHttpsRequest } from '../../../support/hosted-live/https-client.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../../support/hosted-live/settings.ts';
+import { composeApplicationWithWorkOSFake } from '../../../support/in-process/workos-site.ts';
 import { beforeDeadline, temporaryDirectory, writePortalBuild } from '../fixtures/https-site-fixtures.ts';
 
 const organizationId = 'org_01HTTPS';
@@ -27,7 +27,7 @@ export function describeHttpsMcp(): void {
       const certificate = await selfSignedCertificate(await temporaryDirectory(t));
       const site = await LocalHttpsSite.start(fake.settings, {
         portalBuild: await writePortalBuild(t), certificate,
-        application: (logger) => composeWorkOSApplication(config, fake.connection(), {
+        application: (logger) => composeApplicationWithWorkOSFake(config, fake, {
           logger, buildServer: fetchToolServers(async (url, context) => {
             calls.push({ url, subject: context.user.subject, tenantId: context.tenantId });
             return '# HTTPS story';
@@ -66,7 +66,7 @@ export function describeHttpsMcp(): void {
       const certificate = await selfSignedCertificate(await temporaryDirectory(t));
       const site = await LocalHttpsSite.start(fake.settings, {
         portalBuild: await writePortalBuild(t), certificate,
-        application: (logger) => composeWorkOSApplication(config, fake.connection(), {
+        application: (logger) => composeApplicationWithWorkOSFake(config, fake, {
           logger, buildServer: fetchToolServers(async (_url, _context, signal) => {
             signal.addEventListener('abort', () => aborted.resolve(), { once: true });
             started.resolve();

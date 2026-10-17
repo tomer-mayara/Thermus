@@ -3,13 +3,12 @@ import { describe, test } from 'node:test';
 import { composeHostedApplication } from '../../../src/application.ts';
 import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
 import { BillingFree } from '../../../src/billing/billing-free.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
 import type { BrowserSessionState } from '../../../src/auth/hosted-auth/browser-session.ts';
 import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/doubles/organizations/membership-directory-double.ts';
 import { BrowserSessionDouble, SignedInSessionDouble } from '../../support/doubles/auth/browser-session-double.ts';
+import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 
-const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example/team' }, 'http');
 const authority = 'hosted-provider-double';
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
 const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
@@ -69,16 +68,16 @@ function serve() {
   const probe = new AccountOperationSpy(operationPermissions);
   const mcp = new McpEndpointDouble();
   const account = { reportFailure: () => {}, changeRecords: { record: () => {} }, billing: new BillingFree(), operation: probe.operation };
-  const application = composeHostedApplication(config, { session, accessResolver: directory, organizations: directory, mcp }, account);
+  const application = composeHostedApplication(hostedConfig, { session, accessResolver: directory, organizations: directory, mcp }, account);
   return { application, session, directory, probe, mcp };
 }
 
 function accountGet(session: string, path = 'account', headers: Readonly<Record<string, string>> = {}): Request {
-  return new Request(new URL(path, config.publicBaseUrl), { headers: { Cookie: `session=${session}`, ...headers } });
+  return new Request(new URL(path, hostedConfig.publicBaseUrl), { headers: { Cookie: `session=${session}`, ...headers } });
 }
 
 function formPost(session: string, path: string, form: Readonly<Record<string, string>>): Request {
-  return new Request(new URL(path, config.publicBaseUrl), {
+  return new Request(new URL(path, hostedConfig.publicBaseUrl), {
     method: 'POST',
     headers: { Cookie: `session=${session}`, 'Content-Type': 'application/x-www-form-urlencoded', Origin: 'https://thermus.example', 'X-Organization-Id': 'org-b' },
     body: new URLSearchParams(form).toString(),
@@ -170,11 +169,11 @@ describe('Hosted account routes with session and membership directory doubles an
     const disconnected = new AbortController();
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' });
     const requests = [
-      new Request(config.mcpResourceUrl, {
+      new Request(hostedConfig.mcpResourceUrl, {
         method: 'POST', headers: { Cookie: 'session=ann', Authorization: 'Bearer forged-token', 'Content-Type': 'application/json' },
         body, signal: disconnected.signal,
       }),
-      new Request(config.resourceMetadataUrl),
+      new Request(hostedConfig.resourceMetadataUrl),
     ];
 
     const answers = await Promise.all(requests.map(async (request) => (await application.handle(request)).text()));
