@@ -14,9 +14,10 @@ the private record store. Keep completed records and evidence there, outside Git
 public tickets, and application logs. Use the blank
 [acceptance template](templates/hosted-terms-acceptance.md). Keep only necessary
 evidence for a stated purpose, with an access owner and review/deletion date.
-Do not include credentials, invitation tokens, or fetched pages. A durable,
-restricted backup and a verified restore procedure remain prerequisites before
-opening signup; the local record directory alone does not meet that requirement.
+Do not include credentials, invitation tokens, or fetched pages. On October 16,
+2026, the owner removed the durable backup and restore prerequisite and chose
+this restricted local folder alone. Keep exact document bytes, versions, hashes,
+and access restrictions; no off-device backup or restore proof is required.
 
 For a manual grant, the operator checks and records express agreement before
 granting User. The application does not check agreement on manual grants or on
@@ -220,8 +221,8 @@ Record each delivery, response/version, unresolved gap, and approved outcome in
 the private store. Do not claim all existing users agreed until evidence proves
 it. Later-version evidence belongs in a separate dated record; WorkOS's initial
 metadata is not an agreement history. Set review/deletion dates for transition
-records and retained exceptions. Record backup readiness before execution that
-relies on those records. This task prepares the proposal only.
+records and retained exceptions. Check the retained exact bytes, versions, hashes,
+and local access restrictions before execution. This task prepares the proposal only.
 
 ## Acceptance scenarios
 

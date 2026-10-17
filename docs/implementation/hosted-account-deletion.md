@@ -3,8 +3,11 @@
 The external operator handles hosted access removal and deletion requests with
 this manual procedure. Use the [private record template](templates/hosted-deletion-request.md).
 Tomer is the operator. Keep completed records in restricted
-`~/.codex/operator-records`, outside Git. This runbook
-does not publish or adopt the private privacy and terms drafts.
+`~/.codex/operator-records`, outside Git. On October 16, 2026, the owner chose
+this restricted local folder alone and removed the operator backup and restore
+prerequisite. Keep exact document bytes, versions, hashes, and local access
+restrictions. Provider backup retention limits below remain separate. This
+runbook does not publish or adopt the private privacy and terms drafts.
 
 ## Process checks
 

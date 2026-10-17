@@ -1,24 +1,21 @@
 # Hosted Docker on Render: implementation plan
 
-Status: RHD-01, RHD-02, and RHD-03 implementation and local verification complete.
-PRs #115–117 and build fix #120 were reviewed and merged; the retry from checked
-`main` is live and initial public smoke passed 15/15. Both initial identities now
-have verified User-only grants; full RHD-05 remains incomplete.
-RHD-04 and full RHD-05 remain incomplete.
-[PR #119](https://github.com/tomer-mayara/Thermus/pull/119) targets `main` and
-consolidates earlier [PR #118](https://github.com/tomer-mayara/Thermus/pull/118).
-The [setup record](rhd-04.md) and [release record](rhd-05.md) give current evidence
-and limits.
+Status: RHD-01 through RHD-03 implementation and local verification are complete.
+The later October 16, 2026 restricted RHD-05 release checkpoint records completed
+production setup and requested operational checks. PR #119 merged after review.
+Git auto-deploy, browser cookie continuity, rollback/restoration, Google
+production publication and branding, and fresh sign-in passed. The owner accepted
+the first operational release; capacity evidence keeps its recorded bounds.
+
+The [setup record](rhd-04.md) and [release record](rhd-05.md) preserve the earlier
+checkpoint evidence below. Their incomplete states are historical. These results
+do not establish a full public launch or approve self-serve signup. Hosted-product
+policy coverage and signup opening remain separate [FS-05](fs-05.md) work.
 Updated: 2026-10-16.
 The [RHD-01 record](rhd-01.md) gives its results. The
 [RHD-02 record](rhd-02.md) gives the portal, local health, request boundary,
 and verification results. The [RHD-03 record](rhd-03.md) tracks the hosted
 image, production rules decision, and AMD64 runtime evidence.
-The first intended deployment failed its build; the retry is live with initial
-public acceptance satisfied. Browser access/logout and controlled revocation
-passed. Native CIMD login, tool discovery, real fetch, and tool-call denial/
-recovery and actual native refresh passed. Bounded capacity and one-slot refusal/recovery passed within recorded limits;
-deployment/recovery release proofs remain pending.
 The canonical repository is
 `https://github.com/tomer-mayara/Thermus`.
 The owner selected hosted Docker on Render with GitHub auto-deploys to production.

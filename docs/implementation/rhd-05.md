@@ -1,11 +1,13 @@
 # RHD-05: first deployment and release proof
 
-Status: initial public acceptance satisfied; full RHD-05 incomplete. Updated: 2026-10-16.
-[PR #119](https://github.com/tomer-mayara/Thermus/pull/119) targets `main` and
-consolidates earlier [PR #118](https://github.com/tomer-mayara/Thermus/pull/118).
-The candidate incorporates checked `main`. The acceptance below was written
-before the first deployment. The retry is live and public smoke passed 15/15;
-full RHD-05 acceptance remains incomplete.
+Status: requested first-release operational checks completed in the later
+October 16, 2026 restricted release checkpoint. PR #119 merged after review.
+Git auto-deploy, browser cookie continuity, rollback and restoration, Google
+production publication and branding, and fresh sign-in passed. The owner accepted
+the first operational release. Capacity evidence keeps its recorded bounds.
+The incomplete states and specifications below are historical checkpoints.
+This is not a full public-launch record. Hosted-product policy coverage and
+self-serve opening remain separate [FS-05](fs-05.md) work.
 
 ## Manual first-deployment acceptance
 

@@ -310,6 +310,7 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/auth/hosted-portal.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-origin.test.js`,
    `dist/test/acceptance/auth/hosted-workos-signup.test.js`,
+   `dist/test/acceptance/auth/hosted-signup-restart.test.js`,
    `dist/test/acceptance/auth/hosted-signup-guidance.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js`,
    `dist/test/acceptance/mcp/hosted-fetch-tool.test.js`,

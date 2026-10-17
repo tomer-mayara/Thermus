@@ -21,8 +21,10 @@ export interface WorkOSServerSite {
 export interface WorkOSSiteOptions {
   // The hosted configuration of the site. Without it, the site uses hostedConfig.
   readonly config?: typeof hostedConfig;
-  // The organizations that the fake knows. Each gets the environment roles.
+  // The organizations that a new fake knows. Each gets the environment roles.
   readonly organizations: readonly string[];
+  // Reuse provider state for a fresh application. Install the signup fake only on the first site.
+  readonly world?: WorkOSFake;
   // The MFA policy of the connection. Without it, the fake gives its own policy.
   readonly mfaPolicy?: WorkOSMfaPolicy;
   // The MCP tool server of the composition. Without it, the MCP server of the composition has no tools.
@@ -37,6 +39,8 @@ export interface WorkOSSiteOptions {
 
 export interface WorkOSSite extends WorkOSServerSite {
   readonly log: OperatorLogSpy;
+  // Close admission and drain the listener before closing the application. Repeated calls share the result.
+  close(): Promise<void>;
   // The answer of the MCP endpoint to server/discover, with this Connect token or without a token.
   discover(token?: string): Promise<Response>;
 }
@@ -63,22 +67,22 @@ export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions & { r
 export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite>;
 export async function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite | WorkOSSignupSite> {
   const { config = hostedConfig, organizations, mfaPolicy, buildServer, signup, setUp } = options;
-  const world = await WorkOSFake.start(t, config.publicBaseUrl, organizations);
+  const world = options.world ?? await WorkOSFake.start(t, config.publicBaseUrl, organizations);
   const signupFake = options.signupFake === true ? new WorkOSSignupFake(world) : undefined;
   setUp?.(world);
   const log = new OperatorLogSpy();
   const application = await composeApplicationWithWorkOSFake(config, world, { logger: log, buildServer, signup, mfaPolicy });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
-  t.after(async () => {
-    await server.close();
-    await application.close();
-  });
+  let closing: Promise<void> | undefined;
+  const close = () => (closing ??= server.close().then(() => application.close()));
+  t.after(close);
   const transport = listenerTransport(server.url);
   const site: WorkOSSite = {
     world,
     transport,
     publicBaseUrl: config.publicBaseUrl,
     log,
+    close,
     discover: (token) => transport(mcpRequest({ url: config.mcpResourceUrl, method: 'server/discover', ...(token === undefined ? {} : { token }) })),
   };
   return signupFake === undefined ? site : { ...site, signupFake };

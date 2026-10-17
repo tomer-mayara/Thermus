@@ -22,7 +22,8 @@ async function sliceProcess(): Promise<void> {
 
 async function outerProcess(): Promise<void> {
   const probe = fileURLToPath(import.meta.url);
-  const child = spawn('pnpm', ['exec', 'node', '--import', 'tsx', probe, 'slice', signal], { stdio: ['ignore', 'pipe', 'pipe'] });
+  // Dependencies are installed before tests. This signal probe must not reinstall them beside running imports.
+  const child = spawn('pnpm', ['--config.verify-deps-before-run=false', 'exec', 'node', '--import', 'tsx', probe, 'slice', signal], { stdio: ['ignore', 'pipe', 'pipe'] });
   let pendingSignal: NodeJS.Signals | undefined;
   let cleanupStarted = false;
   let forwarded = false;
