@@ -4,7 +4,7 @@ import { text } from 'node:stream/consumers';
 import { describe, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { composeApplication } from '../../../../src/application.ts';
-import { sendHttpsRequest } from '../../../support/hosted-live/https-client.ts';
+import { sendHttpsRequest } from '../../../support/drivers/browser/https-client.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../../support/hosted-live/settings.ts';
 import { beforeDeadline, httpsSettings, temporaryDirectory, writePortalBuild } from '../fixtures/https-site-fixtures.ts';
