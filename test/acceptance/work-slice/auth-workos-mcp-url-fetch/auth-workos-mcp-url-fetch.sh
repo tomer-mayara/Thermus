@@ -13,7 +13,7 @@ set -euo pipefail
 # CDPATH= keeps cd silent, so that root gets only the path.
 root=$(CDPATH= cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd -P)
 script="$root/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh"
-# The slice reads .env.local from the current directory, and pnpm runs the package script from the root.
+# The slice reads .env.local from the current directory. The last line names the entry point by its path from the root.
 cd "$root"
 
 # The WorkOS settings have no default. The message names each missing setting and shows no value.

@@ -10,7 +10,7 @@ import { guardOutboundFetch } from '../../../support/isolation/outbound-fetch-gu
 // A local session fixture for the browser session: the fake WorkOS API with a browser key set, and the real session
 // with the pinned SDK client. The test plays AuthKit and scripts each answer of the API.
 
-export const settings = { clientId: fakeClientId, redirectUri: 'https://thermus.example/team/callback', cookiePassword };
+const settings = { clientId: fakeClientId, redirectUri: 'https://thermus.example/team/callback', cookiePassword };
 export const authority = workosAuthority(fakeClientId);
 export const authenticateRoute = 'POST /user_management/authenticate';
 export const keySetRoute = `GET /sso/jwks/${fakeClientId}`;
@@ -31,7 +31,7 @@ export const ada = {
   updated_at: '2026-10-13T08:00:00.000Z',
 };
 
-export interface SessionFixture {
+interface SessionFixture {
   readonly fake: WorkOSFakeApi;
   readonly browserKey: SigningKey;
   readonly session: WorkOSBrowserSession;

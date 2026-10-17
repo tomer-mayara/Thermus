@@ -29,7 +29,7 @@ export interface SignInServices {
 }
 
 // The sealed session that a hosted server keeps in its cookie. It holds the latest seal after each refresh.
-export class BrowserSession {
+class BrowserSession {
   readonly #workos: WorkOS;
   readonly #cookiePassword: string;
   #sealed: string;

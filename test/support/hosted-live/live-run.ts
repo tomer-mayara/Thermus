@@ -25,7 +25,9 @@ async function checkAuthKitReachable(issuer: string): Promise<void> {
 }
 
 // The shared state of one run of the hosted live gate. Each test awaits what it needs, so a failed setup fails
-// each dependent test by itself. The run makes its staging fixtures at the first need and deletes them at the end.
+// each dependent test by itself. A run without existingFixtures makes its staging fixtures at the first need and
+// deletes them at the end. A run with existingFixtures uses the staging fixtures that the caller gives, and does not
+// make or delete these fixtures. At the end, each run deletes the other fixtures that the run makes or records.
 export class LiveRun {
   readonly settings: HostedLiveSettings;
   readonly workos: WorkOS;

@@ -116,7 +116,7 @@ export class HostedImageGate {
   }
 }
 
-export class HostedImageServer {
+class HostedImageServer {
   constructor(readonly name: string, readonly url: URL, private readonly signal: AbortSignal) {}
 
   logs(signal = this.signal): Promise<string> {
