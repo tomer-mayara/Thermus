@@ -96,12 +96,12 @@ test('Given product access, when the portal opens, then it keeps setup visible a
   const text = document.body.textContent ?? '';
   assert.match(text, /Free access.*No card.*no automatic charge/s);
   assert.match(text, /https:\/\/thermus.example\/mcp/);
-  assert.match(text, /remote HTTP.*Sign in.*intended workspace.*Approve.*fetch/s);
+  assert.match(text, /claude mcp add.*Sign in.*workspace.*Approve.*fetch/s);
   const details = document.querySelector('details');
   assert.ok(details, 'Access details must use a native disclosure');
   assert.equal(details.hasAttribute('open'), false, 'Access details must start closed');
   assert.equal(details.querySelector('summary')?.textContent, 'Details');
-  assert.ok(document.querySelector('ol')?.nextElementSibling === details, 'Details must follow the setup steps');
+  assert.equal(details.parentElement?.lastElementChild, details, 'Details must follow the full connection guide');
   assert.match(details.textContent ?? '', /You have product access in organization org_01ACME\. Roles: user\./);
   assert.match(details.textContent ?? '', /only affects this browser.*own consent/s);
   assert.equal(details.querySelector('.product-access')?.getAttribute('role'), null, 'Closed technical details must not be announced as a status');
@@ -113,5 +113,53 @@ test('Given no product access, when the portal opens, then signup recovery remai
   assert.equal(document.querySelector('a[href="signup"]')?.textContent, 'Start free access');
   assert.equal(document.querySelector('a[href="signup"]')?.closest('details'), null);
   assert.equal(document.querySelector('details'), null);
+  assert.equal(document.querySelector('select'), null, 'A user without access has no connection guide');
   assert.ok(!document.querySelector('a[href^="organizations"]'), 'The portal must not link to the organization page');
 });
+
+test('Given product access at a custom endpoint, when the portal opens, then Claude Code is selected with the endpoint from the server', async () => {
+  const mcpUrl = 'https://gateway.example/team/thermus/mcp';
+  const { document } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', roles: ['user'], plan: 'free', mcpUrl } });
+  const select = document.querySelector<HTMLSelectElement>('#ai-agent');
+  assert.ok(select, 'The guide has a native AI agent selector');
+  assert.equal(document.querySelector('label[for="ai-agent"]')?.textContent, 'Your AI agent');
+  assert.equal(select.value, 'claude-code');
+  assert.match(document.querySelector('.connection-guide')?.textContent ?? '', /claude mcp add/);
+  assert.equal([...document.querySelectorAll('p')].find((paragraph) => paragraph.textContent === `MCP endpoint: ${mcpUrl}`)?.textContent, `MCP endpoint: ${mcpUrl}`);
+  assert.doesNotMatch(document.body.textContent ?? '', /Add the MCP endpoint as a remote HTTP server in your client/);
+});
+
+const clientGuides = [
+  ['codex', /codex mcp add/, 'https://learn.chatgpt.com/docs/extend/mcp?surface=cli'],
+  ['cursor', /mcpServers/, 'https://cursor.com/docs/mcp'],
+  ['vscode', /"servers"/, 'https://code.visualstudio.com/docs/agent-customization/mcp-servers'],
+  ['claude', /custom connector/i, 'https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp'],
+  ['chatgpt', /Add custom MCP server/i, 'https://developers.openai.com/api/docs/guides/custom-mcp-server'],
+  ['other', /remote HTTP/i, 'https://modelcontextprotocol.io/docs/learn/client-concepts'],
+] as const;
+
+for (const [value, expected, guideUrl] of clientGuides) {
+  test(`Given product access, when the user selects ${value}, then its quick guide uses the configured endpoint without another request`, async () => {
+    const mcpUrl = 'https://gateway.example/team/thermus/mcp';
+    const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', roles: ['user'], plan: 'free', mcpUrl } });
+    const select = document.querySelector<HTMLSelectElement>('#ai-agent');
+    const view = document.defaultView;
+    assert.ok(select);
+    assert.ok(view);
+    for (const option of select.querySelectorAll('option')) option.removeAttribute('selected');
+    const selected = select.querySelector<HTMLOptionElement>(`option[value="${value}"]`);
+    assert.ok(selected);
+    selected.selected = true;
+    select.dispatchEvent(new view.Event('change'));
+    const guide = document.querySelector('.connection-guide');
+    assert.ok(guide);
+    assert.match(guide.textContent ?? '', expected);
+    assert.ok(guide.textContent?.includes(mcpUrl));
+    assert.deepEqual([...guide.querySelectorAll('h3')].map((heading) => heading.textContent), ['Add Thermus', 'Authorize access', 'Try it']);
+    assert.equal(guide.querySelector('.client-guide')?.getAttribute('href'), guideUrl);
+    assert.equal(guide.querySelector('.test-prompt')?.textContent, 'Use Thermus to fetch https://example.com and summarize the page.');
+    assert.equal(document.querySelector('details')?.hasAttribute('open'), false);
+    assert.equal(document.querySelector('details')?.parentElement?.lastElementChild?.localName, 'details');
+    assert.deepEqual(requests, ['session', 'portal/access']);
+  });
+}

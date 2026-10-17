@@ -94,6 +94,31 @@ The [FS-02 record](../implementation/fs-02.md) keeps its validation results.
   The fetched public reference page is `https://example.com/`.
   Pending and retained-without-membership cases remain offline proofs.
 
+### Portal AI agent quick guide
+
+The source tests run offline with a DOM and server-answer doubles. The
+[portal design](../design/portal-design.md#ai-agent-quick-guide) lists the verified
+WorkOS and official client sources. These tests check the rendered setup and
+local interaction. They do not prove live client installation or OAuth flows.
+
+[V] `test/acceptance/user-portal/portal.test.ts`: the default Claude Code guide and six native selector changes show client-specific steps, the server's custom base-path MCP endpoint, the common test prompt, and the official client link; selection makes no further server request
+[V] The generic setup list is removed; free-access terms and the exact endpoint paragraph remain visible; technical Details starts closed and stays last below the guide; a user without access has signup recovery and no guide
+[V] `test/unit/user-portal/connection-guide.test.ts`: a copy reports success only when its write resolves and shows Copied on its button; a new attempt restores the Copy label while pending; unavailable or rejected clipboard access shows Copy failed and gives a manual-copy instruction and retains selectable text; a late copy result cannot replace the status after selection changes
+[V] Dynamic endpoints with shell metacharacters, quotes, and HTML remain one CLI argument and valid JSON URL values; they cannot create HTML
+
+Focused commands use the pinned Node runtime through pnpm:
+
+```sh
+pnpm exec node --test test/acceptance/user-portal/portal.test.ts test/unit/user-portal/connection-guide.test.ts
+pnpm exec npm run test:user-portal
+pnpm exec npm run typecheck
+pnpm exec npm run build:user-portal
+```
+
+The focused portal suite passed 35 of 35 cases on 17 October 2026: 16 portal
+acceptance cases, 14 existing portal unit cases, and five guide unit cases.
+Full candidate gates and desktop/mobile browser checks remain separate.
+
 ### Signup close and reopen (FS-05)
 
 `test/acceptance/auth/hosted-signup-restart.test.ts` uses test documents and
