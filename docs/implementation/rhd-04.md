@@ -1,9 +1,10 @@
 # RHD-04: production identity and Render setup
 
-Status: incomplete; initial acceptance is not satisfied. Updated: 2026-10-16.
-[PR #119](https://github.com/tomer-mayara/Thermus/pull/119) targets `main` and
-consolidates earlier [PR #118](https://github.com/tomer-mayara/Thermus/pull/118).
-RHD-04 acceptance remains incomplete.
+Status: requested production setup checks completed in the later October 16,
+2026 release checkpoint. PR #119 merged after review. That restricted checkpoint
+records Google production publication, verified branding, and fresh sign-in.
+The earlier incomplete states below are historical. Hosted-product policy
+coverage and self-serve opening remain separate [FS-05](fs-05.md) work.
 This record starts before provider changes. It contains no secret values.
 The [hosted Docker plan](render-hosted-docker-plan.md) defines the scope.
 RHD-05 owns rollout, remote journeys, load, auto-deploy proof, and recovery.
