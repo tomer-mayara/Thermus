@@ -1,0 +1,55 @@
+.thermus-brand-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  padding: 48px clamp(32px, 4.4vw, 64px);
+  color: #F3F2EE;
+  background: #17181D;
+  font: 400 17px/1.55 "IBM Plex Sans", system-ui, sans-serif;
+}
+.thermus-brand-home { align-self: flex-start; display: inline-flex; padding: 8px 0; }
+.thermus-brand-home:focus-visible { outline: 3px solid #F3F2EE; outline-offset: 6px; }
+.thermus-brand-logo { display: block; width: 168px; height: auto; }
+.thermus-brand-content { width: 100%; max-width: 590px; margin-block: auto; padding-block: 56px; }
+.thermus-brand-eyebrow {
+  margin: 0 0 20px;
+  color: #E8552A;
+  font: 400 12px/1.6 "IBM Plex Mono", monospace;
+  letter-spacing: .07em;
+}
+.thermus-brand-heading {
+  margin: 0;
+  font: 500 clamp(40px, 3.9vw, 56px)/1.08 "IBM Plex Serif", Georgia, serif;
+  letter-spacing: -.02em;
+  overflow-wrap: break-word;
+}
+.thermus-keep-together { white-space: nowrap; }
+.thermus-brand-description { max-width: 550px; margin: 28px 0 0; color: #B4BAC0; font-size: 20px; line-height: 1.55; }
+.thermus-brand-footer { margin: 0; color: #B4BAC0; font-size: 13px; }
+.thermus-flow { margin-top: 32px; padding: 20px 16px; border: 1px solid #2C2D34; border-radius: 12px; background: #141519; }
+.thermus-flow-grid { display: grid; grid-template-columns: minmax(64px, 1fr) minmax(84px, 1fr) minmax(64px, 1fr) minmax(84px, 1fr) minmax(64px, 1fr); gap: 8px; align-items: center; }
+.thermus-flow-node { display: grid; place-items: center; min-height: 64px; padding: 8px 4px; border: 1px solid #7B7E88; border-radius: 8px; background: #212228; font-size: 14px; text-align: center; }
+.thermus-flow-node--gateway { border: 2px solid #E8552A; }
+.thermus-flow-connector { position: relative; height: 112px; }
+.thermus-flow-label { position: absolute; left: 50%; width: max-content; transform: translateX(-50%); white-space: nowrap; text-align: center; font: 400 12px/1.4 "IBM Plex Sans", system-ui, sans-serif; }
+.thermus-flow-label--outbound { top: 0; }
+.thermus-flow-label--return { top: 91px; }
+.thermus-flow-label--clean, .thermus-flow-arrow--clean { color: #7FD1AE; }
+.thermus-flow-label--raw, .thermus-flow-arrow--raw { color: #FF6B5A; }
+.thermus-flow-arrow { position: absolute; top: 43px; left: 0; right: 0; height: 0; border-top: 2px solid currentColor; }
+.thermus-flow-arrow::after { position: absolute; content: ""; top: -6px; right: 0; width: 9px; height: 9px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: rotate(45deg); }
+.thermus-flow-arrow--return { top: 80px; }
+.thermus-flow-arrow--return::after { left: 0; right: auto; transform: rotate(225deg); }
+.thermus-flow-arrow--raw { border-top-style: dashed; }
+@media (max-width: 1100px) {
+  .thermus-brand-panel { padding-inline: 28px; }
+  .thermus-brand-heading { font-size: 40px; }
+  .thermus-brand-description { font-size: 18px; }
+  .thermus-flow { padding-inline: 10px; }
+  .thermus-flow-grid { gap: 5px; }
+}
+@media (max-width: 960px) {
+  .thermus-flow { display: none; }
+}

@@ -86,3 +86,23 @@ test('Given a portal under a public base path, when access is denied, then works
   assert.equal(document.querySelector('.workspace-selection')?.getAttribute('href'), 'organizations?return_to=%2Fteam%2F');
   assert.equal(document.querySelector('a[href="signup"]')?.getAttribute('href'), 'signup');
 });
+
+test('Given a signed-out session, when the portal opens, then native entry links and the brand home link support keyboard navigation', async () => {
+  const { document, options } = portal({ session: async () => new Response(null, { status: 401 }) });
+  await initializePortal(options);
+  assert.equal(document.querySelector('header a')?.getAttribute('aria-label'), 'Thermus home');
+  assert.equal(document.querySelector('header img')?.getAttribute('alt'), 'Thermus');
+  assert.equal(document.querySelector('#sign-in-btn')?.localName, 'a');
+  assert.equal(document.querySelector('#sign-in-btn')?.getAttribute('href'), 'login');
+  assert.equal(document.querySelector('.welcome-card a[href="signup"]')?.getAttribute('tabindex'), null);
+  assert.equal(document.querySelector('main')?.getAttribute('id'), 'main-content');
+  assert.equal(document.querySelector('.skip-link')?.getAttribute('href'), '#main-content');
+});
+
+test('Given a session failure, when the error appears, then the brand header and a main landmark remain available', async () => {
+  const { document, options } = portal({ session: async () => new Response(null, { status: 503 }) });
+  await initializePortal(options);
+  assert.ok(document.querySelector('header a[aria-label="Thermus home"]'));
+  assert.ok(document.querySelector('main [role="alert"]'));
+  assert.equal(document.querySelector('main a[href="./"]')?.textContent, 'Try again');
+});

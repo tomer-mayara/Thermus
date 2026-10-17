@@ -1,5 +1,27 @@
 # Hosted signup inspection and recovery
 
+## Signup pages and document readers
+
+The signup pages use the approved Thermus portal design. Sign-in and activation
+remain separate steps. Page styles do not change signup eligibility, email
+verification, agreement checks, or the activation POST fields.
+
+Desktop legal readers support keyboard focus and scrolling. On mobile, each
+reader shows the original opening paragraph and a closed native disclosure.
+Read full opens the whole document in the page. Hide closes it through the same
+focused disclosure control. No reading or scrolling check controls activation.
+The required agreement stays outside the disclosures and starts unchecked.
+
+The pages render the approved Markdown with micromark and its GFM extension.
+Raw HTML and dangerous link protocols remain disabled. The exact approved
+source text, versions, and hashes remain unchanged. The content policy permits
+only same-origin images and fonts and the page's hashed style; it permits no
+script. Closed signup offers Sign in and Contact. Failed activation offers a
+safe link to sign in again, reopen signup, or contact support, as appropriate.
+Invalid and stale signup forms use the same brand layout. They retain the
+existing refusal status and message. Method refusals retain the Allow header.
+These actions do not repeat a POST or restore access.
+
 ## Tabletop specification
 
 - Given a lost activation response, when Tomer inspects the result, then only

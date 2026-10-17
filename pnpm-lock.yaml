@@ -213,6 +213,12 @@ importers:
       linkedom:
         specifier: ^0.18.13
         version: 0.18.13(patch_hash=ed2bfadf57d266edaacd09d43626f141f804161107e15e1ad1d4e816cbdef590)
+      micromark:
+        specifier: 4.0.3
+        version: 4.0.3
+      micromark-extension-gfm:
+        specifier: 3.0.0
+        version: 3.0.0
       parse5:
         specifier: 8.0.1
         version: 8.0.1

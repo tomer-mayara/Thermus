@@ -1,0 +1,17 @@
+{
+  "theme": "Dark",
+  "radius": "Medium",
+  "font": { "family": "IBM Plex Sans" },
+  "authkitLogoStyle": "Logo",
+  "darkButtonBackgroundColor": "#E8552A",
+  "darkButtonForegroundColor": "#17181D",
+  "darkLinkColor": "#F3F2EE",
+  "darkPageBackgroundColor": "#17181D",
+  "authkitSignInHeadingText": "Sign in to Thermus",
+  "authkitSignInLayout": "TwoColumn",
+  "authkitSignInContentPanelAlignment": "Left",
+  "authkitSignInContentPanelHiddenOnMobile": true,
+  "authkitSignUpLayout": "TwoColumn",
+  "authkitSignUpContentPanelAlignment": "Left",
+  "authkitSignUpContentPanelHiddenOnMobile": true
+}
