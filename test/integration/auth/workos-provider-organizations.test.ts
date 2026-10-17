@@ -14,13 +14,14 @@ import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
 import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
 import { formsIn, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
-import { adminGrant, formFor, superAdminGrant, userGrant } from '../../support/in-process/hosted-organization-site.ts';
+import { formFor } from '../../support/in-process/hosted-organization-site.ts';
 import { ProtectedToolSpy } from '../../support/doubles/mcp/protected-tool-spy.ts';
 import { fakeClientId } from '../../support/doubles/workos/workos-fake-api.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
+import { adminGrant, superAdminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 
 // The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the
 // WorkOS API, together with the real OrganizationAdministration, account routes, and MCP server. A probe stands in for

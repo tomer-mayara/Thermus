@@ -1,8 +1,9 @@
+import { hostedRolePermissions } from '../../fixtures/hosted-roles.ts';
 import type { WorkOSFake } from './workos-fake.ts';
 
 const createdAt = '2026-10-16T12:00:00.000Z';
-const roles = [{ slug: 'member', permissions: [] }, { slug: 'user', permissions: ['product:access'] },
-  { slug: 'admin', permissions: ['user-grants:manage'] }, { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] }];
+// The roles of a personal organization: the hosted role catalog, with the default role first, as the fake listed them.
+const roles = ['member', 'user', 'admin', 'super-admin'].map((slug) => ({ slug, permissions: hostedRolePermissions[slug] ?? [] }));
 
 // Extends the WorkOS HTTP fake with persistent personal organizations and external-ID uniqueness.
 export class WorkOSSignupFake {

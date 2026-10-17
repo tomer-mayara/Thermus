@@ -1123,6 +1123,15 @@ The three hosted WorkOS acceptance specifications and the hosted MCP access guid
 [V] Has the public base URL of the hosted test configuration and a fake without memberships when the test gives no set-up
 [V] Closes its server when the test that opened it ends, so that a later request to the site fails
 
+**Hosted role catalog** (`test/unit/test-support/hosted-roles.test.ts`)
+
+Three support modules had the role catalog of the hosted edition. The WorkOS fake had it as `environmentRoles`, and `test/support/hosted-live/settings.ts` of the hosted live gate as `hostedRolePermissions`. `test/support/in-process/hosted-organization-site.ts` had it as its grants. `memberRole` was in that site and in `test/support/doubles/organizations/directory-double-records.ts`. The signup fake, `test/support/doubles/workos/workos-signup-fake.ts`, had the catalog too, for the personal organizations of signup. `test/support/fixtures/hosted-roles.ts` is the one copy. `hostedRolePermissions` gives each environment role with its application permissions, as the WorkOS staging environment defines them. `user` has `product:access`, `admin` has `user-grants:manage`, `super-admin` has `admin-grants:manage` and `billing:manage`, and `member` has no permission. `userGrant`, `adminGrant`, `superAdminGrant`, and `memberRole` are the grants of these roles. The fake answers with the catalog, the live gate checks the staging environment against it, and the organization site grants from it. Thus the fake and the live gate cannot drift apart. The unit tests of `OrganizationAdministration` keep their own User, Admin, and Super Admin grants. The hosted account integration test keeps its own grants too. Each test shows its data. `roleGrantOf()` of the directory double keeps its own map of User and Admin, because it refuses each other role.
+
+[V] Lists the roles `user`, `admin`, `super-admin`, and `member` in this order, the order in which the WorkOS fake lists the roles of an organization
+[V] Gives each of `userGrant`, `adminGrant`, `superAdminGrant`, and `memberRole` the name of its role and exactly the permissions of that role in the catalog
+[V] Gives the role `member` no permission
+[V] Has no permission in two roles
+
 **Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
 
 `test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, and the local HTTPS site read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts`, `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`, and the three container scripts `edgeScript`, `pageScript`, and `probeScript` of `test/support/container/`.
@@ -2161,7 +2170,7 @@ npm run build && node --test dist/test/acceptance/auth/hosted-startup.test.js
 
 **Hosted WorkOS composition** (`test/acceptance/auth/hosted-workos.test.ts`)
 
-The real hosted composition with the WorkOS provider runs behind the real HTTP server on a loopback port. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it. `test/support/doubles/workos/workos-fake.ts` gives the pinned SDK a local fake of the WorkOS API with users, memberships, the hosted roles, sign-ins, refreshes, and AuthKit-signed Connect tokens. `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the flows against WorkOS.
+The real hosted composition with the WorkOS provider runs behind the real HTTP server on a loopback port. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` starts it. `test/support/doubles/workos/workos-fake.ts` gives the pinned SDK a local fake of the WorkOS API with users, memberships, the hosted roles, sign-ins, refreshes, and AuthKit-signed Connect tokens. The hosted roles are the role catalog of `test/support/fixtures/hosted-roles.ts`. `HostedBrowser` keeps the cookies of each answer. These tests prove the application side, not WorkOS behavior; the hosted live gate proves the flows against WorkOS.
 
 [V] A sign-in through the server and the callback give one sealed `HttpOnly`, `Secure`, `SameSite=Lax` session cookie, clear the sign-in cookie, and give the portal session the profile, the organization, the MFA evidence of the password sign-in, and a form token
 [V] A callback with another state, without the sign-in cookie, with an AuthKit error, or with a refused code gives 400 and no session
@@ -2522,7 +2531,7 @@ AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only c
 [V] The AuthKit key set and the browser-session key set have signing keys with key IDs, and jose accepts them
 [V] WorkOS accepts the staging API key for a read of organizations
 [V] The saved redirect URI is exactly `https://localhost:46443/callback`, the default; no CORS origin is saved; the MCP resource indicator `https://localhost:46443/mcp` is saved
-[V] The environment roles have exactly the permissions of the hosted role mapping, and no other role has an application permission
+[V] The environment roles have exactly the permissions of the hosted role mapping, as the role catalog of `test/support/fixtures/hosted-roles.ts` gives them, and no other role has an application permission
 [V] Provider preflight checks MFA against the selected Optional or Required profile, allows password sign-in, and refuses passkeys
 [V] The hosted sign-in page offers email sign-in and Google as its only social provider (changed for decision D1 and passed in the complete gate on 2026-10-15)
 [V] In the Required profile, a new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`

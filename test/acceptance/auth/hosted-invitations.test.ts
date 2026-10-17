@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { labelsOf, recordLines, rolesOf, serveAdministrationSite as serve, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
-import { adminGrant, formFor, statusesOf, userGrant, userOf } from '../../support/in-process/hosted-organization-site.ts';
+import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
+import { formFor, statusesOf, userOf } from '../../support/in-process/hosted-organization-site.ts';
 
 const invitationsPage = 'https://thermus.example/team/invitations';
 const deniedChange = /Your account cannot make this change in the selected organization\./;

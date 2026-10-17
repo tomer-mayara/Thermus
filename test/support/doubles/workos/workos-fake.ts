@@ -2,6 +2,7 @@ import type { TestContext } from 'node:test';
 import { createRemoteJWKSet } from 'jose';
 import type { WorkOSConnection } from '../../../../src/hosted-workos-application.ts';
 import type { WorkOSSettings, WorkOSMfaPolicy } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { hostedRolePermissions } from '../../fixtures/hosted-roles.ts';
 import { nowInSeconds, SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type RecordedRequest } from './workos-fake-api.ts';
 
@@ -52,13 +53,6 @@ interface InvitationBody {
   readonly role_slug?: string;
 }
 
-// The roles of the hosted role mapping, as the staging environment defines them.
-const environmentRoles: Readonly<Record<string, readonly string[]>> = {
-  user: ['product:access'],
-  admin: ['user-grants:manage'],
-  'super-admin': ['admin-grants:manage', 'billing:manage'],
-  member: [],
-};
 // WorkOS gives the default role to a membership that has no other role.
 const defaultRoles: readonly string[] = Object.freeze(['member']);
 const membershipsRoute = 'GET /user_management/organization_memberships';
@@ -90,7 +84,7 @@ function userJson(user: FakeUser) {
 function roleJson(slug: string) {
   return {
     object: 'role', id: `role_01${slug.toUpperCase().replace('-', '')}`, name: slug, slug, description: null,
-    permissions: environmentRoles[slug] ?? [], type: 'EnvironmentRole', resource_type_slug: 'organization',
+    permissions: hostedRolePermissions[slug] ?? [], type: 'EnvironmentRole', resource_type_slug: 'organization',
     created_at: createdAt, updated_at: createdAt,
   };
 }
@@ -131,7 +125,7 @@ function sameAddress(first: string, second: string): boolean {
 }
 
 function isKnownRole(slug: string | undefined): slug is string {
-  return slug !== undefined && Object.hasOwn(environmentRoles, slug);
+  return slug !== undefined && Object.hasOwn(hostedRolePermissions, slug);
 }
 
 // The position of the first record after the record of the cursor. It stays a position when that record no longer
@@ -232,7 +226,7 @@ export class WorkOSFake {
     fake.authkitKeySet.publish(authkitKey);
     const world = new WorkOSFake({ fake, browserKey, authkitKey, publicBaseUrl, organizations });
     for (const organization of organizations) {
-      fake.answer(`GET /authorization/organizations/${organization}/roles`, { status: 200, body: { object: 'list', data: Object.keys(environmentRoles).map(roleJson) } });
+      fake.answer(`GET /authorization/organizations/${organization}/roles`, { status: 200, body: { object: 'list', data: Object.keys(hostedRolePermissions).map(roleJson) } });
     }
     return world;
   }

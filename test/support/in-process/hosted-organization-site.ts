@@ -17,13 +17,10 @@ import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm 
 import { MembershipDirectoryDouble, type MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
 import { ProtectedToolSpy } from '../doubles/mcp/protected-tool-spy.ts';
 import { hostedConfig } from '../fixtures/hosted-config.ts';
+import { adminGrant, memberRole, superAdminGrant, userGrant } from '../fixtures/hosted-roles.ts';
 
-export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-export const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
-export const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
 export const destinationPaths = ['portal', 'administration/users', 'administration/admins', 'billing'];
 const authority = 'hosted-provider-double';
-const memberRole: RoleGrant = { role: 'member', permissions: [] };
 const destinations = new Map([
   ['/team/portal', 'product:access'],
   ['/team/administration/users', 'user-grants:manage'],

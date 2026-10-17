@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { assertProviderMfaProfile } from '../../../support/hosted-live/mfa-profile.ts';
+import { hostedRolePermissions } from '../../../support/fixtures/hosted-roles.ts';
 import type { LiveRun } from '../../../support/hosted-live/live-run.ts';
 import {
   applicationPermissionsOf,
   browserRedirectUri,
-  hostedRolePermissions,
   mcpResource,
 } from '../../../support/hosted-live/settings.ts';
 import { field, queryWidgetGraph, readWorkOSList } from '../../../support/hosted-live/workos-api.ts';
