@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { setTimeout as sleep } from 'node:timers/promises';
 import type { Page } from 'playwright';
-import { formsIn, type PageForm } from '../../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, type PageForm } from '../../../support/drivers/browser/hosted-browser.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf, superAdminRole } from '../../../support/hosted-live/operator-runbook.ts';
-import { formNamed, serverGet, serverPost, sessionJson, signInThroughPortal, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
+import { serverGet, serverPost, sessionJson, signInThroughPortal, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
 import { localOrigin, mcpResource } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
 
@@ -55,7 +55,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
     const visit = await signInThroughPortal(run, users.selector, organizationA.name);
     const csrfToken = String((await sessionJson(visit.page)).csrfToken);
     const offered = await organizationForms(visit.page, '/portal/access');
-    const switched = await serverPost(visit.page, 'organizations/select', { fields: formNamed(offered, organizationB.name).fields });
+    const switched = await serverPost(visit.page, 'organizations/select', { fields: formLabelled(offered, organizationB.name).fields });
     return { ...visit, csrfToken, offered, switched, switchedAt: Date.now() };
   });
 
@@ -96,7 +96,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       const { clientOwner, organizationA, organizationB } = await run.fixtures();
       const { operatorOrganization } = await run.organizationFixtures();
       const { page } = await selection();
-      const fields = formNamed(await organizationForms(page), organizationA.name).fields;
+      const fields = formLabelled(await organizationForms(page), organizationA.name).fields;
 
       const refusals = [
         await serverPost(page, 'organizations/select', { fields: { ...fields, organization_id: clientOwner.id } }),

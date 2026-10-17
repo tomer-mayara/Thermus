@@ -125,3 +125,11 @@ export function formsIn(html: string): PageForm[] {
     label: decodeHtml(/<button type="submit">([^<]*)<\/button>/.exec(content)?.[1] ?? ''),
   }));
 }
+
+// The form of a page with this button text. The message gives only the button texts, because the fields hold the form
+// token of the session.
+export function formLabelled(forms: readonly PageForm[], label: string): PageForm {
+  const form = forms.find((candidate) => candidate.label === label);
+  assert.ok(form, `The page offers no form "${label}": ${JSON.stringify(forms.map((candidate) => candidate.label))}`);
+  return form;
+}

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import type { Page } from 'playwright';
-import type { PageForm } from '../drivers/browser/hosted-browser.ts';
 import { completeAuthKit } from './authkit-driver.ts';
 import type { LiveRun } from './live-run.ts';
 import { originAndPath } from './navigations.ts';
@@ -44,14 +43,6 @@ export async function acceptInvitationThroughPortal(run: LiveRun, user: LiveUser
   const pages = await completeAuthKit(page, { user, authkitHost, mfaPolicy: run.settings.mfaPolicy ?? 'optional' });
   await waitForPortal(page);
   return { page, pages, signedInAt: Date.now() };
-}
-
-// The form of a page with this button text. The message gives only the button texts, because the fields hold the form
-// token of the session.
-export function formNamed(forms: readonly PageForm[], label: string): PageForm {
-  const form = forms.find((candidate) => candidate.label === label);
-  assert.ok(form, `The page offers no form "${label}": ${JSON.stringify(forms.map((candidate) => candidate.label))}`);
-  return form;
 }
 
 // A request of the browser with its cookies, which follows no redirect.

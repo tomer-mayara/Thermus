@@ -13,7 +13,7 @@ import { IdentityVerifierSpy } from '../doubles/auth/identity-verifier-spy.ts';
 import { mcpRequest, rpcResult } from '../drivers/mcp/mcp-http-request.ts';
 import { AccountOperationSpy } from '../doubles/hosted-admin/account-operation-spy.ts';
 import { BrowserSessionStore, type SignInOptions } from '../doubles/auth/browser-session-store.ts';
-import { HostedBrowser, listenerTransport, type BrowserTransport, type PageForm } from '../drivers/browser/hosted-browser.ts';
+import { HostedBrowser, listenerTransport, type BrowserTransport } from '../drivers/browser/hosted-browser.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
 import { ProtectedToolSpy } from '../doubles/mcp/protected-tool-spy.ts';
 import { hostedConfig } from '../fixtures/hosted-config.ts';
@@ -95,12 +95,6 @@ export async function serveOrganizationSite(t: TestContext, setup: SiteSetup): P
     await parts.application.close();
   });
   return siteWith(parts, listenerTransport(server.url));
-}
-
-export function formFor(forms: readonly PageForm[], label: string): PageForm {
-  const form = forms.find((candidate) => candidate.label === label);
-  assert.ok(form, `the page offers no selection of ${label}: ${JSON.stringify(forms)}`);
-  return form;
 }
 
 export async function statusesOf(browser: HostedBrowser, paths: readonly string[] = destinationPaths): Promise<Record<string, number>> {

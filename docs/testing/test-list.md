@@ -1142,6 +1142,14 @@ Three support modules had the role catalog of the hosted edition. The WorkOS fak
 [V] Gives the role `member` no permission
 [V] Has no permission in two roles
 
+**Form by label of the hosted browser** (`test/unit/test-support/form-labelled.test.ts`)
+
+Three functions found the form of a page by its button text. They were `formFor()` in `test/support/in-process/hosted-organization-site.ts`, `formNamed()` in `test/support/hosted-live/portal-visit.ts` of the hosted live gate, and a local `formNamed()` in `test/acceptance/auth/hosted-workos-administration.test.ts`. `formLabelled()` in `test/support/drivers/browser/hosted-browser.ts`, next to `formsIn()`, is the one copy. When no form has the button text, `formLabelled()` fails with the message of the two `formNamed()` copies. This message gives only the button texts of the page, because the fields hold the form token of the session. The message of `formFor()` also gave the fields of each form.
+
+[V] Gives the form with the button text, with its action and its hidden fields, from the forms that `formsIn()` reads from a page
+[V] Fails with an `AssertionError` when no form has the button text; the message names the text and lists the button texts of the page, without a field value such as the form token
+[V] Fails with a message that names the text and lists no button text, `[]`, when there is no form
+
 **Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
 
 `test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, and the local HTTPS site read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts`, `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`, and the three container scripts `edgeScript`, `pageScript`, and `probeScript` of `test/support/container/`.

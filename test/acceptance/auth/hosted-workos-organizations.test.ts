@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import type { WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { formsIn, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
+import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
-import { formFor, statusesOf } from '../../support/in-process/hosted-organization-site.ts';
+import { statusesOf } from '../../support/in-process/hosted-organization-site.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
@@ -113,7 +113,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     const list = await browser.open('organizations?return_to=/team/portal/access');
     const forms = formsIn(list.body);
     const before = browser.cookieHeader;
-    const selected = await browser.submit(formFor(forms, 'Globex'));
+    const selected = await browser.submit(formLabelled(forms, 'Globex'));
     const portal = await browser.follow(selected);
     const relisted = formsIn((await browser.open('organizations')).body);
 
@@ -138,7 +138,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
   test('Given the same member, when a selection form names the inactive Initech, the default-role Umbrella, the Hooli of another user, or an unknown organization, also with forged organization values in the query and the headers, then each selection is refused with 403, WorkOS gets no switch, and the session keeps Acme', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, ada, acme);
-    const acmeForm = formFor(formsIn((await browser.open(`organizations?organizationId=${hooli}`, { 'X-Organization-Id': hooli })).body), 'Acme (selected)');
+    const acmeForm = formLabelled(formsIn((await browser.open(`organizations?organizationId=${hooli}`, { 'X-Organization-Id': hooli })).body), 'Acme (selected)');
 
     const refusals = [];
     for (const organizationId of [initech, umbrella, hooli, 'org_01UNKNOWN']) {
@@ -167,9 +167,9 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
       ...memberships.map((membership) => (membership.userId === ada.id && membership.organizationId === globex ? { ...membership, status: 'inactive' as const } : membership)),
       { userId: ada.id, organizationId: hooli, roles: ['user'] },
     ];
-    const refused = await browser.submit(formFor(shown, 'Globex'));
+    const refused = await browser.submit(formLabelled(shown, 'Globex'));
     const offered = formsIn((await browser.open('organizations')).body);
-    const selected = await browser.submit(formFor(offered, 'Hooli'));
+    const selected = await browser.submit(formLabelled(offered, 'Hooli'));
 
     assert.deepEqual(shown.map(({ label }) => label), ['Acme (selected)', 'Globex']);
     assert.equal(refused.status, 403, refused.body);
@@ -184,7 +184,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     const browser = await signIn(site, sam);
 
     const forms = formsIn((await browser.open('organizations?return_to=/team/billing')).body);
-    const selected = await browser.submit(formFor(forms, 'Acme'));
+    const selected = await browser.submit(formLabelled(forms, 'Acme'));
     const billing = await browser.follow(selected);
     const portal = await browser.open('portal/access');
 
@@ -201,7 +201,7 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
   test('Given a signed-in member, when a selection comes from another origin or with another form token, then each is refused with 403 before any organization read, and WorkOS gets no switch', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, ada, acme);
-    const globexForm = formFor(formsIn((await browser.open('organizations')).body), 'Globex');
+    const globexForm = formLabelled(formsIn((await browser.open('organizations')).body), 'Globex');
     site.world.fake.takeRequests();
 
     const foreign = await browser.submit(globexForm, { origin: 'https://evil.example' });
@@ -220,13 +220,13 @@ describe('Hosted WorkOS edition: organization onboarding and selection from Work
     site.world.expireAccessTokens();
     const browser = await signIn(site, ada, acme);
     const forms = formsIn((await browser.open('organizations')).body);
-    const initechForm = { ...formFor(forms, 'Globex'), fields: { ...formFor(forms, 'Globex').fields, organization_id: initech } };
+    const initechForm = { ...formLabelled(forms, 'Globex'), fields: { ...formLabelled(forms, 'Globex').fields, organization_id: initech } };
 
-    const selected = await browser.submit(formFor(forms, 'Globex'));
+    const selected = await browser.submit(formLabelled(forms, 'Globex'));
     const refused = await browser.submit(initechForm);
     site.world.membershipOutage = { status: 500, body: { message: 'Internal error' } };
     const failedPage = await browser.open('organizations');
-    const failedSelection = await browser.submit(formFor(forms, 'Acme (selected)'));
+    const failedSelection = await browser.submit(formLabelled(forms, 'Acme (selected)'));
 
     assert.equal(selected.status, 303, selected.body);
     assert.equal(sessionCookiesOf(selected).length, 2, 'The 303 lacks the refreshed cookie or the cookie of the switch.');
