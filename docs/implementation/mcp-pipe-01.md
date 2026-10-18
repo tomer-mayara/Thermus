@@ -1,17 +1,18 @@
 # MCP-PIPE-01: protected neutral page fetch
 
-Status: implementation in progress; candidate checks pending.
-Implementation baseline: `8d12c1e7`. Draft PR: [#155](https://github.com/tomer-mayara/Thermus/pull/155).
+Status: implemented; functional validation and VM restoration complete; awaiting owner PR review.
+Implementation baseline: `8d12c1e7`. PR: [#155](https://github.com/tomer-mayara/Thermus/pull/155).
+Tested implementation revision: `bcae870715a543b0fb411e476cea0a82d9fa951f`.
 
 The [reviewed plan](mcp-pipelines-plan.md#appendix-a-implementation-tickets)
 defines this slice. The historical design review used `41373e82`; that is not
 the implementation baseline. Characterization, focused checks, the final hosted
-build, full acceptance, self-hosted container, and AST review are recorded below.
-The hosted image gate remains pending; the candidate is not marked complete or Ready.
+build, full acceptance, both container gates, and AST review are recorded below.
+VM restoration is verified. Final evidence changes are docs only.
 
 ## Scope and ownership
 
-Extract the protected fetch use case into `src/page-fetch/`. `createFetchPage`
+The protected fetch use case now lives in `src/page-fetch/`. `createFetchPage`
 uses the public auth and fetch contracts. It checks cancellation, requires
 `product:access`, and validates the original URL before fetching. Direct callers
 retain these checks. The result is released Markdown in a typed record.
@@ -161,7 +162,11 @@ class score 73/high finding and composition's 15-dependency/low finding. The
 reasons in the table above apply to both. Improvements are schema 55 → 61 and
 the thin MCP adapter 67 → 87. The review is complete with justified retained
 findings; its process exit remains 1 and is not recorded as a green gate.
-The manager will include the full review Markdown and reasons in the PR.
+The full review Markdown and justified retained findings are in the PR
+description. No rules or baseline entries were changed to hide those findings.
+The final review follows the archival of two temporary VM helper scripts as
+local text evidence. The analyzer had included those ignored, untracked scripts;
+they are not part of this PR. This repeated review adds no measurement/refactor pass.
 
 ### Final hosted build and renderer
 
@@ -224,11 +229,32 @@ this attempt is not a hosted image pass.
 For the same unchanged code, rules, tests, and dependencies, the manager saved
 all three VM config files, binfmt records, and resource settings, then temporarily
 selected bundled Rosetta with 2 CPUs, 4 GiB, and `LIMA_SSH_PORT_FORWARDER=true`.
-The exact hosted gate is running again; its log is
-`.cache/mcp-pipe-01/container-hosted-rosetta.log`. The compiler passed and offline
-unit tests started, but the gate has no final result yet. Managed cleanup is
-set to restore and verify the saved configuration and stop the VM to its prior
-state. Restoration and VM-stop verification are also pending.
+The exact `pnpm run test:container:hosted` gate then exited 0 under Rosetta.
+`.cache/mcp-pipe-01/container-hosted-rosetta.log` reports 9 tests, 0 suites,
+9 passes, and zero failed/cancelled/skipped/todo tests, in 1,167,554.780083 ms.
+All seven final-image runtime child cases passed: metadata, portal/auth/origin,
+exact signup notice, public HTTPS/JavaScript, network/capacity/cancel/shutdown,
+invalid startup, and missing portal. The eighth child proved that a deliberately
+failing offline check stops the build and creates no runtime image.
+
+The positive Linux AMD64 image build passed all offline phases: backend unit
+2,722; portal unit 19; build proofs 13; portal acceptance 16; complete integration
+518; hosted offline selection 128; real renderer 9. Every phase passed all tests
+with zero failed/cancelled/skipped/todo outcomes. The initial QEMU failure is
+retained above; this Rosetta run supplies the hosted image proof for the same code.
+
+Managed cleanup restored the original state. The restoration verifier exited 0;
+its source is archived in `.cache/mcp-pipe-01/rosetta/verify-restoration.py.txt`. `restoration.ok`
+records byte-exact restoration of all three config files, original binfmt
+records, Docker context/engine, three original stopped containers and their
+network memberships, volume/network inventory, and original image tags.
+The original 4-CPU/4-GiB VM is stopped as it was before this task.
+
+An independent host check confirmed the three config files, stopped 4 CPU/4 GiB VM,
+and every tracked implementation hash. The initial comparator rejected only
+reversed comma-separated network display order; comparing membership as a set
+confirmed the same memberships, with no underlying resource change. Final log:
+`.cache/mcp-pipe-01/rosetta/restoration-final.log`. Implementation hashes remain unchanged.
 
 ### Habit-hooks findings
 
@@ -256,11 +282,12 @@ The following findings remain with reasons; this gate is not recorded as green.
   Only factory wiring changed. A size-driven split would add unrelated test
   restructuring to this slice without improving the extraction.
 
-### Remaining evidence
+### Remaining owner review
 
-The hosted image gate and VM restoration verification remain pending.
-The manager will add their results and the final
-candidate revision. The retained habit-hooks and AST findings above remain
+All required implementation test proofs are recorded for `bcae8707`. Owner PR
+review remains pending; functional validation and restoration are complete.
+The manager has signed off the implementation and docs.
+Final evidence updates change docs only. The retained habit-hooks and AST findings above stay
 explicit; neither nonzero command is presented as a pass.
 
 Use the [test gate policy](test-gate-policy.md) for focused/suite commands and

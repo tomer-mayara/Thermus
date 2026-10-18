@@ -1,13 +1,15 @@
 # MCP request and response pipelines
 
-Status: Reviewed design; MCP-PIPE-01 implementation in progress.
+Status: Reviewed design; MCP-PIPE-01 implemented and awaiting owner PR review.
+Its functional validation and VM restoration are complete; tickets 02–04 have not started.
 Date: 2026-10-17. Historical review baseline: `41373e82`.
 Implementation baseline after rebase onto `origin/main`: `8d12c1e7`.
 
 This revision simplifies the design and changes the proposed ticket scopes.
 The [review record](mcp-pipelines-plan-review.md) lists the corrections and the
-final sign-off from both review agents and the manager. No implementation test
-result is claimed.
+historical design sign-off from both review agents and the manager. The
+[MCP-PIPE-01 record](mcp-pipe-01.md) gives the tested implementation revision
+and actual verification results separately from that design review.
 The AST audit clarifications are reviewed; see the
 [audit evidence](mcp-pipelines-plan-review.md#appendix-a-ast-metrics-audit).
 See [Appendix A: implementation tickets](#appendix-a-implementation-tickets)
@@ -328,22 +330,25 @@ Implementation is authorized for MCP-PIPE-01. Follow the [PR steps](test-gate-po
 draft first, manual manager review of delegated work and owner review, required
 checks before Ready, all started Actions jobs passed, Draft again before fixes,
 and merge a clean PR once. The owner merges a new decision record. Delamain
-workers follow their run prompt and do not open/merge PRs. The manager will commit
-the documentation foundation and open the draft PR before source changes.
+workers follow their run prompt and do not open/merge PRs. The manager committed
+the documentation foundation as `b0db5dc6`, opened draft
+[PR #155](https://github.com/tomer-mayara/Thermus/pull/155), then committed the
+implementation as `bcae8707`. The final evidence update changes docs only.
 Earlier planning/review work changed docs only; it supplied no implementation
 test results. Current implementation and check evidence must be recorded separately.
 
 ## Appendix A: implementation tickets
 
 All IDs, titles, and labels remain local entries; no board issues exist.
-MCP-PIPE-01 is **In progress**; MCP-PIPE-02 through 04 are **Not started**.
+MCP-PIPE-01 is **Implemented**, awaiting owner PR review; MCP-PIPE-02 through 04
+are **Not started**.
 These revised scopes replace the earlier appendix breakdown.
 Suggested shared labels: `mcp`, `pipeline`. Each ticket must meet the shared
 Definition of Done above; no testing-only or detached infrastructure ticket is needed.
 
 ### MCP-PIPE-01 — Extract the protected neutral fetch operation
 
-**Dependency:** implementation baseline `8d12c1e7`. **State:** In progress. **Label:** `refactor`.
+**Dependency:** implementation baseline `8d12c1e7`. **State:** Implemented; owner PR review pending. **Label:** `refactor`.
 
 The [implementation record](mcp-pipe-01.md) tracks the candidate and its evidence.
 

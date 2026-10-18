@@ -2,16 +2,16 @@
 
 Date: 2026-10-17. Historical review baseline: `41373e82`.
 Implementation baseline after rebase onto `origin/main`: `8d12c1e7`.
-Status: design and historical audit signed off; MCP-PIPE-01 implementation in progress.
+Status: design and historical audit signed off; MCP-PIPE-01 implemented and awaiting owner PR review.
 Current specification: [MCP request and response pipelines](mcp-pipelines-plan.md).
 
 This second review replaces the first design sign-off. Two review agents used
 Metz- and Martin-inspired perspectives; the manager checked their findings
 against the source and repository rules. Neither Sandi Metz nor Robert C. Martin
 participated in or endorsed this review. That review changed documentation only.
-The review and metrics below are historical evidence. The user has now
-authorized MCP-PIPE-01; this update starts its implementation record without
-claiming that code or checks are complete. Tickets 02–04 remain Not started.
+The review and metrics below are historical evidence. The
+[MCP-PIPE-01 record](mcp-pipe-01.md) gives the completed implementation and
+verification results. Tickets 02–04 remain Not started.
 
 ## Material findings and selected corrections
 
