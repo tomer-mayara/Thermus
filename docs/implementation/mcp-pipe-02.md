@@ -1,6 +1,6 @@
 # MCP-PIPE-02: operation correlation
 
-Status: implementation, functional validation, and environment restoration complete; manager review signed off; owner PR review pending.
+Status: merged in PR #159; functional validation, environment restoration, and manager review complete.
 Implementation baseline: `a50382ea` on `origin/main`.
 Tested implementation revision: `aa76f9f634225096fde405a5d1736e2cba34bb3f`.
 PR: [#159](https://github.com/tomer-mayara/Thermus/pull/159).
@@ -10,7 +10,8 @@ The user authorized this slice after merging MCP-PIPE-01 in
 includes the architecture evolution plan in PR #156. The
 [reviewed ticket](mcp-pipelines-plan.md#mcp-pipe-02--correlate-operations-and-update-record-readers)
 defines the scope. Implementation and hosted Linux AMD64 image validation are
-complete. Environment restoration and manager review are complete; owner review remains pending.
+complete. Environment restoration and manager review are complete; the owner
+merged PR #159.
 
 ## Scope and intended behavior
 
@@ -97,7 +98,7 @@ passes.
 | Environment restoration | Verified against original inventory; VM stopped with original 4 CPUs/4 GiB |
 | Required AST delta/inspection passes and final review | Complete; nonzero results and retained findings below |
 | Manager implementation and docs review | Signed off |
-| Owner PR review | Pending |
+| Owner PR review | Owner merged PR #159 |
 
 The first red command was:
 
@@ -250,7 +251,7 @@ implementation commit. Every new or changed test has now run locally.
 The hosted Linux AMD64 gate and environment restoration passed as recorded below.
 
 The manager committed and pushed the implementation as `aa76f9f6`; PR #159
-awaits owner review. Native gate cleanup matched the original resource inventory;
+was merged by the owner. Native gate cleanup matched the original resource inventory;
 `.cache/mcp-pipe-02/environment/native-cleanup.ok` records that check. The
 hosted image gate used temporary Rosetta with 2 CPUs, 4 GiB, and SSH forwarding.
 The original environment is now restored. This slice made no QEMU attempt.
@@ -447,6 +448,6 @@ PR, and no baseline change in this slice.
 The manager reviewed and signed off the documentation foundation, committed it
 as `ffc8374f`, and opened draft PR #159 before source work started. Functional
 validation and environment restoration are complete. The manager signed off
-the implementation and docs; owner PR review remains pending. The final evidence
-commit changes docs only; the tested source remains `aa76f9f6`. The retained
+the implementation and docs; the owner merged PR #159. The final
+evidence commit changed docs only; the tested source remained `aa76f9f6`. The retained
 quality findings above remain explicit.

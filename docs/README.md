@@ -29,10 +29,11 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
-- [Two MCP pipelines plan](implementation/mcp-pipelines-plan.md): four slices for a neutral fetch operation, correlation IDs, outgoing observation, and incoming decisions; 01 merged in PR #155, 02 is implemented and awaits owner review, and 03–04 have not started.
+- [Two MCP pipelines plan](implementation/mcp-pipelines-plan.md): four slices for a neutral fetch operation, correlation IDs, outgoing observation, and incoming decisions; 01 merged in PR #155, 02 merged in PR #159, 03 is in progress, and 04 has not started.
 - [Two MCP pipelines plan review](implementation/mcp-pipelines-plan-review.md): the deep review, corrected logical errors, section-by-section simplifications, and design sign-off.
 - [MCP-PIPE-01 implementation record](implementation/mcp-pipe-01.md): protected neutral fetch extraction at `bcae8707`, completed functional validation and VM restoration, and retained quality findings with reasons; merged in PR #155.
-- [MCP-PIPE-02 implementation record](implementation/mcp-pipe-02.md): operation correlation and event-aware readers at `aa76f9f6`; functional proofs and environment restoration are complete in PR #159; manager review signed off, owner review pending.
+- [MCP-PIPE-02 implementation record](implementation/mcp-pipe-02.md): operation correlation and event-aware readers at `aa76f9f6`; functional proofs and environment restoration complete, with retained quality findings and reasons; merged in PR #159.
+- [MCP-PIPE-03 implementation record](implementation/mcp-pipe-03.md): outgoing observation and a local decision executor from baseline `12160950`; documentation foundation prepared, source work and checks pending.
 - [Hosted Docker on Render plan](implementation/render-hosted-docker-plan.md): the GitHub auto-deploy target, production identity setup, checks, recovery, and delivery slices; RHD-01 and RHD-02 implementation and verification are complete; PR #116 is stacked on PR #115, and both await owner review.
 - [RHD-01 implementation record](implementation/rhd-01.md): protected hosted fetch, fixed capacity, cancellation, shutdown deadline, and verification results.
 - [RHD-02 implementation record](implementation/rhd-02.md): hosted portal, local startup and health checks, MCP Origin validation, and completed verification results.
