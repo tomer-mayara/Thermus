@@ -16,6 +16,12 @@ const detectionCount = new Set(result.found ?? []).size;
 
 There is no separate numeric detection field. Repeated controls, URLs, or hidden targets can report the same category. Warnings give further detail; their number is not a detection count. The sanitizer and converter preserve prior warnings and do not append an identical warning string again.
 
+The typed `scan_failed` / `scan_limit` withholding signal in `Ctx.scanWithholding` is a release
+decision, not a removal count, detection category, or warning count. It does not
+change `removed`, `skipped`, or `found`. `ProcessHtmlStep` uses that signal for a
+blocked incoming record; ordinary empty output without the signal is allowed.
+Warnings remain reports and are never parsed to infer withholding.
+
 ## Removal targets
 
 The ad cleaner counts each distinct matched DOM node with a source range once per invocation. Two selectors for the same node add one. A matched ancestor and a matched child add two, even when their source ranges overlap. A child that is removed only with its matched ancestor adds nothing. Merging ranges or removing adjacent line whitespace does not add targets.
@@ -54,7 +60,7 @@ These examples start with zero counts and no findings. They assume that no other
 
 ## Migration
 
-The field names and types have not changed, but their meaning has changed:
+The counting fields retain their types. Their earlier meanings changed as follows:
 
 - `removed` previously counted ad targets only. It now also counts HTML sanitizer targets. Do not label it as an ad-only count.
 - `skipped` previously mixed unsupported ad attempts with sanitizer and converter detection categories. It now counts unsupported ad attempts only. Use distinct `found` categories for a detection count.

@@ -24,7 +24,7 @@ The cleaner returns no partial result and does not report a successful skip. The
 
 A 5,000-level nested input is rejected both when rules match the host and when they do not. This also applies to 5,000 unclosed nested `<template>` elements followed by text. Parsing completes without a stack overflow, then the collector rejects the parsed tree with the depth error. In a body, 254 nested `div` elements reach depth 256. They are within the limit. 255 nested `div` elements reach depth 257 and exceed the limit. The same boundary applies to unclosed template content. Nested selectors continue to work when the matching elements are within the limit.
 
-This depth limit applies only to the ad cleaner. `HtmlPageProcessor`, the
+This depth limit applies only to the ad cleaner. `ProcessHtmlStep`, the
 cleaner-owned adapter used by the protected fetch operation, checks
 the shared 10 MiB UTF-8 byte limit before the pipeline starts, so oversized input
 cannot reach ad parsing. The hidden-text sanitizer also checks that shared
@@ -35,4 +35,7 @@ The pipeline accepts a per-call `AbortSignal`. It checks cancellation before
 the first step, between steps, and before it returns. Later steps do not run
 after cancellation. Synchronous parsing cannot be preempted. The [MCP fetch
 tool](mcp-fetch-tool.md) maps an oversized input or a thrown pipeline failure to
-a safe processing error and preserves a completed empty Markdown result.
+a safe processing error. Oversize input produces a failed incoming record,
+with no cleaner or parser work. A completed ordinary empty Markdown result is
+allowed. Known typed sanitizer withholding produces a blocked incoming record
+and exact empty MCP success.
