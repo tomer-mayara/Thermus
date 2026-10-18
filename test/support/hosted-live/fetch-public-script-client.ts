@@ -23,6 +23,17 @@ function childEnvironment(parts: BrowserCommand): NodeJS.ProcessEnv {
   };
 }
 
+async function authorizeBrowser(url: string, parts: BrowserCommand): Promise<readonly string[]> {
+  const page = await parts.browser.newPage();
+  try {
+    await page.goto(url, { waitUntil: 'commit' });
+    return await completeAuthKit(page, { user: parts.user, organizationName: parts.organizationName,
+      authkitHost: new URL(parts.profile.issuer).host, mfaPolicy: 'optional' });
+  } finally {
+    await page.context().close();
+  }
+}
+
 export async function runPublicFetchCommand(args: readonly string[], parts: BrowserCommand) {
   const child = spawn(process.execPath, [fetchPublicScriptEntry, ...args], { env: childEnvironment(parts), stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
   let stdout = '';
@@ -39,14 +50,9 @@ export async function runPublicFetchCommand(args: readonly string[], parts: Brow
     const input = message as { kind?: string; url?: string };
     if (input.kind !== 'authorization' || typeof input.url !== 'string') return;
     browserCalls += 1;
-    browserTasks.push((async () => {
-      const page = await parts.browser.newPage();
-      try {
-        await page.goto(input.url as string, { waitUntil: 'commit' });
-        pages.push(...await completeAuthKit(page, { user: parts.user, organizationName: parts.organizationName,
-          authkitHost: new URL(parts.profile.issuer).host, mfaPolicy: 'optional' }));
-      } finally { await page.context().close(); }
-    })().catch(() => { browserFailed = true; child.kill('SIGTERM'); }));
+    browserTasks.push(authorizeBrowser(input.url, parts)
+      .then((visited) => { pages.push(...visited); })
+      .catch(() => { browserFailed = true; child.kill('SIGTERM'); }));
   });
   const status = await new Promise<number | null>((resolve, reject) => { child.once('error', () => reject(new Error('The private script process did not start.'))); child.once('close', resolve); });
   await Promise.all(browserTasks);

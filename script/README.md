@@ -19,6 +19,14 @@ pnpm exec node --version
 The version must be `v24.20.0`. Run all commands from the repository root. No
 build is needed to run the script.
 
+## Source layout
+
+[`fetch-url.mjs`](fetch-url.mjs) is the command entry point. Its helper modules
+live in `fetch-url/`: [`oauth.mjs`](fetch-url/oauth.mjs) coordinates OAuth,
+[`browser.mjs`](fetch-url/browser.mjs) handles browser sign-in,
+[`credentials.mjs`](fetch-url/credentials.mjs) stores credentials, and
+[`errors.mjs`](fetch-url/errors.mjs) defines command errors.
+
 ## Sign in and fetch
 
 Run this from a terminal on the same machine as your browser:

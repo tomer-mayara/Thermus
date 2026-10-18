@@ -1,6 +1,6 @@
 # MCP fetch debug OAuth upgrade plan
 
-Status: **Implemented and validated; owner review pending**. Date: **2026-10-17**.
+Status: **Implemented; helper layout cleanup and validation in progress**. Date: **2026-10-17**.
 
 ## Purpose and current behavior
 
@@ -314,9 +314,10 @@ state were removed after the test.
 
 ## Implementation review and validation
 
-The implementation keeps command parsing and MCP transport in `fetch-url.mjs`.
-OAuth preparation, browser callback/launcher ownership, and private storage each
-have one module. A shared error class carries only local diagnostics. There is
+The implementation keeps `script/fetch-url.mjs` as the only command entry point.
+Its internal modules are in `script/fetch-url/`: `oauth.mjs` prepares OAuth,
+`browser.mjs` owns the callback and browser launch, and `credentials.mjs` owns
+private storage. `errors.mjs` carries only local diagnostics. There is
 no new dependency, backend authorization change, registration cache, or token
 argument. The store also removes validated orphan temporary files under its
 lock after an interrupted write.

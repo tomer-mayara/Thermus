@@ -27,13 +27,11 @@ type DebugSite = Awaited<ReturnType<typeof serveFetchUrlDebugSite>>;
 class OAuthSite {
   issuer = '';
   readonly requests: { path: string; form?: Record<string, string>; authorization?: string }[] = [];
-  private readonly options: OAuthSiteOptions;
-  private readonly backend: DebugSite;
   private readonly grants = new Map<string, { challenge: string; redirect: string }>();
   private readonly tokens = new Set<string>();
   private issued = 0;
 
-  constructor(options: OAuthSiteOptions, backend: DebugSite) { this.options = options; this.backend = backend; }
+  constructor(private readonly options: OAuthSiteOptions, private readonly backend: DebugSite) {}
 
   async handle(request: IncomingMessage, response: ServerResponse) {
     const url = new URL(request.url ?? '/', this.issuer);

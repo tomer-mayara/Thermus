@@ -55,4 +55,4 @@ export const hostedImageIdentity = containerModule('hosted-image-identity');
 export const fetchPublicScriptEntry = fileURLToPath(siblingModule('fetch-public-script-entry'));
 export const fetchUrlOAuthEntry = fileURLToPath(new URL('test/support/processes/fetch-url-oauth-entry.mjs', repositoryRoot));
 export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url.mjs', repositoryRoot));
-export const fetchUrlCredentials = new URL('script/fetch-url-credentials.mjs', repositoryRoot).href;
+export const fetchUrlCredentials = new URL('script/fetch-url/credentials.mjs', repositoryRoot).href;

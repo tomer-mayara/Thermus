@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { discoverOAuthProtectedResourceMetadata, discoverAuthorizationServerMetadata, startAuthorization, exchangeAuthorization, refreshAuthorization } from '@modelcontextprotocol/client';
-import { browserAuthorization } from './fetch-url-browser.mjs';
-import { FetchUrlError } from './fetch-url-errors.mjs';
+import { browserAuthorization } from './browser.mjs';
+import { FetchUrlError } from './errors.mjs';
 
 export function readyToken(response, startedAt) {
   if (typeof response.token_type !== 'string' || response.token_type.toLowerCase() !== 'bearer') throw tokenError();
@@ -126,7 +126,7 @@ export async function prepareOAuth(options, signal) {
   const timer = setTimeout(() => timeout.abort(new FetchUrlError('Hosted authorization timed out. Run --login again.')), options.authTimeoutMs ?? 300_000);
   const bounded = AbortSignal.any([signal, timeout.signal]);
   try {
-    const { withOAuthStore, OAuthStoreError } = await import('./fetch-url-credentials.mjs');
+    const { withOAuthStore, OAuthStoreError } = await import('./credentials.mjs');
     try { return await withOAuthStore(options.profile, (store) => { bounded.throwIfAborted(); return credentialsFromStore(options, store, bounded); }); }
     catch (error) { if (error instanceof OAuthStoreError) throw new FetchUrlError(error.message); throw error; }
   } catch (error) {

@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { fetchUrlScript } from '../../support/processes/module-paths.ts';
 
-const { callbackResult, browserAuthorization, launchBrowser } = await import(new URL('fetch-url-browser.mjs', pathToFileURL(fetchUrlScript)).href);
+const { callbackResult, browserAuthorization, launchBrowser } = await import(new URL('fetch-url/browser.mjs', pathToFileURL(fetchUrlScript)).href);
 const expected = { state: 'expected-state', metadata: { issuer: 'https://issuer.example' } };
 
 test('Given current metadata without issuer response support, when the callback has code and matching state, then it accepts an absent iss', () => {

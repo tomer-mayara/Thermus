@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import { validateAuthorizationResponseIssuer } from '@modelcontextprotocol/client';
-import { FetchUrlError } from './fetch-url-errors.mjs';
+import { FetchUrlError } from './errors.mjs';
 
 export function callbackResult(parameters, expected) {
   const single = ['state', 'code', 'error', 'iss', 'error_description', 'error_uri'];
