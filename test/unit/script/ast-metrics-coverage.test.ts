@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { gitStubCommit, pathWithGitStub } from '../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
 import { writeV8Coverage, type FunctionRuns, type ProcessRuns } from '../../support/fixtures/v8-coverage.ts';
 import { astMetricsCoverageScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
@@ -13,11 +14,11 @@ const noTools = { env: { PATH: '' } };
 
 // The cases of the merge give coverage files of scripts under this repository's dist/src/ with --from, and the report
 // goes to a temporary file. Thus they run neither the suite nor a build. Offsets are characters of the compiled
-// JavaScript, and a range is [start, end, count].
-const root = fileURLToPath(repositoryRoot);
+// JavaScript, and a range is [start, end, count]. The root has no trailing slash, as git reports it.
+const root = resolve(fileURLToPath(repositoryRoot));
 
 type FunctionEntry = { readonly name: string; readonly start: number; readonly end: number; readonly called: number; readonly coveredShare: number };
-type CoverageReport = { readonly files: readonly { readonly path: string; readonly functions: readonly FunctionEntry[] }[] };
+type CoverageReport = { readonly commit: string; readonly files: readonly { readonly path: string; readonly functions: readonly FunctionEntry[] }[] };
 
 function temporaryFolder(t: TestContext): string {
   const folder = mkdtempSync(join(tmpdir(), 'thermus-coverage-unit-'));
@@ -25,8 +26,10 @@ function temporaryFolder(t: TestContext): string {
   return folder;
 }
 
+// The command asks git for the root and the commit of HEAD before it reads the folder. A stub of git answers both from
+// a PATH that holds nothing else, so these cases need no git, as the check stage of the hosted image has none.
 function runFrom(t: TestContext, folder: string, out: string): Promise<ScriptResult> {
-  return runScript(t, astMetricsCoverageScript, { args: ['--from', folder, '--out', out], cwd: root });
+  return runScript(t, astMetricsCoverageScript, { args: ['--from', folder, '--out', out], cwd: root, env: { PATH: pathWithGitStub(t, root) } });
 }
 
 async function reportOf(t: TestContext, processes: readonly ProcessRuns[]): Promise<CoverageReport> {
@@ -122,6 +125,12 @@ test('Given files and functions in another order, when the coverage command merg
   assert.deepEqual(functionsOf(report, 'src/b.ts').map((entry) => entry.name), ['(anonymous)', 'first', 'early', 'late']);
 });
 
+test('Given the stub of git on PATH, when the coverage command merges a folder, then the report names the commit that the stub reports for HEAD', async (t) => {
+  const report = await reportOf(t, [{ 'dist/src/a.js': [['', [0, 10, 1]]] }]);
+
+  assert.equal(report.commit, gitStubCommit);
+});
+
 test('Given --out with a folder that does not exist, when the coverage command runs, then it makes the folder, writes the report there, and names the file', async (t) => {
   const folder = temporaryFolder(t);
   writeV8Coverage(join(folder, 'v8'), root, [{ 'dist/src/a.js': [['', [0, 10, 1]]] }]);
@@ -142,7 +151,7 @@ for (const [name, files, diagnostic] of [
   ['a coverage file without a result list', { 'coverage-1-1-0.json': '{"timestamp": 1}' }, (folder: string) => `${join(folder, 'coverage-1-1-0.json')} is not a V8 coverage file.`],
   ['a function without ranges', { 'coverage-1-1-0.json': JSON.stringify({ result: [{ url: sourceUrl, functions: [{ functionName: 'a', ranges: [] }] }] }) }, (folder: string) => `${join(folder, 'coverage-1-1-0.json')} is not a V8 coverage file.`],
   ['a range with a count that is not a number', { 'coverage-1-1-0.json': JSON.stringify({ result: [{ url: sourceUrl, functions: [{ functionName: 'a', ranges: [{ startOffset: 0, endOffset: 5, count: '1' }] }] }] }) }, (folder: string) => `${join(folder, 'coverage-1-1-0.json')} is not a V8 coverage file.`],
-  ['coverage files without a script under dist/src/', { 'coverage-1-1-0.json': JSON.stringify({ result: [{ url: 'node:fs', functions: [] }] }) }, (folder: string) => `The coverage files in ${folder} name no script under dist/src/ of ${root.replace(/\/$/, '')}.`],
+  ['coverage files without a script under dist/src/', { 'coverage-1-1-0.json': JSON.stringify({ result: [{ url: 'node:fs', functions: [] }] }) }, (folder: string) => `The coverage files in ${folder} name no script under dist/src/ of ${root}.`],
 ] as const) {
   test(`Given ${name}, when the coverage command reads the folder, then it fails with a diagnostic and writes no report`, async (t) => {
     const folder = join(temporaryFolder(t), 'v8');

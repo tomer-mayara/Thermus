@@ -92,13 +92,17 @@ process remains. `ast-metrics-mcp.live.ts` runs the real server when
 refused arguments of the coverage command with an empty PATH, and the merge
 through `--from` with coverage files for this repository's `dist/src/` in a
 temporary folder: the path map, the union of zero-count blocks, a function
-that no process called, the rounding, the helper filter, the order, `--out`,
-and the diagnostics. `test/support/fixtures/v8-coverage.ts` writes the V8
-coverage files. `test/acceptance/script/ast-metrics-coverage.test.ts` checks
-the merge of two processes and the default run of a small built suite in a
-temporary git repository; `ast-metrics-coverage-failures.test.ts` checks
-files of two builds, a missing `dist/`, a failing suite, and a repository
-without a commit. `ast-metrics-coverage.live.ts` runs the real unit suite
+that no process called, the rounding, the helper filter, the order, the
+commit of the report, `--out`, and the diagnostics. The merge cases run with
+a stub of git first on a PATH that holds nothing else
+(`test/support/doubles/ast-metrics/git-cli-stub.ts`), so the file needs no
+git and no ast-metrics, as the check stage of the hosted image has neither.
+`test/support/fixtures/v8-coverage.ts` writes the V8 coverage files.
+`test/acceptance/script/ast-metrics-coverage.test.ts` checks the merge of two
+processes and the default run of a small built suite in a temporary git
+repository; `ast-metrics-coverage-failures.test.ts` checks files of two
+builds, a missing `dist/`, a failing suite, and a repository without a
+commit. `ast-metrics-coverage.live.ts` runs the real unit suite
 (about 85 seconds); the default suites skip it.
 `test/unit/script/ast-metrics-snapshot.test.ts` checks the help and the
 refused arguments of the snapshot command with an empty PATH, and the rules

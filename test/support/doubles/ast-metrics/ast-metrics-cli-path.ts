@@ -2,7 +2,7 @@ import { accessSync, chmodSync, constants, existsSync, mkdirSync, mkdtempSync, r
 import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import type { TestContext } from 'node:test';
-import { astMetricsCliFake } from '../../processes/module-paths.ts';
+import { astMetricsCliFake, gitCliStub } from '../../processes/module-paths.ts';
 
 // The answers of ast-metrics-cli-fake.ts. Without an answer, the fake writes empty reports and exits 0.
 export interface AstMetricsCliAnswers {
@@ -49,6 +49,18 @@ export function astMetricsCliFakeOnPath(t: TestContext, answers: AstMetricsCliAn
 export function pathWithoutAstMetrics(t: TestContext): string {
   const bin = temporaryFolder(t);
   writeShim(join(bin, 'git'), [executableOnPath('git')]);
+  return bin;
+}
+
+// The commit that the stub of git reports for HEAD.
+export const gitStubCommit = '0123456789abcdef0123456789abcdef01234567';
+
+// A PATH whose only folder holds a stub of git (git-cli-stub.ts) that reports root as the repository root and
+// gitStubCommit as the commit of HEAD. Thus a unit test of a command runs without git and without ast-metrics, as the
+// check stage of the hosted image has neither (docs/implementation/test-gate-policy.md).
+export function pathWithGitStub(t: TestContext, root: string): string {
+  const bin = temporaryFolder(t);
+  writeShim(join(bin, 'git'), [process.execPath, gitCliStub, root, gitStubCommit]);
   return bin;
 }
 
