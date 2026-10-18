@@ -3,7 +3,9 @@
 // shim runs this file with Node. The environment gives the answers:
 //   AST_METRICS_FAKE_LOG           each call adds one JSON line with its arguments and working directory to this file
 //   AST_METRICS_FAKE_METRICS_FILE  the OpenMetrics text that analyze writes; {root} becomes the working directory
-//   AST_METRICS_FAKE_JSON_FILE     the JSON report that analyze writes; {root} becomes the working directory
+//   AST_METRICS_FAKE_JSON_FILE     the JSON report that analyze writes; {root} becomes the working directory. A
+//                                  relative path names a file in the working directory, so that each tree of a test
+//                                  repository can give its own report
 //   AST_METRICS_FAKE_REVIEW        the Markdown that review prints and writes
 //   AST_METRICS_FAKE_STDERR        the text for stderr
 //   AST_METRICS_FAKE_EXIT          the exit status (default 0)

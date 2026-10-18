@@ -8,7 +8,8 @@
 
 export interface Snapshot {
   readonly version: 1;
-  // The commit of HEAD and its committer date (ISO 8601). The files can hold changes that are not committed.
+  // The commit of HEAD of the analyzed tree and its committer date (ISO 8601): with --base, the merge base. The files of
+  // the working tree can hold changes that are not committed.
   readonly commit: string;
   readonly date: string;
   readonly global: GlobalNumbers;
