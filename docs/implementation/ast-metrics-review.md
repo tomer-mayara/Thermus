@@ -385,7 +385,9 @@ Nobody runs anything at merge time, so a pull request writes the file of its
 own merge base: before the output, the command writes that file when the store
 has no file of that commit under any date. A file that exists stays as it is,
 also when this run gives other numbers, such as a count from another coverage
-run. Thus the trend lags one pull request behind `main`, and a commit of
+run. The count of the functions at CRAP 30 or more of the merge base comes
+from its decision paths with the coverage share of the head, as the bands do,
+so the count in a file is the one of the pull request that wrote the file. Thus the trend lags one pull request behind `main`, and a commit of
 `main` that no pull request used as its base gets no file. The command reads
 the files of the store before it writes: a file with the name of a record that
 is not a valid record of version 1 stops the command with exit status 1, and so

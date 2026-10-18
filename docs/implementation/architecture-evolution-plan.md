@@ -568,7 +568,7 @@ coverage run and the review guide with the band rules.
 
 ### T7. Trend
 
-Source: step A3 and "The views". Depends on T6. Done in PR #TBD. The name of a
+Source: step A3 and "The views". Depends on T6. Done in PR #168. The name of a
 file has the day of the committer date in the time zone of the commit and the
 first eight characters of the commit, such as `2026-10-18-a50351b5.json`, the
 first record. The rows come by the time of the committer date, and two records
