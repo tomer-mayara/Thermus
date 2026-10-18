@@ -13,7 +13,7 @@ const live = { timeout: 30_000, skip: installed ? false : 'ast-metrics is not on
 const root = fileURLToPath(repositoryRoot);
 
 test('Given the real ast-metrics and a production file, when file runs in the repository root, then it prints one line for each function within 30 seconds', live, async (t) => {
-  const result = await runScript(t, astMetricsMcpScript, ['file', 'src/application.ts'], { cwd: root });
+  const result = await runScript(t, astMetricsMcpScript, { args: ['file', 'src/application.ts'], cwd: root });
   assert.equal(result.code, 0, result.stderr);
   const [header, heading, ...functions] = result.stdout.trimEnd().split('\n');
   assert.match(header, /^src\/application\.ts: (score \d+\.\d, )?\d+ decision paths?, \d+ functions?$/);
@@ -24,7 +24,7 @@ test('Given the real ast-metrics and a production file, when file runs in the re
 });
 
 test('Given the real ast-metrics and a file that does not exist, when file runs in the repository root, then it fails with the text of ast-metrics within 30 seconds', live, async (t) => {
-  const result = await runScript(t, astMetricsMcpScript, ['file', 'src/does-not-exist.ts'], { cwd: root });
+  const result = await runScript(t, astMetricsMcpScript, { args: ['file', 'src/does-not-exist.ts'], cwd: root });
   assert.equal(result.code, 1);
   assert.equal(result.stdout, '');
   assert.equal(result.stderr, 'ast-metrics-mcp: get_file_metrics failed: File not found in analysis: src/does-not-exist.ts\n');

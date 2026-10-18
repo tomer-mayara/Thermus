@@ -9,7 +9,7 @@ import { runScript } from '../../support/processes/script-command.ts';
 
 test('Given --help, when the command runs, then it prints the usage of each subcommand and starts no server', async (t) => {
   const fake = astMetricsMcpFakeOnPath(t);
-  const result = await runScript(t, astMetricsMcpScript, ['--help'], { env: fake.env });
+  const result = await runScript(t, astMetricsMcpScript, { args: ['--help'], env: fake.env });
   assert.equal(result.code, 0, result.stderr);
   for (const usage of ['file <path> [--json]', 'complex [--limit N] [--max-cyclomatic N]', 'risky [--limit N]', 'overview', 'tools', 'call <tool> [<json arguments>]', '--timeout-ms MS']) {
     assert.ok(result.stdout.includes(usage), `The help does not show ${usage}.`);
@@ -37,7 +37,7 @@ for (const [name, args, diagnostic] of [
 ] as const) {
   test(`Given ${name}, when the command runs, then it fails with one diagnostic line and starts no server`, async (t) => {
     const fake = astMetricsMcpFakeOnPath(t);
-    const result = await runScript(t, astMetricsMcpScript, args, { env: fake.env });
+    const result = await runScript(t, astMetricsMcpScript, { args, env: fake.env });
     assert.equal(result.code, 1);
     assert.equal(result.stdout, '');
     assert.match(result.stderr, /^ast-metrics-mcp: [^\n]+\n$/);

@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { parseArgs } from 'node:util';
+import { CommandError, git, notInstalled, repositoryRoot, verifyBase } from './repository.mjs';
 
 const help = `Usage: node script/ast-metrics-delta.mjs [--base REF] [--min SCORE] [--no-compare] [--help]
 
@@ -26,13 +27,10 @@ measure, such as a file with types only, is listed as "not measured" and does
 not fail the check.
 `;
 
-class DeltaError extends Error {}
-
 const reportFolder = 'ast-report';
 const metricsReport = `${reportFolder}/metrics.txt`;
 const typeScriptFiles = ['*.ts', '*.tsx', '*.mts', '*.cts'];
 const outputLimit = 64 * 1024 * 1024;
-const notInstalled = 'ast-metrics is not installed or not on PATH. See docs/implementation/ast-metrics-review.md.';
 
 function optionsOf(args) {
   let values;
@@ -42,31 +40,13 @@ function optionsOf(args) {
       'no-compare': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
     } }));
   } catch {
-    throw new DeltaError('Invalid arguments. Use --help for the supported options.');
+    throw new CommandError('Invalid arguments. Use --help for the supported options.');
   }
   if (values.help) return { help: true };
-  if (!/^\d+$/.test(values.min) || Number(values.min) > 128) throw new DeltaError('The --min value must be an integer from 0 to 128.');
+  if (!/^\d+$/.test(values.min) || Number(values.min) > 128) throw new CommandError('The --min value must be an integer from 0 to 128.');
   // git and ast-metrics would take a ref that starts with a dash as an option.
-  if (values.base === '' || values.base.startsWith('-')) throw new DeltaError('The --base value must name a git ref.');
+  if (values.base === '' || values.base.startsWith('-')) throw new CommandError('The --base value must name a git ref.');
   return { base: values.base, min: Number(values.min), compare: values['no-compare'] !== true };
-}
-
-function git(cwd, args, failureMessage) {
-  const run = spawnSync('git', args, { cwd, encoding: 'utf8', maxBuffer: outputLimit });
-  if (run.error) throw new DeltaError(run.error.code === 'ENOENT' ? 'git is not installed or not on PATH.' : `git did not run: ${run.error.message}`);
-  if (run.status !== 0) {
-    const gitMessage = run.stderr.trim().split('\n')[0];
-    throw new DeltaError(gitMessage ? `${failureMessage} git: ${gitMessage}` : failureMessage);
-  }
-  return run.stdout;
-}
-
-function repositoryRoot() {
-  return git(process.cwd(), ['rev-parse', '--show-toplevel'], 'Run the command inside a git working tree.').trim();
-}
-
-function verifyBase(root, base) {
-  git(root, ['rev-parse', '--verify', '--quiet', `${base}^{commit}`], `The base ref "${base}" is not a commit in this repository. Fetch it, or name another ref with --base.`);
 }
 
 // Without rename detection, git lists a renamed file as an added file, so the check measures it at its new path.
@@ -88,11 +68,11 @@ function analyze(root, options) {
   const run = spawnSync('ast-metrics', args, {
     cwd: root, env: { ...process.env, PWD: root }, encoding: 'utf8', maxBuffer: outputLimit, stdio: ['ignore', 'pipe', 'inherit'],
   });
-  if (run.error) throw new DeltaError(run.error.code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${run.error.message}`);
+  if (run.error) throw new CommandError(run.error.code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${run.error.message}`);
   if (run.status === 0) return;
   // After a success, the list of reports on stdout is noise. After a failure, it can tell the cause.
   process.stderr.write(run.stdout);
-  throw new DeltaError(run.status === null ? `ast-metrics analyze stopped on signal ${run.signal}.` : `ast-metrics analyze failed with exit status ${run.status}.`);
+  throw new CommandError(run.status === null ? `ast-metrics analyze stopped on signal ${run.signal}.` : `ast-metrics analyze failed with exit status ${run.status}.`);
 }
 
 function scoresOf(root) {
@@ -100,7 +80,7 @@ function scoresOf(root) {
   try {
     text = readFileSync(join(root, metricsReport), 'utf8');
   } catch {
-    throw new DeltaError(`ast-metrics wrote no ${metricsReport}.`);
+    throw new CommandError(`ast-metrics wrote no ${metricsReport}.`);
   }
   const scores = new Map();
   for (const line of text.split(/\r?\n/)) {
@@ -160,7 +140,7 @@ function main(args) {
 try {
   process.exitCode = main(process.argv.slice(2));
 } catch (error) {
-  if (!(error instanceof DeltaError)) throw error;
+  if (!(error instanceof CommandError)) throw error;
   process.stderr.write(`ast-metrics-delta: ${error.message}\n`);
   process.exitCode = 1;
 }
