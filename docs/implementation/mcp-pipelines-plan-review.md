@@ -3,7 +3,7 @@
 Date: 2026-10-17. Historical review baseline: `41373e82`.
 MCP-PIPE-01 implementation baseline: `8d12c1e7`.
 MCP-PIPE-02 implementation baseline on `origin/main`: `a50382ea`.
-Status: historical design and audit signed off; MCP-PIPE-01 merged in PR #155; MCP-PIPE-02 in progress.
+Status: historical design and audit signed off; MCP-PIPE-01 merged in PR #155; MCP-PIPE-02 implemented, awaiting owner review.
 Current specification: [MCP request and response pipelines](mcp-pipelines-plan.md).
 
 This second review replaces the first design sign-off. Two review agents used
@@ -13,8 +13,10 @@ participated in or endorsed this review. That review changed documentation only.
 The review and metrics below are historical evidence. The
 [MCP-PIPE-01 record](mcp-pipe-01.md) gives the completed implementation and
 verification results; the user has merged PR #155. The
-[MCP-PIPE-02 record](mcp-pipe-02.md) tracks the implementation in progress and
-pending checks. Tickets 03–04 remain Not started. The analysis
+[MCP-PIPE-02 record](mcp-pipe-02.md) gives the implementation and passing
+functional validation and verified environment restoration. Manager review is
+signed off; owner review is pending.
+Tickets 03–04 remain Not started. The analysis
 below stays a historical review; it supplies no MCP-PIPE-02 test results.
 
 ## Material findings and selected corrections

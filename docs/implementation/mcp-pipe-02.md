@@ -1,15 +1,16 @@
 # MCP-PIPE-02: operation correlation
 
-Status: implementation complete; verification in progress; owner PR review pending.
+Status: implementation, functional validation, and environment restoration complete; manager review signed off; owner PR review pending.
 Implementation baseline: `a50382ea` on `origin/main`.
-Draft PR: [#159](https://github.com/tomer-mayara/Thermus/pull/159).
+Tested implementation revision: `aa76f9f634225096fde405a5d1736e2cba34bb3f`.
+PR: [#159](https://github.com/tomer-mayara/Thermus/pull/159).
 
 The user authorized this slice after merging MCP-PIPE-01 in
 [PR #155](https://github.com/tomer-mayara/Thermus/pull/155). The baseline also
 includes the architecture evolution plan in PR #156. The
 [reviewed ticket](mcp-pipelines-plan.md#mcp-pipe-02--correlate-operations-and-update-record-readers)
-defines the scope. Implementation is complete. Hosted Linux AMD64 image
-validation and environment restoration remain pending.
+defines the scope. Implementation and hosted Linux AMD64 image validation are
+complete. Environment restoration and manager review are complete; owner review remains pending.
 
 ## Scope and intended behavior
 
@@ -71,9 +72,8 @@ The foundation ran no implementation suites or AST measurements. The BDD, TDD,
 and focused results are below. The final hosted build, complete integration,
 renderer proof, and full acceptance passed after the test-only reader fixes.
 The failed first acceptance run remains recorded. The self-hosted container
-gate passed; the hosted Linux AMD64 gate and environment restoration are pending.
-The completed quality reviews retain the findings explained below. Add the
-tested candidate revision when final gate results arrive.
+and hosted Linux AMD64 container gates passed. Environment restoration is verified.
+The completed quality reviews retain the findings explained below.
 
 The manager checked Node `24.20.0`, `pnpm install --frozen-lockfile`, Lightpanda
 `1.0.0`, and ast-metrics `0.43.1`. These prerequisite checks are not test-gate
@@ -93,9 +93,10 @@ passes.
 | Complete integration | Final hosted build passed: 522 tests, 44 suites, 522 passes |
 | Full acceptance | Final run exit 0: backend 464 tests, 47 suites, 464 passes; portal 16 tests, 0 suites, 16 passes; zero other outcomes |
 | Self-hosted container | Exit 0; 13 tests, 1 suite, 13 passes; zero failed/cancelled/skipped/todo |
-| Hosted Linux AMD64 container and environment restoration | Pending |
+| Hosted Linux AMD64 container | Exit 0; 9 tests, 0 suites, 9 passes; zero failed/cancelled/skipped/todo |
+| Environment restoration | Verified against original inventory; VM stopped with original 4 CPUs/4 GiB |
 | Required AST delta/inspection passes and final review | Complete; nonzero results and retained findings below |
-| Manager production review | Complete, subject to required final gates |
+| Manager implementation and docs review | Signed off |
 | Owner PR review | Pending |
 
 The first red command was:
@@ -246,7 +247,50 @@ proofs.
 with zero failed, cancelled, skipped, or todo tests. This dedicated image gate
 ran the changed `self-hosted-container.test.ts` UUID assertions before the
 implementation commit. Every new or changed test has now run locally.
-The hosted Linux AMD64 gate and its environment restoration remain pending.
+The hosted Linux AMD64 gate and environment restoration passed as recorded below.
+
+The manager committed and pushed the implementation as `aa76f9f6`; PR #159
+awaits owner review. Native gate cleanup matched the original resource inventory;
+`.cache/mcp-pipe-02/environment/native-cleanup.ok` records that check. The
+hosted image gate used temporary Rosetta with 2 CPUs, 4 GiB, and SSH forwarding.
+The original environment is now restored. This slice made no QEMU attempt.
+
+### Hosted Linux AMD64 container
+
+The exact `pnpm run test:container:hosted` gate exited 0 under temporary Rosetta.
+`.cache/mcp-pipe-02/container-hosted-rosetta.log` records 9 tests in 0 suites,
+all 9 passed, with zero failed, cancelled, skipped, or todo tests. The status
+file records 0. Duration was 1,354,877 ms.
+
+The seven packaged runtime cases passed: metadata; CLI/portal/origin handling;
+signup notice; public HTTPS and JavaScript rendering; private-address guards,
+capacity, disconnect and SIGTERM; startup failures; and missing portal. The
+deliberately failing offline build produced no runtime image, so its outer
+assertion passed. The ninth result is the parent test.
+
+The positive image's seven offline phases passed with the same counts as the
+final hosted build above: 2754/19/13/16/522/128/9 tests and
+194/0/0/0/44/17/1 suites, all passed and zero other outcomes.
+`.cache/mcp-pipe-02/hosted-positive-build.log` records those inner phases.
+All functional proofs are complete.
+
+### Environment restoration
+
+The original VM boot needed one bounded retry. The first restoration helper
+then expected QEMU backup entries that had never existed: the original binfmt
+inventory held only `python3.12`, `register`, and `status`. Its comparison failed
+even though the current inventory matched the original. Restoration-only
+verification was corrected to handle only entries present in the original
+inventory; no product source, test, or gate changed.
+
+The corrected verifier passed config bytes, binfmt entries, resources, Docker
+context/engine, actual CPU count, and non-doc source hashes, then stopped the
+VM. The manager independently compared the original backups with the restored
+state: exact VM JSON (`Stopped`, 4 CPUs, 4 GiB), all three config files, context
+and engine, CPU count 4, original containers/volumes/networks/images, and
+non-doc SHA256 values all matched. Evidence is
+`.cache/mcp-pipe-02/rosetta/restoration.ok` and
+`.cache/mcp-pipe-02/environment/final-restoration.ok`.
 
 ### Remaining reader fixes
 
@@ -402,5 +446,7 @@ PR, and no baseline change in this slice.
 
 The manager reviewed and signed off the documentation foundation, committed it
 as `ffc8374f`, and opened draft PR #159 before source work started. Functional
-gates remain pending. The manager's production review is complete subject to
-those gates; owner PR review remains pending.
+validation and environment restoration are complete. The manager signed off
+the implementation and docs; owner PR review remains pending. The final evidence
+commit changes docs only; the tested source remains `aa76f9f6`. The retained
+quality findings above remain explicit.
