@@ -1,3 +1,3 @@
-import { type Step } from '../html-to-markdown-pipeline.ts';
+import { type HtmlTransformation } from '../html-to-markdown-pipeline.ts';
 
-export interface CleanHtmlToMarkdown extends Step {}
+export interface CleanHtmlToMarkdown extends HtmlTransformation {}

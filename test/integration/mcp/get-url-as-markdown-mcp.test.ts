@@ -5,10 +5,12 @@ import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
 import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline, type Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { HtmlToMarkdownPipeline, type HtmlProcessingContext } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
+import { completionLinesIn } from '../../support/drivers/operator-log.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
@@ -34,8 +36,10 @@ test('Given the real MCP operation and pipeline, when the client calls the fetch
   assert.ok(site.fetchURL.mock.calls[0].arguments[1] instanceof AbortSignal);
   assert.equal(site.records.length, 1);
   const record = JSON.parse(site.records[0]);
+  assert.match(record.operationId, generatedOperationIdPattern);
   assert.deepEqual(record, {
     event: 'mcp.tool.completed',
+    operationId: record.operationId,
     authority: context.user.authority,
     subject: context.user.subject,
     tenantId: context.tenantId,
@@ -85,7 +89,7 @@ test('Given a real sanitizer stage in progress, when the MCP client cancels, the
   const stageEvents = new EventEmitter();
   const started = once(stageEvents, 'started', { signal: t.signal });
   const invoke = sanitizer.invoke.bind(sanitizer);
-  const sanitizerInvoke = t.mock.method(sanitizer, 'invoke', (ctx: Ctx) => {
+  const sanitizerInvoke = t.mock.method(sanitizer, 'invoke', (ctx: HtmlProcessingContext) => {
     const result = invoke(ctx);
     stageEvents.emit('started');
     return result;
@@ -131,8 +135,10 @@ async function connect(t: TestContext, page: WebsiteFetchResult, pipeline: HtmlT
   const fetchURL = t.mock.fn(async (_url: string, _signal?: AbortSignal) => page);
   const error = t.mock.fn((_entry: string) => {});
   const server = createFetchToolServer(context, {
-    operation: composeFetchOperation({ fetcher: { fetchURL }, pipeline }),
-    logger: { info(entry) { records.push(entry); events.emit('completed'); }, error },
+    operation: composeFetchOperation({ fetcher: { fetchURL }, pipeline, records: { record: () => {} } }),
+    logger: { info(entry) {
+      if (completionLinesIn(entry).length === 1) { records.push(entry); events.emit('completed'); }
+    }, error },
   });
   const client = new Client({ name: 'real-pipeline-integration', version: '0.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();

@@ -4,7 +4,7 @@ import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-
 import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HiddenHtmlScanner } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { HtmlToMarkdownPipeline, type Step } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { HtmlToMarkdownPipeline, type HtmlTransformation } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 
 describe('Known HTML pipeline output', () => {
@@ -13,7 +13,7 @@ describe('Known HTML pipeline output', () => {
       throw new RangeError('HTML parser failure');
     });
     let seenHtml: string | undefined;
-    const markdowner: Step = {
+    const markdowner: HtmlTransformation = {
       async invoke(ctx) {
         seenHtml = ctx.html;
         return { ...ctx, markdown: '' };
@@ -38,7 +38,7 @@ describe('Known HTML pipeline output', () => {
 
   test('withholds HTML with an unsourced hidden body before markdown conversion', async () => {
     let seenHtml: string | undefined;
-    const markdowner: Step = {
+    const markdowner: HtmlTransformation = {
       async invoke(ctx) {
         seenHtml = ctx.html;
         return { ...ctx, markdown: '' };
@@ -66,7 +66,7 @@ describe('Known HTML pipeline output', () => {
   });
 
   test('keeps hidden payload out of the next step for deeply nested HTML', async () => {
-    const nextStep: Step = { async invoke(ctx) { return { ...ctx, markdown: ctx.html }; } };
+    const nextStep: HtmlTransformation = { async invoke(ctx) { return { ...ctx, markdown: ctx.html }; } };
     const local = new HtmlToMarkdownPipeline([new PromptInjectionRemoverSanitizer(), nextStep]);
     const opening = '<div>\n'.repeat(6000);
     const closing = '</div>\n'.repeat(6000);

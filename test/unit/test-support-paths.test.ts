@@ -7,6 +7,7 @@ import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import {
   astMetricsArchitectureScript,
   astMetricsCliFake,
+  astMetricsCoverageScript,
   astMetricsDeltaScript,
   astMetricsMcpFake,
   astMetricsMcpScript,
@@ -51,6 +52,8 @@ const files = {
   astMetricsMcpFake,
   astMetricsSnapshotScript,
   astMetricsArchitectureScript,
+  astMetricsCoverageScript,
+  astMetricsSnapshotScript,
   programEntry,
   hostedPortalPreload: fileURLToPath(hostedPortalPreload),
   hostedPortalIndex: fileURLToPath(new URL('index.html', hostedPortalFixture)),

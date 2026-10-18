@@ -4,7 +4,7 @@ import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-
 import { HtmlDepthLimitError } from '../../../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts';
 import {
   HtmlToMarkdownPipeline,
-  type Ctx,
+  type HtmlProcessingContext,
 } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 
@@ -14,7 +14,7 @@ describe('HTML to Markdown pipeline depth limit', () => {
     { label: 'unclosed templates', html: '<template>'.repeat(5000) + 'text' },
   ]) {
     test(`an ad cleaner depth failure for ${label} stops all later steps`, async (t) => {
-      const later = t.mock.fn(async (ctx: Ctx) => ({ ...ctx, markdown: 'cleaned' }));
+      const later = t.mock.fn(async (ctx: HtmlProcessingContext) => ({ ...ctx, markdown: 'cleaned' }));
       const local = new HtmlToMarkdownPipeline([
         new CleanHtmlAdsAdblockRs(elementHidingRules), { invoke: later }, { invoke: later },
       ]);

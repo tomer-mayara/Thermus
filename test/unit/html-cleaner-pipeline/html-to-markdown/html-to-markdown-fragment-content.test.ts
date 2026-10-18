@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import type { Ctx } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import type { HtmlProcessingContext } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { createContextForUrl as createContext } from '../fixtures/html-cleaner-context.ts';
 
@@ -18,7 +18,7 @@ describe('HTML to Markdown fragment content', () => {
 
   for (const html of ['', ' \n\t ']) {
     test(`returns empty markdown for ${html === '' ? 'empty' : 'whitespace'} input`, async () => {
-      const input: Ctx = {
+      const input: HtmlProcessingContext = {
         ...createContext(html),
         markdown: 'Old content',
         title: 'Old title',
