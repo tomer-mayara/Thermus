@@ -24,6 +24,7 @@ describe('hidden HTML removal session', () => {
     assert.deepEqual(result.removed, { comments: 1, hidden: 2 });
     assert.deepEqual(result.visibleStyleValues, ['display:block!important;display:none']);
     assert.equal(result.withholdWarning, undefined);
+    assert.equal('scanWithholding' in result ? result.scanWithholding : undefined, undefined);
   });
 
   for (const passes of [7, 8]) {
@@ -32,6 +33,7 @@ describe('hidden HTML removal session', () => {
 
       assert.equal(result.html, passes === 7 ? '<p></p>' : '');
       assert.equal(result.removed.hidden, passes);
+      assert.equal('scanWithholding' in result ? result.scanWithholding : undefined, passes === 7 ? undefined : 'scan_limit');
       assert.equal(result.withholdWarning, passes === 7 ? undefined
         : 'HTML scan limit reached; remaining HTML withheld');
     });
@@ -55,6 +57,7 @@ describe('hidden HTML removal session', () => {
     assert.match([...result.exfilReasons][0] ?? '', /link to attacker\.example/);
     assert.deepEqual(result.visibleStyleValues, []);
     assert.equal(result.withholdWarning, 'HTML scan failed; remaining HTML withheld');
+    assert.equal('scanWithholding' in result ? result.scanWithholding : undefined, 'scan_failed');
   });
 
   test('records raw URL findings before a failed scan', (t) => {
@@ -114,3 +117,19 @@ describe('hidden HTML removal session', () => {
     assert.deepEqual(await sanitizer.invoke(firstContext), isolated[0]);
   });
 });
+
+for (const code of ['scan_failed', 'scan_limit'] as const) {
+  test(`Given ${code} from hidden HTML removal, when the sanitizer keeps changed warning words, then the processing context carries the typed withholding independently`, async (t) => {
+    if (code === 'scan_failed') t.mock.method(HiddenHtmlScanner, 'scan', () => { throw new Error('private-scan-error'); });
+    const run = HiddenHtmlRemovalSession.prototype.run;
+    t.mock.method(HiddenHtmlRemovalSession.prototype, 'run', function (this: HiddenHtmlRemovalSession) {
+      const result = run.call(this);
+      return { ...result, withholdWarning: 'new warning words' };
+    });
+    const result = await new PromptInjectionRemoverSanitizer().invoke(createContext(code === 'scan_limit' ? hiddenAfterPasses(8) : '<p>private-source</p>'));
+
+    assert.equal(result.html, '');
+    assert.equal('scanWithholding' in result ? result.scanWithholding : undefined, code);
+    assert.ok(result.warnings?.includes('new warning words'));
+  });
+}

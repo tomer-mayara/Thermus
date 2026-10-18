@@ -117,6 +117,43 @@ included. In a test file, each case is an anonymous function in the table.
 `file` takes a path relative to the current folder or an absolute path in
 the repository.
 
+### Measure the coverage per function: `script/ast-metrics-coverage.ts`
+
+```sh
+npm run build
+pnpm exec node script/ast-metrics-coverage.ts [--from DIR] [--out FILE]
+```
+
+The command runs the unit suite of `dist/` (`node --test --test-concurrency=1
+"dist/test/unit/**/*.test.js"`, as `npm run test:unit` does) with
+`NODE_V8_COVERAGE` set to a temporary folder, and writes
+`ast-report/coverage.json`. The output of the suite goes to stderr. Without
+`dist/`, it says "Run npm run build first." With `--from DIR`, it reads the
+coverage files of an earlier run and does not run the suite. On this Mac the
+run takes about 85 seconds (274 processes, 95 files of `src/`, 1138
+functions). The command needs no ast-metrics.
+
+For each function of a script under `dist/src/` (`dist/src/x.js` is the
+build of `src/x.ts`), the report gives its name, its range in characters of
+the build, the sum of its calls, and its covered share: the part of its
+characters that at least one process ran. A process does not run the
+characters of a block with count 0, or of a function that it did not call.
+The range of a function includes its nested functions, and each nested
+function has its own entry. The module function and the anonymous functions
+have the name `(anonymous)`. The tsc helpers (`__` names) and the functions
+inside them are left out; the wrapper of `__disposeResources` and its
+`SuppressedError` fallback stay as two `(anonymous)` entries in each file
+that uses `using`. A file that no unit test loads is not in the report. A
+function that only integration or acceptance tests call, such as
+`createApplication`, shows 0 calls.
+
+V8 gives a block only where its count differs from the count around it, so
+the blocks of one function differ from process to process; the command
+therefore merges per character. Two lengths for one script mean coverage
+files of two builds: the command stops with exit status 1. Exit status 1
+also follows a failed suite, a file that is not V8 coverage, or a folder
+without coverage files. Then no report is written.
+
 ### Take a snapshot: `script/ast-metrics-snapshot.ts`
 
 ```sh

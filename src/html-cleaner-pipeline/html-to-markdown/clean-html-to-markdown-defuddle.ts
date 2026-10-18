@@ -1,12 +1,12 @@
 import { applyLayer1, sanitize } from 'agent-input-sanitizer';
-import { type Ctx } from '../html-to-markdown-pipeline.ts';
+import { type HtmlProcessingContext } from '../html-to-markdown-pipeline.ts';
 import { type CleanHtmlToMarkdown } from './clean-html-to-markdown.ts';
 import { plainTextMarkdown } from './plain-text-input.ts';
 import { PreparedHtmlDocument } from './prepare-html-document.ts';
 import { type SanitizeText } from './sanitize-html-document.ts';
 
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
-  public async invoke(ctx: Ctx): Promise<Ctx> {
+  public async invoke(ctx: HtmlProcessingContext): Promise<HtmlProcessingContext> {
     if (/^[\t\n\f\r ]*$/.test(ctx.html)) {
       return {
         ...ctx, markdown: '', title: null,
@@ -48,7 +48,7 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
     };
   }
 
-  private async convertHtml(ctx: Ctx, sanitizeText: SanitizeText): Promise<{ content: string; title: string }> {
+  private async convertHtml(ctx: HtmlProcessingContext, sanitizeText: SanitizeText): Promise<{ content: string; title: string }> {
     return PreparedHtmlDocument.fromHtml(ctx.html, ctx.finalUrl).extract(sanitizeText);
   }
 }

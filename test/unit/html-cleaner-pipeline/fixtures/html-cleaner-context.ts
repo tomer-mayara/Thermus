@@ -1,6 +1,6 @@
-import type { Ctx } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import type { HtmlProcessingContext } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 
-export function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
+export function createContext(html: string, overrides: Partial<HtmlProcessingContext> = {}): HtmlProcessingContext {
   return {
     requestedUrl: 'https://example.com/start',
     finalUrl: 'https://example.com/final',
@@ -11,6 +11,6 @@ export function createContext(html: string, overrides: Partial<Ctx> = {}): Ctx {
   };
 }
 
-export function createContextForUrl(html: string, url = 'https://example.com/'): Ctx {
+export function createContextForUrl(html: string, url = 'https://example.com/'): HtmlProcessingContext {
   return createContext(html, { requestedUrl: url, finalUrl: url });
 }

@@ -1,3 +1,4 @@
+import { completionRecordsIn } from '../../../support/drivers/operator-log.ts';
 import assert from 'node:assert/strict';
 import { text } from 'node:stream/consumers';
 import { describe, test } from 'node:test';
@@ -67,7 +68,7 @@ export function describeHttpsMcp(): void {
       const site = await LocalHttpsSite.start(fake.settings, {
         portalBuild: await writePortalBuild(t), certificate,
         application: (logger) => composeApplicationWithWorkOSFake(config, fake, {
-          logger, buildServer: fetchToolServers(async (_url, _context, signal) => {
+          logger, buildServer: fetchToolServers(async (_url, _context, { signal }) => {
             signal.addEventListener('abort', () => aborted.resolve(), { once: true });
             started.resolve();
             await Promise.race([aborted.promise, release.promise]);
@@ -84,7 +85,7 @@ export function describeHttpsMcp(): void {
         await disconnected;
         await beforeDeadline(aborted.promise);
         await site.close();
-        assert.deepEqual(records.map((record) => JSON.parse(record).status), ['cancelled']);
+        assert.deepEqual(completionRecordsIn(records.join('\n')).map(({ status }) => status), ['cancelled']);
       } finally {
         release.resolve();
       }

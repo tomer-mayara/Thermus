@@ -1,8 +1,10 @@
 # Two MCP pipelines: deep review and simplification
 
 Date: 2026-10-17. Historical review baseline: `41373e82`.
-Implementation baseline after rebase onto `origin/main`: `8d12c1e7`.
-Status: design and historical audit signed off; MCP-PIPE-01 implemented and awaiting owner PR review.
+MCP-PIPE-01 implementation baseline: `8d12c1e7`.
+MCP-PIPE-02 implementation baseline on `origin/main`: `a50382ea`.
+MCP-PIPE-03 implementation baseline on `origin/main`: `12160950`.
+Status: historical design and audit signed off; MCP-PIPE-01 merged in PR #155; MCP-PIPE-02 merged in PR #159; MCP-PIPE-03 merged in PR #160; MCP-PIPE-04 implemented and validated with manager sign-off in PR #162.
 Current specification: [MCP request and response pipelines](mcp-pipelines-plan.md).
 
 This second review replaces the first design sign-off. Two review agents used
@@ -11,7 +13,18 @@ against the source and repository rules. Neither Sandi Metz nor Robert C. Martin
 participated in or endorsed this review. That review changed documentation only.
 The review and metrics below are historical evidence. The
 [MCP-PIPE-01 record](mcp-pipe-01.md) gives the completed implementation and
-verification results. Tickets 02–04 remain Not started.
+verification results; the user has merged PR #155. The
+[MCP-PIPE-02 record](mcp-pipe-02.md) gives the implementation and passing
+functional validation and verified environment restoration; the owner merged
+PR #159. The [MCP-PIPE-03 record](mcp-pipe-03.md) tracks the authorized outgoing
+step and local executor; all functional proofs and environment restoration passed.
+The manager signed off implementation and retained quality dispositions. The
+owner requested the merge of PR #160, completed on 2026-10-18 at `190d60f7`. The [MCP-PIPE-04 record](mcp-pipe-04.md) tracks incoming
+processing; all required functional gates and environment restoration passed,
+with manager sign-off and retained quality dispositions. PR #162 tracks the
+final Ready, Actions, and merge steps. The analysis
+below stays a historical review; current implementation evidence belongs in
+the separate records.
 
 ## Material findings and selected corrections
 

@@ -6,6 +6,8 @@ import { loadDeploymentConfig } from '../../../../src/config/deployment-config.t
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
 import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
+import { generatedOperationIdPattern } from '../../../support/fixtures/execution-context.ts';
+import { completionRecordsIn } from '../../../support/drivers/operator-log.ts';
 import { listenerTransport, type HostedBrowser } from '../../../support/drivers/browser/hosted-browser.ts';
 import { mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../../../support/drivers/mcp/mcp-sdk-client.ts';
@@ -134,13 +136,15 @@ function fetchLines(log: RecordingLog): string[] {
 }
 
 function assertFetchLog(log: RecordingLog, user: FakeUser): void {
-  const { lines } = log;
-  assert.equal(lines.length, 3, `The log must have three lines:\n${lines.join('\n')}`);
-  assert.equal(lines[0], `work-slice fetch started: ${storyUrl}`);
-  assert.equal(lines[1], `work-slice fetch completed: ${storyUrl} gave ${expectedMarkdown.length} characters of Markdown:\n${expectedMarkdown}`);
-  assert.ok(lines[2].startsWith('{"event":"mcp.tool.completed"'), lines[2]);
-  const { durationMs, ...record } = JSON.parse(lines[2]) as Record<string, unknown>;
+  assert.deepEqual(fetchLines(log), [
+    `work-slice fetch started: ${storyUrl}`,
+    `work-slice fetch completed: ${storyUrl} gave ${expectedMarkdown.length} characters of Markdown:\n${expectedMarkdown}`,
+  ]);
+  const records = completionRecordsIn(log.lines.join('\n'));
+  assert.equal(records.length, 1);
+  const { durationMs, operationId, ...record } = records[0];
   assert.equal(typeof durationMs, 'number');
+  assert.match(operationId as string, generatedOperationIdPattern);
   assert.deepEqual(record, {
     event: 'mcp.tool.completed',
     authority: 'workos:client_test',

@@ -1,3 +1,4 @@
+import { completionRecordsIn } from '../../support/drivers/operator-log.ts';
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
@@ -24,6 +25,7 @@ for (const era of mcpProtocolEras) {
     let pipelineCalls = 0;
     let providerCloses = 0;
     const operation = composeFetchOperation({
+      records: { record: (event) => { records.push(JSON.stringify(event)); } },
       fetcher: { fetchURL: async (url, signal) => {
         assert.ok(signal);
         started.resolve(signal);
@@ -76,9 +78,9 @@ for (const era of mcpProtocolEras) {
     assert.equal(pipelineCalls, 0);
     assert.deepEqual(events, ['fetch cancelled', 'fetch cleaned', 'provider closed']);
     assert.equal(providerCloses, 1);
-    assert.equal(records.length, 1);
-    assert.equal(JSON.parse(records[0]).status, 'cancelled');
-    assert.doesNotMatch(records[0], /Late source|Late success/);
+    assert.equal(completionRecordsIn(records.join('\n')).length, 1);
+    assert.equal(completionRecordsIn(records.join('\n'))[0].status, 'cancelled');
+    assert.doesNotMatch(records.join('\n'), /Late source|Late success/);
     await Promise.all([application.close(), application.close(), server.close(), server.close(), listener.close(), listener.close()]);
   });
 
@@ -92,6 +94,7 @@ for (const era of mcpProtocolEras) {
     const records: string[] = [];
     const operationCalls: string[] = [];
     const operation = composeFetchOperation({
+      records: { record: (event) => { records.push(JSON.stringify(event)); } },
       fetcher: { fetchURL: async (url) => {
         operationCalls.push('fetch');
         return { requestedUrl: url, finalUrl: url, html: '<p>Source</p>' };
@@ -145,7 +148,7 @@ for (const era of mcpProtocolEras) {
     assert.ok(elapsedMs < 1_000, `server stop took ${elapsedMs.toFixed(1)} ms`);
     assert.deepEqual(failures, ['The HTTP handler failed for POST /mcp: AbortError']);
     assert.deepEqual(operationCalls, []);
-    assert.deepEqual(records, []);
+    assert.deepEqual(completionRecordsIn(records.join('\n')), []);
   });
 }
 

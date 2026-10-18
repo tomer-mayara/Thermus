@@ -21,6 +21,7 @@ import {
 import { ContainerSite } from '../../support/container/container-site.ts';
 import { dockerOutput } from '../../support/container/docker-cli.ts';
 import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
 import { LocalMcpUser, type McpConnection } from '../../support/dsl/local-mcp-user.ts';
 import type { ServerContainer } from '../../support/container/server-container.ts';
@@ -366,8 +367,9 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(seamLines(server, 'page request'), ['/story', '/story.js']);
     const records = server.completionRecords();
     assert.equal(records.length, 1);
-    const { durationMs, ...record } = records[0] as Record<string, unknown>;
+    const { durationMs, operationId, ...record } = records[0] as Record<string, unknown>;
     assert.equal(typeof durationMs, 'number');
+    assert.match(operationId as string, generatedOperationIdPattern);
     assert.deepEqual(record, {
       event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`, subject: setup.userIds.get(alice.email), tenantId: tenant,
       tool: 'getURLAsMarkdown', url, urlStatus: 'valid', reason: fetchReason, reasonStatus: 'valid', status: 'success',

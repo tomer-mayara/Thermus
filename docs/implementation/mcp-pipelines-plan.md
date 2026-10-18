@@ -1,15 +1,28 @@
 # MCP request and response pipelines
 
-Status: Reviewed design; MCP-PIPE-01 implemented and awaiting owner PR review.
-Its functional validation and VM restoration are complete; tickets 02–04 have not started.
+Status: MCP-PIPE-01 merged in PR #155; MCP-PIPE-02 merged in PR #159.
+MCP-PIPE-03 merged in PR #160. MCP-PIPE-04 is implemented and validated with
+manager sign-off in PR #162.
 Date: 2026-10-17. Historical review baseline: `41373e82`.
-Implementation baseline after rebase onto `origin/main`: `8d12c1e7`.
+MCP-PIPE-01 implementation baseline: `8d12c1e7`.
+MCP-PIPE-02 implementation baseline on `origin/main`: `a50382ea`.
+MCP-PIPE-03 implementation baseline on `origin/main`: `12160950`.
 
 This revision simplifies the design and changes the proposed ticket scopes.
 The [review record](mcp-pipelines-plan-review.md) lists the corrections and the
 historical design sign-off from both review agents and the manager. The
 [MCP-PIPE-01 record](mcp-pipe-01.md) gives the tested implementation revision
 and actual verification results separately from that design review.
+The [MCP-PIPE-02 record](mcp-pipe-02.md) gives implementation `aa76f9f6` and
+passing functional validation and verified environment restoration; the owner
+merged PR #159. The [MCP-PIPE-03 record](mcp-pipe-03.md) tracks the authorized
+outgoing step and local executor; all functional proofs and environment restoration
+are complete. The manager signed off the implementation and retained quality
+dispositions; the owner requested its merge, completed on 2026-10-18 at
+`190d60f7`. The [MCP-PIPE-04 record](mcp-pipe-04.md) tracks incoming
+processing from that baseline; functional gates and environment restoration
+passed. The manager signed off implementation, tests, docs, and explicit
+retained quality findings. PR #162 tracks the final pull request steps.
 The AST audit clarifications are reviewed; see the
 [audit evidence](mcp-pipelines-plan-review.md#appendix-a-ast-metrics-audit).
 See [Appendix A: implementation tickets](#appendix-a-implementation-tickets)
@@ -272,8 +285,8 @@ passing characterization before changing structure; do not create artificial
 red tests. For new behavior in tickets 02–04, first write a failing public
 acceptance case, then use focused TDD until it passes and refactor with green tests.
 
-Reuse/move existing `test/integration/mcp/get-url-as-markdown.test.ts` cases
-and `test/unit/mcp/fetch-tool-schema.test.ts` URL cases before adding suites.
+Reuse existing `test/integration/page-fetch/fetch-page.test.ts` cases
+and `test/integration/mcp/fetch-tool-schema.test.ts` URL cases before adding suites.
 Coordinator tests with real auth are integration tests, even with fetcher/step
 doubles. Same-package step/executor tests with collaborator doubles are unit
 tests. Real core-to-cleaner collaboration is integration. Keep interface tests
@@ -326,7 +339,9 @@ than three measurement/refactor passes, and put justified residual scores and
 the review Markdown in the PR description. Keep `.ast-metrics-baseline.yaml`
 unchanged in this work. This requirement supersedes the earlier diagnostic-only audit.
 
-Implementation is authorized for MCP-PIPE-01. Follow the [PR steps](test-gate-policy.md#pull-request-steps):
+MCP-PIPE-01 merged in [PR #155](https://github.com/tomer-mayara/Thermus/pull/155).
+MCP-PIPE-02 merged in [PR #159](https://github.com/tomer-mayara/Thermus/pull/159).
+The user authorized MCP-PIPE-03 from baseline `12160950`. Follow the [PR steps](test-gate-policy.md#pull-request-steps):
 draft first, manual manager review of delegated work and owner review, required
 checks before Ready, all started Actions jobs passed, Draft again before fixes,
 and merge a clean PR once. The owner merges a new decision record. Delamain
@@ -340,15 +355,15 @@ test results. Current implementation and check evidence must be recorded separat
 ## Appendix A: implementation tickets
 
 All IDs, titles, and labels remain local entries; no board issues exist.
-MCP-PIPE-01 is **Implemented**, awaiting owner PR review; MCP-PIPE-02 through 04
-are **Not started**.
+MCP-PIPE-01 is **Merged** in PR #155; MCP-PIPE-02 is **Merged** in PR #159;
+MCP-PIPE-03 is **Merged** in PR #160; MCP-PIPE-04 is **Implemented and validated; manager sign-off complete** in PR #162.
 These revised scopes replace the earlier appendix breakdown.
 Suggested shared labels: `mcp`, `pipeline`. Each ticket must meet the shared
 Definition of Done above; no testing-only or detached infrastructure ticket is needed.
 
 ### MCP-PIPE-01 — Extract the protected neutral fetch operation
 
-**Dependency:** implementation baseline `8d12c1e7`. **State:** Implemented; owner PR review pending. **Label:** `refactor`.
+**Dependency:** implementation baseline `8d12c1e7`. **State:** Merged in PR #155. **Label:** `refactor`.
 
 The [implementation record](mcp-pipe-01.md) tracks the candidate and its evidence.
 
@@ -402,7 +417,9 @@ unchanged. One temporary processor port isolates the concrete HTML pipeline.
 
 ### MCP-PIPE-02 — Correlate operations and update record readers
 
-**Dependency:** MCP-PIPE-01. **State:** Not started. **Label:** `observability`.
+**Dependency:** merged MCP-PIPE-01; baseline `a50382ea`. **State:** Merged in PR #159. **Label:** `observability`.
+
+The [implementation record](mcp-pipe-02.md) tracks this candidate and its evidence.
 
 **Outcome:** Every dispatched call has one operation ID on its existing MCP
 completion. Context reaches the whole operation without changing behavior.
@@ -445,7 +462,11 @@ completion. Context reaches the whole operation without changing behavior.
 
 ### MCP-PIPE-03 — Add the outgoing standard step and fixed records
 
-**Dependency:** MCP-PIPE-02. **State:** Not started. **Label:** `outgoing-step`.
+**Dependency:** merged MCP-PIPE-02; baseline `12160950`. **State:** Merged in PR #160. **Label:** `outgoing-step`.
+
+The [implementation record](mcp-pipe-03.md) gives the tested source and completed
+functional/restoration evidence. Manager sign-off and quality dispositions are
+complete. PR #160 merged at the owner's request on 2026-10-18.
 
 **Outcome:** `ObserveRequestStep` allows the exact URL unchanged before fetch.
 The local executor enforces decisions and emits the fixed safe terminal event.
@@ -487,7 +508,7 @@ The local executor enforces decisions and emits the fixed safe terminal event.
 
 ### MCP-PIPE-04 — Add incoming processing and typed withholding together
 
-**Dependency:** MCP-PIPE-03. **State:** Not started. **Label:** `incoming-step`.
+**Dependency:** MCP-PIPE-03. **State:** Implemented and validated; manager sign-off complete in PR #162. **Label:** `incoming-step`.
 
 **Outcome:** The existing cleaner adapter becomes the incoming standard step.
 Records distinguish ordinary empty content from typed withholding while the

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { Ctx } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import type { HtmlProcessingContext } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { processHtml } from '../../../../support/in-process/process-html.ts';
 
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';
@@ -14,7 +14,7 @@ function documentHtml(body: string): string {
   return `<html><head><title>Safe title</title></head><body><main>${body}</main></body></html>`;
 }
 
-function assertControlFinding(result: Ctx): void {
+function assertControlFinding(result: HtmlProcessingContext): void {
   assert.equal(result.skipped, 0);
   assert.deepEqual(result.found, ['cf-format']);
   assert.deepEqual(result.warnings, [formatWarning]);
@@ -27,7 +27,7 @@ describe('Controls around entity decoding boundaries', () => {
       ['decimal', '&#27;[31m'],
       ['hexadecimal', '&#x1b;[31m'],
     ] as const;
-    const results: Ctx[] = [];
+    const results: HtmlProcessingContext[] = [];
 
     for (const [, sequence] of sequences) {
       const result = await processHtml(documentHtml(

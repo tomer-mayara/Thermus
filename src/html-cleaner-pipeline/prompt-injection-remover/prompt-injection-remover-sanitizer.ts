@@ -1,6 +1,6 @@
 import { CATEGORY, sanitize } from 'agent-input-sanitizer';
 import { describeRemoved, describeWarned } from 'agent-input-sanitizer/output';
-import type { Ctx } from '../html-to-markdown-pipeline.ts';
+import type { HtmlProcessingContext } from '../html-to-markdown-pipeline.ts';
 import { assertHtmlInputSize } from '../html-input-limit.ts';
 import { HiddenHtmlRemovalSession } from './hidden-html-removal-session.ts';
 import type { PromptInjectionRemover } from './prompt-injection-remover.ts';
@@ -14,7 +14,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     this.smallText = new SmallTextPolicy(options);
   }
 
-  public async invoke(ctx: Ctx): Promise<Ctx> {
+  public async invoke(ctx: HtmlProcessingContext): Promise<HtmlProcessingContext> {
     assertHtmlInputSize(ctx.html);
 
     const sanitized = await sanitizeHtmlControls(ctx.html, this.smallText);
@@ -39,6 +39,7 @@ export class PromptInjectionRemoverSanitizer implements PromptInjectionRemover {
     return {
       ...ctx,
       html: result.html,
+      ...(result.scanWithholding ? { scanWithholding: result.scanWithholding } : {}),
       removed: ctx.removed + result.removed.comments + result.removed.hidden,
       found: [...new Set([...(ctx.found ?? []), ...found])],
       warnings: [...new Set([...(ctx.warnings ?? []), ...warnings])],
