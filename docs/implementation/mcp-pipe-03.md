@@ -1,9 +1,9 @@
 # MCP-PIPE-03: outgoing observation and fixed step records
 
-Status: implemented; functional checks and self-hosted image passed; hosted image and restoration pending.
+Status: implemented and validated; manager sign-off complete; awaiting owner review.
 Implementation baseline: `121609500498e710e74b10e6058496353cf51bc2` on `origin/main`.
 Tested implementation revision: `15d7c223f59dd618d5a6f5200f6988d646e1b5bc`.
-Draft PR: [#160](https://github.com/tomer-mayara/Thermus/pull/160).
+PR: [#160](https://github.com/tomer-mayara/Thermus/pull/160).
 
 The user authorized this slice after merging MCP-PIPE-02 in
 [PR #159](https://github.com/tomer-mayara/Thermus/pull/159). The
@@ -13,9 +13,11 @@ behavior before implementation results existed. The manager signed off that
 foundation, committed it as `5f7dd2b0`, and opened draft PR #160 before source
 edits. The manager signed off the stable implementation, contracts, focused
 evidence, and current API docs. Complete checks and suites passed as recorded
-below. Quality review is complete with retained findings; the hosted image,
-restoration, and Ready remain pending. The implementation commit includes
-source, tests, and README; final evidence updates are docs only.
+below. Both image gates and environment restoration are verified. The manager
+signed off the complete implementation and retained quality dispositions; owner
+review remains pending. The implementation commit includes source, tests, and
+README; final evidence updates are docs only. PR #160 tracks readiness and
+the final head's checks.
 
 ## Authorized scope
 
@@ -122,8 +124,9 @@ and the test inventory in this PR when the implementation names are settled.
 The documentation foundation ran no implementation suite or AST measurement.
 The BDD and focused TDD results are below. The complete check, integration,
 acceptance, hosted offline build, and renderer proof passed. AST and habit-hooks
-are complete with retained findings. The self-hosted image passed; hosted Linux
-AMD64 validation, environment restoration, and final review remain pending.
+are complete with retained findings. Both image gates and environment restoration
+passed. Manager sign-off is complete; owner review remains pending.
+See PR #160 for the final head's checks.
 Record actual commands, exit statuses, candidate revision, Node counts, and
 retained findings as evidence arrives. Historical results from tickets 01–02
 are not evidence for this candidate.
@@ -148,10 +151,12 @@ implementation test or quality-gate passes.
 | Full acceptance | Exit 0; backend 508 tests/47 suites/508 passes; portal 16/0/16; zero other outcomes |
 | Hosted offline build and rendered MCP proof | Exit 0; offline 137 tests/17 suites/137 passes; renderer 9/1/9 |
 | Self-hosted image | Exit 0; 13 tests, 1 suite, 13 passes; zero other outcomes |
-| Linux AMD64 hosted image and restoration | Pending |
+| Linux AMD64 hosted image | Exit 0; 9 tests, 0 suites, 9 passes; zero other outcomes |
+| Environment restoration | Runner and independent verification exit 0; original state and 753 non-doc input hashes verified |
 | Required AST passes, inspections, and review Markdown | Complete; nonzero findings and dispositions below |
-| Manager source/test review | Approved; final candidate review pending full gates |
-| Owner review and started Actions jobs | Pending |
+| Manager implementation/docs review | Signed off, including functional proofs and quality dispositions |
+| Owner review | Pending |
+| Actions/final head | Repository API reports 0 workflows; see PR #160 for the final head's checks |
 
 Before production edits, the implementation agent ran:
 
@@ -333,8 +338,49 @@ cancelled, skipped, or todo tests. Duration was 81.254 seconds. Evidence is
 The manager independently verified native cleanup against the original resource
 inventory, config files, Docker context, and CPU count;
 `.cache/mcp-pipe-03/environment/native-cleanup.ok` records the result.
-The hosted Linux AMD64 gate is running. Its image and environment restoration
-are separate pending proofs.
+The hosted Linux AMD64 and restoration proofs are recorded below.
+
+### Hosted Linux AMD64 image
+
+`pnpm run test:container:hosted` exited 0 on Linux AMD64 through Rosetta with
+2 CPUs and 4 GiB. It reported 9 tests in 0 suites, all 9 passed, with zero failed,
+cancelled, skipped, or todo tests. Duration was 1117.180 seconds, about 18 minutes
+37 seconds. Evidence is `.cache/mcp-pipe-03/container-hosted-rosetta.log` and its
+status file, plus `hosted-image-runner.log` in the same directory.
+
+The positive image's inner `build:hosted` passed all seven phases with the same
+counts as the hosted build above: 2800/19/13/16/534/137/9 tests and
+194/0/0/0/44/17/1 suites. Every phase passed with zero other outcomes.
+`hosted-build-live.log` preserves the positive build output streamed from
+Buildx history.
+
+The packaged proof covers image contents, native cleaner, non-root user and CA
+certificates; real CLI/portal/auth/origin behavior and signup notice; public
+HTTPS and controlled JavaScript rendering; private-address refusal, capacity,
+cancellation and shutdown; invalid startup inputs and missing portal. Its final
+deliberately failing offline check blocks image creation. That negative proof
+took 312.375 seconds and passed its parent assertion; it is not a product failure.
+
+### Environment restoration and final disposition
+
+The runner restored original config bytes, binfmt entries, Docker context and
+engine, CPU count, containers, volumes, networks, and image tags, then stopped
+the VM. It exited 0 without a fallback restart. Evidence is
+`.cache/mcp-pipe-03/rosetta/restoration.ok`.
+
+The manager independently ran the external verifier named in
+`.cache/mcp-pipe-03/environment/final-verifier-path.txt`. It exited 0 and matched
+753 tracked non-doc implementation inputs and the exact original stopped VM
+state with 4 CPUs and 4 GiB, resource inventory, and config bytes against the
+pre-task snapshot. Evidence is
+`.cache/mcp-pipe-03/environment/final-restoration.ok`.
+
+The tested implementation remains `15d7c223`; the final evidence update changes
+docs only. All functional proofs and restoration are complete. The manager
+signed off source, tests, current docs, and retained quality dispositions.
+Owner review remains pending. The repository API reports zero Actions workflows
+in `.cache/mcp-pipe-03/workflows.json`. PR #160 tracks its Ready state and the
+final head's checks.
 
 ### AST measurements and retained findings
 
