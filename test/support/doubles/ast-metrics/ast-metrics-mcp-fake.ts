@@ -9,7 +9,9 @@
 //   AST_METRICS_FAKE_EXIT_EARLY=1  Exit with status 3 right after the answer to initialize.
 //   AST_METRICS_FAKE_TEXT          Plain text that each tool other than get_file_metrics answers instead of JSON.
 import { appendFileSync } from 'node:fs';
-import { createInterface } from 'node:readline';
+import { createInterface, type Interface } from 'node:readline';
+
+type JsonObject = Readonly<Record<string, unknown>>;
 
 const settings = {
   log: process.env.AST_METRICS_FAKE_LOG,
@@ -69,52 +71,53 @@ const knownMetrics = {
   volume: { cloc: 4, halstead_bugs: 0.07341069249774988, halstead_difficulty: 6.856811032105149, halstead_effort: 1877.3398145414073, halstead_volume: 220.23207749324965, lloc: 72, loc: 176 },
 };
 const { maintainability: _fileScore, ...unscoredMetrics } = knownMetrics;
-const fileMetrics = new Map([
+const fileMetrics = new Map<string, JsonObject>([
   ['src/known.ts', knownMetrics],
   ['src/unscored.ts', { ...unscoredMetrics, path: 'src/unscored.ts' }],
 ]);
 
-function send(message) {
+function send(message: JsonObject): void {
   process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
 }
 
-function record(request) {
+function record(request: JsonObject): void {
   if (settings.log === undefined) return;
-  const call = request.method === 'tools/call' ? { tool: request.params?.name, arguments: request.params?.arguments } : {};
+  const params = paramsOf(request);
+  const call = request.method === 'tools/call' ? { tool: params.name, arguments: params.arguments } : {};
   appendFileSync(settings.log, `${JSON.stringify({ method: request.method, ...call, pid: process.pid, cwd: process.cwd() })}\n`);
 }
 
-function textResult(text, isError) {
+function textResult(text: string, isError: boolean): JsonObject {
   return { content: [{ type: 'text', text }], ...(isError ? { isError: true } : {}) };
 }
 
 // The texts of the real server for a missing path and for a path that it did not analyze.
-function fileMetricsResult(path) {
+function fileMetricsResult(path: unknown): JsonObject {
   if (path === undefined) return textResult('Missing required parameter: path', true);
-  const metrics = fileMetrics.get(path);
+  const metrics = typeof path === 'string' ? fileMetrics.get(path) : undefined;
   if (metrics === undefined) return textResult(`File not found in analysis: ${path}`, true);
   return { ...textResult(JSON.stringify(metrics), false), structuredContent: metrics };
 }
 
-function toolResult(name, args) {
-  if (name === 'get_file_metrics') return fileMetricsResult(args.path);
+function toolResult(name: unknown, args: unknown): JsonObject {
+  if (name === 'get_file_metrics') return fileMetricsResult(isJsonObject(args) ? args.path : undefined);
   return textResult(settings.text ?? JSON.stringify({ tool: name, arguments: args }), false);
 }
 
-function callTool(id, params) {
+function callTool(id: unknown, params: JsonObject): void {
   if (settings.hang) {
     // A busy server. The timer keeps the process alive after the end of the input, for at most 30 seconds.
     setTimeout(() => process.exit(4), 30_000);
     return;
   }
-  if (!tools.some((tool) => tool.name === params?.name)) {
-    send({ id, error: { code: -32602, message: `tool '${params?.name}' not found: tool not found` } });
+  if (!tools.some((tool) => tool.name === params.name)) {
+    send({ id, error: { code: -32602, message: `tool '${params.name}' not found: tool not found` } });
     return;
   }
   send({ id, result: toolResult(params.name, params.arguments ?? {}) });
 }
 
-function initialize(id, input) {
+function initialize(id: unknown, input: Interface): void {
   send({ id, result: { protocolVersion: '2024-11-05', capabilities: { tools: { listChanged: true } }, serverInfo: { name: 'ast-metrics', version: '0.43.1' } } });
   if (!settings.exitEarly) return;
   // Stop reading, and let Node exit after it writes the pending output. process.exit() can lose that output.
@@ -124,21 +127,29 @@ function initialize(id, input) {
   process.stdin.destroy();
 }
 
-function handle(request, input) {
-  // A notification, such as notifications/initialized, gets no answer.
-  if (request.id === undefined) return;
+function handle(request: unknown, input: Interface): void {
+  // A notification, such as notifications/initialized, gets no answer, and so does a message that is not an object.
+  if (!isJsonObject(request) || request.id === undefined) return;
   record(request);
   if (request.method === 'initialize') initialize(request.id, input);
   else if (request.method === 'tools/list') send({ id: request.id, result: { tools } });
-  else if (request.method === 'tools/call') callTool(request.id, request.params);
+  else if (request.method === 'tools/call') callTool(request.id, paramsOf(request));
   else send({ id: request.id, error: { code: -32601, message: `method '${request.method}' not found` } });
 }
 
-function serve() {
+function paramsOf(request: JsonObject): JsonObject {
+  return isJsonObject(request.params) ? request.params : {};
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function serve(): void {
   const input = createInterface({ input: process.stdin });
   input.on('line', (line) => {
     if (line.trim() === '') return;
-    let request;
+    let request: unknown;
     try {
       request = JSON.parse(line);
     } catch {
