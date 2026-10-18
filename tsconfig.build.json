@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "exclude": [
+    "script",
     "test/unit/build-output.test.ts",
     "src/user-portal",
     "test/acceptance/user-portal",

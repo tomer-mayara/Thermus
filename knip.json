@@ -4,11 +4,11 @@
       "entry": [
         "docker/verify-hosted-runtime.mjs",
         "script/fetch-url.mjs",
-        "script/ast-metrics-delta.mjs",
-        "script/ast-metrics-review.mjs",
-        "script/ast-metrics-mcp.mjs",
-        "test/support/doubles/ast-metrics/ast-metrics-cli-fake.mjs",
-        "test/support/doubles/ast-metrics/ast-metrics-mcp-fake.mjs"
+        "script/ast-metrics-delta.ts",
+        "script/ast-metrics-review.ts",
+        "script/ast-metrics-mcp.ts",
+        "test/support/doubles/ast-metrics/ast-metrics-cli-fake.ts",
+        "test/support/doubles/ast-metrics/ast-metrics-mcp-fake.ts"
       ]
     },
     ".habit-hooks": { "project": ["*.mjs"] }

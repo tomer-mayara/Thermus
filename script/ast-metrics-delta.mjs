@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { parseArgs } from 'node:util';
-import { CommandError, git, notInstalled, repositoryRoot, verifyBase } from './repository.mjs';
+import { CommandError, git, notInstalled, repositoryRoot, verifyBase } from './repository.ts';
 
 const help = `Usage: node script/ast-metrics-delta.mjs [--base REF] [--min SCORE] [--no-compare] [--help]
 

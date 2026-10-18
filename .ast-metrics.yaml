@@ -21,14 +21,14 @@ reports:
 requirements:
   # The rules apply to production code. A test file is long by design. The
   # file goal of 85 in AGENTS.md applies to production files for the same
-  # reason; script/ast-metrics-delta.mjs lists test files without a goal.
+  # reason; script/ast-metrics-delta.ts lists test files without a goal.
   exclude:
     - /test/
   # ast-metrics ignores a violation that .ast-metrics-baseline.yaml lists.
   # Refresh that file with "ast-metrics baseline" when the rules change.
   rules:
     architecture:
-      # Checked for each class, not for each file. script/ast-metrics-delta.mjs
+      # Checked for each class, not for each file. script/ast-metrics-delta.ts
       # checks the file goal.
       min_maintainability: 85
       max_efferent_coupling: 10

@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { CommandError, notInstalled, repositoryRoot, verifyBase } from './repository.mjs';
+import { CommandError, notInstalled, repositoryRoot, verifyBase } from './repository.ts';
 
 const help = `Usage: node script/ast-metrics-review.mjs [--base REF] [--max-findings N] [--help]
 

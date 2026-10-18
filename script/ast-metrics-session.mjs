@@ -2,7 +2,7 @@
 // in the repository root, makes the calls of one command run, and stops the server.
 import { Client, ProtocolError } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
-import { CommandError, notInstalled } from './repository.mjs';
+import { CommandError, notInstalled } from './repository.ts';
 
 const diagnosticStderrLimit = 2_000;
 

@@ -3,7 +3,7 @@ import { realpathSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { withAstMetricsServer } from './ast-metrics-session.mjs';
-import { CommandError, repositoryRoot } from './repository.mjs';
+import { CommandError, repositoryRoot } from './repository.ts';
 
 const help = `Usage: node script/ast-metrics-mcp.mjs <subcommand> [options]
 

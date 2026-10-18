@@ -163,7 +163,7 @@ tool.
 ## Measure the delta
 
 ```sh
-pnpm exec node script/ast-metrics-delta.mjs [--base REF] [--min SCORE] [--no-compare]
+pnpm exec node script/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare]
 ```
 
 Lists each TypeScript file that the branch adds or changes against the merge
@@ -180,7 +180,7 @@ the comparison.
 ## Review the delta
 
 ```sh
-pnpm exec node script/ast-metrics-review.mjs [--base REF] [--max-findings N]
+pnpm exec node script/ast-metrics-review.ts [--base REF] [--max-findings N]
 ```
 
 Prints the Markdown review of `ast-metrics review` against `--base` (default
@@ -192,12 +192,12 @@ severity high exists, else 0. Update the branch from the base first.
 ## Ask the MCP server
 
 ```sh
-pnpm exec node script/ast-metrics-mcp.mjs file <path> [--json]
-pnpm exec node script/ast-metrics-mcp.mjs complex [--limit N] [--max-cyclomatic N]
-pnpm exec node script/ast-metrics-mcp.mjs risky [--limit N]
-pnpm exec node script/ast-metrics-mcp.mjs overview
-pnpm exec node script/ast-metrics-mcp.mjs tools
-pnpm exec node script/ast-metrics-mcp.mjs call <tool> ['<json arguments>']
+pnpm exec node script/ast-metrics-mcp.ts file <path> [--json]
+pnpm exec node script/ast-metrics-mcp.ts complex [--limit N] [--max-cyclomatic N]
+pnpm exec node script/ast-metrics-mcp.ts risky [--limit N]
+pnpm exec node script/ast-metrics-mcp.ts overview
+pnpm exec node script/ast-metrics-mcp.ts tools
+pnpm exec node script/ast-metrics-mcp.ts call <tool> ['<json arguments>']
 ```
 
 Starts `ast-metrics mcp`, makes one call over standard input and output,

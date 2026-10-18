@@ -20,10 +20,10 @@ systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
 
 ## The commands
 
-### Measure the delta: `script/ast-metrics-delta.mjs`
+### Measure the delta: `script/ast-metrics-delta.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-delta.mjs [--base REF] [--min SCORE] [--no-compare]
+pnpm exec node script/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare]
 ```
 
 The delta is each TypeScript file that the branch adds or changes against the
@@ -60,10 +60,10 @@ size, the complexity, and the comment density of the file. Above 85 the file
 reads without effort. The index of a large file falls with its volume, so a
 split into focused files raises it more than a local rewrite.
 
-### Review the delta: `script/ast-metrics-review.mjs`
+### Review the delta: `script/ast-metrics-review.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-review.mjs [--base REF] [--max-findings N]
+pnpm exec node script/ast-metrics-review.ts [--base REF] [--max-findings N]
 ```
 
 The command runs `ast-metrics review` against `--base` (default
@@ -84,15 +84,15 @@ review compares the working tree with the tip of the base ref, not with the
 merge base: update the branch from `origin/main` first, or the review lists
 changes that are not yours.
 
-### Ask the MCP server: `script/ast-metrics-mcp.mjs`
+### Ask the MCP server: `script/ast-metrics-mcp.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-mcp.mjs file <path> [--json]
-pnpm exec node script/ast-metrics-mcp.mjs complex [--limit N] [--max-cyclomatic N]
-pnpm exec node script/ast-metrics-mcp.mjs risky [--limit N]
-pnpm exec node script/ast-metrics-mcp.mjs overview
-pnpm exec node script/ast-metrics-mcp.mjs tools
-pnpm exec node script/ast-metrics-mcp.mjs call <tool> ['<json arguments>']
+pnpm exec node script/ast-metrics-mcp.ts file <path> [--json]
+pnpm exec node script/ast-metrics-mcp.ts complex [--limit N] [--max-cyclomatic N]
+pnpm exec node script/ast-metrics-mcp.ts risky [--limit N]
+pnpm exec node script/ast-metrics-mcp.ts overview
+pnpm exec node script/ast-metrics-mcp.ts tools
+pnpm exec node script/ast-metrics-mcp.ts call <tool> ['<json arguments>']
 ```
 
 Each run starts `ast-metrics mcp` as a child process, makes one call over
@@ -155,8 +155,9 @@ and commit the file in the same pull request as the rule change.
   counts.
 - `compare.html` lists only the files whose metrics moved enough. The delta
   command lists every delta file.
-- ast-metrics analyzes TypeScript. The commands under `script/` are
-  JavaScript and stay outside the measurements.
+- ast-metrics analyzes TypeScript only. The commands under `script/` are
+  TypeScript and appear in the delta without a goal; `script/fetch-url.mjs`
+  and other JavaScript files stay outside the measurements.
 - The commands run ast-metrics in the repository root that git names from
   the current folder. A worktree of an agent has its own copy of the files;
   run the commands from that worktree.
