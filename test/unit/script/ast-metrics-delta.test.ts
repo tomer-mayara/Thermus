@@ -7,7 +7,7 @@ import { runScript } from '../../support/processes/script-command.ts';
 const noTools = { env: { PATH: '' } };
 
 test('Given --help, when the delta check runs, then it explains the options, the goal, and the report folder', async (t) => {
-  const result = await runScript(t, astMetricsDeltaScript, ['--help'], noTools);
+  const result = await runScript(t, astMetricsDeltaScript, { args: ['--help'], ...noTools });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
@@ -19,7 +19,7 @@ test('Given --help, when the delta check runs, then it explains the options, the
 
 for (const value of ['abc', '-1', '129', '8.5', '']) {
   test(`Given --min=${value}, when the delta check runs, then it fails with a diagnostic about --min`, async (t) => {
-    const result = await runScript(t, astMetricsDeltaScript, [`--min=${value}`], noTools);
+    const result = await runScript(t, astMetricsDeltaScript, { args: [`--min=${value}`], ...noTools });
 
     assert.equal(result.stderr, 'ast-metrics-delta: The --min value must be an integer from 0 to 128.\n');
     assert.equal(result.stdout, '');
@@ -29,7 +29,7 @@ for (const value of ['abc', '-1', '129', '8.5', '']) {
 
 for (const value of ['', '--output=diff.txt']) {
   test(`Given --base=${value}, when the delta check runs, then it fails with a diagnostic about --base`, async (t) => {
-    const result = await runScript(t, astMetricsDeltaScript, [`--base=${value}`], noTools);
+    const result = await runScript(t, astMetricsDeltaScript, { args: [`--base=${value}`], ...noTools });
 
     assert.equal(result.stderr, 'ast-metrics-delta: The --base value must name a git ref.\n');
     assert.equal(result.stdout, '');
@@ -39,7 +39,7 @@ for (const value of ['', '--output=diff.txt']) {
 
 for (const args of [['--maximum', '3'], ['--min'], ['main']]) {
   test(`Given the arguments ${args.join(' ')}, when the delta check runs, then it fails with a diagnostic that points to --help`, async (t) => {
-    const result = await runScript(t, astMetricsDeltaScript, args, noTools);
+    const result = await runScript(t, astMetricsDeltaScript, { args, ...noTools });
 
     assert.equal(result.stderr, 'ast-metrics-delta: Invalid arguments. Use --help for the supported options.\n');
     assert.equal(result.stdout, '');

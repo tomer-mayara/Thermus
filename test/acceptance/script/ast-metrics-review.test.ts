@@ -25,7 +25,7 @@ test('Given a branch with a baseline, when the review runs against main, then as
   const repository = changedBranch(t);
   const fake = astMetricsCliFakeOnPath(t, { review: noFinding });
 
-  const result = await runScript(t, astMetricsReviewScript, ['--base', 'main'], { cwd: repository.root, env: fake.env });
+  const result = await runScript(t, astMetricsReviewScript, { args: ['--base', 'main'], cwd: repository.root, env: fake.env });
 
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, noFinding);
@@ -37,7 +37,7 @@ test('Given a review that finds a high finding and exits 1, when the review runs
   const repository = changedBranch(t);
   const fake = astMetricsCliFakeOnPath(t, { review: highFinding, stderr: 'Quality gate failed.\n', exitCode: 1 });
 
-  const result = await runScript(t, astMetricsReviewScript, ['--base', 'main'], { cwd: repository.root, env: fake.env });
+  const result = await runScript(t, astMetricsReviewScript, { args: ['--base', 'main'], cwd: repository.root, env: fake.env });
 
   assert.equal(result.stderr, 'Quality gate failed.\n');
   assert.equal(result.stdout, highFinding);
@@ -48,7 +48,7 @@ test('Given no baseline file at the root, when the review runs, then it warns th
   const repository = changedBranch(t, {});
   const fake = astMetricsCliFakeOnPath(t, { review: noFinding });
 
-  const result = await runScript(t, astMetricsReviewScript, ['--base', 'main'], { cwd: repository.root, env: fake.env });
+  const result = await runScript(t, astMetricsReviewScript, { args: ['--base', 'main'], cwd: repository.root, env: fake.env });
 
   assert.equal(result.stderr, noBaseline);
   assert.equal(result.stdout, noFinding);
@@ -60,7 +60,7 @@ test('Given --max-findings 7, when the review runs, then ast-metrics review gets
   const repository = changedBranch(t);
   const fake = astMetricsCliFakeOnPath(t, { review: noFinding });
 
-  const result = await runScript(t, astMetricsReviewScript, ['--base', 'main', '--max-findings', '7'], { cwd: repository.root, env: fake.env });
+  const result = await runScript(t, astMetricsReviewScript, { args: ['--base', 'main', '--max-findings', '7'], cwd: repository.root, env: fake.env });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
@@ -72,7 +72,7 @@ test('Given origin/main and no --base, when the review runs, then it compares wi
   repository.git('update-ref', 'refs/remotes/origin/main', 'main');
   const fake = astMetricsCliFakeOnPath(t, { review: noFinding });
 
-  const result = await runScript(t, astMetricsReviewScript, [], { cwd: repository.root, env: fake.env });
+  const result = await runScript(t, astMetricsReviewScript, { args: [], cwd: repository.root, env: fake.env });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
@@ -82,7 +82,7 @@ test('Given origin/main and no --base, when the review runs, then it compares wi
 test('Given a PATH without ast-metrics, when the review runs, then it fails with a diagnostic that names ast-metrics', { timeout }, async (t) => {
   const repository = changedBranch(t);
 
-  const result = await runScript(t, astMetricsReviewScript, ['--base', 'main'], { cwd: repository.root, env: { PATH: pathWithoutAstMetrics(t) } });
+  const result = await runScript(t, astMetricsReviewScript, { args: ['--base', 'main'], cwd: repository.root, env: { PATH: pathWithoutAstMetrics(t) } });
 
   assert.equal(result.stderr, 'ast-metrics-review: ast-metrics is not installed or not on PATH. See docs/implementation/ast-metrics-review.md.\n');
   assert.equal(result.stdout, '');
@@ -93,7 +93,7 @@ test('Given an unknown base ref, when the review runs, then it fails with a diag
   const repository = changedBranch(t);
   const fake = astMetricsCliFakeOnPath(t, { review: noFinding });
 
-  const result = await runScript(t, astMetricsReviewScript, ['--base', 'no-such-branch'], { cwd: repository.root, env: fake.env });
+  const result = await runScript(t, astMetricsReviewScript, { args: ['--base', 'no-such-branch'], cwd: repository.root, env: fake.env });
 
   assert.equal(result.stderr, 'ast-metrics-review: The base ref "no-such-branch" is not a commit in this repository. Fetch it, or name another ref with --base.\n');
   assert.equal(result.stdout, '');

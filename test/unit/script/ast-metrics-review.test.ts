@@ -7,7 +7,7 @@ import { runScript } from '../../support/processes/script-command.ts';
 const noTools = { env: { PATH: '' } };
 
 test('Given --help, when the review runs, then it explains the options, the report file, and the exit status', async (t) => {
-  const result = await runScript(t, astMetricsReviewScript, ['--help'], noTools);
+  const result = await runScript(t, astMetricsReviewScript, { args: ['--help'], ...noTools });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
@@ -19,7 +19,7 @@ test('Given --help, when the review runs, then it explains the options, the repo
 
 for (const value of ['0', '1001', 'abc', '2.5', '-3', '']) {
   test(`Given --max-findings=${value}, when the review runs, then it fails with a diagnostic about --max-findings`, async (t) => {
-    const result = await runScript(t, astMetricsReviewScript, [`--max-findings=${value}`], noTools);
+    const result = await runScript(t, astMetricsReviewScript, { args: [`--max-findings=${value}`], ...noTools });
 
     assert.equal(result.stderr, 'ast-metrics-review: The --max-findings value must be an integer from 1 to 1000.\n');
     assert.equal(result.stdout, '');
@@ -29,7 +29,7 @@ for (const value of ['0', '1001', 'abc', '2.5', '-3', '']) {
 
 for (const value of ['', '--output=review.txt']) {
   test(`Given --base=${value}, when the review runs, then it fails with a diagnostic about --base`, async (t) => {
-    const result = await runScript(t, astMetricsReviewScript, [`--base=${value}`], noTools);
+    const result = await runScript(t, astMetricsReviewScript, { args: [`--base=${value}`], ...noTools });
 
     assert.equal(result.stderr, 'ast-metrics-review: The --base value must name a git ref.\n');
     assert.equal(result.stdout, '');
@@ -39,7 +39,7 @@ for (const value of ['', '--output=review.txt']) {
 
 for (const args of [['--fail-on', 'any'], ['--max-findings'], ['main']]) {
   test(`Given the arguments ${args.join(' ')}, when the review runs, then it fails with a diagnostic that points to --help`, async (t) => {
-    const result = await runScript(t, astMetricsReviewScript, args, noTools);
+    const result = await runScript(t, astMetricsReviewScript, { args, ...noTools });
 
     assert.equal(result.stderr, 'ast-metrics-review: Invalid arguments. Use --help for the supported options.\n');
     assert.equal(result.stdout, '');

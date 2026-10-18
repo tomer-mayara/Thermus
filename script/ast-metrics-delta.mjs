@@ -110,19 +110,29 @@ function scoresOf(root) {
   return scores;
 }
 
-function resultLine(total, below, min) {
-  const files = `${total} ${total === 1 ? 'file' : 'files'}`;
-  if (below === 0) return `Result: all ${files} at ${min} or more.`;
-  return `Result: ${below} of ${files} below ${min}. Goal: ${min} or more for each file.`;
+function count(number, noun) {
+  return `${number} ${number === 1 ? noun : `${noun}s`}`;
+}
+
+function resultLine(measured, below, unmeasured, min) {
+  const rest = unmeasured === 0 ? '' : ` ${count(unmeasured, 'file')} not measured.`;
+  if (below === 0) return `Result: all ${count(measured, 'file')} at ${min} or more.${rest}`;
+  return `Result: ${below} of ${count(measured, 'file')} below ${min}. Goal: ${min} or more for each file.${rest}`;
+}
+
+// The check uses the score as the line shows it, with one decimal. Otherwise 84.96 reads as "85.0 below 85".
+function shownScore(score) {
+  return Number(score.toFixed(1));
 }
 
 function reportOf(files, scores, options) {
   const measured = files.filter((file) => scores.has(file)).sort((first, second) => scores.get(first) - scores.get(second));
-  const below = measured.filter((file) => scores.get(file) < options.min);
+  const unmeasured = files.filter((file) => !scores.has(file));
+  const below = measured.filter((file) => shownScore(scores.get(file)) < options.min);
   const lines = [
-    ...measured.map((file) => `  ${scores.get(file).toFixed(1)}  ${file}${scores.get(file) < options.min ? `  below ${options.min}` : ''}`),
-    ...files.filter((file) => !scores.has(file)).map((file) => `  not measured  ${file}`),
-    resultLine(files.length, below.length, options.min),
+    ...measured.map((file) => `  ${scores.get(file).toFixed(1)}  ${file}${below.includes(file) ? `  below ${options.min}` : ''}`),
+    ...unmeasured.map((file) => `  not measured  ${file}`),
+    resultLine(measured.length, below.length, unmeasured.length, options.min),
   ];
   if (options.compare) lines.push(`Comparison with ${options.base}: ${reportFolder}/compare.html`);
   return { text: `${lines.join('\n')}\n`, passed: below.length === 0 };
