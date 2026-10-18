@@ -1,5 +1,9 @@
 # MCP fetch debug script
 
+The [OAuth upgrade](mcp-fetch-debug-oauth-plan.md) extends this original
+specification with browser sign-in, saved credentials, refresh, and local
+logout. Explicit Bearer input keeps the behavior specified below.
+
 ## Required behavior
 
 Give an operator a command under `script/` that calls Thermus without an LLM
@@ -25,18 +29,21 @@ failure, timeout, or a failed tool result. Close the MCP connection on exit.
 ## Authentication boundary
 
 The hosted backend currently accepts WorkOS Connect OAuth access tokens. The
-customer API-key interface is a design preview. This command sends the supplied
-credential as Bearer authentication; it does not add customer API-key support
-to the backend, issue credentials, or change their expiration.
+customer API-key interface is a design preview. Explicit credential mode sends
+the supplied credential as Bearer authentication. Browser OAuth obtains tokens
+from WorkOS; it does not add customer API-key support to the backend or change
+the provider's token lifetime.
 
 ## Command and checks
 
 [The script guide](../../script/README.md) gives the setup and commands. The
 script runs from source with the pinned Node runtime and the existing MCP client
 SDK. It negotiates the modern protocol and falls back to the legacy protocol.
-The deadline includes credential input and aborts pending HTTP requests.
+In explicit mode, the deadline includes credential input and aborts pending
+HTTP requests. OAuth preparation has a separate budget before the fetch starts.
 
 The [test inventory](../testing/test-list.md#mcp-fetch-debug-command) gives the
 focused offline command. The acceptance tests run the actual executable against
 a local MCP SDK server through the production HTTP bridge. Their credentials and
-authorization gate are test doubles; no hosted OAuth credential is used.
+authorization gate are test doubles; no hosted OAuth credential is used in
+those offline cases. The upgrade adds dedicated Staging provider proofs.

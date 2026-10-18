@@ -83,6 +83,7 @@ for (const hang of ['server/discover', 'initialize', 'tools/call'] as const) {
     assert.equal(result.stdout, '');
     assert.match(result.stderr, /timed out/i);
     assert.equal(site.aborted(), 1);
+    if (hang === 'tools/call') assert.equal(site.requests.filter(({ method }) => method === 'tools/call').length, 1, 'An uncertain tool outcome must not be repeated');
   });
 }
 
@@ -121,4 +122,29 @@ test('Given a URL with caller spelling, when the command fetches, then it sends 
   const result = await runFetchUrl(t, ['--endpoint', site.endpoint, '--url', suppliedUrl, '--reason', reason], { credential: 'test-debug-token' });
   assert.equal(result.code, 0, result.stderr);
   assert.deepEqual(site.calls, [{ url: suppliedUrl, reason }]);
+});
+
+
+test('Given no credential in a non-interactive process, when hosted fetch runs, then it requests login without starting a tool', async (t) => {
+  const result = await runFetchUrl(t, ['--url', pageUrl, '--reason', reason, '--non-interactive']);
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /--login/);
+});
+
+test('Given an explicit environment credential, when login is requested, then it explains how to select OAuth without exposing the credential', async (t) => {
+  const result = await runFetchUrl(t, ['--login'], { credential: 'private-explicit-token' });
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /unset THERMUS_API_KEY/);
+  assert.doesNotMatch(result.stderr, /private-explicit-token/);
+});
+
+test('Given a custom endpoint without an explicit credential, when fetch runs, then it refuses OAuth for that endpoint', async (t) => {
+  const site = await serveFetchUrlDebugSite(t);
+  const result = await runFetchUrl(t, ['--endpoint', site.endpoint, '--url', pageUrl, '--reason', reason]);
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /explicit Bearer/);
+  assert.equal(site.requests.length, 0);
 });

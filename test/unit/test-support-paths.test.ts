@@ -8,6 +8,9 @@ import {
   containerEdgeScript,
   containerPageScript,
   containerProbeScript,
+  fetchPublicScriptEntry,
+  fetchUrlCredentials,
+  fetchUrlOAuthEntry,
   fetchUrlScript,
   foreignOriginProbe,
   heldHostedCleanup,
@@ -30,6 +33,9 @@ import { failingAdCleaner } from '../support/processes/server-preloads.ts';
 // or fixture file otherwise fails only in the suite that uses it, and the container and live gates run rarely.
 const files = {
   hostedImageIdentity,
+  fetchPublicScriptEntry,
+  fetchUrlCredentials: fileURLToPath(fetchUrlCredentials),
+  fetchUrlOAuthEntry,
   fetchUrlScript,
   programEntry,
   hostedPortalPreload: fileURLToPath(hostedPortalPreload),
