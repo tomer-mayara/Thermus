@@ -1,7 +1,8 @@
 # MCP request and response pipelines
 
 Status: MCP-PIPE-01 merged in PR #155; MCP-PIPE-02 merged in PR #159.
-MCP-PIPE-03 is implemented and validated, awaiting owner review; MCP-PIPE-04 has not started.
+MCP-PIPE-03 merged in PR #160. MCP-PIPE-04 is implemented and validated with
+manager sign-off in PR #162.
 Date: 2026-10-17. Historical review baseline: `41373e82`.
 MCP-PIPE-01 implementation baseline: `8d12c1e7`.
 MCP-PIPE-02 implementation baseline on `origin/main`: `a50382ea`.
@@ -17,7 +18,11 @@ passing functional validation and verified environment restoration; the owner
 merged PR #159. The [MCP-PIPE-03 record](mcp-pipe-03.md) tracks the authorized
 outgoing step and local executor; all functional proofs and environment restoration
 are complete. The manager signed off the implementation and retained quality
-dispositions; owner review is pending.
+dispositions; the owner requested its merge, completed on 2026-10-18 at
+`190d60f7`. The [MCP-PIPE-04 record](mcp-pipe-04.md) tracks incoming
+processing from that baseline; functional gates and environment restoration
+passed. The manager signed off implementation, tests, docs, and explicit
+retained quality findings. PR #162 tracks the final pull request steps.
 The AST audit clarifications are reviewed; see the
 [audit evidence](mcp-pipelines-plan-review.md#appendix-a-ast-metrics-audit).
 See [Appendix A: implementation tickets](#appendix-a-implementation-tickets)
@@ -351,7 +356,7 @@ test results. Current implementation and check evidence must be recorded separat
 
 All IDs, titles, and labels remain local entries; no board issues exist.
 MCP-PIPE-01 is **Merged** in PR #155; MCP-PIPE-02 is **Merged** in PR #159;
-MCP-PIPE-03 is **Implemented and validated, awaiting owner review**; MCP-PIPE-04 is **Not started**.
+MCP-PIPE-03 is **Merged** in PR #160; MCP-PIPE-04 is **Implemented and validated; manager sign-off complete** in PR #162.
 These revised scopes replace the earlier appendix breakdown.
 Suggested shared labels: `mcp`, `pipeline`. Each ticket must meet the shared
 Definition of Done above; no testing-only or detached infrastructure ticket is needed.
@@ -457,11 +462,11 @@ completion. Context reaches the whole operation without changing behavior.
 
 ### MCP-PIPE-03 — Add the outgoing standard step and fixed records
 
-**Dependency:** merged MCP-PIPE-02; baseline `12160950`. **State:** Implemented and validated, awaiting owner review. **Label:** `outgoing-step`.
+**Dependency:** merged MCP-PIPE-02; baseline `12160950`. **State:** Merged in PR #160. **Label:** `outgoing-step`.
 
 The [implementation record](mcp-pipe-03.md) gives the tested source and completed
-functional/restoration evidence. Manager sign-off is complete, quality findings
-are documented, and owner review is pending.
+functional/restoration evidence. Manager sign-off and quality dispositions are
+complete. PR #160 merged at the owner's request on 2026-10-18.
 
 **Outcome:** `ObserveRequestStep` allows the exact URL unchanged before fetch.
 The local executor enforces decisions and emits the fixed safe terminal event.
@@ -503,7 +508,7 @@ The local executor enforces decisions and emits the fixed safe terminal event.
 
 ### MCP-PIPE-04 — Add incoming processing and typed withholding together
 
-**Dependency:** MCP-PIPE-03. **State:** Not started. **Label:** `incoming-step`.
+**Dependency:** MCP-PIPE-03. **State:** Implemented and validated; manager sign-off complete in PR #162. **Label:** `incoming-step`.
 
 **Outcome:** The existing cleaner adapter becomes the incoming standard step.
 Records distinguish ordinary empty content from typed withholding while the

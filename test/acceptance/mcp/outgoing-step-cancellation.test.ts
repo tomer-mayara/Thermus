@@ -113,6 +113,7 @@ test('Given production hosted composition with an outgoing step that owns pendin
   assert.deepEqual(steps.map(({ outcome, operationId }) => ({ outcome, operationId })), [
     { outcome: 'cancelled', operationId: completions[1].operationId },
     { outcome: 'allowed', operationId: completions[2].operationId },
+    { outcome: 'allowed', operationId: completions[2].operationId },
   ]);
   assert.deepEqual(stepRecordsIn(site.lines.join('\n'), completions[0].operationId as string), []);
 });

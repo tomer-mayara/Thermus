@@ -1,6 +1,7 @@
 # MCP-PIPE-03: outgoing observation and fixed step records
 
-Status: implemented and validated; manager sign-off complete; awaiting owner review.
+Status: merged in PR #160 on 2026-10-18 at the owner's request.
+Merge revision: `190d60f7d8af0b6e0c61017154b363a49686653d`.
 Implementation baseline: `121609500498e710e74b10e6058496353cf51bc2` on `origin/main`.
 Tested implementation revision: `15d7c223f59dd618d5a6f5200f6988d646e1b5bc`.
 PR: [#160](https://github.com/tomer-mayara/Thermus/pull/160).
@@ -14,8 +15,8 @@ foundation, committed it as `5f7dd2b0`, and opened draft PR #160 before source
 edits. The manager signed off the stable implementation, contracts, focused
 evidence, and current API docs. Complete checks and suites passed as recorded
 below. Both image gates and environment restoration are verified. The manager
-signed off the complete implementation and retained quality dispositions; owner
-review remains pending. The implementation commit includes source, tests, and
+signed off the complete implementation and retained quality dispositions. The
+owner then requested the merge. The implementation commit includes source, tests, and
 README; final evidence updates are docs only. PR #160 tracks readiness and
 the final head's checks.
 

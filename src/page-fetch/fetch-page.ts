@@ -1,19 +1,21 @@
 import { requirePermission, type RequestContext } from '../auth/access-context.ts';
-import type { WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
+import type { WebsiteFetcher, WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
 import { isValidFetchUrl } from './fetch-url.ts';
 import { assertOperationId, type ExecutionContext } from './execution-context.ts';
-import type { PageProcessor } from './page-processor.ts';
 import { reportRendererFailure, type RendererFailureReports } from './renderer-failure-reports.ts';
 import { executeOutgoingStep } from './execute-outgoing-step.ts';
+import { executeIncomingStep } from './execute-incoming-step.ts';
 import type { PipelineStep } from './pipeline-step.ts';
 import type { StepRecordSink } from './step-record.ts';
 
-type FetchPageOutcome = { status: 'released'; markdown: string };
+export type FetchPageOutcome =
+  | { status: 'released'; markdown: string }
+  | { status: 'withheld'; code: 'scan_failed' | 'scan_limit' };
 export type FetchPage = (url: string, context: RequestContext, execution: ExecutionContext) => Promise<FetchPageOutcome>;
 
 export function createFetchPage(dependencies: RendererFailureReports & {
   fetcher: WebsiteFetcher;
-  processor: PageProcessor;
+  incoming: PipelineStep<WebsiteFetchResult, string>;
   outgoing: PipelineStep<string, string>;
   records: StepRecordSink;
 }): FetchPage {
@@ -37,14 +39,9 @@ export function createFetchPage(dependencies: RendererFailureReports & {
     }
 
     throwIfCancelled(signal);
-    try {
-      const markdown = await dependencies.processor.process(page, signal);
-      throwIfCancelled(signal);
-      return { status: 'released', markdown };
-    } catch (error) {
-      throwIfCancelled(signal, error);
-      throw new Error('Page processing failed');
-    }
+    const outcome = await executeIncomingStep(page, execution, dependencies);
+    throwIfCancelled(signal);
+    return outcome;
   };
 }
 

@@ -2,7 +2,7 @@ import type { ApplicationLogger } from './application.ts';
 import { AdRulesFileError, readAdRulesFile } from './config/ad-rules-file.ts';
 import { CleanHtmlAdsAdblockRs } from './html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { HtmlToMarkdownPipeline } from './html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { HtmlPageProcessor } from './html-cleaner-pipeline/html-page-processor.ts';
+import { ProcessHtmlStep } from './html-cleaner-pipeline/process-html-step.ts';
 import { CleanHtmlToMarkdownDefuddle } from './html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { PromptInjectionRemoverSanitizer } from './html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from './mcp/fetch-tool-server.ts';
@@ -28,7 +28,7 @@ export function createFetchOperation(environment: Environment, logger: Applicati
     outgoing: new ObserveRequestStep(),
     records: { record: (event) => logger.info(JSON.stringify(event)) },
     fetcher: new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN),
-    processor: new HtmlPageProcessor(pipeline),
+    incoming: new ProcessHtmlStep(pipeline),
     reportRendererSetupFailure: rendererSetupReporter(logger),
     reportRendererReadinessTimeout: ({ category, budgetMs }) => {
       logger.error(JSON.stringify({ event: 'renderer.fetch.failed', category, budgetMs }));

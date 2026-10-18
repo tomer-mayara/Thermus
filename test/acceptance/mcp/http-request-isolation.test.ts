@@ -157,7 +157,11 @@ for (const era of mcpProtocolEras) {
     assert.equal(site.records[0].operationId, site.operationExecutions[1].operationId);
     assert.equal(site.records[1].operationId, site.operationExecutions[0].operationId);
     assert.notEqual(site.operationExecutions[0].operationId, site.operationExecutions[1].operationId);
-    assert.deepEqual(site.steps.map(({ operationId, outcome }) => ({ operationId, outcome })), site.operationExecutions.map(({ operationId }) => ({ operationId, outcome: 'allowed' })));
+    assert.deepEqual(site.steps.map(({ operationId, stepId, outcome }) => ({ operationId, stepId, outcome })), [
+      ...site.operationExecutions.map(({ operationId }) => ({ operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' })),
+      { operationId: site.operationExecutions[1].operationId, stepId: 'incoming.process_html', outcome: 'allowed' },
+      { operationId: site.operationExecutions[0].operationId, stepId: 'incoming.process_html', outcome: 'allowed' },
+    ]);
     assert.equal(site.operationExecutions[0].signal, signals[0]);
     assert.equal(site.operationExecutions[1].signal, signals[1]);
     assert.deepEqual(site.operationContexts.map((context) => [context.user.subject, context.tenantId]), [['alice', 'alice-tenant'], ['bob', 'bob-tenant']]);
@@ -184,7 +188,10 @@ for (const era of mcpProtocolEras) {
     await site.recorded[1].promise;
     assertRecord(site.records[0], 'bob', 'success');
     assertRecord(site.records[1], 'alice', 'cancelled');
-    assert.deepEqual(site.steps.map(({ operationId, outcome }) => ({ operationId, outcome })), site.operationExecutions.map(({ operationId }) => ({ operationId, outcome: 'allowed' })));
+    assert.deepEqual(site.steps.map(({ operationId, stepId, outcome }) => ({ operationId, stepId, outcome })), [
+      ...site.operationExecutions.map(({ operationId }) => ({ operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' })),
+      { operationId: site.operationExecutions[1].operationId, stepId: 'incoming.process_html', outcome: 'allowed' },
+    ]);
     assert.deepEqual(site.pipelineUrls, ['https://pages.example/bob']);
     assert.doesNotMatch(JSON.stringify(site.records), /private-alice-cancel-reason|Markdown for/);
   });

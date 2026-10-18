@@ -4,9 +4,11 @@ import { describe, test } from 'node:test';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
 import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { HtmlToMarkdownPipeline, type Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
+import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
+import { HiddenHtmlScanner } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
 import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
 const context = createRequestContext({
@@ -17,22 +19,22 @@ const context = createRequestContext({
 
 describe('getURLAsMarkdown with the real HTML pipeline', () => {
   const cases = [
-    { label: 'empty source', html: '', warning: undefined },
-    { label: 'hidden-only source', html: '<div hidden>Private payload</div>', warning: 'HTML sanitized: 1 hidden element(s) removed' },
-    { label: 'ad-only source', html: '<p id="eh-id">Ad target</p>', warning: undefined },
+    { label: 'empty source', html: '', warning: undefined, code: undefined },
+    { label: 'hidden-only source', html: '<div hidden>Private payload</div>', warning: 'HTML sanitized: 1 hidden element(s) removed', code: undefined },
+    { label: 'ad-only source', html: '<p id="eh-id">Ad target</p>', warning: undefined, code: undefined },
     {
       label: 'a failed scan of an unsourced hidden body',
       html: '<p>Visible lead</p><body hidden>Private payload</body>',
-      warning: 'HTML scan failed; remaining HTML withheld',
+      warning: 'HTML scan failed; remaining HTML withheld', code: 'scan_failed',
     },
     {
       label: 'eight HTML removal scans',
       html: hiddenAfterPasses(8),
-      warning: 'HTML scan limit reached; remaining HTML withheld',
+      warning: 'HTML scan limit reached; remaining HTML withheld', code: 'scan_limit',
     },
   ];
 
-  for (const { label, html, warning } of cases) {
+  for (const { label, html, warning, code } of cases) {
     test(`Given ${label}, when the pipeline completes, then the operation preserves exact empty success`, async (t) => {
       const page = { requestedUrl: 'https://source.example/start', finalUrl: 'https://abptestpages.org/article', html };
       const pipeline = new HtmlToMarkdownPipeline([
@@ -41,13 +43,25 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
         new CleanHtmlToMarkdownDefuddle(),
       ]);
       const process = t.mock.method(pipeline, 'process');
-      const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline, records: { record: () => {} } });
+      const scans = t.mock.method(HiddenHtmlScanner, 'scan');
+      const entries: StepRecord[] = [];
+      const execution = executionContextOf();
+      const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline, records: { record: (entry) => { entries.push(entry); } } });
 
-      assert.equal(await operation(page.requestedUrl, context, executionContextOf()), '');
+      assert.equal(await operation(page.requestedUrl, context, execution), '');
+
+      assert.equal(process.mock.callCount(), 1);
+      assert.equal(entries.length, 2);
+      assert.deepEqual(entries.map(({ durationMs: _duration, ...entry }) => entry), [
+        { event: 'pipeline.step.completed', operationId: execution.operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' },
+        { event: 'pipeline.step.completed', operationId: execution.operationId, stepId: 'incoming.process_html', outcome: code ? 'blocked' : 'allowed', ...(code ? { code } : {}) },
+      ]);
+      if (code === 'scan_limit') assert.equal(scans.mock.callCount(), 8);
 
       const result = await process.mock.calls[0].result;
       assert.ok(result);
       assert.equal(result.markdown, '');
+      assert.equal(result.scanWithholding, code);
       assert.equal(result.requestedUrl, page.requestedUrl);
       assert.equal(result.finalUrl, page.finalUrl);
       if (warning) assert.ok(result.warnings?.includes(warning));
@@ -68,7 +82,11 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
       new PromptInjectionRemoverSanitizer(),
       new CleanHtmlToMarkdownDefuddle(),
     ];
-    const invocations = stages.map((stage) => t.mock.method(stage, 'invoke'));
+    const order: number[] = [];
+    const invocations = stages.map((stage, index) => {
+      const invoke = stage.invoke.bind(stage);
+      return t.mock.method(stage, 'invoke', async (ctx: Ctx) => { order.push(index); return invoke(ctx); });
+    });
     const pipeline = new HtmlToMarkdownPipeline(stages);
     const process = t.mock.method(pipeline, 'process');
     const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline, records: { record: () => {} } });
@@ -82,6 +100,8 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
     assert.equal(result.finalUrl, page.finalUrl);
     assert.equal(result.removed, 1);
     assert.deepEqual(invocations.map((invoke) => invoke.mock.callCount()), [1, 1, 1]);
+    assert.deepEqual(order, [0, 1, 2]);
+    assert.equal(process.mock.callCount(), 1);
     assert.deepEqual(page, original);
   });
 

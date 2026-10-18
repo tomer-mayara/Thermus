@@ -47,7 +47,7 @@ for (const era of mcpProtocolEras) {
 
     assert.equal(JSON.parse(await site.firstCompletion).event, 'mcp.tool.completed');
     assert.equal(site.completionLines().length, 1);
-    assert.equal(stepRecordsIn(site.records.join('\n')).length, 2);
+    assert.equal(stepRecordsIn(site.records.join('\n')).length, 3);
   });
 
   test(`Given invalid named calls and an unknown tool in ${era}, when dispatched over HTTP, then each gets one safe record and no fetch runs`, async (t) => {

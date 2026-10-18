@@ -1,8 +1,8 @@
-import type { StepId } from './pipeline-step.ts';
+import type { BlockCode, StepId } from './pipeline-step.ts';
 
 export type StepOutcome =
   | { outcome: 'allowed' }
-  | { outcome: 'blocked'; code: 'blocked' }
+  | { outcome: 'blocked'; code: BlockCode }
   | { outcome: 'failed'; code: 'step_failed' | 'invalid_step_result' }
   | { outcome: 'cancelled'; code: 'cancelled' };
 

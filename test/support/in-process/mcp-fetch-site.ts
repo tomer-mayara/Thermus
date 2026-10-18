@@ -25,6 +25,7 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   headers?: Record<string, string>;
   httpSignal?: AbortSignal;
   outgoing?: PipelineStep<string, string>;
+  incoming?: PipelineStep<WebsiteFetchResult, string>;
   stepSink?: StepRecordSink;
 } = {}) {
   const records: string[] = [];
@@ -38,6 +39,7 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   const provider = new NoAuthProvider(new URL(resourceUrl));
   const operation = composeFetchOperation({
     outgoing: options.outgoing,
+    incoming: options.incoming,
     records: options.stepSink ?? { record: (event) => record(JSON.stringify(event)) },
     fetcher: { fetchURL: async (url, signal) => {
       fetchCalls.push({ url, signal });

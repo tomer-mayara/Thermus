@@ -31,7 +31,7 @@ function operationDoubles(t: TestContext, fetchFailure: unknown) {
     outgoing: new ObserveRequestStep(),
     records: { record: () => {} },
     fetcher: { fetchURL: t.mock.fn(async (_url: string, _signal?: AbortSignal): Promise<WebsiteFetchResult> => { throw fetchFailure; }) },
-    processor: { process: t.mock.fn(async (_source: WebsiteFetchResult) => 'Unused') },
+    incoming: { id: 'incoming.process_html' as const, execute: t.mock.fn(async (_source: WebsiteFetchResult) => ({ decision: 'allow' as const, output: 'Unused' })) },
     reportRendererSetupFailure: t.mock.fn((_failure: RendererSetupFailure) => {}),
     reportRendererReadinessTimeout: t.mock.fn((_failure: { category: 'readiness_timeout'; budgetMs: 20_000 }) => {}),
   };
@@ -72,7 +72,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
       await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
 
       assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
-      assert.equal(dependencies.processor.process.mock.callCount(), 0);
+      assert.equal(dependencies.incoming.execute.mock.callCount(), 0);
       assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
       assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
     });
@@ -86,7 +86,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
 
     assert.deepEqual(dependencies.reportRendererReadinessTimeout.mock.calls.map(({ arguments: args }) => args), [[{ category: 'readiness_timeout', budgetMs: 20_000 }]]);
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
-    assert.equal(dependencies.processor.process.mock.callCount(), 0);
+    assert.equal(dependencies.incoming.execute.mock.callCount(), 0);
   });
 
   test('Given a readiness timeout and a reporter that throws, when the operation fetches, then the caller still gets only the safe fetch failure', async (t) => {
@@ -119,7 +119,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
       await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
 
       assert.deepEqual(dependencies.reportRendererSetupFailure.mock.calls.map((call) => call.arguments), [[{ failure, code }]]);
-      assert.equal(dependencies.processor.process.mock.callCount(), 0);
+      assert.equal(dependencies.incoming.execute.mock.callCount(), 0);
     });
   }
 

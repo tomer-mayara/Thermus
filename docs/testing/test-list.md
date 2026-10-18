@@ -220,7 +220,7 @@ node --test dist/test/acceptance/auth/hosted-signup-restart.test.js
 
 Schema, dispatch, and completion tests now execute the neutral semantic URL
 validator, so they belong to integration below, even with operation/logger
-doubles. Real permission and operation/processor collaboration are integration
+doubles. Real permission and operation/step collaboration are integration
 too. HTTP acceptance uses the real MCP client and bridge with supplied dependencies.
 
 **Execution context identity** (`test/unit/page-fetch/execution-context.test.ts`)
@@ -241,12 +241,40 @@ and complete-candidate evidence.
 [V] The record has only fixed fields, trusted ID, bounded duration, and safe outcome/code; sink failure cannot alter a result or repeat work
 [V] Abort or `AbortError` wins before recording; late work settles after cleanup, no early record escapes, and pre-entry cancellation starts neither step nor event
 
+**Incoming step and typed withholding (MCP-PIPE-04)**
+
+The following cases are implemented in
+`test/unit/page-fetch/execute-incoming-step.test.ts`,
+`test/unit/html-cleaner-pipeline/process-html-step.test.ts`,
+`test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-removal-session.test.ts`,
+`test/unit/mcp/get-url-as-markdown.test.ts`,
+`test/integration/mcp/get-url-as-markdown-pipeline.test.ts`, and
+`test/acceptance/mcp/incoming-step.test.ts` / `incoming-step-cancellation.test.ts`.
+Focused runs passed. The [implementation record](../implementation/mcp-pipe-04.md)
+records the focused evidence, passing complete-candidate functional gates,
+verified environment restoration, and manager sign-off with retained quality
+findings. PR #162 tracks the final pull request steps.
+Production edition suites share `test/support/fixtures/incoming-pages.ts`. Each
+edition and protocol era covers empty, hidden-only, ad-only, real scan failure,
+eight-scan exhaustion, oversize, and excessive depth, plus a fetch failure.
+Existing normal and redirect cases retain exact Markdown. The SDK negotiation
+and raw protocol driver are unchanged.
+
+[V] Typed `scanWithholding` reaches the incoming step from real failed or exhausted scans; warning wording does not select a decision
+[V] The incoming executor accepts string output, including ordinary empty output; only known incoming scan codes produce payload-free withholding
+[V] Unknown codes, generic blocks, malformed results, nonstring output, and exceptions produce the fixed processing error and release no partial content
+[V] Oversized HTML produces a failed incoming record before any cleaner or parser runs
+[V] Exact incoming allowed/blocked/failed/cancelled events join outgoing and completion IDs in both editions and protocol eras; record fields exclude payload and raw causes
+[V] Cancellation wins over late results and leaves earlier records unchanged; hosted capacity stays owned until cleanup and settlement
+[V] The MCP adapter maps only known incoming withholding to exact empty success, without an error flag or structured content
+
 **MCP operation forwarding** (`test/unit/mcp/get-url-as-markdown.test.ts`, `single-fetch-operation.test.ts`)
 
 The thin adapter and capacity wrapper use operation doubles. The shared auth
 and page-fetch contracts are type-only imports.
 
 [V] The adapter forwards the same execution context and returns exact Markdown, including empty text
+[V] Only known withheld scan codes map to exact empty text; malformed neutral outcomes give the fixed processing error
 [V] The hosted wrapper forwards the same context and ID, gives cancellation priority over busy, and holds its slot until owned work settles
 
 **MCP request context binding** (`test/unit/mcp/request-context-binding.test.ts`)
@@ -1081,14 +1109,16 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
-**HTML page processor adapter** (`test/unit/html-cleaner-pipeline/html-page-processor.test.ts`)
+**Incoming HTML step** (`test/unit/html-cleaner-pipeline/process-html-step.test.ts`)
 
-The cleaner-owned adapter runs with a pipeline double. Public processor and
+The cleaner-owned step runs with a pipeline double. Public pipeline-step and
 fetch-result contracts are type-only imports; these cases execute one package.
 
 [V] Returns exact or empty Markdown without appending internal titles, counts, or warnings; forwards the same page and signal and keeps the input unchanged
 [V] Refuses absent pipeline results and absent/nonstring Markdown with the fixed processing error
 [V] Rejects UTF-8 input above 10 MiB before the pipeline can run, including supplementary characters; accepts exactly 10 MiB without truncation
+[V] Blocks with a typed scan code without returning partial Markdown; warning wording is independent of the decision
+[V] Refuses unknown scan codes, array results, and absent or nonstring Markdown; captures each decision field once
 
 **Pipeline cancellation** (`test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.ts`)
 
@@ -1498,7 +1528,7 @@ validator became part of the separate page-fetch package.
 **Protected neutral fetch operation** (`test/integration/page-fetch/fetch-page.test.ts`)
 
 These cases moved from `test/integration/mcp/get-url-as-markdown.test.ts`.
-Real shared permission checks collaborate with fetcher and processor doubles;
+Real shared permission checks collaborate with fetcher and incoming-step doubles;
 no SDK or concrete cleaner runs in this suite.
 
 [V] Calls the real shared permission helper before fetch and refuses a context without product:access
@@ -1523,7 +1553,7 @@ no SDK or concrete cleaner runs in this suite.
 **Renderer setup reports of the operation** (`test/integration/mcp/renderer-setup-report.test.ts`)
 
 The neutral operation runs with the real permission helper and fetcher,
-processor, and reporter doubles. The last case adds the thin MCP adapter,
+incoming-step, and reporter doubles. The last case adds the thin MCP adapter,
 real tool server, and SDK client.
 
 [V] Gives only the fixed `readiness_timeout` category and `20000` budget to the readiness reporter, without the private cause or stderr; the client gets only `Page fetch failed`, and no pipeline work starts
@@ -2146,7 +2176,7 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 
 [V] `test/acceptance/mcp/hosted-fetch-tool.test.ts`: a current Connect User lists and calls the tool, gets cleaned Markdown and a safe record, and missing or revoked access is refused before rendering
 [V] The same file: an overlapping call gets the safe busy result and a `busy` record; success, failure, and cancellation release the shared slot only after settlement
-[V] MCP-PIPE-03: hosted and self-hosted compositions run `outgoing.observe_request` before fetch and attempt its fixed allowed event; exact existing Markdown/completion assertions remain
+[V] MCP-PIPE-04: hosted and self-hosted compositions run `outgoing.observe_request` before fetch and `incoming.process_html` after fetch, with exact allowed event counts joined to the completion ID; exact existing Markdown/completion assertions remain
 [V] `test/acceptance/mcp/http-dns-cancellation.test.ts`: client cancellation and shutdown in both protocol eras end the wait before DNS answers and prevent renderer startup
 [V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
 [V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { assertAllowed, assertForbidden } from './fixtures/import-guards.ts';
 
 describe('Given the protected page-fetch boundary', () => {
-  for (const filePath of ['src/page-fetch/fetch-page.ts', 'src/page-fetch/execute-outgoing-step.ts', 'src/page-fetch/pipeline-step.ts', 'src/page-fetch/step-record.ts', 'src/page-fetch/nested/operation.ts']) {
+  for (const filePath of ['src/page-fetch/fetch-page.ts', 'src/page-fetch/execute-outgoing-step.ts', 'src/page-fetch/execute-incoming-step.ts', 'src/page-fetch/pipeline-step.ts', 'src/page-fetch/step-record.ts', 'src/page-fetch/nested/operation.ts']) {
     const root = filePath.includes('/nested/') ? '../../' : '../';
 
     it(`when ${filePath} names transport or composition, then every literal import and re-export is refused`, async () => {
@@ -50,12 +50,12 @@ describe('Given the protected page-fetch boundary', () => {
         `${root}auth/identity-verifier.ts`,
         `${root}website-fetcher/website-fetcher.ts`,
         `${root}website-fetcher/website-fetcher.js`,
-        './page-processor.ts',
         './fetch-url.ts',
         './pipeline-step.ts',
         './observe-request-step.ts',
         './step-record.ts',
         './execute-outgoing-step.ts',
+        './execute-incoming-step.ts',
         '@example/defuddle',
         'agent-input-sanitizer-notes',
         '@opentelemetry/sdk-logs-notes',
@@ -64,13 +64,13 @@ describe('Given the protected page-fetch boundary', () => {
   }
 
   it('when the cleaner adapter implements the neutral role, then the inward type dependency is allowed', async () => {
-    await assertAllowed('src/html-cleaner-pipeline/html-page-processor.ts', ['../page-fetch/page-processor.ts']);
+    await assertAllowed('src/html-cleaner-pipeline/process-html-step.ts', ['../page-fetch/pipeline-step.ts']);
   });
 
   it('when composition selects real collaborators, then it can name the core and both adapters', async () => {
     await assertAllowed('src/fetch-tool.ts', [
       './page-fetch/fetch-page.ts',
-      './html-cleaner-pipeline/html-page-processor.ts',
+      './html-cleaner-pipeline/process-html-step.ts',
       './website-fetcher/website-fetcher-lightpanda.ts',
       './mcp/get-url-as-markdown.ts',
     ]);
