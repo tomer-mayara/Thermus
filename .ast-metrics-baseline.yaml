@@ -289,7 +289,7 @@ ignored:
       count: 1
     - rule: efferent_coupling
       file: src/fetch-tool.ts
-      message: 'Efferent coupling too high: got 15 (max: 10)'
+      message: 'Efferent coupling too high: got 16 (max: 10)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/hosted-admin/account-form.ts
@@ -388,10 +388,6 @@ ignored:
       message: 'Maintainability too low: got 84 (min: 85)'
       count: 1
     - rule: maintainability
-      file: src/html-cleaner-pipeline/html-page-processor.ts
-      message: 'Maintainability too low: got 73 (min: 85)'
-      count: 1
-    - rule: maintainability
       file: src/html-cleaner-pipeline/html-to-markdown-pipeline.ts
       message: 'Maintainability too low: got 69 (min: 85)'
       count: 1
@@ -422,6 +418,10 @@ ignored:
     - rule: max_loc_by_method
       file: src/html-cleaner-pipeline/html-to-markdown/sanitize-html-document.ts
       message: 'LOC too high in method sanitizeHtmlDocument(): got 32 (max: 30)'
+      count: 1
+    - rule: maintainability
+      file: src/html-cleaner-pipeline/process-html-step.ts
+      message: 'Maintainability too low: got 59 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-selector-predicates.ts
@@ -481,7 +481,7 @@ ignored:
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-removal-session.ts
-      message: 'Maintainability too low: got 64 (min: 85)'
+      message: 'Maintainability too low: got 63 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts
@@ -513,7 +513,7 @@ ignored:
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts
-      message: 'Maintainability too low: got 51 (min: 85)'
+      message: 'Maintainability too low: got 50 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/sanitize-html-controls.ts
@@ -561,15 +561,15 @@ ignored:
       count: 1
     - rule: efferent_coupling
       file: src/mcp/fetch-tool-server.ts
-      message: 'Efferent coupling too high: got 13 (max: 10)'
+      message: 'Efferent coupling too high: got 14 (max: 10)'
       count: 1
     - rule: lloc_by_method
       file: src/mcp/fetch-tool-server.ts
-      message: 'LLOC too high in method createFetchToolServer(): got 29 (max: 20)'
+      message: 'LLOC too high in method createFetchToolServer(): got 30 (max: 20)'
       count: 1
     - rule: max_loc_by_method
       file: src/mcp/fetch-tool-server.ts
-      message: 'LOC too high in method createFetchToolServer(): got 46 (max: 30)'
+      message: 'LOC too high in method createFetchToolServer(): got 47 (max: 30)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/mcp/identity-verifier-sdk-adapter.ts
@@ -622,6 +622,30 @@ ignored:
     - rule: max_loc
       file: src/organizations/organization-administration.ts
       message: Too many Lines of code (204 > 150)
+      count: 1
+    - rule: cyclomatic_complexity
+      file: src/page-fetch/execute-incoming-step.ts
+      message: 'Cyclomatic complexity too high: got 28 (max: 20)'
+      count: 1
+    - rule: lloc_by_method
+      file: src/page-fetch/execute-incoming-step.ts
+      message: 'LLOC too high in method executeIncomingStep(): got 21 (max: 20)'
+      count: 1
+    - rule: max_loc_by_method
+      file: src/page-fetch/execute-incoming-step.ts
+      message: 'LOC too high in method executeIncomingStep(): got 32 (max: 30)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: src/page-fetch/execute-outgoing-step.ts
+      message: 'Cyclomatic complexity too high: got 23 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: src/page-fetch/fetch-page.ts
+      message: 'Efferent coupling too high: got 13 (max: 10)'
+      count: 1
+    - rule: max_loc_by_method
+      file: src/page-fetch/fetch-page.ts
+      message: 'LOC too high in method createFetchPage(): got 31 (max: 30)'
       count: 1
     - rule: maintainability
       file: src/terminal/hidden-line-input.ts
