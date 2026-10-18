@@ -1,6 +1,6 @@
 # MCP fetch debug OAuth upgrade plan
 
-Status: **Implemented; final gates in progress**. Date: **2026-10-17**.
+Status: **Implemented and validated; owner review pending**. Date: **2026-10-17**.
 
 ## Purpose and current behavior
 
@@ -333,7 +333,9 @@ signed off each part. All commands used pinned Node 24.20.0.
 | `node --test dist/test/interface/auth/workos.test.js` | Exit 0; 38 passed; no failures, cancellations, skips, or todo cases. |
 | Focused live FS-02 signup handoff after its guide assertion correction | Exit 0; both cases passed; no failures, cancellations, skips, or todo cases. |
 | Dedicated Staging provider and actual-script proofs, final source rerun | Exit 0; 2 passed in 32.4 seconds; no failures, cancellations, skips, or todo cases. |
-| `habit-hooks` | Exit 1; 28 reviewed findings retained with reasons below. Snooze remains `[]`. |
+| `npm run test:hosted-live`, Optional MFA profile, final source rerun | Exit 0; 79 passed in 590.0 seconds; no failures, cancellations, skips, or todo cases. Includes natural 300-second token expiry and the corrected signup handoff. |
+| `npm run test:container:hosted`, final Linux AMD64 image | Exit 0; 9 passed in 342.7 seconds; no failures, cancellations, skips, or todo cases. Includes packaged rendering, access guards, shutdown, and the failed-check publication barrier. |
+| `habit-hooks` | Exit 1; 26 reviewed findings retained with reasons below. Snooze remains `[]`. |
 
 The first acceptance run failed only because the worktree lacked the Axiom
 ingest settings. The complete rerun above used the existing test settings from
@@ -342,7 +344,35 @@ The first complete hosted live run passed 78 of 79 cases. The one failure waited
 for instruction text removed by the earlier agent-picker change. The corrected
 test checks the default agent, selects Codex, and checks its endpoint command and
 current consent text. Its session, workspace, Connect token, and real MCP fetch
-checks remain. The focused rerun passed; the complete rerun is pending.
+checks remain. Both the focused rerun and the complete 79-case rerun passed.
+
+The final image gate used the production, script, and test source from commit
+`374d4b1e`. Its full Linux AMD64 offline build independently passed the same
+suite counts shown for `build:hosted` above. The final run reused that checked
+build from Docker's cache. A private copy kept its emitted files separate from
+the live tests. Source and dependency payload hashes matched before and after;
+only pnpm's generated private workspace paths and timestamp changed.
+
+The original QEMU run crashed before the checks. The image gate then used
+temporary Rosetta translation. An initial private copy under `/private/tmp`
+was not visible to Colima's bind mounts. Moving the identical copy under the
+already-shared home directory let both affected runtime cases pass. The exact
+gate command, source, dependency pins, and deadlines stayed the same. After
+the final run, all three VM configuration files and the binary-format
+registrations matched their original bytes. The original launch environment,
+Docker context, CPU/memory settings, containers, volumes, networks, and image
+tags were restored or preserved. Docker regenerated only the default bridge's
+ID and creation time. No gate container or build remained active.
+
+The deliberately invalid build also hit one unchanged CSS test's three-second
+work deadline, in addition to its intended sabotage failure. Its unit summary
+was 2711 passed and 2 failed. The exact diagnostic was `The selector work did
+not end within 3000 ms`. That same case passed in the complete valid AMD64
+build and in the first invalid build, at about 1.3 seconds. The test and its
+driver match the base branch. Emulation timing is a likely cause, not a proven
+one. The manager retained the deadline and recorded this incidental failure;
+the valid image passed its full offline checks, and the publication barrier correctly
+refused the invalid build.
 
 Retained style findings: the four exported token, discovery, callback, and
 launcher functions support narrow security-boundary tests. Production calls
