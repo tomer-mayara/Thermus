@@ -1,12 +1,22 @@
 import type { TestContext } from 'node:test';
-import { fetchUrlScript } from './module-paths.ts';
+import { fetchUrlOAuthEntry, fetchUrlScript } from './module-paths.ts';
 import { runScript, type ScriptResult } from './script-command.ts';
+import { fetchUrlState } from '../isolation/fetch-url-state.ts';
 
-export async function runFetchUrl(t: TestContext, args: readonly string[], options: { credential?: string; input?: string; keepInputOpen?: boolean } = {}): Promise<ScriptResult> {
-  return runScript(t, fetchUrlScript, {
-    args,
-    env: options.credential === undefined ? {} : { THERMUS_API_KEY: options.credential },
-    input: options.input,
-    keepInputOpen: options.keepInputOpen,
-  });
+interface FetchUrlOptions {
+  readonly credential?: string;
+  readonly input?: string;
+  readonly keepInputOpen?: boolean;
+  readonly stateDirectory?: string;
+  readonly oauth?: { profile: Record<string, string>; ca: string; interactive?: boolean; authTimeoutMs?: number; redirectUrl?: string; browserAction?: 'wait' | 'cancel'; failSync?: boolean };
+}
+
+export async function runFetchUrl(t: TestContext, args: readonly string[], options: FetchUrlOptions = {}): Promise<ScriptResult> {
+  const env: Record<string, string> = { XDG_STATE_HOME: options.stateDirectory ?? await fetchUrlState(t) };
+  if (options.oauth) {
+    env.THERMUS_TEST_OAUTH = JSON.stringify(options.oauth);
+    env.NODE_EXTRA_CA_CERTS = options.oauth.ca;
+  }
+  if (options.credential !== undefined) env.THERMUS_API_KEY = options.credential;
+  return runScript(t, options.oauth ? fetchUrlOAuthEntry : fetchUrlScript, { args, env, input: options.input, keepInputOpen: options.keepInputOpen });
 }

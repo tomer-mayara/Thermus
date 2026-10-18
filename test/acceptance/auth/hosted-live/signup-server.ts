@@ -78,8 +78,11 @@ export function describeSignupServerCases(previous: LiveRun): void {
       await page.getByRole('heading', { name: 'Connect your MCP client' }).waitFor();
       await page.getByText('Free access. No card is required and there is no automatic charge.', { exact: true }).waitFor();
       await page.getByText(`MCP endpoint: ${localOrigin}/mcp`, { exact: true }).waitFor();
-      await page.getByText('Choose the intended workspace in the client consent screen.', { exact: true }).waitFor();
-      await page.getByText('Approve the connection.', { exact: true }).waitFor();
+      const agent = page.getByRole('combobox', { name: 'Your AI agent', exact: true });
+      assert.equal(await agent.inputValue(), 'claude-code');
+      await agent.selectOption('codex');
+      await page.getByText(`codex mcp add thermus --url '${localOrigin}/mcp'`, { exact: true }).waitFor();
+      await page.getByText('Sign in to Thermus in your browser. Choose the intended workspace. Approve the connection.', { exact: true }).waitFor();
       assert.equal((await sessionJson(page)).organizationId, organization.id);
       const { oauthApplication } = await run.fixtures();
       const grant = await authorizeWithConnect(run, { user, organizationName: organization.name, clientId: oauthApplication.clientId });

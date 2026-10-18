@@ -18,12 +18,43 @@ HTTP failures, failed and unexpected tool results, invalid protocol data,
 connection failures, redirects, and cancellation of hung requests. All use local
 fake credentials and need no live provider or renderer.
 
+`test/acceptance/script/fetch-url-oauth.test.ts` adds process tests with a local
+TLS OAuth site and private credential directories. It checks browser sign-in,
+cached reuse, refresh, recovery markers, fresh login, logout, and refusal of
+bad metadata. `fetch-url-oauth-failures.test.ts` checks durable write order,
+uncertain refresh outcomes, and explicit-credential isolation. The script unit
+files cover callback validation, token response
+validation, private file storage, durable replacement, and process locks.
+`test/interface/script/fetch-url-oauth.test.ts` checks the pinned SDK's metadata
+boundary with strict resource, issuer, endpoint, and PKCE requirements.
+
 ```sh
-npm run build && node --test dist/test/unit/script/fetch-url.test.js dist/test/acceptance/script/fetch-url.test.js
+npm run build && node --test "dist/test/unit/script/*.test.js" "dist/test/interface/script/*.test.js" "dist/test/acceptance/script/*.test.js"
 ```
 
-See [the script guide](../../script/README.md) for use and the current hosted
-authentication limit.
+Two dedicated Staging proofs use the first-party Public Connect application.
+`test/acceptance/auth/fetch-public-connect.live.ts` checks the real browser
+callback, token claims, refresh, and membership enforcement at the hosted MCP
+boundary. `test/acceptance/auth/fetch-public-script.live.ts` runs the command
+with a private Staging profile, real browser, real WorkOS, and real renderer.
+It checks workspace selection, saved reuse, forced refresh, remote authorization
+removal, and local logout. To trigger refresh, it ages only its private saved
+expiry; it does not wait for the access token to expire at WorkOS.
+
+Run those files sequentially: both use the registered callback port 46481.
+They also require the Staging settings, Playwright Chromium, OpenSSL, and the
+pinned renderer. They are not part of the ordinary offline globs. With Staging
+settings supplied by the private launcher described in the
+[gate policy](../implementation/test-gate-policy.md#hosted-live-gate-auth-06), run:
+
+```sh
+npm run build && npm run build:user-portal
+node --test --test-concurrency=1 dist/test/acceptance/auth/fetch-public-connect.live.js dist/test/acceptance/auth/fetch-public-script.live.js
+```
+
+See [the script guide](../../script/README.md) for use and the
+[OAuth implementation record](../implementation/mcp-fetch-debug-oauth-plan.md)
+for configuration and validation results.
 
 ## ast-metrics commands
 
@@ -124,7 +155,8 @@ The [FS-02 record](../implementation/fs-02.md) keeps its validation results.
   grants access or runs a denied tool.
 - The hosted live gate adds two Staging cases. They use a TEST ONLY agreement,
   a real browser, Connect PKCE, and an MCP SDK client. They check new activation,
-  exact acceptance fields, User-only access, the actual token workspace,
+  exact acceptance fields, User-only access, the default agent and Codex guide
+  selection with the configured endpoint, the actual token workspace,
   browser-B/token-A isolation, revoked A refusal, and continued B access.
   The SDK uses the gate's loopback HTTP listener behind its HTTPS front.
   The fetched public reference page is `https://example.com/`.
