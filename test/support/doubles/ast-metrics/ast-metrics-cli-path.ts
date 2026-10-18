@@ -8,6 +8,8 @@ import { astMetricsCliFake } from '../../processes/module-paths.ts';
 export interface AstMetricsCliAnswers {
   // The OpenMetrics text that analyze writes. {root} stands for the working directory of the call.
   readonly metrics?: string;
+  // The JSON report that analyze writes for --report-json. {root} stands for the working directory of the call.
+  readonly json?: string;
   // The Markdown that review prints and writes.
   readonly review?: string;
   readonly stderr?: string;
@@ -50,6 +52,10 @@ function answerSettings(folder: string, answers: AstMetricsCliAnswers): Record<s
   if (answers.metrics !== undefined) {
     settings.AST_METRICS_FAKE_METRICS_FILE = join(folder, 'metrics.txt');
     writeFileSync(settings.AST_METRICS_FAKE_METRICS_FILE, answers.metrics);
+  }
+  if (answers.json !== undefined) {
+    settings.AST_METRICS_FAKE_JSON_FILE = join(folder, 'report.json');
+    writeFileSync(settings.AST_METRICS_FAKE_JSON_FILE, answers.json);
   }
   if (answers.review !== undefined) settings.AST_METRICS_FAKE_REVIEW = answers.review;
   if (answers.stderr !== undefined) settings.AST_METRICS_FAKE_STDERR = answers.stderr;

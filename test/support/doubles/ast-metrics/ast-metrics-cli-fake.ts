@@ -1,11 +1,16 @@
-// A fake of the ast-metrics executable for the tests of script/ast-metrics-delta.ts and
-// script/ast-metrics-review.ts. ast-metrics-cli-path.ts puts a shim named ast-metrics first on PATH, and the shim
-// runs this file with Node. The environment gives the answers:
+// A fake of the ast-metrics executable for the tests of script/ast-metrics-delta.ts, script/ast-metrics-review.ts,
+// and script/ast-metrics-snapshot.ts. ast-metrics-cli-path.ts puts a shim named ast-metrics first on PATH, and the
+// shim runs this file with Node. The environment gives the answers:
 //   AST_METRICS_FAKE_LOG           each call adds one JSON line with its arguments and working directory to this file
 //   AST_METRICS_FAKE_METRICS_FILE  the OpenMetrics text that analyze writes; {root} becomes the working directory
+//   AST_METRICS_FAKE_JSON_FILE     the JSON report that analyze writes; {root} becomes the working directory
 //   AST_METRICS_FAKE_REVIEW        the Markdown that review prints and writes
 //   AST_METRICS_FAKE_STDERR        the text for stderr
 //   AST_METRICS_FAKE_EXIT          the exit status (default 0)
+// analyze takes the folder to analyze as its last argument, such as . or src; the fake writes the same reports for each
+// folder, and the call log names the folder. The snapshot command also starts "ast-metrics mcp", and one executable on
+// PATH must answer both commands. So the fake runs ast-metrics-mcp-fake.ts in its own process for mcp, with the
+// settings of that fake.
 // Like the real executable, the fake fails when the folder of a report does not exist.
 import { appendFileSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
@@ -35,10 +40,17 @@ function workingDirectory(): string {
   return named && named.dev === actual.dev && named.ino === actual.ino ? pwd : process.cwd();
 }
 
+// Without an answer, the report is empty.
+function writeReport(option: string, answerFile: string | undefined): void {
+  const path = optionValue(option);
+  if (path === undefined) return;
+  const text = answerFile ? readFileSync(answerFile, 'utf8') : '';
+  writeFileSync(path, text.replaceAll('{root}', workingDirectory()));
+}
+
 function analyze(): void {
-  const metricsFile = settings.AST_METRICS_FAKE_METRICS_FILE;
-  const metrics = metricsFile ? readFileSync(metricsFile, 'utf8') : '';
-  writeFileSync(reportPath('--report-openmetrics'), metrics.replaceAll('{root}', workingDirectory()));
+  writeReport('--report-openmetrics', settings.AST_METRICS_FAKE_METRICS_FILE);
+  writeReport('--report-json', settings.AST_METRICS_FAKE_JSON_FILE);
   if (optionValue('--compare-with') !== undefined) {
     writeFileSync(join(reportPath('--report-html'), 'compare.html'), '<!doctype html>\n<title>Comparison</title>\n');
   }
@@ -55,7 +67,10 @@ if (settings.AST_METRICS_FAKE_LOG) {
 }
 const commandName = String(args[0]);
 const command = new Map([['analyze', analyze], ['review', review]]).get(commandName);
-if (command) {
+if (commandName === 'mcp') {
+  // The fake of the server reads its settings and starts to serve when it loads.
+  await import(new URL('./ast-metrics-mcp-fake.ts', import.meta.url).href);
+} else if (command) {
   command();
   if (settings.AST_METRICS_FAKE_STDERR) process.stderr.write(settings.AST_METRICS_FAKE_STDERR);
   process.exitCode = Number(settings.AST_METRICS_FAKE_EXIT ?? 0);
