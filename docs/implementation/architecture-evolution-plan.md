@@ -251,8 +251,9 @@ The owner decided on 2026-10-17:
    changed functions and files.
 3. The trend store is JSON files under `docs/metrics/`, one per `main`
    commit.
-4. The architecture map covers `src/` only; `script/` and `test/` appear in
-   the complexity delta, not on the map.
+4. The architecture map and the complexity table cover `src/` only, because
+   the snapshot holds `src/` alone since T1; the delta command still lists
+   the changed `script/` and `test/` files, without a goal.
 5. The encoding above.
 
 ## Limits known in advance
@@ -420,7 +421,7 @@ text. The graph stays under 15 nodes by construction (`src/` only).
 
 ### T4. Complexity delta and the process
 
-Source: step A1 and "The views". Depends on T3. Done in PR #TBD. The table
+Source: step A1 and "The views". Depends on T3. Done in PR #166. The table
 has rows for `src/` files only: since T1, the snapshots hold only `src/`
 files, so the `script/` and `test/` files of decision 4 have no numbers
 there; the delta command still lists them. A file without a maintainability
