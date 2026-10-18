@@ -147,3 +147,74 @@ Run the focused offline tests after a clean build:
 pnpm run build
 pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/script/*.test.js" "dist/test/acceptance/script/*.test.js"
 ```
+
+# Measure and review a pull request with ast-metrics
+
+Three commands wrap the ast-metrics CLI for the process "Code quality review
+with ast-metrics" in [AGENTS.md](../AGENTS.md). They carry the correct syntax
+of the tool; do not call `ast-metrics` directly in that process. Run them from
+the repository root; no build is needed. The `ast-metrics` executable must be
+on PATH (`brew install ast-metrics/tap/ast-metrics` on macOS; the process is
+verified with 0.43.1). The
+[ast-metrics review guide](../docs/implementation/ast-metrics-review.md)
+explains what each command reports, the configuration, and the limits of the
+tool.
+
+## Measure the delta
+
+```sh
+pnpm exec node script/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare]
+```
+
+Lists each TypeScript file that the branch adds or changes against the merge
+base with `--base` (default `origin/main`), with its maintainability score:
+the production files under `src/` first, lowest first, then the other files,
+then the files without a measurement. Committed, staged, unstaged, untracked,
+and renamed files count; deleted files do not. The goal of `--min` (default
+85, an integer from 0 to 128) applies to the production files; a test file or
+a support file is listed with `no goal`. Exit status 1 when a production file
+is below the goal, else 0. The run writes the HTML report to `ast-report/`,
+with `compare.html` for the comparison with the base; `--no-compare` skips
+the comparison.
+
+## Review the delta
+
+```sh
+pnpm exec node script/ast-metrics-review.ts [--base REF] [--max-findings N]
+```
+
+Prints the Markdown review of `ast-metrics review` against `--base` (default
+`origin/main`) and writes it to `ast-report/review.md`: files whose score
+dropped, new functions with more than 10 decision paths, new rule
+violations, and the summary of the change. Exit status 1 when a finding of
+severity high exists, else 0. Update the branch from the base first.
+
+## Ask the MCP server
+
+```sh
+pnpm exec node script/ast-metrics-mcp.ts file <path> [--json]
+pnpm exec node script/ast-metrics-mcp.ts complex [--limit N] [--max-cyclomatic N]
+pnpm exec node script/ast-metrics-mcp.ts risky [--limit N]
+pnpm exec node script/ast-metrics-mcp.ts overview
+pnpm exec node script/ast-metrics-mcp.ts tools
+pnpm exec node script/ast-metrics-mcp.ts call <tool> ['<json arguments>']
+```
+
+Starts `ast-metrics mcp`, makes one call over standard input and output,
+prints the answer, and lets the server exit; no server stays behind. `file`
+prints the score, the decision paths, and the lines of each function in a
+file, lowest score first; `--json` prints the raw answer. The path is
+relative to the current folder, or absolute inside the repository.
+`--timeout-ms` sets the deadline (default 60000 ms; after a timeout the
+command stops the server). Exit status 1 with one diagnostic line on stderr
+for a file that is not in the analysis, an unknown tool, a timeout, a server
+that exits before it answers, or a missing executable.
+
+Run the focused offline tests after a clean build, and the live test with the
+real executable on PATH:
+
+```sh
+pnpm run build
+pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
+pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
+```

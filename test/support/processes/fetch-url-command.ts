@@ -1,29 +1,22 @@
-import { spawn } from 'node:child_process';
 import type { TestContext } from 'node:test';
-import { fetchUrlScript, fetchUrlOAuthEntry } from './module-paths.ts';
+import { fetchUrlOAuthEntry, fetchUrlScript } from './module-paths.ts';
+import { runScript, type ScriptResult } from './script-command.ts';
 import { fetchUrlState } from '../isolation/fetch-url-state.ts';
 
-export async function runFetchUrl(t: TestContext, args: readonly string[], options: { credential?: string; input?: string; keepInputOpen?: boolean; stateDirectory?: string; oauth?: { profile: Record<string, string>; ca: string; interactive?: boolean; authTimeoutMs?: number; redirectUrl?: string; browserAction?: 'wait' | 'cancel'; failSync?: boolean } } = {}) {
-  const stateDirectory = options.stateDirectory ?? await fetchUrlState(t);
-  const child = spawn(process.execPath, [options.oauth ? fetchUrlOAuthEntry : fetchUrlScript, ...args], {
-    env: {
-      PATH: process.env.PATH,
-      XDG_STATE_HOME: stateDirectory,
-      THERMUS_TEST_OAUTH: options.oauth ? JSON.stringify(options.oauth) : undefined,
-      NODE_EXTRA_CA_CERTS: options.oauth?.ca,
-      THERMUS_API_KEY: options.credential,
-    },
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
-  t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL'); });
-  child.stdin.on('error', () => undefined);
-  if (!options.keepInputOpen) child.stdin.end(options.input ?? '');
-  let stdout = '';
-  let stderr = '';
-  child.stdout.setEncoding('utf8').on('data', (chunk: string) => { stdout += chunk; });
-  child.stderr.setEncoding('utf8').on('data', (chunk: string) => { stderr += chunk; });
-  return new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {
-    child.once('error', reject);
-    child.once('close', (code) => resolve({ code, stdout, stderr }));
-  });
+interface FetchUrlOptions {
+  readonly credential?: string;
+  readonly input?: string;
+  readonly keepInputOpen?: boolean;
+  readonly stateDirectory?: string;
+  readonly oauth?: { profile: Record<string, string>; ca: string; interactive?: boolean; authTimeoutMs?: number; redirectUrl?: string; browserAction?: 'wait' | 'cancel'; failSync?: boolean };
+}
+
+export async function runFetchUrl(t: TestContext, args: readonly string[], options: FetchUrlOptions = {}): Promise<ScriptResult> {
+  const env: Record<string, string> = { XDG_STATE_HOME: options.stateDirectory ?? await fetchUrlState(t) };
+  if (options.oauth) {
+    env.THERMUS_TEST_OAUTH = JSON.stringify(options.oauth);
+    env.NODE_EXTRA_CA_CERTS = options.oauth.ca;
+  }
+  if (options.credential !== undefined) env.THERMUS_API_KEY = options.credential;
+  return runScript(t, options.oauth ? fetchUrlOAuthEntry : fetchUrlScript, { args, env, input: options.input, keepInputOpen: options.keepInputOpen });
 }

@@ -566,6 +566,9 @@ payment collection, hosted features, or migration between editions.
 1. Open a draft pull request first.
 2. Do the [required runs](#required-runs).
 3. Update the documents that the change affects in the same pull request.
+   Then run the process "Code quality review with ast-metrics" of AGENTS.md
+   on the complete candidate; the
+   [ast-metrics review guide](ast-metrics-review.md) gives the commands.
 4. Mark the pull request Ready. Wait for every Actions job that starts for its
    head to pass. A started job that is pending, skipped, cancelled, or failed is
    not a pass.

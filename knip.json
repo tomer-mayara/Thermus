@@ -1,8 +1,25 @@
 {
   "workspaces": {
-    ".": { "entry": ["docker/verify-hosted-runtime.mjs", "script/fetch-url.mjs"] },
-    ".habit-hooks": { "project": ["*.mjs"] }
+    ".": {
+      "entry": [
+        "docker/verify-hosted-runtime.mjs",
+        "script/fetch-url.mjs",
+        "script/ast-metrics-delta.ts",
+        "script/ast-metrics-review.ts",
+        "script/ast-metrics-mcp.ts"
+      ]
+    },
+    ".habit-hooks": {
+      "project": [
+        "*.mjs"
+      ]
+    }
   },
-  "ignoreDependencies": ["eslint", "ts-morph"],
-  "ignore": ["tools/code-review-agents/**"]
+  "ignoreDependencies": [
+    "eslint",
+    "ts-morph"
+  ],
+  "ignore": [
+    "tools/code-review-agents/**"
+  ]
 }

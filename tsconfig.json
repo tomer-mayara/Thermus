@@ -16,7 +16,7 @@
     "isolatedModules": true,
     "types": ["node"]
   },
-  "include": ["src", "test"],
+  "include": ["src", "test", "script"],
   "exclude": [
     "src/user-portal",
     "test/acceptance/user-portal",
