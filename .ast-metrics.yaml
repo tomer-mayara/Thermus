@@ -1,4 +1,4 @@
-# AST Metrics configuration. The scripts script/ast-metrics-*.mjs and the
+# AST Metrics configuration. The commands script/ast-metrics-*.ts and the
 # process in AGENTS.md ("Code quality review with ast-metrics") use this file.
 # ast-metrics reads this file from the analyzed folder and ignores --config.
 

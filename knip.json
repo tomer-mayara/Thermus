@@ -6,13 +6,20 @@
         "script/fetch-url.mjs",
         "script/ast-metrics-delta.ts",
         "script/ast-metrics-review.ts",
-        "script/ast-metrics-mcp.ts",
-        "test/support/doubles/ast-metrics/ast-metrics-cli-fake.ts",
-        "test/support/doubles/ast-metrics/ast-metrics-mcp-fake.ts"
+        "script/ast-metrics-mcp.ts"
       ]
     },
-    ".habit-hooks": { "project": ["*.mjs"] }
+    ".habit-hooks": {
+      "project": [
+        "*.mjs"
+      ]
+    }
   },
-  "ignoreDependencies": ["eslint", "ts-morph"],
-  "ignore": ["tools/code-review-agents/**"]
+  "ignoreDependencies": [
+    "eslint",
+    "ts-morph"
+  ],
+  "ignore": [
+    "tools/code-review-agents/**"
+  ]
 }
