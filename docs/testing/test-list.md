@@ -29,21 +29,32 @@ authentication limit.
 
 `test/unit/script/ast-metrics-delta.test.ts`,
 `test/unit/script/ast-metrics-review.test.ts`, and
-`test/unit/script/ast-metrics-mcp.test.ts` check the help and the input
-validation of the three commands. `test/acceptance/script/ast-metrics-delta.test.ts`
-and `test/acceptance/script/ast-metrics-review.test.ts` run the commands in a
-temporary git repository against a double of the ast-metrics executable on
-PATH: the delta of committed, uncommitted, and untracked TypeScript files, the
-scores and the exit status, the exact arguments that reach ast-metrics, the
-missing baseline warning, a missing executable, and a failing analysis.
-`test/acceptance/script/ast-metrics-mcp.test.ts` runs the one-shot MCP call
-against a double of the server: the function table, the pass-through of
-arguments, error answers, a hanging and an early-exiting server, and that no
-server process remains. `test/acceptance/script/ast-metrics-mcp.live.ts` runs
-the real server when `ast-metrics` is on PATH; the default suites skip it.
+`test/unit/script/ast-metrics-mcp.test.ts` check the help and the refused
+arguments of the three commands. They run with an empty PATH, so they also
+show that each command checks its arguments before it runs git or
+ast-metrics. The acceptance tests run the commands in temporary git
+repositories from `test/acceptance/script/fixtures/git-repository.ts`, with
+a double of the ast-metrics executable first on PATH
+(`test/support/doubles/ast-metrics/`); they need git, not ast-metrics.
+`test/acceptance/script/ast-metrics-delta.test.ts` checks the delta
+(committed, staged, unstaged, untracked, and renamed TypeScript files; no
+deleted or other file) and the exact arguments that reach `ast-metrics
+analyze`, with and without the comparison. `ast-metrics-delta-goal.test.ts`
+checks the goal: the production files under `src/` first, the other files
+with `no goal`, the files without a measurement, the result line, `--min`,
+and the exit status. `ast-metrics-delta-failures.test.ts` checks a caller
+through a symbolic link, a missing executable, a failed analysis, and unknown
+base refs. `ast-metrics-review.test.ts` checks the exact arguments of
+`ast-metrics review`, the Markdown on stdout, the exit status, the missing
+baseline warning, `--max-findings`, a missing executable, and an unknown
+base ref. `ast-metrics-mcp.test.ts` runs the one-shot MCP call against a
+double of the server: the function table, the pass-through of arguments,
+error answers, a hanging and an early-exiting server, and that no server
+process remains. `ast-metrics-mcp.live.ts` runs the real server when
+`ast-metrics` is on PATH; the default suites skip it.
 
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 ```
 

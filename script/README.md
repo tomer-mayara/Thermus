@@ -145,6 +145,6 @@ real executable on PATH:
 
 ```sh
 pnpm run build
-pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
+pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 ```

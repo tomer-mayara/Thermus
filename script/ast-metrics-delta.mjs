@@ -120,7 +120,7 @@ function groupsOf(files, scores, min) {
 }
 
 function goalResult(groups, min) {
-  if (groups.production.length === 0) return 'no production file in the delta.';
+  if (groups.production.length === 0) return 'no measured production file in the delta.';
   const production = count(groups.production.length, 'production file');
   if (groups.belowGoal.length === 0) return `all ${production} at ${min} or more.`;
   return `${groups.belowGoal.length} of ${production} below ${min}. Goal: ${min} or more for each production file.`;

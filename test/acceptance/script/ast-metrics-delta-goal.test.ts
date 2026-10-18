@@ -37,14 +37,14 @@ for (const [score, line, goal, code] of [
   });
 }
 
-test('Given a delta with test files only, when the check runs, then it lists them without a goal, says that no production file is in the delta, and passes', { timeout }, async (t) => {
+test('Given a delta with test files only, when the check runs, then it lists them without a goal, says that no measured production file is in the delta, and passes', { timeout }, async (t) => {
   const result = await runScript(t, astMetricsDeltaScript, { args, ...branchWithScores(t, { 'test/support/b.ts': 70, 'test/unit/a.test.ts': 40 }) });
 
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, [
     '  40.0  test/unit/a.test.ts  no goal',
     '  70.0  test/support/b.ts  no goal',
-    'Result: no production file in the delta. 2 other files without a goal.',
+    'Result: no measured production file in the delta. 2 other files without a goal.',
     '',
   ].join('\n'));
   assert.equal(result.code, 0);
