@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
 import { analyzeDelta, reportFolder } from './ast-metrics-delta-analysis.ts';
+import { deltaFiles } from './ast-metrics-delta-files.ts';
 import { deltaReportOf } from './ast-metrics-delta-report.ts';
-import { CommandError, git, repositoryRoot, verifyBase } from './repository.ts';
+import { CommandError, repositoryRoot, verifyBase } from './repository.ts';
 
 const help = `Usage: node script/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--help]
 
@@ -29,7 +30,6 @@ status 1: a production file is below the goal, or the command failed. A file
 with "no goal" or "not measured" never fails the check.
 `;
 
-const typeScriptFiles = ['*.ts', '*.tsx', '*.mts', '*.cts'];
 const optionShape = {
   base: { type: 'string', default: 'origin/main' }, min: { type: 'string', default: '85' },
   'no-compare': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
@@ -52,13 +52,6 @@ function optionsOf(args: readonly string[]): DeltaOptions | { readonly help: tru
   // git and ast-metrics would take a ref that starts with a dash as an option.
   if (values.base === '' || values.base.startsWith('-')) throw new CommandError('The --base value must name a git ref.');
   return { base: values.base, min: Number(values.min), compare: values['no-compare'] !== true };
-}
-
-// Without rename detection, git lists a renamed file as an added file, so the check measures it at its new path.
-function deltaFiles(root: string, base: string): string[] {
-  const changed = git(root, ['diff', '--name-only', '-z', '--no-renames', '--diff-filter=AM', '--merge-base', base, '--', ...typeScriptFiles], `git diff against ${base} failed.`);
-  const untracked = git(root, ['ls-files', '-z', '--others', '--exclude-standard', '--', ...typeScriptFiles], 'git ls-files failed.');
-  return [...new Set(`${changed}${untracked}`.split('\0').filter((file) => file !== ''))].sort();
 }
 
 function main(args: readonly string[]): number {
