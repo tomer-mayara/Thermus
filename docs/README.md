@@ -9,6 +9,7 @@ runtime guides stay current after implementation.
 - [Coding principles](coding-principles.md): design and verification guidance.
 - [Lightpanda runtime](lightpanda-runtime.md): runtime installation and renderer checks.
 - [Test gate policy](implementation/test-gate-policy.md): suite commands, required runs before Ready, the container gate, the renderer gate, the hosted offline checks, the self-hosted release checks, and later release gates.
+- [ast-metrics review guide](implementation/ast-metrics-review.md): the required complete-candidate quality review, scripts, metric goals, and tool limits.
 - [Test code layout](testing/test-code-layout.md): the terms for the auxiliary test files, the four-layer layout of `test/support`, and the placement and dependency rules.
 - [Work slices](../test/acceptance/work-slice/README.md): the manual runs of one thin path through the product, their entry points, and what each needs.
 - [Container installation](../README.md#container-installation): the self-hosted evaluation image, its data volume, the stopped-server commands, backup and restore, and recovery.
@@ -28,6 +29,8 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
+- [Two MCP pipelines plan](implementation/mcp-pipelines-plan.md): four slices for a neutral fetch operation, correlation IDs, outgoing observation, and incoming decisions; MCP-PIPE-01 is in progress from implementation baseline `8d12c1e7`; 02–04 have not started.
+- [Two MCP pipelines plan review](implementation/mcp-pipelines-plan-review.md): the deep review, corrected logical errors, section-by-section simplifications, and design sign-off.
 - [Hosted Docker on Render plan](implementation/render-hosted-docker-plan.md): the GitHub auto-deploy target, production identity setup, checks, recovery, and delivery slices; RHD-01 and RHD-02 implementation and verification are complete; PR #116 is stacked on PR #115, and both await owner review.
 - [RHD-01 implementation record](implementation/rhd-01.md): protected hosted fetch, fixed capacity, cancellation, shutdown deadline, and verification results.
 - [RHD-02 implementation record](implementation/rhd-02.md): hosted portal, local startup and health checks, MCP Origin validation, and completed verification results.
