@@ -121,11 +121,29 @@ that no repository hook runs in the worktree. `ast-metrics-snapshot.live.ts`
 runs the real tool on the repository when it is on PATH, with and without
 `--base HEAD`; the default suites skip it.
 
+`test/unit/script/ast-metrics-architecture.test.ts` checks the help and the
+refused arguments of the architecture command with an empty PATH, a missing
+snapshot file, and files that are not valid snapshots of version 1.
+`ast-metrics-architecture-report.test.ts` checks the pure report in the test
+process: the Jaccard match at 0.5, the tie by label, the greedy order, each
+base community once, identity by files across new ids and labels, the ids
+and the escaping, a label shared by a gone and a new community, the arrows
+and the rounding, and the change detection.
+`test/acceptance/script/ast-metrics-architecture.test.ts` compares the
+complete Markdown for snapshot files from
+`fixtures/ast-metrics-architecture-snapshots.ts`: equal snapshots, a new
+dependency, a cycle, a split, `--touched` with a fall of 2.0, numbers alone,
+a quote and a backtick, and `--out`. `ast-metrics-architecture-base.test.ts`
+runs both doubles in a temporary repository: both snapshots, a failed base
+analysis, and an unknown ref. `ast-metrics-architecture.live.ts` runs the
+real tool with `--base HEAD`; the default suites skip it.
+
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
+node --test dist/test/acceptance/script/ast-metrics-architecture.live.js
 ```
 
 See [the script guide](../../script/README.md) and
