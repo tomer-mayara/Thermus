@@ -1,10 +1,11 @@
 # MCP request and response pipelines
 
-Status: MCP-PIPE-01 merged in PR #155; MCP-PIPE-02 implemented, awaiting owner review.
-Tickets 03–04 have not started.
+Status: MCP-PIPE-01 merged in PR #155; MCP-PIPE-02 merged in PR #159.
+MCP-PIPE-03 is implemented and validated, awaiting owner review; MCP-PIPE-04 has not started.
 Date: 2026-10-17. Historical review baseline: `41373e82`.
 MCP-PIPE-01 implementation baseline: `8d12c1e7`.
 MCP-PIPE-02 implementation baseline on `origin/main`: `a50382ea`.
+MCP-PIPE-03 implementation baseline on `origin/main`: `12160950`.
 
 This revision simplifies the design and changes the proposed ticket scopes.
 The [review record](mcp-pipelines-plan-review.md) lists the corrections and the
@@ -12,8 +13,11 @@ historical design sign-off from both review agents and the manager. The
 [MCP-PIPE-01 record](mcp-pipe-01.md) gives the tested implementation revision
 and actual verification results separately from that design review.
 The [MCP-PIPE-02 record](mcp-pipe-02.md) gives implementation `aa76f9f6` and
-passing functional validation and verified environment restoration. Manager review
-is signed off; owner review is pending.
+passing functional validation and verified environment restoration; the owner
+merged PR #159. The [MCP-PIPE-03 record](mcp-pipe-03.md) tracks the authorized
+outgoing step and local executor; all functional proofs and environment restoration
+are complete. The manager signed off the implementation and retained quality
+dispositions; owner review is pending.
 The AST audit clarifications are reviewed; see the
 [audit evidence](mcp-pipelines-plan-review.md#appendix-a-ast-metrics-audit).
 See [Appendix A: implementation tickets](#appendix-a-implementation-tickets)
@@ -331,9 +335,8 @@ the review Markdown in the PR description. Keep `.ast-metrics-baseline.yaml`
 unchanged in this work. This requirement supersedes the earlier diagnostic-only audit.
 
 MCP-PIPE-01 merged in [PR #155](https://github.com/tomer-mayara/Thermus/pull/155).
-MCP-PIPE-02 is implemented in [PR #159](https://github.com/tomer-mayara/Thermus/pull/159)
-and awaits owner review; functional validation, restoration, and manager review
-are complete. Follow the [PR steps](test-gate-policy.md#pull-request-steps):
+MCP-PIPE-02 merged in [PR #159](https://github.com/tomer-mayara/Thermus/pull/159).
+The user authorized MCP-PIPE-03 from baseline `12160950`. Follow the [PR steps](test-gate-policy.md#pull-request-steps):
 draft first, manual manager review of delegated work and owner review, required
 checks before Ready, all started Actions jobs passed, Draft again before fixes,
 and merge a clean PR once. The owner merges a new decision record. Delamain
@@ -347,8 +350,8 @@ test results. Current implementation and check evidence must be recorded separat
 ## Appendix A: implementation tickets
 
 All IDs, titles, and labels remain local entries; no board issues exist.
-MCP-PIPE-01 is **Merged** in PR #155; MCP-PIPE-02 is **Implemented, awaiting owner review**;
-MCP-PIPE-03 and 04 are **Not started**.
+MCP-PIPE-01 is **Merged** in PR #155; MCP-PIPE-02 is **Merged** in PR #159;
+MCP-PIPE-03 is **Implemented and validated, awaiting owner review**; MCP-PIPE-04 is **Not started**.
 These revised scopes replace the earlier appendix breakdown.
 Suggested shared labels: `mcp`, `pipeline`. Each ticket must meet the shared
 Definition of Done above; no testing-only or detached infrastructure ticket is needed.
@@ -409,7 +412,7 @@ unchanged. One temporary processor port isolates the concrete HTML pipeline.
 
 ### MCP-PIPE-02 — Correlate operations and update record readers
 
-**Dependency:** merged MCP-PIPE-01; baseline `a50382ea`. **State:** Implemented, awaiting owner review. **Label:** `observability`.
+**Dependency:** merged MCP-PIPE-01; baseline `a50382ea`. **State:** Merged in PR #159. **Label:** `observability`.
 
 The [implementation record](mcp-pipe-02.md) tracks this candidate and its evidence.
 
@@ -454,7 +457,11 @@ completion. Context reaches the whole operation without changing behavior.
 
 ### MCP-PIPE-03 — Add the outgoing standard step and fixed records
 
-**Dependency:** MCP-PIPE-02. **State:** Not started. **Label:** `outgoing-step`.
+**Dependency:** merged MCP-PIPE-02; baseline `12160950`. **State:** Implemented and validated, awaiting owner review. **Label:** `outgoing-step`.
+
+The [implementation record](mcp-pipe-03.md) gives the tested source and completed
+functional/restoration evidence. Manager sign-off is complete, quality findings
+are documented, and owner review is pending.
 
 **Outcome:** `ObserveRequestStep` allows the exact URL unchanged before fetch.
 The local executor enforces decisions and emits the fixed safe terminal event.

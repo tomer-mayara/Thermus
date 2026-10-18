@@ -11,6 +11,8 @@ import { NoAuthProvider } from '../doubles/auth/no-auth-provider.ts';
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
 import { completionLinesIn } from '../drivers/operator-log.ts';
+import type { PipelineStep } from '../../../src/page-fetch/pipeline-step.ts';
+import type { StepRecordSink } from '../../../src/page-fetch/step-record.ts';
 
 export const exactMarkdown = '# Exact Markdown\n\nNo extra text.\n';
 export const validFetchArguments = { url: 'HTTPS://Example.COM/Page?private-query=yes#private-fragment', reason: 'Read the page for this task' };
@@ -22,6 +24,8 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   resolver?: AccessResolver;
   headers?: Record<string, string>;
   httpSignal?: AbortSignal;
+  outgoing?: PipelineStep<string, string>;
+  stepSink?: StepRecordSink;
 } = {}) {
   const records: string[] = [];
   const completed = Promise.withResolvers<string>();
@@ -33,6 +37,8 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   const pipelineCalls: { page: WebsiteFetchResult; signal: AbortSignal | undefined }[] = [];
   const provider = new NoAuthProvider(new URL(resourceUrl));
   const operation = composeFetchOperation({
+    outgoing: options.outgoing,
+    records: options.stepSink ?? { record: (event) => record(JSON.stringify(event)) },
     fetcher: { fetchURL: async (url, signal) => {
       fetchCalls.push({ url, signal });
       return options.fetcher?.fetchURL(url, signal) ?? { requestedUrl: url, finalUrl: 'https://example.net/final', html: '<p>Source</p>' };

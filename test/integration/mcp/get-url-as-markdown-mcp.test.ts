@@ -135,7 +135,7 @@ async function connect(t: TestContext, page: WebsiteFetchResult, pipeline: HtmlT
   const fetchURL = t.mock.fn(async (_url: string, _signal?: AbortSignal) => page);
   const error = t.mock.fn((_entry: string) => {});
   const server = createFetchToolServer(context, {
-    operation: composeFetchOperation({ fetcher: { fetchURL }, pipeline }),
+    operation: composeFetchOperation({ fetcher: { fetchURL }, pipeline, records: { record: () => {} } }),
     logger: { info(entry) {
       if (completionLinesIn(entry).length === 1) { records.push(entry); events.emit('completed'); }
     }, error },

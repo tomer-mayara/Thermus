@@ -9,6 +9,7 @@ import { createFetchToolServer } from './mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown, type FetchOperation } from './mcp/get-url-as-markdown.ts';
 import type { RequestServerBuilder } from './mcp/mcp-server.ts';
 import { createFetchPage } from './page-fetch/fetch-page.ts';
+import { ObserveRequestStep } from './page-fetch/observe-request-step.ts';
 import type { RendererSetupFailure } from './page-fetch/renderer-failure-reports.ts';
 import { WebsiteFetcherLightpanda } from './website-fetcher/website-fetcher-lightpanda.ts';
 
@@ -24,6 +25,8 @@ export function createFetchOperation(environment: Environment, logger: Applicati
     new CleanHtmlToMarkdownDefuddle(),
   ]);
   return createGetURLAsMarkdown(createFetchPage({
+    outgoing: new ObserveRequestStep(),
+    records: { record: (event) => logger.info(JSON.stringify(event)) },
     fetcher: new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN),
     processor: new HtmlPageProcessor(pipeline),
     reportRendererSetupFailure: rendererSetupReporter(logger),

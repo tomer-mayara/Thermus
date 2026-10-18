@@ -5,6 +5,7 @@ import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given missing or malformed Bearer credentials in ${era}, when the fetch HTTP resource is requested, then authentication refuses before fetch or completion`, async (t) => {
@@ -44,6 +45,7 @@ for (const era of mcpProtocolEras) {
     assert.equal(site.completionLines().length, 1);
     assert.equal(JSON.parse(site.completionLines()[0]).status, 'access_denied');
     assert.match(JSON.parse(site.completionLines()[0]).operationId, generatedOperationIdPattern);
+    assert.deepEqual(stepRecordsIn(site.records.join('\n')), []);
   });
 
   test(`Given a second supplied token in ${era}, when another HTTP client calls the tool, then test auth keeps the same synthetic authority and subject`, async (t) => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { completionLinesIn, completionRecordsIn, listeningUrlIn, tenantIn } from '../../support/drivers/operator-log.ts';
+import { completionLinesIn, completionRecordsIn, listeningUrlIn, stepRecordsIn, tenantIn } from '../../support/drivers/operator-log.ts';
 
 // The messages have the formats of src: the listening line of src/index.ts, the tenant line of src/application.ts,
 // and the completion record of src/mcp/tool-completion-record.ts.
@@ -24,6 +24,19 @@ function consoleLine(site: string, message: string): string {
 }
 
 describe('Operator log reader of the server sites', () => {
+  test('Given step and completion events from two operations, when step records are selected, then only that event and exact operation ID match', () => {
+    const secondStep = { ...otherEvent, operationId: failure.operationId, outcome: 'blocked', code: 'blocked' };
+    const output = [success, otherEvent, secondStep, failure].map((record) => consoleLine('fetch-tool.js:31', JSON.stringify(record))).join('');
+
+    assert.deepEqual(stepRecordsIn(output), [otherEvent, secondStep]);
+    assert.deepEqual(stepRecordsIn(output, success.operationId), [otherEvent]);
+    assert.deepEqual(stepRecordsIn(output, failure.operationId), [secondStep]);
+    assert.deepEqual(stepRecordsIn(output, success.operationId.toUpperCase()), []);
+    assert.deepEqual(stepRecordsIn(output, 'unknown-operation'), []);
+    assert.deepEqual(stepRecordsIn(JSON.stringify(success)), []);
+    assert.deepEqual(stepRecordsIn(''), []);
+  });
+
   test('Given mixed events from two operations, when one exact ID is selected, then only its actual completion is read', () => {
     const output = [success, otherEvent, failure].map((record) => consoleLine('fetch-tool-server.js:77', JSON.stringify(record))).join('');
 

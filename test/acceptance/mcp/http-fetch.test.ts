@@ -9,6 +9,7 @@ import { exactMarkdown, openFetchSite, validFetchArguments } from '../../support
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given test-injected auth in ${era}, when an MCP HTTP client discovers and calls the fetch tool, then it gets exact Markdown and one completion record with an operation UUID`, async (t) => {
@@ -46,7 +47,7 @@ for (const era of mcpProtocolEras) {
 
     assert.equal(JSON.parse(await site.firstCompletion).event, 'mcp.tool.completed');
     assert.equal(site.completionLines().length, 1);
-    assert.equal(site.records.length, 2);
+    assert.equal(stepRecordsIn(site.records.join('\n')).length, 2);
   });
 
   test(`Given invalid named calls and an unknown tool in ${era}, when dispatched over HTTP, then each gets one safe record and no fetch runs`, async (t) => {
@@ -68,6 +69,7 @@ for (const era of mcpProtocolEras) {
     assert.doesNotMatch(site.records.join('\n'), /private-user|private-pass|private-page|private-extra|private-unknown-tool/);
     assert.deepEqual(site.fetchCalls, []);
     assert.deepEqual(site.pipelineCalls, []);
+    assert.deepEqual(stepRecordsIn(site.records.join('\n')), []);
   });
 
   test(`Given valid maximum Unicode URL and reason in ${era}, when called over HTTP, then no accepted input is truncated`, async (t) => {

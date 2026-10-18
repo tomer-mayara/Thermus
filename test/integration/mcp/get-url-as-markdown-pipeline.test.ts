@@ -41,7 +41,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
         new CleanHtmlToMarkdownDefuddle(),
       ]);
       const process = t.mock.method(pipeline, 'process');
-      const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
+      const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline, records: { record: () => {} } });
 
       assert.equal(await operation(page.requestedUrl, context, executionContextOf()), '');
 
@@ -71,7 +71,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
     const invocations = stages.map((stage) => t.mock.method(stage, 'invoke'));
     const pipeline = new HtmlToMarkdownPipeline(stages);
     const process = t.mock.method(pipeline, 'process');
-    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
+    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline, records: { record: () => {} } });
 
     const markdown = await operation(page.requestedUrl, context, executionContextOf());
 
@@ -94,7 +94,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
       html: `<p id="eh-id">${'x'.repeat(10 * 1024 * 1024)}</p>`,
     };
     const pipeline = new HtmlToMarkdownPipeline([ads, new PromptInjectionRemoverSanitizer(), new CleanHtmlToMarkdownDefuddle()]);
-    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
+    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline, records: { record: () => {} } });
 
     await assert.rejects(operation(page.requestedUrl, context, executionContextOf()), { message: 'Page processing failed' });
     assert.equal(invoke.mock.callCount(), 0);
@@ -108,7 +108,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
       requestedUrl: 'https://source.example/start', finalUrl: 'https://source.example/final',
       html: '<div>'.repeat(5000) + 'Private source' + '</div>'.repeat(5000),
     };
-    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
+    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline, records: { record: () => {} } });
 
     await assert.rejects(operation(page.requestedUrl, context, executionContextOf()), { message: 'Page processing failed' });
     assert.equal(invoke.mock.callCount(), 0);

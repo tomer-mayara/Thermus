@@ -1,0 +1,51 @@
+import type { ExecutionContext } from './execution-context.ts';
+import type { PipelineStep, StepResult } from './pipeline-step.ts';
+import { writeStepRecord, type StepOutcome, type StepRecordSink } from './step-record.ts';
+
+export async function executeOutgoingStep(input: string, execution: ExecutionContext, dependencies: {
+  outgoing: PipelineStep<string, string>;
+  records: StepRecordSink;
+}): Promise<string> {
+  const { signal, operationId } = execution;
+  throwIfCancelled(signal);
+  const startedAt = performance.now();
+  let outcome: StepOutcome = { outcome: 'failed', code: 'step_failed' };
+  try {
+    const result = await dependencies.outgoing.execute(input, signal);
+    throwIfCancelled(signal);
+    const checked = checkedResult(result, input);
+    throwIfCancelled(signal);
+    if (checked === undefined) outcome = { outcome: 'failed', code: 'invalid_step_result' };
+    else if (checked.decision === 'allow') {
+      outcome = { outcome: 'allowed' };
+      return checked.output;
+    } else outcome = { outcome: 'blocked', code: checked.code };
+    throw new Error('Page fetch failed');
+  } catch (error) {
+    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+      outcome = { outcome: 'cancelled', code: 'cancelled' };
+      throw new DOMException('Request cancelled', 'AbortError');
+    }
+    throw new Error('Page fetch failed');
+  } finally {
+    writeStepRecord(dependencies.records, { operationId, stepId: 'outgoing.observe_request', ...outcome }, startedAt);
+  }
+}
+
+function checkedResult(value: unknown, input: string): StepResult<string> | undefined {
+  if (!isResultObject(value)) return undefined;
+  const { decision, output, code } = value;
+  const hasOutput = Object.hasOwn(value, 'output');
+  const hasCode = Object.hasOwn(value, 'code');
+  if (decision === 'allow' && hasOutput && !hasCode && output === input) return { decision, output };
+  if (decision === 'block' && hasCode && !hasOutput && code === 'blocked') return { decision, code };
+  return undefined;
+}
+
+function isResultObject(value: unknown): value is { decision?: unknown; output?: unknown; code?: unknown } {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && Object.hasOwn(value, 'decision');
+}
+
+function throwIfCancelled(signal: AbortSignal): void {
+  if (signal.aborted) throw new DOMException('Request cancelled', 'AbortError');
+}

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
 import { copyFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
@@ -119,7 +120,7 @@ function changedPayload(token: string, claim: string, value: unknown): string {
 
 describe('Self-hosted getURLAsMarkdown with real Better Auth access and the production pipeline, offline', () => {
   for (const era of mcpProtocolEras) {
-    test(`Given a real Better Auth token in ${era}, trusted rules, and a renderer process double, when the MCP client lists and calls getURLAsMarkdown, then the production pipeline returns one exact cleaned Markdown entry with rules and links from the final URL, the server keeps the rules that it read at startup, and each call writes one safe completion record`, { timeout: 120_000 }, async (t) => {
+    test(`Given a real Better Auth token in ${era}, trusted rules, and a renderer process double, when the MCP client lists and calls getURLAsMarkdown, then the production pipeline returns one exact cleaned Markdown entry with rules and links from the final URL, the server keeps the rules that it read at startup, and each call writes one allowed outgoing record joined to its completion ID`, { timeout: 120_000 }, async (t) => {
       const setup = await installation(t, [alice]);
       const rules = rulesFile(t);
       const renderer = RendererProcessDouble.install(t);
@@ -160,6 +161,11 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
         reasonStatus: 'valid',
         status: 'success',
       })));
+      const steps = stepRecordsIn(server.lines.join('\n'));
+      assert.deepEqual(steps.map(({ durationMs, ...record }) => {
+        assert.ok(Number.isSafeInteger(durationMs) && (durationMs as number) >= 0);
+        return record;
+      }), records.map(({ operationId }) => ({ event: 'pipeline.step.completed', operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' })));
       const recordText = server.completionLines().join('\n');
       assert.doesNotMatch(recordText, /private-query|private-fragment|Hidden instruction|Rendered story|Requested host target/);
       assert.ok(!recordText.includes(user.accessToken), 'a completion record holds the access token');

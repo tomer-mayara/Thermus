@@ -72,6 +72,7 @@ for (const era of mcpProtocolEras) {
     let pipelineCalls = 0;
     const fetcher = new WebsiteFetcherLightpanda();
     const operation = composeFetchOperation({
+      records: { record: (event) => { records.push(JSON.stringify(event)); } },
       fetcher: { fetchURL: (url, signal) => {
         callSignal = signal;
         return fetcher.fetchURL(url, signal);
