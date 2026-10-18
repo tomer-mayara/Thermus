@@ -232,9 +232,9 @@ These same-package cases exercise the neutral operation-ID contract.
 
 **Outgoing step and executor** (`test/unit/page-fetch/observe-request-step.test.ts`, `execute-outgoing-step.test.ts`)
 
-These same-package tests use step and record-sink doubles. MCP-PIPE-03 is in
-progress; focused unit evidence is in the
-[implementation record](../implementation/mcp-pipe-03.md).
+These same-package tests use step and record-sink doubles. The
+[implementation record](../implementation/mcp-pipe-03.md) gives focused unit
+and complete-candidate evidence.
 
 [V] Observation allows the exact original string and uses only the outgoing step ID
 [V] The executor validates allow/block shape, unchanged string output, and closed codes; unknown decisions, incoming scan codes, malformed output, and raw failures cannot advance
