@@ -84,9 +84,25 @@ error answers, a hanging and an early-exiting server, and that no server
 process remains. `ast-metrics-mcp.live.ts` runs the real server when
 `ast-metrics` is on PATH; the default suites skip it.
 
+`test/unit/script/ast-metrics-snapshot.test.ts` checks the help and the
+refused arguments of the snapshot command with an empty PATH, and the rules
+of the pure build in the test process: the LOC-weighted maintainability, the
+label rule, the `src/` filter, the cycles, the community of a file in a
+folder member, and the join of the functions.
+`test/acceptance/script/ast-metrics-snapshot.test.ts` runs the command
+against both doubles with the answers of
+`fixtures/ast-metrics-snapshot-answers.ts`: the whole snapshot from one
+analysis and one MCP session, `analyze` and `mcp` both given the folder
+`src`, a `script/` community in a cycle, two equal labels, a caller through a
+symbolic link, and `--out`. `ast-metrics-snapshot-failures.test.ts` checks a
+missing executable, a failed analysis, and a server without metrics for one
+file. `ast-metrics-snapshot.live.ts` runs the real tool on the repository
+when it is on PATH; the default suites skip it.
+
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
+node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
 ```
 
 See [the script guide](../../script/README.md) and

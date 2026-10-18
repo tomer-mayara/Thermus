@@ -117,6 +117,40 @@ included. In a test file, each case is an anonymous function in the table.
 `file` takes a path relative to the current folder or an absolute path in
 the repository.
 
+### Take a snapshot: `script/ast-metrics-snapshot.ts`
+
+```sh
+pnpm exec node script/ast-metrics-snapshot.ts [--out FILE] [--timeout-ms MS]
+```
+
+The command writes the snapshot of the working tree to
+`ast-report/snapshot.json`, or to `--out` (relative to the current folder).
+It runs `ast-metrics analyze src` for the JSON report and one MCP session of
+`ast-metrics mcp src` with `get_communities` and `get_file_metrics` for each
+`src/` file (about one second on this repository). The file holds:
+
+- `commit` and `date`: HEAD and its committer date. The files can hold
+  changes that are not committed.
+- `global`: modularity, cross share, and cycles from `get_communities`, the
+  LOC-weighted maintainability, the decision paths, and the counts of files
+  and functions. All of them describe `src/` alone.
+- `communities`: each community of `src/`, sorted by label, with id, label,
+  hub, member files, the numbers of its files, references, and edges to the
+  other communities.
+- `files`: each `src/` file, sorted by path, with its community (or `null`),
+  maintainability, decision paths, lines, risk, and functions.
+
+A label is the largest namespace in `src/` by member count, without the
+`src/` prefix. The files at the top of `src/` give `src`, and the shared
+kernel is `shared kernel`. When two communities get the same label, each
+label gets the basename of its hub in parentheses. The maintainability of a
+community or of `src/` is the sum of index × lines over the sum of lines of
+the files with an index. A score keeps one decimal and a share two. A value
+that ast-metrics does not give is absent. A function without a name is
+`(anonymous)`. The exit status is 1, with one diagnostic line and no
+snapshot, for a missing executable, a failed analysis, a failed or late
+session (`--timeout-ms`, default 60000 ms), or a file without an answer.
+
 ## The configuration
 
 `.ast-metrics.yaml` at the repository root is the only configuration that
@@ -182,6 +216,14 @@ These facts, measured with `ast-metrics-mcp.ts file <path> --json` on
   grows, the names change, the entry stops matching, and the review lists the
   old cycle as a medium regression. Refresh the baseline then. The pull
   request that added the process did so on its final candidate.
+- ast-metrics groups the dependency graph of all that it analyzes, so the
+  snapshot analyzes `src/` alone: growth of `script/` or `test/` cannot
+  regroup the communities of `src/`. The review and the lint still analyze
+  the whole repository, so their `no_community_cycles` baseline entry can
+  stop matching when `script/` grows.
+- With namespace granularity, a member of a community can be a deep folder,
+  such as `src/auth/hosted-auth`. The snapshot gives each file the community
+  of the nearest member; a file under no member has none.
 - The commands run ast-metrics in the repository root that git names from
   the current folder. A worktree of an agent has its own copy of the files;
   run the commands from that worktree.
