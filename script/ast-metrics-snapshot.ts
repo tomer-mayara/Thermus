@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { commandOf } from './ast-metrics-snapshot-command-line.ts';
+import { writeSnapshotFile } from './ast-metrics-snapshot-file.ts';
 import { snapshotOfTree } from './ast-metrics-snapshot-tree.ts';
 import { CommandError, repositoryRoot } from './repository.ts';
 
@@ -33,26 +33,13 @@ async function main(): Promise<string> {
   const root = repositoryRoot();
   const snapshot = await snapshotOfTree(root, command.timeoutMs);
   const target = command.out === undefined ? resolve(root, defaultFile) : resolve(command.out);
-  writeSnapshot(target, `${JSON.stringify(snapshot, null, 2)}\n`);
+  writeSnapshotFile(target, snapshot);
   const counts = [
     plural(snapshot.communities.length, 'community', 'communities'),
     plural(snapshot.global.files, 'file', 'files'),
     plural(snapshot.global.functions, 'function', 'functions'),
   ];
   return `Wrote ${command.out ?? defaultFile}: ${counts.join(', ')}.\n`;
-}
-
-// The file is complete or absent: the text goes to a temporary file next to it, and a rename replaces the file in one
-// step.
-function writeSnapshot(path: string, text: string): void {
-  mkdirSync(dirname(path), { recursive: true });
-  const temporary = `${path}.${process.pid}.tmp`;
-  try {
-    writeFileSync(temporary, text);
-    renameSync(temporary, path);
-  } finally {
-    rmSync(temporary, { force: true });
-  }
 }
 
 function plural(count: number, one: string, many: string): string {
