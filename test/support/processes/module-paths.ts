@@ -64,3 +64,7 @@ export const astMetricsReviewScript = fileURLToPath(new URL('script/ast-metrics-
 export const astMetricsMcpScript = fileURLToPath(new URL('script/ast-metrics-mcp.ts', repositoryRoot));
 export const astMetricsCliFake = fileURLToPath(new URL('test/support/doubles/ast-metrics/ast-metrics-cli-fake.ts', repositoryRoot));
 export const astMetricsMcpFake = fileURLToPath(new URL('test/support/doubles/ast-metrics/ast-metrics-mcp-fake.ts', repositoryRoot));
+
+// The commands of the architecture evolution plan (docs/implementation/architecture-evolution-plan.md).
+export const astMetricsSnapshotScript = fileURLToPath(new URL('script/ast-metrics-snapshot.ts', repositoryRoot));
+export const astMetricsCoverageScript = fileURLToPath(new URL('script/ast-metrics-coverage.ts', repositoryRoot));
