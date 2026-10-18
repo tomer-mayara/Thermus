@@ -1,8 +1,9 @@
 # MCP pipelines: proposed improvement plan
 
-Execution status: selected MCP-REFINE-01 through 04 are implemented in draft
-PR #164. MCP-REFINE-05 remains deferred. Final gates, quality review, and release
-sign-off are pending. The [implementation record](../implementation/mcp-pipeline-refinements.md)
+Execution status: selected MCP-REFINE-01 through 04 are implemented and validated
+in [PR #164](https://github.com/tomer-mayara/Thermus/pull/164). MCP-REFINE-05 remains deferred. Required functional gates are complete.
+The manager signs off the work and the retained quality exceptions. PR #164
+tracks Ready status, Actions, owner review, and merge. The [implementation record](../implementation/mcp-pipeline-refinements.md)
 tracks execution evidence. The original reviewed proposal follows.
 
 Status: reviewed proposal, not implemented. Both review perspectives and the
