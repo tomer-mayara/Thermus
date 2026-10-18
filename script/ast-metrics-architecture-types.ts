@@ -21,7 +21,7 @@ export interface MapSources {
 
 // kept: a head community with a match in the base, or a dependency that both snapshots have between matched
 // communities. new: only in the head. gone: only in the base.
-export type Status = 'kept' | 'new' | 'gone';
+type Status = 'kept' | 'new' | 'gone';
 
 export interface CommunityNumbers {
   readonly files: number;

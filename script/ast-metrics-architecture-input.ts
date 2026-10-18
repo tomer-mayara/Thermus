@@ -1,5 +1,3 @@
-// The inputs of the architecture delta: two snapshots and the changed files, from two snapshot files or from the
-// repository.
 import { writeSync } from 'node:fs';
 import type { ArchitectureCommand } from './ast-metrics-architecture-command-line.ts';
 import { snapshotInFile } from './ast-metrics-architecture-file.ts';

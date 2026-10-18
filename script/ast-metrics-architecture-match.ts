@@ -2,7 +2,6 @@
 // community that has most of the same files (docs/implementation/architecture-evolution-plan.md, "Community identity").
 import type { MapCommunity } from './ast-metrics-architecture-types.ts';
 
-// The Jaccard overlap of the files from which two communities match.
 const minimumOverlap = 0.5;
 
 // The partner of each matched community in the other snapshot, by the id of the community.
@@ -35,7 +34,8 @@ function candidatesOf(base: readonly MapCommunity[], head: readonly MapCommunity
   return pairs.filter(({ overlap }) => overlap >= minimumOverlap).sort(byOverlapThenLabels);
 }
 
-// The files that both communities have, over all files of the two. Two communities without files have no overlap.
+// The Jaccard overlap: the files that both communities have, over all files of the two. Two communities without files
+// have no overlap.
 function overlapOf(first: readonly string[], second: readonly string[]): number {
   const firstFiles = new Set(first);
   const all = new Set([...first, ...second]);

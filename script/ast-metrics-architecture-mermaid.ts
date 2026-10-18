@@ -24,7 +24,6 @@ export function mermaidOf(map: ArchitectureMap): string[] {
   ];
 }
 
-// A cycle edge and a gone edge are dashed, a new edge is thick.
 function arrowOf(edge: MapEdge): string {
   const label = `"${edgeLabelOf(edge)}"`;
   if (edge.status === 'gone' || edge.inCycle) return `-. ${label} .->`;

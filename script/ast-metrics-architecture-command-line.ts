@@ -1,9 +1,8 @@
 import { parseArgs } from 'node:util';
 import { CommandError } from './repository.ts';
 
-// files: two snapshot files, and the command runs neither git nor ast-metrics. repository: the snapshot of the merge base
-// of the ref and HEAD, and the snapshot of the working tree.
-export type SnapshotSource =
+// With two snapshot files, the command runs neither git nor ast-metrics.
+type SnapshotSource =
   | { readonly kind: 'files'; readonly head: string; readonly base: string }
   | { readonly kind: 'repository'; readonly ref: string; readonly timeoutMs: number };
 

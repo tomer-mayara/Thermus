@@ -24,7 +24,6 @@ function headNodeOf(community: MapCommunity, before: MapCommunity | undefined, t
   return { label: community.label, status: before === undefined ? 'new' : 'kept', touched, numbers: community, change: before && changeOf(community, before) };
 }
 
-// A gone community shows its numbers of the base.
 function goneNodeOf(community: MapCommunity, touched: boolean): MapNode {
   return { label: community.label, status: 'gone', touched, numbers: community };
 }

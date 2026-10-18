@@ -1,4 +1,3 @@
-// The header and the summary line of the architecture delta: the global numbers of src/, base to head.
 import type { MapNode, MapSources } from './ast-metrics-architecture-types.ts';
 
 // The snapshot of the head can hold changes that are not committed, so the header names the base commit only.

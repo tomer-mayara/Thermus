@@ -16,8 +16,8 @@ export function headEdgesOf(head: MapSnapshot, matching: Matching, nodes: NodeIn
   }));
 }
 
-// Each dependency of the base that the head does not have between the partners of its two communities. An end that is a
-// gone community is the node of that community.
+// A dependency of the base is gone when the head does not have it between the partners of its two communities. An end
+// that is a gone community is the node of that community, so that the graph shows where the dependency was.
 export function goneEdgesOf(base: MapSnapshot, matching: Matching, nodes: NodeIndex): MapEdge[] {
   return base.communities.flatMap((community) => community.edges.flatMap((edge): MapEdge[] => {
     const [from, to] = [nodes.base.get(community.id), nodes.base.get(edge.to)];
@@ -26,7 +26,6 @@ export function goneEdgesOf(base: MapSnapshot, matching: Matching, nodes: NodeIn
   }));
 }
 
-// The dependency between the partners of two communities in the other snapshot, when both have a partner.
 function partnerEdgeOf(partners: Matching['baseOf'], from: string, to: string): SnapshotEdge | undefined {
   const target = partners.get(to);
   return target && partners.get(from)?.edges.find((edge) => edge.to === target.id);

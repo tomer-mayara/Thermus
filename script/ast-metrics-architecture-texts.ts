@@ -1,4 +1,3 @@
-// The texts of the Mermaid graph: the node ids, the node texts, and the edge labels.
 import type { MapEdge, MapNode } from './ast-metrics-architecture-types.ts';
 
 // An id is c_ and the label in lower case, with _ for each character outside a-z and 0-9, so that no id is a keyword of

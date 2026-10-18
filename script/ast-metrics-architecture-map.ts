@@ -1,4 +1,3 @@
-// The map is pure, so that its rules have unit tests without git and ast-metrics.
 import { cyclesDiffer } from './ast-metrics-architecture-cycles.ts';
 import { goneEdgesOf, headEdgesOf } from './ast-metrics-architecture-edges.ts';
 import { matchingOf } from './ast-metrics-architecture-match.ts';
