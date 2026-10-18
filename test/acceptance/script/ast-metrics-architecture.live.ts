@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
+import { noProductionFile } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // This check runs the real ast-metrics on this repository. It needs the executable on PATH; the guide is
 // docs/implementation/ast-metrics-review.md. Without it, Node reports the check as skipped. With --base HEAD, the base
@@ -19,8 +20,9 @@ function git(...args: string[]): string {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8' });
 }
 
-// TMPDIR names a folder of the test, so that the check sees each folder that the command leaves there.
-test('Given the real ast-metrics and a src/ without uncommitted changes, when the architecture delta runs with --base HEAD, then both sides of each number of the summary line are equal and the map did not change, within 30 seconds, and no worktree stays', live, async (t) => {
+// TMPDIR names a folder of the test, so that the check sees each folder that the command leaves there. With --base HEAD,
+// the changed files are the files of the working tree that differ from HEAD, and src/ has none of them.
+test('Given the real ast-metrics and a src/ without uncommitted changes, when the architecture delta runs with --base HEAD, then both sides of each number of the summary line are equal, the map did not change, and no production file changed, within 30 seconds, and no worktree stays', live, async (t) => {
   assert.equal(git('status', '--porcelain', '--', 'src'), '', 'The check needs a src/ without uncommitted changes.');
   const folder = dataDirectory(t);
 
@@ -32,7 +34,7 @@ test('Given the real ast-metrics and a src/ without uncommitted changes, when th
   const sides = [...summary.matchAll(/(\S+) → (\S+)/g)].map(([, before, after]) => [before, after]);
   assert.equal(sides.length, 4, summary);
   assert.deepEqual(sides.filter(([before, after]) => before !== after), [], summary);
-  assert.ok(result.stdout.endsWith(`${summary}\n\nThe map did not change.\n`), result.stdout);
+  assert.ok(result.stdout.endsWith([summary, '', 'The map did not change.', '', ...noProductionFile, ''].join('\n')), result.stdout);
   assert.deepEqual(readdirSync(folder).filter((name) => name.startsWith('thermus-snapshot-base-')), []);
   const worktrees = git('worktree', 'list', '--porcelain');
   assert.equal(worktrees.includes(realpathSync(folder)), false, worktrees);

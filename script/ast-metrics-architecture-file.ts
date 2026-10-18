@@ -1,5 +1,5 @@
 // The shape of a snapshot file follows version 1 of script/ast-metrics-snapshot-types.ts. The check covers the fields
-// that the map reads, so that a wrong file, such as another report of ast-metrics, fails it.
+// that the map and the complexity table read, so that a wrong file, such as another report of ast-metrics, fails it.
 import { readFileSync } from 'node:fs';
 import { jsonOf, numberOf, objectOf } from './ast-metrics-json.ts';
 import { arrayOf, textOf, textsOf } from './ast-metrics-snapshot-json.ts';
@@ -8,6 +8,7 @@ import { CommandError } from './repository.ts';
 
 type Fields = ReturnType<typeof objectOf>;
 type MapCommunity = MapSnapshot['communities'][number];
+type TableFile = MapSnapshot['files'][number];
 
 // Gives the value of a field that a snapshot always has, or stops the check.
 type Check = <T>(value: T | undefined) => T;
@@ -15,7 +16,7 @@ type Check = <T>(value: T | undefined) => T;
 // The path is relative to the current folder, as the command line gives it.
 export function snapshotInFile(path: string): MapSnapshot {
   const fields = objectOf(jsonOf(fileText(path)));
-  if (fields.version !== 1 || !Array.isArray(fields.communities)) invalid(path);
+  if (fields.version !== 1 || !Array.isArray(fields.communities) || !Array.isArray(fields.files)) invalid(path);
   return snapshotOf(fields, (value) => value ?? invalid(path));
 }
 
@@ -37,6 +38,7 @@ function snapshotOf(fields: Fields, check: Check): MapSnapshot {
     commit: check(textOf(fields.commit)),
     global: { modularity: check(numberOf(global.modularity)), crossShare: check(numberOf(global.crossShare)), cycles: arrayOf(global.cycles).map(textsOf) },
     communities: arrayOf(fields.communities).map((entry) => communityOf(objectOf(entry), check)),
+    files: arrayOf(fields.files).map((entry) => fileOf(objectOf(entry), check)),
   };
 }
 
@@ -54,4 +56,9 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
       return { to: check(textOf(edge.to)), references: check(numberOf(edge.references)), inCycle: edge.inCycle === true };
     }),
   };
+}
+
+// A value that ast-metrics did not measure is absent, so a file needs only its path.
+function fileOf(fields: Fields, check: Check): TableFile {
+  return { path: check(textOf(fields.path)), maintainability: numberOf(fields.maintainability), paths: numberOf(fields.paths), risk: numberOf(fields.risk) };
 }

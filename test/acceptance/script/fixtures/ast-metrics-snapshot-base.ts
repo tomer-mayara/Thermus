@@ -3,8 +3,9 @@ import { mkdirSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import type { TestContext } from 'node:test';
 import type { AstMetricsCliAnswers } from '../../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
+import type { AstMetricsMcpAnswers } from '../../../support/doubles/ast-metrics/ast-metrics-mcp-fake-path.ts';
 import { dataDirectory } from '../../../support/isolation/data-directory.ts';
-import { jsonReport, repositoryFiles, snapshotDoublesOnPath, type SnapshotDoubles } from './ast-metrics-snapshot-answers.ts';
+import { fileMetricsAnswers, jsonReport, repositoryFiles, serverAnswers, snapshotDoublesOnPath, type SnapshotDoubles } from './ast-metrics-snapshot-answers.ts';
 import { GitRepository } from './git-repository.ts';
 
 export const worktreePrefix = 'thermus-snapshot-base-';
@@ -52,6 +53,19 @@ export function forkedRepository(t: TestContext): { readonly repository: GitRepo
   return { repository, mergeBase };
 }
 
+// The answers of the server for the tree of the branch of forkedRepository: the snapshot answers, and the metrics of the
+// added file. The other trees do not have that file, so the same answers serve them too.
+export const forkedServerAnswers: AstMetricsMcpAnswers = {
+  ...serverAnswers,
+  get_file_metrics: {
+    ...fileMetricsAnswers,
+    'src/auth/audit.ts': {
+      path: 'src/auth/audit.ts', language: 'TypeScript', cyclomatic_complexity: 2, risk_score: 0,
+      functions: [{ name: 'audit', cyclomatic_complexity: 2, maintainability: { comment_weight: 0, maintainability_index: 90 }, volume: { loc: 5, lloc: 3 } }],
+    },
+  },
+};
+
 export interface BaseSnapshotDoubles extends SnapshotDoubles {
   // The real path of the system temporary folder of the command. TMPDIR names a new folder of the test, so that the
   // test sees each folder that the command leaves there.
@@ -59,9 +73,9 @@ export interface BaseSnapshotDoubles extends SnapshotDoubles {
 }
 
 // The doubles of the snapshot answers, but the fake of analyze reads the report of the tree that it runs in. The CLI
-// answers here are added, such as a failure.
-export function baseDoublesOnPath(t: TestContext, cli: AstMetricsCliAnswers = {}): BaseSnapshotDoubles {
-  const doubles = snapshotDoublesOnPath(t, { cli: { jsonInTree: reportInTree, ...cli } });
+// answers here are added, such as a failure, and the server answers replace those of the snapshot.
+export function baseDoublesOnPath(t: TestContext, cli: AstMetricsCliAnswers = {}, server: AstMetricsMcpAnswers = serverAnswers): BaseSnapshotDoubles {
+  const doubles = snapshotDoublesOnPath(t, { cli: { jsonInTree: reportInTree, ...cli }, server });
   const temporary = dataDirectory(t);
   return { ...doubles, env: { ...doubles.env, TMPDIR: temporary }, temporaryFolder: realpathSync(temporary) };
 }

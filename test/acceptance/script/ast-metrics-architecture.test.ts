@@ -5,11 +5,12 @@ import { test } from 'node:test';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
-import { baseSnapshot, community, edge, edited, legend, snapshotArguments } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { baseSnapshot, community, complexityHeading, edge, edited, legend, noProductionFile, snapshotArguments, tableHead } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // The architecture delta of two snapshot files. With --head and --base-snapshot, the command runs neither git nor
-// ast-metrics, so these cases run with an empty PATH. Each expected text is the complete output.
-// ast-metrics-architecture-base.test.ts specifies the command with the snapshots of a repository.
+// ast-metrics, so these cases run with an empty PATH. Each expected text is the complete output, with the complexity
+// section at its end. ast-metrics-architecture-table.test.ts specifies that section, and
+// ast-metrics-architecture-base.test.ts the command with the snapshots of a repository.
 const timeout = 20_000;
 const noTools = { PATH: '' };
 
@@ -31,8 +32,8 @@ const baseEdges = [
   '  c_src -- "5" --> c_hosted_admin',
 ];
 
-function markdown(summary: string, picture: readonly string[]): string {
-  return [header, '', summary, '', ...picture, ''].join('\n');
+function markdown(summary: string, picture: readonly string[], complexity: readonly string[] = noProductionFile): string {
+  return [header, '', summary, '', ...picture, '', ...complexity, ''].join('\n');
 }
 
 // The lines of the graph between the edges and the end of the block.
@@ -126,10 +127,14 @@ test('Given a base community whose files split into two head communities, each w
   assert.equal(result.code, 0);
 });
 
-// hosted-admin loses 2.0 of maintainability and gets 6 decision paths, and auth gets 2 references to it.
-const headWithNewNumbers = edited(baseSnapshot, { communities: { 1: { edges: [edge('3', 12), edge('shared', 2)] }, 3: { maintainability: 64.6, paths: 81 } } });
+// hosted-admin loses 2.0 of maintainability and gets 6 decision paths, because its file routes.ts loses 4.0 and gets 6,
+// and auth gets 2 references to it.
+const headWithNewNumbers = edited(baseSnapshot, {
+  communities: { 1: { edges: [edge('3', 12), edge('shared', 2)] }, 3: { maintainability: 64.6, paths: 81 } },
+  files: { 'src/hosted-admin/routes.ts': { maintainability: 66, paths: 36 } },
+});
 
-test('Given --touched with a file of one community whose maintainability fell by 2.0, when the command runs, then that node has the touched class and its label shows the arrows and the changes, and an edge shows the change of its references', { timeout }, async (t) => {
+test('Given --touched with a file of one community whose maintainability fell by 2.0, when the command runs, then that node has the touched class and its label shows the arrows and the changes, an edge shows the change of its references, and the complexity table after the legend has the row of the file', { timeout }, async (t) => {
   const args = [...snapshotArguments(t, baseSnapshot, headWithNewNumbers), '--touched', 'src/hosted-admin/routes.ts'];
 
   const result = await runScript(t, astMetricsArchitectureScript, { args, env: noTools });
@@ -142,7 +147,12 @@ test('Given --touched with a file of one community whose maintainability fell by
     baseNodes.src,
     '  c_auth -- "12 ↑2" --> c_hosted_admin',
     ...baseEdges.slice(1),
-  ], ['  class c_hosted_admin touched'])));
+  ], ['  class c_hosted_admin touched']), [
+    complexityHeading,
+    '',
+    ...tableHead,
+    '| src/hosted-admin/routes.ts | 70.0 → 66.0 ↓4.0 | 30 → 36 ↑6 | 6 |',
+  ]));
   assert.equal(result.code, 0);
 });
 

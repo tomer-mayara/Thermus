@@ -11,14 +11,15 @@ import { runScript } from '../../support/processes/script-command.ts';
 // command checks its arguments first, and that it reads snapshot files without either tool.
 const noTools = { env: { PATH: '' } };
 
-test('Given --help, when the architecture command runs, then it explains the two sources of the snapshots, the changed files, the matching, the change of the map, the options, and the exit status', async (t) => {
+test('Given --help, when the architecture command runs, then it explains the two sources of the snapshots, the changed files, the matching, the change of the map, the complexity table, the options, and the exit status', async (t) => {
   const result = await runScript(t, astMetricsArchitectureScript, { args: ['--help'], ...noTools });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
   assert.match(result.stdout, /^Usage: node script\/ast-metrics-architecture\.ts \[--base REF\] \[--head FILE --base-snapshot FILE\] \[--touched FILES\] \[--timeout-ms MS\] \[--out FILE\] \[--help\]\n/);
   const texts = ['Mermaid', 'merge base', 'temporary worktree', 'working tree', 'untracked', 'Jaccard', '0.5', 'new or gone', 'did not change', 'default: origin/main'];
-  for (const text of [...texts, 'default: 60000', 'not a gate', 'Exit status 1', 'Exit status 130 or 143']) {
+  const table = ['complexity table', 'ten riskiest', 'not measured', 'no production file changed'];
+  for (const text of [...texts, ...table, 'default: 60000', 'not a gate', 'Exit status 1', 'Exit status 130 or 143']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
 });
@@ -71,6 +72,7 @@ const valid = {
   commit: 'c0ffee00c0ffee00',
   global: { modularity: 0.5, crossShare: 0.25, cycles: [] },
   communities: [{ id: '0', label: 'a', members: ['src/a/0.ts'], files: 1, paths: 10, edges: [{ to: '0', references: 1, inCycle: false }] }],
+  files: [{ path: 'src/a/0.ts', maintainability: 70, paths: 10, risk: 0.5 }],
 };
 const [validCommunity] = valid.communities;
 
@@ -83,6 +85,8 @@ for (const [name, text] of [
   ['a snapshot without communities', JSON.stringify({ ...valid, communities: undefined })],
   ['a community without a label', JSON.stringify({ ...valid, communities: [{ ...validCommunity, label: undefined }] })],
   ['an edge without a target', JSON.stringify({ ...valid, communities: [{ ...validCommunity, edges: [{ references: 1, inCycle: false }] }] })],
+  ['a snapshot without files', JSON.stringify({ ...valid, files: undefined })],
+  ['a file without a path', JSON.stringify({ ...valid, files: [{ maintainability: 70, paths: 10 }] })],
 ] as const) {
   test(`Given a --base-snapshot file with ${name}, when the architecture command runs, then it fails with one diagnostic line that names the file`, async (t) => {
     const args = fileArguments(t, JSON.stringify(valid), text);

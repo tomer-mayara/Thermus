@@ -12,6 +12,12 @@ Print the architecture delta of src/ as Markdown, for the body of a pull
 request: a summary line with the modularity, the cross share, the cycles, and
 the communities of the base and the head, and, when the map changed, a Mermaid
 graph of the src/ communities of the head with the changes against the base.
+Then print the complexity table of the changed src/ files: the maintainability
+and the decision paths of each file, from the base to the head, and its rank
+among the ten riskiest files of the head. A file that the base does not have is
+new, a file that the head does not have is gone, and a file without a
+maintainability index in the head is not measured. Without a changed src/ file,
+the section says that no production file changed.
 
 By default, the command takes two snapshots, as script/ast-metrics-snapshot.ts
 does: the base is the merge base of REF and HEAD, in a temporary worktree, and
