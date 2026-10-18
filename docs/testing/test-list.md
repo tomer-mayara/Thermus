@@ -96,11 +96,21 @@ analysis and one MCP session, `analyze` and `mcp` both given the folder
 `src`, a `script/` community in a cycle, two equal labels, a caller through a
 symbolic link, and `--out`. `ast-metrics-snapshot-failures.test.ts` checks a
 missing executable, a failed analysis, and a server without metrics for one
-file. `ast-metrics-snapshot.live.ts` runs the real tool on the repository
-when it is on PATH; the default suites skip it.
+file. `ast-metrics-snapshot-base.test.ts` checks `--base`: the snapshot of
+the merge base (not of the tip of `main`), the default base file, `--out`,
+no worktree left after a run, and a branch without a commit of its own.
+`ast-metrics-snapshot-base-failures.test.ts` checks a failed analysis of
+the base with the worktree removed, an unknown ref, a ref without a merge
+base, and a git that cannot remove the worktree.
+`ast-metrics-snapshot-base-worktree.test.ts` checks the sweep of stale
+worktrees (also a locked one, also one of an active run that must stay, also
+one that git cannot remove), SIGTERM and SIGINT with exit 143 and 130, and
+that no repository hook runs in the worktree. `ast-metrics-snapshot.live.ts`
+runs the real tool on the repository when it is on PATH, with and without
+`--base HEAD`; the default suites skip it.
 
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
 ```
