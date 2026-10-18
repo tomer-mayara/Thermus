@@ -6,7 +6,7 @@ import type { AccessResolver, RequestContext } from '../../../src/auth/access-co
 import { InvalidAccessTokenError, type IdentityVerifier } from '../../../src/auth/identity-verifier.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
@@ -43,7 +43,7 @@ async function openSite(t: TestContext, era: McpProtocolEra) {
     : { allowed: true, context: {
       user, tenantId: `${user.subject}-tenant`, grants: [{ role: 'user', permissions: ['product:access'] }], permissions: ['product:access'],
     } } };
-  const operation = createGetURLAsMarkdown({
+  const operation = composeFetchOperation({
     fetcher: { fetchURL: async (url, signal) => {
       assert.ok(signal);
       const name = new URL(url).pathname.slice(1) as keyof typeof pages;

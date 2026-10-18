@@ -6,7 +6,7 @@ import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotoco
 import { composeApplication } from '../../../src/application.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
@@ -26,7 +26,7 @@ for (const era of mcpProtocolEras) {
     const events: string[] = [];
     const records: string[] = [];
     let pipelineCalls = 0;
-    const operation = createGetURLAsMarkdown({
+    const operation = composeFetchOperation({
       fetcher: { fetchURL: (url, signal) => {
         assert.ok(signal);
         signals.push(signal);

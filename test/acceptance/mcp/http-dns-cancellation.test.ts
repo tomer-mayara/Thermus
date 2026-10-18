@@ -7,7 +7,7 @@ import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotoco
 import { composeApplication } from '../../../src/application.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
 import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
@@ -70,7 +70,7 @@ for (const era of mcpProtocolEras) {
     let callSignal: AbortSignal | undefined;
     let pipelineCalls = 0;
     const fetcher = new WebsiteFetcherLightpanda();
-    const operation = createGetURLAsMarkdown({
+    const operation = composeFetchOperation({
       fetcher: { fetchURL: (url, signal) => {
         callSignal = signal;
         return fetcher.fetchURL(url, signal);

@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotoco
 import { composeApplication } from '../../../src/application.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
 import { validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
@@ -23,7 +23,7 @@ for (const era of mcpProtocolEras) {
     const records: string[] = [];
     let pipelineCalls = 0;
     let providerCloses = 0;
-    const operation = createGetURLAsMarkdown({
+    const operation = composeFetchOperation({
       fetcher: { fetchURL: async (url, signal) => {
         assert.ok(signal);
         started.resolve(signal);
@@ -91,7 +91,7 @@ for (const era of mcpProtocolEras) {
     const failures: string[] = [];
     const records: string[] = [];
     const operationCalls: string[] = [];
-    const operation = createGetURLAsMarkdown({
+    const operation = composeFetchOperation({
       fetcher: { fetchURL: async (url) => {
         operationCalls.push('fetch');
         return { requestedUrl: url, finalUrl: url, html: '<p>Source</p>' };

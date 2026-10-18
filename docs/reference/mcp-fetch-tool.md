@@ -5,6 +5,8 @@ initialization. MCP-P02 adds shutdown cancellation and request isolation. MCP-P0
 registers the tool in the self-hosted server with trusted rules and the local
 renderer. [RHD-01](../implementation/rhd-01.md) adds protected
 hosted fetch and bounded request waits.
+[MCP-PIPE-01](../implementation/mcp-pipe-01.md) extracts the protected fetch
+use case from MCP and keeps the tool's input and result contract unchanged.
 See [production composition](#production-composition). There is no
 POST tool or new stdio tool.
 
@@ -37,7 +39,8 @@ request server. `buildServer(context, lifetime)` receives the frozen trusted
 `McpServer`. Headers and tool
 arguments cannot replace its authority, subject, or tenant. Missing or malformed
 Bearer credentials retain HTTP 401; a denied access decision retains HTTP 403.
-The operation also requires `product:access` before it fetches the page.
+The neutral `FetchPage` use case also requires `product:access` before it
+fetches the page, including when a caller invokes it without MCP.
 
 | Failure | Observable result |
 | --- | --- |
@@ -49,8 +52,8 @@ The operation also requires `product:access` before it fetches the page.
 | Oversized HTML, thrown pipeline failure, or absent/nonstring Markdown | `isError: true`, `Page processing failed`; no partial output |
 | Observed per-call cancellation | Work stops; no successful result |
 
-The operation checks the shared 10 MiB UTF-8 HTML limit before the first pipeline
-step, including ad removal. A successful pipeline can return empty Markdown
+`HtmlPageProcessor` checks the shared 10 MiB UTF-8 HTML limit before the first
+pipeline stage or parser, including ad removal. A successful pipeline can return empty Markdown
 after empty input, complete removal, or sanitizer withholding. Warnings do not
 create a new failure contract. Existing depth and sanitizer limits still apply.
 
@@ -70,18 +73,33 @@ time. Then it makes these parts one time:
   `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in that
   order;
 - one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
-- one operation, `createGetURLAsMarkdown({ fetcher, pipeline,
-  reportRendererSetupFailure, reportRendererReadinessTimeout })`, with the
+- one `HtmlPageProcessor` that wraps the existing pipeline, checks its input
+  size, and requires string Markdown;
+- one protected `createFetchPage` use case with the fetcher, processor, and
   [renderer setup report](#renderer-setup-report) and
-  [readiness report](#renderer-readiness-report) of the application logger.
+  [readiness report](#renderer-readiness-report) of the application logger;
+- one thin `createGetURLAsMarkdown` adapter that projects its released result
+  to the existing MCP string-returning operation.
 
 `createFetchOperation` returns the operation. Then the branch calls
 `fetchToolServers(operation, logger)`, which returns the `buildServer` function
 of `MCPServer`. Each MCP request gets its own SDK `Server` from
 `createFetchToolServer(context, { operation, logger }, lifetime)`. Completion
-records go to the application logger: one `INFO` line of JSON for each
-dispatched `tools/call`. `requestedUrl` keeps the exact accepted spelling. The
+records attempt a JSON write to the application logger for each dispatched
+`tools/call`, with an `ERROR` fallback if the `INFO` write throws.
+`requestedUrl` keeps the exact accepted spelling. The
 renderer's `finalUrl` selects the ad rules and resolves relative links.
+
+The neutral code lives under `src/page-fetch/`. It owns semantic URL
+validation and the protected fetch sequence. The MCP schema uses the same
+URL rules while retaining SDK schema conversion at the transport boundary.
+The cleaner-owned adapter stays under `src/html-cleaner-pipeline/`; the
+neutral use case depends on the `PageProcessor` contract, not the concrete
+HTML pipeline. Import rules enforce this boundary, including type-only imports.
+
+This extraction adds no outgoing policy, standard pipeline-step decisions,
+operation IDs, step records, or typed withholding. Empty results after
+sanitizer withholding still reach MCP as exact empty success.
 
 Better Auth verifies each token and checks the current account before the tool
 runs. A forged token, a token that a password reset revoked, and a token of a
@@ -177,6 +195,9 @@ recognized tool label or a fixed unknown label; safe input fields or field-statu
 codes; the completion status; and elapsed time. A safe URL omits userinfo, query,
 and fragment. A reason is included only when it is a bounded, structurally valid
 string. JSON encoding escapes line breaks.
+
+The URL path and the verbatim reason can contain sensitive text. These fields
+remain part of the completion contract; the record is not a redacted content audit.
 
 Records contain no unknown tool name, raw argument object, request headers,
 token, HTML, Markdown, or error cause. Envelope, body, and authentication refusals
@@ -288,7 +309,8 @@ The P01 and P02 HTTP acceptance cases use the real SDK client and production
 HTTP bridge with fetcher and pipeline doubles. The P03 offline fetch tool
 acceptance cases run the production `serve()` with real Better Auth, the real
 pipeline, and a renderer process double. Normal integration and acceptance runs
-stay offline and renderer-free. Only the explicit renderer gate,
+need no renderer. The complete acceptance suite also includes the Axiom logger
+test and needs its test credentials/network access. The explicit renderer gate,
 `npm run test:mcp:renderer`, runs the pinned Lightpanda through the tool. See
 the [test inventory](../testing/test-list.md) and
 [test gate policy](../implementation/test-gate-policy.md#renderer-gate-mcp-p03).

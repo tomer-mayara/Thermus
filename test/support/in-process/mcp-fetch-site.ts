@@ -4,7 +4,7 @@ import type { AccessResolver } from '../../../src/auth/access-context.ts';
 import type { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { composeFetchOperation } from './fetch-operation.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
 import type { WebsiteFetcher, WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { NoAuthProvider } from '../doubles/auth/no-auth-provider.ts';
@@ -27,7 +27,7 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   const fetchCalls: { url: string; signal: AbortSignal | undefined }[] = [];
   const pipelineCalls: { page: WebsiteFetchResult; signal: AbortSignal | undefined }[] = [];
   const provider = new NoAuthProvider(new URL(resourceUrl));
-  const operation = createGetURLAsMarkdown({
+  const operation = composeFetchOperation({
     fetcher: { fetchURL: async (url, signal) => {
       fetchCalls.push({ url, signal });
       return options.fetcher?.fetchURL(url, signal) ?? { requestedUrl: url, finalUrl: 'https://example.net/final', html: '<p>Source</p>' };

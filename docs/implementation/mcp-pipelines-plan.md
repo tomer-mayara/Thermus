@@ -345,6 +345,8 @@ Definition of Done above; no testing-only or detached infrastructure ticket is n
 
 **Dependency:** implementation baseline `8d12c1e7`. **State:** In progress. **Label:** `refactor`.
 
+The [implementation record](mcp-pipe-01.md) tracks the candidate and its evidence.
+
 **Outcome:** Both editions use a protected neutral `FetchPage`; behavior stays
 unchanged. One temporary processor port isolates the concrete HTML pipeline.
 

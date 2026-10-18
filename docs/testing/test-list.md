@@ -211,11 +211,6 @@ node --test dist/test/acceptance/auth/hosted-signup-restart.test.js
 **MCP Server**
 
 [V] Connects to the MCP server and runs server/discover; advertises protocol 2026-07-28 and the thermus identity (`test/unit/mcp/discovery.test.ts`)
-[V] Lists `getURLAsMarkdown(url, reason)` with the same strict schema used for validation (`test/unit/mcp/fetch-tool-schema.test.ts`, `fetch-tool-server.test.ts`)
-[V] Checks string types, required fields, extra properties, URL semantics, reason whitespace, and code-point limits including supplementary characters; accepted inputs are not truncated (`fetch-tool-schema.test.ts`)
-[V] Uses operation and logger doubles to check exact projected text, safe argument errors, safe unknown-tool errors, and one completion attempt per dispatched call (`fetch-tool-server.test.ts`)
-[V] Keeps operation errors and logger failures from exposing causes, replacing results, or repeating work (`fetch-tool-server.test.ts`)
-[V] Formats canonical authority, subject, and tenant fields; removes URL userinfo, query, and fragment; includes only a valid bounded reason or field-status codes; escapes line breaks and omits unknown tool names, raw arguments, credentials, and causes (`test/unit/mcp/tool-completion-record.test.ts`)
 [V] Cancels owned work and waits for its cleanup; repeated close calls share one result (`test/unit/mcp/lifetime.test.ts`)
 [V] Removes completed tasks from active work, preserves cleanup errors, waits for in-progress authentication, and refuses work after shutdown (`test/unit/mcp/lifetime.test.ts`)
 [V] Returns the HTTP response of a cancelled modern call before its owned cleanup ends; close still waits for that cleanup (`test/unit/mcp/request-lifetime-isolation.test.ts`)
@@ -223,9 +218,10 @@ node --test dist/test/acceptance/auth/hosted-signup-restart.test.js
 [V] Supplies production rules and runtime dependencies to the self-hosted server (P03 unit, integration, and acceptance cases below)
 [] Lists `postURLAsMarkdown(url, params, reason)` with its URL input schema (deferred)
 
-Dispatch unit tests double the operation and logger. Real permission checks and
-operation/pipeline collaboration belong to integration tests below. HTTP
-acceptance uses the real MCP client and bridge with supplied dependencies.
+Schema, dispatch, and completion tests now execute the neutral semantic URL
+validator, so they belong to integration below, even with operation/logger
+doubles. Real permission and operation/processor collaboration are integration
+too. HTTP acceptance uses the real MCP client and bridge with supplied dependencies.
 
 **MCP request context binding** (`test/unit/mcp/request-context-binding.test.ts`)
 
@@ -1059,6 +1055,15 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
+**HTML page processor adapter** (`test/unit/html-cleaner-pipeline/html-page-processor.test.ts`)
+
+The cleaner-owned adapter runs with a pipeline double. Public processor and
+fetch-result contracts are type-only imports; these cases execute one package.
+
+[V] Returns exact or empty Markdown without appending internal titles, counts, or warnings; forwards the same page and signal and keeps the input unchanged
+[V] Refuses absent pipeline results and absent/nonstring Markdown with the fixed processing error
+[V] Rejects UTF-8 input above 10 MiB before the pipeline can run, including supplementary characters; accepts exactly 10 MiB without truncation
+
 **Pipeline cancellation** (`test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.ts`)
 
 [V] Stops before the first step, between steps, and before return when the per-call signal is cancelled
@@ -1449,13 +1454,28 @@ npm run build && node --test dist/test/integration/work-slice/shutdown-signals.t
 [V] Projects exact text with `projectCallToolResult(result, undefined)` and gives a safe unknown-tool InvalidParams error
 [V] Leaves malformed JSON and the 4 MiB/413 body refusal to the SDK, with no tool dispatch
 
-**MCP fetch operation** (`test/integration/mcp/get-url-as-markdown.test.ts`)
+**MCP schema, dispatch, and completion contracts** (`test/integration/mcp/fetch-tool-schema.test.ts`, `fetch-tool-server.test.ts`, `tool-completion-record.test.ts`)
+
+These cases execute the real neutral semantic URL validator. Dispatch still
+uses operation and logger doubles. They moved from `test/unit/mcp/` when the
+validator became part of the separate page-fetch package.
+
+[V] Lists `getURLAsMarkdown(url, reason)` with the same strict schema used for validation
+[V] Checks string types, required fields, extra properties, URL semantics, reason whitespace, and code-point limits; accepted inputs are not truncated
+[V] Checks exact projected text, safe argument/unknown-tool errors, and one completion attempt per dispatched call
+[V] Keeps operation errors and logger failures from exposing causes, replacing results, or repeating work
+[V] Formats trusted caller fields, URL origin/path, bounded verbatim reason or field-status codes, and escaped line breaks; omits unknown tool names, raw arguments, credentials, and causes
+
+**Protected neutral fetch operation** (`test/integration/page-fetch/fetch-page.test.ts`)
+
+These cases moved from `test/integration/mcp/get-url-as-markdown.test.ts`.
+Real shared permission checks collaborate with fetcher and processor doubles;
+no SDK or concrete cleaner runs in this suite.
 
 [V] Calls the real shared permission helper before fetch and refuses a context without product:access
 [V] Validates URL semantics and code-point bounds, sends the signal to both dependencies, and preserves requested/final URL metadata and exact Markdown
 [V] Gives safe fetch or processing failures without causes or partial output and skips processing after a failed fetch
-[V] Rejects HTML above the shared 10 MiB UTF-8 limit before all pipeline work and accepts the exact byte boundary
-[V] Preserves completed empty Markdown even with withholding warnings, and rejects absent or nonstring Markdown
+[V] Returns the typed released outcome with exact or empty Markdown
 [V] Classifies cancellation before generic errors and checks again after each asynchronous stage
 
 **MCP operation and real pipeline** (`test/integration/mcp/get-url-as-markdown-pipeline.test.ts`)
@@ -1472,7 +1492,9 @@ npm run build && node --test dist/test/integration/work-slice/shutdown-signals.t
 
 **Renderer setup reports of the operation** (`test/integration/mcp/renderer-setup-report.test.ts`)
 
-The operation runs with the real permission helper and with fetcher, pipeline, and reporter doubles. The last case adds the real tool server and an SDK client.
+The neutral operation runs with the real permission helper and fetcher,
+processor, and reporter doubles. The last case adds the thin MCP adapter,
+real tool server, and SDK client.
 
 [V] Gives only the fixed `readiness_timeout` category and `20000` budget to the readiness reporter, without the private cause or stderr; the client gets only `Page fetch failed`, and no pipeline work starts
 [V] Keeps the safe client failure if the readiness reporter throws
@@ -1494,7 +1516,7 @@ The operation runs with the real permission helper and with fetcher, pipeline, a
 Focused commands:
 
 ```sh
-npm run build && node --test dist/test/integration/mcp/sdk-http.test.js dist/test/integration/mcp/get-url-as-markdown.test.js dist/test/integration/mcp/get-url-as-markdown-pipeline.test.js dist/test/integration/mcp/get-url-as-markdown-mcp.test.js dist/test/integration/mcp/renderer-setup-report.test.js dist/test/integration/fetch-tool-renderer-setup-report.test.js
+npm run build && node --test dist/test/integration/mcp/sdk-http.test.js dist/test/integration/page-fetch/fetch-page.test.js dist/test/integration/mcp/fetch-tool-schema.test.js dist/test/integration/mcp/fetch-tool-server.test.js dist/test/integration/mcp/tool-completion-record.test.js dist/test/integration/mcp/get-url-as-markdown-pipeline.test.js dist/test/integration/mcp/get-url-as-markdown-mcp.test.js dist/test/integration/mcp/renderer-setup-report.test.js dist/test/integration/fetch-tool-renderer-setup-report.test.js
 ```
 
 **MCP Authentication**
@@ -2277,6 +2299,20 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/architecture/auth-boundaries.test.js
+```
+
+**Protected page-fetch import boundary** (`test/acceptance/architecture/page-fetch-boundaries.test.ts`)
+
+The existing ESLint fixture machinery checks root and nested core paths with
+static/type imports, re-exports, and literal dynamic imports. Computed imports
+and transitive dependencies remain outside this direct-import proof.
+
+[V] Refuses MCP/SDK, application/composition, provider, concrete renderer/network, cleaner, and logger imports, including type-only imports
+[V] Allows public auth and fetch contracts, including fetcher errors, and core-local modules
+[V] Allows the cleaner-owned adapter's inward type dependency and composition's real collaborator selection
+
+```sh
+npm run build && node --test dist/test/acceptance/architecture/page-fetch-boundaries.test.js
 ```
 
 **Test type boundaries** (`test/acceptance/architecture/test-type-boundaries.test.ts`)

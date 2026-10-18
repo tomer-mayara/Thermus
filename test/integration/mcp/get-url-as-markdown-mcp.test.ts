@@ -8,7 +8,7 @@ import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/
 import { HtmlToMarkdownPipeline, type Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
@@ -131,7 +131,7 @@ async function connect(t: TestContext, page: WebsiteFetchResult, pipeline: HtmlT
   const fetchURL = t.mock.fn(async (_url: string, _signal?: AbortSignal) => page);
   const error = t.mock.fn((_entry: string) => {});
   const server = createFetchToolServer(context, {
-    operation: createGetURLAsMarkdown({ fetcher: { fetchURL }, pipeline }),
+    operation: composeFetchOperation({ fetcher: { fetchURL }, pipeline }),
     logger: { info(entry) { records.push(entry); events.emit('completed'); }, error },
   });
   const client = new Client({ name: 'real-pipeline-integration', version: '0.0.0' });

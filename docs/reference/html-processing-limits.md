@@ -24,7 +24,8 @@ The cleaner returns no partial result and does not report a successful skip. The
 
 A 5,000-level nested input is rejected both when rules match the host and when they do not. This also applies to 5,000 unclosed nested `<template>` elements followed by text. Parsing completes without a stack overflow, then the collector rejects the parsed tree with the depth error. In a body, 254 nested `div` elements reach depth 256. They are within the limit. 255 nested `div` elements reach depth 257 and exceed the limit. The same boundary applies to unclosed template content. Nested selectors continue to work when the matching elements are within the limit.
 
-This depth limit applies only to the ad cleaner. The MCP fetch operation checks
+This depth limit applies only to the ad cleaner. `HtmlPageProcessor`, the
+cleaner-owned adapter used by the protected fetch operation, checks
 the shared 10 MiB UTF-8 byte limit before the pipeline starts, so oversized input
 cannot reach ad parsing. The hidden-text sanitizer also checks that shared
 limit for callers that invoke it directly. Exactly 10 MiB is allowed; one more
