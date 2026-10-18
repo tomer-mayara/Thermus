@@ -1,6 +1,6 @@
 # MCP fetch debug OAuth upgrade plan
 
-Status: **Implemented; helper layout cleanup and validation in progress**. Date: **2026-10-17**.
+Status: **Implemented and validated; awaiting owner review**. Date: **2026-10-17**.
 
 ## Purpose and current behavior
 
@@ -314,66 +314,59 @@ state were removed after the test.
 
 ## Implementation review and validation
 
-The implementation keeps `script/fetch-url.mjs` as the only command entry point.
-Its internal modules are in `script/fetch-url/`: `oauth.mjs` prepares OAuth,
-`browser.mjs` owns the callback and browser launch, and `credential-store.mjs` owns
-private storage. `errors.mjs` carries only local diagnostics. There is
-no new dependency, backend authorization change, registration cache, or token
-argument. The store also removes validated orphan temporary files under its
-lock after an interrupted write.
+Code candidate: `682eea29d38373c7efa35e889d61b1b48d3b2d13`.
 
-Acceptance tests were written and observed failing before implementation.
-The manager reviewed the CLI/OAuth, credential-store, and live-proof work and
-signed off each part. All commands used pinned Node 24.20.0.
+`script/fetch-url.mjs` is the only command entry point. Its four internal
+modules are under `script/fetch-url/`: `oauth.mjs`, `browser.mjs`,
+`credential-store.mjs`, and `errors.mjs`. The helper bodies are unchanged
+apart from relative import paths. The folder change keeps the CLI options and
+OAuth behavior the same. The manager reviewed the CLI/OAuth implementation,
+credential store, live proofs, file moves, and test-support cleanups and signed
+them off. The implementation adds no dependency or backend authorization change.
+The store removes validated orphan temporary files under its lock after an
+interrupted write.
 
-| Check | Result |
+The initial filename in the helper folder was `credentials.mjs`. Packaging admission
+caught that both hosted build contexts exclude `credentials*` files. The final
+name is `credential-store.mjs`; both credential-file exclusions stay intact.
+The final image context includes the store module.
+
+The two new `.live.ts` files are real Staging acceptance tests. The Connect
+proof checks browser PKCE and provider tokens against the hosted MCP backend.
+The script proof runs the actual command through login, fetch, reuse, refresh,
+recovery, and logout. Ordinary `.test.js` globs exclude them because they need
+Staging credentials, a browser, and disposable provider fixtures. Their focused
+command is in the [test inventory](../testing/test-list.md).
+
+Acceptance scenarios failed before the initial OAuth implementation. Existing
+characterization tests passed before the later file moves. The final source uses
+pinned Node 24.20.0. Each test row below has no failures, cancellations, skips,
+or todo cases unless stated otherwise.
+
+| Check on the final code candidate | Result |
 | --- | --- |
-| Focused changed script, SDK interface, storage, and support-path tests | Exit 0; 140 passed; no failures, cancellations, skips, or todo cases. |
+| Clean build and focused changed script, interface, storage, and support-path tests | Exit 0; 140 passed. |
 | `npm run build:hosted` | Exit 0. Includes `npm run check`: 2735 backend unit, 19 portal unit, 13 build, and 16 portal acceptance tests; then 459 integration, 120 hosted, and 9 real-renderer tests. All passed. |
-| `npm run test:acceptance`, with the existing Axiom test settings supplied only to the child process | Exit 0; 412 backend and 16 portal tests passed; no failures, cancellations, skips, or todo cases. |
-| `node --test dist/test/interface/auth/workos.test.js` | Exit 0; 38 passed; no failures, cancellations, skips, or todo cases. |
-| Focused live FS-02 signup handoff after its guide assertion correction | Exit 0; both cases passed; no failures, cancellations, skips, or todo cases. |
-| Dedicated Staging provider and actual-script proofs, final source rerun | Exit 0; 2 passed in 32.4 seconds; no failures, cancellations, skips, or todo cases. |
-| `npm run test:hosted-live`, Optional MFA profile, final source rerun | Exit 0; 79 passed in 590.0 seconds; no failures, cancellations, skips, or todo cases. Includes natural 300-second token expiry and the corrected signup handoff. |
-| `npm run test:container:hosted`, final Linux AMD64 image | Exit 0; 9 passed in 342.7 seconds; no failures, cancellations, skips, or todo cases. Includes packaged rendering, access guards, shutdown, and the failed-check publication barrier. |
-| `habit-hooks` | Exit 1; 26 reviewed findings retained with reasons below. Snooze remains `[]`. |
+| `npm run test:acceptance`, with existing Axiom test settings supplied only to its child process | Exit 0; 412 backend and 16 portal tests passed. |
+| `node --test dist/test/interface/auth/workos.test.js` | Exit 0; 38 passed. |
+| Dedicated Staging provider and actual-script proofs | Exit 0; 2 passed in 37.1 seconds. |
+| `npm run test:hosted-live`, Optional MFA profile | Exit 0; 79 passed in 574.9 seconds, including natural token expiry and the signup handoff. |
+| `npm run test:container:hosted`, Linux AMD64 | Exit 0; 9 passed in 967.1 seconds. The valid AMD64 build passed all seven offline suite groups above. The negative build had only its intended sabotage failure and produced no runtime image. |
+| `habit-hooks` | Exit 1; 26 reviewed findings remain, with reasons below. Snooze is `[]`. No new style finding. |
 
-The first acceptance run failed only because the worktree lacked the Axiom
-ingest settings. The complete rerun above used the existing test settings from
-the main checkout without copying its environment file or printing secrets.
-The first complete hosted live run passed 78 of 79 cases. The one failure waited
-for instruction text removed by the earlier agent-picker change. The corrected
-test checks the default agent, selects Codex, and checks its endpoint command and
-current consent text. Its session, workspace, Connect token, and real MCP fetch
-checks remain. Both the focused rerun and the complete 79-case rerun passed.
+The exact image command ran from a private copy under the shared home directory,
+with temporary Rosetta translation. Source and dependency payload hashes matched
+before and after the run. Only private generated workspace paths, a timestamp,
+and the esbuild launcher changed; the esbuild payload stayed unchanged.
 
-The final image gate used the production, script, and test source from commit
-`374d4b1e`. Its full Linux AMD64 offline build independently passed the same
-suite counts shown for `build:hosted` above. The final run reused that checked
-build from Docker's cache. A private copy kept its emitted files separate from
-the live tests. Source and dependency payload hashes matched before and after;
-only pnpm's generated private workspace paths and timestamp changed.
-
-The original QEMU run crashed before the checks. The image gate then used
-temporary Rosetta translation. An initial private copy under `/private/tmp`
-was not visible to Colima's bind mounts. Moving the identical copy under the
-already-shared home directory let both affected runtime cases pass. The exact
-gate command, source, dependency pins, and deadlines stayed the same. After
-the final run, all three VM configuration files and the binary-format
-registrations matched their original bytes. The original launch environment,
-Docker context, CPU/memory settings, containers, volumes, networks, and image
-tags were restored or preserved. Docker regenerated only the default bridge's
-ID and creation time. No gate container or build remained active.
-
-The deliberately invalid build also hit one unchanged CSS test's three-second
-work deadline, in addition to its intended sabotage failure. Its unit summary
-was 2711 passed and 2 failed. The exact diagnostic was `The selector work did
-not end within 3000 ms`. That same case passed in the complete valid AMD64
-build and in the first invalid build, at about 1.3 seconds. The test and its
-driver match the base branch. Emulation timing is a likely cause, not a proven
-one. The manager retained the deadline and recorded this incidental failure;
-the valid image passed its full offline checks, and the publication barrier correctly
-refused the invalid build.
+After the gate, all three VM configuration files and the original Python-only
+binary-format records matched their saved bytes. Rosetta was absent, and no
+QEMU registration was added. The Docker context, engine, launch environment,
+CPU/memory settings, existing containers and attachments, volume, networks,
+and image tags were preserved. Docker regenerated only the default bridge ID
+and creation time. The original VM boot timed out once during restoration;
+one bounded restart recovered it. Independent verification confirmed that the
+VM finished Stopped, with no active gate container or build.
 
 Retained style findings: the four exported token, discovery, callback, and
 launcher functions support narrow security-boundary tests. Production calls
@@ -385,6 +378,53 @@ source/emitted paths, test layout, and the shared callback port that requires
 the signup suite to run last; they remain applicable. The store's one flat
 credential-admission guard
 keeps an explained complexity exception so its validation rule stays together.
+
+### Maintainability check
+
+Code commit: `682eea29d38373c7efa35e889d61b1b48d3b2d13`. Tool: `ast-metrics 0.43.1`.
+
+Required command:
+
+```sh
+ast-metrics analyze --compare-with=origin/main --report-html=./ast-report --report-json=./ast-report/report.json .
+```
+
+The audit measured every TypeScript file added or changed by `git diff --name-only --diff-filter=AM origin/main...HEAD -- '*.ts'`. All 20 files appear in the final report. After the maximum three cleanup passes, 19 files remain below the target of 85.
+
+The three cleanup passes were:
+
+1. Cache the module import, share the temporary state owner, use constructor parameter properties, and add a browser lifecycle helper.
+2. Share six repeated ready-grant setup calls.
+3. Set child environment fields explicitly.
+
+The review kept explicit acceptance scenarios, assertions, and cohesive resource ownership. Even the 14-line live wrappers have cyclomatic complexity 1 and scores near 62. Further splitting of assertions or added comments solely to raise the score would make the tests harder to follow. The remaining scores are retained for owner review.
+
+| TypeScript file | Final MI | Change from initial |
+|---|---:|---:|
+| `test/acceptance/auth/fetch-public-connect.live.ts` | 62.00 | +0.00 |
+| `test/acceptance/auth/fetch-public-script.live.ts` | 61.91 | +0.00 |
+| `test/acceptance/auth/hosted-live/signup-server.ts` | 37.33 | +0.00 |
+| `test/acceptance/script/fetch-url-oauth-failures.test.ts` | 39.31 | +0.00 |
+| `test/acceptance/script/fetch-url-oauth.test.ts` | 29.10 | +0.00 |
+| `test/acceptance/script/fetch-url.test.ts` | 34.19 | +0.00 |
+| `test/interface/script/fetch-url-oauth.test.ts` | 53.33 | +0.00 |
+| `test/support/hosted-live/fetch-public-connect-proof.ts` | 28.86 | +0.00 |
+| `test/support/hosted-live/fetch-public-script-client.ts` | 47.59 | +0.88 |
+| `test/support/hosted-live/fetch-public-script-proof.ts` | 30.17 | +0.00 |
+| `test/support/in-process/fetch-url-oauth-site.ts` | 35.64 | +0.16 |
+| `test/support/isolation/fetch-url-state.ts` | 74.85 | +0.00 |
+| `test/support/processes/fetch-public-script-entry.ts` | 71.46 | +0.00 |
+| `test/support/processes/fetch-url-command.ts` | 54.20 | +1.75 |
+| `test/support/processes/module-paths.ts` | 94.10 | +0.00 |
+| `test/support/processes/oauth-store-process.ts` | 55.48 | +0.00 |
+| `test/unit/script/fetch-url-browser.test.ts` | 46.13 | +0.00 |
+| `test/unit/script/fetch-url-credentials.test.ts` | 26.82 | +1.71 |
+| `test/unit/script/fetch-url-oauth.test.ts` | 60.45 | +0.00 |
+| `test/unit/test-support-paths.test.ts` | 75.57 | +0.00 |
+
+The comparison temporarily checks out the baseline in the active worktree. Each run was serialized with source work after this behavior was identified. The final run restored `codex/mcp-fetch-oauth` at the code commit above, with no changed tracked files.
+
+The final helper filename correction was measured again after the three cleanup passes; it was a packaging correction, with no fourth cleanup pass, and all 20 TypeScript scores stayed unchanged.
 
 Sources checked **2026-10-17**: [Connect OAuth](https://workos.com/docs/authkit/connect/oauth),
 [WorkOS MCP](https://workos.com/docs/authkit/mcp),
