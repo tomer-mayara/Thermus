@@ -1,5 +1,5 @@
-// A fake of the ast-metrics executable for the tests of script/ast-metrics-delta.mjs and
-// script/ast-metrics-review.mjs. ast-metrics-cli-path.ts puts a shim named ast-metrics first on PATH, and the shim
+// A fake of the ast-metrics executable for the tests of script/ast-metrics-delta.ts and
+// script/ast-metrics-review.ts. ast-metrics-cli-path.ts puts a shim named ast-metrics first on PATH, and the shim
 // runs this file with Node. The environment gives the answers:
 //   AST_METRICS_FAKE_LOG           each call adds one JSON line with its arguments and working directory to this file
 //   AST_METRICS_FAKE_METRICS_FILE  the OpenMetrics text that analyze writes; {root} becomes the working directory
@@ -13,45 +13,53 @@ import { isAbsolute, join } from 'node:path';
 const args = process.argv.slice(2);
 const settings = process.env;
 
-function optionValue(name) {
+function optionValue(name: string): string | undefined {
   const index = args.findIndex((arg) => arg === name || arg.startsWith(`${name}=`));
   if (index === -1) return undefined;
   return args[index] === name ? args[index + 1] : args[index].slice(name.length + 1);
 }
 
+function reportPath(name: string): string {
+  const path = optionValue(name);
+  if (path === undefined) throw new Error(`ast-metrics-cli-fake: the call has no ${name} option.`);
+  return path;
+}
+
 // The real executable is a Go program. Like Go, the fake takes the path of its working directory from PWD when PWD
 // names that folder, also through a symbolic link.
-function workingDirectory() {
+function workingDirectory(): string {
   const pwd = settings.PWD;
-  const named = pwd && isAbsolute(pwd) ? statSync(pwd, { throwIfNoEntry: false }) : undefined;
+  if (!pwd || !isAbsolute(pwd)) return process.cwd();
+  const named = statSync(pwd, { throwIfNoEntry: false });
   const actual = statSync(process.cwd());
   return named && named.dev === actual.dev && named.ino === actual.ino ? pwd : process.cwd();
 }
 
-function analyze() {
+function analyze(): void {
   const metricsFile = settings.AST_METRICS_FAKE_METRICS_FILE;
   const metrics = metricsFile ? readFileSync(metricsFile, 'utf8') : '';
-  writeFileSync(optionValue('--report-openmetrics'), metrics.replaceAll('{root}', workingDirectory()));
+  writeFileSync(reportPath('--report-openmetrics'), metrics.replaceAll('{root}', workingDirectory()));
   if (optionValue('--compare-with') !== undefined) {
-    writeFileSync(join(optionValue('--report-html'), 'compare.html'), '<!doctype html>\n<title>Comparison</title>\n');
+    writeFileSync(join(reportPath('--report-html'), 'compare.html'), '<!doctype html>\n<title>Comparison</title>\n');
   }
 }
 
-function review() {
+function review(): void {
   const markdown = settings.AST_METRICS_FAKE_REVIEW ?? '';
   process.stdout.write(markdown);
-  writeFileSync(optionValue('--report-markdown'), markdown);
+  writeFileSync(reportPath('--report-markdown'), markdown);
 }
 
 if (settings.AST_METRICS_FAKE_LOG) {
   appendFileSync(settings.AST_METRICS_FAKE_LOG, `${JSON.stringify({ argv: args, cwd: process.cwd() })}\n`);
 }
-const commands = { analyze, review };
-if (Object.hasOwn(commands, args[0])) {
-  commands[args[0]]();
+const commandName = String(args[0]);
+const command = new Map([['analyze', analyze], ['review', review]]).get(commandName);
+if (command) {
+  command();
   if (settings.AST_METRICS_FAKE_STDERR) process.stderr.write(settings.AST_METRICS_FAKE_STDERR);
   process.exitCode = Number(settings.AST_METRICS_FAKE_EXIT ?? 0);
 } else {
-  process.stderr.write(`ast-metrics-cli-fake: the fake has no answer for the command ${String(args[0])}.\n`);
+  process.stderr.write(`ast-metrics-cli-fake: the fake has no answer for the command ${commandName}.\n`);
   process.exitCode = 2;
 }

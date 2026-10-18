@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { CommandError, notInstalled, repositoryRoot, verifyBase } from './repository.ts';
 
-const help = `Usage: node script/ast-metrics-review.mjs [--base REF] [--max-findings N] [--help]
+const help = `Usage: node script/ast-metrics-review.ts [--base REF] [--max-findings N] [--help]
 
 Report the ast-metrics findings that the working tree adds or makes worse
 against the tree of REF. Uncommitted changes count. ast-metrics ignores each
@@ -24,16 +24,23 @@ high severity exists and 0 when none exists. The command also exits 1 when it
 fails.
 `;
 
-function optionsOf(args) {
-  let values;
+const optionShape = {
+  base: { type: 'string', default: 'origin/main' }, 'max-findings': { type: 'string', default: '50' },
+  help: { type: 'boolean', short: 'h' },
+} as const;
+
+type ReviewOptions = { readonly base: string; readonly maxFindings: number };
+
+function parsedValues(args: readonly string[]) {
   try {
-    ({ values } = parseArgs({ args, options: {
-      base: { type: 'string', default: 'origin/main' }, 'max-findings': { type: 'string', default: '50' },
-      help: { type: 'boolean', short: 'h' },
-    } }));
+    return parseArgs({ args, options: optionShape }).values;
   } catch {
     throw new CommandError('Invalid arguments. Use --help for the supported options.');
   }
+}
+
+function optionsOf(args: readonly string[]): ReviewOptions | { readonly help: true } {
+  const values = parsedValues(args);
   if (values.help) return { help: true };
   const maxFindings = Number(values['max-findings']);
   if (!/^\d+$/.test(values['max-findings']) || maxFindings < 1 || maxFindings > 1000) {
@@ -45,20 +52,23 @@ function optionsOf(args) {
 }
 
 // With --fail-on high, the exit status of ast-metrics is the result: 1 when a finding of high severity exists.
-function review(root, options) {
+function review(root: string, options: ReviewOptions): number {
   const args = [
     'review', '--base', options.base, '--format', 'markdown', '--max-findings', String(options.maxFindings),
     '--report-markdown', './ast-report/review.md', '--fail-on', 'high',
   ];
   const run = spawnSync('ast-metrics', args, { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] });
-  if (run.error) throw new CommandError(run.error.code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${run.error.message}`);
+  if (run.error) {
+    const { code, message } = run.error as NodeJS.ErrnoException;
+    throw new CommandError(code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${message}`);
+  }
   if (run.status === null) throw new CommandError(`ast-metrics review stopped on signal ${run.signal}.`);
   return run.status;
 }
 
-function main(args) {
+function main(args: readonly string[]): number {
   const options = optionsOf(args);
-  if (options.help) {
+  if ('help' in options) {
     process.stdout.write(help);
     return 0;
   }

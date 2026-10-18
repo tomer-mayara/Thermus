@@ -4,7 +4,7 @@ import { delimiter, join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { astMetricsCliFake } from '../../processes/module-paths.ts';
 
-// The answers of ast-metrics-cli-fake.mjs. Without an answer, the fake writes empty reports and exits 0.
+// The answers of ast-metrics-cli-fake.ts. Without an answer, the fake writes empty reports and exits 0.
 export interface AstMetricsCliAnswers {
   // The OpenMetrics text that analyze writes. {root} stands for the working directory of the call.
   readonly metrics?: string;

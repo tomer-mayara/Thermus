@@ -5,7 +5,7 @@ import { join, relative, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { CommandError, git, notInstalled, repositoryRoot, verifyBase } from './repository.ts';
 
-const help = `Usage: node script/ast-metrics-delta.mjs [--base REF] [--min SCORE] [--no-compare] [--help]
+const help = `Usage: node script/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--help]
 
 Check the maintainability score of each TypeScript file that is added or changed
 against REF. The delta holds the changes from the merge base of REF and HEAD to
@@ -34,17 +34,32 @@ const reportFolder = 'ast-report';
 const metricsReport = `${reportFolder}/metrics.txt`;
 const typeScriptFiles = ['*.ts', '*.tsx', '*.mts', '*.cts'];
 const outputLimit = 64 * 1024 * 1024;
+const optionShape = {
+  base: { type: 'string', default: 'origin/main' }, min: { type: 'string', default: '85' },
+  'no-compare': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
+} as const;
 
-function optionsOf(args) {
-  let values;
+type DeltaOptions = { readonly base: string; readonly min: number; readonly compare: boolean };
+type MeasuredFile = { readonly file: string; readonly score: number };
+
+// The groups of the delta files in the order of the report. Each group of measured files is lowest score first.
+type DeltaGroups = {
+  readonly production: readonly MeasuredFile[];
+  readonly belowGoal: readonly MeasuredFile[];
+  readonly other: readonly MeasuredFile[];
+  readonly notMeasured: readonly string[];
+};
+
+function parsedValues(args: readonly string[]) {
   try {
-    ({ values } = parseArgs({ args, options: {
-      base: { type: 'string', default: 'origin/main' }, min: { type: 'string', default: '85' },
-      'no-compare': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
-    } }));
+    return parseArgs({ args, options: optionShape }).values;
   } catch {
     throw new CommandError('Invalid arguments. Use --help for the supported options.');
   }
+}
+
+function optionsOf(args: readonly string[]): DeltaOptions | { readonly help: true } {
+  const values = parsedValues(args);
   if (values.help) return { help: true };
   if (!/^\d+$/.test(values.min) || Number(values.min) > 128) throw new CommandError('The --min value must be an integer from 0 to 128.');
   // git and ast-metrics would take a ref that starts with a dash as an option.
@@ -53,7 +68,7 @@ function optionsOf(args) {
 }
 
 // Without rename detection, git lists a renamed file as an added file, so the check measures it at its new path.
-function deltaFiles(root, base) {
+function deltaFiles(root: string, base: string): string[] {
   const changed = git(root, ['diff', '--name-only', '-z', '--no-renames', '--diff-filter=AM', '--merge-base', base, '--', ...typeScriptFiles], `git diff against ${base} failed.`);
   const untracked = git(root, ['ls-files', '-z', '--others', '--exclude-standard', '--', ...typeScriptFiles], 'git ls-files failed.');
   return [...new Set(`${changed}${untracked}`.split('\0').filter((file) => file !== ''))].sort();
@@ -61,7 +76,7 @@ function deltaFiles(root, base) {
 
 // ast-metrics fails when the folder of a report does not exist. The old metrics go first, so that a run that writes no
 // metrics cannot show old scores.
-function analyze(root, options) {
+function analyze(root: string, options: DeltaOptions): void {
   mkdirSync(join(root, reportFolder), { recursive: true });
   rmSync(join(root, metricsReport), { force: true });
   const comparison = options.compare ? [`--compare-with=${options.base}`] : [];
@@ -71,21 +86,24 @@ function analyze(root, options) {
   const run = spawnSync('ast-metrics', args, {
     cwd: root, env: { ...process.env, PWD: root }, encoding: 'utf8', maxBuffer: outputLimit, stdio: ['ignore', 'pipe', 'inherit'],
   });
-  if (run.error) throw new CommandError(run.error.code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${run.error.message}`);
+  if (run.error) {
+    const { code, message } = run.error as NodeJS.ErrnoException;
+    throw new CommandError(code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${message}`);
+  }
   if (run.status === 0) return;
   // After a success, the list of reports on stdout is noise. After a failure, it can tell the cause.
   process.stderr.write(run.stdout);
   throw new CommandError(run.status === null ? `ast-metrics analyze stopped on signal ${run.signal}.` : `ast-metrics analyze failed with exit status ${run.status}.`);
 }
 
-function scoresOf(root) {
-  let text;
+function scoresOf(root: string): ReadonlyMap<string, number> {
+  let text: string;
   try {
     text = readFileSync(join(root, metricsReport), 'utf8');
   } catch {
     throw new CommandError(`ast-metrics wrote no ${metricsReport}.`);
   }
-  const scores = new Map();
+  const scores = new Map<string, number>();
   for (const line of text.split(/\r?\n/)) {
     const match = /^maintainability\{path="([^"]+)"\} (\S+)$/.exec(line);
     if (match && Number.isFinite(Number(match[2]))) scores.set(relative(root, match[1]).split(sep).join('/'), Number(match[2]));
@@ -93,51 +111,53 @@ function scoresOf(root) {
   return scores;
 }
 
-function count(number, noun) {
+function count(number: number, noun: string): string {
   return `${number} ${number === 1 ? noun : `${noun}s`}`;
 }
 
 // The check uses the score as the line shows it, with one decimal. Otherwise 84.96 reads as "85.0 below 85".
-function shownScore(score) {
+function shownScore(score: number): number {
   return Number(score.toFixed(1));
 }
 
 // The goal applies to production code only. No test file of the repository reaches 85, so a goal there tells nothing.
-function isProductionFile(file) {
+function isProductionFile(file: string): boolean {
   return file.startsWith('src/');
 }
 
-// The groups of the delta files in the order of the report. Each group of measured files is lowest score first.
-function groupsOf(files, scores, min) {
-  const measured = files.filter((file) => scores.has(file)).sort((first, second) => scores.get(first) - scores.get(second));
-  const production = measured.filter(isProductionFile);
+function groupsOf(files: readonly string[], scores: ReadonlyMap<string, number>, min: number): DeltaGroups {
+  const measured = files.flatMap((file) => {
+    const score = scores.get(file);
+    return score === undefined ? [] : [{ file, score }];
+  }).sort((first, second) => first.score - second.score);
+  const production = measured.filter(({ file }) => isProductionFile(file));
   return {
     production,
-    belowGoal: production.filter((file) => shownScore(scores.get(file)) < min),
-    other: measured.filter((file) => !isProductionFile(file)),
+    belowGoal: production.filter(({ score }) => shownScore(score) < min),
+    other: measured.filter(({ file }) => !isProductionFile(file)),
     notMeasured: files.filter((file) => !scores.has(file)),
   };
 }
 
-function goalResult(groups, min) {
+function goalResult(groups: DeltaGroups, min: number): string {
   if (groups.production.length === 0) return 'no measured production file in the delta.';
   const production = count(groups.production.length, 'production file');
   if (groups.belowGoal.length === 0) return `all ${production} at ${min} or more.`;
   return `${groups.belowGoal.length} of ${production} below ${min}. Goal: ${min} or more for each production file.`;
 }
 
-function resultLine(groups, min) {
+function resultLine(groups: DeltaGroups, min: number): string {
   const other = groups.other.length === 0 ? '' : ` ${count(groups.other.length, 'other file')} without a goal.`;
   const notMeasured = groups.notMeasured.length === 0 ? '' : ` ${count(groups.notMeasured.length, 'file')} not measured.`;
   return `Result: ${goalResult(groups, min)}${other}${notMeasured}`;
 }
 
-function reportOf(files, scores, options) {
+function reportOf(files: readonly string[], scores: ReadonlyMap<string, number>, options: DeltaOptions): { readonly text: string; readonly passed: boolean } {
   const groups = groupsOf(files, scores, options.min);
-  const scoreLine = (file, marker) => `  ${scores.get(file).toFixed(1)}  ${file}${marker}`;
+  const scoreLine = ({ file, score }: MeasuredFile, marker: string): string => `  ${score.toFixed(1)}  ${file}${marker}`;
   const lines = [
-    ...groups.production.map((file) => scoreLine(file, groups.belowGoal.includes(file) ? `  below ${options.min}` : '')),
-    ...groups.other.map((file) => scoreLine(file, '  no goal')),
+    ...groups.production.map((measured) => scoreLine(measured, groups.belowGoal.includes(measured) ? `  below ${options.min}` : '')),
+    ...groups.other.map((measured) => scoreLine(measured, '  no goal')),
     ...groups.notMeasured.map((file) => `  not measured  ${file}`),
     resultLine(groups, options.min),
   ];
@@ -145,9 +165,9 @@ function reportOf(files, scores, options) {
   return { text: `${lines.join('\n')}\n`, passed: groups.belowGoal.length === 0 };
 }
 
-function main(args) {
+function main(args: readonly string[]): number {
   const options = optionsOf(args);
-  if (options.help) {
+  if ('help' in options) {
     process.stdout.write(help);
     return 0;
   }
