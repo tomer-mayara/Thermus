@@ -1,11 +1,9 @@
-import type { PipelineStep, StepResult } from '../page-fetch/pipeline-step.ts';
+import type { IncomingStep, StepResult } from '../page-fetch/pipeline-step.ts';
 import type { WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
 import { assertHtmlInputSize } from './html-input-limit.ts';
 import type { HtmlToMarkdownPipeline } from './html-to-markdown-pipeline.ts';
 
-export class ProcessHtmlStep implements PipelineStep<WebsiteFetchResult, string> {
-  public readonly id = 'incoming.process_html';
-
+export class ProcessHtmlStep implements IncomingStep {
   public constructor(private readonly pipeline: Pick<HtmlToMarkdownPipeline, 'process'>) {}
 
   public async execute(page: WebsiteFetchResult, signal: AbortSignal): Promise<StepResult<string>> {

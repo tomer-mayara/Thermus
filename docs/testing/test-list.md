@@ -236,10 +236,25 @@ These same-package tests use step and record-sink doubles. The
 [implementation record](../implementation/mcp-pipe-03.md) gives focused unit
 and complete-candidate evidence.
 
-[V] Observation allows the exact original string and uses only the outgoing step ID
+[V] Observation allows the exact original string; the executor uses the trusted outgoing record ID
 [V] The executor validates allow/block shape, unchanged string output, and closed codes; unknown decisions, incoming scan codes, malformed output, and raw failures cannot advance
 [V] The record has only fixed fields, trusted ID, bounded duration, and safe outcome/code; sink failure cannot alter a result or repeat work
 [V] Abort or `AbortError` wins before recording; late work settles after cleanup, no early record escapes, and pre-entry cancellation starts neither step nor event
+
+**Pipeline decision types** (`test/interface/page-fetch/pipeline-step-types.ts`)
+
+This compile-only interface proof runs with `npm run typecheck` and the build.
+It has no Node test cases. It derives
+results from the outgoing and incoming dependencies of `createFetchPage`.
+
+[V] Outgoing results accept string output and `blocked`, and reject `scan_failed` and `scan_limit`
+[V] Incoming results accept string output and all three block codes
+
+Before narrowing, `pnpm exec tsc --noEmit` failed with two unused
+`@ts-expect-error` directives. After narrowing, the same command passed. These
+checks prove the static role contract; runtime executor validation has separate
+coverage. The [refinements record](../implementation/mcp-pipeline-refinements.md)
+tracks complete-candidate verification.
 
 **Incoming step and typed withholding (MCP-PIPE-04)**
 

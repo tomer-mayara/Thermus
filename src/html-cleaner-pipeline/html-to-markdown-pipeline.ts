@@ -1,7 +1,7 @@
 import { type WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
 import type { ScanWithholdingCode } from './prompt-injection-remover/hidden-html-removal-session.ts';
 
-export type Ctx = WebsiteFetchResult & {
+export type HtmlProcessingContext = WebsiteFetchResult & {
   markdown?: string;
   title?: string | null;
   // Accumulated ad targets and independent hidden HTML targets or comments removed.
@@ -14,15 +14,15 @@ export type Ctx = WebsiteFetchResult & {
   scanWithholding?: ScanWithholdingCode;
 };
 
-export interface Step {
-  invoke(ctx: Ctx): Promise<Ctx>;
+export interface HtmlTransformation {
+  invoke(ctx: HtmlProcessingContext): Promise<HtmlProcessingContext>;
 }
 
 export class HtmlToMarkdownPipeline {
-  public constructor(private readonly steps: readonly Step[]) {}
+  public constructor(private readonly steps: readonly HtmlTransformation[]) {}
 
-  public async process(page: WebsiteFetchResult, signal?: AbortSignal): Promise<Ctx> {
-    let ctx: Ctx = { ...page, removed: 0, skipped: 0 };
+  public async process(page: WebsiteFetchResult, signal?: AbortSignal): Promise<HtmlProcessingContext> {
+    let ctx: HtmlProcessingContext = { ...page, removed: 0, skipped: 0 };
     for (const step of this.steps) {
       signal?.throwIfAborted();
       ctx = await step.invoke(ctx);

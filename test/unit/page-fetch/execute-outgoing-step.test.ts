@@ -10,9 +10,9 @@ const url = 'HTTPS://Source.Example/private-path?private-query#private-fragment'
 
 function fixture(t: TestContext, result: unknown = { decision: 'allow', output: url }) {
   const entries: StepRecord[] = [];
-  const execute = t.mock.fn(async (_input: string, _signal: AbortSignal) => result as StepResult<string>);
+  const execute = t.mock.fn(async (_input: string, _signal: AbortSignal) => result as StepResult<string, 'blocked'>);
   const record = t.mock.fn((entry: StepRecord) => { entries.push(entry); });
-  const outgoing: PipelineStep<string, string> = { id: 'outgoing.observe_request', execute };
+  const outgoing: PipelineStep<string, string, 'blocked'> = { execute };
   return { outgoing, execute, records: { record }, entries };
 }
 
@@ -54,7 +54,7 @@ const rejectedResults = [
 for (const [name, result, outcome, code] of rejectedResults) {
   test(`Given ${name}, when the outgoing step settles, then it fails closed with one ${outcome} record and no raw result`, async (t) => {
     const dependencies = fixture(t, result);
-    if (result === undefined) dependencies.execute.mock.mockImplementation(async () => undefined as unknown as StepResult<string>);
+    if (result === undefined) dependencies.execute.mock.mockImplementation(async () => undefined as unknown as StepResult<string, 'blocked'>);
     const execution = executionContextOf();
     t.mock.method(performance, 'now', () => 0);
 
@@ -178,7 +178,7 @@ for (const outcome of ['allow', 'block', 'invalid', 'throw'] as const) {
     dependencies.execute.mock.mockImplementation(async () => {
       await release.promise;
       if (outcome === 'throw') throw new Error('private-step-error');
-      return (outcome === 'allow' ? { decision: 'allow', output: url } : { decision: 'block', code: outcome === 'block' ? 'blocked' : 'scan_failed' }) as StepResult<string>;
+      return (outcome === 'allow' ? { decision: 'allow', output: url } : { decision: 'block', code: outcome === 'block' ? 'blocked' : 'scan_failed' }) as StepResult<string, 'blocked'>;
     });
     const controller = new AbortController();
     const execution = executionContextOf(controller.signal);

@@ -1,13 +1,13 @@
 import adblockRust from 'adblock-rs';
 import { selectAll } from 'css-select';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
-import { type Ctx } from '../../html-to-markdown-pipeline.ts';
+import { type HtmlProcessingContext } from '../../html-to-markdown-pipeline.ts';
 import { type CleanHtmlAds } from '../clean-html-ads.ts';
 import { HtmlDepthLimitError, MAX_HTML_ELEMENT_DEPTH } from '../html-depth-limit-error.ts';
 import { expandLoneLineRanges, type SourceRange } from './source-line-index.ts';
 import { SourceRangeParser } from './source-range-parser.ts';
 
-type StripHtmlResult = Pick<Ctx, 'html' | 'removed' | 'skipped'>;
+type StripHtmlResult = Pick<HtmlProcessingContext, 'html' | 'removed' | 'skipped'>;
 
 type AdblockEngine = InstanceType<typeof adblockRust.Engine>;
 
@@ -26,7 +26,7 @@ export class CleanHtmlAdsAdblockRs implements CleanHtmlAds {
     this.engine = new adblockRust.Engine(filterSet);
   }
 
-  public async invoke(ctx: Ctx): Promise<Ctx> {
+  public async invoke(ctx: HtmlProcessingContext): Promise<HtmlProcessingContext> {
     const document = CleanHtmlAdsAdblockRs.parseHtml(ctx.html);
     const selected = this.selectorsFor(ctx.finalUrl, document);
     const stripped = CleanHtmlAdsAdblockRs.stripHtml(ctx.html, document, selected.hide);

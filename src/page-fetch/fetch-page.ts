@@ -1,11 +1,11 @@
 import { requirePermission, type RequestContext } from '../auth/access-context.ts';
-import type { WebsiteFetcher, WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
+import type { WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
 import { isValidFetchUrl } from './fetch-url.ts';
 import { assertOperationId, type ExecutionContext } from './execution-context.ts';
 import { reportRendererFailure, type RendererFailureReports } from './renderer-failure-reports.ts';
 import { executeOutgoingStep } from './execute-outgoing-step.ts';
 import { executeIncomingStep } from './execute-incoming-step.ts';
-import type { PipelineStep } from './pipeline-step.ts';
+import type { OutgoingStep, IncomingStep } from './pipeline-step.ts';
 import type { StepRecordSink } from './step-record.ts';
 
 export type FetchPageOutcome =
@@ -15,8 +15,8 @@ export type FetchPage = (url: string, context: RequestContext, execution: Execut
 
 export function createFetchPage(dependencies: RendererFailureReports & {
   fetcher: WebsiteFetcher;
-  incoming: PipelineStep<WebsiteFetchResult, string>;
-  outgoing: PipelineStep<string, string>;
+  incoming: IncomingStep;
+  outgoing: OutgoingStep;
   records: StepRecordSink;
 }): FetchPage {
   return async (url, context, execution) => {

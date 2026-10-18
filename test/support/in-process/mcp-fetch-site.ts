@@ -11,7 +11,7 @@ import { NoAuthProvider } from '../doubles/auth/no-auth-provider.ts';
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
 import { completionLinesIn } from '../drivers/operator-log.ts';
-import type { PipelineStep } from '../../../src/page-fetch/pipeline-step.ts';
+import type { OutgoingStep, IncomingStep } from '../../../src/page-fetch/pipeline-step.ts';
 import type { StepRecordSink } from '../../../src/page-fetch/step-record.ts';
 
 export const exactMarkdown = '# Exact Markdown\n\nNo extra text.\n';
@@ -24,8 +24,8 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   resolver?: AccessResolver;
   headers?: Record<string, string>;
   httpSignal?: AbortSignal;
-  outgoing?: PipelineStep<string, string>;
-  incoming?: PipelineStep<WebsiteFetchResult, string>;
+  outgoing?: OutgoingStep;
+  incoming?: IncomingStep;
   stepSink?: StepRecordSink;
 } = {}) {
   const records: string[] = [];

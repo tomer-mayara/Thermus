@@ -20,7 +20,7 @@ for (const era of mcpProtocolEras) {
       const controller = new AbortController();
       const site = await openFetchSite(t, era, {
         httpSignal: era === '2025-11-25' ? controller.signal : undefined,
-        outgoing: { id: 'outgoing.observe_request', execute: async (input, signal): Promise<StepResult<string>> => {
+        outgoing: { execute: async (input, signal): Promise<StepResult<string, 'blocked'>> => {
           const onAbort = () => observedAbort.resolve();
           signal.addEventListener('abort', onAbort, { once: true });
           started.resolve(signal);
@@ -67,7 +67,7 @@ test('Given production hosted composition with an outgoing step that owns pendin
   const release = Promise.withResolvers<void>();
   t.after(() => release.resolve());
   let stepCalls = 0;
-  t.mock.method(ObserveRequestStep.prototype, 'execute', async (input: string, signal: AbortSignal): Promise<StepResult<string>> => {
+  t.mock.method(ObserveRequestStep.prototype, 'execute', async (input: string, signal: AbortSignal): Promise<StepResult<string, 'blocked'>> => {
     stepCalls += 1;
     if (stepCalls === 1) { started.resolve(signal); await release.promise; }
     return { decision: 'allow', output: input };

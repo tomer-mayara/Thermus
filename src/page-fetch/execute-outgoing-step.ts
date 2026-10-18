@@ -1,9 +1,9 @@
 import type { ExecutionContext } from './execution-context.ts';
-import type { PipelineStep, StepResult } from './pipeline-step.ts';
+import type { OutgoingStep, StepResult } from './pipeline-step.ts';
 import { writeStepRecord, type StepOutcome, type StepRecordSink } from './step-record.ts';
 
 export async function executeOutgoingStep(input: string, execution: ExecutionContext, dependencies: {
-  outgoing: PipelineStep<string, string>;
+  outgoing: OutgoingStep;
   records: StepRecordSink;
 }): Promise<string> {
   const { signal, operationId } = execution;
@@ -32,7 +32,7 @@ export async function executeOutgoingStep(input: string, execution: ExecutionCon
   }
 }
 
-function checkedResult(value: unknown, input: string): StepResult<string> | undefined {
+function checkedResult(value: unknown, input: string): StepResult<string, 'blocked'> | undefined {
   if (!isResultObject(value)) return undefined;
   const { decision, output, code } = value;
   const hasOutput = Object.hasOwn(value, 'output');

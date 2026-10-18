@@ -1,6 +1,7 @@
 # Pipeline metrics
 
-The pipeline keeps the existing `Ctx` fields. `removed`, `skipped`, and `found` report different results. `HtmlToMarkdownPipeline.process` starts each run with `removed: 0` and `skipped: 0`. Each step preserves prior counts and reports when it returns a new context. It does not mutate the input context.
+The pipeline uses `HtmlProcessingContext` for HTML, source URLs, optional
+Markdown and title, counters, findings, warnings, and typed scan withholding. `removed`, `skipped`, and `found` report different results. `HtmlToMarkdownPipeline.process` starts each run with `removed: 0` and `skipped: 0`. Each `HtmlTransformation` preserves prior counts and reports when it returns a new context. It does not mutate the input context.
 
 | Field | Meaning | Limits |
 | --- | --- | --- |
@@ -16,11 +17,17 @@ const detectionCount = new Set(result.found ?? []).size;
 
 There is no separate numeric detection field. Repeated controls, URLs, or hidden targets can report the same category. Warnings give further detail; their number is not a detection count. The sanitizer and converter preserve prior warnings and do not append an identical warning string again.
 
-The typed `scan_failed` / `scan_limit` withholding signal in `Ctx.scanWithholding` is a release
+The typed `scan_failed` / `scan_limit` withholding signal in `HtmlProcessingContext.scanWithholding` is a release
 decision, not a removal count, detection category, or warning count. It does not
 change `removed`, `skipped`, or `found`. `ProcessHtmlStep` uses that signal for a
 blocked incoming record; ordinary empty output without the signal is allowed.
 Warnings remain reports and are never parsed to infer withholding.
+
+The runner accepts partial and repeated transformation arrays. A partial array
+can return a context without Markdown. `ProcessHtmlStep` owns the completion
+check and the incoming allow/block decision. It validates typed withholding
+before it reads Markdown. The runner does not promise a completed Markdown
+result for every array.
 
 ## Removal targets
 

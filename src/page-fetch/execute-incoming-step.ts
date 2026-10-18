@@ -1,11 +1,11 @@
 import type { WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
 import type { ExecutionContext } from './execution-context.ts';
 import type { FetchPageOutcome } from './fetch-page.ts';
-import type { BlockCode, PipelineStep, StepResult } from './pipeline-step.ts';
+import type { BlockCode, IncomingStep, StepResult } from './pipeline-step.ts';
 import { writeStepRecord, type StepOutcome, type StepRecordSink } from './step-record.ts';
 
 export async function executeIncomingStep(input: WebsiteFetchResult, execution: ExecutionContext, dependencies: {
-  incoming: PipelineStep<WebsiteFetchResult, string>;
+  incoming: IncomingStep;
   records: StepRecordSink;
 }): Promise<FetchPageOutcome> {
   const { signal, operationId } = execution;
