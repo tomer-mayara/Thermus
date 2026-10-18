@@ -261,20 +261,25 @@ pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --ba
 Prints the architecture delta of `src/` as Markdown: a header with the base
 commit, one summary line (modularity, cross share, cycles, communities, base
 → head), and a Mermaid graph of the communities with their changes, or `The
-map did not change.` By default it snapshots the merge base of `--base`
-(default `origin/main`) in a temporary worktree and the working tree; with
+map did not change.` Then it prints the complexity table of the changed
+`src/` files: the maintainability and the decision paths of each file, base
+→ head (`new`, `gone`, or `not measured` when a side has no value), and its
+rank among the ten riskiest files of the head, or
+`No production file changed.` By default it snapshots the merge base of
+`--base` (default `origin/main`) in a temporary worktree and the working
+tree, and the changed files follow the rule of the delta command; with
 `--head` and `--base-snapshot` it reads two snapshot files and runs no tool
 (`--touched` then names the changed files). Exit status 0 when the Markdown
 is printed; 1 with one diagnostic line for a failure. The
 [ast-metrics review guide](../docs/implementation/ast-metrics-review.md)
-gives the matching rule and the encoding.
+gives the matching rule, the encoding, and the rules of the table.
 
 Run the focused offline tests after a clean build, and the live tests with
 the real executable on PATH and the real unit suite:
 
 ```sh
 pnpm run build
-pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js

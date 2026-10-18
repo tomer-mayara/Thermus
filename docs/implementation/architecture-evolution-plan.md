@@ -1,9 +1,10 @@
 # Architecture and complexity evolution plan
 
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
-"Review record"). Nothing is implemented yet. It builds on the process of
-PR #154 ("Code quality review with ast-metrics" in [AGENTS.md](../../AGENTS.md)
-and [the review guide](ast-metrics-review.md)).
+"Review record"). Tickets T1 to T5 are done; T6 and T7 are open (see the
+appendix). It builds on the process of PR #154 ("Code quality review with
+ast-metrics" in [AGENTS.md](../../AGENTS.md) and
+[the review guide](ast-metrics-review.md)).
 
 ## Objective
 
@@ -118,11 +119,15 @@ All three appear in the pull request body through step 5 of the process:
    modularity, cross share, cycles, base to head. The graph appears when a
    community, a dependency, or a band changed; otherwise the summary line
    says that the map did not change.
-2. **Complexity delta.** One table of the files the pull request changed:
-   maintainability, decision paths, and functions with CRAP at 30 or more,
-   before to after, plus the risk rank of the file when it is among the ten
-   riskiest; then the functions that the pull request added or changed and
-   that have CRAP at 30 or more, with their complexity and coverage.
+2. **Complexity delta.** One table of the `src/` files that the pull
+   request changed: maintainability and decision paths, base to head, with
+   `new` or `gone` for a file that one side does not have and
+   `not measured` for a file without a maintainability index, plus the risk
+   rank of the file when it is among the ten riskiest of the head; the line
+   `No production file changed.` when no `src/` file changed. T6 adds the
+   functions with CRAP at 30 or more, before to after, as a column, and
+   then the functions that the pull request added or changed and that have
+   CRAP at 30 or more, with their complexity and coverage.
 3. **Trend.** One table of the last ten snapshots of `main`: modularity, cross
    share, cycles, LOC-weighted maintainability, functions with CRAP at 30 or
    more. The store is `docs/metrics/<date>-<commit>.json`, one file per
@@ -415,7 +420,15 @@ text. The graph stays under 15 nodes by construction (`src/` only).
 
 ### T4. Complexity delta and the process
 
-Source: step A1 and "The views". Depends on T3.
+Source: step A1 and "The views". Depends on T3. Done in PR #TBD. The table
+has rows for `src/` files only: since T1, the snapshots hold only `src/`
+files, so the `script/` and `test/` files of decision 4 have no numbers
+there; the delta command still lists them. A file without a maintainability
+index is `not measured` in both columns, because its 0 decision paths come
+from the zero values that ast-metrics leaves out. No new command or double
+was necessary, so `knip.json` and the paths test did not change. Step 5 of
+AGENTS.md also adds a kept finding of severity high to the baseline in the
+same pull request.
 
 **Outcome and scope.** The architecture command also prints the complexity
 table of the files that the pull request changed (the delta rule of
