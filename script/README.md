@@ -279,3 +279,4 @@ pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-architecture.live.js
+```

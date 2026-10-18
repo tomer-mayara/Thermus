@@ -53,7 +53,6 @@ const files = {
   astMetricsSnapshotScript,
   astMetricsArchitectureScript,
   astMetricsCoverageScript,
-  astMetricsSnapshotScript,
   programEntry,
   hostedPortalPreload: fileURLToPath(hostedPortalPreload),
   hostedPortalIndex: fileURLToPath(new URL('index.html', hostedPortalFixture)),
