@@ -16,8 +16,9 @@ const noTools = { env: { PATH: '' } };
 const snapshot = JSON.stringify({
   version: 1,
   commit: 'c0ffee00c0ffee00',
-  global: { modularity: 0.5, crossShare: 0.25, cycles: [] },
-  communities: [{ id: '0', label: 'a', members: ['src/a/0.ts'], files: 1, paths: 10, edges: [] }],
+  date: '2026-10-18T09:00:00+02:00',
+  global: { modularity: 0.5, crossShare: 0.25, cycles: [], paths: 10, files: 1, functions: 1 },
+  communities: [{ id: '0', label: 'a', members: ['src/a/0.ts'], files: 1, loc: 40, paths: 10, edges: [] }],
   files: [{ path: 'src/a/0.ts', maintainability: 70, paths: 10, functions: [{ name: 'run', paths: 10 }] }],
 });
 

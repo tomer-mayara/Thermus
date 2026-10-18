@@ -8,7 +8,8 @@ import { dataDirectory } from '../../../support/isolation/data-directory.ts';
 // hosted-admin, both depend on the shared kernel, and there is no cycle. The numbers of the files of each community give
 // the numbers of that community. Three files are in no community, so that a change of them does not change the map: one
 // of them is a file of types, without a maintainability index. A case edits a copy of the base. The files also hold the
-// fields that the command does not read, such as the hub and the lines, so that they are complete snapshots.
+// fields that the command does not read, such as the hub and the lines of each file, so that they are complete
+// snapshots.
 
 export interface EdgeShape {
   readonly to: string;
@@ -63,6 +64,11 @@ export const bandsNeedTheCoverage = 'Bands need the coverage: run pnpm exec node
 export const complexityHeading = '## Complexity of the changed files';
 export const tableHead = ['| File | Maintainability | Decision paths | Risk rank |', '| --- | --- | --- | --- |'];
 export const noProductionFile = [complexityHeading, '', 'No production file changed.'];
+
+// The trend section after the complexity section. Two snapshot files without --trend-store have no store, so the
+// section has one line.
+export const trendHeading = '## Trend of src/ on main';
+export const noTrend = [trendHeading, '', 'No snapshot of main in docs/metrics yet.'];
 
 export function edge(to: string, references: number, inCycle = false): EdgeShape {
   return { to, references, inCycle };
@@ -129,7 +135,7 @@ export const baseSnapshot: SnapshotShape = {
 type Changes<T> = Readonly<Record<string, Partial<T> | null>>;
 
 export interface SnapshotEdits {
-  readonly global?: Partial<GlobalShape>;
+  readonly global?: Partial<SnapshotShape['global']>;
   // The changed fields of each community, by id. null removes the community.
   readonly communities?: Changes<CommunityShape>;
   readonly added?: readonly CommunityShape[];

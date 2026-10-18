@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
-import { bandsNeedTheCoverage, baseSnapshot, complexityHeading, edited, file, noProductionFile, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { bandsNeedTheCoverage, baseSnapshot, complexityHeading, edited, file, noProductionFile, noTrend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // The complexity table of the changed src/ files, after the architecture delta of two snapshot files. The changed files
 // of these cases are in no community, so the map did not change, and the table is the part that a case specifies. With
 // --head and --base-snapshot, the command runs neither git nor ast-metrics, so these cases run with an empty PATH. Each
-// expected text is the complete output. Without a coverage report, the table has no CRAP column;
+// expected text is the complete output, with the trend section without a store at its end. Without a coverage report,
+// the table has no CRAP column;
 // ast-metrics-architecture-bands.test.ts specifies that column. ast-metrics-architecture-base.test.ts specifies the
 // changed files of a repository.
 const timeout = 20_000;
@@ -24,7 +25,7 @@ const architecture = [
 ];
 
 function markdown(complexity: readonly string[]): string {
-  return [...architecture, '', ...complexity, ''].join('\n');
+  return [...architecture, '', ...complexity, '', ...noTrend, ''].join('\n');
 }
 
 function table(rows: readonly string[]): string[] {

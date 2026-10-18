@@ -4,9 +4,10 @@ import { dirname, resolve } from 'node:path';
 import { commandOf } from './ast-metrics-architecture-command-line.ts';
 import { mapSourcesOf } from './ast-metrics-architecture-input.ts';
 import { architectureReportOf } from './ast-metrics-architecture-report.ts';
+import { trendLinesOf } from './ast-metrics-architecture-trend.ts';
 import { CommandError } from './repository.ts';
 
-const help = `Usage: node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--timeout-ms MS] [--out FILE] [--help]
+const help = `Usage: node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--trend-store DIR] [--timeout-ms MS] [--out FILE] [--help]
 
 Print the architecture delta of src/ as Markdown, for the body of a pull
 request: a summary line with the modularity, the cross share, the cycles, and
@@ -34,6 +35,19 @@ color of the band, the table gives the count of each changed file, and a list
 names each function that the pull request added or made worse. Without the
 report, the output says that the bands need it.
 
+Last, the command prints the trend of src/ on main: the modularity, the cross
+share, the cycles, the maintainability, and the count of the functions at CRAP
+30 or more of the last ten records of the trend store by date, oldest first,
+and of the head as the last row, this pull request. The trend store of a
+repository is docs/metrics/ of its root: one JSON file for each commit of main
+that a pull request used as its base, named <date>-<commit8>.json, with the
+global numbers of the snapshot of that commit and the numbers of each
+community, and nothing for each file. Before the output, the command writes the
+file of the merge base when the store has no file of that commit; a file that
+exists stays as it is. Commit the new file with the pull request. With --head
+and --base-snapshot, the command writes and reads no store unless --trend-store
+names one.
+
 By default, the command takes two snapshots, as script/ast-metrics-snapshot.ts
 does: the base is the merge base of REF and HEAD, in a temporary worktree, and
 the head is the working tree. The changed files are the src/ files that differ
@@ -57,21 +71,27 @@ Options:
                         commas, in place of the changed files of git
   --coverage FILE       Read the coverage report from FILE (default in a
                         repository: ast-report/coverage.json when it exists)
+  --trend-store DIR     Use DIR as the trend store, relative to the current
+                        folder (default in a repository: docs/metrics of the root)
   --timeout-ms MS       Deadline of each MCP session (100..300000; default: 60000)
   --out FILE            Also write the Markdown to FILE, relative to the current
                         folder
   --help, -h            Show this help
 
 Exit status 0: the Markdown is printed; the command is a report, not a gate.
-Exit status 1: the command failed. It prints one diagnostic line on stderr and
-no Markdown. Exit status 130 or 143: SIGINT or SIGTERM stopped the snapshot of
-the merge base, after the removal of its worktree.
+Exit status 1: the command failed, also when it cannot write the trend store. It
+prints one diagnostic line on stderr and no Markdown. Exit status 130 or 143:
+SIGINT or SIGTERM stopped the snapshot of the merge base, after the removal of
+its worktree.
 `;
 
+// The trend section comes last. Its record goes to the store before the output.
 async function main(): Promise<string> {
   const command = commandOf(process.argv.slice(2));
   if (command.kind === 'help') return help;
-  const report = architectureReportOf(await mapSourcesOf(command));
+  const sources = await mapSourcesOf(command);
+  const trend = trendLinesOf(command, sources);
+  const report = `${[architectureReportOf(sources), ...trend].join('\n')}\n`;
   if (command.out !== undefined) {
     const target = resolve(command.out);
     mkdirSync(dirname(target), { recursive: true });

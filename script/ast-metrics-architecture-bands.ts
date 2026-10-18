@@ -1,7 +1,7 @@
 // The bands of docs/implementation/architecture-evolution-plan.md ("Bands"). A band follows the change: good when no
 // function is at CRAP 30 or more, warning when some are but the pull request added or made worse none of them, and
 // critical when it added or made worse one.
-import { isOver, type FunctionCrap } from './ast-metrics-architecture-crap.ts';
+import { isOver, type FileCrap, type FunctionCrap } from './ast-metrics-architecture-crap.ts';
 import type { CrapDelta, JudgedFunction } from './ast-metrics-architecture-crap-delta.ts';
 import type { Band, MapCommunity, NodeBand } from './ast-metrics-architecture-types.ts';
 
@@ -10,14 +10,23 @@ type BandRule = (head: MapCommunity | undefined, base: MapCommunity | undefined)
 
 export function bandRuleOf(delta: CrapDelta | undefined): BandRule {
   if (delta === undefined) return () => undefined;
-  const headFunctionsOf = (community: MapCommunity) => community.members.flatMap((path) => delta.head.get(path)?.functions ?? []);
-  const baseCountOf = (community: MapCommunity) => countOf(community.members.flatMap((path) => delta.base.get(path)?.functions ?? []));
-  return (head, base) => nodeBandOf(head && headFunctionsOf(head), base && baseCountOf(base));
+  return (head, base) => nodeBandOf(head && memberFunctionsOf(delta.head, head), base && countOf(memberFunctionsOf(delta.base, base)));
 }
 
 // The count of the functions at CRAP 30 or more.
 export function countOf(functions: readonly FunctionCrap[]): number {
   return functions.filter(isOver).length;
+}
+
+// The functions of the files of a community, from the files of one snapshot by path.
+export function memberFunctionsOf<T extends FunctionCrap>(files: ReadonlyMap<string, { readonly functions: readonly T[] }>, { members }: Pick<MapCommunity, 'members'>): T[] {
+  return members.flatMap((path) => files.get(path)?.functions ?? []);
+}
+
+// The count of the functions at CRAP 30 or more in all the files of one snapshot, as the summary line and the trend give
+// it.
+export function totalCountOf(files: ReadonlyMap<string, FileCrap>): number {
+  return countOf([...files.values()].flatMap((file) => file.functions));
 }
 
 // A gone community has the count and the band of the base. The base has no change to follow, so its band is never

@@ -1,14 +1,17 @@
 // The shape of a snapshot file follows version 1 of script/ast-metrics-snapshot-types.ts. The check covers the fields
-// that the map and the complexity table read, so that a wrong file, such as another report of ast-metrics, fails it.
+// that the map, the complexity table, and the trend read, so that a wrong file, such as another report of ast-metrics,
+// fails it.
 import { readFileSync } from 'node:fs';
 import { jsonOf, numberOf, objectOf } from './ast-metrics-json.ts';
 import { arrayOf, textOf, textsOf } from './ast-metrics-snapshot-json.ts';
-import type { MapFunction, MapSnapshot } from './ast-metrics-architecture-types.ts';
+import { isoDateOf } from './ast-metrics-architecture-trend-file.ts';
+import type { MapSnapshot } from './ast-metrics-architecture-types.ts';
 import { CommandError } from './repository.ts';
 
 type Fields = ReturnType<typeof objectOf>;
 type MapCommunity = MapSnapshot['communities'][number];
 type TableFile = MapSnapshot['files'][number];
+type MapFunction = NonNullable<TableFile['functions']>[number];
 
 // Gives the value of a field that a snapshot always has, or stops the check.
 type Check = <T>(value: T | undefined) => T;
@@ -32,11 +35,16 @@ function invalid(path: string): never {
   throw new CommandError(`The file ${path} is not a valid snapshot of version 1.`);
 }
 
+// The maintainability is absent for a src/ without code, so it stays optional.
 function snapshotOf(fields: Fields, check: Check): MapSnapshot {
   const global = objectOf(fields.global);
   return {
     commit: check(textOf(fields.commit)),
-    global: { modularity: check(numberOf(global.modularity)), crossShare: check(numberOf(global.crossShare)), cycles: arrayOf(global.cycles).map(textsOf) },
+    date: check(isoDateOf(fields.date)),
+    global: {
+      modularity: check(numberOf(global.modularity)), crossShare: check(numberOf(global.crossShare)), cycles: arrayOf(global.cycles).map(textsOf),
+      maintainability: numberOf(global.maintainability), paths: check(numberOf(global.paths)), files: check(numberOf(global.files)), functions: check(numberOf(global.functions)),
+    },
     communities: arrayOf(fields.communities).map((entry) => communityOf(objectOf(entry), check)),
     files: arrayOf(fields.files).map((entry) => fileOf(objectOf(entry), check)),
   };
@@ -49,6 +57,7 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
     label: check(textOf(fields.label)),
     members: textsOf(fields.members),
     files: check(numberOf(fields.files)),
+    loc: check(numberOf(fields.loc)),
     maintainability: numberOf(fields.maintainability),
     paths: check(numberOf(fields.paths)),
     edges: arrayOf(fields.edges).map((entry) => {

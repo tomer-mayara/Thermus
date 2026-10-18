@@ -34,6 +34,7 @@ function filesByPath(files: readonly TableFile[]): ReadonlyMap<string, TableFile
   return new Map(files.map((file) => [file.path, file]));
 }
 
-function rowOf(cells: readonly string[]): string {
+// A row of a Markdown table. An empty cell keeps one space, as in | |.
+export function rowOf(cells: readonly string[]): string {
   return `|${cells.map((cell) => (cell === '' ? ' ' : ` ${cell} `)).join('|')}|`;
 }

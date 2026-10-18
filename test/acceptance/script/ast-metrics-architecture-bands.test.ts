@@ -3,11 +3,12 @@ import { test, type TestContext } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
 import { bandedBase, bandedLegend, bandedTableHead, coverageArguments, fn, functionsSection } from './fixtures/ast-metrics-architecture-coverage.ts';
-import { bandsNeedTheCoverage, complexityHeading, edited, legend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { bandsNeedTheCoverage, complexityHeading, edited, legend, noTrend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // The CRAP bands of the architecture delta, from two snapshot files and a coverage report. With --head, --base-snapshot,
 // and --coverage, the command runs neither git nor ast-metrics, so these cases run with an empty PATH. Each expected
-// text is the complete output. fixtures/ast-metrics-architecture-coverage.ts gives the functions of the base and their
+// text is the complete output, with the trend section without a store at its end.
+// fixtures/ast-metrics-architecture-coverage.ts gives the functions of the base and their
 // covered shares: auth, hosted-admin, and src have functions at CRAP 30 or more, and the shared kernel has none.
 const timeout = 20_000;
 const noTools = { PATH: '' };
@@ -45,7 +46,7 @@ function graph(nodes: readonly string[], bandDefs: readonly string[], classes: r
 }
 
 function markdown(functions: string, picture: readonly string[], complexity: readonly string[]): string {
-  return [header, '', `${structure} · functions ≥ 30: ${functions}`, '', ...picture, '', ...complexity, ''].join('\n');
+  return [header, '', `${structure} · functions ≥ 30: ${functions}`, '', ...picture, '', ...complexity, '', ...noTrend, ''].join('\n');
 }
 
 function bandedTable(rows: readonly string[], listed: readonly string[], unmatched = 0): string[] {
@@ -190,7 +191,7 @@ test('Given snapshot files without --coverage, when the command runs, then the l
     '  classDef gone stroke-dasharray:4 4,color:#999999',
     '  class c_shared_kernel touched',
     '```', '', legend, '',
-    complexityHeading, '', ...tableHead, '| src/kernel/ids.ts | 77.0 → 77.0 | 18 → 18 | |', '',
+    complexityHeading, '', ...tableHead, '| src/kernel/ids.ts | 77.0 → 77.0 | 18 → 18 | |', '', ...noTrend, '',
   ].join('\n'));
   assert.equal(result.code, 0);
 });
