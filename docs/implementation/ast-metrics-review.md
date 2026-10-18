@@ -154,6 +154,11 @@ files of two builds: the command stops with exit status 1. Exit status 1
 also follows a failed suite, a file that is not V8 coverage, or a folder
 without coverage files. Then no report is written.
 
+The architecture command reads this report to give each function of `src/`
+its CRAP and each community its band (see "Show the architecture delta").
+Run the coverage command again after a change of `src/`: a function that
+the report does not have gets no CRAP.
+
 ### Take a snapshot: `script/ast-metrics-snapshot.ts`
 
 ```sh
@@ -215,7 +220,7 @@ the diagnostic then names the folder that stays.
 ### Show the architecture delta: `script/ast-metrics-architecture.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--timeout-ms MS] [--out FILE]
+pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--timeout-ms MS] [--out FILE]
 ```
 
 The command prints the architecture delta of `src/` and the complexity table
@@ -229,19 +234,31 @@ delta command. With `--head` and `--base-snapshot` it reads two snapshot
 files and runs no tool; the changed files then come from `--touched` (paths
 from the root, separated by commas), else there are none.
 
+The coverage comes from `--coverage` (a report of the coverage command,
+relative to the current folder), else from `ast-report/coverage.json` in the
+repository root when that file exists. With `--head` and `--base-snapshot`,
+only `--coverage` gives it. A file that is not a coverage report of version
+1 stops the command with exit status 1. Without coverage, the output has no
+bands: the line after the summary line is `Bands need the coverage: run pnpm
+exec node script/ast-metrics-coverage.ts first.`, and the graph, the table,
+and the legend are as they were before the bands.
+
 The output is the header `## Architecture of src/: base <8 characters of the
 base commit> → head`, one summary line (modularity and cross share with two
 decimals, cycles, communities with the shared kernel, base → head, with
-` (n new, m gone)` when there are such), then the Mermaid graph with its
-legend, or `The map did not change.`, and last the complexity section.
+` (n new, m gone)` when there are such, and with coverage
+` · functions ≥ 30: <base> → <head>`, the count of the functions at CRAP 30
+or more in all of `src/`), then the Mermaid graph with its legend, or `The
+map did not change.`, and last the complexity section.
 
 Matching: a head community matches the base community with the largest
 Jaccard overlap of their files, at 0.5 or more; the largest overlaps match
 first, a tie goes to the first label, and each base community matches once.
 An unmatched community is new or gone, so a split or a merge shows as gone
-and new. The map changed when a community is new, gone, or touched, or when
-a dependency or a cycle appeared or disappeared; numbers, reference counts,
-and labels alone do not change it.
+and new. The map changed when a community is new, gone, or touched, when a
+dependency or a cycle appeared or disappeared, or when the band of a kept
+community is not the band of its base (see "The bands"); numbers, reference
+counts, and labels alone do not change it.
 
 The encoding: nodes sorted by label, ids `c_<label>` (a later node with the
 same id gets a number); a node text with the label, ` · new` or ` · gone`,
@@ -251,7 +268,56 @@ grey dashed node for a gone community with its base numbers; edges sorted by
 labels with the references and their change, `<n> · cycle` red dashed for a
 cycle, `<n> · new` thick for a new dependency (`· new · cycle` red dashed when
 both), `gone` grey dashed for a gone dependency; one legend paragraph. A
-label text has no double quote and no backtick.
+label text has no double quote and no backtick. With coverage, the node text
+has a third line with the band, its symbol, and the count of the functions
+at CRAP 30 or more, with its change against the base as ` (+k)` or ` (−k)`:
+`● good: 0 fn ≥ 30`, `▲ warning: 2 fn ≥ 30`, or `■ critical: 6 fn ≥ 30 (+2)`.
+The border has the color of the band: the classes `good` (`#0ca30c`),
+`warning` (`#fab219`), and `critical` (`#d03b3b`) come after `touched` and
+`gone`, only those that the graph uses, and a touched node is in its
+`touched` line and in its band line. A band class sets the color only, so
+that the thick border still shows a touched community: a width of its own
+would replace that border, because the class that the block defines later
+wins. The legend then names the bands before the numbers.
+
+CRAP: each function of a `src/` file of the head gets
+`CRAP = paths² × (1 − share)³ + paths` with one decimal, where paths are its
+decision paths in the snapshot and share is its covered share in the
+coverage report. A function at 30.0 or more is over the limit. The function
+of the report has the same name in the entry of the same path, with the name
+that V8 gives: ast-metrics names a method `module\Class.method`, V8 names it
+`method`, and V8 names a constructor `Class`. A function gets no CRAP and
+counts as unmatched when it is anonymous (also a method without a name, such
+as `module\Class.`), when the file of the snapshot or of the report has its
+name twice, or when the report has the file but not the name. A file that
+the report does not have counts as uncovered, because no unit test loaded
+it: each of its named functions has the share 0 and the CRAP
+`paths² + paths`. On this repository on 2026-10-18, 721 of the 1022
+functions of `src/` matched a function of the report, 68 were in files that
+the report does not have, and 233 stayed unmatched, 227 of them anonymous;
+with the names of ast-metrics as they are, only 402 matched. 22 functions
+had CRAP 30 or more, 15 of them in files that no unit test loads.
+
+The base tree gets no coverage run, so its CRAP is an approximation, as the
+[evolution plan](architecture-evolution-plan.md) records: a function of the
+base has its own decision paths and the share of the head function with the
+same name in the same file. It has the share 0 when the head file does not
+have the name, such as a function or a file that the pull request removed,
+and no CRAP when the head has the name without a CRAP. Thus a change of the
+CRAP comes from a change of the decision paths, and two equal trees give
+equal counts.
+
+The bands: a function of the head is added when the base file does not have
+its name, and worse when its CRAP is 30 or more in the head and below 30 in
+the base, or 30 or more on both sides and higher in the head. A name that
+the base file has twice gives no base value, so its function is neither. A
+community is good when none of its functions is at 30 or more in the head,
+warning when some are and none of them is added or worse, and critical when
+one at 30 or more is added or worse. The count is the number of its
+functions at 30 or more in the head. A gone community has its count of the
+base and the band good or warning, because the base has no change to
+follow. The same rules apply to a changed file: the list after the table
+names each function that makes a file or a community critical.
 
 The complexity section has the heading `## Complexity of the changed files`
 and a table with the columns `File`, `Maintainability`, `Decision paths`, and
@@ -270,8 +336,22 @@ file among the ten files of the head with the highest risk score, from 1 (on
 a tie, the first path ranks first); it is empty for each other file and for a
 file without a risk score. When no changed file is under `src/`, the section
 has the line `No production file changed.` in place of the table, as for a
-pull request that changes only documents. The columns of CRAP come with
-ticket T6 of the [evolution plan](architecture-evolution-plan.md).
+pull request that changes only documents.
+
+With coverage, the column `CRAP ≥ 30` comes after `Decision paths`: the
+count of the functions at CRAP 30 or more of the file in the base and in the
+head, such as `1 → 2 ↑1`, `new → 2`, or `3 → gone`, and `not measured` for a
+side without a function that has a CRAP, such as a file of types or a file
+with unmatched functions only. After the table come the heading
+`### Functions at CRAP 30 or more, added or worse` and one line for each
+such function of the changed files, sorted by path and name, such as
+``- `src/x.ts` `name`: paths 12, covered 0.25, CRAP 72.8 (base 41.0)``, with
+`(base new)` for an added function, or the line `None.`. A method shows as
+`Class.method`, without the module, which the path names. The last line is
+`Unmatched functions: <n> (anonymous, duplicate, or not in the coverage).`,
+the count of the functions of the changed files that have no CRAP. These
+bands are T6 of the [evolution plan](architecture-evolution-plan.md), which
+gives their reasons and their limits.
 
 Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
 diagnostic line for a failure; 130 or 143 when a signal stops the base

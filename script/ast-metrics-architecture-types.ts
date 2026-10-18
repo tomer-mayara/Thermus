@@ -1,6 +1,7 @@
 // The data of the architecture delta of docs/implementation/architecture-evolution-plan.md ("The views", views 1 and 2):
 // two snapshots of src/, the map that compares them, and the files of the complexity table.
-import type { Snapshot, SnapshotCommunity, SnapshotFile } from './ast-metrics-snapshot-types.ts';
+import type { CoverageReport } from './ast-metrics-architecture-coverage.ts';
+import type { Snapshot, SnapshotCommunity, SnapshotFile, SnapshotFunction } from './ast-metrics-snapshot-types.ts';
 
 // The parts of a snapshot that the map and the complexity table read. A snapshot of script/ast-metrics-snapshot.ts has
 // all of them, and so has a snapshot file after its check.
@@ -13,15 +14,33 @@ export interface MapSnapshot {
 
 export type MapCommunity = Pick<SnapshotCommunity, 'id' | 'label' | 'members' | 'files' | 'maintainability' | 'paths' | 'edges'>;
 
-// A snapshot of script/ast-metrics-snapshot.ts gives each file its decision paths, but a snapshot file can leave them
-// out: the table then says that they are not measured.
-export type TableFile = Pick<SnapshotFile, 'path' | 'maintainability' | 'risk'> & Partial<Pick<SnapshotFile, 'paths'>>;
+// A snapshot of script/ast-metrics-snapshot.ts gives each file its decision paths and its functions, but a snapshot file
+// can leave them out: the table then says that they are not measured.
+export type TableFile = Pick<SnapshotFile, 'path' | 'maintainability' | 'risk'> & Partial<Pick<SnapshotFile, 'paths'>> & {
+  readonly functions?: readonly MapFunction[];
+};
+
+export type MapFunction = Pick<SnapshotFunction, 'name' | 'paths'>;
 
 export interface MapSources {
   readonly base: MapSnapshot;
   readonly head: MapSnapshot;
   // The changed files of the pull request, as paths from the root, such as src/auth/session.ts.
   readonly touched: readonly string[];
+  // The coverage of the unit suite in the head. Without it, the report has no bands.
+  readonly coverage?: CoverageReport;
+}
+
+// The band of docs/implementation/architecture-evolution-plan.md ("Bands"). A function at CRAP 30 or more is over.
+export type Band = 'good' | 'warning' | 'critical';
+
+export interface NodeBand {
+  readonly band: Band;
+  // The functions that are over: in the head, or in the base for a gone community.
+  readonly count: number;
+  // Head minus base, and the band of the base, for a kept community.
+  readonly change?: number;
+  readonly before?: Band;
 }
 
 // kept: a head community with a match in the base, or a dependency that both snapshots have between matched
@@ -43,6 +62,8 @@ export interface MapNode {
   readonly numbers: CommunityNumbers;
   // Head minus base, for a kept community. The maintainability change is absent when one side has no maintainability.
   readonly change?: CommunityNumbers;
+  // Absent without coverage.
+  readonly band?: NodeBand;
 }
 
 export interface MapEdge {

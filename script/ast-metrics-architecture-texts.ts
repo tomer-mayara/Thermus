@@ -1,4 +1,6 @@
-import type { MapEdge, MapNode } from './ast-metrics-architecture-types.ts';
+import type { Band, MapEdge, MapNode, NodeBand } from './ast-metrics-architecture-types.ts';
+
+const bandSymbols: Readonly<Record<Band, string>> = { good: '●', warning: '▲', critical: '■' };
 
 // An id is c_ and the label in lower case, with _ for each character outside a-z and 0-9, so that no id is a keyword of
 // Mermaid, such as end. A later node with the same id, such as a gone community with the label of a new one, gets a
@@ -16,10 +18,19 @@ export function nodeIdsOf(nodes: readonly MapNode[]): Map<MapNode, string> {
   return ids;
 }
 
-// GitHub's renderer fails silently on a double quote or a backtick in a label text, so each becomes a single quote.
+// GitHub's renderer fails silently on a double quote or a backtick in a label text, so each becomes a single quote. The
+// band, when the report has one, is the third line.
 export function nodeTextOf(node: MapNode): string {
   const title = node.status === 'kept' ? node.label : `${node.label} · ${node.status}`;
-  return `${title.replace(/["`]/g, "'")}<br/>${numbersOf(node).join(' · ')}`;
+  const lines = [title.replace(/["`]/g, "'"), numbersOf(node).join(' · ')];
+  return (node.band === undefined ? lines : [...lines, bandTextOf(node.band)]).join('<br/>');
+}
+
+// The band never comes as a color alone: its line has the symbol and the word, such as ■ critical: 6 fn ≥ 30 (+2). The
+// minus sign is U+2212.
+function bandTextOf({ band, count, change = 0 }: NodeBand): string {
+  const sign = change > 0 ? '+' : '−';
+  return `${bandSymbols[band]} ${band}: ${count} fn ≥ 30${change === 0 ? '' : ` (${sign}${Math.abs(change)})`}`;
 }
 
 // A community without code, such as one of types only, has no maintainability.

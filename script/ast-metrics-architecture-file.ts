@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { jsonOf, numberOf, objectOf } from './ast-metrics-json.ts';
 import { arrayOf, textOf, textsOf } from './ast-metrics-snapshot-json.ts';
-import type { MapSnapshot } from './ast-metrics-architecture-types.ts';
+import type { MapFunction, MapSnapshot } from './ast-metrics-architecture-types.ts';
 import { CommandError } from './repository.ts';
 
 type Fields = ReturnType<typeof objectOf>;
@@ -58,7 +58,13 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
   };
 }
 
-// A value that ast-metrics did not measure is absent, so a file needs only its path.
+// A value that ast-metrics did not measure is absent, so a file needs only its path. A file without functions, such as
+// a file of types, has none to join with the coverage.
 function fileOf(fields: Fields, check: Check): TableFile {
-  return { path: check(textOf(fields.path)), maintainability: numberOf(fields.maintainability), paths: numberOf(fields.paths), risk: numberOf(fields.risk) };
+  const functions = arrayOf(fields.functions).map((entry) => functionOf(objectOf(entry), check));
+  return { path: check(textOf(fields.path)), maintainability: numberOf(fields.maintainability), paths: numberOf(fields.paths), risk: numberOf(fields.risk), functions };
+}
+
+function functionOf(fields: Fields, check: Check): MapFunction {
+  return { name: check(textOf(fields.name)), paths: check(numberOf(fields.paths)) };
 }

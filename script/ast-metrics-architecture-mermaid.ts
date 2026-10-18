@@ -1,15 +1,20 @@
-// The Mermaid graph of the encoding of docs/implementation/architecture-evolution-plan.md, without the band colors: the
-// border width shows a touched community, and the line of an edge shows a cycle, a new, or a gone dependency.
+// The Mermaid graph of the encoding of docs/implementation/architecture-evolution-plan.md: the border width shows a
+// touched community, the border color its band, and the line of an edge shows a cycle, a new, or a gone dependency.
 import { edgeLabelOf, nodeIdsOf, nodeTextOf } from './ast-metrics-architecture-texts.ts';
-import type { ArchitectureMap, MapEdge, MapNode } from './ast-metrics-architecture-types.ts';
+import type { ArchitectureMap, Band, MapEdge, MapNode } from './ast-metrics-architecture-types.ts';
 
 const cycleStyle = 'stroke:#d03b3b,stroke-width:2px';
 const goneStyle = 'stroke:#999999,stroke-dasharray:4 4';
+
+// The fixed status colors of the plan, in the order of the class lines. A band class sets the color only: a width of its
+// own would replace the thick border of a touched community, because a later class wins.
+const bandColors: readonly (readonly [Band, string])[] = [['good', '#0ca30c'], ['warning', '#fab219'], ['critical', '#d03b3b']];
 
 // The lines of the fenced block, from the opening fence to the closing one.
 export function mermaidOf(map: ArchitectureMap): string[] {
   const ids = nodeIdsOf(map.nodes);
   const idOf = (node: MapNode): string => ids.get(node) ?? '';
+  const bands = bandColors.map(([band, color]) => ({ band, color, ids: map.nodes.filter((node) => node.band?.band === band).map(idOf) })).filter((entry) => entry.ids.length > 0);
   return [
     '```mermaid',
     'flowchart LR',
@@ -18,8 +23,10 @@ export function mermaidOf(map: ArchitectureMap): string[] {
     ...map.edges.flatMap(linkStyleOf),
     '  classDef touched stroke-width:3px',
     '  classDef gone stroke-dasharray:4 4,color:#999999',
+    ...bands.map(({ band, color }) => `  classDef ${band} stroke:${color}`),
     ...classLines('touched', map.nodes.filter((node) => node.touched).map(idOf)),
     ...classLines('gone', map.nodes.filter((node) => node.status === 'gone').map(idOf)),
+    ...bands.flatMap(({ band, ids: banded }) => classLines(band, banded)),
     '```',
   ];
 }

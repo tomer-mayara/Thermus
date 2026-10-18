@@ -54,8 +54,11 @@ export interface SnapshotShape {
   readonly files: readonly FileShape[];
 }
 
-// The legend under each graph.
+// The legend under each graph without bands.
 export const legend = 'Legend: thick border = a community this pull request touched; `· new` and `· gone` = a community or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base.';
+
+// Without a coverage report, this line follows the summary line.
+export const bandsNeedTheCoverage = 'Bands need the coverage: run pnpm exec node script/ast-metrics-coverage.ts first.';
 
 export const complexityHeading = '## Complexity of the changed files';
 export const tableHead = ['| File | Maintainability | Decision paths | Risk rank |', '| --- | --- | --- | --- |'];

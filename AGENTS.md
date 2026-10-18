@@ -113,12 +113,16 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    baseline in the same pull request: run `ast-metrics baseline` and
    commit the new `.ast-metrics-baseline.yaml`. Then the next pull request
    does not get the finding again. Put the Markdown output in the pull
-   request description. Then run
+   request description. Then run `npm run build` and
+   `pnpm exec node script/ast-metrics-coverage.ts` (about 90 seconds). It
+   measures how much of each function the unit tests run, so that the
+   next command can show the CRAP bands. Then run
    `pnpm exec node script/ast-metrics-architecture.ts` and put its output
    in the pull request description too: the architecture delta of `src/`
-   and the complexity table of the changed files. A pull request that
-   changes only documents gets `The map did not change.` and
-   `No production file changed.`; include these lines too.
+   with the band of each community, and the complexity table of the
+   changed files. A pull request that changes only documents gets
+   `The map did not change.` and `No production file changed.`; include
+   these lines too.
 6. Do not change `.ast-metrics-baseline.yaml` in a pull request, except
    for a kept finding of step 5, or when the pull request changes the
    rules in `.ast-metrics.yaml`. Then run `ast-metrics baseline` and commit
