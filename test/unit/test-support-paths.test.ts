@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import {
   astMetricsCliFake,
+  astMetricsCoverageScript,
   astMetricsDeltaScript,
   astMetricsMcpFake,
   astMetricsMcpScript,
@@ -48,6 +49,7 @@ const files = {
   astMetricsMcpScript,
   astMetricsCliFake,
   astMetricsMcpFake,
+  astMetricsCoverageScript,
   astMetricsSnapshotScript,
   programEntry,
   hostedPortalPreload: fileURLToPath(hostedPortalPreload),

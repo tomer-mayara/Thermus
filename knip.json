@@ -7,6 +7,7 @@
         "script/ast-metrics-delta.ts",
         "script/ast-metrics-review.ts",
         "script/ast-metrics-mcp.ts",
+        "script/ast-metrics-coverage.ts",
         "script/ast-metrics-snapshot.ts"
       ]
     },

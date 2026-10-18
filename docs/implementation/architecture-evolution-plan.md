@@ -143,12 +143,19 @@ ones; the output says so instead of hiding it.
 ### CRAP per function
 
 The coverage run is the unit suite once more, under `NODE_V8_COVERAGE`
-(about two to three minutes on this Mac). For each function in a `src/`
-file, coverage is the covered share of its own bytes: the blocks with count
-zero inside its range count as uncovered. Functions match ast-metrics by file
-(`dist/src/x.js` is `src/x.ts`) and by name; an anonymous function, a name
-that occurs twice in a file, and a compiler helper (`__` prefix) stay
-unmatched and get no CRAP; the table lists how many stayed unmatched.
+(about 85 seconds on this Mac, 274 processes). For each function in a
+`src/` file, coverage is the covered share of its own characters in the
+build: the share that at least one process ran, where a process runs no
+character of a block with count zero and no character of a function that it
+did not call. V8 gives a block only where its count differs from the count
+around it, so the blocks differ from process to process and the merge is per
+character, with the function's own range as the key. The range of a function
+includes its nested functions; each nested function has its own entry.
+Functions match ast-metrics by file (`dist/src/x.js` is `src/x.ts`) and by
+name; an anonymous function, a name that occurs twice in a file, and a
+compiler helper (`__` prefix, with the functions inside it) stay unmatched
+and get no CRAP; the table lists how many stayed unmatched. A `src/` file
+that no unit test loads is absent from the coverage and counts as uncovered.
 
 ### Bands
 
@@ -424,7 +431,11 @@ its body.
 ### T5. Coverage per function
 
 Source: step A2 and "CRAP per function". Depends on T1 (the snapshot gives
-the function names); independent of T3 and T4.
+the function names); independent of T3 and T4. Done in PR #158: the merge is
+per character (V8 gives a block only where its count differs from its
+parent's), the helpers are filtered by range, and the live check names a
+called function of `src/application.ts` instead of `createApplication`,
+which only the integration and acceptance tests call.
 
 **Outcome and scope.** Add `script/ast-metrics-coverage.ts [--from DIR]
 [--out FILE]`. By default it runs the unit suite of `dist/` with
