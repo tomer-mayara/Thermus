@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
 import { SdkHttpError, UnauthorizedError, type CallToolResult, type Client } from '@modelcontextprotocol/client';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { incomingPageCases } from '../../support/fixtures/incoming-pages.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
 import { trustedAdRulesFile } from '../../support/fixtures/ad-rules.ts';
@@ -120,7 +121,7 @@ function changedPayload(token: string, claim: string, value: unknown): string {
 
 describe('Self-hosted getURLAsMarkdown with real Better Auth access and the production pipeline, offline', () => {
   for (const era of mcpProtocolEras) {
-    test(`Given a real Better Auth token in ${era}, trusted rules, and a renderer process double, when the MCP client lists and calls getURLAsMarkdown, then the production pipeline returns one exact cleaned Markdown entry with rules and links from the final URL, the server keeps the rules that it read at startup, and each call writes one allowed outgoing record joined to its completion ID`, { timeout: 120_000 }, async (t) => {
+    test(`Given a real Better Auth token in ${era}, trusted rules, and a renderer process double, when the MCP client lists and calls getURLAsMarkdown, then the production pipeline returns one exact cleaned Markdown entry with rules and links from the final URL, the server keeps the rules that it read at startup, and each call writes allowed outgoing and incoming records joined to its completion ID`, { timeout: 120_000 }, async (t) => {
       const setup = await installation(t, [alice]);
       const rules = rulesFile(t);
       const renderer = RendererProcessDouble.install(t);
@@ -165,7 +166,7 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
       assert.deepEqual(steps.map(({ durationMs, ...record }) => {
         assert.ok(Number.isSafeInteger(durationMs) && (durationMs as number) >= 0);
         return record;
-      }), records.map(({ operationId }) => ({ event: 'pipeline.step.completed', operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' })));
+      }), records.flatMap(({ operationId }) => ['outgoing.observe_request', 'incoming.process_html'].map((stepId) => ({ event: 'pipeline.step.completed', operationId, stepId, outcome: 'allowed' }))));
       const recordText = server.completionLines().join('\n');
       assert.doesNotMatch(recordText, /private-query|private-fragment|Hidden instruction|Rendered story|Requested host target/);
       assert.ok(!recordText.includes(user.accessToken), 'a completion record holds the access token');
@@ -234,37 +235,43 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
     assert.deepEqual(server.completionRecords().map(({ status }) => status), ['success']);
   });
 
-  test('Given HTML that the sanitizer withholds, HTML deeper than the ad cleaner limit, and a failed render, when an authorized client calls the tool, then it gets exact empty success or a fixed error without partial Markdown, and each record has no cause or page text', { timeout: 120_000 }, async (t) => {
-    const setup = await installation(t, [alice]);
-    const renderer = RendererProcessDouble.install(t);
-    let nested = '<span hidden>private-hidden-text</span>';
-    for (let pass = 1; pass < 8; pass += 1) nested = `<${nested}span hidden>private-hidden-text</span>`;
-    // A script's text is serialized without escapes, so its markup forms new hidden elements after each removal pass.
-    renderer.serve('https://source.example/withheld', {
-      finalUrl: 'https://news.example/withheld',
-      html: `<html><body><main><h1>Story</h1><p>Visible text that is long enough to stay in the article.</p><div><script type="text/plain"></script>${nested}</script></div></main></body></html>`,
-    });
-    renderer.serve('https://source.example/deep', {
-      finalUrl: 'https://news.example/deep',
-      html: `<html><body><main>${'<div>'.repeat(300)}private-deep-text${'</div>'.repeat(300)}</main></body></html>`,
-    });
-    const token = (await issuedGrants(setup.directory, setup.clientId, [alice])).get(alice.email)?.accessToken ?? '';
-    const server = InProcessServer.open(t);
-    await server.start(serverSettings(setup.directory));
-    const client = await connectWithToken(t, { server: server.address, token: () => token });
+  for (const era of mcpProtocolEras) {
+    test(`Given empty, hidden-only, ad-only, withheld, oversized, deep, and failed pages in ${era}, when a real self-hosted user fetches them, then exact output and truthful incoming records join one completion per call`, { timeout: 120_000 }, async (t) => {
+      const setup = await installation(t, [alice]);
+      const renderer = RendererProcessDouble.install(t);
+      for (const { name, html } of incomingPageCases) renderer.serve(`https://source.example/${name}`, { finalUrl: `https://news.example/${name}`, html });
+      const pipeline = t.mock.method(HtmlToMarkdownPipeline.prototype, 'process');
+      const token = (await issuedGrants(setup.directory, setup.clientId, [alice])).get(alice.email)?.accessToken ?? '';
+      const server = InProcessServer.open(t);
+      await server.start(serverSettings(setup.directory));
+      const client = await connectWithToken(t, { server: server.address, token: () => token, era });
 
-    const results = [];
-    for (const url of ['https://source.example/withheld', 'https://source.example/deep', 'https://source.example/missing']) results.push(await callFetchTool(client, url));
-    await server.stop();
+      for (const { name, text } of incomingPageCases) assertText(await callFetchTool(client, `https://source.example/${name}`), text, text !== '');
+      assertText(await callFetchTool(client, 'https://source.example/missing'), 'Page fetch failed', true);
+      await server.stop();
 
-    assertText(results[0] as CallToolResult, '');
-    assertText(results[1] as CallToolResult, 'Page processing failed', true);
-    assertText(results[2] as CallToolResult, 'Page fetch failed', true);
-    assert.deepEqual(server.completionRecords().map(({ url, status }) => ({ url, status })), [
-      { url: 'https://source.example/withheld', status: 'success' },
-      { url: 'https://source.example/deep', status: 'processing_failed' },
-      { url: 'https://source.example/missing', status: 'fetch_failed' },
-    ]);
-    assert.doesNotMatch(server.completionLines().join('\n'), /private-|Visible text|HtmlDepthLimitError|HTTP request failed/);
-  });
+      const completions = server.completionRecords();
+      assert.equal(completions.length, incomingPageCases.length + 1);
+      assert.equal(new Set(completions.map(({ operationId }) => operationId)).size, completions.length);
+      assert.deepEqual(completions.map(({ status }) => status), [...incomingPageCases.map(({ text }) => text ? 'processing_failed' : 'success'), 'fetch_failed']);
+      assert.equal(pipeline.mock.callCount(), incomingPageCases.length - 1);
+      assert.ok(pipeline.mock.calls.every(({ arguments: [page] }) => !page.requestedUrl.endsWith('/oversize')));
+      const steps = stepRecordsIn(server.lines.join('\n'));
+      assert.equal(steps.length, incomingPageCases.length * 2 + 1);
+      assert.deepEqual(steps.map(({ durationMs, ...record }) => {
+        assert.ok(Number.isSafeInteger(durationMs) && (durationMs as number) >= 0);
+        return record;
+      }), [
+        ...incomingPageCases.flatMap(({ text, code }, index) => [
+          { event: 'pipeline.step.completed', operationId: completions[index].operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' },
+          { event: 'pipeline.step.completed', operationId: completions[index].operationId, stepId: 'incoming.process_html', outcome: text ? 'failed' : code ? 'blocked' : 'allowed', ...(code ? { code } : {}) },
+        ]),
+        { event: 'pipeline.step.completed', operationId: completions.at(-1)?.operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' },
+      ]);
+      for (const completion of completions) assert.match(completion.operationId as string, generatedOperationIdPattern);
+      assert.doesNotMatch(JSON.stringify(steps), /private-|Visible text|Story|source|news|Bearer|warning/);
+      assert.doesNotMatch(server.completionLines().join('\n'), /private-|Visible text|HtmlDepthLimitError|HTTP request failed/);
+      assert.ok(!server.lines.join('\n').includes(token));
+    });
+  }
 });

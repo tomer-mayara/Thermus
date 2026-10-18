@@ -1,4 +1,5 @@
 import { type WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
+import type { ScanWithholdingCode } from './prompt-injection-remover/hidden-html-removal-session.ts';
 
 export type Ctx = WebsiteFetchResult & {
   markdown?: string;
@@ -10,6 +11,7 @@ export type Ctx = WebsiteFetchResult & {
   // Detection categories in first-seen order, without duplicates. Count with Set.size.
   found?: readonly string[];
   warnings?: readonly string[];
+  scanWithholding?: ScanWithholdingCode;
 };
 
 export interface Step {

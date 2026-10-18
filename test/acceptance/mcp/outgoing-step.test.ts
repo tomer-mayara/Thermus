@@ -11,12 +11,18 @@ function assertStep(site: FetchSite, expected: { outcome: string; code?: string 
   const completions = site.completionLines().map((line) => JSON.parse(line) as Record<string, unknown>);
   assert.equal(completions.length, 1);
   const steps = stepRecordsIn(site.records.join('\n'));
-  assert.equal(steps.length, 1);
+  assert.equal(steps.length, site.pipelineCalls.length === 0 ? 1 : 2);
   assert.deepEqual(stepRecordsIn(site.records.join('\n'), completions[0].operationId as string), steps);
   const { durationMs, ...record } = steps[0];
   assert.ok(Number.isSafeInteger(durationMs) && (durationMs as number) >= 0);
   assert.deepEqual(record, { event: 'pipeline.step.completed', operationId: completions[0].operationId,
     stepId: 'outgoing.observe_request', ...expected });
+  if (steps.length === 2) {
+    const { durationMs: incomingDuration, ...incoming } = steps[1];
+    assert.ok(Number.isSafeInteger(incomingDuration) && (incomingDuration as number) >= 0);
+    assert.deepEqual(incoming, { event: 'pipeline.step.completed', operationId: completions[0].operationId,
+      stepId: 'incoming.process_html', outcome: 'allowed' });
+  }
   return completions[0];
 }
 
@@ -96,7 +102,7 @@ for (const era of mcpProtocolEras) {
       assert.deepEqual(result.content, [{ type: 'text', text: blocked ? 'Page fetch failed' : exactMarkdown }]);
       assert.equal(result.isError === true, blocked);
       assert.equal(execute.mock.callCount(), 1);
-      assert.equal(record.mock.callCount(), 1);
+      assert.equal(record.mock.callCount(), blocked ? 1 : 2);
       assert.equal(site.fetchCalls.length, blocked ? 0 : 1);
       assert.equal(site.pipelineCalls.length, blocked ? 0 : 1);
       assert.equal(site.completionLines().length, 1);
