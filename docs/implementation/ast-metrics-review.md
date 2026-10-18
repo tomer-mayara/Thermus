@@ -301,10 +301,10 @@ folder. The file:
   cycles of `src/` instead.
 
 `.ast-metrics-baseline.yaml` lists the violations that existed when the rules
-were last set (169 on 2026-10-18). The review and `ast-metrics lint` report
-only a violation that the baseline does not list. A baseline entry carries
-the measured value in its message, so a file whose value moved appears
-again. Refresh the baseline in three cases: when the rules change, in the
+were last set or at a later refresh (175 after PR #165 on 2026-10-18). The
+review and `ast-metrics lint` report only a violation that the baseline does
+not list. A baseline entry carries the measured value in its message, so a
+file whose value moved appears again. Refresh the baseline in three cases: when the rules change, in the
 same pull request as the rule change; when a violation reached `main` without
 the process (PR #155 brought two), in a pull request that names it; and when
 a pull request keeps a finding of severity high with a reason (step 5 of
