@@ -129,10 +129,13 @@ refused with `Invalid execution context`, without raw identity text or a cause.
 
 The outgoing step runs after those guards and before fetch. `ObserveRequestStep`
 only allows the exact input string unchanged; it performs no policy processing.
-`PipelineStep<Input, Output>` has a readonly ID and
-`execute(input, signal): Promise<StepResult<Output>>`. Its result is allow with
-output or block with a closed code. The fixed IDs are
-`outgoing.observe_request` and `incoming.process_html`. The incoming step
+`PipelineStep<Input, Output, Code extends BlockCode = BlockCode>` defines
+`execute(input, signal): Promise<StepResult<Output, Code>>`. Its result is allow
+with output or block with a closed code. The executable contract has no ID.
+Trusted executor bindings select `outgoing.observe_request` and
+`incoming.process_html` for records. `OutgoingStep` binds string input and output
+and permits only `blocked`; `IncomingStep` binds `WebsiteFetchResult` input,
+string output, and the full incoming block-code set. The incoming step
 receives the fetched page and allows only string Markdown. It runs the fixed
 HTML pipeline once, with each cleaner stage once in the same order.
 
@@ -144,8 +147,8 @@ and processing with `Page fetch failed`, `isError: true`, and completion
 
 After fetch, the incoming executor validates the result against its trusted
 binding before recording allow or releasing content. It accepts `scan_failed`
-and `scan_limit` only for incoming withholding. An advertised step ID cannot
-select a direction. A generic incoming block, unknown code, malformed result,
+and `scan_limit` only for incoming withholding. The trusted executor selects
+the direction and its code rules. A generic incoming block, unknown code, malformed result,
 or nonstring output gives the fixed processing error. Oversize input fails
 inside the entered incoming step, produces a failed record, and starts no cleaner.
 

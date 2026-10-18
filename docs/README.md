@@ -29,7 +29,7 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
-- [MCP pipelines improvement plan](implementation/mcp-pipelines-improvement-plan.md): proposed small contract and naming refinements from two independent AI design reviews; retains the incoming transformation loop and makes a fixed processor conditional on a concrete benefit.
+- [MCP pipeline refinements implementation record](implementation/mcp-pipeline-refinements.md): selected naming, trusted record identity, and static result refinements; verification and manager sign-off are tracked separately from the reviewed proposal.
 - [Two MCP pipelines plan](implementation/mcp-pipelines-plan.md): four slices for a neutral fetch operation, correlation IDs, outgoing observation, and incoming decisions; 01 merged in PR #155, 02 merged in PR #159, 03 merged in PR #160, and 04 is implemented and validated with manager sign-off in PR #162.
 - [Two MCP pipelines plan review](implementation/mcp-pipelines-plan-review.md): the deep review, corrected logical errors, section-by-section simplifications, and design sign-off.
 - [MCP-PIPE-01 implementation record](implementation/mcp-pipe-01.md): protected neutral fetch extraction at `bcae8707`, completed functional validation and VM restoration, and retained quality findings with reasons; merged in PR #155.
@@ -52,6 +52,8 @@ runtime guides stay current after implementation.
 - [Test code refactoring plan](implementation/test-code-refactoring-plan.md): the terms for auxiliary test files, the four-layer target layout of `test/**`, and the ordered steps that move, merge, and split them with no `src` change.
 
 ## Archive
+
+- [MCP pipelines improvement plan](archive/mcp-pipelines-improvement-plan.md): historical reviewed scope and discussion; selected refinements 01–04 are implemented in draft PR #164, with final gates pending. Includes the frozen [Martin-inspired review](archive/mcp-pipelines-review-martin.md) and [Metz-inspired review](archive/mcp-pipelines-review-metz.md).
 
 - [Completed authentication refactoring record](archive/auth-refactoring-plan.md): two merged slices, local command role and lazy opener, auth layout, direct import checks, preserved behavior, and deferred limits.
 - [Completed OO refactoring record](archive/oo-refactoring-plan.md): implementation scope, recorded verification, and deferred design decisions.

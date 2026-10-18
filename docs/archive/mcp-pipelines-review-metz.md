@@ -210,12 +210,12 @@ and an interruptible implementation. Preserve cleanup and capacity proofs.
 ## Verification and evidence limits
 
 This review used source and test inspection only. No new runtime verification
-was executed. The historical [MCP-PIPE-04 record](mcp-pipe-04.md) is historical
+was executed. The historical [MCP-PIPE-04 record](../implementation/mcp-pipe-04.md) is historical
 evidence and does not prove a future candidate.
 
 Implementation must follow [AGENTS.md](../../AGENTS.md), the
 [test layout](../testing/test-code-layout.md), and the
-[gate policy](test-gate-policy.md). Run every changed test locally. Classify
+[gate policy](../implementation/test-gate-policy.md). Run every changed test locally. Classify
 tests by real package collaboration, not speed or folder convenience.
 
 Before Ready, run check, habit-hooks, applicable integration and acceptance

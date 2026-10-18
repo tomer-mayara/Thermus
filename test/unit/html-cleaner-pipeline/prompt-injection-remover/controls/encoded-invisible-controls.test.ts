@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { CleanHtmlToMarkdownDefuddle } from '../../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import type { Ctx } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import type { HtmlProcessingContext } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { processHtml } from '../../../../support/in-process/process-html.ts';
 
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';
@@ -124,7 +124,7 @@ describe('Invisible controls after HTML entity decoding', () => {
   });
 
   test('preserves prior findings, warnings, counts, and input without mutation', async () => {
-    const input: Ctx = {
+    const input: HtmlProcessingContext = {
       requestedUrl: 'https://example.com/',
       finalUrl: 'https://example.com/',
       html: documentHtml('<p>left&#8238;right.</p>', 'left&#x2069;right'),
@@ -159,7 +159,7 @@ describe('Invisible controls after HTML entity decoding', () => {
 
   for (const [name, html, markdown] of documentsWithoutTitles) {
     test(`returns an empty title for ${name} and preserves prior reports`, async () => {
-      const input: Ctx = {
+      const input: HtmlProcessingContext = {
         requestedUrl: 'https://example.com/',
         finalUrl: 'https://example.com/',
         html,

@@ -119,7 +119,7 @@ describe('hidden HTML removal session', () => {
 });
 
 for (const code of ['scan_failed', 'scan_limit'] as const) {
-  test(`Given ${code} from hidden HTML removal, when the sanitizer keeps changed warning words, then Ctx carries the typed withholding independently`, async (t) => {
+  test(`Given ${code} from hidden HTML removal, when the sanitizer keeps changed warning words, then the processing context carries the typed withholding independently`, async (t) => {
     if (code === 'scan_failed') t.mock.method(HiddenHtmlScanner, 'scan', () => { throw new Error('private-scan-error'); });
     const run = HiddenHtmlRemovalSession.prototype.run;
     t.mock.method(HiddenHtmlRemovalSession.prototype, 'run', function (this: HiddenHtmlRemovalSession) {

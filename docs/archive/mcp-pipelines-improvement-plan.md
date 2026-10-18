@@ -1,5 +1,10 @@
 # MCP pipelines: proposed improvement plan
 
+Execution status: selected MCP-REFINE-01 through 04 are implemented in draft
+PR #164. MCP-REFINE-05 remains deferred. Final gates, quality review, and release
+sign-off are pending. The [implementation record](../implementation/mcp-pipeline-refinements.md)
+tracks execution evidence. The original reviewed proposal follows.
+
 Status: reviewed proposal, not implemented. Both review perspectives and the
 manager agree on the selected scope. Date: 2026-10-18. Review baseline:
 `27fa96c2bc47d890787a35be81ff6a2ebff42d61`.
@@ -256,13 +261,13 @@ None is included in the mandatory target.
 ## Verification and sign-off
 
 This review used source/test inspection only. No fresh runtime, gate, or metric
-pass is claimed. [MCP-PIPE-04](mcp-pipe-04.md#quality-review-and-retained-findings)
+pass is claimed. [MCP-PIPE-04](../implementation/mcp-pipe-04.md#quality-review-and-retained-findings)
 records historical functional results and retained nonzero quality findings.
 Those retained scores do not require metric-only helpers or prove a new candidate.
 
 For future implementation, follow [AGENTS.md](../../AGENTS.md),
 [coding principles](../coding-principles.md), [test layout](../testing/test-code-layout.md),
-and [test gate policy](test-gate-policy.md). Run every changed test locally before
+and [test gate policy](../implementation/test-gate-policy.md). Run every changed test locally before
 commit. Use real collaboration to determine test type. New behavior needs BDD
 red then TDD; structural refactoring starts from passing characterization.
 

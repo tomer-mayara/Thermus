@@ -13,7 +13,7 @@ function fixture(t: TestContext, result: unknown) {
   const entries: StepRecord[] = [];
   const execute = t.mock.fn(async (_page: WebsiteFetchResult, _signal: AbortSignal) => result as StepResult<string>);
   const record = t.mock.fn((entry: StepRecord) => { entries.push(entry); });
-  const incoming: PipelineStep<WebsiteFetchResult, string> = { id: 'incoming.process_html', execute };
+  const incoming: PipelineStep<WebsiteFetchResult, string> = { execute };
   return { incoming, execute, records: { record }, entries };
 }
 

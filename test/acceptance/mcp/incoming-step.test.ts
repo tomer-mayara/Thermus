@@ -49,7 +49,7 @@ for (const era of mcpProtocolEras) {
   ]) {
     test(`Given incoming ${name} in ${era}, when the result is checked, then a fixed processing error and joined safe records replace every payload`, async (t) => {
       const execute = t.mock.fn(async () => value as never);
-      const site = await openFetchSite(t, era, { incoming: { id: 'outgoing.observe_request', execute } });
+      const site = await openFetchSite(t, era, { incoming: { execute } });
 
       const result = await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
 
@@ -66,7 +66,7 @@ for (const era of mcpProtocolEras) {
 
   for (const cancelled of [false, true]) {
     test(`Given an incoming ${cancelled ? 'collaborator AbortError' : 'exception'} in ${era}, when it settles, then the outgoing record stays allowed and one safe incoming failure follows`, async (t) => {
-      const site = await openFetchSite(t, era, { incoming: { id: 'incoming.process_html', execute: async () => {
+      const site = await openFetchSite(t, era, { incoming: { execute: async () => {
         if (cancelled) throw new DOMException('private-abort-cause', 'AbortError');
         throw new Error('private-step-cause Bearer private-token');
       } } });
@@ -113,7 +113,7 @@ for (const era of mcpProtocolEras) {
           : { decision: 'block' as const, code: 'scan_failed' as const };
       });
       const record = t.mock.fn(() => { throw new Error('private-sink-error'); });
-      const site = await openFetchSite(t, era, { incoming: { id: 'incoming.process_html', execute }, stepSink: { record } });
+      const site = await openFetchSite(t, era, { incoming: { execute }, stepSink: { record } });
 
       const result = await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
 

@@ -25,7 +25,7 @@ The sanitizer checks hidden document elements, including `html` and `body` eleme
 If a parser scan fails, the sanitizer stops and returns empty HTML. It adds the warning `HTML scan failed; remaining HTML withheld` and keeps reports from earlier scans. A parser failure does not count as a hidden element removal.
 
 The session also returns a typed `scan_failed` or `scan_limit` signal at these
-two withholding exits. The sanitizer carries it through `Ctx.scanWithholding` to
+two withholding exits. The sanitizer carries it through `HtmlProcessingContext.scanWithholding` to
 `ProcessHtmlStep`. The step blocks with that code; it never reads warning text
 to decide whether content is safe to release. The scan loop and warning text
 remain available to existing consumers. A completed scan that yields empty

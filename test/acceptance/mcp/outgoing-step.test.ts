@@ -59,7 +59,7 @@ for (const era of mcpProtocolEras) {
     ['block with payload', { decision: 'block', code: 'blocked', output: 'private-payload' }],
   ]) {
     test(`Given an outgoing ${name} in ${era}, when the MCP call runs, then it returns the fixed fetch error without fetch or processing and records the exact terminal outcome`, async (t) => {
-      const site = await openFetchSite(t, era, { outgoing: { id: 'outgoing.observe_request', execute: async () => value as StepResult<string> } });
+      const site = await openFetchSite(t, era, { outgoing: { execute: async () => value as StepResult<string, 'blocked'> } });
 
       const result = await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
 
@@ -75,7 +75,7 @@ for (const era of mcpProtocolEras) {
 
   for (const cancelled of [false, true]) {
     test(`Given an outgoing ${cancelled ? 'AbortError before signal abort' : 'exception'} in ${era}, when handled, then only the fixed error and one safe step record escape`, async (t) => {
-      const site = await openFetchSite(t, era, { outgoing: { id: 'outgoing.observe_request', execute: async () => {
+      const site = await openFetchSite(t, era, { outgoing: { execute: async () => {
         if (cancelled) throw new DOMException('private-abort-cause', 'AbortError');
         throw new Error('private-step-error Bearer private-token');
       } } });
@@ -93,9 +93,9 @@ for (const era of mcpProtocolEras) {
 
   for (const blocked of [false, true]) {
     test(`Given a broken step sink and ${blocked ? 'block' : 'allow'} in ${era}, when the MCP call finishes, then the decision and completion hold with one write attempt and no repeated work`, async (t) => {
-      const execute = t.mock.fn(async (input: string): Promise<StepResult<string>> => blocked ? { decision: 'block', code: 'blocked' } : { decision: 'allow', output: input });
+      const execute = t.mock.fn(async (input: string): Promise<StepResult<string, 'blocked'>> => blocked ? { decision: 'block', code: 'blocked' } : { decision: 'allow', output: input });
       const record = t.mock.fn(() => { throw new Error('private-sink-error'); });
-      const site = await openFetchSite(t, era, { outgoing: { id: 'outgoing.observe_request', execute }, stepSink: { record } });
+      const site = await openFetchSite(t, era, { outgoing: { execute }, stepSink: { record } });
 
       const result = await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
 

@@ -6,7 +6,6 @@ for (const input of ['HTTPS://Example.COM:443/a%2fb?q=%2f#Part', 'https://exampl
   test(`Given the observation step and ${input}, when it executes, then it allows the exact input with only the standard result fields`, async () => {
     const step = new ObserveRequestStep();
 
-    assert.equal(step.id, 'outgoing.observe_request');
     assert.deepEqual(await step.execute(input, new AbortController().signal), { decision: 'allow', output: input });
   });
 }

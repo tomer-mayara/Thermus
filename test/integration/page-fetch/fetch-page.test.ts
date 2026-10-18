@@ -51,7 +51,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
   test('Given a trusted context without product access, when the operation is called, then fetch never starts', async (t) => {
     const fetchURL = t.mock.fn(async () => page);
     const process = t.mock.fn(async (_source: WebsiteFetchResult): Promise<StepResult<string>> => ({ decision: 'allow', output: 'unused' }));
-    const operation = createFetchPage({ ...operationDoubles(t), fetcher: { fetchURL }, incoming: { id: 'incoming.process_html', execute: process } });
+    const operation = createFetchPage({ ...operationDoubles(t), fetcher: { fetchURL }, incoming: { execute: process } });
     const denied = createRequestContext({ user: context.user, tenantId: context.tenantId, grants: [] });
 
     await assert.rejects(operation(url, denied, executionContextOf()), { name: 'AccessDeniedError', message: 'Access denied' });
@@ -67,7 +67,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
     const fetchURL = t.mock.fn(async () => fetched);
     const process = t.mock.fn(async (_source: WebsiteFetchResult): Promise<StepResult<string>> => ({ decision: 'allow', output: markdown }));
     const signal = new AbortController().signal;
-    const operation = createFetchPage({ ...operationDoubles(t), fetcher: { fetchURL }, incoming: { id: 'incoming.process_html', execute: process } });
+    const operation = createFetchPage({ ...operationDoubles(t), fetcher: { fetchURL }, incoming: { execute: process } });
 
     assert.deepEqual(await operation(requestedUrl, context, executionContextOf(signal)), { status: 'released', markdown });
 
@@ -173,7 +173,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
   ]) {
     test(`Given an outgoing ${name}, when the protected core executes, then fetch and processing never start and the safe fetch error holds`, async (t) => {
       const dependencies = operationDoubles(t);
-      dependencies.outgoing.execute.mock.mockImplementation(async () => result as StepResult<string>);
+      dependencies.outgoing.execute.mock.mockImplementation(async () => result as StepResult<string, 'blocked'>);
 
       await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf()), { message: 'Page fetch failed' });
 
@@ -273,11 +273,10 @@ function operationDoubles(t: TestContext) {
   const entries: StepRecord[] = [];
   return {
     entries,
-    outgoing: { id: 'outgoing.observe_request' as const, execute: t.mock.fn(async (input: string, _signal: AbortSignal): Promise<StepResult<string>> => ({ decision: 'allow', output: input })) },
+    outgoing: { execute: t.mock.fn(async (input: string, _signal: AbortSignal): Promise<StepResult<string, 'blocked'>> => ({ decision: 'allow', output: input })) },
     records: { record: t.mock.fn((entry: StepRecord) => { entries.push(entry); }) },
     fetcher: { fetchURL: t.mock.fn(async (_url: string, _signal?: AbortSignal) => ({ ...page })) },
     incoming: {
-      id: 'incoming.process_html' as const,
       execute: t.mock.fn(async (_source: WebsiteFetchResult, _signal?: AbortSignal): Promise<StepResult<string>> => ({ decision: 'allow', output: 'Exact Markdown' })),
     },
   };

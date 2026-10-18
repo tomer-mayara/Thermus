@@ -1,9 +1,7 @@
-import type { PipelineStep, StepResult } from './pipeline-step.ts';
+import type { OutgoingStep, StepResult } from './pipeline-step.ts';
 
-export class ObserveRequestStep implements PipelineStep<string, string> {
-  readonly id = 'outgoing.observe_request';
-
-  async execute(input: string, _signal: AbortSignal): Promise<StepResult<string>> {
+export class ObserveRequestStep implements OutgoingStep {
+  async execute(input: string, _signal: AbortSignal): Promise<StepResult<string, 'blocked'>> {
     return { decision: 'allow', output: input };
   }
 }

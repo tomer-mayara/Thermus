@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
 import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline, type Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { HtmlToMarkdownPipeline, type HtmlProcessingContext } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
@@ -85,7 +85,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
     const order: number[] = [];
     const invocations = stages.map((stage, index) => {
       const invoke = stage.invoke.bind(stage);
-      return t.mock.method(stage, 'invoke', async (ctx: Ctx) => { order.push(index); return invoke(ctx); });
+      return t.mock.method(stage, 'invoke', async (ctx: HtmlProcessingContext) => { order.push(index); return invoke(ctx); });
     });
     const pipeline = new HtmlToMarkdownPipeline(stages);
     const process = t.mock.method(pipeline, 'process');

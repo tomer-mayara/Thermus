@@ -31,7 +31,7 @@ function operationDoubles(t: TestContext, fetchFailure: unknown) {
     outgoing: new ObserveRequestStep(),
     records: { record: () => {} },
     fetcher: { fetchURL: t.mock.fn(async (_url: string, _signal?: AbortSignal): Promise<WebsiteFetchResult> => { throw fetchFailure; }) },
-    incoming: { id: 'incoming.process_html' as const, execute: t.mock.fn(async (_source: WebsiteFetchResult) => ({ decision: 'allow' as const, output: 'Unused' })) },
+    incoming: { execute: t.mock.fn(async (_source: WebsiteFetchResult) => ({ decision: 'allow' as const, output: 'Unused' })) },
     reportRendererSetupFailure: t.mock.fn((_failure: RendererSetupFailure) => {}),
     reportRendererReadinessTimeout: t.mock.fn((_failure: { category: 'readiness_timeout'; budgetMs: 20_000 }) => {}),
   };

@@ -21,7 +21,7 @@ for (const era of mcpProtocolEras) {
       const controller = new AbortController();
       const site = await openFetchSite(t, era, {
         httpSignal: era === '2025-11-25' ? controller.signal : undefined,
-        incoming: { id: 'incoming.process_html', execute: async (_page, signal): Promise<StepResult<string>> => {
+        incoming: { execute: async (_page, signal): Promise<StepResult<string>> => {
           const onAbort = () => observedAbort.resolve();
           signal.addEventListener('abort', onAbort, { once: true });
           started.resolve(signal);

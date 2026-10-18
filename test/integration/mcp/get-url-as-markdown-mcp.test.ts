@@ -5,7 +5,7 @@ import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
 import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline, type Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { HtmlToMarkdownPipeline, type HtmlProcessingContext } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
@@ -89,7 +89,7 @@ test('Given a real sanitizer stage in progress, when the MCP client cancels, the
   const stageEvents = new EventEmitter();
   const started = once(stageEvents, 'started', { signal: t.signal });
   const invoke = sanitizer.invoke.bind(sanitizer);
-  const sanitizerInvoke = t.mock.method(sanitizer, 'invoke', (ctx: Ctx) => {
+  const sanitizerInvoke = t.mock.method(sanitizer, 'invoke', (ctx: HtmlProcessingContext) => {
     const result = invoke(ctx);
     stageEvents.emit('started');
     return result;
