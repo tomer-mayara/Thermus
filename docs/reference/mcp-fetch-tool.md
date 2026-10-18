@@ -7,6 +7,12 @@ renderer. [RHD-01](../implementation/rhd-01.md) adds protected
 hosted fetch and bounded request waits.
 [MCP-PIPE-01](../implementation/mcp-pipe-01.md) extracts the protected fetch
 use case from MCP and keeps the tool's input and result contract unchanged.
+[MCP-PIPE-02](../implementation/mcp-pipe-02.md) adds operation identity to
+completion records and carries that identity through the protected operation.
+[MCP-PIPE-03](../implementation/mcp-pipe-03.md) adds the outgoing observation
+step and a local executor that validates its result and attempts a fixed record.
+[MCP-PIPE-04](../implementation/mcp-pipe-04.md) converts the cleaner adapter to
+the incoming step and carries typed withholding to the MCP boundary.
 See [production composition](#production-composition). There is no
 POST tool or new stdio tool.
 
@@ -48,14 +54,19 @@ fetches the page, including when a caller invokes it without MCP.
 | Invalid named arguments | `isError: true`, `Invalid tool arguments` |
 | Missing product permission | `isError: true`, `Access denied` |
 | Hosted capacity occupied | `isError: true`, `Server busy. Try again later.`; completion status `busy` |
-| Fetch failure | `isError: true`, `Page fetch failed`; no pipeline work |
+| Fetch failure | `isError: true`, `Page fetch failed`; no HTML processing |
 | Oversized HTML, thrown pipeline failure, or absent/nonstring Markdown | `isError: true`, `Page processing failed`; no partial output |
 | Observed per-call cancellation | Work stops; no successful result |
 
-`HtmlPageProcessor` checks the shared 10 MiB UTF-8 HTML limit before the first
-pipeline stage or parser, including ad removal. A successful pipeline can return empty Markdown
-after empty input, complete removal, or sanitizer withholding. Warnings do not
-create a new failure contract. Existing depth and sanitizer limits still apply.
+`ProcessHtmlStep` checks the shared 10 MiB UTF-8 HTML limit before the first
+pipeline stage or parser, including ad removal. Ordinary empty input or
+complete removal can return allowed empty Markdown.
+A typed `scan_failed` or `scan_limit` result withholds content and produces a
+blocked incoming record. Only this known incoming withholding maps to exact
+empty MCP success, with completion `success`, no error flag, and no structured
+content. Generic blocks, unknown codes, invalid output, or thrown failures give
+`Page processing failed`. Warnings are retained but never parsed to decide
+release. Existing depth and sanitizer limits still apply.
 
 The SDK owns negotiation, envelopes, and its 4 MiB request-body limit with HTTP
 413. The HTTP bridge streams the request to it. Tool validation adds no second
@@ -73,13 +84,17 @@ time. Then it makes these parts one time:
   `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in that
   order;
 - one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
-- one `HtmlPageProcessor` that wraps the existing pipeline, checks its input
-  size, and requires string Markdown;
-- one protected `createFetchPage` use case with the fetcher, processor, and
+- one `ProcessHtmlStep` that wraps the existing pipeline, checks its input
+  size, and allows string Markdown or blocks with a typed scan code;
+- one `ObserveRequestStep` and a core-owned `StepRecordSink` adapted to the
+  application logger;
+- one protected `createFetchPage` use case with the fetcher, incoming step,
+  required outgoing step and record sink, and
   [renderer setup report](#renderer-setup-report) and
   [readiness report](#renderer-readiness-report) of the application logger;
-- one thin `createGetURLAsMarkdown` adapter that projects its released result
-  to the existing MCP string-returning operation.
+- one thin `createGetURLAsMarkdown` adapter that returns released Markdown or
+  maps known withholding to exact empty text in the existing MCP
+  string-returning operation.
 
 `createFetchOperation` returns the operation. Then the branch calls
 `fetchToolServers(operation, logger)`, which returns the `buildServer` function
@@ -91,15 +106,56 @@ records attempt a JSON write to the application logger for each dispatched
 renderer's `finalUrl` selects the ad rules and resolves relative links.
 
 The neutral code lives under `src/page-fetch/`. It owns semantic URL
-validation and the protected fetch sequence. The MCP schema uses the same
+validation, the step protocol/executor and record-sink contract, and the
+protected fetch sequence. Separate `executeOutgoingStep` and
+`executeIncomingStep` functions enforce the two trusted roles. The MCP schema uses the same
 URL rules while retaining SDK schema conversion at the transport boundary.
 The cleaner-owned adapter stays under `src/html-cleaner-pipeline/`; the
-neutral use case depends on the `PageProcessor` contract, not the concrete
-HTML pipeline. Import rules enforce this boundary, including type-only imports.
+neutral use case depends on the `PipelineStep` role contract. The transitional
+`PageProcessor` port is removed. Import rules enforce this boundary, including
+type-only imports.
 
-This extraction adds no outgoing policy, standard pipeline-step decisions,
-operation IDs, step records, or typed withholding. Empty results after
-sanitizer withholding still reach MCP as exact empty success.
+The operation uses readonly `ExecutionContext { signal, operationId }` as its
+third argument. The MCP adapter, hosted wrapper, and development spy forward
+the same object to `FetchPage`; both steps and the fetcher receive its same
+signal. The core validates identity once after its existing cancellation, permission, and semantic URL guards, before fetching.
+Hosted cancellation/busy checks still precede the core. There is no optional
+context fallback or second identity allocation inside the operation.
+
+Direct callers supply a 36-character hyphenated hexadecimal UUID with version
+1–8 and variant 8/9/a/b. Letter case is accepted and preserved. Nil/max UUIDs,
+braces, compact forms, whitespace, extra text, and wrong version/variant are
+refused with `Invalid execution context`, without raw identity text or a cause.
+
+The outgoing step runs after those guards and before fetch. `ObserveRequestStep`
+only allows the exact input string unchanged; it performs no policy processing.
+`PipelineStep<Input, Output, Code extends BlockCode = BlockCode>` defines
+`execute(input, signal): Promise<StepResult<Output, Code>>`. Its result is allow
+with output or block with a closed code. The executable contract has no ID.
+Trusted executor bindings select `outgoing.observe_request` and
+`incoming.process_html` for records. `OutgoingStep` binds string input and output
+and permits only `blocked`; `IncomingStep` binds `WebsiteFetchResult` input,
+string output, and the full incoming block-code set. The incoming step
+receives the fetched page and allows only string Markdown. It runs the fixed
+HTML pipeline once, with each cleaner stage once in the same order.
+
+Steps receive only input and signal. The outgoing executor checks the decision,
+code, and exact original string before recording allow or starting fetch.
+Block, throw, unknown/malformed result, or changed/nonstring output stops fetch
+and processing with `Page fetch failed`, `isError: true`, and completion
+`fetch_failed`. Cancellation takes priority. No raw step cause reaches the client.
+
+After fetch, the incoming executor validates the result against its trusted
+binding before recording allow or releasing content. It accepts `scan_failed`
+and `scan_limit` only for incoming withholding. The trusted executor selects
+the direction and its code rules. A generic incoming block, unknown code, malformed result,
+or nonstring output gives the fixed processing error. Oversize input fails
+inside the entered incoming step, produces a failed record, and starts no cleaner.
+
+The neutral `FetchPageOutcome` is either `{ status: 'released', markdown }` or
+`{ status: 'withheld', code }`. Withheld carries no payload. The MCP adapter
+explicitly maps known withholding to empty text. Empty Markdown without a typed
+signal remains released and records allowed.
 
 Better Auth verifies each token and checks the current account before the tool
 runs. A forged token, a token that a password reset revoked, and a token of a
@@ -187,14 +243,82 @@ launch failures keep their separate behavior. See the
 [runtime guide](../lightpanda-runtime.md#renderer-readiness-report) for operator
 steps.
 
+<a id="outgoing-step-records"></a>
+
+## Step records
+
+For each entered step, the executor attempts one synchronous
+`StepRecordSink.record(event)` call. Composition supplies the sink; the core
+imports no concrete application logger. The fixed event has these fields:
+
+```ts
+{
+  event: 'pipeline.step.completed',
+  operationId,
+  stepId: 'outgoing.observe_request' | 'incoming.process_html',
+  outcome,
+  durationMs,
+  code?,
+}
+```
+
+| Outcome | Code |
+| --- | --- |
+| `allowed` | Absent |
+| `blocked` | `blocked`, or incoming `scan_failed` / `scan_limit` |
+| `failed` | `step_failed` or `invalid_step_result` |
+| `cancelled` | `cancelled` |
+
+The operation ID is the validated UUID from the same dispatched call. The
+step ID comes from the trusted role binding. A supplied step ID cannot
+select another role. Duration is a finite non-negative rounded integer,
+capped at `Number.MAX_SAFE_INTEGER`; invalid clock data uses 0.
+No input, output, raw error, URL, reason, HTML, Markdown, header, credential,
+warning, or exfiltration target is serialized into the event.
+
+Only explicit allow with the exact original URL advances to fetch. Incoming
+allow must contain a string before it can release content. Unknown decisions
+and codes fail closed; known scan codes also fail closed in the outgoing role.
+The outgoing production step does not use policy to block requests; controlled test steps exercise
+these executor boundaries.
+
+A sink exception cannot change the result, repeat a step/fetch, or skip
+cleanup. New step records use one guarded write attempt and no fallback.
+The separate completion writer below keeps its existing fallback. Neither
+record type has a durable or exactly-once delivery guarantee.
+
+Calls stopped before step entry have no step event, including schema, permission,
+URL, operation-ID, and hosted busy refusals. An active step settles after its
+owned cleanup. Abort or `AbortError` observed before its record wins over a late
+result; no later fetch or release follows. A later fetch/incoming cancellation
+does not rewrite an earlier completed step record. The hosted slot stays owned through settlement.
+
+Readers select the event type and operation ID. With a healthy sink, each
+entered step has one exact event and each dispatched call has one actual MCP
+completion; a step event cannot resolve `firstCompletion`. Step records contain
+no request or page content. Legacy completion path/reason privacy limits below
+remain unchanged.
+
 ## Completion records
 
 Every envelope-valid dispatched call attempts one JSON-encoded completion
 record in `finally`. It includes the trusted authority, subject, and tenant; the
-recognized tool label or a fixed unknown label; safe input fields or field-status
+operation ID; the recognized tool label or a fixed unknown label; safe input fields or field-status
 codes; the completion status; and elapsed time. A safe URL omits userinfo, query,
 and fragment. A reason is included only when it is a bounded, structurally valid
 string. JSON encoding escapes line breaks.
+
+Dispatch generates the UUID with Node `randomUUID` before tool-name and argument
+checks. Dispatched unknown, invalid, denied, busy, and cancelled calls therefore
+retain a completion ID, even if no fetch starts. Client request IDs, `_meta`, and
+arguments cannot choose it. HTTP/auth/body/envelope refusals before dispatch
+still have no tool completion. The ID is log metadata; it adds no MCP argument,
+response wrapper, or structured content.
+
+Record readers select `mcp.tool.completed` and the operation ID. A different
+event must not resolve a completion wait. Concurrent calls keep distinct IDs;
+each call keeps its ID and signal through settlement and cleanup. Invalid
+supplied identity cannot start fetching or reach records as unchecked text.
 
 The URL path and the verbatim reason can contain sensitive text. These fields
 remain part of the completion contract; the record is not a redacted content audit.
@@ -209,7 +333,8 @@ These records are best effort; they are not durable audit storage.
 
 ## Cancellation and test composition
 
-Each call supplies its `AbortSignal` to the operation, fetcher, and pipeline.
+Each call supplies an `ExecutionContext` to the operation. Its same `AbortSignal`
+reaches both standard steps, the fetcher, and the HTML pipeline.
 Cancellation is checked before work, between asynchronous stages, and before
 return. Renderer cancellation stops the child and releases per-call resources.
 Synchronous parsing cannot be preempted by cancellation; the existing HTML size

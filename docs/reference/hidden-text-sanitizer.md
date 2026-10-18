@@ -24,6 +24,15 @@ The sanitizer checks hidden document elements, including `html` and `body` eleme
 
 If a parser scan fails, the sanitizer stops and returns empty HTML. It adds the warning `HTML scan failed; remaining HTML withheld` and keeps reports from earlier scans. A parser failure does not count as a hidden element removal.
 
+The session also returns a typed `scan_failed` or `scan_limit` signal at these
+two withholding exits. The sanitizer carries it through `HtmlProcessingContext.scanWithholding` to
+`ProcessHtmlStep`. The step blocks with that code; it never reads warning text
+to decide whether content is safe to release. The scan loop and warning text
+remain available to existing consumers. A completed scan that yields empty
+content has no withholding signal and remains an allowed empty result. The
+[MCP tool](mcp-fetch-tool.md) maps only known incoming withholding to exact empty
+success and records it as blocked.
+
 Before each removal, the sanitizer checks URLs from parsed attributes in document elements and template content. It keeps threat findings and warnings when a later scan removes their source content. A visible flagged URL stays in the HTML. It preserves prior findings in order and appends each new category once. It also preserves prior warnings without appending an identical warning string again.
 
 The sanitizer adds independent hidden elements, hidden text nodes with non-whitespace text, hidden replaced-content elements, and comments to `removed`. Descendants removed with a hidden ancestor do not add targets. Copies of one authored element count once. An implied hidden element counts only when it or a covered descendant contributes source content to remove. Invisible-character cleanup does not add HTML targets. The sanitizer preserves `skipped`, metadata, and the input context. See [pipeline metrics](pipeline-metrics.md) for counting rules, repeated invocations, and migration.

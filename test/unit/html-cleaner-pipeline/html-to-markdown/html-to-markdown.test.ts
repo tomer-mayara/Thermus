@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { type CleanHtmlToMarkdown } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown.ts';
-import { type Ctx } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { type HtmlProcessingContext } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { readAdFixture } from '../fixtures/ad-pages.ts';
 
 const cleanedHtml = readAdFixture('element-hiding.cleaned.html');
@@ -14,7 +14,7 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
     converter = new CleanHtmlToMarkdownDefuddle();
   });
 
-  function createContext(html: string, url = 'https://example.com/'): Ctx {
+  function createContext(html: string, url = 'https://example.com/'): HtmlProcessingContext {
     return {
       requestedUrl: url,
       finalUrl: url,
@@ -68,7 +68,7 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
 
   for (const html of ['', '\t\n\f\r ']) {
     test(`returns empty Markdown when cleaning leaves ${JSON.stringify(html)}`, async () => {
-      const input: Ctx = {
+      const input: HtmlProcessingContext = {
         ...createContext(html),
         markdown: 'Previous output',
         title: 'Previous title',
@@ -130,7 +130,7 @@ describe('CleanHtmlToMarkdownDefuddle', () => {
   });
 
   test('preserves context and converts relative links using its URL', async () => {
-    const input: Ctx = {
+    const input: HtmlProcessingContext = {
       requestedUrl: 'https://example.com/base/',
       finalUrl: 'https://example.com/base/',
       html: '<html><head><title>Relative</title></head><body><main><p><a href="/docs/page">Relative link</a></p></main></body></html>',

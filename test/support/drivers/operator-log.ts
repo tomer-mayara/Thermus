@@ -8,6 +8,7 @@ const tenantLine = /tenant (local:[0-9a-f-]+)\./;
 // before each message. Thus a record does not start its line. The pattern finds the record from its first brace to
 // the end of the line.
 const completionLine = /\{"event":"mcp\.tool\.completed".*\}$/gm;
+const stepLine = /\{"event":"pipeline\.step\.completed".*\}$/gm;
 
 export function listeningUrlIn(output: string): URL | undefined {
   const address = listeningLine.exec(output)?.[1];
@@ -18,10 +19,16 @@ export function tenantIn(output: string): string | undefined {
   return tenantLine.exec(output)?.[1];
 }
 
-export function completionLinesIn(output: string): string[] {
-  return output.match(completionLine) ?? [];
+export function completionLinesIn(output: string, operationId?: string): string[] {
+  const lines = output.match(completionLine) ?? [];
+  return operationId === undefined ? lines : lines.filter((line) => JSON.parse(line).operationId === operationId);
 }
 
-export function completionRecordsIn(output: string): Record<string, unknown>[] {
-  return completionLinesIn(output).map((line) => JSON.parse(line) as Record<string, unknown>);
+export function completionRecordsIn(output: string, operationId?: string): Record<string, unknown>[] {
+  return completionLinesIn(output, operationId).map((line) => JSON.parse(line) as Record<string, unknown>);
+}
+
+export function stepRecordsIn(output: string, operationId?: string): Record<string, unknown>[] {
+  const records = (output.match(stepLine) ?? []).map((line) => JSON.parse(line) as Record<string, unknown>);
+  return operationId === undefined ? records : records.filter((record) => record.operationId === operationId);
 }

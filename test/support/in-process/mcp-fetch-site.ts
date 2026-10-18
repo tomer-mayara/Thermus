@@ -10,6 +10,9 @@ import type { WebsiteFetcher, WebsiteFetchResult } from '../../../src/website-fe
 import { NoAuthProvider } from '../doubles/auth/no-auth-provider.ts';
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
+import { completionLinesIn } from '../drivers/operator-log.ts';
+import type { OutgoingStep, IncomingStep } from '../../../src/page-fetch/pipeline-step.ts';
+import type { StepRecordSink } from '../../../src/page-fetch/step-record.ts';
 
 export const exactMarkdown = '# Exact Markdown\n\nNo extra text.\n';
 export const validFetchArguments = { url: 'HTTPS://Example.COM/Page?private-query=yes#private-fragment', reason: 'Read the page for this task' };
@@ -21,13 +24,23 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   resolver?: AccessResolver;
   headers?: Record<string, string>;
   httpSignal?: AbortSignal;
+  outgoing?: OutgoingStep;
+  incoming?: IncomingStep;
+  stepSink?: StepRecordSink;
 } = {}) {
   const records: string[] = [];
   const completed = Promise.withResolvers<string>();
+  const record = (entry: string) => {
+    records.push(entry);
+    if (completionLinesIn(entry).length === 1) completed.resolve(entry);
+  };
   const fetchCalls: { url: string; signal: AbortSignal | undefined }[] = [];
   const pipelineCalls: { page: WebsiteFetchResult; signal: AbortSignal | undefined }[] = [];
   const provider = new NoAuthProvider(new URL(resourceUrl));
   const operation = composeFetchOperation({
+    outgoing: options.outgoing,
+    incoming: options.incoming,
+    records: options.stepSink ?? { record: (event) => record(JSON.stringify(event)) },
     fetcher: { fetchURL: async (url, signal) => {
       fetchCalls.push({ url, signal });
       return options.fetcher?.fetchURL(url, signal) ?? { requestedUrl: url, finalUrl: 'https://example.net/final', html: '<p>Source</p>' };
@@ -39,7 +52,7 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   });
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: options.resolver ?? provider, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp', expectedResource: new URL(resourceUrl) },
-    buildServer: (context, lifetime) => createFetchToolServer(context, { operation, logger: { info: (entry) => { records.push(entry); completed.resolve(entry); }, error: (entry) => { records.push(entry); completed.resolve(entry); } } }, lifetime),
+    buildServer: (context, lifetime) => createFetchToolServer(context, { operation, logger: { info: record, error: record } }, lifetime),
     reportFailure: () => {},
   });
   const listener = await startHttpServer((request) => server.fetch(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resourceUrl });
@@ -50,5 +63,5 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
     authProvider: { token: async () => 'arbitrary-test-token-contents' }, requestInit: { headers: options.headers },
     fetch: options.httpSignal === undefined ? undefined : (url, init) => fetch(url, { ...init, signal: AbortSignal.any([options.httpSignal as AbortSignal, ...(init?.signal ? [init.signal] : [])]) }),
   }), { era, probe: true });
-  return { client, url, records, fetchCalls, pipelineCalls, server, listener, firstCompletion: completed.promise };
+  return { client, url, records, record, completionLines: (operationId?: string) => completionLinesIn(records.join('\n'), operationId), fetchCalls, pipelineCalls, server, listener, firstCompletion: completed.promise };
 }

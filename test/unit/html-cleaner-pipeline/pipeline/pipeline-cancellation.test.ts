@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import {
   HtmlToMarkdownPipeline,
-  type Ctx,
+  type HtmlProcessingContext,
 } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 
 const page = {
@@ -13,7 +13,7 @@ const page = {
 
 describe('HTML pipeline per-call cancellation', () => {
   test('Given a cancelled call, when processing starts, then no stage runs', async (t) => {
-    const invoke = t.mock.fn(async (ctx: Ctx) => ctx);
+    const invoke = t.mock.fn(async (ctx: HtmlProcessingContext) => ctx);
     const controller = new AbortController();
     controller.abort();
 
@@ -26,7 +26,7 @@ describe('HTML pipeline per-call cancellation', () => {
 
   test('Given cancellation during a stage, when that stage resolves, then later stages do not run', async (t) => {
     const controller = new AbortController();
-    const later = t.mock.fn(async (ctx: Ctx) => ({ ...ctx, markdown: 'must not return' }));
+    const later = t.mock.fn(async (ctx: HtmlProcessingContext) => ({ ...ctx, markdown: 'must not return' }));
     const pipeline = new HtmlToMarkdownPipeline([
       { async invoke(ctx) { controller.abort(); return ctx; } },
       { invoke: later },
@@ -57,7 +57,7 @@ describe('HTML pipeline per-call cancellation', () => {
     const first = Promise.withResolvers<void>();
     const second = Promise.withResolvers<void>();
     const controller = new AbortController();
-    const seen: Ctx[] = [];
+    const seen: HtmlProcessingContext[] = [];
     const pipeline = new HtmlToMarkdownPipeline([
       {
         async invoke(ctx) {

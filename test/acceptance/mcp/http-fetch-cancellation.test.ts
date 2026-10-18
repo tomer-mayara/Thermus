@@ -37,10 +37,10 @@ for (const era of mcpProtocolEras) {
       await abortObserved.promise;
       const completion = JSON.parse(await site.firstCompletion);
       assert.equal(completion.status, 'cancelled');
-      assert.equal(site.records.length, 1);
+      assert.equal(site.completionLines().length, 1);
       assert.equal(site.fetchCalls.length, 1);
       assert.equal(site.pipelineCalls.length, stage === 'after-pipeline' ? 1 : 0);
-      assert.doesNotMatch(site.records[0], /private-client-abort-cause|private-fetch-abort-cause|private-late-success/);
+      assert.doesNotMatch(site.records.join('\n'), /private-client-abort-cause|private-fetch-abort-cause|private-late-success/);
     });
   }
 
@@ -88,8 +88,8 @@ for (const era of mcpProtocolEras) {
     const result = await second;
     await otherClient.close();
     assert.equal(result.isError, undefined);
-    assert.equal(site.records.length, 2);
-    assert.deepEqual(site.records.map((entry) => JSON.parse(entry).status), ['cancelled', 'success']);
+    assert.equal(site.completionLines().length, 2);
+    assert.deepEqual(site.completionLines().map((entry) => JSON.parse(entry).status), ['cancelled', 'success']);
     assert.equal(site.pipelineCalls.length, 1);
     assert.equal(site.pipelineCalls[0]?.page.requestedUrl, 'https://example.com/complete');
   });

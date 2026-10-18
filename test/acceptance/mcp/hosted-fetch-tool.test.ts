@@ -1,9 +1,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
+import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { incomingPageCases } from '../../support/fixtures/incoming-pages.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { RendererProcessDouble, controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { openHostedFetchSite } from '../../support/in-process/hosted-fetch-site.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
 
 const url = 'https://source.example/story?private-query=yes#private-fragment';
 const reason = 'Read the page for this task';
@@ -12,7 +19,7 @@ const markdown = 'The rendered article has enough words to keep this first parag
 const renderedOutput = JSON.stringify({ url, http_status: 200, content: html, error: null });
 const params = { name: 'getURLAsMarkdown', arguments: { url, reason } };
 
-test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and safe completion records are returned, and missing or revoked access is refused before rendering', { timeout: 30_000 }, async (t) => {
+test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and one allowed outgoing and incoming records join the completion ID, and missing or revoked access is refused before rendering', { timeout: 30_000 }, async (t) => {
   const site = await openHostedFetchSite(t);
   const renderer = RendererProcessDouble.install(t);
   renderer.serve(url, { finalUrl: url, html });
@@ -27,10 +34,16 @@ test('Given production hosted composition with trusted rules and a valid Connect
   const revoked = await site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/call', token: site.token, params }));
   assert.deepEqual([unauthenticated.status, revoked.status], [401, 403]);
   assert.equal(renderer.launches.length, 1);
-  assert.deepEqual(site.completions().map(({ durationMs: _duration, ...record }) => record), [{
+  assert.match(site.completions()[0]?.operationId as string, generatedOperationIdPattern);
+  assert.deepEqual(site.completions().map(({ durationMs: _duration, operationId: _operationId, ...record }) => record), [{
     event: 'mcp.tool.completed', authority: 'workos:client_placeholder', subject: 'user_fetch', tenantId: 'workos:client_placeholder:org_fetch',
     tool: params.name, url: 'https://source.example/story', urlStatus: 'valid', reason, reasonStatus: 'valid', status: 'success',
   }]);
+  const steps = stepRecordsIn(site.lines.join('\n'));
+  assert.deepEqual(steps.map(({ durationMs, ...record }) => {
+    assert.ok(Number.isSafeInteger(durationMs) && (durationMs as number) >= 0);
+    return record;
+  }), [{ event: 'pipeline.step.completed', operationId: site.completions()[0]?.operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' }, { event: 'pipeline.step.completed', operationId: site.completions()[0]?.operationId, stepId: 'incoming.process_html', outcome: 'allowed' }]);
   assert.ok(site.world.fake.takeRequests().every(({ method }) => method === 'GET'), 'Hosted fetch changed WorkOS data.');
   assert.doesNotMatch(site.lines.join('\n'), /private-query|private-fragment|private-hidden|Hosted story/);
   assert.ok(!site.lines.join('\n').includes(site.token));
@@ -54,6 +67,8 @@ test('Given one renderer active in production hosted composition, when another a
   renderer.finish(null, renderedOutput, '');
   assert.deepEqual((await rpcResult(await next)).content, [{ type: 'text', text: markdown }]);
   assert.deepEqual(site.completions().map(({ status }) => status), ['busy', 'success', 'success']);
+  for (const record of site.completions()) assert.match(record.operationId as string, generatedOperationIdPattern);
+  assert.equal(new Set(site.completions().map(({ operationId }) => operationId)).size, 3);
 });
 
 for (const outcome of ['failure', 'cancelled'] as const) {
@@ -82,6 +97,55 @@ for (const outcome of ['failure', 'cancelled'] as const) {
     renderer.finish(null, renderedOutput, '');
     assert.deepEqual((await rpcResult(await next)).content, [{ type: 'text', text: markdown }]);
     assert.deepEqual(site.completions().map(({ status }) => status), ['busy', outcome === 'failure' ? 'fetch_failed' : 'cancelled', 'success']);
+    for (const record of site.completions()) assert.match(record.operationId as string, generatedOperationIdPattern);
+    assert.equal(new Set(site.completions().map(({ operationId }) => operationId)).size, 3);
     assert.doesNotMatch(site.lines.join('\n'), /private-query|private-fragment|private-renderer-failure/);
+  });
+}
+
+for (const era of mcpProtocolEras) {
+  test(`Given empty, hidden-only, ad-only, withheld, oversized, deep, and failed pages in ${era}, when a real hosted user fetches them, then exact output and truthful incoming records join one completion per call`, { timeout: 30_000 }, async (t) => {
+    const site = await openHostedFetchSite(t);
+    const renderer = RendererProcessDouble.install(t);
+    for (const { name, html } of incomingPageCases) renderer.serve(`https://source.example/${name}`, { finalUrl: `https://news.example/${name}`, html });
+    const pipeline = t.mock.method(HtmlToMarkdownPipeline.prototype, 'process');
+    const client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL(site.config.mcpResourceUrl), {
+      authProvider: { token: async () => site.token },
+      fetch: async (input, init) => site.application.handle(new Request(input, init)),
+    }), { era });
+    t.after(() => client.close());
+    const call = (url: string) => client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason: 'Read the page' } });
+
+    for (const { name, text } of incomingPageCases) {
+      const result = await call(`https://source.example/${name}`);
+      assert.deepEqual(result.content, [{ type: 'text', text }]);
+      assert.equal(result.isError === true, text !== '');
+      assert.equal(result.structuredContent, undefined);
+    }
+    const failure = await call('https://source.example/missing');
+    assert.deepEqual(failure.content, [{ type: 'text', text: 'Page fetch failed' }]);
+    assert.equal(failure.isError, true);
+
+    const completions = site.completions();
+    assert.equal(completions.length, incomingPageCases.length + 1);
+    assert.equal(new Set(completions.map(({ operationId }) => operationId)).size, completions.length);
+    assert.deepEqual(completions.map(({ status }) => status), [...incomingPageCases.map(({ text }) => text ? 'processing_failed' : 'success'), 'fetch_failed']);
+    assert.equal(pipeline.mock.callCount(), incomingPageCases.length - 1);
+    assert.ok(pipeline.mock.calls.every(({ arguments: [page] }) => !page.requestedUrl.endsWith('/oversize')));
+    const steps = stepRecordsIn(site.lines.join('\n'));
+    assert.equal(steps.length, incomingPageCases.length * 2 + 1);
+    assert.deepEqual(steps.map(({ durationMs, ...record }) => {
+      assert.ok(Number.isSafeInteger(durationMs) && (durationMs as number) >= 0);
+      return record;
+    }), [
+      ...incomingPageCases.flatMap(({ text, code }, index) => [
+        { event: 'pipeline.step.completed', operationId: completions[index].operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' },
+        { event: 'pipeline.step.completed', operationId: completions[index].operationId, stepId: 'incoming.process_html', outcome: text ? 'failed' : code ? 'blocked' : 'allowed', ...(code ? { code } : {}) },
+      ]),
+      { event: 'pipeline.step.completed', operationId: completions.at(-1)?.operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' },
+    ]);
+    for (const completion of completions) assert.match(completion.operationId as string, generatedOperationIdPattern);
+    assert.doesNotMatch(JSON.stringify(steps), /private-|Visible text|Story|source|news|Bearer|warning/);
+    assert.ok(!site.lines.join('\n').includes(site.token));
   });
 }

@@ -4,6 +4,8 @@ import { test } from 'node:test';
 import type { ApplicationLogger } from '../../../src/application.ts';
 import type { RequestContext } from '../../../src/auth/access-context.ts';
 import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
+import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
+import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 import { MARKDOWN_LOG_LIMIT, fetchOperationSpy } from '../../support/doubles/mcp/fetch-operation-spy.ts';
 
 const url = 'https://news.example/story?page=2';
@@ -19,7 +21,7 @@ const operationRuns = 'operation runs';
 interface ObservedFetch {
   readonly operation: FetchOperation;
   readonly timeline: string[];
-  readonly calls: { url: string; context: RequestContext; signal: AbortSignal }[];
+  readonly calls: { url: string; context: RequestContext; execution: ExecutionContext }[];
 }
 
 function observedFetch(outcome: () => Promise<string>, limit?: number): ObservedFetch {
@@ -29,8 +31,8 @@ function observedFetch(outcome: () => Promise<string>, limit?: number): Observed
     info: (message) => { timeline.push(`INFO ${message}`); },
     error: (message) => { timeline.push(`ERROR ${message}`); },
   };
-  const operation = fetchOperationSpy(async (requestedUrl, requestContext, signal) => {
-    calls.push({ url: requestedUrl, context: requestContext, signal });
+  const operation = fetchOperationSpy(async (requestedUrl, requestContext, execution) => {
+    calls.push({ url: requestedUrl, context: requestContext, execution });
     timeline.push(operationRuns);
     return outcome();
   }, log, limit);
@@ -41,15 +43,11 @@ function completedLine(count: number, markdown: string): string {
   return `INFO work-slice fetch completed: ${url} gave ${count} characters of Markdown:\n${markdown}`;
 }
 
-function anySignal(): AbortSignal {
-  return new AbortController().signal;
-}
-
 test('Given an operation that gives Markdown below the limit, when the observed fetch runs, then the started line comes before the operation, and the completed line has the count and the whole Markdown', async () => {
   const markdown = '# Story\n\nThe first paragraph.';
   const { operation, timeline } = observedFetch(async () => markdown, 2_000);
 
-  const result = await operation(url, context, anySignal());
+  const result = await operation(url, context, executionContextOf());
 
   assert.equal(result, markdown);
   assert.deepEqual(timeline, [startedLine, operationRuns, completedLine(29, markdown)]);
@@ -59,7 +57,7 @@ test('Given an operation that gives 2,000 emoji, when the observed fetch runs wi
   const markdown = '😀'.repeat(2_000);
   const { operation, timeline } = observedFetch(async () => markdown, 2_000);
 
-  await operation(url, context, anySignal());
+  await operation(url, context, executionContextOf());
 
   assert.deepEqual(timeline, [startedLine, operationRuns, completedLine(2_000, markdown)]);
 });
@@ -72,7 +70,7 @@ for (const { name, markdown, kept } of cutSamples) {
   test(`Given an operation that gives ${name}, which are 2,001 code points, when the observed fetch runs with the limit 2,000, then the completed line counts 2,001 characters, keeps the first 2,000 code points without a split surrogate pair, and names the 1 more character, and the caller gets the whole Markdown`, async () => {
     const { operation, timeline } = observedFetch(async () => markdown, 2_000);
 
-    const result = await operation(url, context, anySignal());
+    const result = await operation(url, context, executionContextOf());
 
     assert.equal(result, markdown);
     assert.deepEqual(timeline, [startedLine, operationRuns, `${completedLine(2_001, kept)}\n[cut: 1 more characters]`]);
@@ -85,8 +83,8 @@ test('Given no limit, when the operation gives MARKDOWN_LOG_LIMIT code points or
   const whole = observedFetch(async () => atLimit);
   const cut = observedFetch(async () => `${atLimit}😀`);
 
-  await whole.operation(url, context, anySignal());
-  await cut.operation(url, context, anySignal());
+  await whole.operation(url, context, executionContextOf());
+  await cut.operation(url, context, executionContextOf());
 
   assert.equal(MARKDOWN_LOG_LIMIT, 65_536);
   assert.equal(whole.timeline[2], completedLine(65_536, atLimit));
@@ -102,7 +100,7 @@ for (const { kind, failure, message } of failures) {
   test(`Given an operation that fails with ${kind}, when the observed fetch runs, then the log has the started line and an ERROR line with the message "${message}", and the fetch fails with the same value`, async () => {
     const { operation, timeline } = observedFetch(() => Promise.reject(failure));
 
-    const thrown = await operation(url, context, anySignal()).then(
+    const thrown = await operation(url, context, executionContextOf()).then(
       () => assert.fail('The observed fetch must fail.'),
       (error: unknown) => error,
     );
@@ -112,14 +110,16 @@ for (const { kind, failure, message } of failures) {
   });
 }
 
-test('Given an observed fetch, when it runs, then the operation gets the same URL, request context, and signal', async () => {
+test('Given an observed fetch, when it runs, then the operation gets the same URL, request context, execution context, and signal', async () => {
   const { operation, calls } = observedFetch(async () => 'Markdown');
-  const signal = anySignal();
+  const execution = executionContextOf();
 
-  await operation(url, context, signal);
+  await operation(url, context, execution);
 
   assert.equal(calls.length, 1);
   assert.equal(calls[0].url, url);
   assert.equal(calls[0].context, context);
-  assert.equal(calls[0].signal, signal);
+  assert.equal(calls[0].execution, execution);
+  assert.equal(calls[0].execution.signal, execution.signal);
+  assert.equal(calls[0].execution.operationId, execution.operationId);
 });

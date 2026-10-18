@@ -5,6 +5,7 @@ import { CssVisibilityProvenance } from './css-visibility-provenance.ts';
 import { SmallTextPolicy } from './small-text-policy.ts';
 
 type HtmlScan = ReturnType<typeof HiddenHtmlScanner.scan>;
+export type ScanWithholdingCode = 'scan_failed' | 'scan_limit';
 export type HiddenHtmlRemovalResult = {
   html: string;
   removed: { comments: number; hidden: number };
@@ -12,6 +13,7 @@ export type HiddenHtmlRemovalResult = {
   exfilReasons: Set<string>;
   visibleStyleValues: string[];
   withholdWarning: string | undefined;
+  scanWithholding?: ScanWithholdingCode;
 };
 
 export class HiddenHtmlRemovalSession {
@@ -34,7 +36,7 @@ export class HiddenHtmlRemovalSession {
       }
       const scan = this.tryScanHtml();
       if (!scan) {
-        return this.result('', 'HTML scan failed; remaining HTML withheld');
+        return this.result('', 'HTML scan failed; remaining HTML withheld', 'scan_failed');
       }
       this.recordScanWarnings(scan);
       if (scan.ranges.length === 0) {
@@ -49,10 +51,10 @@ export class HiddenHtmlRemovalSession {
     }
 
     // The last removal can form more hidden HTML. Withhold the unchecked result.
-    return this.result('', 'HTML scan limit reached; remaining HTML withheld');
+    return this.result('', 'HTML scan limit reached; remaining HTML withheld', 'scan_limit');
   }
 
-  private result(html: string, withholdWarning?: string): HiddenHtmlRemovalResult {
+  private result(html: string, withholdWarning?: string, scanWithholding?: ScanWithholdingCode): HiddenHtmlRemovalResult {
     return {
       html,
       removed: this.removed,
@@ -60,6 +62,7 @@ export class HiddenHtmlRemovalSession {
       exfilReasons: this.exfilReasons,
       visibleStyleValues: this.visibleStyleValues,
       withholdWarning,
+      ...(scanWithholding ? { scanWithholding } : {}),
     };
   }
 
