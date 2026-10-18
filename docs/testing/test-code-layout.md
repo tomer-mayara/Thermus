@@ -45,7 +45,8 @@ selects it. The other runtime and live gate names stay as listed above.
 This repository needs these kinds of test double:
 
 - **Stub**: gives canned answers. Examples: `NoAuthProvider`, `ChangeAnswers`,
-  `WorkOSFakeApi` with scripted routes.
+  `WorkOSFakeApi` with scripted routes, and the git executable
+  `git-cli-stub.ts` of the unit tests of the ast-metrics commands.
 - **Spy**: gives canned or real answers and records the calls for later checks.
   This is the main kind here: all `*Mock` classes, the two in-process `*Probe`
   classes, `BillingRecorder`, most `*Double` classes.
@@ -126,7 +127,8 @@ test/
     container/           layer 4: the system in Docker; Docker driver; container scripts
     hosted-live/         layers 2 to 4 of the live staging environment (unchanged)
     doubles/<name>/      <name> = src package of the contract (auth, mcp, organizations, hosted-admin,
-                         billing, application, website-fetcher, logging) or external system (workos)
+                         billing, application, website-fetcher, logging) or external system (workos,
+                         ast-metrics; the git stub of the ast-metrics command tests lives there too)
     fixtures/            shared fixture data, settings, data files
       hosted-portal/     the portal build fixture of the offline hosted tests
     isolation/           per-test isolation in the test process

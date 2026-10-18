@@ -342,6 +342,19 @@ non-root runtime user, without network access. It does not rebuild them.
 A failed check must prevent a final runtime image. No Docker daemon runs
 inside the build. These checks supplement the required pull request runs.
 
+The check stage of `Dockerfile.hosted` has no git executable, no `.git`
+folder (`Dockerfile.hosted.dockerignore` excludes it), and no ast-metrics.
+So a unit test of a script must not depend on git or ast-metrics; the unit
+tests of the ast-metrics commands put a stub of git first on a PATH that
+holds nothing else (`test/support/doubles/ast-metrics/git-cli-stub.ts`).
+A run of the unit tests of the scripts with a PATH that holds only `node` is
+the local stand-in for that part of the image gate:
+
+```sh
+mkdir -p /tmp/node-only && ln -sf "$(command -v node)" /tmp/node-only/node
+env PATH=/tmp/node-only node --test "test/unit/script/*.test.ts"
+```
+
 ### Acceptance: hosted build with constrained CPU
 
 Given a Linux AMD64 Render Starter builder with two CPUs and 8 GB of memory
