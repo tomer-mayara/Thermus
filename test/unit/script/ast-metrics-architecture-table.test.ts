@@ -5,7 +5,8 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 
 // The rules of the complexity table: the cells of a row, the risk rank, and the section without a production file. The
 // table is pure, so the cases call it in the test process. Its module runs from source next to the command, as the
-// command runs it. The types give the parts of the contract that the cases use.
+// command runs it. The types give the parts of the contract that the cases use. Without the CRAP delta, the table has no
+// CRAP column; ast-metrics-architecture-functions.test.ts specifies that column and the list after the table.
 interface File {
   readonly path: string;
   readonly maintainability?: number;

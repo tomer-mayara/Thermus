@@ -124,7 +124,25 @@ runs the real tool on the repository when it is on PATH, with and without
 `test/unit/script/ast-metrics-architecture.test.ts` checks the help and the
 refused arguments of the architecture command with an empty PATH, a missing
 snapshot file, and files that are not valid snapshots of version 1 (also one
-without files, and one with a file without a path).
+without files, one with a file without a path, and one with a function
+without a name or decision paths).
+`ast-metrics-architecture-coverage.test.ts` checks the coverage file with an
+empty PATH: a missing file, files that are not valid coverage reports of
+version 1 (also a snapshot, and a covered share that is text), and a valid
+report.
+`ast-metrics-architecture-crap.test.ts` checks the pure CRAP of each
+function: the formula (10 decision paths give 110 and 10) and its rounding,
+the join by file and by the name that V8 gives (a method by its own name, a
+constructor by its class), the functions without a CRAP (anonymous, a name
+twice in the file or in the report, a name that the report does not have),
+the file that the report does not have, the base with the share of the head,
+a removed function and file, two equal trees, and the rules for added and
+worse.
+`ast-metrics-architecture-bands.test.ts` checks the bands in the pure
+report: good, warning, and critical with their counts and the sign of a
+change, a gone and a new community, the band classes and their order, the
+summary count and the legend, the report without coverage, and the change of
+the map by a band.
 `ast-metrics-architecture-report.test.ts` checks the pure report in the test
 process: the Jaccard match at 0.5, the tie by label, the greedy order, each
 base community once, identity by files across new ids and labels, the ids
@@ -137,6 +155,11 @@ and `gone`, `not measured` on each side, the risk rank among the ten
 riskiest (the eleventh file, a tie by path, a file without a risk score, and
 a gone file), the section without a changed `src/` file, and one row for
 each file, sorted by path.
+`ast-metrics-architecture-functions.test.ts` checks the table with coverage:
+the CRAP column (counts with their arrows, `new`, `gone`, and `not
+measured`) and the list after the table (sorted by path and name, `base new`
+or the base CRAP, the share and the CRAP, a method without its module, and
+the unmatched count of the changed files only).
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from
 `fixtures/ast-metrics-architecture-snapshots.ts`: equal snapshots, a new
@@ -146,17 +169,33 @@ row of the file, numbers alone, a quote and a backtick, and `--out`.
 the complexity table: a file whose maintainability fell from 72.0 to 60.0,
 with its risk rank, a new file, a gone file, a file of types without a
 maintainability index, one row for each kind sorted by path, and changed
-files outside `src/`. `ast-metrics-architecture-base.test.ts` runs both
-doubles in a temporary repository: both snapshots with the table row of the
-changed file, the changed files of the delta rule (an added and a changed
-`src/` file, but not a changed test file or a change of `main` after the
-fork), a failed base analysis, and an unknown ref.
+files outside `src/`. These cases give no coverage report, so the line after
+the summary says that the bands need it.
+`ast-metrics-architecture-bands.test.ts` compares the complete Markdown with
+the coverage report of `fixtures/ast-metrics-architecture-coverage.ts`: a
+touched community without a function at CRAP 30 or more (good), one with two
+such functions in the base and none added or worse (warning), an added
+function (critical, `base new`), a function whose decision paths rose
+(worse, critical, with its base CRAP), an anonymous function and a name
+twice in the report (unmatched 2), a file that the report does not have
+(uncovered, CRAP 30.0 at the limit), and no `--coverage` (the line that the
+bands need the coverage, no band, no CRAP column, no list).
+`ast-metrics-architecture-base.test.ts` runs both doubles in a temporary
+repository: both snapshots with the table row of the changed file, the
+changed files of the delta rule (an added and a changed `src/` file, but not
+a changed test file or a change of `main` after the fork), the bands from
+the `ast-report/coverage.json` of the repository root, a failed base
+analysis, and an unknown ref.
 `ast-metrics-architecture.live.ts` runs the real tool with `--base HEAD`,
-whose output ends with `No production file changed.`; the default suites
-skip it.
+whose output ends with `No production file changed.`, and a second case
+that first runs the real unit suite under coverage (about 90 seconds), then
+the command with each `src/` file touched: equal counts on both sides, a
+band without a change on each node, an equal CRAP cell on each row, and an
+empty list. It removes `ast-report/coverage.json` afterwards. The default
+suites skip it.
 
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-coverage.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/unit/script/ast-metrics-architecture-functions.test.js dist/test/unit/script/ast-metrics-architecture-crap.test.js dist/test/unit/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js

@@ -5,7 +5,8 @@ import type { TableFile } from './ast-metrics-architecture-types.ts';
 
 const notMeasured = 'not measured';
 
-type Side = number | 'new' | 'gone' | typeof notMeasured;
+// The value of one side of a cell, or the word for a side without it.
+export type Side = number | 'new' | 'gone' | typeof notMeasured;
 
 interface Measure {
   readonly valueOf: (file: TableFile) => number | undefined;
@@ -31,7 +32,7 @@ function sideOf(file: TableFile | undefined, measure: Measure, absent: 'new' | '
 
 // A file of the head without the value is not measured, also when the base had one: then no change is known. The same
 // word shows a file that neither snapshot has, because ast-metrics measured it in neither tree.
-function cellOf(before: Side, after: Side, digits: number): string {
+export function cellOf(before: Side, after: Side, digits: number): string {
   if (after === notMeasured || (before === 'new' && after === 'gone')) return notMeasured;
   const change = typeof before === 'number' && typeof after === 'number' ? changeText(after - before, digits) : '';
   return `${textOf(before, digits)} → ${textOf(after, digits)}${change}`;

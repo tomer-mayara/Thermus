@@ -1,8 +1,7 @@
 # Architecture and complexity evolution plan
 
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
-"Review record"). Tickets T1 to T5 are done; T6 and T7 are open (see the
-appendix). It builds on the process of PR #154 ("Code quality review with
+"Review record"). Tickets T1 to T6 are done; T7 is open (see the appendix). It builds on the process of PR #154 ("Code quality review with
 ast-metrics" in [AGENTS.md](../../AGENTS.md) and
 [the review guide](ast-metrics-review.md)).
 
@@ -126,8 +125,8 @@ All three appear in the pull request body through step 5 of the process:
    rank of the file when it is among the ten riskiest of the head; the line
    `No production file changed.` when no `src/` file changed. T6 adds the
    functions with CRAP at 30 or more, before to after, as a column, and
-   then the functions that the pull request added or changed and that have
-   CRAP at 30 or more, with their complexity and coverage.
+   then the functions that the pull request added or made worse and that
+   have CRAP at 30 or more, with their complexity and coverage.
 3. **Trend.** One table of the last ten snapshots of `main`: modularity, cross
    share, cycles, LOC-weighted maintainability, functions with CRAP at 30 or
    more. The store is `docs/metrics/<date>-<commit>.json`, one file per
@@ -157,10 +156,20 @@ around it, so the blocks differ from process to process and the merge is per
 character, with the function's own range as the key. The range of a function
 includes its nested functions; each nested function has its own entry.
 Functions match ast-metrics by file (`dist/src/x.js` is `src/x.ts`) and by
-name; an anonymous function, a name that occurs twice in a file, and a
-compiler helper (`__` prefix, with the functions inside it) stay unmatched
-and get no CRAP; the table lists how many stayed unmatched. A `src/` file
-that no unit test loads is absent from the coverage and counts as uncovered.
+the name that V8 gives: ast-metrics names a method `module\Class.method`,
+V8 names it `method`, and V8 names a constructor `Class`. An anonymous
+function, a name that occurs twice in a file of the snapshot or of the
+coverage, a name that the coverage does not have, and a compiler helper
+(`__` prefix, with the functions inside it) stay unmatched and get no CRAP;
+the list under the table gives how many functions of the changed files
+stayed unmatched. A `src/` file that no unit test loads is absent from the
+coverage and counts as uncovered.
+
+The base tree gets no coverage run, so the CRAP of the base is an
+approximation: a function of the base has its own decision paths and the
+covered share of the head function with the same name in the same file, and
+the share 0 when the head file does not have the name, such as a removed
+function. The pull request thus needs one coverage run, not two.
 
 ### Bands
 
@@ -169,6 +178,12 @@ The band of a community or a file follows the change, as rule 1 says:
 - **good**: no function with CRAP at 30 or more;
 - **warning**: some, and the pull request added none and made none worse;
 - **critical**: the pull request added at least one or made one worse.
+
+A function with CRAP at 30 or more is added when the base file does not
+have its name, and worse when its CRAP was below 30 in the base or is higher
+than in the base. The count in the node text is the count of the functions
+at 30 or more in the head. A gone community has the count and the band of
+its base, good or warning, because the base has no change to follow.
 
 ## Encoding of the architecture delta
 
@@ -206,14 +221,18 @@ flowchart LR
   c_hosted_admin -. "6 · cycle" .-> c_auth
   linkStyle 1 stroke:#d03b3b,stroke-width:2px
   classDef touched stroke-width:3px
-  classDef critical stroke:#d03b3b,stroke-width:3px
-  classDef warning stroke:#fab219,stroke-width:3px
-  class c_auth touched,critical
+  classDef gone stroke-dasharray:4 4,color:#999999
+  classDef warning stroke:#fab219
+  classDef critical stroke:#d03b3b
+  class c_auth touched
   class c_hosted_admin warning
+  class c_auth critical
 ```
 
 T3 implements everything above except the band line and the band classes,
-which T6 adds.
+which T6 adds. A band class sets the border color only: with a width of its
+own, it would replace the thick border of a touched community, because the
+class that the block defines later wins.
 
 A label text holds no backtick and no double quote, because GitHub's renderer
 fails silently on them.
@@ -262,6 +281,9 @@ The owner decided on 2026-10-17:
   exercise counts as uncovered until A2 adds that suite. CRAP overstates the
   risk of such code, and the table names the suite that produced the
   coverage.
+- The base gets the coverage of the head (see "CRAP per function"), so a
+  pull request that only removes unit tests makes no function worse, and a
+  function that the pull request removed counts as uncovered in the base.
 - ast-metrics measures TypeScript only; a change to `.mjs` files or to
   configuration does not appear.
 - The trend lags one pull request behind `main`, and a `main` commit that no
@@ -498,7 +520,19 @@ when `dist/` is missing. One suite at a time on a shared host.
 
 ### T6. CRAP, bands, and colors
 
-Source: step A2, "Bands", and "Encoding". Depends on T4 and T5.
+Source: step A2, "Bands", and "Encoding". Depends on T4 and T5. Done in PR
+#167, with the approximation of the base: the base tree gets no coverage
+run, so a function of the base has its own decision paths and the covered
+share of the head function with the same name (0 when the head file does
+not have the name). Findings: ast-metrics names a method
+`module\Class.method` and V8 names it `method`, so the join uses the names
+of V8; on this repository on 2026-10-18, 721 of the 1022 functions of `src/`
+matched, against 402 with the names of ast-metrics as they are. The
+snapshot files stay without the coverage and CRAP fields: the architecture
+command joins the coverage when it makes its report. A band class sets the
+border color only, so that the thick border of a touched community stays,
+and a kept community whose band changed changes the map, as "The views"
+says.
 
 **Outcome and scope.** The architecture command reads `coverage.json` when
 present (or `--coverage FILE`), joins each function of the head snapshot

@@ -6,7 +6,7 @@ import { mapSourcesOf } from './ast-metrics-architecture-input.ts';
 import { architectureReportOf } from './ast-metrics-architecture-report.ts';
 import { CommandError } from './repository.ts';
 
-const help = `Usage: node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--timeout-ms MS] [--out FILE] [--help]
+const help = `Usage: node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--timeout-ms MS] [--out FILE] [--help]
 
 Print the architecture delta of src/ as Markdown, for the body of a pull
 request: a summary line with the modularity, the cross share, the cycles, and
@@ -18,6 +18,21 @@ among the ten riskiest files of the head. A file that the base does not have is
 new, a file that the head does not have is gone, and a file without a
 maintainability index in the head is not measured. Without a changed src/ file,
 the section says that no production file changed.
+
+With the coverage report of script/ast-metrics-coverage.ts, each function of
+src/ gets its CRAP: paths² × (1 − covered share)³ + paths. The function of the
+coverage has the same name in the same file, as V8 names it: a method by its
+own name, a constructor by its class. A function without a name, a name that
+the file or the report has twice, and a name that the report does not have get
+no CRAP. A file that the report does not have counts as uncovered. The base
+tree gets no coverage run: a function of the base has the covered share of the
+head. A community is
+good when no function has CRAP 30 or more, warning when some have but this
+pull request added or made worse none of them, and critical when it added or
+made worse one. The node text gives the band and the count, the border has the
+color of the band, the table gives the count of each changed file, and a list
+names each function that the pull request added or made worse. Without the
+report, the output says that the bands need it.
 
 By default, the command takes two snapshots, as script/ast-metrics-snapshot.ts
 does: the base is the merge base of REF and HEAD, in a temporary worktree, and
@@ -40,6 +55,8 @@ Options:
   --base-snapshot FILE  Read the base snapshot from FILE
   --touched FILES       The changed files, as paths from the root separated by
                         commas, in place of the changed files of git
+  --coverage FILE       Read the coverage report from FILE (default in a
+                        repository: ast-report/coverage.json when it exists)
   --timeout-ms MS       Deadline of each MCP session (100..300000; default: 60000)
   --out FILE            Also write the Markdown to FILE, relative to the current
                         folder
