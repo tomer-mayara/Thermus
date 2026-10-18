@@ -126,7 +126,7 @@ export async function prepareOAuth(options, signal) {
   const timer = setTimeout(() => timeout.abort(new FetchUrlError('Hosted authorization timed out. Run --login again.')), options.authTimeoutMs ?? 300_000);
   const bounded = AbortSignal.any([signal, timeout.signal]);
   try {
-    const { withOAuthStore, OAuthStoreError } = await import('./credentials.mjs');
+    const { withOAuthStore, OAuthStoreError } = await import('./credential-store.mjs');
     try { return await withOAuthStore(options.profile, (store) => { bounded.throwIfAborted(); return credentialsFromStore(options, store, bounded); }); }
     catch (error) { if (error instanceof OAuthStoreError) throw new FetchUrlError(error.message); throw error; }
   } catch (error) {

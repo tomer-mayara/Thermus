@@ -24,7 +24,7 @@ build is needed to run the script.
 [`fetch-url.mjs`](fetch-url.mjs) is the command entry point. Its helper modules
 live in `fetch-url/`: [`oauth.mjs`](fetch-url/oauth.mjs) coordinates OAuth,
 [`browser.mjs`](fetch-url/browser.mjs) handles browser sign-in,
-[`credentials.mjs`](fetch-url/credentials.mjs) stores credentials, and
+[`credential-store.mjs`](fetch-url/credential-store.mjs) stores credentials, and
 [`errors.mjs`](fetch-url/errors.mjs) defines command errors.
 
 ## Sign in and fetch

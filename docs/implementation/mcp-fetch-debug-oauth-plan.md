@@ -316,7 +316,7 @@ state were removed after the test.
 
 The implementation keeps `script/fetch-url.mjs` as the only command entry point.
 Its internal modules are in `script/fetch-url/`: `oauth.mjs` prepares OAuth,
-`browser.mjs` owns the callback and browser launch, and `credentials.mjs` owns
+`browser.mjs` owns the callback and browser launch, and `credential-store.mjs` owns
 private storage. `errors.mjs` carries only local diagnostics. There is
 no new dependency, backend authorization change, registration cache, or token
 argument. The store also removes validated orphan temporary files under its
