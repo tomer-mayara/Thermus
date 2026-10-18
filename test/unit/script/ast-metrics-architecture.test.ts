@@ -7,8 +7,9 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 import { runScript } from '../../support/processes/script-command.ts';
 
 // The command line and the snapshot files of the architecture command. ast-metrics-architecture-report.test.ts
-// specifies the rules of the report. An empty PATH has no git and no ast-metrics. Thus these cases also show that the
-// command checks its arguments first, and that it reads snapshot files without either tool.
+// specifies the rules of the report, and ast-metrics-architecture-coverage.test.ts the coverage file. An empty PATH has
+// no git and no ast-metrics. Thus these cases also show that the command checks its arguments first, and that it reads
+// snapshot files without either tool.
 const noTools = { env: { PATH: '' } };
 
 test('Given --help, when the architecture command runs, then it explains the two sources of the snapshots, the changed files, the matching, the change of the map, the complexity table, the bands, the options, and the exit status', async (t) => {
@@ -98,49 +99,6 @@ for (const [name, text] of [
     const result = await runScript(t, astMetricsArchitectureScript, { args, ...noTools });
 
     assert.equal(result.stderr, `ast-metrics-architecture: The file ${args[3]} is not a valid snapshot of version 1.\n`);
-    assert.equal(result.stdout, '');
-    assert.equal(result.code, 1);
-  });
-}
-
-// Writes the text to a coverage file next to two valid snapshot files and gives the arguments that name all three.
-function coverageArguments(t: TestContext, text: string): string[] {
-  const args = fileArguments(t, JSON.stringify(valid), JSON.stringify(valid));
-  const coverage = join(dataDirectory(t), 'coverage.json');
-  writeFileSync(coverage, text);
-  return [...args, '--coverage', coverage];
-}
-
-test('Given a --coverage file that does not exist, when the architecture command runs, then it fails with one diagnostic line that names the file', async (t) => {
-  const missing = join(dataDirectory(t), 'missing.json');
-
-  const result = await runScript(t, astMetricsArchitectureScript, { args: [...fileArguments(t, JSON.stringify(valid), JSON.stringify(valid)), '--coverage', missing], ...noTools });
-
-  assert.equal(result.stderr, `ast-metrics-architecture: Cannot read the coverage file ${missing}.\n`);
-  assert.equal(result.stdout, '');
-  assert.equal(result.code, 1);
-});
-
-// The parts of a coverage report that the command reads, as script/ast-metrics-coverage.ts writes them.
-const validCoverage = { version: 1, suite: 'unit', files: [{ path: 'src/a/0.ts', functions: [{ name: 'run', start: 0, end: 10, called: 1, coveredShare: 0.5 }] }] };
-
-for (const [name, text] of [
-  ['text that is not JSON', 'Coverage'],
-  ['a JSON array', '[]'],
-  ['a report of version 2', JSON.stringify({ ...validCoverage, version: 2 })],
-  ['a snapshot', JSON.stringify(valid)],
-  ['a report without files', JSON.stringify({ ...validCoverage, files: undefined })],
-  ['a file without a path', JSON.stringify({ ...validCoverage, files: [{ functions: [] }] })],
-  ['a file without functions', JSON.stringify({ ...validCoverage, files: [{ path: 'src/a/0.ts' }] })],
-  ['a function without a name', JSON.stringify({ ...validCoverage, files: [{ path: 'src/a/0.ts', functions: [{ coveredShare: 0.5 }] }] })],
-  ['a covered share that is text', JSON.stringify({ ...validCoverage, files: [{ path: 'src/a/0.ts', functions: [{ name: 'run', coveredShare: '0.5' }] }] })],
-] as const) {
-  test(`Given a --coverage file with ${name}, when the architecture command runs, then it fails with one diagnostic line that names the file`, async (t) => {
-    const args = coverageArguments(t, text);
-
-    const result = await runScript(t, astMetricsArchitectureScript, { args, ...noTools });
-
-    assert.equal(result.stderr, `ast-metrics-architecture: The file ${args.at(-1)} is not a valid coverage report of version 1.\n`);
     assert.equal(result.stdout, '');
     assert.equal(result.code, 1);
   });

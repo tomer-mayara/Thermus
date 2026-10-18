@@ -123,10 +123,13 @@ runs the real tool on the repository when it is on PATH, with and without
 
 `test/unit/script/ast-metrics-architecture.test.ts` checks the help and the
 refused arguments of the architecture command with an empty PATH, a missing
-snapshot file, files that are not valid snapshots of version 1 (also one
+snapshot file, and files that are not valid snapshots of version 1 (also one
 without files, one with a file without a path, and one with a function
-without a name or decision paths), a missing coverage file, and files that
-are not valid coverage reports of version 1.
+without a name or decision paths).
+`ast-metrics-architecture-coverage.test.ts` checks the coverage file with an
+empty PATH: a missing file, files that are not valid coverage reports of
+version 1 (also a snapshot, and a covered share that is text), and a valid
+report.
 `ast-metrics-architecture-crap.test.ts` checks the pure CRAP of each
 function: the formula (10 decision paths give 110 and 10) and its rounding,
 the join by file and by the name that V8 gives (a method by its own name, a
@@ -191,7 +194,7 @@ empty list. It removes `ast-report/coverage.json` afterwards. The default
 suites skip it.
 
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/unit/script/ast-metrics-architecture-crap.test.js dist/test/unit/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-coverage.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/unit/script/ast-metrics-architecture-crap.test.js dist/test/unit/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
