@@ -1,8 +1,7 @@
 // The summary that the file subcommand of script/ast-metrics-mcp.ts makes from the answer of get_file_metrics: a
 // header with the file values, then one line for each function, lowest score first.
+import { isJsonObject, jsonOf, numberOf, objectOf, type JsonObject } from './ast-metrics-json.ts';
 import { CommandError } from './repository.ts';
-
-type JsonObject = Readonly<Record<string, unknown>>;
 
 // Only the values that the summary prints. A value that the answer does not give is undefined.
 interface FunctionMetrics {
@@ -45,17 +44,17 @@ function fileMetricsOf(text: string): FileMetrics {
 
 // An entry that is not an object gives no values, so its line shows only dashes.
 function functionMetricsOf(entry: unknown): FunctionMetrics {
-  const fields: JsonObject = isJsonObject(entry) ? entry : {};
+  const fields = objectOf(entry);
   return {
     name: typeof fields.name === 'string' ? fields.name : undefined,
     cyclomaticComplexity: numberOf(fields.cyclomatic_complexity),
     maintainabilityIndex: maintainabilityIndexOf(fields),
-    lines: numberOf(isJsonObject(fields.volume) ? fields.volume.loc : undefined),
+    lines: numberOf(objectOf(fields.volume).loc),
   };
 }
 
 function maintainabilityIndexOf(metrics: JsonObject): number | undefined {
-  return isJsonObject(metrics.maintainability) ? numberOf(metrics.maintainability.maintainability_index) : undefined;
+  return numberOf(objectOf(metrics.maintainability).maintainability_index);
 }
 
 // A function without a score compares as equal to each other function.
@@ -70,16 +69,4 @@ function functionLine(entry: FunctionMetrics): string {
 
 function plural(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
-}
-
-function numberOf(value: unknown): number | undefined {
-  return typeof value === 'number' ? value : undefined;
-}
-
-function jsonOf(text: string): unknown {
-  try { return JSON.parse(text); } catch { return undefined; }
-}
-
-function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
