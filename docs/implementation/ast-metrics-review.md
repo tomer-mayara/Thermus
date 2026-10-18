@@ -220,12 +220,12 @@ the diagnostic then names the folder that stays.
 ### Show the architecture delta: `script/ast-metrics-architecture.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--timeout-ms MS] [--out FILE]
+pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
 ```
 
-The command prints the architecture delta of `src/` and the complexity table
-of the changed files as Markdown, and also writes it to `--out` (relative to
-the current folder). Step 5 of the process puts this output in the pull
+The command prints the architecture delta of `src/`, the complexity table of
+the changed files, and the trend of `src/` on `main` as Markdown, and also
+writes it to `--out` (relative to the current folder). Step 5 of the process puts this output in the pull
 request description. By default it takes the snapshot of the merge base of
 `--base` (default `origin/main`) in a temporary worktree, as `--base` of the
 snapshot command does, and the snapshot of the working tree; this takes about
@@ -249,7 +249,8 @@ decimals, cycles, communities with the shared kernel, base → head, with
 ` (n new, m gone)` when there are such, and with coverage
 ` · functions ≥ 30: <base> → <head>`, the count of the functions at CRAP 30
 or more in all of `src/`), then the Mermaid graph with its legend, or `The
-map did not change.`, and last the complexity section.
+map did not change.`, then the complexity section, and last the trend section
+(see "The trend").
 
 Matching: a head community matches the base community with the largest
 Jaccard overlap of their files, at 0.5 or more; the largest overlaps match
@@ -353,9 +354,51 @@ the count of the functions of the changed files that have no CRAP. These
 bands are T6 of the [evolution plan](architecture-evolution-plan.md), which
 gives their reasons and their limits.
 
+#### The trend
+
+The trend section has the heading `## Trend of src/ on main` and a table with
+the columns `Commit`, `Date`, `Modularity`, `Cross share`, `Cycles`,
+`Maintainability`, and `Functions ≥ 30`: one row for each of the last ten
+records of the trend store by the time of their dates, oldest first (two
+records of the same time in the order of their file names), and the head as
+the last row, `this pull request`, without a date. A row gives the first eight
+characters of the commit, the day of its committer date, the modularity and
+the cross share with two decimals, the count of the cycles, the LOC-weighted
+maintainability of `src/` with one decimal, and the count of the functions at
+CRAP 30 or more in all of `src/`, as the summary line counts it. A value that a
+record does not have, such as the count of a run without coverage, is `–`.
+
+The trend store of a repository is `docs/metrics/` of its root, and the pull
+requests commit its files (step 7 of the process). It holds one JSON file for
+each commit of `main` that a pull request used as its base, named
+`<date>-<commit8>.json`: the day of the committer date of the commit in the
+time zone of the commit, and the first eight characters of the commit. A file
+holds `version` 1, the `commit`, its `date`, the global numbers of the
+snapshot of the merge base (`modularity`, `crossShare`, `cycles` as a count,
+`maintainability`, `paths`, `files`, `functions`, and with coverage
+`functionsOver30`), and each community, sorted by label, with its `label`,
+`files`, `loc`, `maintainability`, `paths`, and with coverage
+`functionsOver30`. It holds nothing for each file. The JSON has two spaces and
+a newline at the end, so that two files diff well.
+
+Nobody runs anything at merge time, so a pull request writes the file of its
+own merge base: before the output, the command writes that file when the store
+has no file of that commit under any date. A file that exists stays as it is,
+also when this run gives other numbers, such as a count from another coverage
+run. Thus the trend lags one pull request behind `main`, and a commit of
+`main` that no pull request used as its base gets no file. The command reads
+the files of the store before it writes: a file with the name of a record that
+is not a valid record of version 1 stops the command with exit status 1, and so
+does a store that it cannot write. Other files of the folder, such as a README,
+do not count. With `--head` and `--base-snapshot`, only `--trend-store DIR`
+(relative to the current folder) gives a store; without it, the section is the
+line `No snapshot of main in docs/metrics yet.`, and the command writes
+nothing. In a repository, `--trend-store` replaces `docs/metrics/`, as the live
+test does.
+
 Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
-diagnostic line for a failure; 130 or 143 when a signal stops the base
-snapshot.
+diagnostic line for a failure, also for a store that the command cannot read or
+write; 130 or 143 when a signal stops the base snapshot.
 
 ## The configuration
 

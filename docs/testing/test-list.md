@@ -122,10 +122,12 @@ runs the real tool on the repository when it is on PATH, with and without
 `--base HEAD`; the default suites skip it.
 
 `test/unit/script/ast-metrics-architecture.test.ts` checks the help and the
-refused arguments of the architecture command with an empty PATH, a missing
-snapshot file, and files that are not valid snapshots of version 1 (also one
-without files, one with a file without a path, and one with a function
-without a name or decision paths).
+refused arguments of the architecture command with an empty PATH (also an
+empty `--trend-store`), a missing snapshot file, and files that are not valid
+snapshots of version 1 (also one without files, one with a file without a
+path, one with a function without a name or decision paths, one without a date
+or with a date without a time, one without the count of its files, and one
+with a community without lines).
 `ast-metrics-architecture-coverage.test.ts` checks the coverage file with an
 empty PATH: a missing file, files that are not valid coverage reports of
 version 1 (also a snapshot, and a covered share that is text), and a valid
@@ -160,11 +162,29 @@ the CRAP column (counts with their arrows, `new`, `gone`, and `not
 measured`) and the list after the table (sorted by path and name, `base new`
 or the base CRAP, the share and the CRAP, a method without its module, and
 the unmatched count of the changed files only).
+`ast-metrics-architecture-trend.test.ts` checks the pure record of a snapshot
+and the pure trend section: the fields of the record in their order, the count
+of the cycles, the counts of the functions at CRAP 30 or more of `src/` and of
+each community, the communities sorted by label, nothing for each file, a
+record without coverage and without maintainability, the rows with the first
+eight characters of the commit and the day of its date, the decimals, the
+head as `this pull request` without a date, the en dash for a value that a row
+does not have, and the line of an empty store.
+`ast-metrics-architecture-trend-store.test.ts` checks the store in a folder of
+the test: the file name in the time zone of the commit, the text of a new file
+in a new folder, the file of the same commit under another date that stays
+unchanged, a file of another commit, files that are not records (also a folder
+with the name of a record), the diagnostics for record files that are not
+valid records of version 1 (and that no file is written then), the last ten of
+eleven records and a new one, and the order by the time of the date in several
+time zones, with the file name for two records of the same time.
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from
 `fixtures/ast-metrics-architecture-snapshots.ts`: equal snapshots, a new
 dependency, a cycle, a split, `--touched` with a fall of 2.0 and the table
-row of the file, numbers alone, a quote and a backtick, and `--out`.
+row of the file, numbers alone, a quote and a backtick, and `--out`. Without
+`--trend-store`, the Markdown of two snapshot files ends with the trend
+section that says that main has no snapshot yet.
 `ast-metrics-architecture-table.test.ts` compares the complete Markdown of
 the complexity table: a file whose maintainability fell from 72.0 to 60.0,
 with its risk rank, a new file, a gone file, a file of types without a
@@ -185,17 +205,33 @@ repository: both snapshots with the table row of the changed file, the
 changed files of the delta rule (an added and a changed `src/` file, but not
 a changed test file or a change of `main` after the fork), the bands from
 the `ast-report/coverage.json` of the repository root, a failed base
-analysis, and an unknown ref.
-`ast-metrics-architecture.live.ts` runs the real tool with `--base HEAD`,
-whose output ends with `No production file changed.`, and a second case
-that first runs the real unit suite under coverage (about 90 seconds), then
-the command with each `src/` file touched: equal counts on both sides, a
-band without a change on each node, an equal CRAP cell on each row, and an
-empty list. It removes `ast-report/coverage.json` afterwards. The default
-suites skip it.
+analysis, and an unknown ref. Each complete Markdown ends with the trend
+table: the row of the merge base, whose record the run wrote to
+`docs/metrics/` of the test repository, and the row of the head.
+`ast-metrics-architecture-trend.test.ts` compares the complete Markdown and
+the files of the trend store: an empty store with a coverage report (the
+whole JSON of the new record of the base commit and the table with its row
+and the row of the head), a file of the base commit under another date with
+other numbers (unchanged, no file added, its numbers and `–` in the table),
+twelve files (the last ten by date, two of one day by their time, and the
+head), a `--trend-store` path that is a file (exit 1, one diagnostic line,
+no Markdown), two snapshot files without `--trend-store` in a repository
+(the line that main has no snapshot yet, nothing written), and a repository
+with both doubles run twice: the first run writes
+`docs/metrics/<date>-<commit8>.json` with the numbers of the merge base, and
+the second run, with a coverage report, leaves that file unchanged.
+`ast-metrics-architecture.live.ts` runs the real tool with `--base HEAD` and
+a trend store in a folder of the test: the summary and `No production file
+changed.`, the record of HEAD in the store, and the trend table that ends with
+the row of HEAD and the row of the head with the same numbers. A second case
+first runs the real unit suite under coverage (about 90 seconds), then the
+command with each `src/` file touched: equal counts on both sides, a band
+without a change on each node, an equal CRAP cell on each row, and an empty
+list. It removes `ast-report/coverage.json` afterwards. Neither case writes to
+`docs/metrics/` of the repository. The default suites skip it.
 
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-coverage.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/unit/script/ast-metrics-architecture-functions.test.js dist/test/unit/script/ast-metrics-architecture-crap.test.js dist/test/unit/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-coverage.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/unit/script/ast-metrics-architecture-functions.test.js dist/test/unit/script/ast-metrics-architecture-crap.test.js dist/test/unit/script/ast-metrics-architecture-bands.test.js dist/test/unit/script/ast-metrics-architecture-trend.test.js dist/test/unit/script/ast-metrics-architecture-trend-store.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/acceptance/script/ast-metrics-architecture-trend.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js

@@ -119,14 +119,19 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    next command can show the CRAP bands. Then run
    `pnpm exec node script/ast-metrics-architecture.ts` and put its output
    in the pull request description too: the architecture delta of `src/`
-   with the band of each community, and the complexity table of the
-   changed files. A pull request that changes only documents gets
-   `The map did not change.` and `No production file changed.`; include
-   these lines too.
+   with the band of each community, the complexity table of the changed
+   files, and the trend table of `src/` on `main`. A pull request that
+   changes only documents gets `The map did not change.` and
+   `No production file changed.`; include these lines too.
 6. Do not change `.ast-metrics-baseline.yaml` in a pull request, except
    for a kept finding of step 5, or when the pull request changes the
    rules in `.ast-metrics.yaml`. Then run `ast-metrics baseline` and commit
    the new file.
+7. The architecture command of step 5 writes the record of the base
+   commit of the pull request to `docs/metrics/` when that commit has no
+   record yet. The new file is part of the pull request: commit it. Do not
+   change a file that is in `docs/metrics/` already. Nothing runs when a
+   pull request merges, so these files are the only history of `main`.
 
 The MCP server of ast-metrics runs only for the time of one call: the
 command starts it, makes the call, prints the answer, and stops it. Do not
