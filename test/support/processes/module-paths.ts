@@ -53,3 +53,11 @@ export const hostedImageIdentity = containerModule('hosted-image-identity');
 
 // The debug command runs directly from source; no build copies the script.
 export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url.mjs', repositoryRoot));
+
+// The ast-metrics commands run directly from source too. Their tests put a double of the ast-metrics executable
+// first on PATH; the doubles run from source as well.
+export const astMetricsDeltaScript = fileURLToPath(new URL('script/ast-metrics-delta.mjs', repositoryRoot));
+export const astMetricsReviewScript = fileURLToPath(new URL('script/ast-metrics-review.mjs', repositoryRoot));
+export const astMetricsMcpScript = fileURLToPath(new URL('script/ast-metrics-mcp.mjs', repositoryRoot));
+export const astMetricsCliFake = fileURLToPath(new URL('test/support/doubles/ast-metrics/ast-metrics-cli-fake.mjs', repositoryRoot));
+export const astMetricsMcpFake = fileURLToPath(new URL('test/support/doubles/ast-metrics/ast-metrics-mcp-fake.mjs', repositoryRoot));

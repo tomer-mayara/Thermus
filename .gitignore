@@ -157,3 +157,4 @@ vite.config.ts.timestamp-*
 
 # The trusted ad rules of a local container installation. compose.yaml mounts this file.
 /ad-rules.txt
+ast-report/
