@@ -5,7 +5,7 @@ import { dataDirectory } from '../../../support/isolation/data-directory.ts';
 import { baseSnapshot, edited, legend, type SnapshotShape } from './ast-metrics-architecture-snapshots.ts';
 
 // The functions of the base snapshot of ast-metrics-architecture-snapshots.ts, and a coverage report of the unit suite
-// in the shape that script/ast-metrics-coverage.ts writes. With the covered shares of the report, the base has four
+// in the shape that script/code-quality/ast-metrics-coverage.ts writes. With the covered shares of the report, the base has four
 // functions with CRAP 30 or more: issueToken of auth (72.0), listAccounts (72.8) and route (68.0) of hosted-admin, and
 // createApplication of src (42.0), whose file the report does not have, so that it counts as uncovered. In
 // src/auth/session.ts, refresh has two entries in the report and the third function is anonymous, so neither gets a

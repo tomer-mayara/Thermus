@@ -46,7 +46,7 @@ test('Given --help, when the coverage command runs, then it explains the run of 
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/ast-metrics-coverage\.ts \[--from DIR\] \[--out FILE\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-coverage\.ts \[--from DIR\] \[--out FILE\] \[--help\]\n/);
   for (const text of ['NODE_V8_COVERAGE', 'dist/test/unit/**/*.test.js', 'npm run build', 'dist/src/', 'ast-report/coverage.json', '__', 'Exit status 1']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }

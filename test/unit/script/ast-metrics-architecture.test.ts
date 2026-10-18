@@ -17,10 +17,10 @@ test('Given --help, when the architecture command runs, then it explains the two
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/ast-metrics-architecture\.ts \[--base REF\] \[--head FILE --base-snapshot FILE\] \[--touched FILES\] \[--coverage FILE\] \[--trend-store DIR\] \[--timeout-ms MS\] \[--out FILE\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-architecture\.ts \[--base REF\] \[--head FILE --base-snapshot FILE\] \[--touched FILES\] \[--coverage FILE\] \[--trend-store DIR\] \[--timeout-ms MS\] \[--out FILE\] \[--help\]\n/);
   const texts = ['Mermaid', 'merge base', 'temporary worktree', 'working tree', 'untracked', 'Jaccard', '0.5', 'new or gone', 'did not change', 'default: origin/main'];
   const table = ['complexity table', 'ten riskiest', 'not measured', 'no production file changed'];
-  const bands = ['CRAP', 'ast-report/coverage.json', 'script/ast-metrics-coverage.ts', 'no coverage run', 'good', 'warning', 'critical', 'added or made worse'];
+  const bands = ['CRAP', 'ast-report/coverage.json', 'script/code-quality/ast-metrics-coverage.ts', 'no coverage run', 'good', 'warning', 'critical', 'added or made worse'];
   const trend = ['trend store', 'docs/metrics', '<date>-<commit8>.json', 'last ten', 'this pull request', 'stays as it is'];
   for (const text of [...texts, ...table, ...bands, ...trend, 'default: 60000', 'not a gate', 'Exit status 1', 'Exit status 130 or 143']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
@@ -71,7 +71,7 @@ test('Given a --head file that does not exist, when the architecture command run
   assert.equal(result.code, 1);
 });
 
-// The parts of a snapshot that the command reads, as script/ast-metrics-snapshot.ts writes them.
+// The parts of a snapshot that the command reads, as script/code-quality/ast-metrics-snapshot.ts writes them.
 const valid = {
   version: 1,
   commit: 'c0ffee00c0ffee00',

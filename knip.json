@@ -4,12 +4,12 @@
       "entry": [
         "docker/verify-hosted-runtime.mjs",
         "script/fetch-url.mjs",
-        "script/ast-metrics-delta.ts",
-        "script/ast-metrics-review.ts",
-        "script/ast-metrics-mcp.ts",
-        "script/ast-metrics-snapshot.ts",
-        "script/ast-metrics-architecture.ts",
-        "script/ast-metrics-coverage.ts"
+        "script/code-quality/ast-metrics-delta.ts",
+        "script/code-quality/ast-metrics-review.ts",
+        "script/code-quality/ast-metrics-mcp.ts",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "script/code-quality/ast-metrics-architecture.ts",
+        "script/code-quality/ast-metrics-coverage.ts"
       ]
     },
     ".habit-hooks": {

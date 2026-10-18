@@ -28,7 +28,7 @@ interface TrendRecord extends TrendNumbers {
   readonly communities: readonly { readonly label: string; readonly files: number; readonly loc: number; readonly paths: number }[];
 }
 
-const { trendOfStore } = await import(new URL('ast-metrics-architecture-trend-store.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
+const { trendOfStore } = await import(new URL('architecture/trend-store.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
   trendOfStore(folder: string, base: TrendRecord): TrendNumbers[];
 };
 

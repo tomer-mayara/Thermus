@@ -84,19 +84,19 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 ## Code quality review with ast-metrics
 
 Run this process on the complete candidate of each pull request, after the
-documents are updated and before Ready. Use the commands under `script/`;
+documents are updated and before Ready. Use the commands under `script/code-quality/`;
 they carry the correct syntax of ast-metrics. The details and the limits are
 in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
 
 1. Update the branch from `origin/main` first. The commands compare with it.
-2. Measure the delta: `pnpm exec node script/ast-metrics-delta.ts`. It
+2. Measure the delta: `pnpm exec node script/code-quality/ast-metrics-delta.ts`. It
    lists each TypeScript file that the pull request adds or changes with
    its maintainability score, lowest first. The goal is 85 or more for each
    production file, under `src/`. A test file or a support file is listed
    with its score and has no goal; step 5 fails the pull request when its
    score dropped. The command exits 1 when a production file is below 85.
 3. For each production file below 85, find what to change before you edit:
-   `pnpm exec node script/ast-metrics-mcp.ts file <path>` gives the score,
+   `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>` gives the score,
    the decision paths, and the lines of each function in the file. Start
    with the functions that have the lowest score or the most decision
    paths: split them, remove duplicated logic, and simplify the control
@@ -104,7 +104,7 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
 4. Measure again (step 2). Do no more than 3 passes of steps 2 and 3. If a
    production file is still below 85 after 3 passes, write its score and
    the reason in the pull request description and continue.
-5. Review the delta: `pnpm exec node script/ast-metrics-review.ts`. It
+5. Review the delta: `pnpm exec node script/code-quality/ast-metrics-review.ts`. It
    reports only what the pull request made worse or added: a file whose
    score dropped, a new function with more than 10 decision paths (with
    file and line), and a new rule violation. Correct each finding of
@@ -114,10 +114,10 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    commit the new `.ast-metrics-baseline.yaml`. Then the next pull request
    does not get the finding again. Put the Markdown output in the pull
    request description. Then run `npm run build` and
-   `pnpm exec node script/ast-metrics-coverage.ts` (about 90 seconds). It
+   `pnpm exec node script/code-quality/ast-metrics-coverage.ts` (about 90 seconds). It
    measures how much of each function the unit tests run, so that the
    next command can show the CRAP bands. Then run
-   `pnpm exec node script/ast-metrics-architecture.ts` and put its output
+   `pnpm exec node script/code-quality/ast-metrics-architecture.ts` and put its output
    in the pull request description too: the architecture delta of `src/`
    with the band of each community, the complexity table of the changed
    files, and the trend table of `src/` on `main`. A pull request that

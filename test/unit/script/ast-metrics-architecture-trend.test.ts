@@ -48,13 +48,13 @@ interface TrendNumbers {
 type FilesCrap = object;
 
 const scriptFolder = pathToFileURL(astMetricsArchitectureScript);
-const { trendRecordOf } = await import(new URL('ast-metrics-architecture-trend-record.ts', scriptFolder).href) as {
+const { trendRecordOf } = await import(new URL('architecture/trend-record.ts', scriptFolder).href) as {
   trendRecordOf(snapshot: Snapshot, crap: FilesCrap | undefined): TrendNumbers;
 };
-const { crapDeltaOf } = await import(new URL('ast-metrics-architecture-crap-delta.ts', scriptFolder).href) as {
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as {
   crapDeltaOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[]; readonly coverage: Coverage }): { readonly base: FilesCrap };
 };
-const { trendSectionOf } = await import(new URL('ast-metrics-architecture-trend-table.ts', scriptFolder).href) as {
+const { trendSectionOf } = await import(new URL('architecture/report.ts', scriptFolder).href) as {
   trendSectionOf(stored: readonly TrendNumbers[], head: TrendNumbers): string[];
 };
 

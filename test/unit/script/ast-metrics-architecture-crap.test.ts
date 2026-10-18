@@ -32,7 +32,7 @@ interface CrapDelta {
   readonly base: ReadonlyMap<string, { readonly functions: readonly Omit<JudgedFunction, 'base' | 'addedOrWorse'>[]; readonly unmatched: number }>;
 }
 
-const { crapDeltaOf } = await import(new URL('ast-metrics-architecture-crap-delta.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
   crapDeltaOf(sources: Sources): CrapDelta | undefined;
 };
 

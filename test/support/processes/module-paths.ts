@@ -59,13 +59,14 @@ export const fetchUrlCredentials = new URL('script/fetch-url/credential-store.mj
 
 // The ast-metrics commands run directly from source too. Their tests put a double of the ast-metrics executable
 // first on PATH; the doubles run from source as well.
-export const astMetricsDeltaScript = fileURLToPath(new URL('script/ast-metrics-delta.ts', repositoryRoot));
-export const astMetricsReviewScript = fileURLToPath(new URL('script/ast-metrics-review.ts', repositoryRoot));
-export const astMetricsMcpScript = fileURLToPath(new URL('script/ast-metrics-mcp.ts', repositoryRoot));
+export const astMetricsDeltaScript = fileURLToPath(new URL('script/code-quality/ast-metrics-delta.ts', repositoryRoot));
+export const astMetricsReviewScript = fileURLToPath(new URL('script/code-quality/ast-metrics-review.ts', repositoryRoot));
+export const astMetricsMcpScript = fileURLToPath(new URL('script/code-quality/ast-metrics-mcp.ts', repositoryRoot));
 export const astMetricsCliFake = fileURLToPath(new URL('test/support/doubles/ast-metrics/ast-metrics-cli-fake.ts', repositoryRoot));
 export const astMetricsMcpFake = fileURLToPath(new URL('test/support/doubles/ast-metrics/ast-metrics-mcp-fake.ts', repositoryRoot));
 
 // The commands of the architecture evolution plan (docs/implementation/architecture-evolution-plan.md).
-export const astMetricsSnapshotScript = fileURLToPath(new URL('script/ast-metrics-snapshot.ts', repositoryRoot));
-export const astMetricsArchitectureScript = fileURLToPath(new URL('script/ast-metrics-architecture.ts', repositoryRoot));
-export const astMetricsCoverageScript = fileURLToPath(new URL('script/ast-metrics-coverage.ts', repositoryRoot));
+export const astMetricsSnapshotScript = fileURLToPath(new URL('script/code-quality/ast-metrics-snapshot.ts', repositoryRoot));
+export const astMetricsArchitectureScript = fileURLToPath(new URL('script/code-quality/ast-metrics-architecture.ts', repositoryRoot));
+export const astMetricsCoverageScript = fileURLToPath(new URL('script/code-quality/ast-metrics-coverage.ts', repositoryRoot));
+export const astMetricsCoverageSourceFolder = fileURLToPath(new URL('script/code-quality/coverage', repositoryRoot));

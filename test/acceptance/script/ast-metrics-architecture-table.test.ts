@@ -92,7 +92,7 @@ test('Given changed files of each kind, when the command runs, then the table ha
 });
 
 test('Given changed files of which none is under src/, when the command runs, then the complexity section after the architecture delta says that no production file changed, and has no table', { timeout }, async (t) => {
-  const result = await runWith(t, {}, ['test/unit/script/ast-metrics-architecture.test.ts', 'script/ast-metrics-architecture.ts', 'README.md']);
+  const result = await runWith(t, {}, ['test/unit/script/ast-metrics-architecture.test.ts', 'script/code-quality/ast-metrics-architecture.ts', 'README.md']);
 
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, markdown(noProductionFile));

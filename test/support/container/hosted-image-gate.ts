@@ -8,7 +8,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { listeningUrlIn } from '../drivers/operator-log.ts';
 import { workOSSettingsFor } from '../fixtures/hosted-placeholder.ts';
-import { containerPageScript, containerProbeScript, hostedImageIdentity, repositoryRoot } from '../processes/module-paths.ts';
+import { astMetricsCoverageSourceFolder, containerPageScript, containerProbeScript, hostedImageIdentity, repositoryRoot } from '../processes/module-paths.ts';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 const root = fileURLToPath(repositoryRoot);
@@ -74,7 +74,7 @@ export class HostedImageGate {
     for (const input of ['Dockerfile.hosted', 'Dockerfile.hosted.dockerignore', '.habit-hooks', '.npmrc', 'docker', 'docs', 'migrations', 'package.json', 'patches', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'script', 'src', 'test', 'tsconfig.json', 'tsconfig.build.json', 'tsconfig.user-portal.json']) {
       cpSync(join(root, input), join(context, input), {
         recursive: true,
-        filter: (path) => !['.git', 'node_modules', 'dist', '.cache', 'coverage', 'secrets', 'playwright-report', 'test-results'].includes(basename(path))
+        filter: (path) => (path === astMetricsCoverageSourceFolder || !['.git', 'node_modules', 'dist', '.cache', 'coverage', 'secrets', 'playwright-report', 'test-results'].includes(basename(path)))
           && !/^(?:\.env|credentials)|\.(?:pem|key|p12|pfx|log)$/.test(basename(path)),
       });
     }

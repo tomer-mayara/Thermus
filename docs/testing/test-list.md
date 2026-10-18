@@ -58,6 +58,10 @@ for configuration and validation results.
 
 ## ast-metrics commands
 
+The six commands run from source in `script/code-quality/`. See the
+[code quality script guide](../../script/code-quality/README.md) for their
+entry points and helper folders.
+
 `test/unit/script/ast-metrics-delta.test.ts`,
 `test/unit/script/ast-metrics-review.test.ts`, and
 `test/unit/script/ast-metrics-mcp.test.ts` check the help and the refused

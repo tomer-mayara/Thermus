@@ -34,10 +34,10 @@ function snapshotIn(path: string): LiveSnapshot {
 // then this check names the new counts.
 function assertSnapshotOfHead(snapshot: LiveSnapshot): void {
   const labels = snapshot.communities.map(({ label }) => label);
-  assert.equal(snapshot.communities.filter(({ id }) => id !== 'shared').length, 7, labels.join(', '));
+  assert.equal(snapshot.communities.filter(({ id }) => id !== 'shared').length, 8, labels.join(', '));
   assert.ok(labels.includes('shared kernel'), labels.join(', '));
   assert.equal(new Set(labels).size, labels.length, labels.join(', '));
-  assert.equal(snapshot.global.cycles.length, 1, JSON.stringify(snapshot.global.cycles));
+  assert.equal(snapshot.global.cycles.length, 2, JSON.stringify(snapshot.global.cycles));
   assert.ok(snapshot.global.files > 90, `${snapshot.global.files} files`);
   assert.deepEqual(snapshot.communities.flatMap(({ members }) => members).filter((member) => !member.startsWith('src/')), []);
   const ids = new Set(snapshot.communities.map(({ id }) => id));
@@ -45,7 +45,7 @@ function assertSnapshotOfHead(snapshot: LiveSnapshot): void {
   assert.equal(snapshot.commit, git('rev-parse', 'HEAD').trim());
 }
 
-test('Given the real ast-metrics, when the snapshot runs in the repository root, then it has 7 communities and the shared kernel, one cycle, and more than 90 files within 60 seconds', live, async (t) => {
+test('Given the real ast-metrics, when the snapshot runs in the repository root, then it has 8 communities and the shared kernel, two cycles, and more than 90 files within 60 seconds', live, async (t) => {
   const out = join(dataDirectory(t), 'snapshot.json');
 
   const result = await runScript(t, astMetricsSnapshotScript, { args: ['--out', out], cwd: root });
@@ -56,7 +56,7 @@ test('Given the real ast-metrics, when the snapshot runs in the repository root,
 
 // HEAD is the merge base of HEAD and HEAD, so the temporary worktree holds the commit of HEAD. TMPDIR names a folder of
 // the test, so that the check sees each folder that the command leaves there.
-test('Given the real ast-metrics, when the snapshot runs with --base HEAD, then the snapshot from the temporary worktree has 7 communities and the shared kernel and names HEAD within 30 seconds, and no worktree stays', { ...live, timeout: 30_000 }, async (t) => {
+test('Given the real ast-metrics, when the snapshot runs with --base HEAD, then the snapshot from the temporary worktree has 8 communities and the shared kernel and names HEAD within 30 seconds, and no worktree stays', { ...live, timeout: 30_000 }, async (t) => {
   const folder = dataDirectory(t);
   const out = join(folder, 'snapshot-base.json');
 

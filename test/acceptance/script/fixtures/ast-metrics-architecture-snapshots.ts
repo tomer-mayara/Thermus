@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { dataDirectory } from '../../../support/isolation/data-directory.ts';
 
-// Snapshot files in the shape that script/ast-metrics-snapshot.ts writes, for the architecture command with --head and
+// Snapshot files in the shape that script/code-quality/ast-metrics-snapshot.ts writes, for the architecture command with --head and
 // --base-snapshot. The base is a small src/ in four communities, after the real one: src depends on auth and
 // hosted-admin, both depend on the shared kernel, and there is no cycle. The numbers of the files of each community give
 // the numbers of that community. Three files are in no community, so that a change of them does not change the map: one
@@ -59,7 +59,7 @@ export interface SnapshotShape {
 export const legend = 'Legend: thick border = a community this pull request touched; `· new` and `· gone` = a community or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base.';
 
 // Without a coverage report, this line follows the summary line.
-export const bandsNeedTheCoverage = 'Bands need the coverage: run pnpm exec node script/ast-metrics-coverage.ts first.';
+export const bandsNeedTheCoverage = 'Bands need the coverage: run pnpm exec node script/code-quality/ast-metrics-coverage.ts first.';
 
 export const complexityHeading = '## Complexity of the changed files';
 export const tableHead = ['| File | Maintainability | Decision paths | Risk rank |', '| --- | --- | --- | --- |'];

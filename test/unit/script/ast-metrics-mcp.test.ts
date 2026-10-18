@@ -21,7 +21,7 @@ test('Given --help, when the command runs, then it prints the usage of each subc
 for (const [name, args, diagnostic] of [
   ['no subcommand', [], /Give a subcommand/],
   ['an unknown subcommand', ['explain'], /Unknown subcommand: explain\./],
-  ['file without a path', ['file'], /Usage: node script\/ast-metrics-mcp\.ts file <path> \[--json\]/],
+  ['file without a path', ['file'], /Usage: node script\/code-quality\/ast-metrics-mcp\.ts file <path> \[--json\]/],
   ['file with two paths', ['file', 'a.ts', 'b.ts'], /file <path>/],
   ['call without a tool', ['call'], /call <tool> \[<json arguments>\]/],
   ['call with text that is not JSON', ['call', 'find_risky_code', '{limit'], /JSON object/],

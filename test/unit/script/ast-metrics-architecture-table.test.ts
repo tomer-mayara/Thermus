@@ -20,7 +20,7 @@ interface Sources {
   readonly touched: readonly string[];
 }
 
-const { complexityTableOf } = await import(new URL('ast-metrics-architecture-table.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
+const { complexityTableOf } = await import(new URL('architecture/table.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
   complexityTableOf(sources: Sources): string[];
 };
 

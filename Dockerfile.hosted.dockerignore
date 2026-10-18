@@ -17,13 +17,14 @@
 !tsconfig.user-portal.json
 
 # Apply these exclusions after the allowlist, also inside included directories.
+**/coverage
+!script/code-quality/coverage/
 **/.env*
 **/.git
 **/.git/**
 **/node_modules
 **/dist
 **/.cache
-**/coverage
 **/playwright-report
 **/test-results
 **/*.log

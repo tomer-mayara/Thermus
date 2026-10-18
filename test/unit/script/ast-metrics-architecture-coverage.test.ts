@@ -12,7 +12,7 @@ import { runScript } from '../../support/processes/script-command.ts';
 // line and the snapshot files.
 const noTools = { env: { PATH: '' } };
 
-// The parts of a snapshot that the command reads, as script/ast-metrics-snapshot.ts writes them.
+// The parts of a snapshot that the command reads, as script/code-quality/ast-metrics-snapshot.ts writes them.
 const snapshot = JSON.stringify({
   version: 1,
   commit: 'c0ffee00c0ffee00',
@@ -40,7 +40,7 @@ test('Given a --coverage file that does not exist, when the architecture command
   assert.equal(result.code, 1);
 });
 
-// The parts of a coverage report that the command reads, as script/ast-metrics-coverage.ts writes them.
+// The parts of a coverage report that the command reads, as script/code-quality/ast-metrics-coverage.ts writes them.
 const valid = { version: 1, suite: 'unit', files: [{ path: 'src/a/0.ts', functions: [{ name: 'run', start: 0, end: 10, called: 1, coveredShare: 0.5 }] }] };
 
 for (const [name, text] of [

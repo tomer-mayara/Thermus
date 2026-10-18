@@ -12,7 +12,7 @@ test('Given --help, when the snapshot command runs, then it explains the options
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/ast-metrics-snapshot\.ts \[--base REF\] \[--out FILE\] \[--timeout-ms MS\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-snapshot\.ts \[--base REF\] \[--out FILE\] \[--timeout-ms MS\] \[--help\]\n/);
   const texts = ['ast-report/snapshot.json', 'src/', 'get_communities', 'get_file_metrics', 'default: 60000', 'HEAD', 'Exit status 1'];
   for (const text of [...texts, '--base REF', 'merge base', 'temporary worktree', 'ast-report/snapshot-base.json', 'interrupted runs', 'SIGTERM', 'Exit status 130', '143']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
@@ -64,7 +64,7 @@ interface BuiltSnapshot {
   readonly files: readonly { readonly path: string; readonly community: string | null; readonly maintainability?: number; readonly risk?: number; readonly functions: readonly object[] }[];
 }
 
-const { snapshotOf } = await import(new URL('ast-metrics-snapshot-build.ts', pathToFileURL(astMetricsSnapshotScript)).href) as { snapshotOf(sources: Sources): unknown };
+const { snapshotOf } = await import(new URL('snapshot/build.ts', pathToFileURL(astMetricsSnapshotScript)).href) as { snapshotOf(sources: Sources): unknown };
 
 // A community of the get_communities answer, with its members as hubs.
 function community(id: string, members: readonly string[], namespaces: Readonly<Record<string, number>> = {}) {

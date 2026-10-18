@@ -26,10 +26,10 @@ interface Sources {
 type CrapDelta = object;
 
 const scriptFolder = pathToFileURL(astMetricsArchitectureScript);
-const { complexityTableOf } = await import(new URL('ast-metrics-architecture-table.ts', scriptFolder).href) as {
+const { complexityTableOf } = await import(new URL('architecture/table.ts', scriptFolder).href) as {
   complexityTableOf(sources: Sources, delta: CrapDelta | undefined): string[];
 };
-const { crapDeltaOf } = await import(new URL('ast-metrics-architecture-crap-delta.ts', scriptFolder).href) as {
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as {
   crapDeltaOf(sources: Sources): CrapDelta | undefined;
 };
 

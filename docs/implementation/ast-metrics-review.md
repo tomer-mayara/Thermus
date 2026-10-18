@@ -15,15 +15,18 @@ The commands need the `ast-metrics` executable on PATH. On macOS, install it
 from its Homebrew tap: `brew install ast-metrics/tap/ast-metrics`. Other
 systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
 `ast-metrics version`: this guide is verified with 0.43.1. The commands under
-`script/` need no build; run them from the repository root with
+`script/code-quality/` need no build; run them from the repository root with
 `pnpm exec node`.
 
 ## The commands
 
-### Measure the delta: `script/ast-metrics-delta.ts`
+The six entry points and their helper folders are in
+[`script/code-quality/`](../../script/code-quality/README.md).
+
+### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare]
+pnpm exec node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare]
 ```
 
 The delta is each TypeScript file that the branch adds or changes against the
@@ -60,10 +63,10 @@ size, the complexity, and the comment density of the file. Above 85 the file
 reads without effort. The index of a large file falls with its volume, so a
 split into focused files raises it more than a local rewrite.
 
-### Review the delta: `script/ast-metrics-review.ts`
+### Review the delta: `script/code-quality/ast-metrics-review.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-review.ts [--base REF] [--max-findings N]
+pnpm exec node script/code-quality/ast-metrics-review.ts [--base REF] [--max-findings N]
 ```
 
 The command runs `ast-metrics review` against `--base` (default
@@ -84,15 +87,15 @@ review compares the working tree with the tip of the base ref, not with the
 merge base: update the branch from `origin/main` first, or the review lists
 changes that are not yours.
 
-### Ask the MCP server: `script/ast-metrics-mcp.ts`
+### Ask the MCP server: `script/code-quality/ast-metrics-mcp.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-mcp.ts file <path> [--json]
-pnpm exec node script/ast-metrics-mcp.ts complex [--limit N] [--max-cyclomatic N]
-pnpm exec node script/ast-metrics-mcp.ts risky [--limit N]
-pnpm exec node script/ast-metrics-mcp.ts overview
-pnpm exec node script/ast-metrics-mcp.ts tools
-pnpm exec node script/ast-metrics-mcp.ts call <tool> ['<json arguments>']
+pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path> [--json]
+pnpm exec node script/code-quality/ast-metrics-mcp.ts complex [--limit N] [--max-cyclomatic N]
+pnpm exec node script/code-quality/ast-metrics-mcp.ts risky [--limit N]
+pnpm exec node script/code-quality/ast-metrics-mcp.ts overview
+pnpm exec node script/code-quality/ast-metrics-mcp.ts tools
+pnpm exec node script/code-quality/ast-metrics-mcp.ts call <tool> ['<json arguments>']
 ```
 
 Each run starts `ast-metrics mcp` as a child process, makes one call over
@@ -117,11 +120,11 @@ included. In a test file, each case is an anonymous function in the table.
 `file` takes a path relative to the current folder or an absolute path in
 the repository.
 
-### Measure the coverage per function: `script/ast-metrics-coverage.ts`
+### Measure the coverage per function: `script/code-quality/ast-metrics-coverage.ts`
 
 ```sh
 npm run build
-pnpm exec node script/ast-metrics-coverage.ts [--from DIR] [--out FILE]
+pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE]
 ```
 
 The command runs the unit suite of `dist/` (`node --test --test-concurrency=1
@@ -159,10 +162,10 @@ its CRAP and each community its band (see "Show the architecture delta").
 Run the coverage command again after a change of `src/`: a function that
 the report does not have gets no CRAP.
 
-### Take a snapshot: `script/ast-metrics-snapshot.ts`
+### Take a snapshot: `script/code-quality/ast-metrics-snapshot.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS]
+pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS]
 ```
 
 The command writes the snapshot of the working tree to
@@ -217,10 +220,10 @@ the worktree. With `--base`, the exit status is also 1 for an unknown ref, a
 ref without a merge base with HEAD, or a worktree that git cannot remove;
 the diagnostic then names the folder that stays.
 
-### Show the architecture delta: `script/ast-metrics-architecture.ts`
+### Show the architecture delta: `script/code-quality/ast-metrics-architecture.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
+pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
 ```
 
 The command prints the architecture delta of `src/`, the complexity table of
@@ -240,7 +243,7 @@ repository root when that file exists. With `--head` and `--base-snapshot`,
 only `--coverage` gives it. A file that is not a coverage report of version
 1 stops the command with exit status 1. Without coverage, the output has no
 bands: the line after the summary line is `Bands need the coverage: run pnpm
-exec node script/ast-metrics-coverage.ts first.`, and the graph, the table,
+exec node script/code-quality/ast-metrics-coverage.ts first.`, and the graph, the table,
 and the legend are as they were before the bands.
 
 The output is the header `## Architecture of src/: base <8 characters of the
