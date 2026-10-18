@@ -521,7 +521,7 @@ when `dist/` is missing. One suite at a time on a shared host.
 ### T6. CRAP, bands, and colors
 
 Source: step A2, "Bands", and "Encoding". Depends on T4 and T5. Done in PR
-#TBD, with the approximation of the base: the base tree gets no coverage
+#167, with the approximation of the base: the base tree gets no coverage
 run, so a function of the base has its own decision paths and the covered
 share of the head function with the same name (0 when the head file does
 not have the name). Findings: ast-metrics names a method
