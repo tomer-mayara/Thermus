@@ -29,6 +29,7 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
+- [MCP pipelines improvement plan](implementation/mcp-pipelines-improvement-plan.md): proposed small contract and naming refinements from two independent AI design reviews; retains the incoming transformation loop and makes a fixed processor conditional on a concrete benefit.
 - [Two MCP pipelines plan](implementation/mcp-pipelines-plan.md): four slices for a neutral fetch operation, correlation IDs, outgoing observation, and incoming decisions; 01 merged in PR #155, 02 merged in PR #159, 03 merged in PR #160, and 04 is implemented and validated with manager sign-off in PR #162.
 - [Two MCP pipelines plan review](implementation/mcp-pipelines-plan-review.md): the deep review, corrected logical errors, section-by-section simplifications, and design sign-off.
 - [MCP-PIPE-01 implementation record](implementation/mcp-pipe-01.md): protected neutral fetch extraction at `bcae8707`, completed functional validation and VM restoration, and retained quality findings with reasons; merged in PR #155.
