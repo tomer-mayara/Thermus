@@ -9,11 +9,19 @@ import { astMetricsMcpFake } from '../../processes/module-paths.ts';
 export const knownFile = 'src/known.ts';
 export const unscoredFile = 'src/unscored.ts';
 
+// The answers for the files of a test repository, keyed by tool name: get_communities answers its value as JSON, and
+// get_file_metrics answers the value of its path, or the error of the real server for each other path.
+export interface AstMetricsMcpAnswers {
+  readonly get_communities?: unknown;
+  readonly get_file_metrics?: Readonly<Record<string, unknown>>;
+}
+
 // hang: the fake never answers a tools/call. exit-early: it exits with status 3 after its answer to initialize.
 // text: each tool other than get_file_metrics answers this plain text instead of JSON.
 export interface AstMetricsMcpFakeSettings {
   readonly mode?: 'hang' | 'exit-early';
   readonly text?: string;
+  readonly answers?: AstMetricsMcpAnswers;
 }
 
 export interface AstMetricsMcpFakeRequest {
@@ -43,10 +51,14 @@ export function astMetricsMcpFakeOnPath(t: TestContext, settings: AstMetricsMcpF
   const log = join(directory, 'requests.jsonl');
   mkdirSync(bin);
   writeFileSync(join(bin, 'ast-metrics'), `#!/bin/sh\nexec "${process.execPath}" "${astMetricsMcpFake}" "$@"\n`, { mode: 0o755 });
-  const env: Record<string, string> = { PATH: `${bin}${delimiter}${process.env.PATH ?? ''}`, AST_METRICS_FAKE_LOG: log };
+  const env: Record<string, string> = { PATH: `${bin}${delimiter}${process.env.PATH ?? ''}`, AST_METRICS_FAKE_REQUEST_LOG: log };
   if (settings.mode === 'hang') env.AST_METRICS_FAKE_HANG = '1';
   if (settings.mode === 'exit-early') env.AST_METRICS_FAKE_EXIT_EARLY = '1';
   if (settings.text !== undefined) env.AST_METRICS_FAKE_TEXT = settings.text;
+  if (settings.answers !== undefined) {
+    env.AST_METRICS_FAKE_ANSWERS = join(directory, 'answers.json');
+    writeFileSync(env.AST_METRICS_FAKE_ANSWERS, JSON.stringify(settings.answers));
+  }
   const requests = (): AstMetricsMcpFakeRequest[] => (existsSync(log) ? readFileSync(log, 'utf8').split('\n') : [])
     .filter((line) => line !== '')
     .map((line) => JSON.parse(line) as AstMetricsMcpFakeRequest);
