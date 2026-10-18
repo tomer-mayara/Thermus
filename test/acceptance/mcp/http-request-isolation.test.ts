@@ -175,8 +175,12 @@ for (const era of mcpProtocolEras) {
     const bob = await site.connect('bob');
     const first = call(alice, 'alice', cancelled.signal);
     const rejected = assert.rejects(first);
+    // Alice's operation starts before Bob's call, so that the order of the executions and of the step records is fixed.
+    await site.pages.alice.started.promise;
     const second = call(bob, 'bob');
     const signals = await Promise.all([site.pages.alice.started.promise, site.pages.bob.started.promise]);
+    assert.equal(site.operationExecutions[0].signal, signals[0]);
+    assert.equal(site.operationExecutions[1].signal, signals[1]);
     cancelled.abort(new Error('private-alice-cancel-reason'));
     await rejected;
     await site.pages.alice.cancelled.promise;
