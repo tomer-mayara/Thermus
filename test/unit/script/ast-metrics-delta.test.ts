@@ -6,13 +6,13 @@ import { runScript } from '../../support/processes/script-command.ts';
 // An empty PATH has no git and no ast-metrics. Thus these cases also show that the command checks its arguments first.
 const noTools = { env: { PATH: '' } };
 
-test('Given --help, when the delta check runs, then it explains the options, the goal, and the report folder', async (t) => {
+test('Given --help, when the delta check runs, then it explains the options, the goal for the production files under src/, and the report folder', async (t) => {
   const result = await runScript(t, astMetricsDeltaScript, { args: ['--help'], ...noTools });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
   assert.match(result.stdout, /^Usage: node script\/ast-metrics-delta\.mjs \[--base REF\] \[--min SCORE\] \[--no-compare\] \[--help\]\n/);
-  for (const text of ['origin/main', 'default: 85', '--no-compare', 'ast-report/', 'not measured']) {
+  for (const text of ['origin/main', 'default: 85', 'production files', 'src/', '"no goal"', '--no-compare', 'ast-report/', '"not measured"']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
 });

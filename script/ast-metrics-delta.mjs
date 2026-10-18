@@ -12,19 +12,22 @@ against REF. The delta holds the changes from the merge base of REF and HEAD to
 the working tree: committed, staged, and unstaged changes, and the new files that
 git does not ignore. Deleted files are not in the delta.
 
-The command runs ast-metrics analyze at the repository root and prints one line
-for each delta file, lowest score first. The reports go to ast-report/.
+The goal applies to the production files only: the files under src/. The command
+runs ast-metrics analyze at the repository root and prints one line for each
+delta file: first the production files, lowest score first, then the other
+files, such as tests, lowest score first and marked "no goal". A file that
+ast-metrics does not measure, such as a file with types only, comes last and is
+marked "not measured". The reports go to ast-report/.
 
 Options:
   --base REF      Git ref to compare with (default: origin/main)
-  --min SCORE     Goal for each file (integer 0..128; default: 85)
+  --min SCORE     Goal for each production file (integer 0..128; default: 85)
   --no-compare    Do not add the comparison with REF to the HTML report
   --help, -h      Show this help
 
-Exit status 0: each measured file is at the goal or more. Exit status 1: a file
-is below the goal, or the command failed. A file that ast-metrics does not
-measure, such as a file with types only, is listed as "not measured" and does
-not fail the check.
+Exit status 0: each measured production file is at the goal or more. Exit
+status 1: a production file is below the goal, or the command failed. A file
+with "no goal" or "not measured" never fails the check.
 `;
 
 const reportFolder = 'ast-report';
@@ -94,28 +97,52 @@ function count(number, noun) {
   return `${number} ${number === 1 ? noun : `${noun}s`}`;
 }
 
-function resultLine(measured, below, unmeasured, min) {
-  const rest = unmeasured === 0 ? '' : ` ${count(unmeasured, 'file')} not measured.`;
-  if (below === 0) return `Result: all ${count(measured, 'file')} at ${min} or more.${rest}`;
-  return `Result: ${below} of ${count(measured, 'file')} below ${min}. Goal: ${min} or more for each file.${rest}`;
-}
-
 // The check uses the score as the line shows it, with one decimal. Otherwise 84.96 reads as "85.0 below 85".
 function shownScore(score) {
   return Number(score.toFixed(1));
 }
 
-function reportOf(files, scores, options) {
+// The goal applies to production code only. No test file of the repository reaches 85, so a goal there tells nothing.
+function isProductionFile(file) {
+  return file.startsWith('src/');
+}
+
+// The groups of the delta files in the order of the report. Each group of measured files is lowest score first.
+function groupsOf(files, scores, min) {
   const measured = files.filter((file) => scores.has(file)).sort((first, second) => scores.get(first) - scores.get(second));
-  const unmeasured = files.filter((file) => !scores.has(file));
-  const below = measured.filter((file) => shownScore(scores.get(file)) < options.min);
+  const production = measured.filter(isProductionFile);
+  return {
+    production,
+    belowGoal: production.filter((file) => shownScore(scores.get(file)) < min),
+    other: measured.filter((file) => !isProductionFile(file)),
+    notMeasured: files.filter((file) => !scores.has(file)),
+  };
+}
+
+function goalResult(groups, min) {
+  if (groups.production.length === 0) return 'no production file in the delta.';
+  const production = count(groups.production.length, 'production file');
+  if (groups.belowGoal.length === 0) return `all ${production} at ${min} or more.`;
+  return `${groups.belowGoal.length} of ${production} below ${min}. Goal: ${min} or more for each production file.`;
+}
+
+function resultLine(groups, min) {
+  const other = groups.other.length === 0 ? '' : ` ${count(groups.other.length, 'other file')} without a goal.`;
+  const notMeasured = groups.notMeasured.length === 0 ? '' : ` ${count(groups.notMeasured.length, 'file')} not measured.`;
+  return `Result: ${goalResult(groups, min)}${other}${notMeasured}`;
+}
+
+function reportOf(files, scores, options) {
+  const groups = groupsOf(files, scores, options.min);
+  const scoreLine = (file, marker) => `  ${scores.get(file).toFixed(1)}  ${file}${marker}`;
   const lines = [
-    ...measured.map((file) => `  ${scores.get(file).toFixed(1)}  ${file}${below.includes(file) ? `  below ${options.min}` : ''}`),
-    ...unmeasured.map((file) => `  not measured  ${file}`),
-    resultLine(measured.length, below.length, unmeasured.length, options.min),
+    ...groups.production.map((file) => scoreLine(file, groups.belowGoal.includes(file) ? `  below ${options.min}` : '')),
+    ...groups.other.map((file) => scoreLine(file, '  no goal')),
+    ...groups.notMeasured.map((file) => `  not measured  ${file}`),
+    resultLine(groups, options.min),
   ];
   if (options.compare) lines.push(`Comparison with ${options.base}: ${reportFolder}/compare.html`);
-  return { text: `${lines.join('\n')}\n`, passed: below.length === 0 };
+  return { text: `${lines.join('\n')}\n`, passed: groups.belowGoal.length === 0 };
 }
 
 function main(args) {

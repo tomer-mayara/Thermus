@@ -30,6 +30,14 @@ export class GitRepository {
     return repository;
   }
 
+  // The branch feature commits the files on a main branch that holds only README.md. Thus the delta against main
+  // holds these files.
+  static withBranchAdding(t: TestContext, files: readonly string[]): GitRepository {
+    const repository = GitRepository.onFeatureBranch(t, { 'README.md': '# Test\n' });
+    repository.commit('Add the files', Object.fromEntries(files.map((file) => [file, 'export const value = 1;\n'])));
+    return repository;
+  }
+
   write(files: Readonly<Record<string, string>>): void {
     for (const [path, text] of Object.entries(files)) {
       mkdirSync(dirname(join(this.root, path)), { recursive: true });
