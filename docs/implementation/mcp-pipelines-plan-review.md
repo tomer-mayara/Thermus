@@ -17,7 +17,9 @@ verification results; the user has merged PR #155. The
 [MCP-PIPE-02 record](mcp-pipe-02.md) gives the implementation and passing
 functional validation and verified environment restoration; the owner merged
 PR #159. The [MCP-PIPE-03 record](mcp-pipe-03.md) tracks the authorized outgoing
-step and local executor, with source work and checks pending. Ticket 04 remains
+step and local executor; complete checks, integration, acceptance, and renderer
+proofs passed. Quality findings are documented; the self-hosted image passed, with hosted
+image and restoration pending. Ticket 04 remains
 Not started. The analysis below stays a historical review; current implementation
 evidence belongs in the separate records.
 

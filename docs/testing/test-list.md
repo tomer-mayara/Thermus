@@ -230,6 +230,17 @@ These same-package cases exercise the neutral operation-ID contract.
 [V] Accepts 36-character hyphenated hexadecimal UUIDs with versions 1–8 and variants 8/9/a/b, including uppercase text
 [V] Refuses nil/max, nonstrings, oversized text, braces/compact forms, trailing whitespace, and wrong version/variant with fixed `Invalid execution context` and no cause
 
+**Outgoing step and executor** (`test/unit/page-fetch/observe-request-step.test.ts`, `execute-outgoing-step.test.ts`)
+
+These same-package tests use step and record-sink doubles. MCP-PIPE-03 is in
+progress; focused unit evidence is in the
+[implementation record](../implementation/mcp-pipe-03.md).
+
+[V] Observation allows the exact original string and uses only the outgoing step ID
+[V] The executor validates allow/block shape, unchanged string output, and closed codes; unknown decisions, incoming scan codes, malformed output, and raw failures cannot advance
+[V] The record has only fixed fields, trusted ID, bounded duration, and safe outcome/code; sink failure cannot alter a result or repeat work
+[V] Abort or `AbortError` wins before recording; late work settles after cleanup, no early record escapes, and pre-entry cancellation starts neither step nor event
+
 **MCP operation forwarding** (`test/unit/mcp/get-url-as-markdown.test.ts`, `single-fetch-operation.test.ts`)
 
 The thin adapter and capacity wrapper use operation doubles. The shared auth
@@ -1229,6 +1240,7 @@ The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page f
 [V] Gives the local tenant of the tenant line; gives none without that line or before the full stop of that line arrives, so it gives only a complete ID
 [V] Gives the completion records of an output in their order, also when other lines and a JSON line of another event are between them and when the console logger writes the time, the level, and the call site before each record; an output without a record gives none
 [V] `completionLinesIn(output, operationId?)` and `completionRecordsIn(output, operationId?)` select only `mcp.tool.completed`; a supplied ID matches exactly, including letter case, and an unknown ID gives none
+[V] `stepRecordsIn(output, operationId?)` selects only `pipeline.step.completed` in order and optionally matches the exact case-sensitive ID; completion records and other operation IDs do not match
 [V] Gives the same URL, tenant, and records for the messages of the in-process logger, joined with line breaks, as for the console text of the same messages
 
 **Cookie jar of the test browsers** (`test/unit/test-support/cookie-jar.test.ts`)
@@ -2076,6 +2088,21 @@ These cases are offline and renderer-free.
 [V] Keeps the trusted identity despite forged headers and arguments
 [V] Cancels a per-call fetch through HTTP and prevents later work and successful completion
 
+[V] MCP-PIPE-03: outgoing events join the completion UUID with exact counts and no payload fields; refused calls have no event for an unstarted step
+
+**Outgoing step HTTP contract** (`test/acceptance/mcp/outgoing-step.test.ts`, `outgoing-step-cancellation.test.ts`)
+
+The existing MCP sites supply controlled steps and sinks through public
+boundaries. Both protocol eras run the fault and delayed-cleanup cases;
+the hosted-slot proof uses production hosted composition with a renderer double.
+
+[V] Allows the exact URL, returns exact Markdown, and joins one fixed step record to one completion without private request/page fields
+[V] Block, wrong-direction scan codes, unknown decisions, malformed output, and exceptions stop fetch/HTML processing with the exact safe failure and terminal event
+[V] `AbortError` wins before the signal changes; a step exception that resembles a renderer setup failure sends no renderer report
+[V] Broken sinks preserve allow/block, one write attempt, exact completion, and no repeated work
+[V] Client cancellation waits for entered-step cleanup, then records cancellation and prevents fetch after late allow/block/throw
+[V] Production hosted capacity remains busy until step cleanup settles; after actual `busy` and `cancelled` completions arrive, a later request can fetch, and events retain their own operation IDs
+
 Modern client cancellation aborts its call stream. Legacy cancellation coverage
 aborts that stream through the public SDK fetch option. A legacy cancel
 notification alone cannot reach a call on a different stateless request server.
@@ -2119,6 +2146,7 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 
 [V] `test/acceptance/mcp/hosted-fetch-tool.test.ts`: a current Connect User lists and calls the tool, gets cleaned Markdown and a safe record, and missing or revoked access is refused before rendering
 [V] The same file: an overlapping call gets the safe busy result and a `busy` record; success, failure, and cancellation release the shared slot only after settlement
+[V] MCP-PIPE-03: hosted and self-hosted compositions run `outgoing.observe_request` before fetch and attempt its fixed allowed event; exact existing Markdown/completion assertions remain
 [V] `test/acceptance/mcp/http-dns-cancellation.test.ts`: client cancellation and shutdown in both protocol eras end the wait before DNS answers and prevent renderer startup
 [V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
 [V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
@@ -2331,6 +2359,7 @@ and transitive dependencies remain outside this direct-import proof.
 
 [V] Refuses MCP/SDK, application/composition, provider, concrete renderer/network, cleaner, and logger imports, including type-only imports
 [V] Allows public auth and fetch contracts, including fetcher errors, and core-local modules
+[V] Applies those same public-contract allow and implementation deny rules to the local executor, protocol, and record module
 [V] Allows the cleaner-owned adapter's inward type dependency and composition's real collaborator selection
 
 ```sh

@@ -15,7 +15,9 @@ and actual verification results separately from that design review.
 The [MCP-PIPE-02 record](mcp-pipe-02.md) gives implementation `aa76f9f6` and
 passing functional validation and verified environment restoration; the owner
 merged PR #159. The [MCP-PIPE-03 record](mcp-pipe-03.md) tracks the authorized
-outgoing step and local executor; source work and checks are pending.
+outgoing step and local executor; complete checks, integration, acceptance,
+and renderer proofs passed. Quality findings are documented; the self-hosted image passed, with hosted
+image and restoration pending.
 The AST audit clarifications are reviewed; see the
 [audit evidence](mcp-pipelines-plan-review.md#appendix-a-ast-metrics-audit).
 See [Appendix A: implementation tickets](#appendix-a-implementation-tickets)
@@ -457,8 +459,9 @@ completion. Context reaches the whole operation without changing behavior.
 
 **Dependency:** merged MCP-PIPE-02; baseline `12160950`. **State:** In progress. **Label:** `outgoing-step`.
 
-The [implementation record](mcp-pipe-03.md) tracks the documentation foundation
-and pending source work and checks.
+The [implementation record](mcp-pipe-03.md) gives the implemented candidate and
+verified checks, integration, acceptance, and renderer proofs. Quality findings
+are documented; the self-hosted image passed, with hosted image and restoration pending.
 
 **Outcome:** `ObserveRequestStep` allows the exact URL unchanged before fetch.
 The local executor enforces decisions and emits the fixed safe terminal event.

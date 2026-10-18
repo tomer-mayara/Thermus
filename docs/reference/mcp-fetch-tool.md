@@ -9,6 +9,8 @@ hosted fetch and bounded request waits.
 use case from MCP and keeps the tool's input and result contract unchanged.
 [MCP-PIPE-02](../implementation/mcp-pipe-02.md) adds operation identity to
 completion records and carries that identity through the protected operation.
+[MCP-PIPE-03](../implementation/mcp-pipe-03.md) adds the outgoing observation
+step and a local executor that validates its result and attempts a fixed record.
 See [production composition](#production-composition). There is no
 POST tool or new stdio tool.
 
@@ -50,7 +52,7 @@ fetches the page, including when a caller invokes it without MCP.
 | Invalid named arguments | `isError: true`, `Invalid tool arguments` |
 | Missing product permission | `isError: true`, `Access denied` |
 | Hosted capacity occupied | `isError: true`, `Server busy. Try again later.`; completion status `busy` |
-| Fetch failure | `isError: true`, `Page fetch failed`; no pipeline work |
+| Fetch failure | `isError: true`, `Page fetch failed`; no HTML processing |
 | Oversized HTML, thrown pipeline failure, or absent/nonstring Markdown | `isError: true`, `Page processing failed`; no partial output |
 | Observed per-call cancellation | Work stops; no successful result |
 
@@ -77,7 +79,10 @@ time. Then it makes these parts one time:
 - one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
 - one `HtmlPageProcessor` that wraps the existing pipeline, checks its input
   size, and requires string Markdown;
-- one protected `createFetchPage` use case with the fetcher, processor, and
+- one `ObserveRequestStep` and a core-owned `StepRecordSink` adapted to the
+  application logger;
+- one protected `createFetchPage` use case with the fetcher, processor,
+  required outgoing step and record sink, and
   [renderer setup report](#renderer-setup-report) and
   [readiness report](#renderer-readiness-report) of the application logger;
 - one thin `createGetURLAsMarkdown` adapter that projects its released result
@@ -93,7 +98,8 @@ records attempt a JSON write to the application logger for each dispatched
 renderer's `finalUrl` selects the ad rules and resolves relative links.
 
 The neutral code lives under `src/page-fetch/`. It owns semantic URL
-validation and the protected fetch sequence. The MCP schema uses the same
+validation, the step protocol/executor and record-sink contract, and the
+protected fetch sequence. The MCP schema uses the same
 URL rules while retaining SDK schema conversion at the transport boundary.
 The cleaner-owned adapter stays under `src/html-cleaner-pipeline/`; the
 neutral use case depends on the `PageProcessor` contract, not the concrete
@@ -112,9 +118,23 @@ Direct callers supply a 36-character hyphenated hexadecimal UUID with version
 braces, compact forms, whitespace, extra text, and wrong version/variant are
 refused with `Invalid execution context`, without raw identity text or a cause.
 
-There are no standard pipeline-step decisions, step records, outgoing policy,
-or typed withholding yet. Empty results after sanitizer withholding still
-reach MCP as exact empty success.
+The outgoing step runs after those guards and before fetch. `ObserveRequestStep`
+only allows the exact input string unchanged; it performs no policy processing.
+`PipelineStep<Input, Output>` has a readonly ID and
+`execute(input, signal): Promise<StepResult<Output>>`. Its result is allow with
+output or block with code `blocked`. The current protocol has only the outgoing
+ID; incoming roles and scan codes are not part of this slice.
+
+Steps receive only input and signal. The local executor checks the decision,
+code, and exact original string before recording allow or starting fetch.
+Block, throw, unknown/malformed result, or changed/nonstring output stops fetch
+and processing with `Page fetch failed`, `isError: true`, and completion
+`fetch_failed`. Cancellation takes priority. No raw step cause reaches the client.
+
+The existing `PageProcessor` and cleaner behavior stay in place. There is no
+incoming standard step, incoming event, outgoing policy, or typed withholding
+yet. Empty results after sanitizer withholding still reach MCP as exact empty
+success.
 
 Better Auth verifies each token and checks the current account before the tool
 runs. A forged token, a token that a password reset revoked, and a token of a
@@ -202,6 +222,59 @@ launch failures keep their separate behavior. See the
 [runtime guide](../lightpanda-runtime.md#renderer-readiness-report) for operator
 steps.
 
+## Outgoing step records
+
+For each entered step, the executor attempts one synchronous
+`StepRecordSink.record(event)` call. Composition supplies the sink; the core
+imports no concrete application logger. The fixed event has these fields:
+
+```ts
+{
+  event: 'pipeline.step.completed',
+  operationId,
+  stepId: 'outgoing.observe_request',
+  outcome,
+  durationMs,
+  code?,
+}
+```
+
+| Outcome | Code |
+| --- | --- |
+| `allowed` | Absent |
+| `blocked` | `blocked` |
+| `failed` | `step_failed` or `invalid_step_result` |
+| `cancelled` | `cancelled` |
+
+The operation ID is the validated UUID from the same dispatched call. The
+step ID comes from the trusted outgoing binding. A supplied step ID cannot
+select another role. Duration is a finite non-negative rounded integer,
+capped at `Number.MAX_SAFE_INTEGER`; invalid clock data uses 0.
+No input, output, raw error, URL, reason, HTML, Markdown, header, credential,
+warning, or exfiltration target is serialized into the event.
+
+Only explicit allow with the exact original URL advances. Unknown decisions,
+unknown codes, and incoming scan codes fail closed. The outgoing production
+step does not use policy to block requests; controlled test steps exercise
+these executor boundaries.
+
+A sink exception cannot change the result, repeat a step/fetch, or skip
+cleanup. New step records use one guarded write attempt and no fallback.
+The separate completion writer below keeps its existing fallback. Neither
+record type has a durable or exactly-once delivery guarantee.
+
+Calls stopped before step entry have no step event, including schema, permission,
+URL, operation-ID, and hosted busy refusals. An active step settles after its
+owned cleanup. Abort or `AbortError` observed before its record wins over a late
+result; no fetch follows. A later fetch/processor cancellation does not rewrite
+an earlier completed step record. The hosted slot stays owned through settlement.
+
+Readers select the event type and operation ID. With a healthy sink, each
+entered step has one exact event and each dispatched call has one actual MCP
+completion; a step event cannot resolve `firstCompletion`. Step records contain
+no request or page content. Legacy completion path/reason privacy limits below
+remain unchanged.
+
 ## Completion records
 
 Every envelope-valid dispatched call attempts one JSON-encoded completion
@@ -237,7 +310,7 @@ These records are best effort; they are not durable audit storage.
 ## Cancellation and test composition
 
 Each call supplies an `ExecutionContext` to the operation. Its same `AbortSignal`
-reaches the fetcher and pipeline.
+reaches the outgoing step, fetcher, and pipeline.
 Cancellation is checked before work, between asynchronous stages, and before
 return. Renderer cancellation stops the child and releases per-call resources.
 Synchronous parsing cannot be preempted by cancellation; the existing HTML size
