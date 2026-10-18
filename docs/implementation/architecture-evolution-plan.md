@@ -201,19 +201,19 @@ fails silently on them.
 
 ## Steps
 
-Each step is one pull request under the AGENTS.md process: the acceptance
-test first, with doubles of ast-metrics and of the coverage files, golden
-Markdown output, and one live test with the real tool.
+Each step groups the tickets of the appendix; each ticket is one pull
+request under the AGENTS.md process: the acceptance test first, with doubles
+of ast-metrics and of the coverage files, golden Markdown output, and one
+live test with the real tool.
 
-- **A1. Architecture and complexity delta.** The snapshot module and the
-  command `script/ast-metrics-architecture.ts --base REF`: head and base
-  snapshots, community matching, the graph, the summary line, and the
-  complexity table without the CRAP columns. AGENTS.md step 5 adds its
-  output to the pull request body.
-- **A2. CRAP.** The coverage run, the join, CRAP per function, the bands, the
-  border colors, and the CRAP columns of the table.
-- **A3. Trend.** The write of the base snapshot to `docs/metrics/` and the
-  trend table.
+- **A1. Architecture and complexity delta** (tickets T1 to T4): the snapshot,
+  the base snapshot from the merge base, the graph with the summary line,
+  and the complexity table without the CRAP columns, wired into step 5 of
+  the process.
+- **A2. CRAP** (tickets T5 and T6): the coverage run, the join, CRAP per
+  function, the bands, the border colors, and the CRAP columns of the table.
+- **A3. Trend** (ticket T7): the write of the base snapshot to
+  `docs/metrics/` and the trend table.
 
 Later, outside this plan: cognitive complexity per function from
 `eslint-plugin-sonarjs` as one more column; coverage from the acceptance
@@ -265,3 +265,249 @@ The review of 2026-10-17 corrected the first version:
   and the trend is the saved base snapshot.
 - Function matching by line was not possible (ast-metrics gives no lines);
   unmatched functions are now reported instead of guessed.
+
+## Appendix: tickets
+
+Each ticket is one pull request and one board ticket; the text below is the
+ticket body in the shape of the board. The order is the dependency order.
+Every ticket reads this plan, [the review guide](ast-metrics-review.md),
+`docs/coding-principles.md`, `docs/testing/test-code-layout.md`, and
+`docs/implementation/test-gate-policy.md`, and follows the AGENTS.md process:
+the acceptance test first, then TDD, the focused test before each commit,
+`npm run check`, `habit-hooks`, and the ast-metrics review process before
+Ready. Commands under `script/` are TypeScript, run from source, typed
+without `any`, and pass the rules of `.ast-metrics.yaml`; their doubles live
+under `test/support/doubles/ast-metrics/`, and their tests use `runScript`
+and the fixtures of `test/acceptance/script/`.
+
+### T1. Snapshot of the working tree
+
+Source: step A1 of the plan.
+
+**Outcome and scope.** Add `script/ast-metrics-snapshot.ts [--out FILE]`.
+It runs `ast-metrics analyze --report-json` and one MCP session
+(`get_communities` with members, then `get_file_metrics` for each `src/`
+file) and writes the snapshot JSON described in "The snapshot": the commit
+and date of HEAD, the global numbers (modularity, cross share, the cycles,
+the LOC-weighted maintainability of `src/`, the total decision paths), the
+`src/` communities with label (hub and largest namespace), members, hubs,
+references, and edges, and the files with their metrics and functions. The
+CRAP fields stay absent. Default output `ast-report/snapshot.json`. Extend
+the CLI double to answer `analyze --report-json` from a fixture and the MCP
+double to answer the two tools from fixtures.
+
+**Acceptance criteria.**
+- Given doubles that answer with the fixtures of a small repository, when
+  the command runs, then the snapshot holds only the `src/` communities, each
+  labeled by its hub and largest namespace, with members, references, and
+  edges, the LOC-weighted maintainability (checked against a hand-computed
+  value), and each file with its functions, and the exit status is 0.
+- Given a `script/` community in the answer, when the command runs, then it
+  is not in the snapshot.
+- Given a missing executable, a failing analysis, or a server that errors on
+  one file, when the command runs, then the exit status is 1 with one
+  diagnostic line and no partial snapshot file.
+- Given the real ast-metrics (live test), when the command runs on this
+  repository, then the snapshot has 7 communities and one cycle, within 60
+  seconds.
+
+**Unit test list.** The LOC-weighted average; the label rule; the `src/`
+filter; the cycle list from the edges; the file-to-function join.
+
+**Development and completion rules.** One MCP session for all calls, never
+one run per file. Keep each new file under the rules of `.ast-metrics.yaml`.
+Update the review guide and `script/README.md` with the command.
+
+### T2. Snapshot of the merge base
+
+Source: step A1 of the plan. Depends on T1.
+
+**Outcome and scope.** Add `--base REF` to the snapshot command. It finds
+the merge base of REF and HEAD, adds a temporary detached `git worktree`
+of it under the system temporary folder, runs the snapshot there, and
+removes the worktree again, also after a failure. The snapshot records the
+base commit.
+
+**Acceptance criteria.**
+- Given a repository with `main` and a feature branch that adds one file and
+  changes one file, when the command runs with `--base main`, then the
+  snapshot shows the files of the merge base (the added file absent, the
+  changed file with its base metrics) and names the merge-base commit.
+- Given a failure inside the analysis of the base, when the command runs,
+  then the exit status is 1 and `git worktree list` shows no temporary
+  worktree afterwards.
+- Given an unknown ref, when the command runs, then the exit status is 1
+  with the diagnostic of the shared `repository.ts` helper.
+
+**Unit test list.** The merge-base lookup; the temporary folder name; the
+removal in a `finally` path.
+
+**Development and completion rules.** Reuse `repository.ts` for git calls.
+Never run `pnpm install` in the worktree; the analysis needs no
+`node_modules`.
+
+### T3. Architecture delta
+
+Source: step A1 and "Encoding of the architecture delta". Depends on T2.
+
+**Outcome and scope.** Add `script/ast-metrics-architecture.ts --base REF`.
+It makes the head and the base snapshot (or reads them with `--head FILE
+--base-snapshot FILE`, for the tests), matches the communities by Jaccard
+overlap of members at 0.5 or more, and prints the summary line (modularity,
+cross share, cycles, base to head) and, when a community, a dependency, or
+a label changed, the Mermaid graph of the encoding without the band colors:
+nodes in a fixed order with files, maintainability with an arrow, decision
+paths with an arrow; thick border for a touched community; edges with
+references and change; red dashed for a cycle; bold for a new dependency;
+the legend line. No backtick and no double quote in a label text.
+
+**Acceptance criteria.**
+- Given two equal snapshots, when the command runs, then it prints the
+  summary line and "The map did not change." and no graph, exit 0.
+- Given a head snapshot with a new dependency between two communities, when
+  the command runs, then the graph has that edge in bold with its reference
+  count, and the summary line shows the cross share before and after.
+- Given a cycle in the head, when the command runs, then its edges are red
+  dashed and the summary counts the cycle.
+- Given a community whose members split into two, when the command runs,
+  then the output names one community as gone and two as new.
+- Given a touched community whose maintainability fell by 2, when the command
+  runs, then its node has a thick border and the label shows the arrow and
+  the change.
+- Given the real ast-metrics (live test) on this repository with `--base
+  HEAD`, then the output is the summary line and "The map did not change."
+
+**Unit test list.** The Jaccard match and its 0.5 limit; the fixed node
+order; the arrows and rounding; the Mermaid escaping; the change detection.
+
+**Development and completion rules.** Golden output files for the Mermaid
+text. The graph stays under 15 nodes by construction (`src/` only).
+
+### T4. Complexity delta and the process
+
+Source: step A1 and "The views". Depends on T3.
+
+**Outcome and scope.** The architecture command also prints the complexity
+table of the files that the pull request changed (the delta rule of
+`ast-metrics-delta.ts`): maintainability and decision paths before to after,
+and the risk rank when the file is among the ten riskiest of the head
+snapshot; a file that is new or gone says so. Then wire the process: AGENTS.md
+step 5 says to run the command and to put its output in the pull request
+body; the review guide, `script/README.md`, `docs/testing/test-list.md`,
+`knip.json`, and the paths test name the new commands and doubles.
+
+**Acceptance criteria.**
+- Given a changed file whose maintainability fell from 72 to 60, when the
+  command runs, then the table row shows `72 → 60` with the arrow and the
+  decision paths before and after.
+- Given a new file, when the command runs, then its row says "new" in the
+  before columns.
+- Given a changed file in the top ten by risk, when the command runs, then
+  the row shows its rank.
+- Given no changed TypeScript file under `src/`, when the command runs, then
+  the table says that no production file changed.
+
+**Unit test list.** The table rows; the rank lookup; the arrows.
+
+**Development and completion rules.** The documents change in the same pull
+request. Run the new step on the pull request itself and put the output in
+its body.
+
+### T5. Coverage per function
+
+Source: step A2 and "CRAP per function". Depends on T1 (the snapshot gives
+the function names); independent of T3 and T4.
+
+**Outcome and scope.** Add `script/ast-metrics-coverage.ts [--from DIR]
+[--out FILE]`. By default it runs the unit suite of `dist/` with
+`NODE_V8_COVERAGE` set to a temporary folder; with `--from`, it reads an
+existing folder. It merges the V8 coverage files, keeps the scripts under
+`dist/src/`, maps each to its `src/*.ts` path, computes for each function
+the covered share of its bytes (the blocks with count zero are uncovered)
+and whether it was called, skips compiler helpers (`__` prefix), and writes
+`ast-report/coverage.json`: the suite that produced it, the files, and the
+functions with name, covered share, and call count. Extend the fixtures
+with small V8 coverage files.
+
+**Acceptance criteria.**
+- Given a folder with V8 coverage files of two processes for the same
+  script, when the command runs with `--from`, then the function counts are
+  the sums and the covered share is the share of bytes outside zero-count
+  blocks, checked against hand-computed values.
+- Given a function with a nested function, when the command runs, then each
+  has its own entry and share.
+- Given a compiler helper, when the command runs, then it is absent.
+- Given the real unit suite (live test), when the command runs on this
+  repository, then `coverage.json` names the unit suite and holds
+  `createApplication` of `src/application.ts` with a count of at least 1.
+
+**Unit test list.** The merge of two files; the byte share; the path map;
+the helper filter.
+
+**Development and completion rules.** The default run is `node --test` on
+the unit globs of `package.json` after `npm run build`; the command says
+when `dist/` is missing. One suite at a time on a shared host.
+
+### T6. CRAP, bands, and colors
+
+Source: step A2, "Bands", and "Encoding". Depends on T4 and T5.
+
+**Outcome and scope.** The architecture command reads `coverage.json` when
+present (or `--coverage FILE`), joins each function of the head snapshot
+with its coverage by file and name, computes `CRAP = CC² × (1 − share)³ +
+CC`, counts the functions at 30 or more per file and per community, derives
+the band of each community and file from the change against the base
+(good, warning, critical as the plan defines them), and adds: the band
+symbol, word, and count to the node text, the border color class, the CRAP
+columns to the complexity table, the list of functions that the pull request
+added or changed with CRAP at 30 or more (name, complexity, covered share),
+and the count of unmatched functions. The snapshot gains the coverage and
+CRAP fields.
+
+**Acceptance criteria.**
+- Given a function with 10 decision paths and no coverage, when the command
+  runs, then its CRAP is 110; given full coverage, then 10.
+- Given a community with no function at 30 or more, when the command runs,
+  then its node has the good symbol, word, and class.
+- Given a community with two such functions in the base and none added or
+  worsened, then the band is warning; given one added by the pull request,
+  then critical, and the function is in the list.
+- Given an anonymous function and a name that occurs twice in a file, when
+  the command runs, then they get no CRAP and the unmatched count is 2.
+- Given no `coverage.json` and no `--coverage`, when the command runs, then
+  the output says that the bands need the coverage run and shows no colors.
+
+**Unit test list.** The formula; the band rules; the join and its
+exclusions; the Mermaid classes.
+
+**Development and completion rules.** The colors are the three fixed hex
+values of the plan; no other color. Update AGENTS.md step 5 with the
+coverage run and the review guide with the band rules.
+
+### T7. Trend
+
+Source: step A3 and "The views". Depends on T6.
+
+**Outcome and scope.** The architecture command writes the base snapshot's
+global numbers and per-community numbers to
+`docs/metrics/<date>-<commit>.json` when that file does not exist (the date
+is the commit date of the base commit), and prints the trend table of the
+last ten files by date: modularity, cross share, cycles, LOC-weighted
+maintainability, functions with CRAP at 30 or more. AGENTS.md says that the
+file is part of the pull request.
+
+**Acceptance criteria.**
+- Given no file for the base commit, when the command runs, then the file
+  exists with the global and per-community numbers and nothing per file.
+- Given an existing file for the base commit, when the command runs, then
+  the file is unchanged.
+- Given twelve files, when the command runs, then the table shows the last
+  ten by date, oldest first, with the head as the last row marked "this
+  pull request".
+- Given the real ast-metrics (live test), then the file for the current
+  merge base is written under `docs/metrics/` and removed again by the test.
+
+**Unit test list.** The file name; the row order; the "unchanged" rule.
+
+**Development and completion rules.** The file holds no per-file data.
+Update the review guide with the store and its lag.
