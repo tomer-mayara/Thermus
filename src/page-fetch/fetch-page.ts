@@ -4,6 +4,9 @@ import { isValidFetchUrl } from './fetch-url.ts';
 import { assertOperationId, type ExecutionContext } from './execution-context.ts';
 import type { PageProcessor } from './page-processor.ts';
 import { reportRendererFailure, type RendererFailureReports } from './renderer-failure-reports.ts';
+import { executeOutgoingStep } from './execute-outgoing-step.ts';
+import type { PipelineStep } from './pipeline-step.ts';
+import type { StepRecordSink } from './step-record.ts';
 
 type FetchPageOutcome = { status: 'released'; markdown: string };
 export type FetchPage = (url: string, context: RequestContext, execution: ExecutionContext) => Promise<FetchPageOutcome>;
@@ -11,6 +14,8 @@ export type FetchPage = (url: string, context: RequestContext, execution: Execut
 export function createFetchPage(dependencies: RendererFailureReports & {
   fetcher: WebsiteFetcher;
   processor: PageProcessor;
+  outgoing: PipelineStep<string, string>;
+  records: StepRecordSink;
 }): FetchPage {
   return async (url, context, execution) => {
     const { signal } = execution;
@@ -19,9 +24,12 @@ export function createFetchPage(dependencies: RendererFailureReports & {
     if (!isValidFetchUrl(url)) throw new Error('Invalid tool arguments');
     assertOperationId(execution.operationId);
 
+    const outgoingUrl = await executeOutgoingStep(url, execution, dependencies);
+    throwIfCancelled(signal);
+
     let page;
     try {
-      page = await dependencies.fetcher.fetchURL(url, signal);
+      page = await dependencies.fetcher.fetchURL(outgoingUrl, signal);
     } catch (error) {
       throwIfCancelled(signal, error);
       reportRendererFailure(dependencies, error);

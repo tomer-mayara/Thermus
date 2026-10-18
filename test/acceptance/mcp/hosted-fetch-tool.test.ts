@@ -5,6 +5,7 @@ import { RendererProcessDouble, controlledRenderer } from '../../support/doubles
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { openHostedFetchSite } from '../../support/in-process/hosted-fetch-site.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
 
 const url = 'https://source.example/story?private-query=yes#private-fragment';
 const reason = 'Read the page for this task';
@@ -13,7 +14,7 @@ const markdown = 'The rendered article has enough words to keep this first parag
 const renderedOutput = JSON.stringify({ url, http_status: 200, content: html, error: null });
 const params = { name: 'getURLAsMarkdown', arguments: { url, reason } };
 
-test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and safe completion records are returned, and missing or revoked access is refused before rendering', { timeout: 30_000 }, async (t) => {
+test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and one allowed outgoing record join the completion ID, and missing or revoked access is refused before rendering', { timeout: 30_000 }, async (t) => {
   const site = await openHostedFetchSite(t);
   const renderer = RendererProcessDouble.install(t);
   renderer.serve(url, { finalUrl: url, html });
@@ -33,6 +34,11 @@ test('Given production hosted composition with trusted rules and a valid Connect
     event: 'mcp.tool.completed', authority: 'workos:client_placeholder', subject: 'user_fetch', tenantId: 'workos:client_placeholder:org_fetch',
     tool: params.name, url: 'https://source.example/story', urlStatus: 'valid', reason, reasonStatus: 'valid', status: 'success',
   }]);
+  const steps = stepRecordsIn(site.lines.join('\n'));
+  assert.deepEqual(steps.map(({ durationMs, ...record }) => {
+    assert.ok(Number.isSafeInteger(durationMs) && (durationMs as number) >= 0);
+    return record;
+  }), [{ event: 'pipeline.step.completed', operationId: site.completions()[0]?.operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' }]);
   assert.ok(site.world.fake.takeRequests().every(({ method }) => method === 'GET'), 'Hosted fetch changed WorkOS data.');
   assert.doesNotMatch(site.lines.join('\n'), /private-query|private-fragment|private-hidden|Hosted story/);
   assert.ok(!site.lines.join('\n').includes(site.token));

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { assertAllowed, assertForbidden } from './fixtures/import-guards.ts';
 
 describe('Given the protected page-fetch boundary', () => {
-  for (const filePath of ['src/page-fetch/fetch-page.ts', 'src/page-fetch/nested/operation.ts']) {
+  for (const filePath of ['src/page-fetch/fetch-page.ts', 'src/page-fetch/execute-outgoing-step.ts', 'src/page-fetch/pipeline-step.ts', 'src/page-fetch/step-record.ts', 'src/page-fetch/nested/operation.ts']) {
     const root = filePath.includes('/nested/') ? '../../' : '../';
 
     it(`when ${filePath} names transport or composition, then every literal import and re-export is refused`, async () => {
@@ -52,6 +52,10 @@ describe('Given the protected page-fetch boundary', () => {
         `${root}website-fetcher/website-fetcher.js`,
         './page-processor.ts',
         './fetch-url.ts',
+        './pipeline-step.ts',
+        './observe-request-step.ts',
+        './step-record.ts',
+        './execute-outgoing-step.ts',
         '@example/defuddle',
         'agent-input-sanitizer-notes',
         '@opentelemetry/sdk-logs-notes',

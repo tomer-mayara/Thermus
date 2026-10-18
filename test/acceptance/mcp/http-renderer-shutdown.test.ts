@@ -28,6 +28,7 @@ for (const era of mcpProtocolEras) {
     const records: string[] = [];
     let pipelineCalls = 0;
     const operation = composeFetchOperation({
+      records: { record: (event) => { records.push(JSON.stringify(event)); } },
       fetcher: { fetchURL: (url, signal) => {
         assert.ok(signal);
         signals.push(signal);

@@ -25,6 +25,7 @@ for (const era of mcpProtocolEras) {
     let pipelineCalls = 0;
     let providerCloses = 0;
     const operation = composeFetchOperation({
+      records: { record: (event) => { records.push(JSON.stringify(event)); } },
       fetcher: { fetchURL: async (url, signal) => {
         assert.ok(signal);
         started.resolve(signal);
@@ -93,6 +94,7 @@ for (const era of mcpProtocolEras) {
     const records: string[] = [];
     const operationCalls: string[] = [];
     const operation = composeFetchOperation({
+      records: { record: (event) => { records.push(JSON.stringify(event)); } },
       fetcher: { fetchURL: async (url) => {
         operationCalls.push('fetch');
         return { requestedUrl: url, finalUrl: url, html: '<p>Source</p>' };

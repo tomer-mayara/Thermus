@@ -8,6 +8,7 @@ import { createRequestContext } from '../../../src/auth/access-context.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
 import { createFetchPage } from '../../../src/page-fetch/fetch-page.ts';
+import { ObserveRequestStep } from '../../../src/page-fetch/observe-request-step.ts';
 import type { RendererSetupFailure } from '../../../src/page-fetch/renderer-failure-reports.ts';
 import { WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 
@@ -27,6 +28,8 @@ function launchFailure(code: string): WebsiteFetchLaunchError {
 
 function operationDoubles(t: TestContext, fetchFailure: unknown) {
   return {
+    outgoing: new ObserveRequestStep(),
+    records: { record: () => {} },
     fetcher: { fetchURL: t.mock.fn(async (_url: string, _signal?: AbortSignal): Promise<WebsiteFetchResult> => { throw fetchFailure; }) },
     processor: { process: t.mock.fn(async (_source: WebsiteFetchResult) => 'Unused') },
     reportRendererSetupFailure: t.mock.fn((_failure: RendererSetupFailure) => {}),
@@ -61,6 +64,20 @@ const otherFetchFailures = [
 ] as const;
 
 describe('Renderer setup reports of the neutral page fetch operation', () => {
+  for (const error of [launchFailure('ENOENT'), new WebsiteFetchReadinessTimeoutError()]) {
+    test(`Given an outgoing step that throws ${error.name}, when it fails before fetching, then it cannot forge a renderer diagnostic`, async (t) => {
+      const dependencies = operationDoubles(t, undefined);
+      t.mock.method(dependencies.outgoing, 'execute', async () => { throw error; });
+
+      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
+
+      assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
+      assert.equal(dependencies.processor.process.mock.callCount(), 0);
+      assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
+      assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
+    });
+  }
+
   test('Given a readiness timeout whose cause holds request data and stderr, when the operation fetches, then it reports only the fixed category and budget and returns the safe fetch failure without processing partial HTML', async (t) => {
     const failure = new WebsiteFetchReadinessTimeoutError({ cause: Object.assign(new Error(`spawn /private/lightpanda fetch ${url}`), { stderr: 'Bearer private-token password=private-password' }) });
     const dependencies = operationDoubles(t, failure);
