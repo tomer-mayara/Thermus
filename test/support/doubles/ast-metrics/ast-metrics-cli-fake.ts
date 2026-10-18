@@ -9,6 +9,7 @@
 //   AST_METRICS_FAKE_REVIEW        the Markdown that review prints and writes
 //   AST_METRICS_FAKE_STDERR        the text for stderr
 //   AST_METRICS_FAKE_EXIT          the exit status (default 0)
+//   AST_METRICS_FAKE_DELAY_MS      analyze and review wait this long, after the call log, before they answer (default 0)
 // analyze takes the folder to analyze as its last argument, such as . or src; the fake writes the same reports for each
 // folder, and the call log names the folder. The snapshot command also starts "ast-metrics mcp", and one executable on
 // PATH must answer both commands. So the fake runs ast-metrics-mcp-fake.ts in its own process for mcp, with the
@@ -16,6 +17,7 @@
 // Like the real executable, the fake fails when the folder of a report does not exist.
 import { appendFileSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 const args = process.argv.slice(2);
 const settings = process.env;
@@ -73,6 +75,7 @@ if (commandName === 'mcp') {
   // The fake of the server reads its settings and starts to serve when it loads.
   await import(new URL('./ast-metrics-mcp-fake.ts', import.meta.url).href);
 } else if (command) {
+  await delay(Number(settings.AST_METRICS_FAKE_DELAY_MS ?? 0));
   command();
   if (settings.AST_METRICS_FAKE_STDERR) process.stderr.write(settings.AST_METRICS_FAKE_STDERR);
   process.exitCode = Number(settings.AST_METRICS_FAKE_EXIT ?? 0);

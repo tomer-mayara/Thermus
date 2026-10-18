@@ -1,10 +1,16 @@
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import type { TestContext } from 'node:test';
 
 export interface ScriptResult {
   readonly code: number | null;
   readonly stdout: string;
   readonly stderr: string;
+}
+
+// Sends the signal to the command as soon as when gives true. when is checked every 20 ms while the command runs.
+interface ScriptStop {
+  readonly signal: NodeJS.Signals;
+  readonly when: () => boolean;
 }
 
 export interface ScriptLine {
@@ -14,6 +20,7 @@ export interface ScriptLine {
   readonly input?: string;
   readonly keepInputOpen?: boolean;
   readonly cwd?: string;
+  readonly stop?: ScriptStop;
 }
 
 // Runs a command under script/ in a child Node process and collects its exit status and output.
@@ -24,6 +31,7 @@ export async function runScript(t: TestContext, script: string, line: ScriptLine
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   t.after(() => { if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL'); });
+  if (line.stop) stopWhenReady(child, line.stop);
   child.stdin.on('error', () => undefined);
   if (!line.keepInputOpen) child.stdin.end(line.input ?? '');
   let stdout = '';
@@ -34,4 +42,13 @@ export async function runScript(t: TestContext, script: string, line: ScriptLine
     child.once('error', reject);
     child.once('close', (code) => resolve({ code, stdout, stderr }));
   });
+}
+
+function stopWhenReady(child: ChildProcess, stop: ScriptStop): void {
+  const timer = setInterval(() => {
+    if (!stop.when()) return;
+    clearInterval(timer);
+    child.kill(stop.signal);
+  }, 20);
+  child.once('exit', () => clearInterval(timer));
 }

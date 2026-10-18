@@ -1,5 +1,5 @@
-import { execFileSync } from 'node:child_process';
-import { readdirSync, realpathSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { mkdirSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import type { TestContext } from 'node:test';
 import type { AstMetricsCliAnswers } from '../../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
@@ -75,16 +75,41 @@ export function foldersLeftIn(doubles: BaseSnapshotDoubles): string[] {
   return readdirSync(doubles.temporaryFolder).filter((name) => name.startsWith(worktreePrefix)).map((name) => join(doubles.temporaryFolder, name));
 }
 
-// A saboteur of the cleanup: the PATH of the doubles, with a git first that refuses "git worktree remove" and runs the
-// real git for each other command. The worktree then stays until the test removes its folders.
-export function pathWithGitThatKeepsWorktrees(t: TestContext, path: string): string {
+// The command names the folder of its worktree by the id of its process, and the folder of an interrupted run stays.
+export function runFolderOf(doubles: BaseSnapshotDoubles, pid: number): string {
+  return join(doubles.temporaryFolder, `${worktreePrefix}${pid}-Ab12Cd`);
+}
+
+// The id of a process that has ended, as the process of an interrupted run.
+export function endedProcessId(): number {
+  return spawnSync(process.execPath, ['--version']).pid;
+}
+
+// A post-checkout hook that touches the marker file, as a hook that installs packages acts in each new tree.
+export function installCheckoutHook(repository: GitRepository, marker: string): void {
+  const hooks = join(repository.root, '.git', 'hooks');
+  mkdirSync(hooks, { recursive: true });
+  writeFileSync(join(hooks, 'post-checkout'), `#!/bin/sh\ntouch ${shellWord(marker)}\n`, { mode: 0o755 });
+}
+
+// A saboteur of the cleanup: the PATH of the doubles, with a git first that refuses "git worktree remove" of the folder,
+// or of each folder, and runs the real git for each other command. The worktree then stays until the test removes its
+// folders.
+export function pathWithGitThatKeepsWorktrees(t: TestContext, path: string, folder = ''): string {
   const bin = dataDirectory(t);
   const realGit = execFileSync('sh', ['-c', 'command -v git'], { encoding: 'utf8' }).trim();
   const script = [
     '#!/bin/sh',
-    'if [ "$1" = worktree ] && [ "$2" = remove ]; then echo "fatal: the test keeps the worktree" >&2; exit 128; fi',
-    `exec '${realGit.replaceAll("'", "'\\''")}' "$@"`,
+    'if [ "$1" = worktree ] && [ "$2" = remove ]; then',
+    `  case "$*" in *${shellWord(folder)}*) echo "fatal: the test keeps the worktree" >&2; exit 128;; esac`,
+    'fi',
+    `exec ${shellWord(realGit)} "$@"`,
   ];
   writeFileSync(join(bin, 'git'), `${script.join('\n')}\n`, { mode: 0o755 });
   return `${bin}${delimiter}${path}`;
+}
+
+// The shell takes a word in single quotes literally.
+function shellWord(text: string): string {
+  return `'${text.replaceAll("'", "'\\''")}'`;
 }

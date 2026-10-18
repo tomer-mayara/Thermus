@@ -14,7 +14,7 @@ test('Given --help, when the snapshot command runs, then it explains the options
   assert.equal(result.code, 0);
   assert.match(result.stdout, /^Usage: node script\/ast-metrics-snapshot\.ts \[--base REF\] \[--out FILE\] \[--timeout-ms MS\] \[--help\]\n/);
   const texts = ['ast-report/snapshot.json', 'src/', 'get_communities', 'get_file_metrics', 'default: 60000', 'HEAD', 'Exit status 1'];
-  for (const text of [...texts, '--base REF', 'merge base', 'temporary worktree', 'ast-report/snapshot-base.json']) {
+  for (const text of [...texts, '--base REF', 'merge base', 'temporary worktree', 'ast-report/snapshot-base.json', 'interrupted runs', 'SIGTERM', 'Exit status 130', '143']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
 });

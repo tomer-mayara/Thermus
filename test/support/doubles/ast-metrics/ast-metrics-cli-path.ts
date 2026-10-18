@@ -17,6 +17,8 @@ export interface AstMetricsCliAnswers {
   readonly review?: string;
   readonly stderr?: string;
   readonly exitCode?: number;
+  // analyze and review wait this long before they answer, as a slow analysis does.
+  readonly delayMs?: number;
 }
 
 export interface AstMetricsCliCall {
@@ -64,6 +66,7 @@ function answerSettings(folder: string, answers: AstMetricsCliAnswers): Record<s
   if (answers.review !== undefined) settings.AST_METRICS_FAKE_REVIEW = answers.review;
   if (answers.stderr !== undefined) settings.AST_METRICS_FAKE_STDERR = answers.stderr;
   if (answers.exitCode !== undefined) settings.AST_METRICS_FAKE_EXIT = String(answers.exitCode);
+  if (answers.delayMs !== undefined) settings.AST_METRICS_FAKE_DELAY_MS = String(answers.delayMs);
   return settings;
 }
 
