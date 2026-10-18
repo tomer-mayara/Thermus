@@ -29,6 +29,10 @@ const { withOAuthStore } = await import(fetchUrlCredentials) as {
   withOAuthStore<T>(binding: typeof profile, operation: (store: Store) => Promise<T>): Promise<T>;
 };
 
+async function saveReadyGrant() {
+  await withOAuthStore(profile, async (store) => store.saveReady(ready));
+}
+
 function privateState(t: TestContext) {
   const state = fs.realpathSync(fs.mkdtempSync(join(tmpdir(), 'thermus-oauth-store-')));
   const previous = process.env.XDG_STATE_HOME;
@@ -60,7 +64,7 @@ test('Given private OAuth state, when a grant and refresh marker are saved, then
 
 test('Given a local grant, when logout runs repeatedly, then it removes credentials and retains the same lock inode', async (t) => {
   const paths = privateState(t);
-  await withOAuthStore(profile, async (store) => store.saveReady(ready));
+  await saveReadyGrant();
   const inode = fs.statSync(paths.lock).ino;
   for (let repeat = 0; repeat < 2; repeat++) {
     await withOAuthStore(profile, async (store) => {
@@ -81,7 +85,7 @@ test('Given a ready record without refresh credentials, when it is saved and loa
 
 test('Given a crash temporary file and an unrelated file, when logout opens the store, then it removes owned credentials and keeps unrelated bytes and the lock inode', async (t) => {
   const paths = privateState(t);
-  await withOAuthStore(profile, async (store) => store.saveReady(ready));
+  await saveReadyGrant();
   const temporary = join(paths.directory, '.grant-00000000-0000-4000-8000-000000000000.tmp');
   const unrelated = join(paths.directory, 'notes.txt');
   fs.writeFileSync(temporary, 'private-orphan-refresh', { mode: 0o600 });
@@ -125,7 +129,7 @@ for (const [name, alter] of [
 ] as const) {
   test(`Given ${name} in a saved record, when the store reads it, then it refuses with a safe local login diagnostic`, async (t) => {
     const paths = privateState(t);
-    await withOAuthStore(profile, async (store) => store.saveReady(ready));
+    await saveReadyGrant();
     const record = JSON.parse(fs.readFileSync(paths.grant, 'utf8')) as Record<string, unknown>;
     alter(record);
     fs.writeFileSync(paths.grant, JSON.stringify(record));
@@ -164,7 +168,7 @@ test('Given a filesystem that cannot sync new directory entries, when the store 
 for (const target of ['directory', 'grant', 'lock'] as const) {
   test(`Given a symlink at the OAuth ${target}, when the store opens it, then the target is not read or changed`, async (t) => {
     const paths = privateState(t);
-    await withOAuthStore(profile, async (store) => store.saveReady(ready));
+    await saveReadyGrant();
     const destination = join(paths.state, 'untouched');
     const location = paths[target];
     fs.renameSync(location, destination);
@@ -179,7 +183,7 @@ for (const target of ['directory', 'grant', 'lock'] as const) {
 for (const target of ['directory', 'grant', 'lock'] as const) {
   test(`Given public permissions on the OAuth ${target}, when the store opens it, then it refuses instead of silently changing permissions`, async (t) => {
     const paths = privateState(t);
-    await withOAuthStore(profile, async (store) => store.saveReady(ready));
+    await saveReadyGrant();
     fs.chmodSync(paths[target], target === 'directory' ? 0o755 : 0o644);
     await assert.rejects(withOAuthStore(profile, async (store) => store.read()), /permission|safe|storage/i);
     assert.equal(fs.statSync(paths[target]).mode & 0o777, target === 'directory' ? 0o755 : 0o644);
@@ -189,7 +193,7 @@ for (const target of ['directory', 'grant', 'lock'] as const) {
 for (const failDirectorySync of [false, true]) {
   test(`Given a ${failDirectorySync ? 'directory' : 'file'} sync failure, when replacement is attempted, then the failed run stops and disk holds only the ${failDirectorySync ? 'new validated' : 'previous'} record`, async (t) => {
     const paths = privateState(t);
-    await withOAuthStore(profile, async (store) => store.saveReady(ready));
+    await saveReadyGrant();
     const replacement = { ...ready, accessToken: 'new-access-token', refreshToken: 'new-refresh-token' };
     const originalSync = fs.fsyncSync;
     await withOAuthStore(profile, async (store) => {
