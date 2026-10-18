@@ -122,6 +122,51 @@ Community identity: match head communities to base communities by the
 Jaccard overlap of their members (0.5 or more); label a community by its hub
 and its largest namespace, not by the generated name.
 
+## Encoding of the architecture delta
+
+The graph shows both lenses on one drawing. One metric per visual channel; a
+risk band is a status, so it uses the fixed status colors and always travels
+with a symbol and a word, never color alone. Agreed with the owner on
+2026-10-17.
+
+| Channel | Carries | Reason |
+| --- | --- | --- |
+| Node | One `src/` community (about seven) | The structure. |
+| Node text | Name, files, LOC-weighted maintainability with an arrow for the change, decision paths with an arrow, the CRAP band word and the count of functions at 30 or more with its change | Where complexity lives stays numeric; text is the one channel that reads the same in every theme. |
+| Node border color | The CRAP band: good (no function at 30 or more), warning (some, none new), critical (new ones in this pull request, or a load above a fixed limit) | Unprotected complexity is the one color-coded metric. |
+| Border width | Thick when the pull request touched the community | The change. |
+| Edge | A dependency between communities, labeled with its references and their change | Coupling and its movement. |
+| Edge style | Red dashed when part of a cycle; bold when new in this pull request | The structure problems. |
+| Line under the graph | Modularity, cross share, cycles, base to head; the legend of the bands | The summary. |
+
+Colors: good `#0ca30c`, warning `#fab219`, critical `#d03b3b`, from the
+validated status palette, as borders and not as fills, so that GitHub's light
+and dark themes keep the node text readable. Maintainability gets no second
+color scale: two color scales on one drawing do not read; its trend is a
+number with an arrow, and the complexity table under the graph holds the exact
+values. The band symbols are `●` good, `▲` warning, `■` critical.
+
+Two rules keep the picture comparable from pull request to pull request: the
+band limits and the colors are fixed, and the nodes come in a fixed order, so
+the Mermaid text itself gives a meaningful diff.
+
+The shape of the output, with made-up numbers:
+
+```mermaid
+flowchart LR
+  auth["auth/hosted-auth<br/>11 files · MI 60 ↓2 · paths 310 ↑12<br/>■ CRAP critical: 6 fn ≥ 30 (+2)"]
+  admin["hosted-admin<br/>6 files · MI 64 · paths 120<br/>▲ CRAP warning: 2 fn ≥ 30"]
+  auth -- "20" --> admin
+  admin -. "6 · cycle" .-> auth
+  classDef critical stroke:#d03b3b,stroke-width:3px
+  classDef warning stroke:#fab219,stroke-width:3px
+  class auth critical
+  class admin warning
+```
+
+A label holds no backtick and no double quote, because GitHub's renderer
+fails silently on them.
+
 ## Steps
 
 Each step is one pull request that follows the AGENTS.md process, with the
