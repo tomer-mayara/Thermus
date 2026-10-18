@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-import { execFileSync } from 'node:child_process';
 import { realpathSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
-import { Client, ProtocolError } from '@modelcontextprotocol/client';
-import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+import { withAstMetricsServer } from './ast-metrics-session.mjs';
+import { CommandError, repositoryRoot } from './repository.mjs';
 
 const help = `Usage: node script/ast-metrics-mcp.mjs <subcommand> [options]
 
@@ -32,41 +31,28 @@ The score is the maintainability index (0 to 100; more is better). The paths are
 decision paths (cyclomatic complexity), and the lines are lines of code.
 `;
 
-const guide = 'docs/implementation/ast-metrics-review.md';
-const diagnosticStderrLimit = 2_000;
-
-class CommandError extends Error {}
-
 // The subcommands check the command line before the command looks for the root, so that a wrong command line
 // starts no server.
 const subcommands = {
   file: {
-    usage: 'file <path> [--json]',
-    options: ['json'],
-    operands: [1, 1],
+    usage: 'file <path> [--json]', options: ['json'], operands: [1, 1],
     command: ([path], values) => ({ kind: 'file', path, json: values.json === true }),
   },
   complex: {
-    usage: 'complex [--limit N] [--max-cyclomatic N]',
-    options: ['limit', 'max-cyclomatic'],
-    operands: [0, 0],
+    usage: 'complex [--limit N] [--max-cyclomatic N]', options: ['limit', 'max-cyclomatic'], operands: [0, 0],
     command: (_operands, values) => toolCommand('find_complex_code', {
       limit: integerOf(values, 'limit', 1),
       max_cyclomatic: integerOf(values, 'max-cyclomatic', 0),
     }),
   },
   risky: {
-    usage: 'risky [--limit N]',
-    options: ['limit'],
-    operands: [0, 0],
+    usage: 'risky [--limit N]', options: ['limit'], operands: [0, 0],
     command: (_operands, values) => toolCommand('find_risky_code', { limit: integerOf(values, 'limit', 1) }),
   },
   overview: { usage: 'overview', options: [], operands: [0, 0], command: () => toolCommand('analyze_project', {}) },
   tools: { usage: 'tools', options: [], operands: [0, 0], command: () => ({ kind: 'tools' }) },
   call: {
-    usage: 'call <tool> [<json arguments>]',
-    options: [],
-    operands: [1, 2],
+    usage: 'call <tool> [<json arguments>]', options: [], operands: [1, 2],
     command: ([name, json = '{}']) => toolCommand(name, argumentsOf(json)),
   },
 };
@@ -124,60 +110,36 @@ function toolCommand(name, args) {
 }
 
 function jsonOf(text) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return undefined;
-  }
-}
-
-function repositoryRootOf(timeoutMs) {
-  try {
-    return execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: timeoutMs }).replace(/\n$/, '');
-  } catch {
-    throw new CommandError('Run the command in a git working tree: git rev-parse --show-toplevel failed.');
-  }
+  try { return JSON.parse(text); } catch { return undefined; }
 }
 
 // The server names a file by its path from the root, with forward slashes. git gives the physical path of the root,
-// so the folder of the path is resolved too: on macOS the temporary folders are symbolic links.
+// so the folder of the path is resolved too: on macOS the temporary folders are symbolic links. A folder that does
+// not exist stays as it is; the server then tells that it does not know the file.
 function rootPathOf(root, path) {
   const absolute = resolve(path);
   let folder = dirname(absolute);
-  try {
-    folder = realpathSync(folder);
-  } catch {
-    // A folder that does not exist stays as it is. The server then tells that it does not know the file.
-  }
+  try { folder = realpathSync(folder); } catch { /* The folder does not exist. */ }
   const fromRoot = relative(root, join(folder, basename(absolute)));
   if (fromRoot === '' || fromRoot === '..' || fromRoot.startsWith(`..${sep}`)) throw new CommandError(`The path must name a file in the repository root ${root}.`);
   return fromRoot.split(sep).join('/');
 }
 
 function workOf(command, root) {
-  if (command.kind === 'tools') return listTools;
+  if (command.kind === 'tools') return toolList;
   if (command.kind === 'file') return fileWork(rootPathOf(root, command.path), command.json);
-  return async (client, callOptions) => formattedAnswer(await answerText(client, { name: command.name, arguments: command.arguments }, callOptions));
+  return async (server) => formattedAnswer(await server.tool(command.name, command.arguments));
 }
 
-async function listTools(client, callOptions) {
-  const { tools } = await client.listTools(undefined, callOptions);
-  return tools.map((tool) => `${tool.name}: ${tool.description ?? ''}\n`).join('');
+async function toolList(server) {
+  return (await server.tools()).map((tool) => `${tool.name}: ${tool.description ?? ''}\n`).join('');
 }
 
 function fileWork(path, json) {
-  return async (client, callOptions) => {
-    const text = await answerText(client, { name: 'get_file_metrics', arguments: { path } }, callOptions);
+  return async (server) => {
+    const text = await server.tool('get_file_metrics', { path });
     return json ? formattedAnswer(text) : fileSummary(path, text);
   };
-}
-
-async function answerText(client, call, callOptions) {
-  const result = await client.callTool(call, callOptions);
-  const texts = result.content.filter((item) => item.type === 'text').map((item) => item.text);
-  if (result.isError) throw new CommandError(`${call.name} failed: ${texts.join(' ')}`);
-  if (result.content.length !== 1 || texts.length !== 1) throw new CommandError(`${call.name} gave an unexpected answer: expected one text item.`);
-  return texts[0];
 }
 
 function formattedAnswer(text) {
@@ -216,95 +178,15 @@ function plural(count, noun) {
   return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
-// The server runs in the root, because it analyzes the folder that it runs in.
-class ServerProcess {
-  #transport;
-  #client = new Client({ name: 'thermus-ast-metrics-mcp', version: '0.0.0' });
-  #stderr = '';
-  #spawnError;
-  #exit;
-
-  constructor(root) {
-    this.#transport = new StdioClientTransport({ command: 'ast-metrics', args: ['mcp'], cwd: root, env: process.env, stderr: 'pipe' });
-    // Read all of stderr, so that a full pipe cannot stop the server. Keep the start of it for a diagnostic.
-    this.#transport.stderr.setEncoding('utf8').on('data', (chunk) => { this.#stderr = (this.#stderr + chunk).slice(0, diagnosticStderrLimit); });
-    // A failed start, such as ENOENT, also closes the transport. Keep its error, so that the diagnostic names it.
-    this.#transport.onerror = (error) => { if (String(error?.syscall).startsWith('spawn')) this.#spawnError = error; };
-    this.#exit = new Promise((_resolve, reject) => {
-      this.#transport.onclose = () => reject(this.#spawnError ?? new CommandError(`ast-metrics exited before it answered. ${this.#stderrNote()}`));
-    });
-    // The exit after the answer is no failure.
-    this.#exit.catch(() => undefined);
-  }
-
-  // The SDK waits without end for a write to a server that has exited, and its request timeout does not cover the
-  // notifications/initialized message. So the exit of the server also ends the call.
-  run(work, callOptions) {
-    return Promise.race([this.#call(work, callOptions), this.#exit]);
-  }
-
-  async #call(work, callOptions) {
-    await this.#client.connect(this.#transport, callOptions);
-    return work(this.#client, callOptions);
-  }
-
-  failureOf(error) {
-    if (error instanceof CommandError) return error;
-    if (error?.code === 'ENOENT') return new CommandError(`ast-metrics is not installed, or it is not on PATH. See ${guide}.`);
-    if (error instanceof ProtocolError) return new CommandError(`ast-metrics refused the request: ${error.message}`);
-    return new CommandError(`The MCP call failed: ${error instanceof Error ? error.message : String(error)}`);
-  }
-
-  #stderrNote() {
-    const text = this.#stderr.trim();
-    return text === '' ? 'It wrote nothing to stderr.' : `Its stderr: ${text}`;
-  }
-
-  // Closing the client closes the input of the server, and the server exits by itself. After a timeout the server
-  // is still at work, so it gets SIGTERM first. The transport sends SIGTERM and then SIGKILL to a server that stays.
-  async stop(now) {
-    const pid = this.#transport.pid;
-    if (now && pid !== null) {
-      try {
-        process.kill(pid, 'SIGTERM');
-      } catch {
-        // The server exited in the meantime.
-      }
-    }
-    await this.#client.close();
-  }
-}
-
-async function callServer(root, timeoutMs, work) {
-  const server = new ServerProcess(root);
-  const timeout = new CommandError(`The call timed out after ${timeoutMs} ms. Increase --timeout-ms if needed.`);
-  const controller = new AbortController();
-  const deadline = setTimeout(() => controller.abort(timeout), timeoutMs);
-  const timedOut = new Promise((_resolve, reject) => {
-    controller.signal.addEventListener('abort', () => reject(timeout), { once: true });
-  });
-  try {
-    return await Promise.race([server.run(work, { signal: controller.signal, timeout: timeoutMs }), timedOut]);
-  } catch (error) {
-    throw controller.signal.aborted ? timeout : server.failureOf(error);
-  } finally {
-    clearTimeout(deadline);
-    await server.stop(controller.signal.aborted);
-  }
-}
-
 async function main() {
   const command = commandOf(process.argv.slice(2));
-  if (command.help) {
-    process.stdout.write(help);
-    return;
-  }
-  const root = repositoryRootOf(command.timeoutMs);
-  process.stdout.write(await callServer(root, command.timeoutMs, workOf(command, root)));
+  if (command.help) return help;
+  const root = repositoryRoot();
+  return withAstMetricsServer(root, command.timeoutMs, workOf(command, root));
 }
 
 try {
-  await main();
+  process.stdout.write(await main());
 } catch (error) {
   const message = error instanceof CommandError ? error.message : `Unexpected failure: ${error instanceof Error ? error.message : String(error)}`;
   // A diagnostic is one line, also when the server wrote several lines.
