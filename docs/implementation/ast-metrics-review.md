@@ -175,6 +175,48 @@ the worktree. With `--base`, the exit status is also 1 for an unknown ref, a
 ref without a merge base with HEAD, or a worktree that git cannot remove;
 the diagnostic then names the folder that stays.
 
+### Show the architecture delta: `script/ast-metrics-architecture.ts`
+
+```sh
+pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--timeout-ms MS] [--out FILE]
+```
+
+The command prints the architecture delta of `src/` as Markdown, and also
+writes it to `--out` (relative to the current folder). By default it takes
+the snapshot of the merge base of `--base` (default `origin/main`) in a
+temporary worktree, as `--base` of the snapshot command does, and the
+snapshot of the working tree; this takes about two seconds. The changed
+files are the `src/` files of the delta rule of the delta command. With
+`--head` and `--base-snapshot` it reads two snapshot files and runs no tool;
+the changed files then come from `--touched` (paths from the root, separated
+by commas), else there are none.
+
+The output is the header `## Architecture of src/: base <8 characters of the
+base commit> → head`, one summary line (modularity and cross share with two
+decimals, cycles, communities with the shared kernel, base → head, with
+` (n new, m gone)` when there are such), then the Mermaid graph with its
+legend, or `The map did not change.`
+
+Matching: a head community matches the base community with the largest
+Jaccard overlap of their files, at 0.5 or more; the largest overlaps match
+first, a tie goes to the first label, and each base community matches once.
+An unmatched community is new or gone, so a split or a merge shows as gone
+and new. The map changed when a community is new, gone, or touched, or when
+a dependency or a cycle appeared or disappeared; numbers, reference counts,
+and labels alone do not change it.
+
+The encoding: nodes sorted by label, ids `c_<label>` (a later node with the
+same id gets a number); a node text with the label, ` · new` or ` · gone`,
+the files, the LOC-weighted maintainability, and the decision paths, each
+with `↑n` or `↓n` for a change; a thick border for a touched community; a
+grey dashed node for a gone community with its base numbers; edges sorted by
+labels with the references and their change, `<n> · cycle` red dashed for a
+cycle, `<n> · new` thick for a new dependency (`· new · cycle` red dashed when
+both), `gone` grey dashed for a gone dependency; one legend paragraph. A
+label text has no double quote and no backtick. Exit status 0 when the
+Markdown is printed (a report, not a gate); 1 with one diagnostic line for a
+failure; 130 or 143 when a signal stops the base snapshot.
+
 ## The configuration
 
 `.ast-metrics.yaml` at the repository root is the only configuration that

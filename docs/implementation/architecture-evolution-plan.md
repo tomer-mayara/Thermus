@@ -188,15 +188,20 @@ The shape of the output, with made-up numbers:
 
 ```mermaid
 flowchart LR
-  auth["auth/hosted-auth<br/>11 files · MI 60 ↓2 · paths 310 ↑12<br/>■ critical: 6 fn ≥ 30 (+2)"]
-  admin["hosted-admin<br/>6 files · MI 64 · paths 120<br/>▲ warning: 2 fn ≥ 30"]
-  auth -- "20" --> admin
-  admin -. "6 · cycle" .-> auth
+  c_auth["auth<br/>42 files · MI 58.6 ↓2.0 · paths 1102 ↑12<br/>■ critical: 6 fn ≥ 30 (+2)"]
+  c_hosted_admin["hosted-admin<br/>7 files · MI 66.6 · paths 175<br/>▲ warning: 2 fn ≥ 30"]
+  c_auth -- "20 ↑3" --> c_hosted_admin
+  c_hosted_admin -. "6 · cycle" .-> c_auth
+  linkStyle 1 stroke:#d03b3b,stroke-width:2px
+  classDef touched stroke-width:3px
   classDef critical stroke:#d03b3b,stroke-width:3px
   classDef warning stroke:#fab219,stroke-width:3px
-  class auth critical
-  class admin warning
+  class c_auth touched,critical
+  class c_hosted_admin warning
 ```
+
+T3 implements everything above except the band line and the band classes,
+which T6 adds.
 
 A label text holds no backtick and no double quote, because GitHub's renderer
 fails silently on them.
@@ -364,13 +369,16 @@ Never run `pnpm install` in the worktree; the analysis needs no
 ### T3. Architecture delta
 
 Source: step A1 and "Encoding of the architecture delta". Depends on T2.
+Done in PR #163. The map changes when a community is new, gone, or
+touched, or when a dependency or a cycle appeared or disappeared; numbers,
+reference counts, and labels alone do not change it.
 
 **Outcome and scope.** Add `script/ast-metrics-architecture.ts --base REF`.
 It makes the head and the base snapshot (or reads them with `--head FILE
 --base-snapshot FILE`, for the tests), matches the communities by Jaccard
 overlap of members at 0.5 or more, and prints the summary line (modularity,
-cross share, cycles, base to head) and, when a community, a dependency, or
-a label changed, the Mermaid graph of the encoding without the band colors:
+cross share, cycles, base to head) and, when a community is new, gone, or
+touched, or a dependency or a cycle appeared or disappeared, the Mermaid graph of the encoding without the band colors:
 nodes in a fixed order with files, maintainability with an arrow, decision
 paths with an arrow; thick border for a touched community; edges with
 references and change; red dashed for a cycle; bold for a new dependency;
