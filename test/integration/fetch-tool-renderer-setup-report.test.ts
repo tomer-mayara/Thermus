@@ -1,3 +1,5 @@
+import { completionRecordsIn } from '../support/drivers/operator-log.ts';
+import { executionContextOf } from '../support/fixtures/execution-context.ts';
 import assert from 'node:assert/strict';
 import childProcess, { type ChildProcess, type ExecFileException } from 'node:child_process';
 import { test, type TestContext } from 'node:test';
@@ -61,7 +63,7 @@ test('Given the server composition and renderer starts that fail with ENOENT and
   }
 
   for (const result of results) assert.deepEqual([result.content, result.isError], [[{ type: 'text', text: 'Page fetch failed' }], true]);
-  assert.deepEqual(lines.info.map((line) => JSON.parse(line).status), Array(5).fill('fetch_failed'));
+  assert.deepEqual(completionRecordsIn(lines.info.join('\n')).map(({ status }) => status), Array(5).fill('fetch_failed'));
   assert.deepEqual(lines.error, [
     'Renderer setup failure: the Lightpanda executable is missing (ENOENT). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.',
     'Renderer setup failure: the Lightpanda executable cannot start (EACCES). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.',
@@ -84,7 +86,7 @@ for (const loggerFails of [false, true]) {
     const operation = createFetchOperation({ AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: executable }, logger);
 
     for (let call = 0; call < 2; call += 1) {
-      await assert.rejects(operation(url, context, new AbortController().signal), (error: unknown) => {
+      await assert.rejects(operation(url, context, executionContextOf()), (error: unknown) => {
         assert.ok(error instanceof Error);
         assert.equal(error.message, 'Page fetch failed');
         assert.equal(error.cause, undefined);

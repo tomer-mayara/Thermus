@@ -100,7 +100,9 @@ maintainability of `src/`, the count of functions with CRAP at 30 or more),
 the `src/` communities with their members and references, the per-file
 metrics, and the per-function decision paths and, when coverage is present,
 coverage and CRAP. One module makes it from one JSON report and one MCP
-session; the commands read snapshots and nothing else.
+session, both of `src/` alone (`ast-metrics analyze src`, `ast-metrics mcp
+src`), so that growth of `script/` or `test/` cannot regroup the
+communities; the commands read snapshots and nothing else.
 
 A pull request has two snapshots: the head (the working tree) and the base
 (the merge base with `origin/main`, analyzed in a temporary `git worktree`
@@ -289,7 +291,13 @@ and the fixtures of `test/acceptance/script/`.
 
 ### T1. Snapshot of the working tree
 
-Source: step A1 of the plan.
+Source: step A1 of the plan. Done in PR #157, with two findings: a member
+of a community can be a folder (namespace granularity), so each file gets
+the community of its nearest member; and ast-metrics groups the whole
+graph that it analyzes, so 14 new modules under `script/` regrouped the
+communities of `src/` (7 to 6) with no change in `src/`. The snapshot
+therefore runs `ast-metrics analyze src` and `ast-metrics mcp src`, and its
+numbers describe `src/` alone.
 
 **Outcome and scope.** Add `script/ast-metrics-snapshot.ts [--out FILE]`.
 It runs `ast-metrics analyze --report-json` and one MCP session

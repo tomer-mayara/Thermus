@@ -4,6 +4,7 @@ import { openWorkOSApplication } from '../../../src/hosted-workos-application.ts
 import { hostedRootConfig } from '../fixtures/hosted-config.ts';
 import { hostedFetchSettings, workOSSettings } from '../fixtures/hosted-placeholder.ts';
 import { WorkOSFake, type FakeUser } from '../doubles/workos/workos-fake.ts';
+import { completionRecordsIn } from '../drivers/operator-log.ts';
 
 const hostedFetchUser: FakeUser = { id: 'user_fetch', email: 'fetch@example.com', firstName: 'Fetch' };
 const hostedFetchOrganization = 'org_fetch';
@@ -27,5 +28,5 @@ export async function openHostedFetchSite(t: TestContext) {
   const token = await world.authkitKey.sign({ sub: hostedFetchUser.id, client_id: 'client_mcp', sid: 'app_consent_fetch', scope: 'openid', org_id: hostedFetchOrganization }, {
     issuer: workOSSettings.WORKOS_AUTHKIT_ISSUER, audience: hostedRootConfig.mcpResourceUrl,
   });
-  return { application, config: hostedRootConfig, world, token, lines, completions: () => lines.filter((line) => line.startsWith('{"event":"mcp.tool.completed"')).map((line) => JSON.parse(line) as Record<string, unknown>) };
+  return { application, config: hostedRootConfig, world, token, lines, completions: (operationId?: string) => completionRecordsIn(lines.join('\n'), operationId) };
 }

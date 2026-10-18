@@ -33,6 +33,8 @@ test('Given the double on PATH and the known file, when file runs from a subfold
   assert.equal(result.stdout, `${knownFileLines.join('\n')}\n`);
   assert.equal(result.stderr, '');
   assert.deepEqual(fake.calls(), [{ tool: 'get_file_metrics', arguments: { path: knownFile }, cwd: root }]);
+  // The command analyzes the whole repository: it gives the server no folder, unlike the snapshot command.
+  assert.equal(fake.requests()[0].folder, undefined);
   assert.deepEqual(await fake.stillRunning(), []);
 });
 

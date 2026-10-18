@@ -31,9 +31,9 @@ for (const era of mcpProtocolEras) {
     await Promise.all([site.listener.close(), site.server.close()]);
     const elapsedMs = performance.now() - stoppingAt;
 
-    assert.equal(site.records.length, 1);
+    assert.equal(site.completionLines().length, 1);
     assert.equal(site.pipelineCalls.length, 0);
-    assert.doesNotMatch(site.records[0], /Late source|Late success/);
+    assert.doesNotMatch(site.records.join('\n'), /Late source|Late success/);
     assert.ok(elapsedMs < 1_000, `server stop took ${elapsedMs.toFixed(1)} ms after cancellation`);
   });
 }

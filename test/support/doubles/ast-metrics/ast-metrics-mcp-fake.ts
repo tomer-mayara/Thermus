@@ -1,20 +1,28 @@
 // A fake of "ast-metrics mcp", the MCP server of the ast-metrics CLI 0.43.1. Like the real server, it reads one
 // JSON-RPC message per line on stdin, writes one per line on stdout, and exits at the end of its input. It has the
 // nine tools of the real server, but it reads no file: get_file_metrics knows two paths, and each other tool answers
-// JSON that echoes its arguments, so that a test can see what the command sent.
+// JSON that echoes its arguments, so that a test can see what the command sent. A file of answers replaces the two
+// paths and the echo of get_communities. Like the real server, it takes the folder to analyze as an optional argument
+// after mcp; it gives the same answers for each folder, and the request log names the folder.
 //
 // Settings in the environment:
-//   AST_METRICS_FAKE_LOG           A file that gets one JSON line for each request: method, tool, arguments, pid, cwd.
+//   AST_METRICS_FAKE_REQUEST_LOG   A file that gets one JSON line for each request: method, tool, arguments, folder,
+//                                  pid, cwd. A server without a folder argument logs no folder.
+//                                  The name differs from the call log of ast-metrics-cli-fake.ts, which runs this fake
+//                                  for its mcp command in one environment with its own settings.
+//   AST_METRICS_FAKE_ANSWERS       A JSON file with the answer of get_communities, and the answers of get_file_metrics
+//                                  by path. get_file_metrics then knows only these paths.
 //   AST_METRICS_FAKE_HANG=1        Never answer a tools/call, and keep running after the end of the input.
 //   AST_METRICS_FAKE_EXIT_EARLY=1  Exit with status 3 right after the answer to initialize.
 //   AST_METRICS_FAKE_TEXT          Plain text that each tool other than get_file_metrics answers instead of JSON.
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 import { createInterface, type Interface } from 'node:readline';
 
 type JsonObject = Readonly<Record<string, unknown>>;
 
 const settings = {
-  log: process.env.AST_METRICS_FAKE_LOG,
+  folder: process.argv[3],
+  log: process.env.AST_METRICS_FAKE_REQUEST_LOG,
   hang: process.env.AST_METRICS_FAKE_HANG === '1',
   exitEarly: process.env.AST_METRICS_FAKE_EXIT_EARLY === '1',
   text: process.env.AST_METRICS_FAKE_TEXT,
@@ -71,10 +79,20 @@ const knownMetrics = {
   volume: { cloc: 4, halstead_bugs: 0.07341069249774988, halstead_difficulty: 6.856811032105149, halstead_effort: 1877.3398145414073, halstead_volume: 220.23207749324965, lloc: 72, loc: 176 },
 };
 const { maintainability: _fileScore, ...unscoredMetrics } = knownMetrics;
-const fileMetrics = new Map<string, JsonObject>([
+const answers = answersOf(process.env.AST_METRICS_FAKE_ANSWERS);
+const fileMetrics = new Map<string, JsonObject>(isJsonObject(answers.get_file_metrics) ? answerEntries(answers.get_file_metrics) : [
   ['src/known.ts', knownMetrics],
   ['src/unscored.ts', { ...unscoredMetrics, path: 'src/unscored.ts' }],
 ]);
+
+function answersOf(file: string | undefined): JsonObject {
+  const value: unknown = file === undefined ? {} : JSON.parse(readFileSync(file, 'utf8'));
+  return isJsonObject(value) ? value : {};
+}
+
+function answerEntries(answersByPath: JsonObject): [string, JsonObject][] {
+  return Object.entries(answersByPath).filter((entry): entry is [string, JsonObject] => isJsonObject(entry[1]));
+}
 
 function send(message: JsonObject): void {
   process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
@@ -84,7 +102,7 @@ function record(request: JsonObject): void {
   if (settings.log === undefined) return;
   const params = paramsOf(request);
   const call = request.method === 'tools/call' ? { tool: params.name, arguments: params.arguments } : {};
-  appendFileSync(settings.log, `${JSON.stringify({ method: request.method, ...call, pid: process.pid, cwd: process.cwd() })}\n`);
+  appendFileSync(settings.log, `${JSON.stringify({ method: request.method, ...call, folder: settings.folder, pid: process.pid, cwd: process.cwd() })}\n`);
 }
 
 function textResult(text: string, isError: boolean): JsonObject {
@@ -101,6 +119,7 @@ function fileMetricsResult(path: unknown): JsonObject {
 
 function toolResult(name: unknown, args: unknown): JsonObject {
   if (name === 'get_file_metrics') return fileMetricsResult(isJsonObject(args) ? args.path : undefined);
+  if (name === 'get_communities' && answers.get_communities !== undefined) return textResult(JSON.stringify(answers.get_communities), false);
   return textResult(settings.text ?? JSON.stringify({ tool: name, arguments: args }), false);
 }
 

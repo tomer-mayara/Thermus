@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { Ctx } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import type { HtmlProcessingContext } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createContext } from '../../fixtures/html-cleaner-context.ts';
 
 const threatUrl = `https://attacker.example/?payload=${'a'.repeat(128)}`;
 const scanFailureWarning = 'HTML scan failed; remaining HTML withheld';
 
-function assertHiddenDocumentRemoved(result: Ctx): void {
+function assertHiddenDocumentRemoved(result: HtmlProcessingContext): void {
   assert.equal(result.html, '');
   assert.equal(result.found?.includes('hidden-html'), true);
   assert.equal(result.skipped, 0);

@@ -18,14 +18,17 @@ function terminate(pid: number | null): void {
   }
 }
 
-// The server runs in the root, because it analyzes the folder that it runs in.
+// The server runs in the root, and the paths of the calls are paths from the root. Without a folder, the server
+// analyzes the root; a folder, such as src, limits the analysis to that folder. The default gives no folder argument,
+// because with "." get_file_metrics answers each path as an absolute path.
 export class ServerProcess {
   readonly #transport: StdioClientTransport;
   readonly #client = new Client({ name: 'thermus-ast-metrics-mcp', version: '0.0.0' });
   readonly #exit: Promise<never>;
 
-  constructor(root: string) {
-    this.#transport = new StdioClientTransport({ command: 'ast-metrics', args: ['mcp'], cwd: root, env: commandEnvironment(), stderr: 'pipe' });
+  constructor(root: string, folder?: string) {
+    const args = folder === undefined ? ['mcp'] : ['mcp', folder];
+    this.#transport = new StdioClientTransport({ command: 'ast-metrics', args, cwd: root, env: commandEnvironment(), stderr: 'pipe' });
     this.#exit = exitOf(this.#transport);
   }
 

@@ -6,24 +6,28 @@ import type { RequestContext } from '../../../src/auth/access-context.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import type { McpRequestLifetime } from '../../../src/mcp/mcp-server.ts';
+import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
+import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
+import { completionLinesIn } from '../../support/drivers/operator-log.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 
 const context: RequestContext = {
   user: { authority: 'trusted-authority', subject: 'trusted-subject' }, tenantId: 'trusted-workspace', grants: [], permissions: ['product:access'],
 };
 const validArgs = { url: 'HTTPS://Example.COM/Page?secret-query=yes#secret-fragment', reason: 'Read for the task' };
 
-async function connect(t: TestContext, options: { operation?: (url: string, context: RequestContext, signal: AbortSignal) => Promise<string>; infoFails?: boolean; errorFails?: boolean; lifetime?: McpRequestLifetime } = {}) {
-  const calls: { url: string; context: RequestContext; signal: AbortSignal }[] = [];
+async function connect(t: TestContext, options: { operation?: FetchOperation; infoFails?: boolean; errorFails?: boolean; lifetime?: McpRequestLifetime } = {}) {
+  const calls: { url: string; context: RequestContext; execution: ExecutionContext }[] = [];
   const info: string[] = [];
   const completed = Promise.withResolvers<string>();
   const errors: string[] = [];
   const server = createFetchToolServer(context, {
-    operation: async (url, trusted, signal) => {
-      calls.push({ url, context: trusted, signal });
-      return options.operation?.(url, trusted, signal) ?? '# Exact\n';
+    operation: async (url, trusted, execution) => {
+      calls.push({ url, context: trusted, execution });
+      return options.operation?.(url, trusted, execution) ?? '# Exact\n';
     },
     logger: {
-      info: (entry) => { info.push(entry); completed.resolve(entry); if (options.infoFails) throw new Error('secret-info-error'); },
+      info: (entry) => { info.push(entry); if (completionLinesIn(entry).length === 1) completed.resolve(entry); if (options.infoFails) throw new Error('secret-info-error'); },
       error: (entry) => { errors.push(entry); if (options.errorFails) throw new Error('secret-log-error'); },
     },
   }, options.lifetime);
@@ -45,9 +49,11 @@ test('Given a fetch operation double, when the tool is listed and called, then i
   assert.equal(calls.length, 1);
   assert.equal(calls[0]?.url, validArgs.url);
   assert.equal(calls[0]?.context, context);
-  assert.ok(calls[0]?.signal instanceof AbortSignal);
+  assert.ok(calls[0]?.execution.signal instanceof AbortSignal);
   assert.equal(info.length, 1);
   const entry = JSON.parse(info[0]);
+  assert.match(entry.operationId, generatedOperationIdPattern);
+  assert.equal(entry.operationId, calls[0]?.execution.operationId);
   assert.equal(entry.reason, validArgs.reason);
   assert.equal(entry.status, 'success');
   assert.equal(entry.subject, context.user.subject);
@@ -115,7 +121,7 @@ test('Given an operation AbortError with a private message, when called, then ca
 
 test('Given cancellation while the operation runs, when the operation returns late Markdown, then the dispatch records cancellation instead of success', async (t) => {
   const started = Promise.withResolvers<void>();
-  const site = await connect(t, { operation: async (_url, _context, signal) => {
+  const site = await connect(t, { operation: async (_url, _context, { signal }) => {
     started.resolve();
     await new Promise<void>((resolve) => signal.addEventListener('abort', () => resolve(), { once: true }));
     return 'late success';
@@ -146,7 +152,7 @@ test('Given an owned request lifetime, when shutdown cancels it, then the full h
   const cancelled = Promise.withResolvers<void>();
   const tracked: Promise<unknown>[] = [];
   const lifetime: McpRequestLifetime = { signal: shutdown.signal, track: (task) => { tracked.push(task); return task; } };
-  const site = await connect(t, { lifetime, operation: async (_url, _context, signal) => {
+  const site = await connect(t, { lifetime, operation: async (_url, _context, { signal }) => {
     started.resolve();
     await new Promise<void>((resolve) => signal.addEventListener('abort', () => { cancelled.resolve(); resolve(); }, { once: true }));
     await release.promise;

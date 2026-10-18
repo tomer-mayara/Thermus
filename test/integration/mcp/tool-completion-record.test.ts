@@ -6,14 +6,16 @@ import { formatToolCompletion } from '../../../src/mcp/tool-completion-record.ts
 const context: RequestContext = {
   user: { authority: 'synthetic-authority', subject: 'trusted-subject' }, tenantId: 'trusted-tenant', grants: [], permissions: [],
 };
+const operationId = 'D35803FB-2C25-4273-8967-99EED265721B';
 
 function record(argumentsValue: unknown, name = 'getURLAsMarkdown') {
-  return formatToolCompletion(context, { name, arguments: argumentsValue, status: 'invalid_arguments', durationMs: 7 });
+  return formatToolCompletion(context, { operationId, name, arguments: argumentsValue, status: 'invalid_arguments', durationMs: 7 });
 }
 
 test('Given credential-bearing URL and line breaks in a valid reason, when a completion is formatted, then JSON is one line and only safe fields are kept', () => {
   const encoded = record({ url: 'https://private-user:private-password@example.com/path?private-query=yes#private-fragment', reason: 'First line\nSecond\rline', headers: { authorization: 'private-token' }, cause: 'private-cause', html: 'private-html', markdown: 'private-markdown', subject: 'forged-subject' });
   const entry = JSON.parse(encoded);
+  assert.equal(entry.operationId, operationId);
   assert.equal(entry.url, 'https://example.com/path');
   assert.equal(entry.urlStatus, 'invalid');
   assert.equal(entry.reason, 'First line\nSecond\rline');

@@ -150,7 +150,7 @@ pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/scr
 
 # Measure and review a pull request with ast-metrics
 
-Three commands wrap the ast-metrics CLI for the process "Code quality review
+The commands below wrap the ast-metrics CLI for the process "Code quality review
 with ast-metrics" in [AGENTS.md](../AGENTS.md). They carry the correct syntax
 of the tool; do not call `ast-metrics` directly in that process. Run them from
 the repository root; no build is needed. The `ast-metrics` executable must be
@@ -227,12 +227,31 @@ one build; then no report is written. The
 [ast-metrics review guide](../docs/implementation/ast-metrics-review.md)
 gives the details of the share.
 
+## Take a snapshot
+
+```sh
+pnpm exec node script/ast-metrics-snapshot.ts [--out FILE] [--timeout-ms MS]
+```
+
+Writes the snapshot of the working tree to `ast-report/snapshot.json`, or to
+`--out` (relative to the current folder): the global numbers of `src/`, the
+`src/` communities with labels, members, references, and edges, and each
+`src/` file with its metrics and functions, from one `ast-metrics analyze
+src` run and one session of `ast-metrics mcp src`, so that only a change of
+`src/` changes the communities. The file is written only after all calls
+succeeded. `--timeout-ms` sets the deadline of the session (default 60000
+ms). Exit status 1, with one diagnostic line on stderr, for a missing
+executable, a failed analysis, or a failed call. The
+[ast-metrics review guide](../docs/implementation/ast-metrics-review.md)
+describes the file.
+
 Run the focused offline tests after a clean build, and the live tests with
 the real executable on PATH and the real unit suite:
 
 ```sh
 pnpm run build
-pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
+pnpm exec node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
 ```
