@@ -12,7 +12,7 @@ historical design sign-off from both review agents and the manager. The
 [MCP-PIPE-01 record](mcp-pipe-01.md) gives the tested implementation revision
 and actual verification results separately from that design review.
 The [MCP-PIPE-02 record](mcp-pipe-02.md) tracks the next authorized slice;
-its source work and checks are pending.
+implementation is in progress and checks are pending.
 The AST audit clarifications are reviewed; see the
 [audit evidence](mcp-pipelines-plan-review.md#appendix-a-ast-metrics-audit).
 See [Appendix A: implementation tickets](#appendix-a-implementation-tickets)
@@ -275,8 +275,8 @@ passing characterization before changing structure; do not create artificial
 red tests. For new behavior in tickets 02–04, first write a failing public
 acceptance case, then use focused TDD until it passes and refactor with green tests.
 
-Reuse/move existing `test/integration/mcp/get-url-as-markdown.test.ts` cases
-and `test/unit/mcp/fetch-tool-schema.test.ts` URL cases before adding suites.
+Reuse existing `test/integration/page-fetch/fetch-page.test.ts` cases
+and `test/integration/mcp/fetch-tool-schema.test.ts` URL cases before adding suites.
 Coordinator tests with real auth are integration tests, even with fetcher/step
 doubles. Same-package step/executor tests with collaborator doubles are unit
 tests. Real core-to-cleaner collaboration is integration. Keep interface tests

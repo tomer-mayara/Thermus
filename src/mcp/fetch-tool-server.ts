@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../auth/access-context.ts';
 import { fetchToolInputSchema, parseFetchToolArguments } from './fetch-tool-schema.ts';
@@ -21,6 +22,7 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
     inputSchema: fetchToolInputSchema,
   }] }));
   const callTool = async (request: CallToolRequest, requestContext: ServerContext) => {
+    const operationId = randomUUID();
     const startedAt = performance.now();
     const call = request.params;
     const signal = lifetime === undefined ? requestContext.mcpReq.signal : AbortSignal.any([requestContext.mcpReq.signal, lifetime.signal]);
@@ -33,7 +35,7 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
       const args = await parseFetchToolArguments(call.arguments);
       if (args === undefined) throw new Error('Invalid tool arguments');
       signal.throwIfAborted();
-      const markdown = await dependencies.operation(args.url, context, signal);
+      const markdown = await dependencies.operation(args.url, context, { signal, operationId });
       signal.throwIfAborted();
       if (typeof markdown !== 'string') throw new Error('Page processing failed');
       status = 'success';
@@ -46,7 +48,7 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
       return server.projectCallToolResult(result, undefined);
     } finally {
       emitCompletion(dependencies.logger, formatToolCompletion(context, {
-        name: call.name, arguments: call.arguments, status, durationMs: Math.max(0, performance.now() - startedAt),
+        operationId, name: call.name, arguments: call.arguments, status, durationMs: Math.max(0, performance.now() - startedAt),
       }));
     }
   };

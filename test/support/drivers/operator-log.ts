@@ -18,10 +18,11 @@ export function tenantIn(output: string): string | undefined {
   return tenantLine.exec(output)?.[1];
 }
 
-export function completionLinesIn(output: string): string[] {
-  return output.match(completionLine) ?? [];
+export function completionLinesIn(output: string, operationId?: string): string[] {
+  const lines = output.match(completionLine) ?? [];
+  return operationId === undefined ? lines : lines.filter((line) => JSON.parse(line).operationId === operationId);
 }
 
-export function completionRecordsIn(output: string): Record<string, unknown>[] {
-  return completionLinesIn(output).map((line) => JSON.parse(line) as Record<string, unknown>);
+export function completionRecordsIn(output: string, operationId?: string): Record<string, unknown>[] {
+  return completionLinesIn(output, operationId).map((line) => JSON.parse(line) as Record<string, unknown>);
 }

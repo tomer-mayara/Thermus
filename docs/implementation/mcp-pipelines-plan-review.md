@@ -13,8 +13,8 @@ participated in or endorsed this review. That review changed documentation only.
 The review and metrics below are historical evidence. The
 [MCP-PIPE-01 record](mcp-pipe-01.md) gives the completed implementation and
 verification results; the user has merged PR #155. The
-[MCP-PIPE-02 record](mcp-pipe-02.md) tracks the authorized next slice and its
-pending source work/checks. Tickets 03–04 remain Not started. The analysis
+[MCP-PIPE-02 record](mcp-pipe-02.md) tracks the implementation in progress and
+pending checks. Tickets 03–04 remain Not started. The analysis
 below stays a historical review; it supplies no MCP-PIPE-02 test results.
 
 ## Material findings and selected corrections

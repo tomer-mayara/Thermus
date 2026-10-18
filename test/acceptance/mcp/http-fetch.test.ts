@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
 import { ProtocolError, type CallToolResult } from '@modelcontextprotocol/client';
 import type { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
@@ -6,9 +7,11 @@ import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fe
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { exactMarkdown, openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
 
 for (const era of mcpProtocolEras) {
-  test(`Given test-injected auth in ${era}, when an MCP HTTP client discovers and calls the fetch tool, then it gets exact Markdown and one completion record`, async (t) => {
+  test(`Given test-injected auth in ${era}, when an MCP HTTP client discovers and calls the fetch tool, then it gets exact Markdown and one completion record with an operation UUID`, async (t) => {
     const site = await openFetchSite(t, era, { headers: { 'X-Subject': 'forged-subject', 'X-Tenant-Id': 'forged-tenant', 'X-Authority': 'forged-authority' } });
     const listed = await site.client.listTools();
     assert.deepEqual(listed.tools.map(({ name }) => name), ['getURLAsMarkdown']);
@@ -20,14 +23,30 @@ for (const era of mcpProtocolEras) {
     assert.equal(site.pipelineCalls[0]?.page.requestedUrl, validFetchArguments.url);
     assert.equal(site.pipelineCalls[0]?.page.finalUrl, 'https://example.net/final');
     assert.equal(site.fetchCalls[0]?.signal, site.pipelineCalls[0]?.signal);
-    assert.equal(site.records.length, 1);
-    const entry = JSON.parse(site.records[0]);
+    assert.equal(site.completionLines().length, 1);
+    const entry = JSON.parse(site.completionLines()[0]);
+    assert.match(entry.operationId, generatedOperationIdPattern);
     assert.equal(entry.authority, 'https://synthetic-auth.thermus.invalid');
     assert.equal(entry.subject, 'synthetic-user');
     assert.equal(entry.tenantId, 'synthetic-workspace');
     assert.equal(entry.reason, validFetchArguments.reason);
     assert.equal(entry.status, 'success');
-    assert.doesNotMatch(site.records[0], /forged-|private-query|private-fragment|Source|Exact Markdown|arbitrary-test-token/);
+    assert.doesNotMatch(site.records.join('\n'), /forged-|private-query|private-fragment|Source|Exact Markdown|arbitrary-test-token/);
+  });
+
+  test(`Given a non-completion event fixture in ${era}, when the log receives it before a real call, then only the actual completion resolves the wait`, async (t) => {
+    const site = await openFetchSite(t, era);
+    let completed = false;
+    void site.firstCompletion.then(() => { completed = true; });
+    site.record(JSON.stringify({ event: 'pipeline.step.completed', operationId: 'd35803fb-2c25-4273-8967-99eed265721b' }));
+    await setImmediate();
+    assert.equal(completed, false);
+
+    assertTextResult(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments }), exactMarkdown);
+
+    assert.equal(JSON.parse(await site.firstCompletion).event, 'mcp.tool.completed');
+    assert.equal(site.completionLines().length, 1);
+    assert.equal(site.records.length, 2);
   });
 
   test(`Given invalid named calls and an unknown tool in ${era}, when dispatched over HTTP, then each gets one safe record and no fetch runs`, async (t) => {
@@ -41,8 +60,11 @@ for (const era of mcpProtocolEras) {
       assert.doesNotMatch(error.message, /private-unknown-tool/);
       return true;
     });
-    assert.equal(site.records.length, 10);
-    assert.equal(JSON.parse(site.records[9]).tool, 'unknown');
+    const completions = site.completionLines().map((line) => JSON.parse(line));
+    assert.equal(completions.length, 10);
+    assert.equal(completions[9].tool, 'unknown');
+    for (const entry of completions) assert.match(entry.operationId, generatedOperationIdPattern);
+    assert.equal(new Set(completions.map(({ operationId }) => operationId)).size, 10);
     assert.doesNotMatch(site.records.join('\n'), /private-user|private-pass|private-page|private-extra|private-unknown-tool/);
     assert.deepEqual(site.fetchCalls, []);
     assert.deepEqual(site.pipelineCalls, []);
@@ -55,7 +77,7 @@ for (const era of mcpProtocolEras) {
     const reason = '😀'.repeat(2_000);
     assertTextResult(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } }), exactMarkdown);
     assert.equal(site.fetchCalls[0]?.url, url);
-    assert.equal(JSON.parse(site.records[0]).reason, reason);
+    assert.equal(JSON.parse(site.completionLines()[0]).reason, reason);
   });
 
   for (const failure of ['fetch', 'pipeline', 'oversized', 'absent-markdown', 'nonstring-markdown'] as const) {
@@ -74,8 +96,8 @@ for (const era of mcpProtocolEras) {
       assertTextResult(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments }), message, true);
       assert.equal(site.fetchCalls.length, 1);
       assert.equal(site.pipelineCalls.length, failure === 'fetch' || failure === 'oversized' ? 0 : 1);
-      assert.equal(site.records.length, 1);
-      assert.doesNotMatch(site.records[0], /private-fetch-cause|private-pipeline-cause|private-source/);
+      assert.equal(site.completionLines().length, 1);
+      assert.doesNotMatch(site.records.join('\n'), /private-fetch-cause|private-pipeline-cause|private-source/);
     });
   }
 
@@ -86,11 +108,32 @@ for (const era of mcpProtocolEras) {
         pipeline: { process: async (page) => ({ ...page, removed: 0, skipped: 0, markdown: '', warnings: warning === undefined ? [] : [warning] }) },
       });
       assertTextResult(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments }), '');
-      assert.equal(site.records.length, 1);
-      assert.equal(JSON.parse(site.records[0]).status, 'success');
+      assert.equal(site.completionLines().length, 1);
+      assert.equal(JSON.parse(site.completionLines()[0]).status, 'success');
     });
   }
 }
+
+test('Given private client request IDs, metadata, and extra arguments, when calls are dispatched, then operation IDs are fresh UUIDs and copy no client ID text', async (t) => {
+  const site = await openFetchSite(t, '2026-07-28');
+  for (const extraArgument of [false, true]) {
+    const request = mcpRequest({ url: site.url.href, method: 'tools/call', token: 'arbitrary-test-token', params: {
+      name: 'getURLAsMarkdown', arguments: { ...validFetchArguments, ...(extraArgument ? { operationId: 'private-argument-id' } : {}) },
+    } });
+    const body = await request.json() as { id: string | number; params: { _meta: Record<string, unknown> } };
+    body.id = 'private-json-rpc-id';
+    body.params._meta.operationId = 'private-metadata-id';
+    const result = await rpcResult(await fetch(new Request(request, { body: JSON.stringify(body) })));
+    assert.deepEqual(result.content, [{ type: 'text', text: extraArgument ? 'Invalid tool arguments' : exactMarkdown }]);
+    assert.equal(result.isError === true, extraArgument);
+  }
+  const records = site.completionLines().map((line) => JSON.parse(line));
+  assert.equal(records.length, 2);
+  for (const record of records) assert.match(record.operationId, generatedOperationIdPattern);
+  assert.notEqual(records[0].operationId, records[1].operationId);
+  assert.equal(site.fetchCalls.length, 1);
+  assert.doesNotMatch(site.records.join('\n'), /private-json-rpc-id|private-metadata-id|private-argument-id/);
+});
 
 function assertTextResult(result: CallToolResult, text: string, isError = false): void {
   assert.deepEqual(result.content, [{ type: 'text', text }]);

@@ -10,11 +10,12 @@ const listeningMessage = 'Listening on http://127.0.0.1:52947';
 const stoppingMessage = 'Stopping after SIGTERM';
 const success = {
   event: 'mcp.tool.completed', authority: 'better-auth:7303c1d8-a899-4392-8a3e-62b354fc839c', subject: 'alice-id', tenantId: tenant,
+  operationId: 'd35803fb-2c25-4273-8967-99eed265721b',
   tool: 'getURLAsMarkdown', url: 'http://127.0.0.1:8090/story', urlStatus: 'valid', reason: 'Summarize the story', reasonStatus: 'valid',
   status: 'success', durationMs: 12.5,
 };
-const failure = { ...success, url: 'http://127.0.0.1:8090/missing', status: 'fetch_failed', durationMs: 3.25 };
-const otherEvent = { event: 'mcp.tool.started', tool: 'getURLAsMarkdown' };
+const failure = { ...success, operationId: 'e35803fb-2c25-4273-8967-99eed265721b', url: 'http://127.0.0.1:8090/missing', status: 'fetch_failed', durationMs: 3.25 };
+const otherEvent = { event: 'pipeline.step.completed', operationId: success.operationId, stepId: 'outgoing.observe_request', outcome: 'allowed' };
 
 // A child process and a container give the text of src/logging/console-logger.ts. The time, the level in colour,
 // and the call site come before each message, and a line break comes after it.
@@ -23,6 +24,15 @@ function consoleLine(site: string, message: string): string {
 }
 
 describe('Operator log reader of the server sites', () => {
+  test('Given mixed events from two operations, when one exact ID is selected, then only its actual completion is read', () => {
+    const output = [success, otherEvent, failure].map((record) => consoleLine('fetch-tool-server.js:77', JSON.stringify(record))).join('');
+
+    assert.deepEqual(completionLinesIn(output, success.operationId), [JSON.stringify(success)]);
+    assert.deepEqual(completionRecordsIn(output, failure.operationId), [failure]);
+    assert.deepEqual(completionRecordsIn(output, success.operationId.toUpperCase()), []);
+    assert.deepEqual(completionRecordsIn(output, 'unknown-operation'), []);
+  });
+
   test('Given the output of a server, when the listening URL is read, then it is undefined before the listening line arrives, and it is the URL of that line when other lines are around it', () => {
     const beforeListening = consoleLine('application.js:95', tenantMessage);
     const output = beforeListening + consoleLine('index.js:109', listeningMessage) + consoleLine('index.js:111', stoppingMessage);

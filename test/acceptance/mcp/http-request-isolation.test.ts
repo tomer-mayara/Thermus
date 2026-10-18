@@ -8,6 +8,9 @@ import { startHttpServer } from '../../../src/http/server.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
+import { completionRecordsIn } from '../../support/drivers/operator-log.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import { mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
@@ -28,6 +31,7 @@ async function openSite(t: TestContext, era: McpProtocolEra) {
   const records: Array<Record<string, unknown>> = [];
   const pipelineUrls: string[] = [];
   const operationContexts: RequestContext[] = [];
+  const operationExecutions: ExecutionContext[] = [];
   const recorded = [Promise.withResolvers<void>(), Promise.withResolvers<void>()] as const;
   const access = { deny: false, invalid: false };
   const verifier: IdentityVerifier = { verifyAccessToken: async (token) => {
@@ -66,15 +70,19 @@ async function openSite(t: TestContext, era: McpProtocolEra) {
     } },
   });
   const logger = { info: (record: string) => {
-    records.push(JSON.parse(record) as Record<string, unknown>);
-    recorded[records.length - 1]?.resolve();
+    const completions = completionRecordsIn(record);
+    if (completions.length === 1) {
+      records.push(completions[0]);
+      recorded[records.length - 1]?.resolve();
+    }
   }, error: (record: string) => { throw new Error(record); } };
   const server = new MCPServer({
     auth: { verifier, accessResolver: resolver, expectedResource: resource, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' },
     buildServer: (context, lifetime) => createFetchToolServer(context, {
-      operation: async (url, callContext, signal) => {
+      operation: async (url, callContext, execution) => {
         operationContexts.push(callContext);
-        return operation(url, callContext, signal);
+        operationExecutions.push(execution);
+        return operation(url, callContext, execution);
       }, logger,
     }, lifetime),
     reportFailure: () => {},
@@ -101,7 +109,7 @@ async function openSite(t: TestContext, era: McpProtocolEra) {
     clients.push(client);
     return client;
   }
-  return { pages, records, recorded, pipelineUrls, operationContexts, access, server, listener, connect };
+  return { pages, records, recorded, pipelineUrls, operationContexts, operationExecutions, access, server, listener, connect };
 }
 
 function call(client: Client, subject: 'alice' | 'bob', signal?: AbortSignal) {
@@ -117,6 +125,7 @@ function assertSuccess(result: CallToolResult, subject: string) {
 
 function assertRecord(record: Record<string, unknown> | undefined, subject: string, status: string) {
   assert.ok(record);
+  assert.match(record.operationId as string, generatedOperationIdPattern);
   assert.equal(record.subject, subject);
   assert.equal(record.authority, authority);
   assert.equal(record.tenantId, `${subject}-tenant`);
@@ -142,6 +151,11 @@ for (const era of mcpProtocolEras) {
     assert.equal(site.records.length, 2);
     assertRecord(site.records[0], 'bob', 'success');
     assertRecord(site.records[1], 'alice', 'success');
+    assert.equal(site.records[0].operationId, site.operationExecutions[1].operationId);
+    assert.equal(site.records[1].operationId, site.operationExecutions[0].operationId);
+    assert.notEqual(site.operationExecutions[0].operationId, site.operationExecutions[1].operationId);
+    assert.equal(site.operationExecutions[0].signal, signals[0]);
+    assert.equal(site.operationExecutions[1].signal, signals[1]);
     assert.deepEqual(site.operationContexts.map((context) => [context.user.subject, context.tenantId]), [['alice', 'alice-tenant'], ['bob', 'bob-tenant']]);
     assert.ok(site.operationContexts.every((context) => Object.isFrozen(context)));
   });

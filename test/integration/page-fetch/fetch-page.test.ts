@@ -3,6 +3,7 @@ import { describe, test, type TestContext } from 'node:test';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
 import { createFetchPage } from '../../../src/page-fetch/fetch-page.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 
 const url = 'https://source.example/article';
 const page: WebsiteFetchResult = { requestedUrl: url, finalUrl: 'https://destination.example/final', html: '<p>Source</p>' };
@@ -13,13 +14,41 @@ const context = createRequestContext({
 });
 
 describe('Protected neutral page fetch operation and access contract', () => {
+  test('Given a private invalid operation ID, when the protected operation is called, then no work starts and only the fixed context error is returned', async (t) => {
+    const dependencies = operationDoubles(t);
+    const execution = { ...executionContextOf(), operationId: 'private-operation-id' };
+
+    await assert.rejects(createFetchPage(dependencies)(url, context, execution), {
+      message: 'Invalid execution context',
+    });
+
+    assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
+    assert.equal(dependencies.processor.process.mock.callCount(), 0);
+  });
+
+  for (const guard of ['cancellation', 'permission', 'URL'] as const) {
+    test(`Given an invalid operation ID and failing ${guard} guard, when called, then the existing guard takes precedence`, async (t) => {
+      const dependencies = operationDoubles(t);
+      const controller = new AbortController();
+      if (guard === 'cancellation') controller.abort();
+      const trusted = guard === 'URL' ? context : createRequestContext({ user: context.user, tenantId: context.tenantId, grants: [] });
+      const execution = { signal: controller.signal, operationId: 'private-invalid-id' };
+      const message = { cancellation: 'Request cancelled', permission: 'Access denied', URL: 'Invalid tool arguments' }[guard];
+
+      await assert.rejects(createFetchPage(dependencies)('invalid URL', trusted, execution), { message });
+
+      assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
+      assert.equal(dependencies.processor.process.mock.callCount(), 0);
+    });
+  }
+
   test('Given a trusted context without product access, when the operation is called, then fetch never starts', async (t) => {
     const fetchURL = t.mock.fn(async () => page);
     const process = t.mock.fn(async (_source: WebsiteFetchResult) => 'unused');
     const operation = createFetchPage({ fetcher: { fetchURL }, processor: { process } });
     const denied = createRequestContext({ user: context.user, tenantId: context.tenantId, grants: [] });
 
-    await assert.rejects(operation(url, denied, new AbortController().signal), { name: 'AccessDeniedError', message: 'Access denied' });
+    await assert.rejects(operation(url, denied, executionContextOf()), { name: 'AccessDeniedError', message: 'Access denied' });
 
     assert.equal(fetchURL.mock.callCount(), 0);
     assert.equal(process.mock.callCount(), 0);
@@ -34,7 +63,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
     const signal = new AbortController().signal;
     const operation = createFetchPage({ fetcher: { fetchURL }, processor: { process } });
 
-    assert.deepEqual(await operation(requestedUrl, context, signal), { status: 'released', markdown });
+    assert.deepEqual(await operation(requestedUrl, context, executionContextOf(signal)), { status: 'released', markdown });
 
     assert.deepEqual(fetchURL.mock.calls[0].arguments, [requestedUrl, signal]);
     assert.deepEqual(process.mock.calls[0].arguments, [fetched, signal]);
@@ -45,7 +74,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
     test(`Given invalid URL ${JSON.stringify(invalid)}, when the operation is called, then no fetch runs`, async (t) => {
       const dependencies = operationDoubles(t);
 
-      await assert.rejects(createFetchPage(dependencies)(invalid, context, new AbortController().signal), {
+      await assert.rejects(createFetchPage(dependencies)(invalid, context, executionContextOf()), {
         message: 'Invalid tool arguments',
       });
 
@@ -61,7 +90,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
       const dependencies = operationDoubles(t);
       const signal = new AbortController().signal;
 
-      assert.deepEqual(await createFetchPage(dependencies)(boundedUrl, context, signal), { status: 'released', markdown: 'Exact Markdown' });
+      assert.deepEqual(await createFetchPage(dependencies)(boundedUrl, context, executionContextOf(signal)), { status: 'released', markdown: 'Exact Markdown' });
       assert.deepEqual(dependencies.fetcher.fetchURL.mock.calls[0].arguments, [boundedUrl, signal]);
     });
 
@@ -69,7 +98,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
       const prefix = 'https://example.com/';
       const dependencies = operationDoubles(t);
 
-      await assert.rejects(createFetchPage(dependencies)(prefix + character.repeat(8193 - prefix.length), context, new AbortController().signal), {
+      await assert.rejects(createFetchPage(dependencies)(prefix + character.repeat(8193 - prefix.length), context, executionContextOf()), {
         message: 'Invalid tool arguments',
       });
       assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
@@ -80,7 +109,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
     const dependencies = operationDoubles(t);
     dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw new Error('secret fetch cause'); });
 
-    await assert.rejects(createFetchPage(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
+    await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf()), (error: unknown) => {
       assert.ok(error instanceof Error);
       assert.equal(error.message, 'Page fetch failed');
       assert.equal(error.cause, undefined);
@@ -94,7 +123,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
     const dependencies = operationDoubles(t);
     dependencies.processor.process.mock.mockImplementation(async () => { throw new Error('secret partial Markdown'); });
 
-    await assert.rejects(createFetchPage(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
+    await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf()), (error: unknown) => {
       assert.ok(error instanceof Error);
       assert.equal(error.message, 'Page processing failed');
       assert.equal(error.cause, undefined);
@@ -107,7 +136,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
     const dependencies = operationDoubles(t);
     dependencies.processor.process.mock.mockImplementation(async () => '');
 
-    assert.deepEqual(await createFetchPage(dependencies)(url, context, new AbortController().signal), { status: 'released', markdown: '' });
+    assert.deepEqual(await createFetchPage(dependencies)(url, context, executionContextOf()), { status: 'released', markdown: '' });
   });
 
   test('Given cancellation before fetch, when called, then no collaborator runs and the cancellation cause is withheld', async (t) => {
@@ -115,7 +144,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
     const controller = new AbortController();
     controller.abort(new Error('secret cancellation reason'));
 
-    await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+    await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf(controller.signal)), { name: 'AbortError', message: 'Request cancelled' });
     assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
     assert.equal(dependencies.processor.process.mock.callCount(), 0);
   });
@@ -127,7 +156,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
       if (stage === 'fetch') dependencies.fetcher.fetchURL.mock.mockImplementation(abort);
       else dependencies.processor.process.mock.mockImplementation(abort);
 
-      await assert.rejects(createFetchPage(dependencies)(url, context, new AbortController().signal), { name: 'AbortError', message: 'Request cancelled' });
+      await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf()), { name: 'AbortError', message: 'Request cancelled' });
 
       assert.equal(dependencies.processor.process.mock.callCount(), stage === 'fetch' ? 0 : 1);
     });
@@ -146,7 +175,7 @@ describe('Protected neutral page fetch operation and access contract', () => {
           dependencies.processor.process.mock.mockImplementation(async () => { cancel(); return 'partial'; });
         }
 
-        await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+        await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf(controller.signal)), { name: 'AbortError', message: 'Request cancelled' });
 
         assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 1);
         assert.equal(dependencies.processor.process.mock.callCount(), stage === 'fetch' ? 0 : 1);

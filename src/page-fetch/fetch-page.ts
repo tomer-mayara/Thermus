@@ -1,20 +1,23 @@
 import { requirePermission, type RequestContext } from '../auth/access-context.ts';
 import type { WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
 import { isValidFetchUrl } from './fetch-url.ts';
+import { assertOperationId, type ExecutionContext } from './execution-context.ts';
 import type { PageProcessor } from './page-processor.ts';
 import { reportRendererFailure, type RendererFailureReports } from './renderer-failure-reports.ts';
 
 type FetchPageOutcome = { status: 'released'; markdown: string };
-export type FetchPage = (url: string, context: RequestContext, signal: AbortSignal) => Promise<FetchPageOutcome>;
+export type FetchPage = (url: string, context: RequestContext, execution: ExecutionContext) => Promise<FetchPageOutcome>;
 
 export function createFetchPage(dependencies: RendererFailureReports & {
   fetcher: WebsiteFetcher;
   processor: PageProcessor;
 }): FetchPage {
-  return async (url, context, signal) => {
+  return async (url, context, execution) => {
+    const { signal } = execution;
     throwIfCancelled(signal);
     requirePermission(context, 'product:access');
     if (!isValidFetchUrl(url)) throw new Error('Invalid tool arguments');
+    assertOperationId(execution.operationId);
 
     let page;
     try {
