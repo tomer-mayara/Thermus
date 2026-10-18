@@ -108,11 +108,21 @@ analysis and one MCP session, `analyze` and `mcp` both given the folder
 `src`, a `script/` community in a cycle, two equal labels, a caller through a
 symbolic link, and `--out`. `ast-metrics-snapshot-failures.test.ts` checks a
 missing executable, a failed analysis, and a server without metrics for one
-file. `ast-metrics-snapshot.live.ts` runs the real tool on the repository
-when it is on PATH; the default suites skip it.
+file. `ast-metrics-snapshot-base.test.ts` checks `--base`: the snapshot of
+the merge base (not of the tip of `main`), the default base file, `--out`,
+no worktree left after a run, and a branch without a commit of its own.
+`ast-metrics-snapshot-base-failures.test.ts` checks a failed analysis of
+the base with the worktree removed, an unknown ref, a ref without a merge
+base, and a git that cannot remove the worktree.
+`ast-metrics-snapshot-base-worktree.test.ts` checks the sweep of stale
+worktrees (also a locked one, also one of an active run that must stay, also
+one that git cannot remove), SIGTERM and SIGINT with exit 143 and 130, and
+that no repository hook runs in the worktree. `ast-metrics-snapshot.live.ts`
+runs the real tool on the repository when it is on PATH, with and without
+`--base HEAD`; the default suites skip it.
 
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
@@ -249,77 +259,8 @@ node --test dist/test/acceptance/auth/hosted-signup-restart.test.js
 
 Schema, dispatch, and completion tests now execute the neutral semantic URL
 validator, so they belong to integration below, even with operation/logger
-doubles. Real permission and operation/step collaboration are integration
+doubles. Real permission and operation/processor collaboration are integration
 too. HTTP acceptance uses the real MCP client and bridge with supplied dependencies.
-
-**Execution context identity** (`test/unit/page-fetch/execution-context.test.ts`)
-
-These same-package cases exercise the neutral operation-ID contract.
-
-[V] Accepts 36-character hyphenated hexadecimal UUIDs with versions 1–8 and variants 8/9/a/b, including uppercase text
-[V] Refuses nil/max, nonstrings, oversized text, braces/compact forms, trailing whitespace, and wrong version/variant with fixed `Invalid execution context` and no cause
-
-**Outgoing step and executor** (`test/unit/page-fetch/observe-request-step.test.ts`, `execute-outgoing-step.test.ts`)
-
-These same-package tests use step and record-sink doubles. The
-[implementation record](../implementation/mcp-pipe-03.md) gives focused unit
-and complete-candidate evidence.
-
-[V] Observation allows the exact original string; the executor uses the trusted outgoing record ID
-[V] The executor validates allow/block shape, unchanged string output, and closed codes; unknown decisions, incoming scan codes, malformed output, and raw failures cannot advance
-[V] The record has only fixed fields, trusted ID, bounded duration, and safe outcome/code; sink failure cannot alter a result or repeat work
-[V] Abort or `AbortError` wins before recording; late work settles after cleanup, no early record escapes, and pre-entry cancellation starts neither step nor event
-
-**Pipeline decision types** (`test/interface/page-fetch/pipeline-step-types.ts`)
-
-This compile-only interface proof runs with `npm run typecheck` and the build.
-It has no Node test cases. It derives
-results from the outgoing and incoming dependencies of `createFetchPage`.
-
-[V] Outgoing results accept string output and `blocked`, and reject `scan_failed` and `scan_limit`
-[V] Incoming results accept string output and all three block codes
-
-Before narrowing, `pnpm exec tsc --noEmit` failed with two unused
-`@ts-expect-error` directives. After narrowing, the same command passed. These
-checks prove the static role contract; runtime executor validation has separate
-coverage. The [refinements record](../implementation/mcp-pipeline-refinements.md)
-tracks complete-candidate verification.
-
-**Incoming step and typed withholding (MCP-PIPE-04)**
-
-The following cases are implemented in
-`test/unit/page-fetch/execute-incoming-step.test.ts`,
-`test/unit/html-cleaner-pipeline/process-html-step.test.ts`,
-`test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-removal-session.test.ts`,
-`test/unit/mcp/get-url-as-markdown.test.ts`,
-`test/integration/mcp/get-url-as-markdown-pipeline.test.ts`, and
-`test/acceptance/mcp/incoming-step.test.ts` / `incoming-step-cancellation.test.ts`.
-Focused runs passed. The [implementation record](../implementation/mcp-pipe-04.md)
-records the focused evidence, passing complete-candidate functional gates,
-verified environment restoration, and manager sign-off with retained quality
-findings. PR #162 tracks the final pull request steps.
-Production edition suites share `test/support/fixtures/incoming-pages.ts`. Each
-edition and protocol era covers empty, hidden-only, ad-only, real scan failure,
-eight-scan exhaustion, oversize, and excessive depth, plus a fetch failure.
-Existing normal and redirect cases retain exact Markdown. The SDK negotiation
-and raw protocol driver are unchanged.
-
-[V] Typed `scanWithholding` reaches the incoming step from real failed or exhausted scans; warning wording does not select a decision
-[V] The incoming executor accepts string output, including ordinary empty output; only known incoming scan codes produce payload-free withholding
-[V] Unknown codes, generic blocks, malformed results, nonstring output, and exceptions produce the fixed processing error and release no partial content
-[V] Oversized HTML produces a failed incoming record before any cleaner or parser runs
-[V] Exact incoming allowed/blocked/failed/cancelled events join outgoing and completion IDs in both editions and protocol eras; record fields exclude payload and raw causes
-[V] Cancellation wins over late results and leaves earlier records unchanged; hosted capacity stays owned until cleanup and settlement
-[V] The MCP adapter maps only known incoming withholding to exact empty success, without an error flag or structured content
-
-**MCP operation forwarding** (`test/unit/mcp/get-url-as-markdown.test.ts`, `single-fetch-operation.test.ts`)
-
-The thin adapter and capacity wrapper use operation doubles. The shared auth
-and page-fetch contracts are type-only imports.
-
-[V] The adapter forwards the same execution context and returns exact Markdown, including empty text
-[V] Only known withheld scan codes map to exact empty text; malformed neutral outcomes give the fixed processing error
-[V] The hosted wrapper forwards the same context and ID, gives cancellation priority over busy, and holds its slot until owned work settles
 
 **MCP request context binding** (`test/unit/mcp/request-context-binding.test.ts`)
 
@@ -1153,16 +1094,14 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
 
-**Incoming HTML step** (`test/unit/html-cleaner-pipeline/process-html-step.test.ts`)
+**HTML page processor adapter** (`test/unit/html-cleaner-pipeline/html-page-processor.test.ts`)
 
-The cleaner-owned step runs with a pipeline double. Public pipeline-step and
+The cleaner-owned adapter runs with a pipeline double. Public processor and
 fetch-result contracts are type-only imports; these cases execute one package.
 
 [V] Returns exact or empty Markdown without appending internal titles, counts, or warnings; forwards the same page and signal and keeps the input unchanged
 [V] Refuses absent pipeline results and absent/nonstring Markdown with the fixed processing error
 [V] Rejects UTF-8 input above 10 MiB before the pipeline can run, including supplementary characters; accepts exactly 10 MiB without truncation
-[V] Blocks with a typed scan code without returning partial Markdown; warning wording is independent of the decision
-[V] Refuses unknown scan codes, array results, and absent or nonstring Markdown; captures each decision field once
 
 **Pipeline cancellation** (`test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.ts`)
 
@@ -1313,8 +1252,6 @@ The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page f
 [V] Gives no listening URL before the `Listening on` line arrives, and the URL of that line when other lines are around it
 [V] Gives the local tenant of the tenant line; gives none without that line or before the full stop of that line arrives, so it gives only a complete ID
 [V] Gives the completion records of an output in their order, also when other lines and a JSON line of another event are between them and when the console logger writes the time, the level, and the call site before each record; an output without a record gives none
-[V] `completionLinesIn(output, operationId?)` and `completionRecordsIn(output, operationId?)` select only `mcp.tool.completed`; a supplied ID matches exactly, including letter case, and an unknown ID gives none
-[V] `stepRecordsIn(output, operationId?)` selects only `pipeline.step.completed` in order and optionally matches the exact case-sensitive ID; completion records and other operation IDs do not match
 [V] Gives the same URL, tenant, and records for the messages of the in-process logger, joined with line breaks, as for the console text of the same messages
 
 **Cookie jar of the test browsers** (`test/unit/test-support/cookie-jar.test.ts`)
@@ -1473,7 +1410,7 @@ npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.j
 [V] `fetchOperationSpy()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
 [V] Counts code points, not UTF-16 units; above the limit, the completed line keeps the first code points without a split surrogate pair and ends with `[cut: <n> more characters]`, and the caller still gets the whole Markdown; the default limit is 65,536 code points
 [V] When the operation fails with an `Error`, a cancellation `DOMException`, or a value that is not an `Error`, writes one ERROR line with the message and throws the same value again
-[V] Gives the operation the same URL, request context, execution context, signal, and operation ID
+[V] Gives the operation the same URL, request context, and signal
 
 ```sh
 npm run build && node --test dist/test/unit/test-support/fetch-operation-spy.test.js
@@ -1565,19 +1502,17 @@ validator became part of the separate page-fetch package.
 [V] Lists `getURLAsMarkdown(url, reason)` with the same strict schema used for validation
 [V] Checks string types, required fields, extra properties, URL semantics, reason whitespace, and code-point limits; accepted inputs are not truncated
 [V] Checks exact projected text, safe argument/unknown-tool errors, and one completion attempt per dispatched call
-[V] Allocates a UUID before tool/schema checks, carries it to the operation, and includes the same ID in success, refusal, and cancellation completions
 [V] Keeps operation errors and logger failures from exposing causes, replacing results, or repeating work
 [V] Formats trusted caller fields, URL origin/path, bounded verbatim reason or field-status codes, and escaped line breaks; omits unknown tool names, raw arguments, credentials, and causes
 
 **Protected neutral fetch operation** (`test/integration/page-fetch/fetch-page.test.ts`)
 
 These cases moved from `test/integration/mcp/get-url-as-markdown.test.ts`.
-Real shared permission checks collaborate with fetcher and incoming-step doubles;
+Real shared permission checks collaborate with fetcher and processor doubles;
 no SDK or concrete cleaner runs in this suite.
 
 [V] Calls the real shared permission helper before fetch and refuses a context without product:access
 [V] Validates URL semantics and code-point bounds, sends the signal to both dependencies, and preserves requested/final URL metadata and exact Markdown
-[V] Refuses an invalid supplied operation ID before fetch, without raw identity text or a cause; cancellation, permission, and URL guards keep their precedence
 [V] Gives safe fetch or processing failures without causes or partial output and skips processing after a failed fetch
 [V] Returns the typed released outcome with exact or empty Markdown
 [V] Classifies cancellation before generic errors and checks again after each asynchronous stage
@@ -1597,7 +1532,7 @@ no SDK or concrete cleaner runs in this suite.
 **Renderer setup reports of the operation** (`test/integration/mcp/renderer-setup-report.test.ts`)
 
 The neutral operation runs with the real permission helper and fetcher,
-incoming-step, and reporter doubles. The last case adds the thin MCP adapter,
+processor, and reporter doubles. The last case adds the thin MCP adapter,
 real tool server, and SDK client.
 
 [V] Gives only the fixed `readiness_timeout` category and `20000` budget to the readiness reporter, without the private cause or stderr; the client gets only `Page fetch failed`, and no pipeline work starts
@@ -2154,28 +2089,11 @@ fixed synthetic identity fields through the normal verifier/resolver seam.
 These cases are offline and renderer-free.
 
 [V] Lists the shared strict schema and returns one exact Markdown text entry with one safe completion record
-[V] Gives each dispatched call a distinct generated UUID, including refused calls, and ignores client request IDs, metadata, and attempted argument IDs
-[V] A test-only non-completion event leaves `firstCompletion` pending; only `mcp.tool.completed` resolves it, and the completion reader can select the exact operation ID
 [V] Refuses invalid named arguments and unknown tools before fetch and records dispatched failures
 [V] Preserves Bearer 401, access-decision 403, and operation-level product permission denial before fetch
 [V] Preserves safe failures and completed empty success, without titles, warnings, or partial output
 [V] Keeps the trusted identity despite forged headers and arguments
 [V] Cancels a per-call fetch through HTTP and prevents later work and successful completion
-
-[V] MCP-PIPE-03: outgoing events join the completion UUID with exact counts and no payload fields; refused calls have no event for an unstarted step
-
-**Outgoing step HTTP contract** (`test/acceptance/mcp/outgoing-step.test.ts`, `outgoing-step-cancellation.test.ts`)
-
-The existing MCP sites supply controlled steps and sinks through public
-boundaries. Both protocol eras run the fault and delayed-cleanup cases;
-the hosted-slot proof uses production hosted composition with a renderer double.
-
-[V] Allows the exact URL, returns exact Markdown, and joins one fixed step record to one completion without private request/page fields
-[V] Block, wrong-direction scan codes, unknown decisions, malformed output, and exceptions stop fetch/HTML processing with the exact safe failure and terminal event
-[V] `AbortError` wins before the signal changes; a step exception that resembles a renderer setup failure sends no renderer report
-[V] Broken sinks preserve allow/block, one write attempt, exact completion, and no repeated work
-[V] Client cancellation waits for entered-step cleanup, then records cancellation and prevents fetch after late allow/block/throw
-[V] Production hosted capacity remains busy until step cleanup settles; after actual `busy` and `cancelled` completions arrive, a later request can fetch, and events retain their own operation IDs
 
 Modern client cancellation aborts its call stream. Legacy cancellation coverage
 aborts that stream through the public SDK fetch option. A legacy cancel
@@ -2197,7 +2115,7 @@ callback through the real MCP HTTP path.
 [V] Cancels active work before listener drain and awaits fetch cleanup before provider close
 [V] Refuses new connections, skips later pipeline work, records cancellation once, and permits repeated close
 [V] Kills the renderer child and removes its timer/listener once, awaits the process callback before provider close, and refuses late success
-[V] Keeps trusted identities, tenants, reasons, signals, exact results, and distinct operation IDs separate when calls finish in reverse order; each completion keeps its own ID
+[V] Keeps trusted identities, tenants, reasons, signals, exact results, and completion records separate when calls finish in reverse order
 [V] Cancels one client call without cancelling a peer; shutdown cancels all active calls, including legacy work
 [V] Waits for both independent cleanup tasks even when one finishes first
 [V] Rechecks authentication and access after a prior success and never reuses the earlier context after a refusal
@@ -2220,7 +2138,6 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 
 [V] `test/acceptance/mcp/hosted-fetch-tool.test.ts`: a current Connect User lists and calls the tool, gets cleaned Markdown and a safe record, and missing or revoked access is refused before rendering
 [V] The same file: an overlapping call gets the safe busy result and a `busy` record; success, failure, and cancellation release the shared slot only after settlement
-[V] MCP-PIPE-04: hosted and self-hosted compositions run `outgoing.observe_request` before fetch and `incoming.process_html` after fetch, with exact allowed event counts joined to the completion ID; exact existing Markdown/completion assertions remain
 [V] `test/acceptance/mcp/http-dns-cancellation.test.ts`: client cancellation and shutdown in both protocol eras end the wait before DNS answers and prevent renderer startup
 [V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
 [V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
@@ -2348,7 +2265,6 @@ npm run test:mcp:renderer
 
 [V] Given the work-slice application with the mock provider, the trusted rules fixture, and a renderer double that serves `https://news.example/story`, when an MCP client in each protocol era with the token `any-token` lists the tools and calls `getURLAsMarkdown` with that URL and a reason, then the client gets the cleaned Markdown without the paragraph that the fixture rule for `news.example` removes, the log has the started line, the completed line, and one completion record, and `close()` stops the application
 [V] Given the work-slice application, when a request has no `Authorization` header, then it gets 401 with a Bearer challenge, a request to another path gets 404, no renderer starts, and the log has no fetch line
-[V] The shared completion reader selects the actual event, validates its generated UUID, and preserves the exact two debug lines, one completion, and previous completion fields
 
 The manual entry point `basic-mcp-url-fetch.ts` next to this file is not a test, and the [README of the slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md) describes it.
 
@@ -2364,7 +2280,6 @@ npm run build && node --test dist/test/acceptance/work-slice/basic-mcp-url-fetch
 [V] Given Dee with a non-`thermus.ai` Google address and no membership, sign-in creates no automatic membership, portal access is refused, and the organization page gives onboarding guidance; her Connect token for Acme gets 403 `access_denied` without a renderer or fetch line; after an external change gives her a User membership, the next MCP request returns Markdown and records her WorkOS identity
 [V] Given no token, a browser token of Ada, and a Connect token for another resource, each call of `getURLAsMarkdown` gets 401 with a Bearer challenge that names the protected-resource metadata, no renderer starts, and the log has no fetch line; the metadata names the MCP resource and the AuthKit issuer of the world as its only authorization server
 [V] Given Ben with Admin only in Acme, his Connect token gets 403 `access_denied` at the tool, no renderer starts, and the log has no fetch line
-[V] The shared completion reader selects the actual event, validates its generated UUID, and preserves the exact two debug lines, one completion, and previous WorkOS completion fields
 
 The manual entry point `auth-workos-mcp-url-fetch.ts` next to this file is not a test, and the [README of the slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md) describes it.
 
@@ -2433,7 +2348,6 @@ and transitive dependencies remain outside this direct-import proof.
 
 [V] Refuses MCP/SDK, application/composition, provider, concrete renderer/network, cleaner, and logger imports, including type-only imports
 [V] Allows public auth and fetch contracts, including fetcher errors, and core-local modules
-[V] Applies those same public-contract allow and implementation deny rules to the local executor, protocol, and record module
 [V] Allows the cleaner-owned adapter's inward type dependency and composition's real collaborator selection
 
 ```sh
@@ -2778,8 +2692,6 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.j
 **Self-hosted evaluation container** (`test/acceptance/auth/self-hosted-container.test.ts`)
 
 The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image holds the pinned Lightpanda 1.0.0. In the two renderer cases, `NODE_OPTIONS` loads the test-only page seam `test/support/container/container-page.ts` into the server. The seam serves a JavaScript page on port 8090 of the container, gives the lookup of `localhost` a public address, and logs each renderer launch and each connection and request of the page. With `CONTAINER_GATE_PAGE=permitted`, it lets the renderer reach `127.0.0.1` for the page; with `blocked`, the renderer starts with the production options. The hosted image acceptance specification loads the same seam with the third mode, `hosted`. The seam keeps the telemetry settings of the image and the fetcher. The suite does not reach a public page, and it is not a renderer gate pass.
-
-[V] MCP-PIPE-02: each completion UUID is validated before the unchanged legacy fields; the dedicated container gate passed 13/13 in the [implementation record](../implementation/mcp-pipe-02.md)
 
 [V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed` and a `fetch_failed` record, because the container has no route out, and the server log gets no renderer setup report; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
 [V] Given two users with tokens and consents, a restart, a new container, and a container of the rebuilt image on the same volume each keep the tenant, the user IDs, the clients, the signing keys, the sessions, the consents, and the tokens of both users usable

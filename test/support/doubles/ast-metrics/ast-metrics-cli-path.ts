@@ -10,10 +10,15 @@ export interface AstMetricsCliAnswers {
   readonly metrics?: string;
   // The JSON report that analyze writes for --report-json. {root} stands for the working directory of the call.
   readonly json?: string;
+  // In place of json: the path of a file with the JSON report, from the working directory of the call. Each commit of a
+  // test repository can hold its own report, so that a worktree of another commit gets the numbers of its own tree.
+  readonly jsonInTree?: string;
   // The Markdown that review prints and writes.
   readonly review?: string;
   readonly stderr?: string;
   readonly exitCode?: number;
+  // analyze and review wait this long before they answer, as a slow analysis does.
+  readonly delayMs?: number;
 }
 
 export interface AstMetricsCliCall {
@@ -57,9 +62,11 @@ function answerSettings(folder: string, answers: AstMetricsCliAnswers): Record<s
     settings.AST_METRICS_FAKE_JSON_FILE = join(folder, 'report.json');
     writeFileSync(settings.AST_METRICS_FAKE_JSON_FILE, answers.json);
   }
+  if (answers.jsonInTree !== undefined) settings.AST_METRICS_FAKE_JSON_FILE = answers.jsonInTree;
   if (answers.review !== undefined) settings.AST_METRICS_FAKE_REVIEW = answers.review;
   if (answers.stderr !== undefined) settings.AST_METRICS_FAKE_STDERR = answers.stderr;
   if (answers.exitCode !== undefined) settings.AST_METRICS_FAKE_EXIT = String(answers.exitCode);
+  if (answers.delayMs !== undefined) settings.AST_METRICS_FAKE_DELAY_MS = String(answers.delayMs);
   return settings;
 }
 

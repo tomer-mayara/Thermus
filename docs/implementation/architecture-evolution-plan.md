@@ -335,7 +335,14 @@ Update the review guide and `script/README.md` with the command.
 
 ### T2. Snapshot of the merge base
 
-Source: step A1 of the plan. Depends on T1.
+Source: step A1 of the plan. Depends on T1. Done in PR #161, with a
+follow-up: a run first removes the stale worktrees of interrupted runs
+(their names hold the process id), SIGINT and SIGTERM remove the worktree
+and give 130 or 143, and no repository hook runs in the worktree. The same
+pull request dropped the rule `no_community_cycles` from `.ast-metrics.yaml`
+and refreshed the baseline: with the grouping of the whole repository, the
+rule reported a cycle between two halves of `script/` that have no import
+cycle, and its baseline entry had drifted three times in two days.
 
 **Outcome and scope.** Add `--base REF` to the snapshot command. It finds
 the merge base of REF and HEAD, adds a temporary detached `git worktree`

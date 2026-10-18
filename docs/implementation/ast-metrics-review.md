@@ -153,10 +153,11 @@ therefore merges per character. Two lengths for one script mean coverage
 files of two builds: the command stops with exit status 1. Exit status 1
 also follows a failed suite, a file that is not V8 coverage, or a folder
 without coverage files. Then no report is written.
+
 ### Take a snapshot: `script/ast-metrics-snapshot.ts`
 
 ```sh
-pnpm exec node script/ast-metrics-snapshot.ts [--out FILE] [--timeout-ms MS]
+pnpm exec node script/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS]
 ```
 
 The command writes the snapshot of the working tree to
@@ -187,6 +188,30 @@ that ast-metrics does not give is absent. A function without a name is
 snapshot, for a missing executable, a failed analysis, a failed or late
 session (`--timeout-ms`, default 60000 ms), or a file without an answer.
 
+With `--base REF`, the command takes the snapshot of the merge base of REF
+and HEAD. It adds a temporary detached worktree of that commit in the system
+temporary folder (`thermus-snapshot-base-<pid>-<random>`), runs the same
+analysis there, and removes the worktree again with `git worktree remove
+--force`, also after a failure. The worktree gets no `node_modules`, because
+ast-metrics only parses the files, and no hook of the repository runs in it
+(`core.hooksPath=/dev/null`). `commit` and `date` then name the merge base
+and its committer date. The default file is `ast-report/snapshot-base.json`,
+so that `ast-report/snapshot.json` stays.
+
+Before it adds its worktree, the command runs `git worktree prune` and
+removes each worktree under the temporary folder whose name has the prefix
+and whose run has ended (the name holds the process id of its run, so the
+worktree of a run that is still active stays). It removes a stale worktree
+with `git worktree remove --force --force`, because git locks a worktree
+until its add is complete; a stale worktree that git cannot remove stays,
+and the run goes on. One stderr line says how many it removed. On SIGINT or
+SIGTERM, the command removes its worktree, says so, and exits 130 or 143; a
+signal that comes during a synchronous step, such as `ast-metrics analyze`,
+takes effect after that step. After SIGKILL or a crash, the next run removes
+the worktree. With `--base`, the exit status is also 1 for an unknown ref, a
+ref without a merge base with HEAD, or a worktree that git cannot remove;
+the diagnostic then names the folder that stays.
+
 ## The configuration
 
 `.ast-metrics.yaml` at the repository root is the only configuration that
@@ -203,16 +228,21 @@ folder. The file:
   where a long function is normal. The goal of 85 of the delta command
   applies to production files for the same reason.
 - Sets the rules: maintainability 85 for each class, efferent coupling at
-  most 10, no dependency cycle between communities, at most 150 lines and 20
-  decision paths for a file, at most 30 lines and 20 logical lines for a
-  function.
+  most 10, at most 150 lines and 20 decision paths for a file, at most 30
+  lines and 20 logical lines for a function. The rule `no_community_cycles`
+  is not used: it judges how ast-metrics groups the files of the whole
+  repository, not an import cycle, and its baseline entry drifted with every
+  change of `script/`; the architecture delta of the evolution plan shows the
+  cycles of `src/` instead.
 
 `.ast-metrics-baseline.yaml` lists the violations that existed when the rules
-were set (170 on 2026-10-17). The review and `ast-metrics lint` report only a
-violation that the baseline does not list. A baseline entry carries the
-measured value in its message, so a file whose value moved appears again.
-Refresh the baseline only when the rules change: run `ast-metrics baseline`
-and commit the file in the same pull request as the rule change.
+were last set (169 on 2026-10-18). The review and `ast-metrics lint` report
+only a violation that the baseline does not list. A baseline entry carries
+the measured value in its message, so a file whose value moved appears
+again. Refresh the baseline in two cases: when the rules change, in the same
+pull request as the rule change; and when a violation reached `main` without
+the process (PR #155 brought two), in a pull request that names it. Run
+`ast-metrics baseline` and commit the file.
 
 ## How ast-metrics counts
 
@@ -247,16 +277,12 @@ These facts, measured with `ast-metrics-mcp.ts file <path> --json` on
 - ast-metrics analyzes TypeScript only. The commands under `script/` are
   TypeScript and appear in the delta without a goal; `script/fetch-url.mjs`
   and other JavaScript files stay outside the measurements.
-- A baseline entry of `no_community_cycles` names the communities as
-  ast-metrics groups them on the whole dependency graph. When code elsewhere
-  grows, the names change, the entry stops matching, and the review lists the
-  old cycle as a medium regression. Refresh the baseline then. The pull
-  request that added the process did so on its final candidate.
 - ast-metrics groups the dependency graph of all that it analyzes, so the
   snapshot analyzes `src/` alone: growth of `script/` or `test/` cannot
-  regroup the communities of `src/`. The review and the lint still analyze
-  the whole repository, so their `no_community_cycles` baseline entry can
-  stop matching when `script/` grows.
+  regroup the communities of `src/`. The review and the lint analyze the
+  whole repository; that is why `no_community_cycles` is not a rule here:
+  with the grouping of the whole repository, it named a "cycle" between two
+  halves of `script/` that have no import cycle.
 - With namespace granularity, a member of a community can be a deep folder,
   such as `src/auth/hosted-auth`. The snapshot gives each file the community
   of the nearest member; a file under no member has none.

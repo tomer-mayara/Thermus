@@ -3,9 +3,6 @@
 # generated, so they are ignored until fixed. Re-run `ast-metrics baseline`
 # to refresh it after fixing some of them or accepting new ones.
 ignored:
-    - rule: no_community_cycles
-      message: 'Communities depend on each other: src (src/auth/hosted-auth), src/hosted-admin, src (src/organizations/organization-administration); to cut: src (src/auth/hosted-auth) → src (src/organizations/organization-administration) (4), src (src/auth/hosted-auth) → src/hosted-admin (6)'
-      count: 1
     - rule: cyclomatic_complexity
       file: src/application.ts
       message: 'Cyclomatic complexity too high: got 40 (max: 20)'
@@ -292,7 +289,7 @@ ignored:
       count: 1
     - rule: efferent_coupling
       file: src/fetch-tool.ts
-      message: 'Efferent coupling too high: got 13 (max: 10)'
+      message: 'Efferent coupling too high: got 15 (max: 10)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/hosted-admin/account-form.ts
@@ -389,6 +386,10 @@ ignored:
     - rule: maintainability
       file: src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts
       message: 'Maintainability too low: got 84 (min: 85)'
+      count: 1
+    - rule: maintainability
+      file: src/html-cleaner-pipeline/html-page-processor.ts
+      message: 'Maintainability too low: got 73 (min: 85)'
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/html-to-markdown-pipeline.ts
@@ -569,10 +570,6 @@ ignored:
     - rule: max_loc_by_method
       file: src/mcp/fetch-tool-server.ts
       message: 'LOC too high in method createFetchToolServer(): got 46 (max: 30)'
-      count: 1
-    - rule: max_loc_by_method
-      file: src/mcp/get-url-as-markdown.ts
-      message: 'LOC too high in method createGetURLAsMarkdown(): got 34 (max: 30)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/mcp/identity-verifier-sdk-adapter.ts

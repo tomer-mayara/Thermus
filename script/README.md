@@ -230,7 +230,7 @@ gives the details of the share.
 ## Take a snapshot
 
 ```sh
-pnpm exec node script/ast-metrics-snapshot.ts [--out FILE] [--timeout-ms MS]
+pnpm exec node script/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS]
 ```
 
 Writes the snapshot of the working tree to `ast-report/snapshot.json`, or to
@@ -241,7 +241,14 @@ src` run and one session of `ast-metrics mcp src`, so that only a change of
 `src/` changes the communities. The file is written only after all calls
 succeeded. `--timeout-ms` sets the deadline of the session (default 60000
 ms). Exit status 1, with one diagnostic line on stderr, for a missing
-executable, a failed analysis, or a failed call. The
+executable, a failed analysis, or a failed call. With `--base REF`, the
+snapshot is of the merge base of REF and HEAD: the command analyzes that
+commit in a temporary worktree under the system temporary folder, removes
+the worktree again (also after a failure, and on SIGINT or SIGTERM with exit
+status 130 or 143), and writes `ast-report/snapshot-base.json` by default. A
+run first removes the temporary worktrees that interrupted runs left, and
+says on stderr how many. The worktree needs no `pnpm install`, and no hook
+of the repository runs in it. The
 [ast-metrics review guide](../docs/implementation/ast-metrics-review.md)
 describes the file.
 
@@ -250,7 +257,7 @@ the real executable on PATH and the real unit suite:
 
 ```sh
 pnpm run build
-pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js

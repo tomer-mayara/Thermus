@@ -7,13 +7,14 @@ import { runScript } from '../../support/processes/script-command.ts';
 // An empty PATH has no git and no ast-metrics. Thus these cases also show that the command checks its arguments first.
 const noTools = { env: { PATH: '' } };
 
-test('Given --help, when the snapshot command runs, then it explains the options, the default file, and the exit status', async (t) => {
+test('Given --help, when the snapshot command runs, then it explains the options, the default files of the working tree and of the merge base, and the exit status', async (t) => {
   const result = await runScript(t, astMetricsSnapshotScript, { args: ['--help'], ...noTools });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/ast-metrics-snapshot\.ts \[--out FILE\] \[--timeout-ms MS\] \[--help\]\n/);
-  for (const text of ['ast-report/snapshot.json', 'src/', 'get_communities', 'get_file_metrics', 'default: 60000', 'HEAD', 'Exit status 1']) {
+  assert.match(result.stdout, /^Usage: node script\/ast-metrics-snapshot\.ts \[--base REF\] \[--out FILE\] \[--timeout-ms MS\] \[--help\]\n/);
+  const texts = ['ast-report/snapshot.json', 'src/', 'get_communities', 'get_file_metrics', 'default: 60000', 'HEAD', 'Exit status 1'];
+  for (const text of [...texts, '--base REF', 'merge base', 'temporary worktree', 'ast-report/snapshot-base.json', 'interrupted runs', 'SIGTERM', 'Exit status 130', '143']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
 });
@@ -26,6 +27,9 @@ for (const [args, diagnostic] of [
   [['--timeout-ms', '99'], 'The --timeout-ms value must be an integer from 100 to 300000.'],
   [['--timeout-ms', '300001'], 'The --timeout-ms value must be an integer from 100 to 300000.'],
   [['--timeout-ms', '1e3'], 'The --timeout-ms value must be an integer from 100 to 300000.'],
+  [['--base'], 'Invalid arguments. Use --help for the supported options.'],
+  [['--base='], 'The --base value must name a git ref.'],
+  [['--base=--output=diff.txt'], 'The --base value must name a git ref.'],
 ] as const) {
   test(`Given the arguments ${args.join(' ')}, when the snapshot command runs, then it fails with one diagnostic line`, async (t) => {
     const result = await runScript(t, astMetricsSnapshotScript, { args, ...noTools });

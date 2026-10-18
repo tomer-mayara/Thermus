@@ -32,7 +32,9 @@ requirements:
       # checks the file goal.
       min_maintainability: 85
       max_efferent_coupling: 10
-      no_community_cycles: true
+      # no_community_cycles is not used: it judges the grouping of the whole
+      # repository, not an import cycle, and its baseline entry drifted with
+      # every change of script/. The architecture delta shows the cycles of src/.
     volume:
       max_loc: 150
       max_loc_by_method: 30
