@@ -1,4 +1,4 @@
-import { countOf } from './ast-metrics-architecture-bands.ts';
+import { totalCountOf } from './ast-metrics-architecture-bands.ts';
 import type { CrapDelta } from './ast-metrics-architecture-crap-delta.ts';
 import type { MapNode, MapSources } from './ast-metrics-architecture-types.ts';
 
@@ -13,7 +13,7 @@ export function summaryOf({ base, head }: MapSources, nodes: readonly MapNode[],
   const counts = (['new', 'gone'] as const)
     .map((status) => `${nodes.filter((node) => node.status === status).length} ${status}`)
     .filter((count) => !count.startsWith('0 '));
-  const functions = delta === undefined ? [] : [`functions ≥ 30: ${totalOf(delta.base)} → ${totalOf(delta.head)}`];
+  const functions = delta === undefined ? [] : [`functions ≥ 30: ${totalCountOf(delta.base)} → ${totalCountOf(delta.head)}`];
   return [
     `Modularity ${base.global.modularity.toFixed(2)} → ${head.global.modularity.toFixed(2)}`,
     `cross share ${base.global.crossShare.toFixed(2)} → ${head.global.crossShare.toFixed(2)}`,
@@ -21,8 +21,4 @@ export function summaryOf({ base, head }: MapSources, nodes: readonly MapNode[],
     `communities ${base.communities.length} → ${head.communities.length}${counts.length === 0 ? '' : ` (${counts.join(', ')})`}`,
     ...functions,
   ].join(' · ');
-}
-
-function totalOf(files: CrapDelta['base']): number {
-  return countOf([...files.values()].flatMap((file) => file.functions));
 }

@@ -7,11 +7,12 @@ import { fileURLToPath } from 'node:url';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript, astMetricsCoverageScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
-import { bandsNeedTheCoverage, noProductionFile } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { bandsNeedTheCoverage, noProductionFile, trendHeading } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // These checks run the real ast-metrics on this repository. They need the executable on PATH; the guide is
 // docs/implementation/ast-metrics-review.md. Without it, Node reports the checks as skipped. With --base HEAD, the base
-// is the commit of HEAD, so the checks need a src/ without changes that are not committed.
+// is the commit of HEAD, so the checks need a src/ without changes that are not committed. Each check gives the command
+// a trend store in a folder of the test with --trend-store, so that no check writes to docs/metrics/ of the repository.
 const installed = (process.env.PATH ?? '').split(delimiter).some((folder) => folder !== '' && existsSync(join(folder, 'ast-metrics')));
 const skip = installed ? false : 'ast-metrics is not on PATH';
 const root = fileURLToPath(repositoryRoot);
@@ -24,22 +25,28 @@ function git(...args: string[]): string {
 // TMPDIR names a folder of the test, so that the check sees each folder that the command leaves there. With --base HEAD,
 // the changed files are the files of the working tree that differ from HEAD, and src/ has none of them. A coverage
 // report of an earlier run gives the summary line its count of the functions at CRAP 30 or more; without one, the line
-// after the summary says that the bands need it.
-test('Given the real ast-metrics and a src/ without uncommitted changes, when the architecture delta runs with --base HEAD, then both sides of each number of the summary line are equal, the map did not change, and no production file changed, within 30 seconds, and no worktree stays', { timeout: 30_000, skip }, async (t) => {
+// after the summary says that the bands need it. The new store gets the record of HEAD, so the trend table has the row
+// of HEAD and the row of the head, with the same numbers. The folder of the test, with the store, goes after the test.
+test('Given the real ast-metrics, a src/ without uncommitted changes, and an empty trend store, when the architecture delta runs with --base HEAD and --trend-store, then both sides of each number of the summary line are equal, the map did not change, no production file changed, the store holds the record of HEAD, and the trend table ends with the row of HEAD and the row of the head with the same numbers, within 30 seconds, and no worktree stays', { timeout: 30_000, skip }, async (t) => {
   assert.equal(git('status', '--porcelain', '--', 'src'), '', 'The check needs a src/ without uncommitted changes.');
   const folder = dataDirectory(t);
+  const store = join(folder, 'metrics');
   const banded = existsSync(coverageReport);
 
-  const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'HEAD'], cwd: root, env: { TMPDIR: folder } });
+  const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'HEAD', '--trend-store', store], cwd: root, env: { TMPDIR: folder } });
 
   assert.equal(result.code, 0, result.stderr);
   const [header, , summary] = result.stdout.split('\n');
-  assert.equal(header, `## Architecture of src/: base ${git('rev-parse', 'HEAD').slice(0, 8)} → head`);
+  const [commit, date] = [git('rev-parse', 'HEAD').trim(), git('show', '-s', '--format=%cI', 'HEAD').trim()];
+  assert.equal(header, `## Architecture of src/: base ${commit.slice(0, 8)} → head`);
   const sides = [...summary.matchAll(/(\S+) → (\S+)/g)].map(([, before, after]) => [before, after]);
   assert.equal(sides.length, banded ? 5 : 4, summary);
   assert.deepEqual(sides.filter(([before, after]) => before !== after), [], summary);
   const coverageNote = banded ? [] : [bandsNeedTheCoverage, ''];
-  assert.ok(result.stdout.endsWith([summary, '', ...coverageNote, 'The map did not change.', '', ...noProductionFile, ''].join('\n')), result.stdout);
+  assert.ok(result.stdout.includes([summary, '', ...coverageNote, 'The map did not change.', '', ...noProductionFile, '', trendHeading, ''].join('\n')), result.stdout);
+  assert.deepEqual(readdirSync(store), [`${date.slice(0, 10)}-${commit.slice(0, 8)}.json`]);
+  const [baseRow, headRow] = result.stdout.trimEnd().split('\n').slice(-2);
+  assert.equal(headRow, baseRow.replace(`| ${commit.slice(0, 8)} | ${date.slice(0, 10)} |`, '| this pull request | |'), result.stdout);
   assert.deepEqual(readdirSync(folder).filter((name) => name.startsWith('thermus-snapshot-base-')), []);
   const worktrees = git('worktree', 'list', '--porcelain');
   assert.equal(worktrees.includes(realpathSync(folder)), false, worktrees);
@@ -55,8 +62,10 @@ test('Given the coverage report of the real unit suite, when the architecture de
   // The output of the suite is long; its end holds the summary and the diagnostic.
   assert.equal(coverage.code, 0, coverage.stderr.slice(-4000));
   const touched = git('ls-files', '--', 'src/*.ts').trim().split('\n');
+  const folder = dataDirectory(t);
+  const args = ['--base', 'HEAD', '--touched', touched.join(','), '--trend-store', join(folder, 'metrics')];
 
-  const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'HEAD', '--touched', touched.join(',')], cwd: root, env: { TMPDIR: dataDirectory(t) } });
+  const result = await runScript(t, astMetricsArchitectureScript, { args, cwd: root, env: { TMPDIR: folder } });
 
   assert.equal(result.code, 0, result.stderr);
   const lines = result.stdout.split('\n');

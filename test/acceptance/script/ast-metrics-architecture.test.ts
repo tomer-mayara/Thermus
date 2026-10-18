@@ -5,13 +5,15 @@ import { test } from 'node:test';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
-import { bandsNeedTheCoverage, baseSnapshot, community, complexityHeading, edge, edited, legend, noProductionFile, snapshotArguments, tableHead } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { bandsNeedTheCoverage, baseSnapshot, community, complexityHeading, edge, edited, legend, noProductionFile, noTrend, snapshotArguments, tableHead } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // The architecture delta of two snapshot files. With --head and --base-snapshot, the command runs neither git nor
 // ast-metrics, so these cases run with an empty PATH. Each expected text is the complete output, with the complexity
-// section at its end. These cases give no coverage report, so the line after the summary says that the bands need it.
+// section and the trend section at its end. These cases give no coverage report, so the line after the summary says
+// that the bands need it, and no --trend-store, so the trend section says that main has no snapshot yet.
 // ast-metrics-architecture-table.test.ts specifies the complexity section, ast-metrics-architecture-bands.test.ts the
-// bands, and ast-metrics-architecture-base.test.ts the command with the snapshots of a repository.
+// bands, ast-metrics-architecture-trend.test.ts the trend, and ast-metrics-architecture-base.test.ts the command with
+// the snapshots of a repository.
 const timeout = 20_000;
 const noTools = { PATH: '' };
 
@@ -34,7 +36,7 @@ const baseEdges = [
 ];
 
 function markdown(summary: string, picture: readonly string[], complexity: readonly string[] = noProductionFile): string {
-  return [header, '', summary, '', bandsNeedTheCoverage, '', ...picture, '', ...complexity, ''].join('\n');
+  return [header, '', summary, '', bandsNeedTheCoverage, '', ...picture, '', ...complexity, '', ...noTrend, ''].join('\n');
 }
 
 // The lines of the graph between the edges and the end of the block.

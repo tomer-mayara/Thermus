@@ -12,16 +12,17 @@ import { runScript } from '../../support/processes/script-command.ts';
 // snapshot files without either tool.
 const noTools = { env: { PATH: '' } };
 
-test('Given --help, when the architecture command runs, then it explains the two sources of the snapshots, the changed files, the matching, the change of the map, the complexity table, the bands, the options, and the exit status', async (t) => {
+test('Given --help, when the architecture command runs, then it explains the two sources of the snapshots, the changed files, the matching, the change of the map, the complexity table, the bands, the trend, the options, and the exit status', async (t) => {
   const result = await runScript(t, astMetricsArchitectureScript, { args: ['--help'], ...noTools });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/ast-metrics-architecture\.ts \[--base REF\] \[--head FILE --base-snapshot FILE\] \[--touched FILES\] \[--coverage FILE\] \[--timeout-ms MS\] \[--out FILE\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/ast-metrics-architecture\.ts \[--base REF\] \[--head FILE --base-snapshot FILE\] \[--touched FILES\] \[--coverage FILE\] \[--trend-store DIR\] \[--timeout-ms MS\] \[--out FILE\] \[--help\]\n/);
   const texts = ['Mermaid', 'merge base', 'temporary worktree', 'working tree', 'untracked', 'Jaccard', '0.5', 'new or gone', 'did not change', 'default: origin/main'];
   const table = ['complexity table', 'ten riskiest', 'not measured', 'no production file changed'];
   const bands = ['CRAP', 'ast-report/coverage.json', 'script/ast-metrics-coverage.ts', 'no coverage run', 'good', 'warning', 'critical', 'added or made worse'];
-  for (const text of [...texts, ...table, ...bands, 'default: 60000', 'not a gate', 'Exit status 1', 'Exit status 130 or 143']) {
+  const trend = ['trend store', 'docs/metrics', '<date>-<commit8>.json', 'last ten', 'this pull request', 'stays as it is'];
+  for (const text of [...texts, ...table, ...bands, ...trend, 'default: 60000', 'not a gate', 'Exit status 1', 'Exit status 130 or 143']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
 });
@@ -36,6 +37,7 @@ for (const [args, diagnostic] of [
   [['--base=--output=diff.txt'], 'The --base value must name a git ref.'],
   [['--out='], 'The --out value must name a file.'],
   [['--coverage='], 'The --coverage value must name a file.'],
+  [['--trend-store='], 'The --trend-store value must name a folder.'],
   [['--timeout-ms', '99'], 'The --timeout-ms value must be an integer from 100 to 300000.'],
   [['--timeout-ms', '1e3'], 'The --timeout-ms value must be an integer from 100 to 300000.'],
   [['--verbose'], 'Invalid arguments. Use --help for the supported options.'],
@@ -73,8 +75,9 @@ test('Given a --head file that does not exist, when the architecture command run
 const valid = {
   version: 1,
   commit: 'c0ffee00c0ffee00',
-  global: { modularity: 0.5, crossShare: 0.25, cycles: [] },
-  communities: [{ id: '0', label: 'a', members: ['src/a/0.ts'], files: 1, paths: 10, edges: [{ to: '0', references: 1, inCycle: false }] }],
+  date: '2026-10-18T09:00:00+02:00',
+  global: { modularity: 0.5, crossShare: 0.25, cycles: [], paths: 10, files: 1, functions: 0 },
+  communities: [{ id: '0', label: 'a', members: ['src/a/0.ts'], files: 1, loc: 40, paths: 10, edges: [{ to: '0', references: 1, inCycle: false }] }],
   files: [{ path: 'src/a/0.ts', maintainability: 70, paths: 10, risk: 0.5 }],
 };
 const [validCommunity] = valid.communities;
@@ -84,9 +87,13 @@ for (const [name, text] of [
   ['a JSON array', '[]'],
   ['a snapshot of version 2', JSON.stringify({ ...valid, version: 2 })],
   ['a snapshot without a commit', JSON.stringify({ ...valid, commit: undefined })],
+  ['a snapshot without a date', JSON.stringify({ ...valid, date: undefined })],
+  ['a date without a time', JSON.stringify({ ...valid, date: '2026-10-18' })],
   ['a modularity that is text', JSON.stringify({ ...valid, global: { ...valid.global, modularity: '0.5' } })],
+  ['a snapshot without the count of its files', JSON.stringify({ ...valid, global: { ...valid.global, files: undefined } })],
   ['a snapshot without communities', JSON.stringify({ ...valid, communities: undefined })],
   ['a community without a label', JSON.stringify({ ...valid, communities: [{ ...validCommunity, label: undefined }] })],
+  ['a community without lines', JSON.stringify({ ...valid, communities: [{ ...validCommunity, loc: undefined }] })],
   ['an edge without a target', JSON.stringify({ ...valid, communities: [{ ...validCommunity, edges: [{ references: 1, inCycle: false }] }] })],
   ['a snapshot without files', JSON.stringify({ ...valid, files: undefined })],
   ['a file without a path', JSON.stringify({ ...valid, files: [{ maintainability: 70, paths: 10 }] })],

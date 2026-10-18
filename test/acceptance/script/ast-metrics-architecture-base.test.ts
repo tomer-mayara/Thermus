@@ -6,6 +6,7 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 import { runScript } from '../../support/processes/script-command.ts';
 import { bandedLegend, bandedTableHead, functionsSection } from './fixtures/ast-metrics-architecture-coverage.ts';
 import { bandsNeedTheCoverage, complexityHeading, legend, tableHead } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { commitCells, trendSection, withTrend } from './fixtures/ast-metrics-architecture-trend.ts';
 import { fileMetricsAnswers, serverAnswers } from './fixtures/ast-metrics-snapshot-answers.ts';
 import { baseDoublesOnPath, baseRepository, foldersLeftIn, forkedRepository, forkedServerAnswers, worktreesOf } from './fixtures/ast-metrics-snapshot-base.ts';
 
@@ -13,11 +14,12 @@ import { baseDoublesOnPath, baseRepository, foldersLeftIn, forkedRepository, for
 // temporary worktree and the snapshot of the working tree, and git gives the changed files. Both doubles answer each
 // snapshot with the answers of fixtures/ast-metrics-snapshot-answers.ts: admin and auth in a cycle, and the shared
 // kernel, whose file has no maintainability. A test repository has no ast-report/coverage.json unless a case writes it,
-// so the line after the summary says that the bands need the coverage.
+// so the line after the summary says that the bands need the coverage. Each run writes the record of the merge base to
+// docs/metrics/ of the test repository, so the trend table has its row and the row of the head.
 const timeout = 20_000;
 
-// The complete output when the changed files touch auth: the graph with the node of auth, and the complexity table with
-// the rows of the changed files.
+// The output up to the trend when the changed files touch auth: the graph with the node of auth, and the complexity
+// table with the rows of the changed files.
 function markdownOf(baseCommit: string, authNode: string, rows: readonly string[]): string {
   return [
     `## Architecture of src/: base ${baseCommit.slice(0, 8)} → head`,
@@ -61,9 +63,9 @@ test('Given a branch whose working tree changes one src/ file and both doubles o
   const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'main'], cwd: repository.root, env: doubles.env });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdownOf(repository.git('rev-parse', 'HEAD'), '  c_auth["auth<br/>2 files · MI 70.4 · paths 9"]', [
+  assert.equal(result.stdout, withTrend(markdownOf(repository.git('rev-parse', 'HEAD'), '  c_auth["auth<br/>2 files · MI 70.4 · paths 9"]', [
     '| src/auth/session.ts | 61.2 → 61.2 | 6 → 6 | 1 |',
-  ]));
+  ]), [`${commitCells(repository, 'HEAD')} 0.42 | 0.33 | 1 | 70.3 | – |`, '| this pull request | | 0.42 | 0.33 | 1 | 70.3 | – |']));
   assert.equal(result.code, 0);
   const calls = doubles.cli.calls().map(({ argv, cwd }) => [argv[0], dirname(cwd) === doubles.temporaryFolder ? 'temporary worktree' : cwd]);
   assert.deepEqual(calls, [['analyze', 'temporary worktree'], ['mcp', 'temporary worktree'], ['analyze', repository.root], ['mcp', repository.root]]);
@@ -83,10 +85,10 @@ test('Given a branch that changes one src/ file and adds one, a working tree tha
   const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'main'], cwd: repository.root, env: doubles.env });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdownOf(mergeBase, '  c_auth["auth<br/>2 files · MI 64.8 ↓5.6 · paths 12 ↑3"]', [
+  assert.equal(result.stdout, withTrend(markdownOf(mergeBase, '  c_auth["auth<br/>2 files · MI 64.8 ↓5.6 · paths 12 ↑3"]', [
     '| src/auth/audit.ts | new → 90.0 | new → 2 | |',
     '| src/auth/session.ts | 61.2 → 55.5 ↓5.7 | 6 → 9 ↑3 | 1 |',
-  ]));
+  ]), [`${commitCells(repository, mergeBase)} 0.42 | 0.33 | 1 | 70.3 | – |`, '| this pull request | | 0.42 | 0.33 | 1 | 68.7 | – |']));
   assert.equal(result.code, 0);
   assert.deepEqual(worktreesOf(repository), [repository.root]);
 });
@@ -159,6 +161,8 @@ test('Given a repository with ast-report/coverage.json in its root and both doub
     '| src/auth/session.ts | 61.2 → 61.2 | 6 → 6 | 1 → 1 | 1 |',
     '',
     ...functionsSection([], 1),
+    '',
+    ...trendSection([`${commitCells(repository, 'HEAD')} 0.42 | 0.33 | 1 | 70.3 | 1 |`, '| this pull request | | 0.42 | 0.33 | 1 | 70.3 | 1 |']),
     '',
   ].join('\n'));
   assert.equal(result.code, 0);

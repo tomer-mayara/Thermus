@@ -1,7 +1,7 @@
 # Architecture and complexity evolution plan
 
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
-"Review record"). Tickets T1 to T6 are done; T7 is open (see the appendix). It builds on the process of PR #154 ("Code quality review with
+"Review record"). Tickets T1 to T7 are done (see the appendix). It builds on the process of PR #154 ("Code quality review with
 ast-metrics" in [AGENTS.md](../../AGENTS.md) and
 [the review guide](ast-metrics-review.md)).
 
@@ -568,7 +568,14 @@ coverage run and the review guide with the band rules.
 
 ### T7. Trend
 
-Source: step A3 and "The views". Depends on T6.
+Source: step A3 and "The views". Depends on T6. Done in PR #168. The name of a
+file has the day of the committer date in the time zone of the commit and the
+first eight characters of the commit, such as `2026-10-18-a50351b5.json`, the
+first record. The rows come by the time of the committer date, and two records
+of the same time by their file names. The command reads the store before it
+writes, so that a store with a wrong file gets no new file. With `--head` and
+`--base-snapshot`, only `--trend-store DIR` gives a store; the live test uses
+it, so that no test writes under `docs/metrics/`.
 
 **Outcome and scope.** The architecture command writes the base snapshot's
 global numbers and per-community numbers to
