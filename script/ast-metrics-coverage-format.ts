@@ -2,13 +2,13 @@
 // code units) of the compiled JavaScript, not bytes.
 import { jsonOf, objectOf } from './ast-metrics-json.ts';
 
-export type V8Range = { readonly startOffset: number; readonly endOffset: number; readonly count: number };
+type V8Range = { readonly startOffset: number; readonly endOffset: number; readonly count: number };
 
 // The first range is the whole function with the count of its calls. The other ranges are blocks inside it, each with
 // its own count. V8 gives a block only where its count differs from the count around it.
 export type V8Function = { readonly functionName: string; readonly ranges: readonly [V8Range, ...V8Range[]] };
 
-export type V8Script = { readonly url: string; readonly functions: readonly V8Function[] };
+type V8Script = { readonly url: string; readonly functions: readonly V8Function[] };
 
 export function v8ScriptsOf(text: string): readonly V8Script[] | undefined {
   const { result } = objectOf(jsonOf(text));
