@@ -218,21 +218,22 @@ the diagnostic then names the folder that stays.
 pnpm exec node script/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--timeout-ms MS] [--out FILE]
 ```
 
-The command prints the architecture delta of `src/` as Markdown, and also
-writes it to `--out` (relative to the current folder). By default it takes
-the snapshot of the merge base of `--base` (default `origin/main`) in a
-temporary worktree, as `--base` of the snapshot command does, and the
-snapshot of the working tree; this takes about two seconds. The changed
-files are the `src/` files of the delta rule of the delta command. With
-`--head` and `--base-snapshot` it reads two snapshot files and runs no tool;
-the changed files then come from `--touched` (paths from the root, separated
-by commas), else there are none.
+The command prints the architecture delta of `src/` and the complexity table
+of the changed files as Markdown, and also writes it to `--out` (relative to
+the current folder). Step 5 of the process puts this output in the pull
+request description. By default it takes the snapshot of the merge base of
+`--base` (default `origin/main`) in a temporary worktree, as `--base` of the
+snapshot command does, and the snapshot of the working tree; this takes about
+two seconds. The changed files are the `src/` files of the delta rule of the
+delta command. With `--head` and `--base-snapshot` it reads two snapshot
+files and runs no tool; the changed files then come from `--touched` (paths
+from the root, separated by commas), else there are none.
 
 The output is the header `## Architecture of src/: base <8 characters of the
 base commit> → head`, one summary line (modularity and cross share with two
 decimals, cycles, communities with the shared kernel, base → head, with
 ` (n new, m gone)` when there are such), then the Mermaid graph with its
-legend, or `The map did not change.`
+legend, or `The map did not change.`, and last the complexity section.
 
 Matching: a head community matches the base community with the largest
 Jaccard overlap of their files, at 0.5 or more; the largest overlaps match
@@ -250,9 +251,31 @@ grey dashed node for a gone community with its base numbers; edges sorted by
 labels with the references and their change, `<n> · cycle` red dashed for a
 cycle, `<n> · new` thick for a new dependency (`· new · cycle` red dashed when
 both), `gone` grey dashed for a gone dependency; one legend paragraph. A
-label text has no double quote and no backtick. Exit status 0 when the
-Markdown is printed (a report, not a gate); 1 with one diagnostic line for a
-failure; 130 or 143 when a signal stops the base snapshot.
+label text has no double quote and no backtick.
+
+The complexity section has the heading `## Complexity of the changed files`
+and a table with the columns `File`, `Maintainability`, `Decision paths`, and
+`Risk rank`: one row for each changed file under `src/`, sorted by path.
+Each cell gives the value of the base and of the head, such as
+`72.0 → 60.0 ↓12.0` or `12 → 15 ↑3`: the maintainability with one decimal,
+the decision paths as an integer, and the change with the arrows of the map,
+left out when it is zero. A file that the base does not have shows
+`new → 70.2`, and a file that the head does not have shows `55.0 → gone`. A
+file without a maintainability index in the head is `not measured` in both
+columns: ast-metrics gives an index only to a file with code, and the
+snapshot gives such a file 0 decision paths only because ast-metrics leaves
+out each value of zero. The same word shows a value that a snapshot file
+leaves out, such as the decision paths. The risk rank is the position of the
+file among the ten files of the head with the highest risk score, from 1 (on
+a tie, the first path ranks first); it is empty for each other file and for a
+file without a risk score. When no changed file is under `src/`, the section
+has the line `No production file changed.` in place of the table, as for a
+pull request that changes only documents. The columns of CRAP come with
+ticket T6 of the [evolution plan](architecture-evolution-plan.md).
+
+Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
+diagnostic line for a failure; 130 or 143 when a signal stops the base
+snapshot.
 
 ## The configuration
 
@@ -278,13 +301,15 @@ folder. The file:
   cycles of `src/` instead.
 
 `.ast-metrics-baseline.yaml` lists the violations that existed when the rules
-were last set (169 on 2026-10-18). The review and `ast-metrics lint` report
-only a violation that the baseline does not list. A baseline entry carries
-the measured value in its message, so a file whose value moved appears
-again. Refresh the baseline in two cases: when the rules change, in the same
-pull request as the rule change; and when a violation reached `main` without
-the process (PR #155 brought two), in a pull request that names it. Run
-`ast-metrics baseline` and commit the file.
+were last set or at a later refresh (175 after PR #165 on 2026-10-18). The
+review and `ast-metrics lint` report only a violation that the baseline does
+not list. A baseline entry carries the measured value in its message, so a
+file whose value moved appears again. Refresh the baseline in three cases: when the rules change, in the
+same pull request as the rule change; when a violation reached `main` without
+the process (PR #155 brought two), in a pull request that names it; and when
+a pull request keeps a finding of severity high with a reason (step 5 of
+AGENTS.md), in that pull request, so that the next pull request does not get
+the finding again. Run `ast-metrics baseline` and commit the file.
 
 ## How ast-metrics counts
 

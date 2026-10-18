@@ -40,9 +40,9 @@ export function edgeLabelOf(edge: MapEdge): string {
   return parts.join(' · ');
 }
 
-// The change follows the value as an arrow and its size. A change that rounds to zero, or that has no value, shows
-// nothing.
-function changeText(change: number | undefined, digits: number): string {
+// The change follows the value as an arrow and its size, in the map and in the complexity table. A change that rounds
+// to zero, or that has no value, shows nothing.
+export function changeText(change: number | undefined, digits: number): string {
   const text = (change ?? 0).toFixed(digits);
   if (Number(text) === 0) return '';
   return text.startsWith('-') ? ` ↓${text.slice(1)}` : ` ↑${text}`;

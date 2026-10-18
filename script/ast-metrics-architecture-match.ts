@@ -1,5 +1,6 @@
 // ast-metrics renumbers and renames its communities when code grows elsewhere, so a head community is the base
 // community that has most of the same files (docs/implementation/architecture-evolution-plan.md, "Community identity").
+import { textOrder } from './ast-metrics-architecture-order.ts';
 import type { MapCommunity } from './ast-metrics-architecture-types.ts';
 
 const minimumOverlap = 0.5;
@@ -47,8 +48,4 @@ function overlapOf(first: readonly string[], second: readonly string[]): number 
 // the snapshots.
 function byOverlapThenLabels(first: Candidate, second: Candidate): number {
   return second.overlap - first.overlap || textOrder(first.head.label, second.head.label) || textOrder(first.base.label, second.base.label);
-}
-
-function textOrder(first: string, second: string): number {
-  return Number(first > second) - Number(first < second);
 }

@@ -108,11 +108,21 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    reports only what the pull request made worse or added: a file whose
    score dropped, a new function with more than 10 decision paths (with
    file and line), and a new rule violation. Correct each finding of
-   severity high, or give the reason in the pull request description. Put
-   the Markdown output in the pull request description.
+   severity high, or give the reason in the pull request description. If
+   you keep a finding of severity high with a reason, also add it to the
+   baseline in the same pull request: run `ast-metrics baseline` and
+   commit the new `.ast-metrics-baseline.yaml`. Then the next pull request
+   does not get the finding again. Put the Markdown output in the pull
+   request description. Then run
+   `pnpm exec node script/ast-metrics-architecture.ts` and put its output
+   in the pull request description too: the architecture delta of `src/`
+   and the complexity table of the changed files. A pull request that
+   changes only documents gets `The map did not change.` and
+   `No production file changed.`; include these lines too.
 6. Do not change `.ast-metrics-baseline.yaml` in a pull request, except
-   when the pull request changes the rules in `.ast-metrics.yaml`. Then run
-   `ast-metrics baseline` and commit the new file.
+   for a kept finding of step 5, or when the pull request changes the
+   rules in `.ast-metrics.yaml`. Then run `ast-metrics baseline` and commit
+   the new file.
 
 The MCP server of ast-metrics runs only for the time of one call: the
 command starts it, makes the call, prints the answer, and stops it. Do not

@@ -6,7 +6,7 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 // The rules of the architecture report: the matching, the node ids and texts, the arrows, and the change of the map.
 // The report is pure, so the cases call it in the test process. Its module runs from source next to the command, as the
 // command runs it. The types give the parts of the contract that the cases use, and the cases read the lines of the
-// graph.
+// graph. ast-metrics-architecture-table.test.ts specifies the complexity table at the end of the report.
 interface Community {
   readonly id: string;
   readonly label: string;
@@ -21,6 +21,7 @@ interface Snapshot {
   readonly commit: string;
   readonly global: { readonly modularity: number; readonly crossShare: number; readonly cycles: readonly (readonly string[])[] };
   readonly communities: readonly Community[];
+  readonly files: readonly { readonly path: string; readonly maintainability?: number; readonly paths: number }[];
 }
 
 const { architectureReportOf } = await import(new URL('ast-metrics-architecture-report.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
@@ -33,9 +34,13 @@ function community(id: string, label: string, parts: Partial<Community> & { read
   return { id, label, members, files: members.length, paths: 10, edges: [], ...parts };
 }
 
+// Each member of a community is a file of the snapshot.
 function snapshotOf(communities: readonly Community[], cycles: readonly (readonly string[])[] = []): Snapshot {
-  return { commit: 'c0ffee00c0ffee00', global: { modularity: 0.5, crossShare: 0.25, cycles }, communities };
+  const files = communities.flatMap(({ members }) => members.map((path) => ({ path, maintainability: 70, paths: 5 })));
+  return { commit: 'c0ffee00c0ffee00', global: { modularity: 0.5, crossShare: 0.25, cycles }, communities, files };
 }
+
+const noProductionFileEnd = '\n\n## Complexity of the changed files\n\nNo production file changed.\n';
 
 function reportOf(base: Snapshot, head: Snapshot, touched: readonly string[] = []): string {
   return architectureReportOf({ base, head, touched });
@@ -90,7 +95,7 @@ test('Given a head whose communities have other ids and labels but the same file
 
   const report = reportOf(base, head);
 
-  assert.ok(report.endsWith('\n\nThe map did not change.\n'), report);
+  assert.ok(report.endsWith(`\n\nThe map did not change.${noProductionFileEnd}`), report);
 });
 
 test('Given labels with a Mermaid keyword, a double quote, a backtick, upper case, and parentheses, when the report is made, then each id is c_ and the label in lower case with _ for each other character, and each label text has a single quote for each quote and backtick', () => {
@@ -162,7 +167,7 @@ for (const [name, base, head, touched, changed] of [
     const report = reportOf(base, head, touched);
 
     assert.equal(report.includes('```mermaid\n'), changed, report);
-    assert.equal(report.endsWith('\n\nThe map did not change.\n'), !changed, report);
+    assert.equal(report.includes('\n\nThe map did not change.\n\n'), !changed, report);
   });
 }
 

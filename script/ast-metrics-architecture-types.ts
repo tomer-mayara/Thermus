@@ -1,16 +1,21 @@
-// The data of the architecture delta of docs/implementation/architecture-evolution-plan.md ("The views", view 1): two
-// snapshots of src/, and the map that compares them.
-import type { Snapshot, SnapshotCommunity } from './ast-metrics-snapshot-types.ts';
+// The data of the architecture delta of docs/implementation/architecture-evolution-plan.md ("The views", views 1 and 2):
+// two snapshots of src/, the map that compares them, and the files of the complexity table.
+import type { Snapshot, SnapshotCommunity, SnapshotFile } from './ast-metrics-snapshot-types.ts';
 
-// The parts of a snapshot that the map reads. A snapshot of script/ast-metrics-snapshot.ts has all of them, and so has a
-// snapshot file after its check.
+// The parts of a snapshot that the map and the complexity table read. A snapshot of script/ast-metrics-snapshot.ts has
+// all of them, and so has a snapshot file after its check.
 export interface MapSnapshot {
   readonly commit: string;
   readonly global: Pick<Snapshot['global'], 'modularity' | 'crossShare' | 'cycles'>;
   readonly communities: readonly MapCommunity[];
+  readonly files: readonly TableFile[];
 }
 
 export type MapCommunity = Pick<SnapshotCommunity, 'id' | 'label' | 'members' | 'files' | 'maintainability' | 'paths' | 'edges'>;
+
+// A snapshot of script/ast-metrics-snapshot.ts gives each file its decision paths, but a snapshot file can leave them
+// out: the table then says that they are not measured.
+export type TableFile = Pick<SnapshotFile, 'path' | 'maintainability' | 'risk'> & Partial<Pick<SnapshotFile, 'paths'>>;
 
 export interface MapSources {
   readonly base: MapSnapshot;
