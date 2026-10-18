@@ -1,6 +1,16 @@
 {
   "workspaces": {
-    ".": { "entry": ["docker/verify-hosted-runtime.mjs", "script/fetch-url.mjs"] },
+    ".": {
+      "entry": [
+        "docker/verify-hosted-runtime.mjs",
+        "script/fetch-url.mjs",
+        "script/ast-metrics-delta.mjs",
+        "script/ast-metrics-review.mjs",
+        "script/ast-metrics-mcp.mjs",
+        "test/support/doubles/ast-metrics/ast-metrics-cli-fake.mjs",
+        "test/support/doubles/ast-metrics/ast-metrics-mcp-fake.mjs"
+      ]
+    },
     ".habit-hooks": { "project": ["*.mjs"] }
   },
   "ignoreDependencies": ["eslint", "ts-morph"],

@@ -25,6 +25,31 @@ npm run build && node --test dist/test/unit/script/fetch-url.test.js dist/test/a
 See [the script guide](../../script/README.md) for use and the current hosted
 authentication limit.
 
+## ast-metrics commands
+
+`test/unit/script/ast-metrics-delta.test.ts`,
+`test/unit/script/ast-metrics-review.test.ts`, and
+`test/unit/script/ast-metrics-mcp.test.ts` check the help and the input
+validation of the three commands. `test/acceptance/script/ast-metrics-delta.test.ts`
+and `test/acceptance/script/ast-metrics-review.test.ts` run the commands in a
+temporary git repository against a double of the ast-metrics executable on
+PATH: the delta of committed, uncommitted, and untracked TypeScript files, the
+scores and the exit status, the exact arguments that reach ast-metrics, the
+missing baseline warning, a missing executable, and a failing analysis.
+`test/acceptance/script/ast-metrics-mcp.test.ts` runs the one-shot MCP call
+against a double of the server: the function table, the pass-through of
+arguments, error answers, a hanging and an early-exiting server, and that no
+server process remains. `test/acceptance/script/ast-metrics-mcp.live.ts` runs
+the real server when `ast-metrics` is on PATH; the default suites skip it.
+
+```sh
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
+node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
+```
+
+See [the script guide](../../script/README.md) and
+[the ast-metrics review guide](../implementation/ast-metrics-review.md).
+
 ## Free hosted signup (FS-01)
 
 The [FS-01 record](../implementation/fs-01.md) keeps the complete-candidate

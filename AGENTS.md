@@ -92,18 +92,18 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
 2. Measure the delta: `pnpm exec node script/ast-metrics-delta.mjs`. It
    lists each TypeScript file that the pull request adds or changes with
    its maintainability score, lowest first. The goal is 85 or more for each
-   file. The command exits 1 when a file is below 85.
-3. For each file below 85, find what to change before you edit:
+   production file, under `src/`. A test file or a support file is listed
+   with its score and has no goal; step 5 fails the pull request when its
+   score dropped. The command exits 1 when a production file is below 85.
+3. For each production file below 85, find what to change before you edit:
    `pnpm exec node script/ast-metrics-mcp.mjs file <path>` gives the score,
    the decision paths, and the lines of each function in the file. Start
    with the functions that have the lowest score or the most decision
    paths: split them, remove duplicated logic, and simplify the control
-   flow. The server knows the production files only; for a test file, read
-   the file and split its longest cases or move shared setup into the test
-   support. Keep the tests green after each change.
+   flow. Keep the tests green after each change.
 4. Measure again (step 2). Do no more than 3 passes of steps 2 and 3. If a
-   file is still below 85 after 3 passes, write its score and the reason in
-   the pull request description and continue.
+   production file is still below 85 after 3 passes, write its score and
+   the reason in the pull request description and continue.
 5. Review the delta: `pnpm exec node script/ast-metrics-review.mjs`. It
    reports only what the pull request made worse or added: a file whose
    score dropped, a new function with more than 10 decision paths (with

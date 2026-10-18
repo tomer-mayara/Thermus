@@ -19,8 +19,9 @@ reports:
   html: ./ast-report
 
 requirements:
-  # The rules apply to production code. A test file is long by design; the
-  # file goal of 85 in AGENTS.md applies to test files too.
+  # The rules apply to production code. A test file is long by design. The
+  # file goal of 85 in AGENTS.md applies to production files for the same
+  # reason; script/ast-metrics-delta.mjs lists test files without a goal.
   exclude:
     - /test/
   # ast-metrics ignores a violation that .ast-metrics-baseline.yaml lists.

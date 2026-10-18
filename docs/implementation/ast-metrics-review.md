@@ -28,22 +28,32 @@ pnpm exec node script/ast-metrics-delta.mjs [--base REF] [--min SCORE] [--no-com
 
 The delta is each TypeScript file that the branch adds or changes against the
 merge base with `--base` (default `origin/main`): committed, staged, unstaged,
-and new untracked files. Deleted files and other file types are not part of
-it. The command runs one analysis of the repository and prints the
-maintainability score of each delta file, lowest first:
+and new untracked files, and a renamed file at its new path. Deleted files
+and other file types are not part of it. The command runs one analysis of the
+repository and prints the maintainability score of each delta file: the
+production files first, lowest first, then the other files, then the files
+without a measurement:
 
 ```
   41.4  src/user-portal/connection-guide.ts  below 85
   91.0  src/http/server.ts
-Result: 1 of 2 files below 85. Goal: 85 or more for each file.
+  42.9  test/acceptance/script/ast-metrics-delta.test.ts  no goal
+  not measured  src/types.d.ts
+Result: 1 of 2 production files below 85. Goal: 85 or more for each production file. 1 other file without a goal. 1 file not measured.
 Comparison with origin/main: ast-report/compare.html
 ```
 
-The exit status is 1 when a file is below `--min` (default 85), else 0. A
-file without a measurement is listed as `not measured` and does not fail the
-gate. The analysis also writes the HTML report to `ast-report/`, with
-`compare.html` for the comparison with the base; `--no-compare` skips the
-comparison and halves the run time.
+The goal applies to the production files, under `src/`. The owner decided
+this on 2026-10-17: no test file of the repository reaches 85 (339 files,
+median 42, best 76), because a test file holds one function per case and
+long case names, while the production files have a median of 62 and ten
+files at 85 or more. A test file or a support file is listed with its score
+and `no goal`; the review reports a drop of its score. The exit status is 1
+when a production file is below `--min` (default 85), else 0. A file without
+a measurement is listed as `not measured` and does not fail the gate. The
+analysis also writes the HTML report to `ast-report/`, with `compare.html`
+for the comparison with the base; `--no-compare` skips the comparison and
+halves the run time.
 
 The score is the maintainability index of ast-metrics: 0 to 128, from the
 size, the complexity, and the comment density of the file. Above 85 the file
@@ -102,8 +112,10 @@ follow your edits. A call takes about one second.
   always change together.
 - `call` reaches every tool of the server; `tools` lists them.
 
-The server knows the production files only (`src/`). For a file under
-`test/`, `file` answers that the file is not in the analysis.
+The server analyzes the same files as the delta command, test files
+included. In a test file, each case is an anonymous function in the table.
+`file` takes a path relative to the current folder or an absolute path in
+the repository.
 
 ## The configuration
 
@@ -118,7 +130,8 @@ folder. The file:
 - Applies the rules to production code only (`requirements.exclude:
   /test/`). The review still reports a score drop and a new complex function
   in a test file; the exclusion removes only rule violations from test code,
-  where a long function is normal.
+  where a long function is normal. The goal of 85 of the delta command
+  applies to production files for the same reason.
 - Sets the rules: maintainability 85 for each class, efferent coupling at
   most 10, no dependency cycle between communities, at most 150 lines and 20
   decision paths for a file, at most 30 lines and 20 logical lines for a
@@ -144,9 +157,9 @@ and commit the file in the same pull request as the rule change.
   command lists every delta file.
 - ast-metrics analyzes TypeScript. The commands under `script/` are
   JavaScript and stay outside the measurements.
-- The MCP server and the review share the configuration of the repository
-  root. A worktree of an agent has its own copy of the files; run the
-  commands from that worktree.
+- The commands run ast-metrics in the repository root that git names from
+  the current folder. A worktree of an agent has its own copy of the files;
+  run the commands from that worktree.
 
 ## Reports for the owner
 
