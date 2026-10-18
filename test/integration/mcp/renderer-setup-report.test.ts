@@ -3,9 +3,10 @@ import { describe, test, type TestContext } from 'node:test';
 import { Client, InMemoryTransport, type CallToolResult } from '@modelcontextprotocol/client';
 import type { Server } from '@modelcontextprotocol/server';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
-import type { Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown, type RendererSetupFailure } from '../../../src/mcp/get-url-as-markdown.ts';
+import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { createFetchPage } from '../../../src/page-fetch/fetch-page.ts';
+import type { RendererSetupFailure } from '../../../src/page-fetch/renderer-failure-reports.ts';
 import { WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 
 const url = 'https://source.example/article?private-query=secret#private-fragment';
@@ -25,13 +26,13 @@ function launchFailure(code: string): WebsiteFetchLaunchError {
 function operationDoubles(t: TestContext, fetchFailure: unknown) {
   return {
     fetcher: { fetchURL: t.mock.fn(async (_url: string, _signal?: AbortSignal): Promise<WebsiteFetchResult> => { throw fetchFailure; }) },
-    pipeline: { process: t.mock.fn(async (source: WebsiteFetchResult): Promise<Ctx> => ({ ...source, removed: 0, skipped: 0, markdown: 'Unused' })) },
+    processor: { process: t.mock.fn(async (_source: WebsiteFetchResult) => 'Unused') },
     reportRendererSetupFailure: t.mock.fn((_failure: RendererSetupFailure) => {}),
     reportRendererReadinessTimeout: t.mock.fn((_failure: { category: 'readiness_timeout'; budgetMs: 20_000 }) => {}),
   };
 }
 
-async function assertSafeFetchFailure(call: Promise<string>): Promise<void> {
+async function assertSafeFetchFailure(call: Promise<unknown>): Promise<void> {
   await assert.rejects(call, (error: unknown) => {
     assert.ok(error instanceof Error);
     assert.equal(error.message, 'Page fetch failed');
@@ -57,23 +58,23 @@ const otherFetchFailures = [
   ['a blocked destination', new Error('Fetch destination is not a public network address: 127.0.0.1')],
 ] as const;
 
-describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
+describe('Renderer setup reports of the neutral page fetch operation', () => {
   test('Given a readiness timeout whose cause holds request data and stderr, when the operation fetches, then it reports only the fixed category and budget and returns the safe fetch failure without processing partial HTML', async (t) => {
     const failure = new WebsiteFetchReadinessTimeoutError({ cause: Object.assign(new Error(`spawn /private/lightpanda fetch ${url}`), { stderr: 'Bearer private-token password=private-password' }) });
     const dependencies = operationDoubles(t, failure);
 
-    await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
 
     assert.deepEqual(dependencies.reportRendererReadinessTimeout.mock.calls.map(({ arguments: args }) => args), [[{ category: 'readiness_timeout', budgetMs: 20_000 }]]);
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
-    assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+    assert.equal(dependencies.processor.process.mock.callCount(), 0);
   });
 
   test('Given a readiness timeout and a reporter that throws, when the operation fetches, then the caller still gets only the safe fetch failure', async (t) => {
     const dependencies = operationDoubles(t, new WebsiteFetchReadinessTimeoutError());
     dependencies.reportRendererReadinessTimeout.mock.mockImplementation(() => { throw new Error('private logging failure'); });
 
-    await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
 
     assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 1);
   });
@@ -86,7 +87,7 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
       throw new WebsiteFetchReadinessTimeoutError();
     });
 
-    await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+    await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
 
     assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
@@ -96,10 +97,10 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
     test(`Given a renderer that cannot start with ${code}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets one report with only the failure class and code`, async (t) => {
       const dependencies = operationDoubles(t, launchFailure(code));
 
-      await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
+      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
 
       assert.deepEqual(dependencies.reportRendererSetupFailure.mock.calls.map((call) => call.arguments), [[{ failure, code }]]);
-      assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+      assert.equal(dependencies.processor.process.mock.callCount(), 0);
     });
   }
 
@@ -107,7 +108,7 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
     test(`Given ${name}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets no report`, async (t) => {
       const dependencies = operationDoubles(t, fetchFailure);
 
-      await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
+      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
 
       assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
       if (!(fetchFailure instanceof WebsiteFetchReadinessTimeoutError)) assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
@@ -118,7 +119,7 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
     const dependencies = operationDoubles(t, launchFailure('ENOENT'));
     dependencies.reportRendererSetupFailure.mock.mockImplementation(() => { throw new Error('private log failure'); });
 
-    await assertSafeFetchFailure(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
 
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 1);
   });
@@ -131,7 +132,7 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
       throw launchFailure('ENOENT');
     });
 
-    await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+    await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
 
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
   });
@@ -142,7 +143,7 @@ describe('Renderer setup reports of the getURLAsMarkdown operation', () => {
     dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw failures.shift(); });
     const lines = { info: [] as string[], error: [] as string[] };
     const server = createFetchToolServer(context, {
-      operation: createGetURLAsMarkdown(dependencies),
+      operation: createGetURLAsMarkdown(createFetchPage(dependencies)),
       logger: { info: (line) => lines.info.push(line), error: (line) => lines.error.push(line) },
     });
     const client = await connectedClient(t, server);

@@ -5,7 +5,7 @@ import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cle
 import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
+import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
 const context = createRequestContext({
@@ -40,7 +40,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
         new CleanHtmlToMarkdownDefuddle(),
       ]);
       const process = t.mock.method(pipeline, 'process');
-      const operation = createGetURLAsMarkdown({ fetcher: { async fetchURL() { return page; } }, pipeline });
+      const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
       assert.equal(await operation(page.requestedUrl, context, new AbortController().signal), '');
 
@@ -62,13 +62,15 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
       html: '<p id="eh-id">Ad target</p><p>Related <a href="child">article</a>.</p>',
     };
     const original = { ...page };
-    const pipeline = new HtmlToMarkdownPipeline([
+    const stages = [
       new CleanHtmlAdsAdblockRs(elementHidingRules),
       new PromptInjectionRemoverSanitizer(),
       new CleanHtmlToMarkdownDefuddle(),
-    ]);
+    ];
+    const invocations = stages.map((stage) => t.mock.method(stage, 'invoke'));
+    const pipeline = new HtmlToMarkdownPipeline(stages);
     const process = t.mock.method(pipeline, 'process');
-    const operation = createGetURLAsMarkdown({ fetcher: { async fetchURL() { return page; } }, pipeline });
+    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
     const markdown = await operation(page.requestedUrl, context, new AbortController().signal);
 
@@ -78,6 +80,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
     assert.equal(result.requestedUrl, page.requestedUrl);
     assert.equal(result.finalUrl, page.finalUrl);
     assert.equal(result.removed, 1);
+    assert.deepEqual(invocations.map((invoke) => invoke.mock.callCount()), [1, 1, 1]);
     assert.deepEqual(page, original);
   });
 
@@ -90,7 +93,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
       html: `<p id="eh-id">${'x'.repeat(10 * 1024 * 1024)}</p>`,
     };
     const pipeline = new HtmlToMarkdownPipeline([ads, new PromptInjectionRemoverSanitizer(), new CleanHtmlToMarkdownDefuddle()]);
-    const operation = createGetURLAsMarkdown({ fetcher: { async fetchURL() { return page; } }, pipeline });
+    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
     await assert.rejects(operation(page.requestedUrl, context, new AbortController().signal), { message: 'Page processing failed' });
     assert.equal(invoke.mock.callCount(), 0);
@@ -104,7 +107,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
       requestedUrl: 'https://source.example/start', finalUrl: 'https://source.example/final',
       html: '<div>'.repeat(5000) + 'Private source' + '</div>'.repeat(5000),
     };
-    const operation = createGetURLAsMarkdown({ fetcher: { async fetchURL() { return page; } }, pipeline });
+    const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
     await assert.rejects(operation(page.requestedUrl, context, new AbortController().signal), { message: 'Page processing failed' });
     assert.equal(invoke.mock.callCount(), 0);

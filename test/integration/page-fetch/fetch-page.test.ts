@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
-import type { Ctx } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { createFetchPage } from '../../../src/page-fetch/fetch-page.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 
 const url = 'https://source.example/article';
@@ -13,11 +12,11 @@ const context = createRequestContext({
   grants: [{ role: 'reader', permissions: ['product:access'] }],
 });
 
-describe('getURLAsMarkdown operation and access contract', () => {
+describe('Protected neutral page fetch operation and access contract', () => {
   test('Given a trusted context without product access, when the operation is called, then fetch never starts', async (t) => {
     const fetchURL = t.mock.fn(async () => page);
-    const process = t.mock.fn(async (source: WebsiteFetchResult): Promise<Ctx> => ({ ...source, removed: 0, skipped: 0, markdown: 'unused' }));
-    const operation = createGetURLAsMarkdown({ fetcher: { fetchURL }, pipeline: { process } });
+    const process = t.mock.fn(async (_source: WebsiteFetchResult) => 'unused');
+    const operation = createFetchPage({ fetcher: { fetchURL }, processor: { process } });
     const denied = createRequestContext({ user: context.user, tenantId: context.tenantId, grants: [] });
 
     await assert.rejects(operation(url, denied, new AbortController().signal), { name: 'AccessDeniedError', message: 'Access denied' });
@@ -31,11 +30,11 @@ describe('getURLAsMarkdown operation and access contract', () => {
     const fetched = { ...page, requestedUrl };
     const markdown = '\n# Exact title\n\nBody 😃\n';
     const fetchURL = t.mock.fn(async () => fetched);
-    const process = t.mock.fn(async (source: WebsiteFetchResult): Promise<Ctx> => ({ ...source, removed: 0, skipped: 0, markdown, title: 'Do not append' }));
+    const process = t.mock.fn(async (_source: WebsiteFetchResult) => markdown);
     const signal = new AbortController().signal;
-    const operation = createGetURLAsMarkdown({ fetcher: { fetchURL }, pipeline: { process } });
+    const operation = createFetchPage({ fetcher: { fetchURL }, processor: { process } });
 
-    assert.equal(await operation(requestedUrl, context, signal), markdown);
+    assert.deepEqual(await operation(requestedUrl, context, signal), { status: 'released', markdown });
 
     assert.deepEqual(fetchURL.mock.calls[0].arguments, [requestedUrl, signal]);
     assert.deepEqual(process.mock.calls[0].arguments, [fetched, signal]);
@@ -46,12 +45,12 @@ describe('getURLAsMarkdown operation and access contract', () => {
     test(`Given invalid URL ${JSON.stringify(invalid)}, when the operation is called, then no fetch runs`, async (t) => {
       const dependencies = operationDoubles(t);
 
-      await assert.rejects(createGetURLAsMarkdown(dependencies)(invalid, context, new AbortController().signal), {
+      await assert.rejects(createFetchPage(dependencies)(invalid, context, new AbortController().signal), {
         message: 'Invalid tool arguments',
       });
 
       assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
-      assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+      assert.equal(dependencies.processor.process.mock.callCount(), 0);
     });
   }
 
@@ -62,7 +61,7 @@ describe('getURLAsMarkdown operation and access contract', () => {
       const dependencies = operationDoubles(t);
       const signal = new AbortController().signal;
 
-      assert.equal(await createGetURLAsMarkdown(dependencies)(boundedUrl, context, signal), 'Exact Markdown');
+      assert.deepEqual(await createFetchPage(dependencies)(boundedUrl, context, signal), { status: 'released', markdown: 'Exact Markdown' });
       assert.deepEqual(dependencies.fetcher.fetchURL.mock.calls[0].arguments, [boundedUrl, signal]);
     });
 
@@ -70,7 +69,7 @@ describe('getURLAsMarkdown operation and access contract', () => {
       const prefix = 'https://example.com/';
       const dependencies = operationDoubles(t);
 
-      await assert.rejects(createGetURLAsMarkdown(dependencies)(prefix + character.repeat(8193 - prefix.length), context, new AbortController().signal), {
+      await assert.rejects(createFetchPage(dependencies)(prefix + character.repeat(8193 - prefix.length), context, new AbortController().signal), {
         message: 'Invalid tool arguments',
       });
       assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
@@ -81,21 +80,21 @@ describe('getURLAsMarkdown operation and access contract', () => {
     const dependencies = operationDoubles(t);
     dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw new Error('secret fetch cause'); });
 
-    await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
+    await assert.rejects(createFetchPage(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
       assert.ok(error instanceof Error);
       assert.equal(error.message, 'Page fetch failed');
       assert.equal(error.cause, undefined);
       return true;
     });
     assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 1);
-    assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+    assert.equal(dependencies.processor.process.mock.callCount(), 0);
   });
 
-  test('Given a thrown pipeline failure, when it rejects, then only the safe processing error is returned', async (t) => {
+  test('Given a thrown processor failure, when it rejects, then only the safe processing error is returned', async (t) => {
     const dependencies = operationDoubles(t);
-    dependencies.pipeline.process.mock.mockImplementation(async () => { throw new Error('secret partial Markdown'); });
+    dependencies.processor.process.mock.mockImplementation(async () => { throw new Error('secret partial Markdown'); });
 
-    await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
+    await assert.rejects(createFetchPage(dependencies)(url, context, new AbortController().signal), (error: unknown) => {
       assert.ok(error instanceof Error);
       assert.equal(error.message, 'Page processing failed');
       assert.equal(error.cause, undefined);
@@ -104,51 +103,11 @@ describe('getURLAsMarkdown operation and access contract', () => {
     assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 1);
   });
 
-  for (const markdown of [undefined, null, 42, { text: 'must not serialize' }]) {
-    test(`Given nonstring Markdown ${JSON.stringify(markdown)}, when the pipeline returns it, then the operation fails safely`, async (t) => {
-      const dependencies = operationDoubles(t);
-      dependencies.pipeline.process.mock.mockImplementation(async (source) => ({ ...source, removed: 0, skipped: 0, markdown }) as unknown as Ctx);
-
-      await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), { message: 'Page processing failed' });
-    });
-  }
-
-  for (const result of [undefined, null]) {
-    test(`Given an absent pipeline result ${result}, when processing returns, then the operation fails safely`, async (t) => {
-      const dependencies = operationDoubles(t);
-      dependencies.pipeline.process.mock.mockImplementation(async () => result as unknown as Ctx);
-
-      await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), { message: 'Page processing failed' });
-    });
-  }
-
-  test('Given empty Markdown and warnings, when the pipeline completes, then the empty success is preserved', async (t) => {
+  test('Given empty processed Markdown, when the fetch completes, then the released outcome keeps exact empty text', async (t) => {
     const dependencies = operationDoubles(t);
-    dependencies.pipeline.process.mock.mockImplementation(async (source) => ({
-      ...source, removed: 0, skipped: 0, markdown: '', warnings: ['HTML scan failed; remaining HTML withheld'],
-    }));
+    dependencies.processor.process.mock.mockImplementation(async () => '');
 
-    assert.equal(await createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), '');
-  });
-
-  for (const html of ['x'.repeat(10 * 1024 * 1024 + 1), '😃'.repeat(10 * 1024 * 1024 / 4) + 'x']) {
-    test(`Given HTML of ${Buffer.byteLength(html, 'utf8')} bytes and ${html.length} UTF-16 units, when fetched, then it fails before pipeline stages`, async (t) => {
-      const dependencies = operationDoubles(t);
-      dependencies.fetcher.fetchURL.mock.mockImplementation(async () => ({ ...page, html }));
-
-      await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), { message: 'Page processing failed' });
-
-      assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
-    });
-  }
-
-  test('Given exactly 10 MiB of UTF-8 HTML, when fetched, then processing receives the complete input', async (t) => {
-    const html = '😃'.repeat(10 * 1024 * 1024 / 4);
-    const dependencies = operationDoubles(t);
-    dependencies.fetcher.fetchURL.mock.mockImplementation(async () => ({ ...page, html }));
-
-    assert.equal(await createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), 'Exact Markdown');
-    assert.equal(dependencies.pipeline.process.mock.calls[0].arguments[0].html, html);
+    assert.deepEqual(await createFetchPage(dependencies)(url, context, new AbortController().signal), { status: 'released', markdown: '' });
   });
 
   test('Given cancellation before fetch, when called, then no collaborator runs and the cancellation cause is withheld', async (t) => {
@@ -156,21 +115,21 @@ describe('getURLAsMarkdown operation and access contract', () => {
     const controller = new AbortController();
     controller.abort(new Error('secret cancellation reason'));
 
-    await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+    await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
     assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 0);
-    assert.equal(dependencies.pipeline.process.mock.callCount(), 0);
+    assert.equal(dependencies.processor.process.mock.callCount(), 0);
   });
 
-  for (const stage of ['fetch', 'pipeline']) {
+  for (const stage of ['fetch', 'processor']) {
     test(`Given an AbortError from ${stage}, when the signal has not yet changed, then cancellation is still classified safely`, async (t) => {
       const dependencies = operationDoubles(t);
       const abort = async (): Promise<never> => { throw new DOMException('secret abort details', 'AbortError'); };
       if (stage === 'fetch') dependencies.fetcher.fetchURL.mock.mockImplementation(abort);
-      else dependencies.pipeline.process.mock.mockImplementation(abort);
+      else dependencies.processor.process.mock.mockImplementation(abort);
 
-      await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, new AbortController().signal), { name: 'AbortError', message: 'Request cancelled' });
+      await assert.rejects(createFetchPage(dependencies)(url, context, new AbortController().signal), { name: 'AbortError', message: 'Request cancelled' });
 
-      assert.equal(dependencies.pipeline.process.mock.callCount(), stage === 'fetch' ? 0 : 1);
+      assert.equal(dependencies.processor.process.mock.callCount(), stage === 'fetch' ? 0 : 1);
     });
 
     for (const outcome of ['resolve', 'reject']) {
@@ -184,13 +143,13 @@ describe('getURLAsMarkdown operation and access contract', () => {
         if (stage === 'fetch') {
           dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { cancel(); return page; });
         } else {
-          dependencies.pipeline.process.mock.mockImplementation(async (source) => { cancel(); return { ...source, removed: 0, skipped: 0, markdown: 'partial' }; });
+          dependencies.processor.process.mock.mockImplementation(async () => { cancel(); return 'partial'; });
         }
 
-        await assert.rejects(createGetURLAsMarkdown(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+        await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
 
         assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 1);
-        assert.equal(dependencies.pipeline.process.mock.callCount(), stage === 'fetch' ? 0 : 1);
+        assert.equal(dependencies.processor.process.mock.callCount(), stage === 'fetch' ? 0 : 1);
       });
     }
   }
@@ -199,10 +158,8 @@ describe('getURLAsMarkdown operation and access contract', () => {
 function operationDoubles(t: TestContext) {
   return {
     fetcher: { fetchURL: t.mock.fn(async (_url: string, _signal?: AbortSignal) => ({ ...page })) },
-    pipeline: {
-      process: t.mock.fn(async (source: WebsiteFetchResult, _signal?: AbortSignal): Promise<Ctx> => ({
-        ...source, removed: 0, skipped: 0, markdown: 'Exact Markdown',
-      })),
+    processor: {
+      process: t.mock.fn(async (_source: WebsiteFetchResult, _signal?: AbortSignal) => 'Exact Markdown'),
     },
   };
 }

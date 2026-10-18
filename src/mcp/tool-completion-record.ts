@@ -1,5 +1,6 @@
 import type { RequestContext } from '../auth/access-context.ts';
-import { fetchToolInputSchema, fieldStatus, isValidFetchUrl } from './fetch-tool-schema.ts';
+import { isValidFetchUrl } from '../page-fetch/fetch-url.ts';
+import { fetchToolInputSchema, fieldStatus } from './fetch-tool-schema.ts';
 
 export type CompletionStatus = 'success' | 'invalid_arguments' | 'unknown_tool' | 'access_denied' | 'fetch_failed' | 'processing_failed' | 'cancelled' | 'busy';
 

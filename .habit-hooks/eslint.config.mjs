@@ -27,6 +27,15 @@ const consumerImports = [
   providerPackages,
   `(?:\\.\\./)+auth/(?:${providerPaths}|local-auth/local-auth-command(?:-line)?(?:\\.[jt]s)?$)`,
 ];
+const pageFetchImports = [
+  ...consumerImports,
+  '@modelcontextprotocol/(?:server|client)(?:/|$)',
+  '(?:adblock-rs|agent-input-sanitizer|defuddle)(?:/|$)',
+  '@opentelemetry/(?:sdk-logs|exporter-logs-otlp-http)(?:/|$)',
+  '(?:\\.\\./)+(?:mcp/|http/|hosted-admin/|html-cleaner-pipeline/|logging/)',
+  '(?:\\.\\./)+(?:application|fetch-tool|hosted-workos-application|hosted-renderer-startup|hosted-portal|index)(?:\\.[jt]s)?$',
+  '(?:\\.\\./)+website-fetcher/(?!website-fetcher(?:\\.[jt]s)?$)',
+];
 
 function directImportRules(paths, message) {
   const regex = `^(?:${paths.join('|')})`;
@@ -117,6 +126,10 @@ export default [
   {
     files: ['src/mcp/**/*.ts', 'src/hosted-admin/**/*.ts'],
     rules: directImportRules(consumerImports, 'Auth consumers use role contracts. Composition roots select implementations.'),
+  },
+  {
+    files: ['src/page-fetch/**/*.ts'],
+    rules: directImportRules(pageFetchImports, 'Page fetch uses public contracts. Composition selects transport, renderer, cleaner, and logger implementations.'),
   },
   // For the same rule, a block replaces the options of each block before it.
   // Thus each glob has one block with all of its patterns. The driver block and
