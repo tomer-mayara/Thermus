@@ -144,6 +144,25 @@ measured value in its message, so a file whose value moved appears again.
 Refresh the baseline only when the rules change: run `ast-metrics baseline`
 and commit the file in the same pull request as the rule change.
 
+## How ast-metrics counts
+
+These facts, measured with `ast-metrics-mcp.ts file <path> --json` on
+2026-10-17, say what moves a number:
+
+- The decision paths of a file are the sum over all its functions, arrow
+  functions included, plus the branches at the top level of the file. A
+  function with one `if` or one `?:` adds one path for each.
+- The outgoing dependencies of a file are the names it imports, type-only
+  imports included: `import type { A, B }` counts 2. Fewer names per file is
+  the only way down.
+- The maintainability index of a file falls with its volume, so a split along
+  a real seam raises the index of each part more than a local rewrite. The
+  rule `min_maintainability` applies to each class with the class's own
+  volume, so a small class with its helpers as module functions scores
+  higher than a large one.
+- A test case is an anonymous function in the table of `file`, so the table
+  of a test file names the file's helpers and nothing else.
+
 ## Limits
 
 - The rule `min_maintainability` checks each class, not each file. Most files
