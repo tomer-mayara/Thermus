@@ -2,10 +2,12 @@
 // JSON-RPC message per line on stdin, writes one per line on stdout, and exits at the end of its input. It has the
 // nine tools of the real server, but it reads no file: get_file_metrics knows two paths, and each other tool answers
 // JSON that echoes its arguments, so that a test can see what the command sent. A file of answers replaces the two
-// paths and the echo of get_communities.
+// paths and the echo of get_communities. Like the real server, it takes the folder to analyze as an optional argument
+// after mcp; it gives the same answers for each folder, and the request log names the folder.
 //
 // Settings in the environment:
-//   AST_METRICS_FAKE_REQUEST_LOG   A file that gets one JSON line for each request: method, tool, arguments, pid, cwd.
+//   AST_METRICS_FAKE_REQUEST_LOG   A file that gets one JSON line for each request: method, tool, arguments, folder,
+//                                  pid, cwd. A server without a folder argument logs no folder.
 //                                  The name differs from the call log of ast-metrics-cli-fake.ts, which runs this fake
 //                                  for its mcp command in one environment with its own settings.
 //   AST_METRICS_FAKE_ANSWERS       A JSON file with the answer of get_communities, and the answers of get_file_metrics
@@ -19,6 +21,7 @@ import { createInterface, type Interface } from 'node:readline';
 type JsonObject = Readonly<Record<string, unknown>>;
 
 const settings = {
+  folder: process.argv[3],
   log: process.env.AST_METRICS_FAKE_REQUEST_LOG,
   hang: process.env.AST_METRICS_FAKE_HANG === '1',
   exitEarly: process.env.AST_METRICS_FAKE_EXIT_EARLY === '1',
@@ -99,7 +102,7 @@ function record(request: JsonObject): void {
   if (settings.log === undefined) return;
   const params = paramsOf(request);
   const call = request.method === 'tools/call' ? { tool: params.name, arguments: params.arguments } : {};
-  appendFileSync(settings.log, `${JSON.stringify({ method: request.method, ...call, pid: process.pid, cwd: process.cwd() })}\n`);
+  appendFileSync(settings.log, `${JSON.stringify({ method: request.method, ...call, folder: settings.folder, pid: process.pid, cwd: process.cwd() })}\n`);
 }
 
 function textResult(text: string, isError: boolean): JsonObject {

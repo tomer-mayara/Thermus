@@ -28,6 +28,8 @@ export interface AstMetricsMcpFakeRequest {
   readonly method: string;
   readonly tool?: string;
   readonly arguments?: unknown;
+  // The folder argument of "ast-metrics mcp", when the command gave one.
+  readonly folder?: string;
   readonly pid: number;
   readonly cwd: string;
 }

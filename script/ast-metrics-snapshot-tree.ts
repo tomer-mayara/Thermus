@@ -8,13 +8,18 @@ import { sourceFilesOf } from './ast-metrics-snapshot-report.ts';
 import type { Snapshot } from './ast-metrics-snapshot-types.ts';
 import { git } from './repository.ts';
 
+// ast-metrics groups the dependency graph of all that it analyzes, so code that grows in script/ or test/ would regroup
+// the communities of src/. Both runs thus analyze src/ alone.
+const analyzedFolder = 'src';
+
 // One JSON report of "ast-metrics analyze" and one session of "ast-metrics mcp". HEAD gives the commit and the date;
 // the files can hold changes that are not committed. timeoutMs is the deadline of the session.
 export async function snapshotOfTree(root: string, timeoutMs: number): Promise<Snapshot> {
   const commit = git(root, ['rev-parse', '--verify', 'HEAD'], 'The repository has no commit at HEAD.').trim();
   const date = git(root, ['show', '-s', '--format=%cI', 'HEAD'], 'git show failed for HEAD.').trim();
-  const files = sourceFilesOf(analysisReportOf(root), root);
-  const answers = await withAstMetricsServer(root, timeoutMs, (server) => serverAnswersOf(server, files.map((file) => file.path)));
+  const files = sourceFilesOf(analysisReportOf(root, analyzedFolder), root);
+  const paths = files.map((file) => file.path);
+  const answers = await withAstMetricsServer({ root, folder: analyzedFolder }, timeoutMs, (server) => serverAnswersOf(server, paths));
   return snapshotOf({ commit, date, files, ...answers });
 }
 

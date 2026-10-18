@@ -73,12 +73,6 @@ test('Given the doubles with the answers of a small repository, when the snapsho
   const { commit, date, ...snapshot } = snapshotIn(join(repository.root, 'ast-report', 'snapshot.json')) as { readonly commit: string; readonly date: string };
   assert.deepEqual(snapshot, expectedSnapshot);
   assert.deepEqual({ commit, date }, { commit: repository.git('rev-parse', 'HEAD').trim(), date: repository.git('show', '-s', '--format=%cI', 'HEAD').trim() });
-  const [analysis, session, ...otherCalls] = doubles.cli.calls();
-  assert.deepEqual(otherCalls, []);
-  assert.match(analysis.argv[1], /^--report-json=\/.+\/report\.json$/);
-  assert.deepEqual([analysis.argv.toSpliced(1, 1), analysis.cwd], [['analyze', '--report-summary=false', '.'], repository.root]);
-  assert.equal(existsSync(analysis.argv[1].slice('--report-json='.length)), false, 'The JSON report stays after the run.');
-  assert.deepEqual(session, { argv: ['mcp'], cwd: repository.root });
   assert.deepEqual(doubles.server.calls(), [
     { tool: 'get_communities', arguments: { with_members: true }, cwd: repository.root },
     ...sourceFiles.map((path) => ({ tool: 'get_file_metrics', arguments: { path }, cwd: repository.root })),
@@ -86,6 +80,24 @@ test('Given the doubles with the answers of a small repository, when the snapsho
   const requests = doubles.server.requests();
   assert.deepEqual([requests.filter((request) => request.method === 'initialize').length, new Set(requests.map((request) => request.pid)).size], [1, 1]);
   assert.deepEqual(await doubles.server.stillRunning(), []);
+});
+
+// ast-metrics groups the dependency graph of all that it analyzes, so code that grows in script/ or test/ would regroup
+// the communities of src/.
+test('Given the doubles, when the snapshot runs, then the analysis and the MCP server get the folder src, in the repository root, so that code outside src/ cannot regroup its communities', { timeout }, async (t) => {
+  const repository = committedRepository(t);
+  const doubles = snapshotDoublesOnPath(t);
+
+  const result = await runScript(t, astMetricsSnapshotScript, { cwd: repository.root, env: doubles.env });
+
+  assert.equal(result.code, 0, result.stderr);
+  const [analysis, session, ...otherCalls] = doubles.cli.calls();
+  assert.deepEqual(otherCalls, []);
+  assert.match(analysis.argv[1], /^--report-json=\/.+\/report\.json$/);
+  assert.deepEqual([analysis.argv.toSpliced(1, 1), analysis.cwd], [['analyze', '--report-summary=false', 'src'], repository.root]);
+  assert.equal(existsSync(analysis.argv[1].slice('--report-json='.length)), false, 'The JSON report stays after the run.');
+  assert.deepEqual(session, { argv: ['mcp', 'src'], cwd: repository.root });
+  assert.deepEqual([...new Set(doubles.server.requests().map(({ folder }) => folder))], ['src']);
 });
 
 test('Given a script/ community in a cycle with a src/ community, when the snapshot runs, then the snapshot has neither that community, nor its edges, nor its cycle', { timeout }, async (t) => {

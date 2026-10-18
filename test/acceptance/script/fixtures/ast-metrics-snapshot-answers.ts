@@ -6,7 +6,8 @@ import { astMetricsMcpFakeOnPath, type AstMetricsMcpAnswers, type AstMetricsMcpF
 // depend on each other in a cycle: auth ("0") with two files, and admin ("1"), whose member is a folder, because
 // ast-metrics groups the files of a deep folder into one unit. Both use the shared kernel. script/ is a community of
 // its own ("2"), and the test file is in no community. Like the real answers, a JSON report leaves out each zero value,
-// and a file of types has no maintainability index.
+// and a file of types has no maintainability index. The snapshot analyzes src/ alone, so the real tool gives neither
+// the script/ community nor the files outside src/; they are here so that the tests show that the snapshot drops them.
 
 export const sourceFiles = ['src/admin/pages/account.ts', 'src/auth/session.ts', 'src/auth/tokens.ts', 'src/kernel/ids.ts'];
 

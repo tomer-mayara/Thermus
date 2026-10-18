@@ -9,10 +9,11 @@ const help = `Usage: node script/ast-metrics-snapshot.ts [--out FILE] [--timeout
 
 Write the snapshot of the working tree: the numbers of ast-metrics for the files
 under src/ and for their communities, in one JSON file. In the repository root,
-the command runs ast-metrics analyze for the JSON report, then one session of
-the MCP server (ast-metrics mcp) with get_communities and get_file_metrics for
-each src/ file. The snapshot names the commit and the date of HEAD; the files
-can hold changes that are not committed.
+the command runs ast-metrics analyze src for the JSON report, then one session
+of the MCP server (ast-metrics mcp src) with get_communities and
+get_file_metrics for each src/ file. Both analyze src/ alone, so that code
+outside src/ cannot regroup its communities. The snapshot names the commit and
+the date of HEAD; the files can hold changes that are not committed.
 
 Options:
   --out FILE       The snapshot file, relative to the current folder

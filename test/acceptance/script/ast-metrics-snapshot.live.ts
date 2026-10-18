@@ -22,11 +22,9 @@ interface LiveSnapshot {
   readonly files: readonly { readonly path: string; readonly community: string | null }[];
 }
 
-// The counts are those of this repository on 2026-10-18. ast-metrics groups the whole dependency graph of the
-// production code, script/ included, and it regroups the communities of src/ when code grows elsewhere: the modules of
-// the snapshot command itself made 6 communities of the 7 that src/ had before. A change of src/ or script/ can thus
-// change the counts; then this check names the new counts.
-test('Given the real ast-metrics, when the snapshot runs in the repository root, then it has 6 communities and the shared kernel, one cycle, and more than 90 files within 60 seconds', live, async (t) => {
+// The counts are those of src/ on 2026-10-18. The snapshot analyzes src/ alone, so only a change of src/ can change them;
+// then this check names the new counts.
+test('Given the real ast-metrics, when the snapshot runs in the repository root, then it has 7 communities and the shared kernel, one cycle, and more than 90 files within 60 seconds', live, async (t) => {
   const out = join(dataDirectory(t), 'snapshot.json');
 
   const result = await runScript(t, astMetricsSnapshotScript, { args: ['--out', out], cwd: root });
@@ -34,7 +32,7 @@ test('Given the real ast-metrics, when the snapshot runs in the repository root,
   assert.equal(result.code, 0, result.stderr);
   const snapshot = JSON.parse(readFileSync(out, 'utf8')) as LiveSnapshot;
   const labels = snapshot.communities.map(({ label }) => label);
-  assert.equal(snapshot.communities.filter(({ id }) => id !== 'shared').length, 6, labels.join(', '));
+  assert.equal(snapshot.communities.filter(({ id }) => id !== 'shared').length, 7, labels.join(', '));
   assert.ok(labels.includes('shared kernel'), labels.join(', '));
   assert.equal(new Set(labels).size, labels.length, labels.join(', '));
   assert.equal(snapshot.global.cycles.length, 1, JSON.stringify(snapshot.global.cycles));

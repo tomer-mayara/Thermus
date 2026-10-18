@@ -17,7 +17,7 @@ export interface Snapshot {
 }
 
 interface GlobalNumbers {
-  // From get_communities, for the whole dependency graph.
+  // From get_communities, for the dependency graph of src/.
   readonly modularity: number;
   readonly crossShare: number;
   // The labels of the communities in each cycle between src/ communities.

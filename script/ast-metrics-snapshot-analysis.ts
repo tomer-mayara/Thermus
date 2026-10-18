@@ -7,22 +7,23 @@ import { CommandError, notInstalled } from './repository.ts';
 const outputLimit = 64 * 1024 * 1024;
 const diagnosticStderrLimit = 2_000;
 
-// The JSON report goes to a new temporary folder, so that the report of an earlier run cannot stand in for it.
-export function analysisReportOf(root: string): string {
+// The analyzed folder is a path from the root, such as src. The JSON report goes to a new temporary folder, so that
+// the report of an earlier run cannot stand in for it.
+export function analysisReportOf(root: string, analyzed: string): string {
   const folder = mkdtempSync(join(tmpdir(), 'thermus-ast-metrics-snapshot-'));
   try {
     const report = join(folder, 'report.json');
-    analyze(root, report);
+    analyze(root, analyzed, report);
     return readReport(report);
   } finally {
     rmSync(folder, { recursive: true, force: true });
   }
 }
 
-function analyze(root: string, report: string): void {
+function analyze(root: string, analyzed: string, report: string): void {
   // A Go program such as ast-metrics takes its working directory from PWD when PWD names that folder. Without the root
   // in PWD, a caller that came through a symbolic link gets paths through the link, and no path is in the root.
-  const run = spawnSync('ast-metrics', ['analyze', `--report-json=${report}`, '--report-summary=false', '.'], {
+  const run = spawnSync('ast-metrics', ['analyze', `--report-json=${report}`, '--report-summary=false', analyzed], {
     cwd: root, env: { ...process.env, PWD: root }, encoding: 'utf8', maxBuffer: outputLimit, stdio: ['ignore', 'pipe', 'pipe'],
   });
   if (run.error) {
