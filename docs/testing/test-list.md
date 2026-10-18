@@ -84,9 +84,23 @@ error answers, a hanging and an early-exiting server, and that no server
 process remains. `ast-metrics-mcp.live.ts` runs the real server when
 `ast-metrics` is on PATH; the default suites skip it.
 
+`test/unit/script/ast-metrics-coverage.test.ts` checks the help and the
+refused arguments of the coverage command with an empty PATH, and the merge
+through `--from` with coverage files for this repository's `dist/src/` in a
+temporary folder: the path map, the union of zero-count blocks, a function
+that no process called, the rounding, the helper filter, the order, `--out`,
+and the diagnostics. `test/support/fixtures/v8-coverage.ts` writes the V8
+coverage files. `test/acceptance/script/ast-metrics-coverage.test.ts` checks
+the merge of two processes and the default run of a small built suite in a
+temporary git repository; `ast-metrics-coverage-failures.test.ts` checks
+files of two builds, a missing `dist/`, a failing suite, and a repository
+without a commit. `ast-metrics-coverage.live.ts` runs the real unit suite
+(about 85 seconds); the default suites skip it.
+
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
+npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
+node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 ```
 
 See [the script guide](../../script/README.md) and

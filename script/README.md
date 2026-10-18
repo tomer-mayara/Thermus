@@ -210,11 +210,29 @@ command stops the server). Exit status 1 with one diagnostic line on stderr
 for a file that is not in the analysis, an unknown tool, a timeout, a server
 that exits before it answers, or a missing executable.
 
-Run the focused offline tests after a clean build, and the live test with the
-real executable on PATH:
+## Measure the coverage per function
 
 ```sh
 pnpm run build
-pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js
+pnpm exec node script/ast-metrics-coverage.ts [--from DIR] [--out FILE]
+```
+
+Runs the unit suite of `dist/` with `NODE_V8_COVERAGE` set to a temporary
+folder (the suite output goes to stderr) and writes `ast-report/coverage.json`:
+for each function of `src/` that the suite loaded, its name, its range in the
+build, its calls, and its covered share. `--from DIR` reads the coverage
+files of an earlier run. The command needs no ast-metrics. Exit status 1 when
+`dist/` is missing, the suite fails, or the coverage files do not come from
+one build; then no report is written. The
+[ast-metrics review guide](../docs/implementation/ast-metrics-review.md)
+gives the details of the share.
+
+Run the focused offline tests after a clean build, and the live tests with
+the real executable on PATH and the real unit suite:
+
+```sh
+pnpm run build
+pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
+pnpm exec node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 ```
