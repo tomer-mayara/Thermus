@@ -1,3 +1,4 @@
+import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { createRequestContext } from '../../../src/auth/access-context.ts';
@@ -42,7 +43,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
       const process = t.mock.method(pipeline, 'process');
       const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
-      assert.equal(await operation(page.requestedUrl, context, new AbortController().signal), '');
+      assert.equal(await operation(page.requestedUrl, context, executionContextOf()), '');
 
       const result = await process.mock.calls[0].result;
       assert.ok(result);
@@ -72,7 +73,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
     const process = t.mock.method(pipeline, 'process');
     const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
-    const markdown = await operation(page.requestedUrl, context, new AbortController().signal);
+    const markdown = await operation(page.requestedUrl, context, executionContextOf());
 
     assert.equal(markdown, 'Related [article](https://abptestpages.org/directory/child).');
     const result = await process.mock.calls[0].result;
@@ -95,7 +96,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
     const pipeline = new HtmlToMarkdownPipeline([ads, new PromptInjectionRemoverSanitizer(), new CleanHtmlToMarkdownDefuddle()]);
     const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
-    await assert.rejects(operation(page.requestedUrl, context, new AbortController().signal), { message: 'Page processing failed' });
+    await assert.rejects(operation(page.requestedUrl, context, executionContextOf()), { message: 'Page processing failed' });
     assert.equal(invoke.mock.callCount(), 0);
   });
 
@@ -109,7 +110,7 @@ describe('getURLAsMarkdown with the real HTML pipeline', () => {
     };
     const operation = composeFetchOperation({ fetcher: { async fetchURL() { return page; } }, pipeline });
 
-    await assert.rejects(operation(page.requestedUrl, context, new AbortController().signal), { message: 'Page processing failed' });
+    await assert.rejects(operation(page.requestedUrl, context, executionContextOf()), { message: 'Page processing failed' });
     assert.equal(invoke.mock.callCount(), 0);
   });
 });

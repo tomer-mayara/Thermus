@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import { copyFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
@@ -145,7 +146,9 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
       assert.deepEqual(pages, [{ requestedUrl, finalUrl }, { requestedUrl, finalUrl }]);
       const records = server.completionRecords();
       for (const record of records) assert.equal(typeof record.durationMs, 'number');
-      assert.deepEqual(records.map(({ durationMs: _durationMs, ...record }) => record), [1, 2].map(() => ({
+      for (const record of records) assert.match(record.operationId as string, generatedOperationIdPattern);
+      assert.equal(new Set(records.map(({ operationId }) => operationId)).size, 2);
+      assert.deepEqual(records.map(({ durationMs: _durationMs, operationId: _operationId, ...record }) => record), [1, 2].map(() => ({
         event: 'mcp.tool.completed',
         authority: `better-auth:${tenant.slice('local:'.length)}`,
         subject: setup.userIds.get(alice.email),

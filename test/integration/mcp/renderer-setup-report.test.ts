@@ -1,3 +1,5 @@
+import { executionContextOf } from '../../support/fixtures/execution-context.ts';
+import { completionRecordsIn } from '../../support/drivers/operator-log.ts';
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { Client, InMemoryTransport, type CallToolResult } from '@modelcontextprotocol/client';
@@ -63,7 +65,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const failure = new WebsiteFetchReadinessTimeoutError({ cause: Object.assign(new Error(`spawn /private/lightpanda fetch ${url}`), { stderr: 'Bearer private-token password=private-password' }) });
     const dependencies = operationDoubles(t, failure);
 
-    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
 
     assert.deepEqual(dependencies.reportRendererReadinessTimeout.mock.calls.map(({ arguments: args }) => args), [[{ category: 'readiness_timeout', budgetMs: 20_000 }]]);
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
@@ -74,7 +76,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const dependencies = operationDoubles(t, new WebsiteFetchReadinessTimeoutError());
     dependencies.reportRendererReadinessTimeout.mock.mockImplementation(() => { throw new Error('private logging failure'); });
 
-    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
 
     assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 1);
   });
@@ -87,7 +89,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
       throw new WebsiteFetchReadinessTimeoutError();
     });
 
-    await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+    await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf(controller.signal)), { name: 'AbortError', message: 'Request cancelled' });
 
     assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
@@ -97,7 +99,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     test(`Given a renderer that cannot start with ${code}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets one report with only the failure class and code`, async (t) => {
       const dependencies = operationDoubles(t, launchFailure(code));
 
-      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
+      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
 
       assert.deepEqual(dependencies.reportRendererSetupFailure.mock.calls.map((call) => call.arguments), [[{ failure, code }]]);
       assert.equal(dependencies.processor.process.mock.callCount(), 0);
@@ -108,7 +110,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     test(`Given ${name}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets no report`, async (t) => {
       const dependencies = operationDoubles(t, fetchFailure);
 
-      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
+      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
 
       assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
       if (!(fetchFailure instanceof WebsiteFetchReadinessTimeoutError)) assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
@@ -119,7 +121,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const dependencies = operationDoubles(t, launchFailure('ENOENT'));
     dependencies.reportRendererSetupFailure.mock.mockImplementation(() => { throw new Error('private log failure'); });
 
-    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, new AbortController().signal));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
 
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 1);
   });
@@ -132,7 +134,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
       throw launchFailure('ENOENT');
     });
 
-    await assert.rejects(createFetchPage(dependencies)(url, context, controller.signal), { name: 'AbortError', message: 'Request cancelled' });
+    await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf(controller.signal)), { name: 'AbortError', message: 'Request cancelled' });
 
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
   });
@@ -152,8 +154,9 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     for (let call = 0; call < 3; call += 1) results.push(await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } }) as CallToolResult);
 
     assert.deepEqual(results, [1, 2, 3].map(() => ({ content: [{ type: 'text', text: 'Page fetch failed' }], isError: true })));
-    const records = lines.info.map((line) => {
-      const { durationMs: _durationMs, ...record } = JSON.parse(line) as Record<string, unknown>;
+    const completions = completionRecordsIn(lines.info.join('\n'));
+    assert.equal(new Set(completions.map(({ operationId }) => operationId)).size, 3);
+    const records = completions.map(({ durationMs: _durationMs, operationId: _operationId, ...record }) => {
       return record;
     });
     assert.equal(records.length, 3);

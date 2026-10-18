@@ -1,3 +1,4 @@
+import { completionRecordsIn } from '../../support/drivers/operator-log.ts';
 import assert from 'node:assert/strict';
 import dns from 'node:dns/promises';
 import { getEventListeners } from 'node:events';
@@ -105,8 +106,8 @@ for (const era of mcpProtocolEras) {
       assert.equal(await Promise.race([closing.then(() => true), setTimeout(500, false)]), true,
         'Shutdown must close the application while DNS is still pending');
       assert.deepEqual(events, ['provider closed']);
-      assert.equal(records.length, 1);
-      assert.equal(JSON.parse(records[0]).status, 'cancelled');
+      assert.equal(completionRecordsIn(records.join('\n')).length, 1);
+      assert.equal(completionRecordsIn(records.join('\n'))[0].status, 'cancelled');
       assert.ok(callSignal);
       assert.equal(callSignal.aborted, true);
       assert.equal(getEventListeners(callSignal, 'abort').length, 0);

@@ -1,6 +1,7 @@
 // The explicit renderer gate: npm run test:mcp:renderer. The *.test.js globs do not select this file.
 // It needs LIGHTPANDA_BIN with the pinned Lightpanda 1.0.0 (docs/lightpanda-runtime.md). Without it, setup fails.
 import assert from 'node:assert/strict';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import childProcess, { execFile, type ChildProcess } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
@@ -213,7 +214,8 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
       assert.deepEqual(pagesSeen(site), [{ requestedUrl: url, finalUrl: url }]);
       const records = site.server.completionRecords();
       assert.equal(records.length, 1);
-      const { durationMs, ...record } = records[0] as Record<string, unknown>;
+      const { durationMs, operationId, ...record } = records[0] as Record<string, unknown>;
+      assert.match(operationId as string, generatedOperationIdPattern);
       assert.equal(typeof durationMs, 'number');
       assert.deepEqual(record, {
         event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`, subject: site.subject, tenantId: tenant,

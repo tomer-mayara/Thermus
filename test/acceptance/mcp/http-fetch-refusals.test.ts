@@ -4,6 +4,7 @@ import { SdkHttpError, StreamableHTTPClientTransport } from '@modelcontextprotoc
 import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 
 for (const era of mcpProtocolEras) {
   test(`Given missing or malformed Bearer credentials in ${era}, when the fetch HTTP resource is requested, then authentication refuses before fetch or completion`, async (t) => {
@@ -40,8 +41,9 @@ for (const era of mcpProtocolEras) {
     assert.equal(result.isError, true);
     assert.deepEqual(site.fetchCalls, []);
     assert.deepEqual(site.pipelineCalls, []);
-    assert.equal(site.records.length, 1);
-    assert.equal(JSON.parse(site.records[0]).status, 'access_denied');
+    assert.equal(site.completionLines().length, 1);
+    assert.equal(JSON.parse(site.completionLines()[0]).status, 'access_denied');
+    assert.match(JSON.parse(site.completionLines()[0]).operationId, generatedOperationIdPattern);
   });
 
   test(`Given a second supplied token in ${era}, when another HTTP client calls the tool, then test auth keeps the same synthetic authority and subject`, async (t) => {
@@ -50,9 +52,10 @@ for (const era of mcpProtocolEras) {
     t.after(() => client.close());
     await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
     await client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
-    assert.equal(site.records.length, 2);
-    for (const encoded of site.records) {
+    assert.equal(site.completionLines().length, 2);
+    for (const encoded of site.completionLines()) {
       const record = JSON.parse(encoded);
+      assert.match(record.operationId, generatedOperationIdPattern);
       assert.equal(record.subject, 'synthetic-user');
       assert.equal(record.authority, 'https://synthetic-auth.thermus.invalid');
       assert.equal(record.tenantId, 'synthetic-workspace');

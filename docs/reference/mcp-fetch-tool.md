@@ -7,6 +7,8 @@ renderer. [RHD-01](../implementation/rhd-01.md) adds protected
 hosted fetch and bounded request waits.
 [MCP-PIPE-01](../implementation/mcp-pipe-01.md) extracts the protected fetch
 use case from MCP and keeps the tool's input and result contract unchanged.
+[MCP-PIPE-02](../implementation/mcp-pipe-02.md) adds operation identity to
+completion records and carries that identity through the protected operation.
 See [production composition](#production-composition). There is no
 POST tool or new stdio tool.
 
@@ -97,9 +99,22 @@ The cleaner-owned adapter stays under `src/html-cleaner-pipeline/`; the
 neutral use case depends on the `PageProcessor` contract, not the concrete
 HTML pipeline. Import rules enforce this boundary, including type-only imports.
 
-This extraction adds no outgoing policy, standard pipeline-step decisions,
-operation IDs, step records, or typed withholding. Empty results after
-sanitizer withholding still reach MCP as exact empty success.
+The operation uses readonly `ExecutionContext { signal, operationId }` as its
+third argument. The MCP adapter, hosted wrapper, and development spy forward
+the same object to `FetchPage`; fetcher and processor retain signal-only
+contracts and receive its same signal. The core validates identity once after
+its existing cancellation, permission, and semantic URL guards, before fetching.
+Hosted cancellation/busy checks still precede the core. There is no optional
+context fallback or second identity allocation inside the operation.
+
+Direct callers supply a 36-character hyphenated hexadecimal UUID with version
+1–8 and variant 8/9/a/b. Letter case is accepted and preserved. Nil/max UUIDs,
+braces, compact forms, whitespace, extra text, and wrong version/variant are
+refused with `Invalid execution context`, without raw identity text or a cause.
+
+There are no standard pipeline-step decisions, step records, outgoing policy,
+or typed withholding yet. Empty results after sanitizer withholding still
+reach MCP as exact empty success.
 
 Better Auth verifies each token and checks the current account before the tool
 runs. A forged token, a token that a password reset revoked, and a token of a
@@ -191,10 +206,22 @@ steps.
 
 Every envelope-valid dispatched call attempts one JSON-encoded completion
 record in `finally`. It includes the trusted authority, subject, and tenant; the
-recognized tool label or a fixed unknown label; safe input fields or field-status
+operation ID; the recognized tool label or a fixed unknown label; safe input fields or field-status
 codes; the completion status; and elapsed time. A safe URL omits userinfo, query,
 and fragment. A reason is included only when it is a bounded, structurally valid
 string. JSON encoding escapes line breaks.
+
+Dispatch generates the UUID with Node `randomUUID` before tool-name and argument
+checks. Dispatched unknown, invalid, denied, busy, and cancelled calls therefore
+retain a completion ID, even if no fetch starts. Client request IDs, `_meta`, and
+arguments cannot choose it. HTTP/auth/body/envelope refusals before dispatch
+still have no tool completion. The ID is log metadata; it adds no MCP argument,
+response wrapper, or structured content.
+
+Record readers select `mcp.tool.completed` and the operation ID. A different
+event must not resolve a completion wait. Concurrent calls keep distinct IDs;
+each call keeps its ID and signal through settlement and cleanup. Invalid
+supplied identity cannot start fetching or reach records as unchecked text.
 
 The URL path and the verbatim reason can contain sensitive text. These fields
 remain part of the completion contract; the record is not a redacted content audit.
@@ -209,7 +236,8 @@ These records are best effort; they are not durable audit storage.
 
 ## Cancellation and test composition
 
-Each call supplies its `AbortSignal` to the operation, fetcher, and pipeline.
+Each call supplies an `ExecutionContext` to the operation. Its same `AbortSignal`
+reaches the fetcher and pipeline.
 Cancellation is checked before work, between asynchronous stages, and before
 return. Renderer cancellation stops the child and releases per-call resources.
 Synchronous parsing cannot be preempted by cancellation; the existing HTML size

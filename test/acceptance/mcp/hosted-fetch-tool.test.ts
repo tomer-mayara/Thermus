@@ -4,6 +4,7 @@ import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { RendererProcessDouble, controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { openHostedFetchSite } from '../../support/in-process/hosted-fetch-site.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 
 const url = 'https://source.example/story?private-query=yes#private-fragment';
 const reason = 'Read the page for this task';
@@ -27,7 +28,8 @@ test('Given production hosted composition with trusted rules and a valid Connect
   const revoked = await site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/call', token: site.token, params }));
   assert.deepEqual([unauthenticated.status, revoked.status], [401, 403]);
   assert.equal(renderer.launches.length, 1);
-  assert.deepEqual(site.completions().map(({ durationMs: _duration, ...record }) => record), [{
+  assert.match(site.completions()[0]?.operationId as string, generatedOperationIdPattern);
+  assert.deepEqual(site.completions().map(({ durationMs: _duration, operationId: _operationId, ...record }) => record), [{
     event: 'mcp.tool.completed', authority: 'workos:client_placeholder', subject: 'user_fetch', tenantId: 'workos:client_placeholder:org_fetch',
     tool: params.name, url: 'https://source.example/story', urlStatus: 'valid', reason, reasonStatus: 'valid', status: 'success',
   }]);
@@ -54,6 +56,8 @@ test('Given one renderer active in production hosted composition, when another a
   renderer.finish(null, renderedOutput, '');
   assert.deepEqual((await rpcResult(await next)).content, [{ type: 'text', text: markdown }]);
   assert.deepEqual(site.completions().map(({ status }) => status), ['busy', 'success', 'success']);
+  for (const record of site.completions()) assert.match(record.operationId as string, generatedOperationIdPattern);
+  assert.equal(new Set(site.completions().map(({ operationId }) => operationId)).size, 3);
 });
 
 for (const outcome of ['failure', 'cancelled'] as const) {
@@ -82,6 +86,8 @@ for (const outcome of ['failure', 'cancelled'] as const) {
     renderer.finish(null, renderedOutput, '');
     assert.deepEqual((await rpcResult(await next)).content, [{ type: 'text', text: markdown }]);
     assert.deepEqual(site.completions().map(({ status }) => status), ['busy', outcome === 'failure' ? 'fetch_failed' : 'cancelled', 'success']);
+    for (const record of site.completions()) assert.match(record.operationId as string, generatedOperationIdPattern);
+    assert.equal(new Set(site.completions().map(({ operationId }) => operationId)).size, 3);
     assert.doesNotMatch(site.lines.join('\n'), /private-query|private-fragment|private-renderer-failure/);
   });
 }

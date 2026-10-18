@@ -5,6 +5,8 @@ import type { ApplicationLogger } from '../../../../src/application.ts';
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
 import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
+import { generatedOperationIdPattern } from '../../../support/fixtures/execution-context.ts';
+import { completionRecordsIn } from '../../../support/drivers/operator-log.ts';
 import { mcpProtocolEras, type McpProtocolEra } from '../../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../../../support/drivers/mcp/mcp-sdk-client.ts';
 import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';
@@ -72,10 +74,10 @@ function assertText(result: CallToolResult, text: string): void {
   assert.equal(result.structuredContent, undefined);
 }
 
-function assertSuccessRecord(line: string): void {
-  assert.ok(line.startsWith('{"event":"mcp.tool.completed"'), line);
-  const { durationMs, ...record } = JSON.parse(line) as Record<string, unknown>;
+function assertSuccessRecord(completion: Record<string, unknown>): void {
+  const { durationMs, operationId, ...record } = completion;
   assert.equal(typeof durationMs, 'number');
+  assert.match(operationId as string, generatedOperationIdPattern);
   assert.deepEqual(record, {
     event: 'mcp.tool.completed',
     authority: 'https://synthetic-auth.thermus.invalid',
@@ -116,10 +118,13 @@ describe('The basic MCP URL fetch work slice with the mock provider and the prod
 
       assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }]);
       assertText(result, expectedMarkdown);
-      assert.equal(log.lines.length, 3, `The log must have three lines:\n${log.lines.join('\n')}`);
-      assert.equal(log.lines[0], `work-slice fetch started: ${storyUrl}`);
-      assert.equal(log.lines[1], `work-slice fetch completed: ${storyUrl} gave ${expectedMarkdown.length} characters of Markdown:\n${expectedMarkdown}`);
-      assertSuccessRecord(log.lines[2]);
+      assert.deepEqual(log.lines.filter((line) => line.includes('work-slice fetch')), [
+        `work-slice fetch started: ${storyUrl}`,
+        `work-slice fetch completed: ${storyUrl} gave ${expectedMarkdown.length} characters of Markdown:\n${expectedMarkdown}`,
+      ]);
+      const records = completionRecordsIn(log.lines.join('\n'));
+      assert.equal(records.length, 1);
+      assertSuccessRecord(records[0]);
       assert.deepEqual(renderer.launches.map(({ executable }) => executable), [rendererExecutable]);
       await assert.rejects(fetch(server.url));
     });

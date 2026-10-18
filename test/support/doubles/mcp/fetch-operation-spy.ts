@@ -6,11 +6,11 @@ import type { FetchOperation } from '../../../../src/mcp/get-url-as-markdown.ts'
 export const MARKDOWN_LOG_LIMIT = 64 * 1024;
 
 export function fetchOperationSpy(operation: FetchOperation, logger: ApplicationLogger, limit = MARKDOWN_LOG_LIMIT): FetchOperation {
-  return async (url, context, signal) => {
+  return async (url, context, execution) => {
     logger.info(`work-slice fetch started: ${url}`);
     let markdown: string;
     try {
-      markdown = await operation(url, context, signal);
+      markdown = await operation(url, context, execution);
     } catch (error) {
       logger.error(`work-slice fetch failed: ${url}: ${BaseLogger.messageOf(error)}`);
       throw error;

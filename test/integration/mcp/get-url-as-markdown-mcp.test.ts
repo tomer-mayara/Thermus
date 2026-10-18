@@ -9,6 +9,8 @@ import { HtmlToMarkdownPipeline, type Ctx } from '../../../src/html-cleaner-pipe
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
+import { completionLinesIn } from '../../support/drivers/operator-log.ts';
+import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
@@ -34,8 +36,10 @@ test('Given the real MCP operation and pipeline, when the client calls the fetch
   assert.ok(site.fetchURL.mock.calls[0].arguments[1] instanceof AbortSignal);
   assert.equal(site.records.length, 1);
   const record = JSON.parse(site.records[0]);
+  assert.match(record.operationId, generatedOperationIdPattern);
   assert.deepEqual(record, {
     event: 'mcp.tool.completed',
+    operationId: record.operationId,
     authority: context.user.authority,
     subject: context.user.subject,
     tenantId: context.tenantId,
@@ -132,7 +136,9 @@ async function connect(t: TestContext, page: WebsiteFetchResult, pipeline: HtmlT
   const error = t.mock.fn((_entry: string) => {});
   const server = createFetchToolServer(context, {
     operation: composeFetchOperation({ fetcher: { fetchURL }, pipeline }),
-    logger: { info(entry) { records.push(entry); events.emit('completed'); }, error },
+    logger: { info(entry) {
+      if (completionLinesIn(entry).length === 1) { records.push(entry); events.emit('completed'); }
+    }, error },
   });
   const client = new Client({ name: 'real-pipeline-integration', version: '0.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();

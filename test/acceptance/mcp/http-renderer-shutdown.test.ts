@@ -1,3 +1,4 @@
+import { completionRecordsIn } from '../../support/drivers/operator-log.ts';
 import assert from 'node:assert/strict';
 import { getEventListeners } from 'node:events';
 import { setImmediate } from 'node:timers/promises';
@@ -80,7 +81,7 @@ for (const era of mcpProtocolEras) {
     assert.equal(cleared.mock.calls.filter(({ arguments: args }) => args[0] === readinessTimer).length, 1);
     await setImmediate();
     assert.equal(events.length, 0);
-    assert.equal(records.length, 0);
+    assert.equal(completionRecordsIn(records.join('\n')).length, 0);
     t.mock.timers.tick(60_000);
     assert.deepEqual(renderer.child.signals, ['SIGKILL']);
     events.push('renderer reaped');
@@ -99,8 +100,8 @@ for (const era of mcpProtocolEras) {
     assert.equal(getEventListeners(signal, 'abort').length, 0);
     assert.equal(pipelineCalls, 0);
     assert.deepEqual(events, ['renderer reaped', 'provider closed']);
-    assert.equal(records.length, 1);
-    assert.equal(JSON.parse(records[0]).status, 'cancelled');
-    assert.doesNotMatch(records[0], /Late source|Late success/);
+    assert.equal(completionRecordsIn(records.join('\n')).length, 1);
+    assert.equal(completionRecordsIn(records.join('\n'))[0].status, 'cancelled');
+    assert.doesNotMatch(records.join('\n'), /Late source|Late success/);
   });
 }

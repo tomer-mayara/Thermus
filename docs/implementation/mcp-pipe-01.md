@@ -1,6 +1,6 @@
 # MCP-PIPE-01: protected neutral page fetch
 
-Status: implemented; functional validation and VM restoration complete; awaiting owner PR review.
+Status: merged in PR #155; functional validation and VM restoration complete.
 Implementation baseline: `8d12c1e7`. PR: [#155](https://github.com/tomer-mayara/Thermus/pull/155).
 Tested implementation revision: `bcae870715a543b0fb411e476cea0a82d9fa951f`.
 
@@ -282,11 +282,11 @@ The following findings remain with reasons; this gate is not recorded as green.
   Only factory wiring changed. A size-driven split would add unrelated test
   restructuring to this slice without improving the extraction.
 
-### Remaining owner review
+### Completed review
 
-All required implementation test proofs are recorded for `bcae8707`. Owner PR
-review remains pending; functional validation and restoration are complete.
-The manager has signed off the implementation and docs.
+All required implementation test proofs are recorded for `bcae8707`. The owner
+merged PR #155 after review; functional validation and restoration are complete.
+The manager signed off the implementation and docs.
 Final evidence updates change docs only. The retained habit-hooks and AST findings above stay
 explicit; neither nonzero command is presented as a pass.
 
