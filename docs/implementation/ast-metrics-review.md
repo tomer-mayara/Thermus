@@ -177,6 +177,11 @@ These facts, measured with `ast-metrics-mcp.ts file <path> --json` on
 - ast-metrics analyzes TypeScript only. The commands under `script/` are
   TypeScript and appear in the delta without a goal; `script/fetch-url.mjs`
   and other JavaScript files stay outside the measurements.
+- A baseline entry of `no_community_cycles` names the communities as
+  ast-metrics groups them on the whole dependency graph. When code elsewhere
+  grows, the names change, the entry stops matching, and the review lists the
+  old cycle as a medium regression. Refresh the baseline then. The pull
+  request that added the process did so on its final candidate.
 - The commands run ast-metrics in the repository root that git names from
   the current folder. A worktree of an agent has its own copy of the files;
   run the commands from that worktree.

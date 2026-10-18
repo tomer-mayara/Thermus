@@ -4,7 +4,7 @@
 # to refresh it after fixing some of them or accepting new ones.
 ignored:
     - rule: no_community_cycles
-      message: 'Communities depend on each other: auth/hosted-auth & organizations/organization-directory, hosted-admin/administration-routes & hosted-admin/account-pages, organizations/organization-administration & organizations/customer-roles; to cut: auth/hosted-auth & organizations/organization-directory → organizations/organization-administration & organizations/customer-roles (4), auth/hosted-auth & organizations/organization-directory → hosted-admin/administration-routes & hosted-admin/account-pages (10)'
+      message: 'Communities depend on each other: src (src/auth/hosted-auth), src/hosted-admin, src (src/organizations/organization-administration); to cut: src (src/auth/hosted-auth) → src (src/organizations/organization-administration) (4), src (src/auth/hosted-auth) → src/hosted-admin (6)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/application.ts
