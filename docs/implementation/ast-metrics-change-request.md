@@ -29,8 +29,10 @@ AGENTS.md rule and authorizes no base-coverage storage or merge workflow.
 
 Delivery status:
 
-- PR #175 implements CR-16 and the CR-23 contract-test foundation. It awaits
-  owner review. CR-23's later content consolidation remains.
+- PR #175 merged CR-16 and the CR-23 contract-test foundation. CR-23's later
+  content consolidation remains.
+- Delivery group 2, CR-24, is in progress: always print the architecture
+  drawing and require its fenced block and legend in the pull request body.
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
