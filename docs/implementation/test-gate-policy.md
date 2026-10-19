@@ -225,6 +225,7 @@ lists the available focused tests and identifies both coverage collectors.
 | `ast-metrics-coverage.ts`, `coverage/`, capture provenance, or build/suite collection | `ast-metrics-coverage.live.ts`; collecting architecture when report compatibility or joining is affected. Both are subject to the collector limit below. |
 | `ast-metrics-architecture.ts`, `architecture/` structural input, matching, map, table, or trend behavior | Structural `ast-metrics-architecture.live.ts`, with `--no-coverage`. |
 | Architecture coverage compatibility, correspondence, CRAP, bands, or coverage rendering | `ast-metrics-architecture-coverage.live.ts`, subject to the collector limit; select affected focused tests with doubles even when collection is deferred. |
+| `ast-metrics-crap.ts`, `crap/`, or its source classification, coverage join, goal advice, or threshold comparisons | `ast-metrics-crap.live.ts` with an existing compatible report; select the affected focused tests too. This live file starts no build or collector. |
 | Shared repository, identity, provenance, process, or double helpers | Only the focused and live contracts that consume the changed behavior. Apply the collector limit to each collecting consumer. |
 | README command help or either test inventory | The existing focused `script-readme.test.ts` contract. Reading a listed command does not select that command. |
 
@@ -265,6 +266,21 @@ file after the build. Run no other suite at the same time on a shared host:
 node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 node --test dist/test/acceptance/script/ast-metrics-architecture-coverage.live.js
 ```
+
+The CRAP live contract reuses an existing report. Select it when its behavior
+or a real shared dependency changes; do not add it as a blanket gate. After
+a build prepares its emitted file, pass a compatible private report when
+available:
+
+```sh
+AST_METRICS_CRAP_COVERAGE=/absolute/path/coverage.json node --test dist/test/acceptance/script/ast-metrics-crap.live.js
+```
+
+Without that variable it reads `ast-report/coverage.json`. It starts no build,
+suite, or collector. Missing ast-metrics or coverage gives an explicit skip;
+record the required assessment as deferred, not passed. A present stale report
+fails. Collect a report only when the independent test selection permits both
+complete unit parts; an unavailable report does not expand that selection.
 
 ### Keep the selection through nested commands
 

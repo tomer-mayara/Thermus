@@ -11,7 +11,7 @@ again before you change the process.
 
 ## Installation
 
-Delta, review, MCP, snapshot, and online architecture need the `ast-metrics`
+Delta, review, MCP, snapshot, CRAP, and online architecture need the `ast-metrics`
 executable on PATH. On macOS, install it
 from its Homebrew tap: `brew install ast-metrics/tap/ast-metrics`. Other
 systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
@@ -33,7 +33,7 @@ them from the repository root with `pnpm exec node`.
 
 ## The commands
 
-The six entry points and their helper folders are in
+The seven entry points and their helper folders are in
 [`script/code-quality/`](../../script/code-quality/README.md). Use these wrappers
 for the review process. `ast-metrics baseline` remains a direct-call exception
 until CR-09 of the [change request](ast-metrics-change-request.md) adds its wrapper.
@@ -44,7 +44,7 @@ commands. Only a change under `src/` requires the full ordinary suite
 Do not add `npm run check`, which would repeat unit and portal tests.
 For other changes, run only affected test groups and existing focused tests.
 The delta, review, snapshot, and architecture commands do not run tests.
-Keep the required delta, review, and architecture
+Keep the required delta, review, CRAP, and architecture
 steps for every pull request.
 
 The coverage command runs both parts of the unit suite: emitted Node tests
@@ -332,6 +332,102 @@ equality alone cannot distinguish them. After a change of `src/`, collect
 coverage again if no current valid report is available and both complete
 parts of the unit suite are within scope.
 
+### The CRAP goal
+
+Run the available command; CR-09 has not added a process wrapper:
+
+```sh
+pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...]
+```
+
+Defaults are `origin/main`, `ast-report/coverage.json`, strict limit 30,
+inclusive target 15, and changed production TypeScript files under `src/`.
+Thresholds accept finite positive decimals with at most six fractional
+digits and a safe integer after removing the point; the target must be below
+the limit. Explicit paths select inspection files; they do not make every
+function new.
+The command resolves an empty default selection first, prints
+`No production files to assess.`, and exits 0 without reading coverage or
+opening MCP. A required nonempty selection without sufficient data remains
+unresolved. Missing, stale, or unverified coverage fails without a measured
+table. Record a deferred assessment when collection is outside the selected
+scope. This command runs no build or test suite and takes no full architecture
+snapshot. It uses one bounded MCP session and source evidence against the
+selected base.
+
+For decision paths `p` and own-character covered share `c`, the score is
+`p² × (1 − c)³ + p`. The original CRAP measure used basis-path coverage;
+this repository's V8 character share is an approximation. See the original
+[Savoia and Evans article](https://www.artima.com/weblogs/viewpost.jsp?thread=215899)
+and the [GMetrics definition](https://dx42.github.io/gmetrics/metrics/CrapMetric.html).
+Added or changed
+functions must aim below 30. Added functions must also aim at 15 or less.
+The owner approved these project goals on 2026-10-18; 15 is not a universal
+CRAP standard. The architecture bands and risk counts keep their boundary
+at CRAP ≥ 30. A new function between 15 and 30 can miss its required target
+without adding a critical architecture band.
+
+| Paths | Minimum whole percent for CRAP < 30 | Minimum whole percent for CRAP ≤ 15 |
+| --- | --- | --- |
+| 0 | 0% | 0% |
+| 4 | 0% | 12% |
+| 5 | 1% | 27% |
+| 10 | 42% | 64% |
+| 15 | 60% | 100% |
+| 20 | 71% | split |
+| 25 | 81% | split |
+| 30 | split | split |
+| 35 | split | split |
+
+A recommendation is the smallest whole percentage that satisfies the actual
+inequality. For `0 < p < L`, equality is at
+`c = 1 − ((L − p) / p²)^(1/3)`. A strict limit needs coverage above the
+crossing; an inclusive target permits equality. At a positive crossing use
+`floor(100c) + 1` for strict comparison, or `ceil(100c)` for inclusive
+comparison, then check the candidate. Already-passing zero coverage and zero
+paths need no division. At `p = L`, even full coverage cannot get below L;
+at `p = T`, full coverage meets target T. Five paths at zero and 25 paths
+at 80% equal 30 and fail the strict limit. Fifteen paths at full coverage
+equal 15 and meet the target. `split` means no share can meet that goal.
+Comparisons use unrounded values across CRAP output, bands, regressions, and
+counts. The output keeps one decimal unless that hides a goal boundary;
+it then shows more precision or an explicit inequality. Thus 29.96 stays
+visibly below 30 and 15.04 stays visibly above 15.
+
+The table has `File`, `Function`, `Change`, `Paths`, `Coverage`, `CRAP`, and
+`To do`. It shows all functions of selected files. Source evidence classifies
+new, changed, unchanged, or identity unknown, with the same conservative
+matching limits as architecture. Anonymous functions, duplicate names,
+copies, changed extractions, and unresolved moves cannot gain identity from
+name equality. Compatible coverage joins by file and a unique supported V8
+name. Missing matches and zero-own exclusions have no measured share.
+Their CRAP is shown as `≥ <paths>`, with `no coverage data` or `split` when
+the paths alone make the applicable goal impossible. Unknown identity states
+which goal cannot be classified; neither unknown identity nor unknown coverage
+passes a required goal.
+
+Rows sort by exact score or numeric lower bound, descending, then file,
+function, and stable source identity. Bounds do not give an exact ranking of
+unknown risks. The summary separates known limit violations, measured target
+misses, unmeasured functions, and required functions with unknown assessment
+or identity. Counts of lower bounds are not exact totals. Under the limit,
+advice is `ok`, with target advice such as `for 15: cover ≥ 12%` or
+`for 15: split` when needed. At or above the limit, advice gives strict-limit
+coverage or a split. Exit 1 reports known limit violations in inspected files,
+required new-target misses, or insufficient data for a required goal; exit 0
+means the applicable assessments passed, including the empty default case.
+
+Improve required misses with selected unit tests or fewer paths and remeasure
+with compatible coverage and the same base for at most three cycles. Record
+score or bound, paths, coverage, classification, and reason for every
+unresolved required goal, including new functions above 15 but below 30 and
+unknown data. An unchanged high function can retain `unchanged by this PR`.
+Under approved D2, Ready may proceed with these documented exceptions; the
+command still exits 1. Tool failures remain errors. Reselect tests from the
+actual candidate after test changes; do not expand selection only to collect
+coverage. Real-file checks reuse compatible coverage or collect only when
+eligible. A missing report does not add a blanket live gate.
+
 ### Take a snapshot: `script/code-quality/ast-metrics-snapshot.ts`
 
 ```sh
@@ -521,9 +617,11 @@ would replace that border, because the class that the block defines later
 wins. The legend then names the bands before the numbers.
 
 CRAP: each function of a `src/` file of the head gets
-`CRAP = paths² × (1 − share)³ + paths` with one decimal, where paths are its
-decision paths in the snapshot and share is its covered share in the
-coverage report. A function at 30.0 or more is over the limit. The function
+`CRAP = paths² × (1 − share)³ + paths`, where paths are its decision paths
+in the snapshot and share is its covered share in the coverage report.
+Comparisons use the unrounded value; a value at 30 or more is over the
+strict limit. Display uses one decimal unless it hides the boundary, then
+more precision or an explicit inequality. The function
 of the report has the same name in the entry of the same path, with the name
 that V8 gives: ast-metrics names a method `module\Class.method`, V8 names it
 `method`, and V8 names a constructor `Class`. A function gets no exact CRAP and
@@ -756,7 +854,7 @@ review and `ast-metrics lint` report only a violation that the baseline does
 not list. A baseline entry carries the measured value in its message, so a
 file whose value moved appears again. Current AGENTS.md permits a refresh
 for two reasons only: the pull request changes `.ast-metrics.yaml` rules, or
-it keeps a finding of severity high with a reason under step 5. Refresh and
+it keeps a finding of severity high with a reason under step 4. Refresh and
 commit the baseline in that same pull request. A third exception for violations
 already on `main` remains owner decision D8 of the change request; historical
 refreshes do not grant permission. `ast-metrics baseline` is the current

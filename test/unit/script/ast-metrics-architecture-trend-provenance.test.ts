@@ -78,3 +78,16 @@ test('Given CRAP values without verified coverage, when a record is made, then c
   assert.equal('functionsOver30' in record, false);
   assert.equal('crap' in record, false);
 });
+
+for (const [description, tool, hasTool] of [
+  ['tool version 9.8.7', '9.8.7', true],
+  ['no tool version', undefined, false],
+] as const) {
+  test(`Given a trend record with ${description}, when its table numbers are read, then the optional version is preserved`, (t) => {
+    const path = join(dataDirectory(t), 'record.json');
+    writeFileSync(path, JSON.stringify({ ...numbers, version: 1, tool }));
+    const result = trendNumbersInFile(path);
+    assert.equal(result.tool, tool);
+    assert.equal('tool' in result, hasTool);
+  });
+}

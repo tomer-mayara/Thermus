@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
-// The CRAP of each function and its change against the base: the formula and its rounding, the join with the coverage
+// The CRAP of each function and its change against the base: the formula and its precision, the join with the coverage
 // by file and name, the functions that get no CRAP, the uncovered file, the share of the base, and the rules for added
 // and worse. The rules are pure, so the cases call them in the test process. Their module runs from source next to the
 // command, as the command runs it. The types give the parts of the contract that the cases use.
@@ -62,11 +62,11 @@ test('Given functions of 10 decision paths with the covered shares 0 and 1, when
   assert.deepEqual(crapOf(sources, 'src/a.ts'), { bare: 110, tested: 10 });
 });
 
-test('Given CRAP values with more decimals, when the CRAP is computed, then it keeps one decimal, and a half rounds up', () => {
+test('Given CRAP values with more decimals, when the CRAP is computed, then it retains the unrounded values', () => {
   const sources = sourcesOf({ 'src/a.ts': [['quarter', 12], ['half', 7], ['tenth', 9]] }, { 'src/a.ts': [['quarter', 0.25], ['half', 0.5], ['tenth', 0.1]] });
 
   // 144 × 0.421875 + 12 = 72.75; 49 × 0.125 + 7 = 13.125; 81 × 0.729 + 9 = 68.049.
-  assert.deepEqual(crapOf(sources, 'src/a.ts'), { quarter: 72.8, half: 13.1, tenth: 68 });
+  assert.deepEqual(crapOf(sources, 'src/a.ts'), { quarter: 72.75, half: 13.125, tenth: 68.049 });
 });
 
 test('Given an anonymous function, a method without a name, a name that the file has twice, a name that the report has twice, and a name that the report does not have, when the CRAP is computed, then each has an unknown covered share and its paths as a lower bound', () => {
@@ -108,8 +108,8 @@ test('Given a function whose decision paths changed, when the delta is made, the
 
   const delta = crapDeltaOf(sources);
 
-  assert.deepEqual(delta?.base.get('src/a.ts')?.functions, [{ name: 'grow', paths: 7, share: 0.5, crap: 13.1 }]);
-  assert.deepEqual(delta?.head.get('src/a.ts')?.functions.map(({ crap, base }) => ({ crap, base })), [{ crap: 38.5, base: 13.1 }]);
+  assert.deepEqual(delta?.base.get('src/a.ts')?.functions, [{ name: 'grow', paths: 7, share: 0.5, crap: 13.125 }]);
+  assert.deepEqual(delta?.head.get('src/a.ts')?.functions.map(({ crap, base }) => ({ crap, base })), [{ crap: 38.5, base: 13.125 }]);
 });
 
 test('Given a function that the pull request removed, a removed file, and a function that the head has without a CRAP, when the delta is made, then removed functions and the ambiguous head function get no estimated base CRAP', () => {
@@ -128,7 +128,7 @@ test('Given the same tree on both sides, when the delta is made, then each funct
   const delta = crapDeltaOf(sourcesOf(tree, { 'src/a.ts': [['big', 0.1], ['small', 0.5]] }));
 
   assert.deepEqual(delta?.head.get('src/a.ts')?.functions.map(({ name, crap, base, addedOrWorse }) => ({ name, crap, base, addedOrWorse })), [
-    { name: 'big', crap: 68, base: 68, addedOrWorse: false },
+    { name: 'big', crap: 68.049, base: 68.049, addedOrWorse: false },
     { name: 'small', crap: 2.5, base: 2.5, addedOrWorse: false },
     { name: '(anonymous)', crap: 4, base: undefined, addedOrWorse: false },
   ]);
@@ -138,7 +138,7 @@ test('Given the same tree on both sides, when the delta is made, then each funct
 for (const [name, basePaths, headPaths, share, expected] of [
   ['a function at 30 or more that the base file does not have', undefined, 8, 0, { base: 'new', addedOrWorse: true }],
   ['a function below 30 that the base file does not have', undefined, 3, 0, { base: 'new', addedOrWorse: false }],
-  ['a function that went from below 30 to 30 or more', 7, 14, 0.5, { base: 13.1, addedOrWorse: true }],
+  ['a function that went from below 30 to 30 or more', 7, 14, 0.5, { base: 13.125, addedOrWorse: true }],
   ['a function above 30 on both sides with a higher CRAP in the head', 8, 9, 0, { base: 72, addedOrWorse: true }],
   ['a function above 30 on both sides with the same CRAP', 8, 8, 0, { base: 72, addedOrWorse: false }],
   ['a function above 30 on both sides with a lower CRAP in the head', 9, 8, 0, { base: 90, addedOrWorse: false }],
@@ -180,4 +180,13 @@ test('Given a proven new function without coverage and at least 30 paths, when r
   const file = headOf(sourcesOf({ 'src/new.ts': [['fresh', 30]] }, { 'src/new.ts': [] }, {}), 'src/new.ts');
 
   assert.deepEqual(file.functions.map(({ share, crap, base, addedOrWorse }) => ({ share, crap, base, addedOrWorse })), [{ share: undefined, crap: 30, base: 'new', addedOrWorse: true }]);
+});
+
+test('Given scores at and just below 30, when architecture risk is judged, then it uses exact values before display rounding', () => {
+  const boundary = headOf(sourcesOf({ 'src/a.ts': [['f', 25]] }, { 'src/a.ts': [['f', 0.8]] }, {}), 'src/a.ts');
+  assert.equal(boundary.functions[0].crap, 30);
+  assert.equal(boundary.functions[0].addedOrWorse, true);
+  const below = headOf(sourcesOf({ 'src/a.ts': [['f', 5]] }, { 'src/a.ts': [['f', 0.000534]] }, {}), 'src/a.ts');
+  assert.ok(below.functions[0].crap > 29.95 && below.functions[0].crap < 30);
+  assert.equal(below.functions[0].addedOrWorse, false);
 });

@@ -102,3 +102,20 @@ for (const tool of [43, '', ' ']) test(`Given a snapshot with malformed tool met
   assert.equal(result.code, 1);
   assert.match(result.stderr, /not a valid snapshot of version 1/);
 });
+
+test('Given a stored trend record from another tool version, when architecture reads it on a later run, then it retains the recorded version without changing the file', async (t) => {
+  const repository = GitRepository.onFeatureBranch(t, repositoryFiles);
+  repository.git('update-ref', 'refs/remotes/origin/main', 'main');
+  const previous = snapshotDoublesOnPath(t, { cli: { version: '9.8.7', json: jsonReport } });
+  const args = ['--base', 'main', '--no-coverage'];
+  const published = await runScript(t, paths.astMetricsArchitectureScript, { cwd: repository.root, args: [...args, '--record', '--allow-tool-version'], env: previous.env });
+  assert.equal(published.code, 0, published.stderr);
+  const record = join(repository.root, 'docs/metrics', `${repository.git('show', '-s', '--format=%cI', 'main').slice(0, 10)}-${repository.git('rev-parse', 'main').slice(0, 8)}.json`);
+  const original = readFileSync(record, 'utf8');
+  assert.equal(JSON.parse(original).tool, '9.8.7');
+  const current = snapshotDoublesOnPath(t);
+  const readOnly = await runScript(t, paths.astMetricsArchitectureScript, { cwd: repository.root, args, env: current.env });
+  assert.equal(readOnly.code, 0, readOnly.stderr);
+  assert.match(readOnly.stdout, new RegExp(`Trend tool versions: ${repository.git('rev-parse', 'main').slice(0, 8)}: ast-metrics 9\\.8\\.7; this pull request: ast-metrics 0\\.43\\.1\\.`));
+  assert.equal(readFileSync(record, 'utf8'), original);
+});

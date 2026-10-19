@@ -1,5 +1,6 @@
 import type { JudgedFunction } from './crap-delta.ts';
 import { textOrder } from './order.ts';
+import { crapTextOf } from './crap-format.ts';
 
 interface ListedFunction {
   readonly path: string;
@@ -13,11 +14,11 @@ export function addedOrWorseLines(path: string, functions: readonly JudgedFuncti
   return listed.sort((first, second) => textOrder(first.name, second.name)).map(lineOf);
 }
 
-// A share keeps two decimals and a CRAP one, as the formula gives them.
+// Scores show extra precision when one decimal could hide the limit boundary.
 function lineOf({ path, name, crap }: ListedFunction): string {
-  const base = typeof crap.base === 'number' ? crap.base.toFixed(1) : 'new';
+  const base = typeof crap.base === 'number' ? crapTextOf(crap.base) : 'new';
   const covered = crap.share === undefined ? 'unknown' : crap.share.toFixed(2);
-  const value = crap.share === undefined ? `≥ ${crap.paths}` : crap.crap.toFixed(1);
+  const value = crapTextOf(crap);
   return `- \`${path}\` \`${name}\`: paths ${crap.paths}, covered ${covered}, CRAP ${value} (base ${base})`;
 }
 

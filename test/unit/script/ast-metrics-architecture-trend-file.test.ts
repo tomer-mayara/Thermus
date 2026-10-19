@@ -22,6 +22,8 @@ for (const [name, text] of [
   ['a modularity that is text', JSON.stringify({ ...valid, modularity: '0.5' })],
   ['a record without a cross share', JSON.stringify({ ...valid, crossShare: undefined })],
   ['a record without the count of the cycles', JSON.stringify({ ...valid, cycles: undefined })],
+  ['a numeric tool version', JSON.stringify({ ...valid, tool: 43 })],
+  ['an empty tool version', JSON.stringify({ ...valid, tool: '' })],
 ] as const) {
   test(`Given a record file with ${name}, when the record goes to the store, then the store fails with a diagnostic that names the file and writes no file`, (t) => {
     const folder = dataDirectory(t);

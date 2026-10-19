@@ -1,6 +1,7 @@
 // The change of the CRAP of each function of the head against the base, which the bands of
 // docs/implementation/architecture-evolution-plan.md ("Bands") follow: they judge the change, not the total.
 import { crapLimit, isOver, type FileCrap, type FunctionCrap } from './crap.ts';
+import { compareCrap } from './crap-score.ts';
 import type { FunctionCorrespondence } from './correspondence.ts';
 import { snapshotCrapOf } from './crap-snapshots.ts';
 import type { MapSources } from './types.ts';
@@ -60,6 +61,7 @@ function baseEntryOf(partner: FunctionCorrespondence['base'], files: ReadonlyMap
 // on both sides with a higher CRAP in the head.
 function judged(entry: FunctionCrap, identity: FunctionCorrespondence | undefined, files: ReadonlyMap<string, FileCrap>): JudgedFunction {
   const base = baseValueOf(identity, files);
-  const worse = typeof base === 'number' && (base < crapLimit || entry.crap > base);
+  const predecessor = baseEntryOf(identity?.base, files);
+  const worse = typeof base === 'number' && predecessor !== undefined && (compareCrap(predecessor, crapLimit) < 0 || compareCrap(entry, predecessor) > 0);
   return { ...entry, base, classification: identity?.classification ?? 'unknown', addedOrWorse: isOver(entry) && (base === 'new' || worse) };
 }

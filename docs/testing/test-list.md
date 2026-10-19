@@ -82,13 +82,15 @@ different or missing snapshot versions.
 `test/acceptance/script/ast-metrics-tool-version.test.ts` checks refusal
 before analysis or record writes and explicit override for delta, review,
 snapshot, online architecture, and MCP. New snapshots and records retain
-the actual version. An overridden snapshot refuses disagreement between
+the actual version. A later read-only architecture run preserves a stored
+record's version and leaves the record unchanged. An overridden snapshot
+refuses disagreement between
 the CLI and MCP before any MCP tool call or snapshot publication. Offline
 rendering with an empty PATH identifies different versions and rejects
 malformed snapshot tool metadata. Help starts no tool; coverage imports work
 without ast-metrics. Coverage has no version option.
 
-The six commands run from source in `script/code-quality/`. See the
+The seven commands run from source in `script/code-quality/`. See the
 [code quality script guide](../../script/code-quality/README.md) for their
 entry points and helper folders.
 
@@ -119,6 +121,24 @@ process remains. `ast-metrics-mcp.live.ts` runs the real server when
 `ast-metrics` is on PATH; ordinary suites do not select it. It checks a
 positive function table, its declared row count, and the missing-file error,
 without requiring an incidental function name. An absent-tool skip is not a pass.
+
+`ast-metrics-crap*.test.ts` covers the per-function goal command. Unit cases
+check threshold validation, strict and inclusive boundaries, minimum whole
+coverage percentages, goal scope, unknown data, ordering, and report output.
+Acceptance cases use temporary repositories, source identity, verified fixture
+coverage, and MCP doubles. They check the complete table and goal exit status,
+empty default selection without coverage or MCP, explicit inspection paths,
+custom base, unchanged high functions, and missing or stale coverage. These
+cases run no application suite.
+
+`test/acceptance/script/ast-metrics-crap.live.ts` uses real files and an
+existing compatible report from `AST_METRICS_CRAP_COVERAGE`, or
+`ast-report/coverage.json` by default. It starts no build, suite, or collector.
+Select it only for affected behavior or shared dependencies. Missing tool
+or report gives an explicit skip; record the assessment as deferred, not
+passed. Present stale coverage fails. See the
+[policy mapping](../implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts)
+for its command and collection limits.
 
 `test/unit/script/ast-metrics-coverage.test.ts` checks help, refused
 arguments, and unverified `--from` inspection with an empty PATH and a Git
@@ -342,14 +362,16 @@ time zones, with the file name for two records of the same time.
 `test/unit/script/ast-metrics-architecture-trend-provenance.test.ts` checks
 measured, estimated, legacy unknown, and unavailable count cells, the
 first-recording estimate note, and valid and invalid count provenance.
+It also checks that reading table numbers preserves a present tool version
+and leaves the optional field absent in legacy records.
 
 `test/unit/script/ast-metrics-architecture-trend-publication.test.ts` checks
 full-SHA identity across dates, prefix collisions, record-shaped directories
 and symlinks, malformed global and community fields, bounded lock failure
 with manual recovery guidance, and concurrent publication without overwrite.
 `test/unit/script/ast-metrics-architecture-trend-file.test.ts` checks that
-malformed required record fields fail before publication and name the bad
-file.
+malformed required fields and malformed optional tool versions fail before
+publication and name the bad file.
 
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from
@@ -463,6 +485,12 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-paths.test.ts | no |
+| live | test/acceptance/script/ast-metrics-crap.live.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
@@ -502,6 +530,9 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
