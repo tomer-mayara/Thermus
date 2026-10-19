@@ -30,7 +30,7 @@ test('Given a branch whose working tree changes one src/ file and both doubles o
   const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'main'], cwd: repository.root, env: doubles.env });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, withEmptyTrend(repositoryMarkdownOf(repository.git('rev-parse', 'HEAD'), '  c_auth["auth<br/>2 files · MI 70.4 · paths 9"]', [
+  assert.equal(result.stdout, withEmptyTrend(repositoryMarkdownOf({ baseCommit: repository.git('rev-parse', 'HEAD'), unknownIdentity: 5 }, '  c_auth["auth<br/>2 files · MI 70.4 · paths 9"]', [
     '| src/auth/session.ts | 61.2 → 61.2 | 6 → 6 | 1 |',
   ])));
   assert.equal(result.code, 0);
@@ -53,7 +53,7 @@ test('Given a branch that changes one src/ file and adds one, a working tree tha
   const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'main'], cwd: repository.root, env: doubles.env });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, withEmptyTrend(repositoryMarkdownOf(mergeBase, '  c_auth["auth<br/>2 files · MI 64.8 ↓5.6 · paths 12 ↑3"]', [
+  assert.equal(result.stdout, withEmptyTrend(repositoryMarkdownOf({ baseCommit: mergeBase, unknownIdentity: 6 }, '  c_auth["auth<br/>2 files · MI 64.8 ↓5.6 · paths 12 ↑3"]', [
     '| src/auth/audit.ts | new → 90.0 | new → 2 | |',
     '| src/auth/session.ts | 61.2 → 55.5 ↓5.7 | 6 → 9 ↑3 | 1 |',
   ])));

@@ -1,6 +1,7 @@
 // The build is pure, so that its rules have unit tests without git and ast-metrics: tree.ts runs
 // them and gives the answers.
 import { snapshotCommunitiesOf } from './communities.ts';
+import { functionEvidenceOf } from '../identity/source.ts';
 import { serverCommunitiesOf, snapshotFunctionsOf } from './input.ts';
 import { communityMapOf } from './map.ts';
 import { rounded, sumOf, weightedMaintainability } from '../shared/numbers.ts';
@@ -14,12 +15,15 @@ export interface SnapshotSources {
   // The answer texts of get_communities and of get_file_metrics for each file.
   readonly communities: string;
   readonly functions: ReadonlyMap<string, string>;
+  readonly sourceTexts?: ReadonlyMap<string, string>;
 }
 
 export function snapshotOf(sources: SnapshotSources): Snapshot {
   const answer = serverCommunitiesOf(sources.communities);
   const map = communityMapOf(answer);
-  const files = sources.files.map((file) => snapshotFileOf(file, map.communityOf(file.path), sources.functions.get(file.path)));
+  const files = sources.files
+    .map((file) => snapshotFileOf(file, map.communityOf(file.path), sources.functions.get(file.path)))
+    .map((file) => fileWithEvidence(file, sources.sourceTexts?.get(file.path)));
   return {
     version: 1,
     commit: sources.commit,
@@ -49,4 +53,9 @@ function snapshotFileOf(file: FileMeasurement, community: string | null, functio
     risk: rounded(file.risk, 2),
     functions: snapshotFunctionsOf(file.path, functions),
   };
+}
+
+function fileWithEvidence(file: SnapshotFile, text: string | undefined): SnapshotFile {
+  if (text === undefined) return file;
+  return { ...file, ...functionEvidenceOf({ path: file.path, text }, file.functions) };
 }

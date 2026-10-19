@@ -8,7 +8,7 @@ import type { ArchitectureMap, MapSnapshot, MapSources } from './types.ts';
 // The head communities come first and the gone ones after them, so that the stable sort puts the head first on a tie.
 // A change of a number or of a reference count alone does not change the map.
 export function architectureMapOf(sources: MapSources, delta: CrapDelta | undefined): ArchitectureMap {
-  const matching = matchingOf(sources.base.communities, sources.head.communities);
+  const matching = matchingOf(sources.base.communities, sources.head.communities, sources.changes);
   const index = nodeIndexOf(sources, matching, delta);
   const nodes = [...new Set([...index.head.values(), ...index.base.values()])].sort(byLabel);
   const edges = [...headEdgesOf(sources.head, matching, index), ...goneEdgesOf(sources.base, matching, index)].sort(byLabels);

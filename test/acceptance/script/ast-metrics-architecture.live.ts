@@ -41,7 +41,11 @@ test('Given the real ast-metrics and no source edits, when architecture runs wit
   const communityCount = summary.match(/communities (\d+) → (\d+)/);
   assert.ok(communityCount, summary);
   assert.equal(nodes.length, Number(communityCount[2]), result.stdout);
-  assert.ok(result.stdout.includes(['', ...noProductionFile, '', trendHeading, ''].join('\n')), result.stdout);
+  const complexity = result.stdout.slice(result.stdout.indexOf(noProductionFile[0]), result.stdout.indexOf(trendHeading)).trimEnd().split('\n');
+  assert.deepEqual(complexity.slice(0, noProductionFile.length), noProductionFile);
+  const identityNotices = complexity.slice(noProductionFile.length).filter((line) => line !== '');
+  assert.ok(identityNotices.length <= 1, result.stdout);
+  for (const identityNotice of identityNotices) assert.match(identityNotice, /^Unknown function identity: [1-9]\d* \(no proven declaration or unique unchanged body\/signature correspondence\)\.$/u);
   assert.match(result.stdout, /\nLegend: /);
   assert.equal(existsSync(store), false);
   assert.deepEqual(readdirSync(folder).filter((name) => name.startsWith('thermus-snapshot-base-')), []);

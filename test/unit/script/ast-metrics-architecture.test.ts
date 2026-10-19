@@ -17,7 +17,7 @@ test('Given --help, when the architecture command runs, then it explains the two
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-architecture\.ts \[--base REF\] \[--head FILE --base-snapshot FILE\] \[--touched FILES\] \[--coverage FILE \| --no-coverage\] \[--trend-store DIR\] \[--record\] \[--timeout-ms MS\] \[--out FILE\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-architecture\.ts \[--base REF\] \[--head FILE --base-snapshot FILE\] \[--changes FILE\] \[--touched FILES\] \[--coverage FILE \| --no-coverage\] \[--trend-store DIR\] \[--record\] \[--timeout-ms MS\] \[--out FILE\] \[--help\]\n/);
   const texts = ['Mermaid', 'merge base', 'temporary worktree', 'working tree', 'untracked', 'Jaccard', '0.5', 'new or gone', 'did not change', 'default: origin/main'];
   const table = ['complexity table', 'ten riskiest', 'not measured', 'no production file changed'];
   const bands = ['CRAP', 'ast-report/coverage.json', 'script/code-quality/ast-metrics-coverage.ts', 'no coverage run', 'good', 'warning', 'critical', 'added or made worse'];

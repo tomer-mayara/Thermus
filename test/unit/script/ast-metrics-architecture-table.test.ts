@@ -68,7 +68,7 @@ test('Given changes of maintainability and decision paths, when the table is mad
 test('Given a file that only the head has and a file that only the base has, when the table is made, then the first says new before the values of the head and the second gone after the values of the base', () => {
   const rows = rowsOf([{ path: 'src/gone.ts', maintainability: 55, paths: 20 }], [{ path: 'src/new.ts', maintainability: 70.2, paths: 8 }], ['src/new.ts', 'src/gone.ts']);
 
-  assert.deepEqual(rows, ['| src/gone.ts | 55.0 → gone | 20 → gone | |', '| src/new.ts | new → 70.2 | new → 8 | |']);
+  assert.deepEqual(rows, ['| src/gone.ts | 55.0 → gone | 20 → gone | gone |', '| src/new.ts | new → 70.2 | new → 8 | |']);
 });
 
 // A file without a maintainability index has no code, and its 0 decision paths are not a measurement.
@@ -94,7 +94,7 @@ test('Given files without a value on one side, when the table is made, then a he
     '| src/emptied.ts | not measured | not measured | |',
     '| src/grown.ts | not measured → 64.0 | not measured → 9 | |',
     '| src/odd.ts | 72.0 → 70.0 ↓2.0 | not measured | |',
-    '| src/types-gone.ts | not measured → gone | not measured → gone | |',
+    '| src/types-gone.ts | not measured → gone | not measured → gone | gone |',
     '| src/types-new.ts | not measured | not measured | |',
     '| src/types.ts | not measured | not measured | |',
     '| src/unknown.ts | not measured | not measured | |',
@@ -118,13 +118,13 @@ test('Given files of the head with an equal risk score, when the table is made, 
   assert.deepEqual(rows.map((row) => row.split(' | ').at(-1)), ['2 |', '3 |', '1 |']);
 });
 
-test('Given a changed file without a risk score in the head, and a gone file with the highest risk score of the base, when the table is made, then neither has a rank, also when fewer than ten files have a score', () => {
+test('Given a changed file without a risk score in the head, and a gone file with the highest risk score of the base, when the table is made, then the gone rank is marked and the unscored head has no rank, also when fewer than ten files have a score', () => {
   const base = [{ path: 'src/gone.ts', maintainability: 50, paths: 9, risk: 0.9 }, { path: 'src/plain.ts', maintainability: 70, paths: 5, risk: 0.4 }, { path: 'src/risky.ts', maintainability: 60, paths: 8, risk: 0.2 }];
   const head = [{ path: 'src/plain.ts', maintainability: 70, paths: 5 }, { path: 'src/risky.ts', maintainability: 60, paths: 8, risk: 0.2 }];
 
   const rows = rowsOf(base, head, ['src/gone.ts', 'src/plain.ts', 'src/risky.ts']);
 
-  assert.deepEqual(rows.map((row) => row.split(' | ').at(-1)), ['|', '|', '1 |']);
+  assert.deepEqual(rows.map((row) => row.split(' | ').at(-1)), ['gone |', '|', '1 |']);
 });
 
 for (const [name, touched] of [

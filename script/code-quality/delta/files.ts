@@ -1,14 +1,19 @@
 // The delta rule of script/code-quality/ast-metrics-delta.ts. A module of its own, because the architecture command gives the same
 // files as the changed files of a pull request.
 import { git } from '../shared/repository.ts';
+import { validateChanges, type FileChange } from './changes.ts';
+import { changesInDiff } from './status.ts';
 
 const typeScriptFiles = ['*.ts', '*.tsx', '*.mts', '*.cts'];
 
-// Each TypeScript file that differs between the merge base of the base ref and HEAD and the working tree, and each new
-// file that git does not ignore, sorted. Without rename detection, git lists a renamed file as an added file, so the
-// delta holds it at its new path.
+// Deleted files have no current score. Renamed files use their new path.
 export function deltaFiles(root: string, base: string): string[] {
-  const changed = git(root, ['diff', '--name-only', '-z', '--no-renames', '--diff-filter=AM', '--merge-base', base, '--', ...typeScriptFiles], `git diff against ${base} failed.`);
+  return deltaChanges(root, base).filter((change) => change.status !== 'D').map((change) => change.path).sort();
+}
+
+export function deltaChanges(root: string, base: string): FileChange[] {
+  const changed = git(root, ['diff', '--name-status', '-z', '-M', '--merge-base', base, '--', ...typeScriptFiles], `git diff against ${base} failed.`);
   const untracked = git(root, ['ls-files', '-z', '--others', '--exclude-standard', '--', ...typeScriptFiles], 'git ls-files failed.');
-  return [...new Set(`${changed}${untracked}`.split('\0').filter((file) => file !== ''))].sort();
+  const additions: FileChange[] = untracked.split('\0').filter((path) => path !== '').map((path) => ({ status: 'A', path }));
+  return validateChanges([...changesInDiff(changed), ...additions]).sort((first, second) => first.path < second.path ? -1 : first.path > second.path ? 1 : 0);
 }

@@ -324,6 +324,18 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
   and after analysis. The commit label alone does not identify uncommitted
   snapshot content.
 
+Each file can also hold `sourceEvidence` with normalization version
+`typescript-tokens-v1`, coordinates `utf16`, and a `complete` flag. Each
+supported function can hold `identity`: declaration kind, lexical owner,
+name, source `start` and `end`, and SHA-256 `body` and `signature` hashes.
+Offsets start at zero and exclude the end character. TypeScript syntax and
+token text supply these hashes; whitespace and comments do not affect them,
+but literal spelling and executable syntax do. The signature omits the
+binding name; recursive uses in the body remain. Source parse errors withhold identity and set `complete: false`.
+Anonymous functions, duplicate names, and unsupported owners have no stable
+identity. `complete` is true only when every executable function is supported
+and every metric has one source declaration. See the [snapshot format](ast-metrics-change-request.md#a2-snapshot).
+
 Snapshots contain no coverage or CRAP. The architecture command joins a
 separate coverage report when it makes its output.
 
@@ -366,7 +378,7 @@ the diagnostic then names the folder that stays.
 ### Show the architecture delta: `script/code-quality/ast-metrics-architecture.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--record] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
+pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--record] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
 ```
 
 The command prints the architecture delta of `src/`, the complexity table of
@@ -375,10 +387,17 @@ writes it to `--out` (relative to the current folder). Step 5 of the process put
 request description. By default it takes the snapshot of the merge base of
 `--base` (default `origin/main`) in a temporary worktree, as `--base` of the
 snapshot command does, and the snapshot of the working tree; this takes about
-two seconds. The changed files are the `src/` files of the delta rule of the
-delta command. With `--head` and `--base-snapshot` it reads two snapshot
-files and runs no tool; the changed files then come from `--touched` (paths
-from the root, separated by commas), else there are none.
+two seconds. The changed files retain addition, modification, deletion, and
+rename status.
+A rename compares the old base path with the new head path and has one row
+labeled `newpath (renamed from oldpath)`. A deletion has a row at its old
+path and touches its base community. Delta omits deleted files; architecture keeps them.
+With `--head` and `--base-snapshot`, the command reads two snapshot files and
+runs no tool. `--changes FILE` supplies validated status and rename evidence
+for those snapshots. `--touched` supplies root-relative paths separated by
+commas, with no rename proof. With both options, `--touched` selects the
+rows while `--changes` supplies independent correspondence evidence. Without
+either option, there are no changed-file rows. See the [offline change format](ast-metrics-change-request.md#a4-offline-change-metadata).
 
 The coverage comes from `--coverage` (a report of the coverage command,
 relative to the current folder), else from `ast-report/coverage.json` in the
@@ -477,26 +496,40 @@ with the names of ast-metrics as they are, only 402 matched. 22 functions
 had CRAP 30 or more, 15 of them in files absent from the report. These are
 dated observations, not assertions about the current tree.
 
-The base tree gets no coverage run, so its CRAP is an approximation, as the
-[evolution plan](architecture-evolution-plan.md) records: a function of the
-base has its own decision paths and the share of the head function with the
-same name in the same file. It has the share 0 when the head file does not
-have the name, such as a function or a file that the pull request removed,
-and no CRAP when the head has the name without a CRAP. Thus a change of the
-CRAP comes from a change of the decision paths, and two equal trees give
-equal counts.
+The base tree gets no coverage run, so its CRAP is a head-derived estimate.
+A proven base/head function pair uses the base decision paths with the head
+covered share. A base function without a proven head partner has no estimated
+CRAP. Removed functions and files remain unknown; they do not get zero share.
+The report counts unknown base estimates separately, including those of
+removed functions. Equal supported trees give equal counts.
 
-The bands: a function of the head is added when the base file does not have
-its name, and worse when its CRAP is 30 or more in the head and below 30 in
-the base, or 30 or more on both sides and higher in the head. A name that
-the base file has twice gives no base value, so its function is neither. A
-community is good when none of its functions is at 30 or more in the head,
-warning when some are and none of them is added or worse, and critical when
-one at 30 or more is added or worse. The count is the number of its
-functions at 30 or more in the head. A gone community has its count of the
-base and the band good or warning, because the base has no change to
-follow. The same rules apply to a changed file: the list after the table
-names each function that makes a file or a community critical.
+Function correspondence uses source evidence, separately from the coverage
+join above. Within the same file, or a proven file rename, a unique
+kind/owner/name declaration pair establishes continuity. Equal body and
+signature hashes mean unchanged; an edit to either means changed. Without
+that continuity, only one unique unchanged body/signature pair can prove a
+move or rename, including a move to an untracked file. Same-name declarations
+in unrelated files do not establish continuity. Copies, duplicate bodies,
+changed extractions, and recursive renames can remain ambiguous. A function
+is new only when its head file and all base files have complete evidence,
+all base declarations have proven partners, and no matching base body or
+unresolved move candidate remains. Legacy snapshots and missing source
+evidence limit classification to identity unknown. Offline readers never
+read the caller's checkout to fill the gap. Unknown identity is not called
+new or worse.
+
+The bands: a community is good when none of its assessed functions is at
+CRAP 30 or more, warning when some are and none is proven added or worse,
+and critical when one is proven added or worse. A proven pair is worse when
+the head CRAP is at least 30 and either crosses 30 or exceeds the base value.
+A proven new function at 30 or more is added. Unknown correspondence gives
+neither claim. A gone community uses its known base estimates; base unknowns
+remain visible. These rules also apply to changed-file rows and the list
+below the table. `Unknown function identity: N (no proven declaration or
+unique unchanged body/signature correspondence).` appears when identity
+unknowns exist, even without coverage. Compatible coverage always adds
+`Base functions without an estimated covered share: N.` after complexity.
+CR-07's incomplete-coverage bands remain follow-up work.
 
 The complexity section has the heading `## Complexity of the changed files`
 and a table with the columns `File`, `Maintainability`, `Decision paths`, and

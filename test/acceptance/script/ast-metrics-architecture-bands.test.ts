@@ -37,8 +37,10 @@ function graph(nodes: readonly string[], bandDefs: readonly string[], classes: r
   return ['```mermaid', 'flowchart LR', ...nodes, ...baseEdges, ...graphDefinitions, ...bandDefs, ...classes, '```', '', bandedLegend];
 }
 
-function markdown(functions: string, picture: readonly string[], complexity: readonly string[]): string {
-  return [header, '', `${structure} · functions ≥ 30: ${functions}`, '', ...picture, '', ...complexity, '', coverageNote, '', ...noTrend, ''].join('\n');
+interface RiskCounts { readonly functions: string; readonly unknownIdentity: number }
+
+function markdown(counts: RiskCounts, picture: readonly string[], complexity: readonly string[]): string {
+  return [header, '', `${structure} · functions ≥ 30: ${counts.functions}`, '', ...picture, '', ...complexity, '', `Unknown function identity: ${counts.unknownIdentity} (no proven declaration or unique unchanged body/signature correspondence).`, '', 'Base functions without an estimated covered share: 2.', '', coverageNote, '', ...noTrend, ''].join('\n');
 }
 
 function bandedTable(rows: readonly string[], listed: readonly string[], unmatched = 0): string[] {
@@ -56,7 +58,7 @@ test('Given equal covered snapshots, when the command runs, then it prints the u
   const result = await runScript(t, astMetricsArchitectureScript, { args, env: noTools });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown('4 → 4', ['The map did not change.', '', ...bandedBaseGraph], noProductionFile));
+  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, ['The map did not change.', '', ...bandedBaseGraph], noProductionFile));
   assert.equal(result.code, 0);
 });
 
@@ -64,7 +66,7 @@ test('Given a touched community with no function at CRAP 30 or more, when the co
   const result = await runWith(t, {}, 'src/kernel/ids.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown('4 → 4', graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
+  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
     '  class c_shared_kernel touched',
     '  class c_shared_kernel good',
     '  class c_auth,c_hosted_admin,c_src warning',
@@ -76,7 +78,7 @@ test('Given a touched community with two functions at CRAP 30 or more in the bas
   const result = await runWith(t, {}, 'src/hosted-admin/routes.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown('4 → 4', graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
+  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
     '  class c_hosted_admin touched',
     '  class c_shared_kernel good',
     '  class c_auth,c_hosted_admin,c_src warning',
@@ -90,23 +92,20 @@ const addedFunction = {
   files: { 'src/hosted-admin/accounts.ts': { paths: 53, functions: [fn('listAccounts', 12), fn('renderAccount', 3), fn('exportAccounts', 8)] } },
 };
 
-test('Given a pull request that adds a function at CRAP 30 or more to a community with two such functions, when the command runs, then the node says critical with 3 functions and the change +1, the critical class replaces the warning class, the row counts 1 → 2, and the list names the function with base new', { timeout }, async (t) => {
+test('Given a pull request that adds a function at CRAP 30 or more to a community with two such functions, when the command runs, then its count rises but unresolved base identity prevents a false new-function claim', { timeout }, async (t) => {
   const result = await runWith(t, addedFunction, 'src/hosted-admin/accounts.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown('4 → 5', graph([
+  assert.equal(result.stdout, markdown({ functions: '4 → 5', unknownIdentity: 2 }, graph([
     bandedNodes.auth,
-    '  c_hosted_admin["hosted-admin<br/>2 files · MI 66.6 · paths 83 ↑8<br/>■ critical: 3 fn ≥ 30 (+1)"]',
+    '  c_hosted_admin["hosted-admin<br/>2 files · MI 66.6 · paths 83 ↑8<br/>▲ warning: 3 fn ≥ 30 (+1)"]',
     bandedNodes.kernel,
     bandedNodes.src,
-  ], [classDefs.good, classDefs.warning, classDefs.critical], [
+  ], [classDefs.good, classDefs.warning], [
     '  class c_hosted_admin touched',
     '  class c_shared_kernel good',
-    '  class c_auth,c_src warning',
-    '  class c_hosted_admin critical',
-  ]), bandedTable(['| src/hosted-admin/accounts.ts | 63.2 → 63.2 | 45 → 53 ↑8 | 1 → 2 ↑1 | 4 |'], [
-    '- `src/hosted-admin/accounts.ts` `exportAccounts`: paths 8, covered 0.00, CRAP 72.0 (base new)',
-  ])));
+    '  class c_auth,c_hosted_admin,c_src warning',
+  ]), bandedTable(['| src/hosted-admin/accounts.ts | 63.2 → 63.2 | 45 → 53 ↑8 | 1 → 2 ↑1 | 4 |'], [])));
   assert.equal(result.code, 0);
 });
 
@@ -121,7 +120,7 @@ test('Given a pull request that raises the decision paths of a function so that 
   const result = await runWith(t, worseFunction, 'src/auth/tokens.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown('4 → 5', graph([
+  assert.equal(result.stdout, markdown({ functions: '4 → 5', unknownIdentity: 1 }, graph([
     '  c_auth["auth<br/>4 files · MI 58.6 · paths 117 ↑7<br/>■ critical: 2 fn ≥ 30 (+1)"]',
     bandedNodes.hostedAdmin,
     bandedNodes.kernel,
@@ -142,7 +141,7 @@ test('Given a changed file with an anonymous function and a function whose name 
   const result = await runWith(t, {}, 'src/auth/session.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown('4 → 4', graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
+  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
     '  class c_auth touched',
     '  class c_shared_kernel good',
     '  class c_auth,c_hosted_admin,c_src warning',
@@ -157,23 +156,20 @@ const addedUncovered = {
   files: { 'src/application.ts': { paths: 35, functions: [fn('createApplication', 6), fn('startServer', 5)] } },
 };
 
-test('Given a changed file that the coverage report does not have, when the command runs, then its functions count as uncovered with CRAP = paths² + paths, so that the new function at exactly 30.0 makes its community critical', { timeout }, async (t) => {
+test('Given a changed file that the coverage report does not have, when the command runs, then its functions count as uncovered with CRAP = paths² + paths, and the new declaration stays unknown while a base move candidate is unresolved', { timeout }, async (t) => {
   const result = await runWith(t, addedUncovered, 'src/application.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown('4 → 5', graph([
+  assert.equal(result.stdout, markdown({ functions: '4 → 5', unknownIdentity: 2 }, graph([
     bandedNodes.auth,
     bandedNodes.hostedAdmin,
     bandedNodes.kernel,
-    '  c_src["src<br/>2 files · MI 56.0 · paths 45 ↑5<br/>■ critical: 2 fn ≥ 30 (+1)"]',
-  ], [classDefs.good, classDefs.warning, classDefs.critical], [
+    '  c_src["src<br/>2 files · MI 56.0 · paths 45 ↑5<br/>▲ warning: 2 fn ≥ 30 (+1)"]',
+  ], [classDefs.good, classDefs.warning], [
     '  class c_src touched',
     '  class c_shared_kernel good',
-    '  class c_auth,c_hosted_admin warning',
-    '  class c_src critical',
-  ]), bandedTable(['| src/application.ts | 52.0 → 52.0 | 30 → 35 ↑5 | 1 → 2 ↑1 | 1 |'], [
-    '- `src/application.ts` `startServer`: paths 5, covered 0.00, CRAP 30.0 (base new)',
-  ])));
+    '  class c_auth,c_hosted_admin,c_src warning',
+  ]), bandedTable(['| src/application.ts | 52.0 → 52.0 | 30 → 35 ↑5 | 1 → 2 ↑1 | 1 |'], [])));
   assert.equal(result.code, 0);
 });
 
@@ -189,7 +185,7 @@ test('Given snapshot files without --coverage, when the command runs, then the l
     ...graphDefinitions,
     '  class c_shared_kernel touched',
     '```', '', legend, '',
-    complexityHeading, '', ...tableHead, '| src/kernel/ids.ts | 77.0 → 77.0 | 18 → 18 | |', '', ...noTrend, '',
+    complexityHeading, '', ...tableHead, '| src/kernel/ids.ts | 77.0 → 77.0 | 18 → 18 | |', '', 'Unknown function identity: 1 (no proven declaration or unique unchanged body/signature correspondence).', '', ...noTrend, '',
   ].join('\n'));
   assert.equal(result.code, 0);
 });

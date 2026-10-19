@@ -1,3 +1,4 @@
+import { fileMappingOf } from './file-correspondence.ts';
 // The complexity table of docs/implementation/architecture-evolution-plan.md ("The views", view 2). With coverage, it has
 // the column of the functions at CRAP 30 or more, and the list of the functions follows it. The table is pure, so that
 // its rules have unit tests without git and ast-metrics.
@@ -11,16 +12,32 @@ const heading = '## Complexity of the changed files';
 const rankedFiles = 10;
 
 // The snapshots hold only src/ files, so a changed file elsewhere, such as a test, gets no row.
-export function complexityTableOf({ base, head, touched }: MapSources, delta: CrapDelta | undefined): string[] {
-  const changed = [...new Set(touched.filter((path) => path.startsWith('src/')))].sort();
+export function complexityTableOf({ base, head, touched, changes }: MapSources, delta: CrapDelta | undefined): string[] {
+  const { before: renames, after: destinations } = fileMappingOf(changes);
+  const changed = [...new Set(touched.map((path) => destinations.get(path) ?? path).filter((path) => path.startsWith('src/')))].sort();
   if (changed.length === 0) return [heading, '', 'No production file changed.'];
   const [before, after] = [filesByPath(base.files), filesByPath(head.files)];
-  const ranks = riskRanksOf(head.files);
-  const crapCells = (path: string) => (delta === undefined ? [] : [crapCellOf(delta, path)]);
-  const rows = changed.map((path) => rowOf([path, ...measureCellsOf(before.get(path), after.get(path)), ...crapCells(path), `${ranks.get(path) ?? ''}`]));
+  const context = { before, after, renames, ranks: riskRanksOf(head.files) };
+  const rows = changed.map((path) => rowOf(rowCellsOf(path, context, delta)));
   const columns = ['File', 'Maintainability', 'Decision paths', ...(delta === undefined ? [] : ['CRAP ≥ 30']), 'Risk rank'];
   const list = delta === undefined ? [] : ['', ...functionListOf(delta, changed)];
   return [heading, '', rowOf(columns), rowOf(columns.map(() => '---')), ...rows, ...list];
+}
+
+interface TableContext {
+  readonly before: ReadonlyMap<string, TableFile>;
+  readonly after: ReadonlyMap<string, TableFile>;
+  readonly renames: ReadonlyMap<string, string>;
+  readonly ranks: ReadonlyMap<string, number>;
+}
+
+function rowCellsOf(path: string, context: TableContext, delta: CrapDelta | undefined): string[] {
+  const oldPath = context.renames.get(path);
+  const before = context.before.get(oldPath ?? path), after = context.after.get(path);
+  const label = oldPath === undefined ? path : `${path} (renamed from ${oldPath})`;
+  const crapCells = delta === undefined ? [] : [crapCellOf(delta, path, oldPath)];
+  const rank = after === undefined && before !== undefined ? 'gone' : `${context.ranks.get(path) ?? ''}`;
+  return [label, ...measureCellsOf(before, after), ...crapCells, rank];
 }
 
 // A tie goes to the first path, so that the rank does not depend on the order of the files in a snapshot file.

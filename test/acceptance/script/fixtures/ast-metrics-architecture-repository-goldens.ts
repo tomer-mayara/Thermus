@@ -24,7 +24,7 @@ const plainGraph = [
     legend,
 ];
 
-export function repositoryMarkdownOf(baseCommit: string, authNode: string, rows: readonly string[]): string {
+export function repositoryMarkdownOf({ baseCommit, unknownIdentity }: { readonly baseCommit: string; readonly unknownIdentity: number }, authNode: string, rows: readonly string[]): string {
   return [
     `## Architecture of src/: base ${baseCommit.slice(0, 8)} → head`,
     '',
@@ -38,6 +38,8 @@ export function repositoryMarkdownOf(baseCommit: string, authNode: string, rows:
     '',
     ...tableHead,
     ...rows,
+    '',
+    `Unknown function identity: ${unknownIdentity} (no proven declaration or unique unchanged body/signature correspondence).`,
     '',
   ].join('\n');
 }
@@ -70,7 +72,7 @@ const coveredGraph = [
     '```mermaid',
     'flowchart LR',
     '  c_admin["admin<br/>1 file · MI 70.1 · paths 4<br/>● good: 0 fn ≥ 30"]',
-    '  c_auth["auth<br/>2 files · MI 70.4 · paths 9<br/>▲ warning: 1 fn ≥ 30"]',
+    '  c_auth["auth<br/>2 files · MI 70.4 · paths 9<br/>▲ warning: 1 fn ≥ 30 (+1)"]',
     '  c_shared_kernel["shared kernel<br/>1 file · paths 0<br/>● good: 0 fn ≥ 30"]',
     '  c_admin -. "1 · cycle" .-> c_auth',
     '  c_admin -- "1" --> c_shared_kernel',
@@ -94,16 +96,20 @@ export function coveredRepositoryMarkdown(repository: GitRepository): string {
   return [
     `## Architecture of src/: base ${repository.git('rev-parse', 'HEAD').slice(0, 8)} → head`,
     '',
-    'Modularity 0.42 → 0.42 · cross share 0.33 → 0.33 · cycles 1 → 1 · communities 3 → 3 · functions ≥ 30: 1 → 1',
+    'Modularity 0.42 → 0.42 · cross share 0.33 → 0.33 · cycles 1 → 1 · communities 3 → 3 · functions ≥ 30: 0 → 1',
     '',
     ...coveredGraph,
     '',
     complexityHeading,
     '',
     ...bandedTableHead,
-    '| src/auth/session.ts | 61.2 → 61.2 | 6 → 6 | 1 → 1 | 1 |',
+    '| src/auth/session.ts | 61.2 → 61.2 | 6 → 6 | not measured → 1 | 1 |',
     '',
     ...functionsSection([], 1),
+    '',
+    'Unknown function identity: 5 (no proven declaration or unique unchanged body/signature correspondence).',
+    '',
+    'Base functions without an estimated covered share: 5.',
     '',
     `Coverage: unit suite at ${repository.git('rev-parse', 'HEAD').trim().slice(0, 8)}.`,
     '',

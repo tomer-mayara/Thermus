@@ -1,3 +1,4 @@
+import { functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -26,7 +27,7 @@ interface Snapshot {
     readonly maintainability?: number; readonly paths: number; readonly files: number; readonly functions: number;
   };
   readonly communities: readonly Community[];
-  readonly files: readonly { readonly path: string; readonly maintainability?: number; readonly paths: number; readonly functions: readonly { readonly name: string; readonly paths: number }[] }[];
+  readonly files: readonly { readonly path: string; readonly maintainability?: number; readonly paths: number; readonly functions: readonly import('../../../script/code-quality/architecture/types.ts').MapFunction[] }[];
 }
 
 interface Coverage {
@@ -71,8 +72,8 @@ const snapshot: Snapshot = {
   global: { modularity: 0.47, crossShare: 0.31, cycles: [['alpha', 'zulu'], ['alpha', 'beta']], maintainability: 64.2, paths: 30, files: 2, functions: 3 },
   communities: [community('zulu', ['src/z/two.ts'], 70.5), community('alpha', ['src/a/one.ts'], 58.1)],
   files: [
-    { path: 'src/a/one.ts', maintainability: 58.1, paths: 12, functions: [{ name: 'run', paths: 10 }, { name: 'helper', paths: 2 }] },
-    { path: 'src/z/two.ts', maintainability: 70.5, paths: 18, functions: [{ name: 'big', paths: 6 }] },
+    { path: 'src/a/one.ts', maintainability: 58.1, paths: 12, functions: [{ name: 'run', paths: 10, identity: functionIdentityOf('run', 10) }, { name: 'helper', paths: 2, identity: functionIdentityOf('helper', 2) }] },
+    { path: 'src/z/two.ts', maintainability: 70.5, paths: 18, functions: [{ name: 'big', paths: 6, identity: functionIdentityOf('big', 6) }] },
   ],
 };
 

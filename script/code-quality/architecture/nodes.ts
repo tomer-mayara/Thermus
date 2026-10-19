@@ -16,10 +16,11 @@ type NodeMarks = Pick<MapNode, 'touched' | 'band'>;
 export function nodeIndexOf(sources: MapSources, matching: Matching, delta: CrapDelta | undefined): NodeIndex {
   const touched = new Set(sources.touched);
   const bandOf = bandRuleOf(delta);
-  const marksOf = (community: MapCommunity, band: MapNode['band']) => ({ touched: community.members.some((member) => touched.has(member)), band });
+  const touches = (community: MapCommunity | undefined) => community?.members.some((member) => touched.has(member)) ?? false;
+  const marksOf = (community: MapCommunity, band: MapNode['band'], before?: MapCommunity) => ({ touched: touches(community) || touches(before), band });
   const head = new Map(sources.head.communities.map((community): [string, MapNode] => {
     const before = matching.baseOf.get(community.id);
-    return [community.id, headNodeOf(community, before, marksOf(community, bandOf(community, before)))];
+    return [community.id, headNodeOf(community, before, marksOf(community, bandOf(community, before), before))];
   }));
   const nodeOfPartner = (community: MapCommunity) => {
     const partner = matching.headOf.get(community.id);

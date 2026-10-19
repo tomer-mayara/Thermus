@@ -1,3 +1,4 @@
+import type { SnapshotFile } from '../../../../script/code-quality/snapshot/types.ts';
 import { writeFileSync } from 'node:fs';
 import type { InputIdentity } from '../../../../script/code-quality/provenance/types.ts';
 import { join } from 'node:path';
@@ -38,6 +39,7 @@ interface GlobalShape {
 }
 
 export interface FileShape {
+  readonly sourceEvidence?: SnapshotFile['sourceEvidence'];
   readonly path: string;
   readonly community: string | null;
   readonly maintainability?: number;

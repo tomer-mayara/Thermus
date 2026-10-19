@@ -41,6 +41,8 @@ test('Given a branch that changes only a document, no coverage, and both doubles
     '',
     ...noProductionFile,
     '',
+    'Unknown function identity: 5 (no proven declaration or unique unchanged body/signature correspondence).',
+    '',
     '## Trend of src/ on main', '', 'No snapshot of main in the trend store yet.',
     '',
   ].join('\n'));

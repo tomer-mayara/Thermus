@@ -2,6 +2,7 @@
 // docs/implementation/architecture-evolution-plan.md ("CRAP per function") gives it: paths² × (1 − share)³ + paths,
 // with the covered share of the function's own code in the unit suite. The base uses the share of the head,
 // because the command runs the unit suite only for the head.
+import { correspondenceOf, type Correspondence } from './correspondence.ts';
 import type { CoverageFunction } from './coverage.ts';
 import type { MapSources, TableFile } from './types.ts';
 import { rounded } from '../shared/numbers.ts';
@@ -57,15 +58,24 @@ function keyOf(name: string): string | undefined {
 interface SnapshotCrap {
   readonly head: ReadonlyMap<string, FileCrap>;
   readonly base: ReadonlyMap<string, FileCrap>;
+  readonly correspondence: Correspondence;
 }
 
-export function snapshotCrapOf({ base, head, coverage }: MapSources): SnapshotCrap | undefined {
+export function snapshotCrapOf(sources: MapSources): SnapshotCrap | undefined {
+  const { base, head, coverage } = sources;
   if (coverage === undefined) return undefined;
+  const correspondence = correspondenceOf(sources);
   const covered = new Map(coverage.files.map((file) => [file.path, file.functions]));
   const headCrap = new Map(head.files.map((file) => [file.path, fileCrapOf(file, coverageShareOf(covered.get(file.path)))]));
-  const headFiles = new Map(head.files.map((file) => [file.path, file]));
-  const baseCrap = base.files.map((file): [string, FileCrap] => [file.path, fileCrapOf(file, headShareOf(headFiles.get(file.path), headCrap.get(file.path)))]);
-  return { head: headCrap, base: new Map(baseCrap) };
+  const baseCrap = base.files.map((file): [string, FileCrap] => {
+    const shares = new Map((file.functions ?? []).map((fn) => {
+      const partner = correspondence.base.get(fn);
+      const share = partner && headCrap.get(partner.file.path)?.functions.find((entry) => entry.name === partner.fn.name)?.share;
+      return [fn.name, share];
+    }));
+    return [file.path, fileCrapOf(file, (name) => shares.get(name))];
+  });
+  return { head: headCrap, base: new Map(baseCrap), correspondence };
 }
 
 // A file that the report does not have is uncovered: no unit test loaded it. A key that the report has twice or not at
@@ -75,16 +85,5 @@ function coverageShareOf(covered: readonly CoverageFunction[] | undefined): Shar
     if (covered === undefined) return 0;
     const partners = covered.filter((entry) => entry.name === key);
     return partners.length === 1 ? partners[0].coveredShare : undefined;
-  };
-}
-
-// A function of the base has the share of the function of the head with the same name, and 0 when the head file does
-// not have the name, such as a function that the pull request removed. A function that the head has without a CRAP gets
-// none in the base either, so that two equal trees give equal counts.
-function headShareOf(file: TableFile | undefined, crap: FileCrap | undefined): ShareRule {
-  return (name) => {
-    const partner = crap?.functions.find((entry) => entry.name === name);
-    if (partner !== undefined) return partner.share;
-    return file?.functions?.some((entry) => entry.name === name) ? undefined : 0;
   };
 }

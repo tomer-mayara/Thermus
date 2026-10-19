@@ -1,3 +1,4 @@
+import { completeSourceEvidence, functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -8,12 +9,7 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 // worse. The table is pure, so the cases call it in the test process with the CRAP delta that the report gives it. The
 // modules run from source next to the command, as the command runs them. The types give the parts of the contract that
 // the cases use. ast-metrics-architecture-table.test.ts specifies the table without coverage.
-interface File {
-  readonly path: string;
-  readonly maintainability: number;
-  readonly paths: number;
-  readonly functions: readonly { readonly name: string; readonly paths: number }[];
-}
+type File = import('../../../script/code-quality/architecture/types.ts').TableFile;
 
 interface Sources {
   readonly base: { readonly files: readonly File[] };
@@ -37,7 +33,7 @@ type Functions = readonly (readonly [name: string, paths: number])[];
 
 // A file with maintainability 70, 5 decision paths, and its functions as name and decision paths.
 function fileOf(path: string, functions: Functions): File {
-  return { path, maintainability: 70, paths: 5, functions: functions.map(([name, paths]) => ({ name, paths })) };
+  return { path, sourceEvidence: completeSourceEvidence, maintainability: 70, paths: 5, functions: functions.map(([name, paths]) => ({ name, paths, identity: functionIdentityOf(name, paths) })) };
 }
 
 // The coverage report has no file, so each named function is uncovered: 5 decision paths give the CRAP 30, and 4 give 20.
@@ -86,7 +82,7 @@ test('Given changed files of each kind with a coverage report, when the table is
 
   const cells = bandedTableOf(base, head, touched).slice(4, 4 + touched.length).map((row) => row.split(' | ')[3]);
 
-  assert.deepEqual(cells, ['2 → 1 ↓1', '1 → gone', 'not measured → 1', '1 → 2 ↑1', 'new → 1', 'not measured', 'not measured', 'not measured']);
+  assert.deepEqual(cells, ['2 → 1 ↓1', 'not measured → gone', 'not measured → 1', '1 → 2 ↑1', 'new → 1', 'not measured', 'not measured', 'not measured']);
 });
 
 // startServer and stopServer are new, run went from 20 to 42, and big stays at 72.0. The module prefix of a method of

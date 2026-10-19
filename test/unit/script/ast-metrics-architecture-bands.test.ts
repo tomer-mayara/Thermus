@@ -1,3 +1,4 @@
+import { completeSourceEvidence, functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -53,7 +54,7 @@ function community(id: string, label: string, functions: Functions): readonly [C
 }
 
 function snapshotOf(communities: readonly (readonly [Community, Functions])[], others: Readonly<Record<string, Functions>> = {}): Snapshot {
-  const fileOf = (path: string, functions: Functions) => ({ path, maintainability: 70, paths: 10, functions: functions.map(([name, paths]) => ({ name, paths })) });
+  const fileOf = (path: string, functions: Functions) => ({ path, sourceEvidence: completeSourceEvidence, maintainability: 70, paths: 10, functions: functions.map(([name, paths]) => ({ name, paths, identity: functionIdentityOf(name, paths) })) });
   const files = [...communities.map(([{ members }, functions]) => fileOf(members[0], functions)), ...Object.entries(others).map(([path, functions]) => fileOf(path, functions))];
   return { commit: 'c0ffee00c0ffee00', global: { modularity: 0.5, crossShare: 0.25, cycles: [] }, communities: communities.map(([entry]) => entry), files };
 }
@@ -96,7 +97,7 @@ test('Given a community that has one function at 30 or more fewer than in the ba
   assert.deepEqual(nodeLines(report), ['  c_shrunk["shrunk<br/>1 file · paths 10<br/>▲ warning: 1 fn ≥ 30 (−1)"]']);
 });
 
-test('Given a gone community with a function at 30 or more in the base and a gone one without, when the report is made, then each shows its base count with warning or good, and a new community shows its head count without a change', () => {
+test('Given a gone community with a function at 30 or more in the base and a gone one without, when the report is made, then each shows its base count with warning or good, and a new community shows its head count without a false new-function claim', () => {
   const base = snapshotOf([community('0', 'calm', [['small', 4]]), community('1', 'old', [['big', 7]])]);
   const head = snapshotOf([community('2', 'young', [['big', 7], ['fresh', 6]])]);
 
@@ -105,13 +106,13 @@ test('Given a gone community with a function at 30 or more in the base and a gon
   assert.deepEqual(nodeLines(report), [
     '  c_calm["calm · gone<br/>1 file · paths 10<br/>● good: 0 fn ≥ 30"]',
     '  c_old["old · gone<br/>1 file · paths 10<br/>▲ warning: 1 fn ≥ 30"]',
-    '  c_young["young · new<br/>1 file · paths 10<br/>■ critical: 2 fn ≥ 30"]',
+    '  c_young["young · new<br/>1 file · paths 10<br/>▲ warning: 2 fn ≥ 30"]',
   ]);
 });
 
 // The band classes set the border color only: the width stays the channel of a touched community, as the legend says.
 test('Given nodes of each band, a touched one among them, and a gone one, when the report is made, then the block defines only the band classes that it uses, in the order good, warning, critical, after touched and gone, and the class lines follow in the same order, so that a touched node is in its touched line and in its band line', () => {
-  const base = snapshotOf([community('0', 'calm', [['small', 4]]), community('1', 'known', [['big', 5]]), community('3', 'old', [['tiny', 1]])]);
+  const base = snapshotOf([community('0', 'calm', [['small', 4]]), community('1', 'known', [['big', 5]]), community('3', 'old', [])]);
   const head = snapshotOf([community('0', 'calm', [['small', 4]]), community('1', 'known', [['big', 5]]), community('2', 'risky', [['fresh', 5]])]);
 
   const report = reportOf(base, head, ['src/known.ts']);
