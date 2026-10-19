@@ -135,10 +135,11 @@ Build first with `pnpm run build`. Run this command, or its live test, only
 when `src/` changed or the complete
 emitted Node unit suite was already selected. A focused unit package does
 not select that whole suite. Reuse current valid coverage when available;
-otherwise, an architecture report without coverage is acceptable outside
-that scope. Current coverage must describe the candidate's source, unit-test,
-and build inputs, including test helpers and fixtures. A commit that changes
-only documents does not invalidate coverage when those inputs are unchanged.
+otherwise, use the architecture report without bands, with its graph and
+legend, outside that scope. Current coverage must describe the candidate's
+source, unit-test, and build inputs, including test helpers and fixtures.
+A commit that changes only documents does not invalidate coverage when those
+inputs are unchanged.
 
 ```text
 Usage: pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE] [--help]
@@ -191,12 +192,14 @@ Options:
 
 Prints the architecture delta of `src/` as Markdown: a header with the base
 commit, one summary line (modularity, cross share, cycles, communities, base
-→ head), and a Mermaid graph of the communities with their changes, or `The
-map did not change.` Then it prints the complexity table of the changed
-`src/` files: the maintainability and the decision paths of each file, base
-→ head (`new`, `gone`, or `not measured` when a side has no value), and its
-rank among the ten riskiest files of the head, or
-`No production file changed.` By default it snapshots the merge base of
+→ head), and a fenced Mermaid graph of the communities with their changes
+and its legend. The graph always appears. For an unchanged map, `The map did
+not change.` appears above the graph; equal snapshots with no touched files
+keep all nodes and dependencies without change arrows or touched borders.
+Then it prints the complexity table of the changed `src/` files: the maintainability and the
+decision paths of each file, base → head (`new`, `gone`, or `not measured`
+when a side has no value), and its rank among the ten riskiest files of the
+head, or `No production file changed.` By default it snapshots the merge base of
 `--base` (default `origin/main`) in a temporary worktree and the working
 tree, and the changed files follow the rule of the delta command; with
 `--head` and `--base-snapshot` it reads two snapshot files and runs no tool
@@ -216,8 +219,11 @@ the trend store.
 
 Move aside a stale default `ast-report/coverage.json` before the architecture
 run. Its missing-coverage message does not require a broader test run; use
-the output without bands when no current valid coverage is available and
-the selection does not permit collection. Without a trend store in offline
+the graph and legend without bands when no current valid coverage is available
+and the selection does not permit collection. Paste the fenced `mermaid` block
+and its legend unchanged into every pull request body, including a pull request
+that changes only documents or has no valid coverage. Bands require compatible
+coverage; the graph does not require collection. Without a trend store in offline
 mode, the section says `No trend store.` A configured store receives the base
 record before the table is printed. An empty store passed directly to the
 trend formatter says `No snapshot of main in the trend store yet.`
@@ -297,6 +303,11 @@ files are eligible only when `src/` changed or that complete unit suite was alre
 selected. Keep them deferred outside that scope. Each architecture live case
 uses a temporary trend store; neither changes repository `docs/metrics/`.
 
+Architecture acceptance cases share complete base, banded, and repository
+drawings in `test/acceptance/script/fixtures/ast-metrics-architecture-goldens.ts`.
+The document-only case in `ast-metrics-architecture-unchanged.test.ts` checks
+the complete graph without bands and proves that no test suite runs.
+
 <!-- code-quality-tests:start -->
 | Kind | Test file | Collects full unit coverage |
 | --- | --- | --- |
@@ -304,6 +315,7 @@ uses a temporary trend store; neither changes repository `docs/metrics/`.
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |

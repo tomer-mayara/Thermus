@@ -12,8 +12,9 @@ const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--bas
 
 Print the architecture delta of src/ as Markdown, for the body of a pull
 request: a summary line with the modularity, the cross share, the cycles, and
-the communities of the base and the head, and, when the map changed, a Mermaid
-graph of the src/ communities of the head with the changes against the base.
+the communities of the base and the head, and a Mermaid graph of the src/
+communities of the head with the changes against the base. Every report includes
+the graph and its legend. An unchanged map keeps its note above the graph.
 Then print the complexity table of the changed src/ files: the maintainability
 and the decision paths of each file, from the base to the head, and its rank
 among the ten riskiest files of the head. A file that the base does not have is
@@ -61,8 +62,8 @@ their files, when that overlap is 0.5 or more; each base community matches one
 head community at most. A community without a match is new or gone. The map
 changed when a community is new or gone, when a changed file is in a community,
 or when a dependency or a cycle between communities appeared or disappeared. A
-change of the numbers alone does not change the map; the output then says that
-the map did not change.
+change of the numbers alone does not change the map; the output then prints
+"The map did not change." above the graph.
 
 Options:
   --base REF            The base of the pull request (default: origin/main)

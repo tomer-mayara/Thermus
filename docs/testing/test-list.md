@@ -169,13 +169,16 @@ worse.
 report: good, warning, and critical with their counts and the sign of a
 change, a gone and a new community, the band classes and their order, the
 summary count and the legend, the report without coverage, and the change of
-the map by a band.
+the map by a band. Every band-change case keeps the graph and checks whether
+the unchanged-map line applies.
 `ast-metrics-architecture-report.test.ts` checks the pure report in the test
 process: the Jaccard match at 0.5, the tie by label, the greedy order, each
 base community once, identity by files across new ids and labels, the ids
 and the escaping, a label shared by a gone and a new community, the arrows
 and the rounding, the change detection, and the end of a report without a
-changed `src/` file.
+changed `src/` file. Equal snapshots, renamed labels, numeric changes, and
+other unchanged-map cases keep the graph; the change rules still select
+the unchanged-map line.
 `ast-metrics-architecture-table.test.ts` checks the pure complexity table:
 the lines of the section, the cells with their arrows and rounding, `new`
 and `gone`, `not measured` on each side, the risk rank among the ten
@@ -206,10 +209,15 @@ eleven records and a new one, and the order by the time of the date in several
 time zones, with the file name for two records of the same time.
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from
-`fixtures/ast-metrics-architecture-snapshots.ts`: equal snapshots, a new
-dependency, a cycle, a split, `--touched` with a fall of 2.0 and the table
-row of the file, numbers alone, a quote and a backtick, and `--out`. Without
-`--trend-store`, the Markdown of two snapshot files ends with the trend
+`fixtures/ast-metrics-architecture-snapshots.ts`: equal snapshots with no
+touched files keep every node and dependency without change arrows or
+touched borders, the unchanged-map line, the missing-coverage reason, and
+the legend; a new dependency, a cycle, a split, `--touched` with a fall of 2.0 and the table
+row of the file, numeric changes with the unchanged-map line and the graph,
+a quote and a backtick, and `--out` with the complete graph. The shared
+`fixtures/ast-metrics-architecture-goldens.ts` supplies the complete base,
+banded, and repository drawings. Without `--trend-store`, the Markdown of
+two snapshot files ends with the trend
 section that says `No trend store.`
 `ast-metrics-architecture-table.test.ts` compares the complete Markdown of
 the complexity table: a file whose maintainability fell from 72.0 to 60.0,
@@ -218,9 +226,12 @@ maintainability index, one row for each kind sorted by path, and changed
 files outside `src/`. These cases give no coverage report, so the line after
 the summary says that the bands need it.
 `ast-metrics-architecture-bands.test.ts` compares the complete Markdown with
-the coverage report of `fixtures/ast-metrics-architecture-coverage.ts`: a
-touched community without a function at CRAP 30 or more (good), one with two
-such functions in the base and none added or worse (warning), an added
+the coverage report of `fixtures/ast-metrics-architecture-coverage.ts`: equal
+covered snapshots with no touched files keep the unchanged-map line, every
+node with its assessable band without change arrows or touched borders,
+and the legend; a touched community without a function at CRAP 30 or more
+(good), one with two such functions in the base and none added or worse
+(warning), an added
 function (critical, `base new`), a function whose decision paths rose
 (worse, critical, with its base CRAP), an anonymous function and a name
 twice in the report (unmatched 2), a file that the report does not have
@@ -234,6 +245,12 @@ the `ast-report/coverage.json` of the repository root, a failed base
 analysis, and an unknown ref. Each complete Markdown ends with the trend
 table: the row of the merge base, whose record the run wrote to
 `docs/metrics/` of the test repository, and the row of the head.
+`ast-metrics-architecture-unchanged.test.ts` checks a temporary repository
+whose branch changes only a document, with no coverage and both doubles:
+the complete Markdown keeps the unchanged-map line, every community, the
+dependencies and the legend without bands, `No production file changed.`,
+and the trend. A suite marker stays absent, the ast-metrics calls are only
+analysis and MCP, and no worktree or server stays after the run.
 `ast-metrics-architecture-trend.test.ts` compares the complete Markdown and
 the files of the trend store: an empty store with a coverage report (the
 whole JSON of the new record of the base commit and the table with its row
@@ -247,14 +264,17 @@ with both doubles run twice: the first run writes
 `docs/metrics/<date>-<commit8>.json` with the numbers of the merge base, and
 the second run, with a coverage report, leaves that file unchanged.
 `ast-metrics-architecture.live.ts` runs the real tool with `--base HEAD` and
-a trend store in a folder of the test: the summary and `No production file
+a trend store in a folder of the test: the summary, the unchanged-map line,
+the fenced graph with every community, the legend, and `No production file
 changed.`, the record of HEAD in the store, and the trend table that ends with
 the row of HEAD and the row of the head with the same numbers. A second case
 first runs the real unit suite under coverage (about 90 seconds), then the
 command with each `src/` file touched: equal counts on both sides, a band
 without a change on each node, an equal CRAP cell on each row, and an empty
 list. It removes `ast-report/coverage.json` afterwards. Neither case writes to
-`docs/metrics/` of the repository. The default suites skip it.
+`docs/metrics/` of the repository. The structural case collects no coverage;
+the second case keeps the full-unit-suite scope restriction. The default
+suites skip it.
 
 The following is the same complete inventory as the script README. The
 contract discovers available files in lexical order. These rows do not select
@@ -273,6 +293,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |

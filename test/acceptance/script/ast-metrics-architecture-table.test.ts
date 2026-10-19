@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
+import { baseGraph } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, baseSnapshot, complexityHeading, edited, file, noProductionFile, noTrend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // The complexity table of the changed src/ files, after the architecture delta of two snapshot files. The changed files
@@ -22,6 +23,8 @@ const architecture = [
   bandsNeedTheCoverage,
   '',
   'The map did not change.',
+  '',
+  ...baseGraph,
 ];
 
 function markdown(complexity: readonly string[]): string {

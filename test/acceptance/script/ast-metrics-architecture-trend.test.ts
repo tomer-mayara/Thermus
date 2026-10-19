@@ -6,6 +6,7 @@ import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
 import { bandedBase, coverageArguments } from './fixtures/ast-metrics-architecture-coverage.ts';
+import { bandedBaseGraph, baseGraph, repositoryGraph } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, baseSnapshot, edited, noProductionFile, noTrend, snapshotArguments } from './fixtures/ast-metrics-architecture-snapshots.ts';
 import { commitCells, emptyStore, recordText, trendSection, writeRecords, type TrendRecordShape } from './fixtures/ast-metrics-architecture-trend.ts';
 import { baseDoublesOnPath, baseRepository } from './fixtures/ast-metrics-snapshot-base.ts';
@@ -23,7 +24,7 @@ const header = '## Architecture of src/: base a1b2c3d4 → head';
 const baseCommit = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0';
 
 // The output of two equal base snapshots without coverage, up to the trend section.
-const unchanged = [header, '', 'Modularity 0.52 → 0.52 · cross share 0.26 → 0.26 · cycles 0 → 0 · communities 4 → 4', '', bandsNeedTheCoverage, '', 'The map did not change.', '', ...noProductionFile];
+const unchanged = [header, '', 'Modularity 0.52 → 0.52 · cross share 0.26 → 0.26 · cycles 0 → 0 · communities 4 → 4', '', bandsNeedTheCoverage, '', 'The map did not change.', '', ...baseGraph, '', ...noProductionFile];
 const headRow = '| this pull request | | 0.52 | 0.26 | 0 | 62.1 | – |';
 
 function markdown(before: readonly string[], trend: readonly string[]): string {
@@ -44,7 +45,7 @@ test('Given an empty store and a coverage report, when the command runs with --t
 
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, markdown(
-    [header, '', 'Modularity 0.52 → 0.55 · cross share 0.26 → 0.25 · cycles 0 → 0 · communities 4 → 4 · functions ≥ 30: 4 → 4', '', 'The map did not change.', '', ...noProductionFile],
+    [header, '', 'Modularity 0.52 → 0.55 · cross share 0.26 → 0.25 · cycles 0 → 0 · communities 4 → 4 · functions ≥ 30: 4 → 4', '', 'The map did not change.', '', ...bandedBaseGraph, '', ...noProductionFile],
     trendSection(['| a1b2c3d4 | 2026-10-18 | 0.52 | 0.26 | 0 | 62.1 | 4 |', '| this pull request | | 0.55 | 0.25 | 0 | 61.5 | 4 |']),
   ));
   assert.equal(result.code, 0);
@@ -144,7 +145,7 @@ test('Given two snapshot files without --trend-store, when the command runs in t
 // kernel, whose file has no maintainability. The coverage report of the second run has no file, so each named function
 // is uncovered, and none of them reaches CRAP 30.
 function repositoryMarkdown(repository: GitRepository, summary: readonly string[], rows: readonly string[]): string {
-  const head = [`## Architecture of src/: base ${repository.git('rev-parse', 'HEAD').slice(0, 8)} → head`, '', ...summary, '', 'The map did not change.', '', ...noProductionFile];
+  const head = [`## Architecture of src/: base ${repository.git('rev-parse', 'HEAD').slice(0, 8)} → head`, '', ...summary, '', 'The map did not change.', '', ...repositoryGraph(summary.length === 1), '', ...noProductionFile];
   return markdown(head, trendSection(rows));
 }
 

@@ -27,7 +27,7 @@ function git(...args: string[]): string {
 // report of an earlier run gives the summary line its count of the functions at CRAP 30 or more; without one, the line
 // after the summary says that the bands need it. The new store gets the record of HEAD, so the trend table has the row
 // of HEAD and the row of the head, with the same numbers. The folder of the test, with the store, goes after the test.
-test('Given the real ast-metrics, a src/ without uncommitted changes, and an empty trend store, when the architecture delta runs with --base HEAD and --trend-store, then both sides of each number of the summary line are equal, the map did not change, no production file changed, the store holds the record of HEAD, and the trend table ends with the row of HEAD and the row of the head with the same numbers, within 30 seconds, and no worktree stays', { timeout: 30_000, skip }, async (t) => {
+test('Given the real ast-metrics, a src/ without uncommitted changes, and an empty trend store, when the architecture delta runs with --base HEAD and --trend-store, then both sides of each number of the summary line are equal, the unchanged map graph has every community, no production file changed, the store holds the record of HEAD, and the trend table ends with the row of HEAD and the row of the head with the same numbers, within 30 seconds, and no worktree stays', { timeout: 30_000, skip }, async (t) => {
   assert.equal(git('status', '--porcelain', '--', 'src'), '', 'The check needs a src/ without uncommitted changes.');
   const folder = dataDirectory(t);
   const store = join(folder, 'metrics');
@@ -43,7 +43,13 @@ test('Given the real ast-metrics, a src/ without uncommitted changes, and an emp
   assert.equal(sides.length, banded ? 5 : 4, summary);
   assert.deepEqual(sides.filter(([before, after]) => before !== after), [], summary);
   const coverageNote = banded ? [] : [bandsNeedTheCoverage, ''];
-  assert.ok(result.stdout.includes([summary, '', ...coverageNote, 'The map did not change.', '', ...noProductionFile, '', trendHeading, ''].join('\n')), result.stdout);
+  assert.ok(result.stdout.includes([summary, '', ...coverageNote, 'The map did not change.', '', '```mermaid', 'flowchart LR'].join('\n')), result.stdout);
+  const nodes = result.stdout.split('\n').filter((line) => /^ {2}c_\w+\["/.test(line));
+  const communityCount = summary.match(/communities (\d+) → (\d+)/);
+  assert.ok(communityCount, summary);
+  assert.equal(nodes.length, Number(communityCount[2]), result.stdout);
+  assert.ok(result.stdout.includes(['', ...noProductionFile, '', trendHeading, ''].join('\n')), result.stdout);
+  assert.match(result.stdout, /\nLegend: /);
   assert.deepEqual(readdirSync(store), [`${date.slice(0, 10)}-${commit.slice(0, 8)}.json`]);
   const [baseRow, headRow] = result.stdout.trimEnd().split('\n').slice(-2);
   assert.equal(headRow, baseRow.replace(`| ${commit.slice(0, 8)} | ${date.slice(0, 10)} |`, '| this pull request | |'), result.stdout);

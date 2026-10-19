@@ -29,8 +29,11 @@ AGENTS.md rule and authorizes no base-coverage storage or merge workflow.
 
 Delivery status:
 
-- PR #175 implements CR-16 and the CR-23 contract-test foundation. It awaits
-  owner review. CR-23's later content consolidation remains.
+- PR #175 merged CR-16 and the CR-23 contract-test foundation. CR-23's later
+  content consolidation remains.
+- PR #176 implements delivery group 2, CR-24: always print the architecture
+  drawing and require its fenced block and legend in the pull request body.
+  It awaits owner review.
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
@@ -80,9 +83,9 @@ The review found these problems:
    commands or activate the future AGENTS.md process.
 6. The graph shows clusters, not designed components. CR-13 adds the
    component view. CR-14 adds charts and component trends.
-7. An unchanged map has no drawing. CR-24 always prints it, with bands
-   when compatible coverage exists. Missing bands do not authorize a
-   broader test run.
+7. At the proposal baseline, an unchanged map had no drawing. CR-24 in
+   PR #176 always prints it, with bands when compatible coverage exists.
+   Missing bands do not authorize a broader test run.
 
 Other CRs align documentation, check command contracts, pin the tool,
 reduce repetition, and address separate cleanup. Four proposed commands
@@ -112,6 +115,12 @@ A document-only commit does not invalidate coverage when its measurement
 inputs are unchanged. Without valid coverage, the current policy permits
 architecture output without bands. The commands do not yet enforce that
 validity; CR-03 supplies the mechanism.
+
+CR-24 in PR #176 adds the graph and legend to every architecture report.
+Current step 5 requires their fenced `mermaid` block and legend unchanged
+in every pull request body, including unchanged maps and document-only
+changes. `The map did not change.` stays above the graph. Bands require
+compatible coverage; this requirement does not expand the selected test scope.
 
 ### 2.2 Commands, layout, and documents
 
@@ -177,8 +186,10 @@ disagree on lookup location; the controlled check remains part of CR-16.
 - Community matching is greedy by member-file Jaccard overlap at 0.5,
   with each base community matched once. A split or merge can appear as
   gone plus new.
-- A graph appears only when a community is new, gone, or touched, or an
-  edge or cycle changes. Otherwise it prints `The map did not change.`
+- CR-24 in PR #176 always prints the graph and legend. The existing map
+  change rules still decide whether `The map did not change.` appears above
+  the graph: a community is new, gone, or touched, an edge or cycle changes,
+  or a kept community's band changes.
 - CRAP is `paths² × (1 − coveredShare)³ + paths`. Current code rounds it
   to one decimal before comparing it with 30. CR-22 changes that contract
   explicitly to compare before display rounding.
@@ -1213,9 +1224,9 @@ the final content pass consolidates explanations, not missing contracts.
 
 P1 · S · gap. Independent for the graph; use CR-03 validity once present.
 
-**Evidence.** `architecture/report.ts` omits unchanged maps. The study
-found no drawing in PRs #166 to #169. This is historical evidence, not a
-claim about every later PR.
+**Evidence.** At the proposal baseline, `architecture/report.ts` omitted
+unchanged maps. The study found no drawing in PRs #166 to #169. This is
+historical evidence, not a claim about every later PR.
 
 **Required behavior.** Always print the community graph and legend. Keep
 `The map did not change.` above it when appropriate. Unchanged elements
@@ -1239,6 +1250,14 @@ the unchanged line still depends on them.
 
 **Documents.** AGENTS.md drawing requirement, guide, README, plan encoding,
 inventory. Scope remains unchanged before and after this CR.
+
+**Delivery.** Implemented in PR #176 after PR #175 merged; owner review is
+pending. This delivery
+changes graph output and the current step 5 drawing requirement. It does
+not implement CR-03 coverage validation, CR-07 incomplete assessments,
+the CR-09 process wrapper, or the CR-13 component view. Invalid coverage
+that the current parser rejects still stops the command; callers must move
+aside stale default coverage under the current policy.
 
 ## 5. Delivery order
 
@@ -1583,9 +1602,10 @@ and CR-24 land. It reflects D1 to D3, approved on 2026-10-18: an inclusive
 new-function target of 15, goals with documented exceptions after at most
 three cycles, and clearly labeled head-derived historical estimates.
 D4 to D9 remain open; this text grants no approval for their proposals.
-Current AGENTS.md remains authoritative. CR-24 can first add the drawing
-requirement to current step 5. Until CR-09 exists, run individual available
-commands with the same scope; do not prescribe an unavailable wrapper.
+Current AGENTS.md remains authoritative. CR-24 adds the drawing requirement
+to current step 5; that change does not activate the other proposed steps.
+Until CR-09 exists, run individual available commands with the same scope;
+do not prescribe an unavailable wrapper.
 
 > Run this process on the complete candidate after documents are updated
 > and before Ready. Use commands under `script/code-quality/`; the
