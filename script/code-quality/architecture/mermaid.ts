@@ -1,4 +1,4 @@
-// The Mermaid graph of the encoding of docs/implementation/architecture-evolution-plan.md: the border width shows a
+// Graph encoding: docs/implementation/ast-metrics-review.md, "Show the architecture delta". The border width shows a
 // touched community, the border color its band, and the line of an edge shows a cycle, a new, or a gone dependency.
 import { changeText } from './format.ts';
 import { bandTextOf } from './band-label.ts';

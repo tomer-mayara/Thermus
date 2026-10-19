@@ -1,4 +1,4 @@
-// The data of the architecture delta of docs/implementation/architecture-evolution-plan.md ("The views"): two snapshots
+// The architecture delta data of docs/implementation/ast-metrics-review.md, "Show the architecture delta": two snapshots
 // of src/, the map that compares them, and the files of the complexity table.
 import type { DependencyEvidence } from '../dependencies/types.ts';
 import type { FileChange } from '../delta/changes.ts';
@@ -44,7 +44,7 @@ export interface MapSources {
   readonly coverageNotice?: string;
 }
 
-// The band of docs/implementation/architecture-evolution-plan.md ("Bands"). A function at CRAP 30 or more is over.
+// Bands: docs/implementation/ast-metrics-review.md, "Show the architecture delta". CRAP 30 or more is over the limit.
 export type Band = 'good' | 'warning' | 'critical';
 
 export interface NodeBand {

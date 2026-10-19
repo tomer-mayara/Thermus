@@ -48,13 +48,13 @@ runtime guides stay current after implementation.
 - [Authentication implementation plan](design/authentication-design.md): provider contracts, offline local accounts in one shared workspace, the hosted placeholder, hosted scope, and implementation gates.
 - [Paid billing design](design/billing-design.md): the `Billing` interface, free billing until the owner chooses a payment provider, the open paid decisions, and the AUTH-11 specification.
 - [Planned cache key design](design/cache-design.md): pending cache requirements.
-- [Architecture and complexity evolution plan](implementation/architecture-evolution-plan.md): the study, the three views of each pull request (architecture delta, complexity table, trend), the CRAP bands, the decisions, and the tickets T1 to T7, merged in PRs #157 to #168; the trend records are the files of `metrics/`.
-- [ast-metrics change request](implementation/ast-metrics-change-request.md): proposed revision 4, with coverage and provenance corrections, architecture views, scoped checks, and open owner decisions; no command or policy change is implemented by this document.
+- [ast-metrics change request](implementation/ast-metrics-change-request.md): delivery record for revision 4, with implemented coverage and architecture changes, explicit owner dispositions, deferred measured base coverage and merge workflow, and CR-21 archival.
 - [Test inventory](testing/test-list.md): executed cases and pending cache tests.
 - [Test code refactoring plan](implementation/test-code-refactoring-plan.md): the terms for auxiliary test files, the four-layer target layout of `test/**`, and the ordered steps that move, merge, and split them with no `src` change.
 
 ## Archive
 
+- [Architecture and complexity evolution record](archive/architecture-evolution-plan.md): the study, original design, dated measurements, and completed T1 to T7; later CR delivery and deferred work are recorded in the change request. Current commands, decisions, and limits are in the ast-metrics review guide.
 - [MCP pipelines improvement plan](archive/mcp-pipelines-improvement-plan.md): historical reviewed scope and discussion; selected refinements 01–04 are implemented and validated in [PR #164](https://github.com/tomer-mayara/Thermus/pull/164); 05 remains deferred. Includes the frozen [Martin-inspired review](archive/mcp-pipelines-review-martin.md) and [Metz-inspired review](archive/mcp-pipelines-review-metz.md).
 
 - [Completed authentication refactoring record](archive/auth-refactoring-plan.md): two merged slices, local command role and lazy opener, auth layout, direct import checks, preserved behavior, and deferred limits.

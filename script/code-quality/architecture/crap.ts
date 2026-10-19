@@ -1,7 +1,7 @@
-// CRAP (Change Risk Anti-Patterns, Savoia and Evans 2007) of each src/ function, as
-// docs/implementation/architecture-evolution-plan.md ("CRAP per function") gives it: paths² × (1 − share)³ + paths,
-// with the covered share of the function's own code in the unit suite. The base uses the share of the head,
-// because the command runs the unit suite only for the head.
+// CRAP (Change Risk Anti-Patterns, Savoia and Evans 2007) of each src/ function:
+// paths² × (1 − share)³ + paths, with the covered share of its own code in the selected suites.
+// See docs/implementation/ast-metrics-review.md, "Show the architecture delta".
+// The base estimate uses the head share; no base coverage is measured.
 import type { CoverageFunction } from './coverage.ts';
 import type { TableFile } from './types.ts';
 import { compareCrap, crapValueOf } from './crap-score.ts';

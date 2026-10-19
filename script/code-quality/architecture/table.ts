@@ -1,5 +1,5 @@
 import { changedFilesOf, type FileComparison } from './file-correspondence.ts';
-// The complexity table of docs/implementation/architecture-evolution-plan.md ("The views", view 2). With coverage, it has
+// The complexity table of docs/implementation/ast-metrics-review.md, "Show the architecture delta". With coverage, it has
 // the column of the functions at CRAP 30 or more, and the list of the functions follows it. The table is pure, so that
 // its rules have unit tests without git and ast-metrics.
 import { measureCellsOf } from './format.ts';

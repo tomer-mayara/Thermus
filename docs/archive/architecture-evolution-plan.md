@@ -1,5 +1,16 @@
 # Architecture and complexity evolution plan
 
+Archived implementation record (CR-21, PR #191), updated 2026-10-19.
+The [review guide](../implementation/ast-metrics-review.md) holds the current
+commands, decisions, and limits. The [change request](../implementation/ast-metrics-change-request.md#32-owner-decisions)
+records the owner dispositions: defer D4's measured base-coverage store and
+D5's merge workflow, retain the two baseline exceptions under D8, and retain
+command-specific unexpected-error diagnostics under D9. Approved implementation
+work is complete through PR #190; CR-21 archives this plan in PR #191.
+Real integration capture remains deferred because its complete group was not
+selected. Loader-thread coverage remains unsupported and unverified.
+The study, dated observations, and completed ticket evidence below remain history.
+
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
 "Review record"). Historical tickets T1 to T7 are done (see the appendix).
 PR #175 completed CR-16 and the CR-23 contract-test foundation. PR #176
@@ -24,15 +35,17 @@ the CR-23 content consolidation at `2cfd381c`. The detailed README explains
 CRAP before commands, puts commands in process order, and links their focused
 tests. Its help contracts and both test inventories remain checked by the
 existing documentation contract.
-The CRAP delta was already calculated once before CR-17. D9 remains open.
+The CRAP delta was already calculated once before CR-17. D9 retains each
+command's unexpected-error diagnostics.
 PR #188 merged CR-10 option A, selected-suite coverage under CR-11,
 and manual backfill and gap reporting under CR-12 at `efed6618`.
 The owner approved D6's cleaner → MCP and website-fetcher → auth path rules
 through the review wrapper, D7's file cap 40 with LOC 150 unchanged and a strict
 new-function warning above 10 paths, and CR-11's verified pre-crash
 flush/stop/seal protocol on 2026-10-19. These approved changes are implemented;
-selected tests, typechecking, and all 13 affected live cases pass. D4 option B,
-D5, D8, and D9 remain open.
+selected tests, typechecking, and all 13 affected live cases pass. D4 option B
+and D5 are deferred. D8 retains the two baseline exceptions; D9 retains
+command-specific unexpected-error diagnostics.
 The rule refresh changed 209 intermediate entries to 169 after the approved
 D6/D7 changes; the base before PR #188 had 175 entries. Final verification stayed at
 169 and left the baseline byte-identical.
@@ -40,11 +53,13 @@ The refresh uses the existing AGENTS.md exception for retained high findings.
 A refresh does not silence high file-maintainability regressions; the pull
 request description gives an individual reason for each retained high finding.
 No new baseline exception is added.
-The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
-completion of T1 to T7 does not complete those CRs. This plan builds on
+PR #189 merged CR-19's remaining helper cleanup at `1bc81715`. PR #190
+merged CR-20's request-isolation test split at `73c70570`. The
+[change request](../implementation/ast-metrics-change-request.md) records delivery and the explicit
+disposition of deferred work; CR-21 prepares this archive after those changes. This plan builds on
 the process of PR #154 ("Code quality review with
 ast-metrics" in [AGENTS.md](../../AGENTS.md) and
-[the review guide](ast-metrics-review.md)).
+[the review guide](../implementation/ast-metrics-review.md)).
 
 ## Objective
 
@@ -168,7 +183,7 @@ Anonymous functions, duplicate names, and unsupported owners stay unknown.
 Legacy snapshots provide no source proof; offline readers do not inspect the
 caller's checkout. The wrappers run from the repository root;
 keep its configuration authoritative by adding no config under `src/`.
-The [review guide](ast-metrics-review.md#the-configuration) records the
+The [review guide](../implementation/ast-metrics-review.md#the-configuration) records the
 controlled 0.43.1 configuration lookup check.
 
 A pull request has two snapshots: the head (the working tree) and the base
@@ -260,7 +275,7 @@ uses the immutable `docs/metrics/` store. It never rewrites a record, collects
 coverage, runs suites or builds, or installs packages. Worktree cleanup failure
 prevents that record's publication; earlier complete records survive later
 failures. Exit statuses are 0 for selected records present, 1 for failure, and
-130/143 for SIGINT/SIGTERM. A merge-time workflow remains unapproved under D5.
+130/143 for SIGINT/SIGTERM. D5 defers a merge-time workflow; manual backfill remains available.
 
 ### Community identity
 
@@ -388,7 +403,7 @@ Test helpers, fixtures, non-TypeScript files,
 and untracked paths under `test/` count. Any changed `src/` path suppresses
 this notice. Offline rendering requires equal known source fingerprints plus
 explicit test paths and no source path. It does not infer test-only work from
-empty metadata. D4's measured base-coverage store remains unapproved.
+empty metadata. D4 defers the measured base-coverage store.
 
 The base tree gets no coverage run, so its CRAP is a head-derived estimate.
 Only a proven base/head function pair can use the head covered share with
@@ -422,7 +437,7 @@ unknown identity remains unresolved for the applicable goals.
 
 Added or changed functions aim at CRAP < 30; added functions also aim at
 CRAP ≤ 15 under approved D1. Comparisons use unrounded scores. The
-[guide's threshold table](ast-metrics-review.md#the-crap-goal) gives the
+[guide's threshold table](../implementation/ast-metrics-review.md#the-crap-goal) gives the
 smallest whole coverage percent for each goal: five paths at zero and 25
 paths at 80% equal 30 and fail; 15 paths at full coverage meet target 15.
 `split` means no coverage percentage can meet the applicable inequality.
@@ -501,8 +516,7 @@ or touched borders.
 Compatible coverage adds bands; without it, the graph and legend still
 appear with the specific coverage-withholding notice. Reuse valid coverage or
 collect only within the current test gate policy. CR-03 coverage validity
-checks are implemented in PR #178; PR #181 adds CR-07 incomplete
-assessments, pending owner review.
+checks merged in PR #178; PR #181 merged CR-07 incomplete assessments.
 
 The shape of the output, with made-up numbers:
 
@@ -582,7 +596,7 @@ their fenced block and legend unchanged in every pull request body. The original
   type, re-export, side-effect, and literal dynamic imports are retained.
   Packages are ignored; unresolved local imports, unsupported aliases,
   non-literal dynamic imports, parse errors, and outside-source targets
-  remain explicit issues. See the [snapshot format](ast-metrics-change-request.md#a2-snapshot)
+  remain explicit issues. See the [snapshot format](../implementation/ast-metrics-change-request.md#a2-snapshot)
   for resolution rules. These pairs have different units from tool references.
 - Legacy snapshots can show their community map and component nodes from
   file metrics, but component edges and import explanations are unavailable
@@ -602,8 +616,8 @@ their fenced block and legend unchanged in every pull request body. The original
   [GitHub diagram guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
   explains fenced diagrams and renderer-version checks. The numeric table
   and component matrix preserve all values and gaps.
-- Coverage defaults to emitted Node and source portal unit tests. Draft
-  PR #188 adds selected integration and acceptance suites under CR-11, with
+- Coverage defaults to emitted Node and source portal unit tests.
+  PR #188 merged selected integration and acceptance suites under CR-11, with
   isolated captures and explicit suite provenance. A function tested only by
   an unselected suite can still count as uncovered. Every complete requested
   suite must already be independently selected. Process collection remains
@@ -623,7 +637,7 @@ their fenced block and legend unchanged in every pull request body. The original
   The coverage live file needs no ast-metrics; MCP, snapshot, and architecture
   live files skip without it. A skip is not a pass. Live contracts check
   dynamic structure and positive counts rather than dated repository counts.
-  The [policy mapping](test-gate-policy.md#ast-metrics-focused-and-live-contracts)
+  The [policy mapping](../implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts)
   selects affected focused and live contracts; command and double changes do
   not select all live files or a broader nested suite.
 - The 2026-10-18 study observed a reported seven-point maintainability drop
@@ -640,8 +654,9 @@ their fenced block and legend unchanged in every pull request body. The original
   project warning starts strictly above 10 new-function paths. These rules
   are implemented, with focused policy and pinned-tool boundary tests passing.
   Selected tests, typechecking, and all 13 affected live cases pass. Native 0.43.1 symbol matching and its
-  warning at 10 paths do not establish those project contracts. D4 option B,
-  D5, D8, and D9 remain open.
+  warning at 10 paths do not establish those project contracts. D4 option B
+  and D5 are deferred. D8 keeps the two baseline exceptions, and D9 keeps
+  command-specific unexpected-error diagnostics.
 - The trend lags one pull request behind `main`, and a `main` commit that no
   pull request records as a base gets no snapshot. Stored counts belong to
   the first recording pull request. They are head-derived estimates, not
@@ -676,15 +691,15 @@ supersedes T3's rule that an unchanged map has no graph. Current PR work
 always follows current AGENTS.md and the test gate policy, including the
 coverage restrictions above and the two permitted baseline refresh reasons.
 Use `ast-metrics-baseline.ts` for an allowed refresh and its ignored entry
-counts. The wrapper adds no exception; a third baseline exception remains
-owner decision D8.
+counts. The wrapper adds no exception. D8 rejects a third baseline exception
+for violations already on `main`.
 
-Every ticket reads this plan, [the review guide](ast-metrics-review.md),
+Every ticket reads this plan, [the review guide](../implementation/ast-metrics-review.md),
 `docs/coding-principles.md`, `docs/testing/test-code-layout.md`, and
 `docs/implementation/test-gate-policy.md`, and follows the AGENTS.md process:
 the acceptance test first, then TDD, the focused test before each commit,
 the checks selected by the changed paths under the
-[test gate policy](test-gate-policy.md#required-runs), `habit-hooks`, and the
+[test gate policy](../implementation/test-gate-policy.md#required-runs), `habit-hooks`, and the
 ast-metrics review process before Ready. Commands under `script/code-quality/`
 are TypeScript, run from source, and typed without `any`. Use the configured
 gates and explain retained findings; PR #170 retained medium/low findings.

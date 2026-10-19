@@ -8,6 +8,13 @@ of the tool. If the two disagree, follow AGENTS.md and correct this guide.
 The facts in this guide were verified on 2026-10-17 through 2026-10-19 with
 ast-metrics 0.43.1 on this repository. PR #188 merged CR-10 option A,
 CR-11, and manual CR-12 at `efed6618`.
+The architecture plan is now an [archival record](../archive/architecture-evolution-plan.md).
+This guide holds its current decisions and limits. On 2026-10-19, the owner
+deferred D4's measured base-coverage store and D5's merge workflow. D8 keeps
+the existing two baseline refresh reasons and rejects a third reason for
+violations already on `main`. D9 keeps each command's unexpected-error
+diagnostics; no shared normalization is approved. These dispositions change
+no runtime behavior and grant no broader test scope.
 A later version can behave differently; verify the limits again before you
 change the process.
 
@@ -46,7 +53,7 @@ handle repeated argument and limit checks, JSON file reads, and UTF-16 text
 ordering. Consumers keep their schema checks and file-kind diagnostics.
 Comparators return zero for ties; locale-sensitive sorts keep their existing
 contract. Each command keeps its help, output, cleanup, and failure behavior.
-CR-17 does not resolve the open D9 diagnostic decision.
+D9 retains these command-specific unexpected-error diagnostics after CR-17.
 
 Select tests under the [test gate policy](test-gate-policy.md) before these
 commands. Only a change under `src/` requires the full ordinary suite
@@ -802,8 +809,8 @@ Any changed path under `src/`, of any extension, suppresses this
 particular notice. Offline inputs require equal known source fingerprints and
 explicit test paths, with no source path, before they can establish test-only
 changes. They do not infer this from commit dates or empty metadata.
-These notices do not measure base coverage or judge changed tests. D4's
-base-coverage store remains unapproved. Legacy snapshots can still show
+These notices do not measure base coverage or judge changed tests. D4 defers
+the measured base-coverage store. Legacy snapshots can still show
 structure; they cannot establish coverage compatibility.
 
 These notices do not change the selected test scope. Use verified compatible
@@ -975,9 +982,9 @@ including known lower-bound violations. Directly below that summary, the
 report lists unmeasured functions in changed files with at least five paths,
 sorted by path and name, for example
 ``- `src/x.ts` `(anonymous)`: paths 5, covered unknown, CRAP ≥ 5``. Anonymous
-functions are displayed without a name match. These bands are T6 of the
-[evolution plan](architecture-evolution-plan.md), which
-gives their reasons and their limits.
+functions are displayed without a name match. T6 of the
+[archived evolution plan](../archive/architecture-evolution-plan.md#t6-crap-bands-and-colors)
+records the original band design. The rules above are the current contract.
 
 #### Components and import evidence
 
@@ -1174,7 +1181,7 @@ explicit reason. Offline reports with a store print
 no-store output stays
 `No trend store.` In a repository, `--trend-store` replaces `docs/metrics/`, as
 the live test does with a temporary folder. D3 authorizes no base-coverage
-store or merge workflow; those remain D4 and D5.
+store or merge workflow; the owner deferred both under D4 and D5.
 
 Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
 diagnostic line for a failure, also for a store that the command cannot read or
@@ -1200,7 +1207,8 @@ collector, or package install. Each tool session is bounded, and worktrees are
 removed on success, analysis failure, SIGINT, and SIGTERM. A cleanup failure
 prevents that record's publication. Earlier completed records survive a later
 failure. Exit 0 means the selected records exist; failures exit 1 and signals
-exit 130 or 143. D5 still has no approved merge-time workflow.
+exit 130 or 143. D5 defers a merge-time workflow; manual backfill remains
+the supported way to fill missing structural records.
 
 ## The configuration
 
@@ -1229,13 +1237,12 @@ adding no config under `src/`. The root file:
   lines and 20 logical lines for a function. The rule `no_community_cycles`
   is not used: it judges how ast-metrics groups the files of the whole
   repository, not an import cycle, and its baseline entry drifted with every
-  change of `script/`; the architecture delta of the evolution plan shows the
-  cycles of `src/` instead.
+  change of `script/`; the architecture delta shows the cycles of `src/` instead.
 
 The owner approved D6 and D7 on 2026-10-19: cleaner → MCP and
 website-fetcher → auth path restrictions enforced by the review wrapper,
 a file cap of 40 paths with LOC 150 unchanged, and a new-function warning
-strictly above 10 paths. The candidate implements these rules. Selected tests,
+strictly above 10 paths. PR #188 implemented these rules. Selected tests,
 typechecking, and all 13 affected live cases pass. Retained
 review findings still need individual reasons. A controlled 0.43.1 capability
 check found that `coupling.forbidden`
@@ -1250,7 +1257,7 @@ The rule refresh changed 209 intermediate entries to 169 after the approved
 D6/D7 changes; the base before PR #188 had 175 entries.
 Final verification stayed at 169 entries and left the baseline byte-identical.
 The refresh uses the existing AGENTS.md exception for retained high findings.
-Final review reports 10 high maintainability findings, two medium findings,
+PR #188's final review reports 10 high maintainability findings, two medium findings,
 no low findings, and six improvements. Each retained high finding still needs
 its own reason in the pull request description. This refresh adds no baseline exception.
 
@@ -1262,9 +1269,8 @@ carries the measured value in its message, so a file whose value moved can
 appear again. Current AGENTS.md permits a refresh
 for two reasons only: the pull request changes `.ast-metrics.yaml` rules, or
 it keeps a finding of severity high with a reason under step 4. Refresh and
-commit the baseline in that same pull request. A third exception for violations
-already on `main` remains owner decision D8 of the change request; historical
-refreshes do not grant permission. Use
+commit the baseline in that same pull request. D8 rejects a third exception
+for violations already on `main`; historical refreshes do not grant permission. Use
 `pnpm exec node script/code-quality/ast-metrics-baseline.ts` for the refresh.
 
 ## How ast-metrics counts
