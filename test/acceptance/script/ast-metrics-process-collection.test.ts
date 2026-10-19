@@ -7,7 +7,7 @@ import { processFixture, recordsIn } from './fixtures/ast-metrics-process.ts';
 // Both complete unit parts are selected in this small repository. Only its fixture
 // tests run; this case cannot start the application's unit suite.
 const fixtureFiles = {
-  'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node script/build.cjs' } }),
+  'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node script/build.cjs', 'test:unit': 'npm run build && node --test --test-concurrency=1 "dist/test/unit/**/*.test.js" && node --test "test/unit/user-portal/**/*.test.ts"' } }),
   'script/build.cjs': "require('node:fs').mkdirSync('ast-report', {recursive:true}); require('node:fs').appendFileSync('ast-report/collection.log', 'build\\n');\n",
   'dist/src/auth/session.js': 'export function openSession() { return 1; }\n',
   'dist/test/unit/process.test.js': "import {appendFileSync} from 'node:fs'; import {test} from 'node:test'; import {openSession} from '../../src/auth/session.js'; test('emitted fixture',()=>{openSession(); appendFileSync('ast-report/collection.log','node\\n');});\n",
@@ -32,7 +32,7 @@ test('Given both fixture unit parts were selected, when collection is explicit, 
 
 test('Given the fixture build fails during explicit collection, when the process runs, then it saves an unavailable assessment and writes no historical record', { timeout: 20_000 }, async (t) => {
   const { repository, run } = processFixture(t);
-  repository.write({ 'package.json': JSON.stringify({ scripts: { build: 'node -e "process.exit(1)"' } }) });
+  repository.write({ 'package.json': JSON.stringify({ scripts: { build: 'node -e "process.exit(1)"', 'test:unit': 'npm run build && node --test "dist/test/unit/**/*.test.js"' } }) });
   const result = await run(['--collect-coverage']);
   assert.equal(result.code, 1);
   assert.match(result.stdout, /The build failed\. No coverage is written\./);

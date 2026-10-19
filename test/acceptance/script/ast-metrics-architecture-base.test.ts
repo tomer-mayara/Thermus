@@ -6,6 +6,7 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 import { runScript } from '../../support/processes/script-command.ts';
 import { repositoryMarkdownOf, coveredRepositoryMarkdown, coverageReport, riskyServerAnswers } from './fixtures/ast-metrics-architecture-repository-goldens.ts';
 import { verifiedCoverageFor } from './fixtures/ast-metrics-verified-coverage.ts';
+import { missingOriginMainGapNotice } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { baseDoublesOnPath, baseRepository, foldersLeftIn, forkedRepository, forkedServerAnswers, worktreesOf } from './fixtures/ast-metrics-snapshot-base.ts';
 
 // The architecture delta of a repository. Without snapshot files, the command takes the snapshot of the merge base in a
@@ -16,7 +17,7 @@ import { baseDoublesOnPath, baseRepository, foldersLeftIn, forkedRepository, for
 const timeout = 20_000;
 
 function withEmptyTrend(report: string): string {
-  return `${report}\n## Trend of src/ on main\n\nNo snapshot of main in the trend store yet.\n`;
+  return `${report}\n## Trend of src/ on main\n\nNo snapshot of main in the trend store yet.\n\n${missingOriginMainGapNotice}\n`;
 }
 
 // The output up to the trend when the changed files touch auth: the graph with the node of auth, and the complexity

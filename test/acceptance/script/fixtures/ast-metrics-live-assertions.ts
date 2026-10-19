@@ -50,15 +50,15 @@ function assertDependenciesOfSource(snapshot: Snapshot): void {
   for (const issue of snapshot.dependencies.issues) assert.ok(paths.has(issue.path), issue.path);
 }
 
-export function assertArchitectureOfHead(output: string, commit: string, sourceInventory: string): void {
+export function assertArchitectureOfHead(output: string, commit: string, expected: { readonly sourceInventory: string; readonly testChangesOnly: boolean }): void {
   const [header, , summary] = output.split('\n');
   assert.equal(header, `## Architecture of src/: base ${commit.slice(0, 8)} → head`);
   const sides = [...summary.matchAll(/(\S+) → (\S+)/g)].map(([, before, after]) => [before, after]);
   assert.equal(sides.length, 4, summary);
   assert.deepEqual(sides.filter(([before, after]) => before !== after), [], summary);
   assertCommunityMap(output, summary);
-  assertComponentMap(output, sourceInventory);
-  assertUnchangedComplexity(output);
+  assertComponentMap(output, expected.sourceInventory);
+  assertUnchangedComplexity(output, expected.testChangesOnly);
 }
 
 function assertCommunityMap(output: string, summary: string): void {
@@ -88,10 +88,11 @@ function componentNameOf(path: string): string {
   return parts.length > 2 ? parts[1] : 'src';
 }
 
-function assertUnchangedComplexity(output: string): void {
+function assertUnchangedComplexity(output: string, testChangesOnly: boolean): void {
   const complexity = output.slice(output.indexOf(noProductionFile[0]), output.indexOf(trendHeading)).trimEnd().split('\n');
   assert.deepEqual(complexity.slice(0, noProductionFile.length), noProductionFile);
   const identityNotices = complexity.slice(noProductionFile.length).filter((line) => line !== '');
+  if (testChangesOnly) assert.equal(identityNotices.shift(), 'Test changes are not judged: no coverage comparison was made.');
   assert.ok(identityNotices.length <= 1, output);
   for (const identityNotice of identityNotices) assert.match(identityNotice, /^Unknown function identity: [1-9]\d* \(no proven declaration or unique unchanged body\/signature correspondence\)\.$/u);
 }

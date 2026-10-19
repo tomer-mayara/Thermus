@@ -25,9 +25,10 @@ export function coverageForHead(report: CoverageReport | undefined, head: InputI
 function compatible(report: CoverageReport, head: InputIdentity): boolean {
   const provenance = report.provenance;
   if (provenance?.status !== 'verified') return false;
-  if (report.commit !== provenance.capturedCommit || report.suite !== head.suite || report.measurementVersion !== head.measurementVersion) return false;
+  if (report.commit !== provenance.capturedCommit || JSON.stringify(report.suite) !== JSON.stringify(provenance.suite) || report.measurementVersion !== head.measurementVersion) return false;
+  const comparison = provenance.comparisonIdentity ?? provenance;
   return (['sourceFingerprint', 'inputsFingerprint', 'runtime', 'compiler', 'measurementVersion', 'suite'] as const)
-    .every((key) => provenance[key] === head[key]);
+    .every((key) => comparison[key] === head[key]);
 }
 
 // Missing data has a Markdown explanation; stale or skipped data also gets a command diagnostic.

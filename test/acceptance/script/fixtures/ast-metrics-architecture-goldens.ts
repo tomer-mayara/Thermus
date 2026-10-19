@@ -1,6 +1,8 @@
 import { bandedLegend } from './ast-metrics-architecture-coverage.ts';
 import { legend } from './ast-metrics-architecture-snapshots.ts';
 
+export const missingOriginMainGapNotice = 'Gap check unavailable: Cannot check gaps without origin/main. git: fatal: Needed a single revision';
+
 // Complete unchanged graphs. These expectations do not call the report code.
 export const baseEdges = [
   '  c_auth -- "10" --> c_hosted_admin',

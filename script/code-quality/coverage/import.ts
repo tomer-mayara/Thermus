@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { CoverageProvenance } from '../provenance/types.ts';
+import { coverageOriginOf } from '../provenance/captures.ts';
+import type { CoverageProvenance, CoverageSuite } from '../provenance/types.ts';
+import { inputIdentityIn } from '../provenance/read.ts';
 import { objectOf } from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
 import * as build from './build.ts';
@@ -12,17 +14,31 @@ import { mergedCoverage } from './merge.ts';
 function verifiedOrigin(root: string, folder: string) {
   const capture = manifest.readCaptureManifest(folder);
   build.assertInputs(root, capture.manifest.identity);
+  if (capture.manifest.comparisonIdentity !== undefined) build.assertInputs(root, capture.manifest.comparisonIdentity);
   build.assertBuild(root, capture.manifest.buildFingerprint);
   if (manifest.rawFingerprintOf(folder) !== capture.manifest.rawFingerprint) throw new CommandError('The capture manifest does not match the raw V8 data.');
   return capture;
 }
 export function importedCoverage(root: string, options: { folder: string; allowUnverified: boolean }) {
   const original = originalIn(options.folder);
-  let provenance = importProvenance(root, options, original);
+  const initial = importProvenance(root, options, original);
   const coverage = mergedCoverage(sourceScriptsIn(options.folder, root));
-  if (provenance.status === 'verified') provenance = finalProvenance(root, { folder: options.folder, allowUnverified: options.allowUnverified, provenance, coverage, original });
-  const commit = provenance.status === 'verified' ? provenance.capturedCommit : objectOf(original).capturedCommit;
-  return { coverage, provenance, commit: typeof commit === 'string' && /^[a-f0-9]{40}$/.test(commit) ? commit : null };
+  const provenance = initial.status === 'verified'
+    ? selectedOriginOf(finalProvenance(root, { ...options, provenance: initial, coverage, original })) : initial;
+  return { coverage, provenance, ...reportOriginOf(provenance, original) };
+}
+function selectedOriginOf(provenance: CoverageProvenance): CoverageProvenance {
+  if (provenance.status !== 'verified') return provenance;
+  if (provenance.suite === 'unit' || provenance.comparisonIdentity === undefined) return provenance;
+  return coverageOriginOf([provenance], provenance.comparisonIdentity);
+}
+function reportOriginOf(provenance: CoverageProvenance, original: unknown): { commit: string | null; suite: CoverageSuite | readonly CoverageSuite[] | undefined } {
+  if (provenance.status === 'verified') return { commit: provenance.capturedCommit, suite: provenance.suite };
+  const record = objectOf(original);
+  const originalSuite = inputIdentityIn(record.identity)?.suite;
+  const suite = originalSuite === undefined || originalSuite === 'unit' ? originalSuite : [originalSuite];
+  const commit = typeof record.capturedCommit === 'string' && /^[a-f0-9]{40}$/.test(record.capturedCommit) ? record.capturedCommit : null;
+  return { commit, suite };
 }
 function importProvenance(root: string, options: { folder: string; allowUnverified: boolean }, original: unknown): CoverageProvenance {
   try { return verifiedOrigin(root, options.folder).provenance; }

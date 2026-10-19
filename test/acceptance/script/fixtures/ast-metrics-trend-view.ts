@@ -58,4 +58,5 @@ export const trendViewMarkdown = [
   '| auth | MI –; functions ≥ 30: – | MI 61.0; functions ≥ 30: 3 (estimate) | MI 63.0; functions ≥ 30: 0 (measured) | MI 65.0; functions ≥ 30: – |',
   '| pay&#124;&lt;ments&gt; | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 45.0; functions ≥ 30: 6 (measured) | MI –; functions ≥ 30: – |',
   '| zulu | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 67.0; functions ≥ 30: – |', '',
+  'Gap check unavailable: offline snapshot dates cannot prove omitted commits.', '',
 ].join('\n');

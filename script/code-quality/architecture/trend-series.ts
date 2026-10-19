@@ -1,6 +1,7 @@
+import { trendSuiteLabelOf } from './trend-basis.ts';
 import type { TrendNumbers } from './trend-record.ts';
 
-type Basis = 'maintainability' | 'measured' | 'head-derived estimate' | 'legacy unknown';
+type Basis = string;
 interface Sample { readonly label: string; readonly value: number; readonly basis: Basis }
 export type TrendRun = [Sample, ...Sample[]];
 export interface TrendSeries { readonly heading: string; readonly name: string; readonly axis: string; readonly runs: readonly TrendRun[] }
@@ -22,7 +23,9 @@ function commitLabelOf({ commit }: TrendNumbers): string {
 
 function countBasisOf({ crap }: TrendNumbers): Basis {
   if (crap === undefined) return 'legacy unknown';
-  return crap.kind === 'measured' ? 'measured' : 'head-derived estimate';
+  const basis = crap.kind === 'measured' ? 'measured' : 'head-derived estimate';
+  const suites = trendSuiteLabelOf(crap);
+  return suites === undefined ? basis : `${basis}; ${suites}`;
 }
 
 function sampleOf(label: string, value: number | undefined, basis: Basis): Sample | undefined {

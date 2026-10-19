@@ -3,6 +3,142 @@
 # generated, so they are ignored until fixed. Re-run `ast-metrics baseline`
 # to refresh it after fixing some of them or accepting new ones.
 ignored:
+    - rule: efferent_coupling
+      file: script/code-quality/architecture/map.ts
+      message: 'Efferent coupling too high: got 11 (max: 10)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/architecture/mermaid.ts
+      message: 'Cyclomatic complexity too high: got 34 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/architecture/report.ts
+      message: 'Efferent coupling too high: got 11 (max: 10)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/architecture/sources.ts
+      message: 'Efferent coupling too high: got 13 (max: 10)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/architecture/trend-basis.ts
+      message: 'Cyclomatic complexity too high: got 27 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/architecture/trend-record.ts
+      message: 'Efferent coupling too high: got 11 (max: 10)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/architecture/trend.ts
+      message: 'Efferent coupling too high: got 12 (max: 10)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/ast-metrics-coverage.ts
+      message: 'Efferent coupling too high: got 11 (max: 10)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/coverage/capture.ts
+      message: 'Efferent coupling too high: got 14 (max: 10)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/coverage/completeness.ts
+      message: 'Cyclomatic complexity too high: got 29 (max: 20)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/coverage/import.ts
+      message: 'Cyclomatic complexity too high: got 28 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/coverage/import.ts
+      message: 'Efferent coupling too high: got 13 (max: 10)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/coverage/input.ts
+      message: 'Cyclomatic complexity too high: got 24 (max: 20)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/coverage/manifest.ts
+      message: 'Cyclomatic complexity too high: got 26 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/coverage/manifest.ts
+      message: 'Efferent coupling too high: got 11 (max: 10)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/coverage/suites.ts
+      message: 'Cyclomatic complexity too high: got 24 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/mcp/output.ts
+      message: 'Efferent coupling too high: got 13 (max: 10)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/mcp/server-process.ts
+      message: 'Cyclomatic complexity too high: got 23 (max: 20)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/provenance/read.ts
+      message: 'Cyclomatic complexity too high: got 60 (max: 20)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/code-quality/snapshot/communities.ts
+      message: 'Cyclomatic complexity too high: got 26 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/code-quality/snapshot/input.ts
+      message: 'Efferent coupling too high: got 16 (max: 10)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/fetch-url/fetch-url.ts
+      message: 'Cyclomatic complexity too high: got 78 (max: 20)'
+      count: 1
+    - rule: max_loc
+      file: script/fetch-url/fetch-url.ts
+      message: Too many Lines of code (192 > 150)
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/fetch-url/helper/browser.ts
+      message: 'Cyclomatic complexity too high: got 46 (max: 20)'
+      count: 1
+    - rule: lloc_by_method
+      file: script/fetch-url/helper/browser.ts
+      message: 'LLOC too high in method browserAuthorization(): got 30 (max: 20)'
+      count: 1
+    - rule: max_loc_by_method
+      file: script/fetch-url/helper/browser.ts
+      message: 'LOC too high in method browserAuthorization(): got 37 (max: 30)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/fetch-url/helper/credential-store.ts
+      message: 'Cyclomatic complexity too high: got 119 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/fetch-url/helper/credential-store.ts
+      message: 'Efferent coupling too high: got 19 (max: 10)'
+      count: 1
+    - rule: lloc_by_method
+      file: script/fetch-url/helper/credential-store.ts
+      message: 'LLOC too high in method replaceRecord(): got 22 (max: 20)'
+      count: 1
+    - rule: lloc_by_method
+      file: script/fetch-url/helper/credential-store.ts
+      message: 'LLOC too high in method withOAuthStore(): got 33 (max: 20)'
+      count: 1
+    - rule: max_loc
+      file: script/fetch-url/helper/credential-store.ts
+      message: Too many Lines of code (286 > 150)
+      count: 1
+    - rule: max_loc_by_method
+      file: script/fetch-url/helper/credential-store.ts
+      message: 'LOC too high in method withOAuthStore(): got 52 (max: 30)'
+      count: 1
+    - rule: cyclomatic_complexity
+      file: script/fetch-url/helper/oauth.ts
+      message: 'Cyclomatic complexity too high: got 66 (max: 20)'
+      count: 1
+    - rule: efferent_coupling
+      file: script/fetch-url/helper/oauth.ts
+      message: 'Efferent coupling too high: got 12 (max: 10)'
+      count: 1
     - rule: cyclomatic_complexity
       file: src/application.ts
       message: 'Cyclomatic complexity too high: got 40 (max: 20)'

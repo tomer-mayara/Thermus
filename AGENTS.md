@@ -112,7 +112,7 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
 2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts` and read
    `ast-report/process.md`. It runs delta, review, coverage resolution, CRAP,
    and architecture in order. It prints and saves four report sections.
-   It reuses verified compatible unit coverage by default. Missing or stale
+   It reuses verified compatible coverage by default. Missing or stale
    coverage never starts a suite. Use `--collect-coverage` only when `src/`
    changed or both complete unit parts were already selected: emitted Node
    tests and source portal tests. The collector builds first. Record that
@@ -121,6 +121,11 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    reports; it cannot make an unassessed required goal pass. An empty default
    production-file selection succeeds without coverage or MCP for CRAP.
    A document-only commit can reuse an older capture when its inputs match.
+   The standalone collector defaults to unit coverage. Its repeatable `--suite`
+   option can collect unit, integration, or acceptance coverage only when each
+   complete suite was independently selected. The process collector still runs
+   unit only. Preserve the reported suite names and original capture identities
+   when reusing combined coverage; the command grants no extra test scope.
 3. Maintainability goal: 85 or more for each changed production file under
    `src/`. Test and support files have no goal. Inspect low files with
    `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.

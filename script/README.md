@@ -150,7 +150,7 @@ pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/scr
 
 # Measure and review code quality
 
-The nine ast-metrics commands and their helpers are in
+The ten ast-metrics commands and their helpers are in
 [`code-quality/`](code-quality/README.md). That guide explains CRAP before
 the command sections, which follow the review process order. It gives the
 source layout, Usage/Options contracts, and the complete ordinary/live test
@@ -158,8 +158,14 @@ inventory. Select affected tests from that inventory; the full list does not
 require a run of every file. The documentation contract runs each command's
 help without child processes and checks the same test set in the README and
 [test inventory](../docs/testing/test-list.md#ast-metrics-commands).
-The coverage command builds first and collects both complete parts of the
-unit suite: emitted Node tests and source portal tests. Its
+The coverage command defaults to both complete unit parts: emitted Node tests
+and source portal tests. Repeat `--suite unit|integration|acceptance` for
+independently selected package suites. It builds once, preserves exact package
+selections, retains each capture identity, and unions compatible coverage. Nested
+or broader commands defer collection; missing shutdown evidence rejects capture.
+No option expands the selected test scope. Trend charts split at changes in
+suite set. Older D3 records without `captureProvenance` retain their historical
+unit-only schema; pre-D3 unknown records stay unknown. Its
 `ast-metrics-coverage.live.ts` and the separate
 `ast-metrics-architecture-coverage.live.ts` have the same collector limit under
 the [test gate policy](../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts).
@@ -174,3 +180,17 @@ coverage and collects only with an explicit eligible request. It prints and
 saves the four report sections to `ast-report/process.md`. The baseline
 wrapper reports ignored entry counts before and after a permitted refresh;
 it adds no baseline exception.
+
+Manual `ast-metrics-backfill.ts --count N` (default 10) records missing exact
+first-parent commits of `origin/main` in oldest-selected-first order. It needs
+complete history, preserves existing records, and runs no suites or coverage.
+Repository gap checks cover only the interval between displayed first-parent
+record endpoints; all stored full commit identities count. Offline reports with
+a store state that snapshot dates cannot prove gaps.
+
+Test-only architecture reports explain that base estimates use head coverage,
+or that no coverage comparison was made. Offline test-only claims require known,
+equal source fingerprints and declared test paths without source changes.
+CR-15 path-coupling rules and CR-18 threshold changes remain pending. The
+`ast-metrics-rules.live.ts` cases probe pinned-tool capabilities; they add no
+native rule or new project gate.

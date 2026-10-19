@@ -9,6 +9,7 @@ import { architectureMapOf } from './map.ts';
 import { mermaidOf } from './mermaid.ts';
 import { complexityTableOf } from './table.ts';
 import { toolNoticeOf } from './tool-notice.ts';
+import { testChangeNoticeOf } from './test-changes.ts';
 import type * as mapTypes from './types.ts';
 
 const legendParts = {
@@ -23,11 +24,20 @@ const bandsNeedTheCoverage = 'No coverage report: the bands are withheld. Run th
 // the line after the summary says how to get the bands.
 export function architectureReportOf(sources: mapTypes.MapSources, delta: CrapDelta | undefined): string {
   const map = architectureMapOf(sources, delta);
-  const legend = [legendParts.start, ...(delta === undefined ? [] : [legendParts.bands]), legendParts.end].join(' ');
-  const picture = [...(map.changed ? [] : ['The map did not change.', '']), ...mermaidOf(map), '', legend];
   const coverageNote = delta === undefined ? ['', sources.coverageNotice ?? bandsNeedTheCoverage] : [];
-  const assessed = delta === undefined ? [] : ['', `Coverage: unit suite at ${sources.coverage?.commit?.slice(0, 8) ?? 'unknown'}.`];
-  return `${[headerOf(sources), '', summaryOf(sources, map.nodes, delta), ...coverageNote, '', ...toolNoticeOf(sources.base, sources.head), ...picture, ...communityEvidenceLinesOf(sources, map), '', ...componentLinesOf(sources, delta), '', ...complexityTableOf(sources, delta), ...identityNoticeOf(sources, delta).flatMap((line) => ['', line]), ...assessed].join('\n')}\n`;
+  return `${[headerOf(sources), '', summaryOf(sources, map.nodes, delta), ...coverageNote, '', ...toolNoticeOf(sources.base, sources.head), ...communityPictureOf(map, delta !== undefined), ...communityEvidenceLinesOf(sources, map), '', ...componentLinesOf(sources, delta), '', ...complexityTableOf(sources, delta), ...testChangeNoticeOf(sources, delta !== undefined), ...identityNoticeOf(sources, delta).flatMap((line) => ['', line]), ...coverageCaptionOf(sources, delta)].join('\n')}\n`;
+}
+
+function communityPictureOf(map: mapTypes.ArchitectureMap, covered: boolean): string[] {
+  const legend = [legendParts.start, ...(covered ? [legendParts.bands] : []), legendParts.end].join(' ');
+  return [...(map.changed ? [] : ['The map did not change.', '']), ...mermaidOf(map), '', legend];
+}
+
+function coverageCaptionOf(sources: mapTypes.MapSources, delta: CrapDelta | undefined): string[] {
+  if (delta === undefined) return [];
+  const suite = sources.coverage?.suite;
+  const label = Array.isArray(suite) ? `${suite.join(' + ')} suites` : `${suite ?? 'unknown'} suite`;
+  return ['', `Coverage: ${label} at ${sources.coverage?.commit?.slice(0, 8) ?? 'unknown'}.`];
 }
 
 // The snapshot of the head can hold changes that are not committed, so the header names the base commit only.

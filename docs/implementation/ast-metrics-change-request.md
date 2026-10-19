@@ -31,7 +31,7 @@ It authorizes no base-coverage storage or merge workflow.
 Delivery status:
 
 - PR #175 merged CR-16 and the CR-23 contract-test foundation. PR #187
-  implements CR-23's content consolidation; merge is pending.
+  merged CR-23's content consolidation at `2cfd381c`.
 - PR #176 merged delivery group 2, CR-24: always print the architecture
   drawing and require its fenced block and legend in the pull request body.
 - PR #177 merged delivery group 3, CR-01 and CR-02: collect portal unit
@@ -58,6 +58,14 @@ Delivery status:
   community edge changes, and show stable source-folder components.
 - PR #186 merged CR-14: global trend charts, commit titles and PR
   numbers, and a stable component trend matrix.
+- Draft PR #188 implements CR-10 option A, selected-suite coverage under
+  CR-11, and manual CR-12 backfill and gap reporting. It is not merged.
+  CR-15/D6 and CR-18/D7 configuration remain pending owner decisions. Their
+  capability checks alone approve no rule, cap, workaround, or baseline change.
+  Separately, the baseline wrapper refreshed 175 entries to 209 under the
+  existing retained-high exception. Configuration remains unchanged. The pull
+  request description records individual retained-high reasons; the refresh
+  does not silence high file-maintainability regressions.
 - The other CRs have not been implemented.
 
 Contents:
@@ -114,8 +122,8 @@ The review found these problems:
 Other CRs align documentation, check command contracts, pin the tool,
 reduce repetition, and address separate cleanup. CR-22 adds `crap` as the
 seventh command. CR-09 adds `process` and `baseline`, bringing the inventory
-to nine. The proposed `backfill` command would bring it to ten. The
-earlier instruction to keep six commands applied to the completed
+to nine. Manual `backfill` in draft PR #188 brings the candidate inventory
+to ten. The earlier instruction to keep six commands applied to the completed
 reorganization; it does not prevent additions delivered by their approved CRs.
 
 ## 2. Background and verified state
@@ -165,12 +173,13 @@ in `.ts`; the main build excludes `script/`.
 | `ast-metrics-delta.ts` | List changed files and maintainability; enforce the production-file goal. | `delta/` |
 | `ast-metrics-review.ts` | Pass the selected base ref to the tool's review; the guide describes comparison with that ref's tip. | `review/` |
 | `ast-metrics-mcp.ts` | Make one MCP call and stop the server. | `mcp/` |
-| `ast-metrics-coverage.ts` | Collect and merge V8 coverage from emitted Node and source portal unit tests. | `coverage/` |
+| `ast-metrics-coverage.ts` | Collect and merge V8 coverage from independently selected suites; default unit includes emitted Node and source portal tests. | `coverage/` |
 | `ast-metrics-snapshot.ts` | Capture metrics and communities of `src/`, optionally at a merge base. | `snapshot/` |
 | `ast-metrics-architecture.ts` | Compare snapshots and print the map, complexity table, and trend. | `architecture/` |
 | `ast-metrics-crap.ts` | Assess per-function goals and give coverage or split advice. | `crap/` |
 | `ast-metrics-process.ts` | Compose the complete review with coverage reuse by default. | `process/` |
 | `ast-metrics-baseline.ts` | Refresh an allowed baseline and report ignored entry counts. | `baseline/` |
+| `ast-metrics-backfill.ts` | Record missing exact first-parent main commits without coverage. | `backfill/` |
 
 `shared/` contains repository operations, JSON readers, and numeric helpers.
 `provenance/` owns deterministic input identity and its readers.
@@ -201,7 +210,12 @@ not supported. The tool's maintainability index goes from 0 to 128. Current
 rules set class maintainability 85, efferent coupling 10, file LOC 150,
 function LOC 30, function logical LOC 20, and file cyclomatic complexity
 20. The separate delta command enforces the file maintainability goal.
-The baseline has 175 entries. Tests are excluded from the tool's rules.
+The current candidate baseline has 209 entries. The wrapper refreshed the
+previous 175 entries under AGENTS.md's existing exception for retained high
+findings. This is separate from the native capability findings and adds no
+configuration change or baseline exception. High file-maintainability
+regressions remain reported after refresh; the pull request description gives
+individual retained-high reasons. Tests are excluded from the tool's rules.
 
 The tool omits numeric fields with zero values; readers use `numberOrZero`.
 An upstream renamed field can therefore appear to be zero until a version
@@ -317,7 +331,9 @@ test group. Do not run the full inventory merely because it is listed.
    This includes coverage live and architecture's coverage-collecting case.
    Both parts of the unit suite must be within scope before collection:
    emitted Node tests and source portal tests. Reuse valid coverage otherwise,
-   or report without bands.
+   or report without bands. Explicit CR-11 suite requests require each complete
+   group to be independently selected; the flag does not grant scope. Default
+   process collection still selects only unit coverage.
 7. A documentation-only change needs no executable test added for prose.
    A command reference does not select that command. Missing metric data
    does not authorize a broader suite.
@@ -359,8 +375,8 @@ its answer.
 | --- | --- | --- | --- |
 | D4 | CR-10 | Store and use coverage of merged trees beyond option A. | Land the warning first. Decide capture, identity, retention, and size before option B. D3 does not approve this storage. |
 | D5 | CR-12 | Workflow to record every merge on `main`. | Keep manual backfill until workflow behavior is approved. |
-| D6 | CR-15 | Forbidden component dependencies. | Choose explicit path rules; do not freeze communities. |
-| D7 | CR-18 | File complexity cap and new-function warning threshold. | Consider 40 per file, LOC 150 unchanged; separately decide the warning above ten function paths. |
+| D6 | CR-15 | Forbidden component dependencies. | Choose explicit path rules; do not freeze communities. Pinned 0.43.1 matches imported symbols and emits low findings, so it cannot provide the intended high-severity path gate. No workaround is approved. |
+| D7 | CR-18 | File complexity cap and new-function warning threshold. | Consider 40 per file, LOC 150 unchanged; separately decide the new-function warning. The verified native warning starts at 10 paths, not above 10. |
 | D8 | CR-16 / Appendix D | Third baseline exception for violations already on `main`. | Keep the current two exceptions until approved. Historical practice does not grant permission. |
 | D9 | CR-17 | Normalize unexpected errors to one line or preserve stack output. | Preserve command contracts during deduplication. A diagnostic behavior change needs approval and tests. |
 
@@ -844,11 +860,17 @@ P2 · D4 + M · limit. Depends on CR-03 and CR-04.
 **Evidence.** Using head coverage on both sides hides changes in test
 protection. A test-only PR cannot measure the change against the base.
 
-**Option A, required.** When tests, helpers, or fixtures change without
-source changes, print `Test changes are not judged: the base uses the
-coverage of the head.` after the complexity section. Without coverage,
-say that no coverage comparison was made. Use actual changed inputs, not
-only the TypeScript delta filter.
+**Option A, implemented in draft PR #188.** When paths under `test/`,
+including helpers, fixtures, and untracked files of any extension, change
+without any changed `src/` path, print
+`Test changes are not judged: the base uses the coverage of the head.`
+after the complexity section when compatible coverage is available. Without an
+assessment, print `Test changes are not judged: no coverage comparison was made.`
+This uses actual changed
+paths, not the TypeScript delta filter. Offline inputs require equal known
+source fingerprints and explicit test paths, with no source path. Empty
+metadata does not establish test-only changes. Option A judges no tests and
+stores no measured base coverage.
 
 **Option B, pending D4.** Store coverage captured for merged input identities
 and use it for compatible bases. Before approval, define capture time,
@@ -896,6 +918,43 @@ representation conflicts, child shutdown, and incomplete capture. Default
 process runs never start extra suites. A real proof runs only when those
 complete groups are selected.
 
+**Delivery.** Draft PR #188 implements explicit suite selection. Requests
+are deduplicated in first-requested order. Each suite gets an isolated retained
+capture after one build. Unit includes emitted Node and source portal unit
+tests; integration uses emitted integration tests; acceptance uses emitted
+tests excluding `hosted-image`, then source portal acceptance tests. The
+package's `test:<suite>` script must use the supported build prerequisite and
+direct Node selections within its own suite. Unknown prerequisites, nested
+commands, and broader selections defer collection before build or launch.
+Every complete requested group must already be selected. Neither the option
+nor missing coverage grants extra test scope. Process collection remains
+unit-only by default; compatible verified combined reports can be reused.
+
+Default unit reports retain `suite: "unit"`. Explicit non-unit and combined
+reports use an ordered suite array, full original per-suite `captures`, and a
+canonical unit `comparisonIdentity` for current-tree compatibility. Each true
+per-suite input identity remains distinct. New capture-manifest version 2
+binds process and worker lifecycle evidence as well as raw V8 data. Missing,
+killed, untracked, or unflushed participants prevent verified publication;
+failed suites preserve the previous good report. This conservative check can
+reject intentionally killed test children. Legacy unit strings and version-1
+unit manifests remain readable. Source/emitted representation conflicts still
+fail. `--from` imports one archived capture and cannot combine with `--suite`.
+Real multi-suite proofs run only when those complete groups are independently
+selected; fixtures do not establish that a complete real suite will succeed.
+
+**Unresolved real proof.** The current unit lock tests intentionally use
+`SIGKILL` on children that load production code. These captures cannot supply
+normal-shutdown evidence. Verified full-unit collection and its positive live
+checks are blocked until a crash-capture policy is defined. PR #188 remains
+Draft; fixture success does not satisfy that real proof. The child lock fixture
+now retains its handle so garbage collection cannot release the lock before
+the assertion; its forced-exit behavior and assertions stay unchanged.
+The latest real capture passed all 3,531 unit tests, then refused publication
+for 159 process/thread identities without complete evidence. The five known
+lock crash children are only part of that set. A protocol for those children
+alone is not yet a proven fix for complete real collection.
+
 **Documents.** Guide, README options and cost, plan limits, inventory,
 formats, and proposed process text if it uses these suites.
 
@@ -903,20 +962,33 @@ formats, and proposed process text if it uses these suites.
 
 P3 · M + D5 · limit. Depends on CR-04; compatible with CR-08.
 
-**Required behavior.** Propose
+**Required behavior.** Draft PR #188 implements
 `pnpm exec node script/code-quality/ast-metrics-backfill.ts [--count N] [--allow-tool-version]`.
-Define a positive-integer default in help before implementation. Walk
-first-parent `origin/main` and snapshot missing selected commits exactly.
+The help defines default count 10; `N` must be a positive safe integer.
+Help and argument validation precede Git and tool access. Require complete
+first-parent `origin/main` history and select its latest `N` commits, or all
+available commits when fewer exist. Analyze missing selected commits oldest
+first and snapshot each commit exactly.
 `snapshotOfBase` resolves a merge base, so do not reuse it blindly: reuse
 the temporary-worktree lifecycle with an exact-commit analysis operation.
 The recorded commit and analyzed content must agree.
 
-Use the verified no-overwrite store. Backfill structural data without CRAP
-unless separately available compatible coverage meets D3. Never run extra
-suites or rewrite a record to fill a count. Show one line per gap:
+Use the verified no-overwrite store. This delivery backfills structural data
+only and records no CRAP counts. Any later use of separately available coverage
+must meet D3. Never run extra suites or rewrite a record to fill a count. Show one line per gap:
 `k commits of main between <a8> and <b8> have no record.` Use full identities
-and first-parent history. With unavailable or shallow history, state what
-could not be checked. Offline dates cannot prove omitted commits.
+and first-parent history. Gap checks cover only commits strictly between
+the oldest and newest displayed first-parent recorded endpoints; exclude those
+endpoints from `k`. Every stored full identity counts, including rows outside
+the display selection. Do not claim coverage of commits outside those endpoints.
+Repository reports preserve structure and state why missing or shallow history
+prevents checking gaps. Offline reports with a store say
+`Gap check unavailable: offline snapshot dates cannot prove omitted commits.`
+No-store output stays
+`No trend store.` Backfill itself refuses unavailable or shallow history before
+tool access. Worktree cleanup failure prevents publication of that record;
+earlier complete records survive later failures. Exit statuses are 0 for
+selected records present, 1 for failure, and 130/143 for stop signals.
 
 **Acceptance criteria and tests.** A temporary history writes only missing
 exact-commit records and shows correct gaps. Test count validation, existing
@@ -1046,14 +1118,22 @@ values, D3 labels, and gaps.
 
 P3 · S + D6 · gap. Depends on owner-approved forbidden dependencies.
 
-**Required behavior.** Verify supported `coupling.forbidden` syntax with
+**Capability finding in draft PR #188.** A controlled native 0.43.1 check
+found that `coupling.forbidden` matches imported symbol names rather than
+resolved source paths, and emits low review findings. This does not meet the
+intended high-severity path gate below. D6 is open. No layer rule, workaround,
+configuration edit, or baseline refresh is approved by this finding.
+
+**Required behavior after D6.** Verify supported `coupling.forbidden` syntax with
 the pinned tool. Add the owner's selected `from`/`to` path rules, refresh
 the baseline in the same rule-change PR, and explain each rule. Cleaner →
 MCP and fetcher → auth were examples, not approved restrictions. Do not
 enable `no_cross_community_dependencies`; clusters can drift.
 
-**Acceptance criteria and tests.** Temporary source fixtures show a new
-forbidden import as a high finding and an allowed import as permitted.
+**Intended acceptance criteria.** Temporary source fixtures show a new
+forbidden import as a high finding and an allowed import as permitted. The
+pinned native capability cannot currently meet this criterion; the owner must
+decide how to proceed before implementation.
 Use doubles for ordinary command behavior and a selected real-tool contract
 for rule syntax. Do not change product imports only to prove the rule.
 
@@ -1071,7 +1151,7 @@ P2 · S–M · mistake. Land early; maintain alignment through all CRs.
 | Labels | State the largest-source-namespace rule, tie-break, and duplicate suffix from section 2.3. |
 | Plan T5 | The live check finds `createApplication` present, not called, and calls of other application functions. CR-01 adds the explicit called `initializePortal` proof. CR-06 in PR #180 checks default-report isolation. |
 | Plan T7 | Live checks use a temporary trend store, not writes/deletes under the repository's `docs/metrics/`. |
-| Suite limits | Unit-only remains a limit until CR-11; portal omission is a bug until CR-01. Historical tickets did not add another suite. |
+| Suite limits | CR-11 in draft PR #188 adds explicit independently selected integration and acceptance groups; default unit/process behavior stays unchanged. Historical tickets did not authorize broader scope. |
 | Direct tool calls | CR-09 supplies the baseline wrapper; the same two refresh reasons apply. |
 | Live commands | CR-06 in PR #180 separates structural architecture from its coverage file. Both collectors keep their scope limit and preserve the default report. Coverage.live needs no ast-metrics. |
 | Empty trend text | Offline mode without a store says `No trend store.` A configured empty store gets a different message. This changes runtime output. |
@@ -1114,10 +1194,10 @@ diagnostic change. Test meaningful tie ordering. Select affected focused
 consumers; actual test changes select their groups. No new unexplained
 habit-hooks finding, and future modules follow approved gate/exception rules.
 
-**Documents.** Layout and inventory as needed. Keep the nine entry points
-now delivered by the approved command CRs.
+**Documents.** Layout and inventory as needed. CR-17 preserved the nine
+entry points then delivered. CR-12 in draft PR #188 adds the tenth command.
 
-**Delivery.** PR #184 implements this CR and awaits owner review. Shared
+**Delivery.** PR #184 merged this CR. Shared
 helpers own repeated argument parsing, timeout and base checks, output limits,
 JSON object file reads, and text ordering where their contracts match.
 File-kind read diagnostics and each consumer's schema checks stay intact.
@@ -1134,6 +1214,12 @@ P3 · S + D7 · limit.
 modules. PR #170 consolidated them and retained documented medium/low
 findings. Do not claim all existing modules satisfy every configured cap.
 The tool's maintainability rule is class-level; delta handles the file goal.
+
+**Capability finding in draft PR #188.** The native new-function warning
+starts at 10 decision paths, not above 10. The owner has not approved a cap
+change or a different warning threshold. This finding alone authorizes no
+configuration or baseline change and approves no workaround. The separate
+retained-high baseline refresh uses the existing AGENTS.md exception.
 
 **Required behavior.** After D7, change the approved cap and baseline in
 one PR. The proposal remains 40 paths per file and 150 LOC unchanged.
@@ -1346,7 +1432,7 @@ from knip entries under `script/code-quality/ast-metrics-*.ts`. Run real
 `--help` without a tool, Git, build, or suite call. Compare normalized
 synopses, including `pnpm exec node` versus `node` and multi-synopsis
 commands. Check every option/default against a defined help contract.
-All nine current commands have `Usage:` and `Options:` blocks. Treat missing
+All ten candidate commands have `Usage:` and `Options:` blocks. Treat missing
 blocks in a future command as a clear contract failure. Compare defaults
 declared in help; where a default is delegated to ast-metrics, require that
 delegation to be identified rather than inventing a wrapper-owned default.
@@ -1370,9 +1456,8 @@ focused-command reference. Every command CR updates its own section;
 the final content pass consolidates explanations, not missing contracts.
 
 **Delivery.** The contract-test foundation merged in PR #175. The content
-consolidation is implemented in PR #187; pending merge. The detailed
-README explains CRAP before the commands and orders the nine available
-commands by process. It describes their output, options and defaults, exits,
+consolidation merged in PR #187 at `2cfd381c`. The detailed
+README explains CRAP before the commands and orders its commands by process. It describes their output, options and defaults, exits,
 focused tests, helpers, and doubles. The script index, review guide, plan,
 inventory, and focused-command reference are aligned. The existing contract
 checks help and both complete test inventories; this prose pass adds no
@@ -1439,7 +1524,8 @@ or option updates its own README and contract in the same PR.
 | 12 | CR-13 | Add component/dependency metadata and output. |
 | 13 | CR-14 | Add charts and component history after CR-13 and CR-04 implement approved D3. |
 | 14 | CR-23 content consolidation | Consolidate explanation; earlier command PRs already update their own sections. |
-| Later | CR-10 option A, CR-11, CR-12, CR-15, CR-18 | Follow their dependencies and decisions. Option A does not await option B. |
+| 15, draft PR #188 | CR-10 option A, CR-11, CR-12 | Test-change notice, independently selected suite capture, and manual structural backfill; no merge workflow. |
+| Pending owner | CR-10 option B, CR-15, CR-18 | D4, D6, and D7 remain open. Pinned coupling cannot provide the intended high-severity path gate; no workaround or config change is approved. |
 | Independent | CR-19 and CR-20 | Separate cleanup and its selected checks. |
 | Last | CR-21 | Archive only when dependent work is complete or explicitly disposed of in a living specification. |
 
@@ -1507,10 +1593,10 @@ fixtures and checked readers for each implemented extension.
 
 ### A.1 Coverage
 
-The current shape after CR-01/CR-02 in PR #177 and CR-03 in PR #178 is
-abbreviated below. Counts are illustrative. New reports use JSON schema
-version 2. Legacy version 1 remains readable; absent provenance cannot
-establish assessment.
+The default unit shape after CR-01/CR-02 in PR #177 and CR-03 in PR #178 is
+abbreviated below. CR-11's draft PR #188 suite extension follows it. Counts
+are illustrative. New reports use JSON schema version 2. Legacy version 1
+remains readable; absent provenance cannot establish assessment.
 `measurementVersion` names the unchanged own-character semantics.
 
 ```json
@@ -1598,8 +1684,8 @@ compiler, suite, and measurement version are part of the hash.
 `dist/.coverage-build.json` holds `version: 1`, `identity: InputIdentity`,
 and `buildFingerprint`, which hashes all emitted output except this
 manifest. `--no-build` requires both identities to match. Successful raw
-captures stay under `ast-report/coverage-captures/capture-<unique>/`.
-Their `capture-manifest.json` holds `version: 1`, `identity`,
+captures stay under `ast-report/coverage-captures/capture-<suite>-<unique>/`.
+The legacy version-1 `capture-manifest.json` holds `identity`,
 `capturedCommit`, `buildFingerprint`, `rawFingerprint`, and `scripts`
 (the identified source representations and content identities). The report's
 `captureManifestFingerprint` hashes the exact manifest text. Capture checks
@@ -1618,7 +1704,29 @@ unavailable. Unverified data and legacy reports without verified provenance
 cannot enable bands or historical counts. Completed reports and snapshots can render offline without Git.
 A document-only commit can reuse an older capture when the full input
 identity matches. Schema, measurement semantics, and tool versions are
-separate. CR-11's proposed suite array remains future work.
+separate.
+
+CR-11 in draft PR #188 preserves this default unit string. Explicit non-unit
+or multi-suite reports use the same ordered suite array at report and
+provenance level. `provenance.captures` preserves each original full verified
+capture identity: true suite, input/source fingerprints, original commit,
+runtime, compiler, measurement version, build fingerprint, and capture-manifest
+fingerprint. `comparisonIdentity` holds the canonical unit identity used to
+compare the current tree. It does not relabel per-suite captures. The aggregate
+`captureManifestFingerprint` is SHA-256 of JSON for the ordered list of
+`{suite, captureManifestFingerprint}` values. Readers reject duplicate or
+reordered suite/capture sets and conflicting capture identities.
+
+New capture manifests use version 2 and add the canonical `comparisonIdentity`
+to the true per-suite `identity`. Their `rawFingerprint` hashes both raw
+`coverage-*` files and `process-*` lifecycle files. Each process and worker
+must be tracked, flush coverage, and exit normally. Missing, killed, untracked,
+or unflushed participants cannot produce a verified report. The retained
+archive path is `ast-report/coverage-captures/capture-<suite>-<unique>/`.
+Legacy unit strings and version-1 unit manifests remain readable. New trend
+`crap.captureProvenance` keeps the full capture evidence, including suite
+arrays, original captures, and the comparison identity. Charts separate
+normalized suite sets as well as count bases; legacy records stay unchanged.
 
 ### A.2 Snapshot
 

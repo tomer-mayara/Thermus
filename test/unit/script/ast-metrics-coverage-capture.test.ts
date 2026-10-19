@@ -9,12 +9,14 @@ import { pathToFileURL } from 'node:url';
 import { astMetricsCoverageScript } from '../../support/processes/module-paths.ts';
 const script = pathToFileURL(astMetricsCoverageScript);
 const { collectCoverage } = await import(new URL('coverage/capture.ts', script).href) as typeof import('../../../script/code-quality/coverage/capture.ts');
+const { rawFingerprintOf } = await import(new URL('coverage/manifest.ts', script).href) as typeof import('../../../script/code-quality/coverage/manifest.ts');
 const { importedCoverage } = await import(new URL('coverage/import.ts', script).href) as typeof import('../../../script/code-quality/coverage/import.ts');
 import { writeV8Coverage } from '../../support/fixtures/v8-coverage.ts';
 
 function rootOf(t: TestContext): string {
   const root = mkdtempSync(join(tmpdir(), 'coverage-capture-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { 'test:unit': 'npm run build && node --test --test-concurrency=1 "dist/test/unit/**/*.test.js" && node --test "test/unit/user-portal/**/*.test.ts"', 'test:acceptance': 'npm run build && node --test "dist/test/acceptance/**/*.test.js"' } }));
   mkdirSync(join(root, 'src'));
   writeFileSync(join(root, 'src/a.ts'), 'export const a = 1;');
   return root;
@@ -24,7 +26,11 @@ function runner(t: TestContext, root: string, change?: (call: number) => void): 
   t.mock.method(childProcess, 'spawnSync', (_file: string, args: string[], options: childProcess.SpawnSyncOptions) => {
     calls.push(args);
     if (args[0] === 'run') { mkdirSync(join(root, 'dist/src'), { recursive: true }); writeFileSync(join(root, 'dist/src/a.js'), ' '.repeat(10)); }
-    else writeV8Coverage(options.env?.NODE_V8_COVERAGE as string, root, [{ 'dist/src/a.js': [['a', [0, 10, 1]]] }]);
+    else {
+      const folder = options.env?.NODE_V8_COVERAGE as string;
+      writeV8Coverage(folder, root, [{ 'dist/src/a.js': [['a', [0, 10, 1]]] }]);
+      writeFileSync(join(folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: true }));
+    }
     change?.(calls.length);
     return { status: 0, signal: null, output: [], pid: 0, stdout: null, stderr: null };
   });
@@ -98,5 +104,55 @@ test('Given conflicting script evidence in a capture manifest, when inspection i
   manifest.scripts[0].contentIdentity = 'f'.repeat(64);
   writeFileSync(file, JSON.stringify(manifest));
   assert.throws(() => importedCoverage(root, { folder: result.folder, allowUnverified: false }), /identified scripts/);
+  assert.equal(importedCoverage(root, { folder: result.folder, allowUnverified: true }).provenance.status, 'unverified');
+});
+
+test('Given a later selected suite has a nested suite command, when collection is requested, then preflight starts neither the build nor the first suite', (t) => {
+  const root = rootOf(t);
+  const calls = runner(t, root);
+  const file = join(root, 'package.json');
+  const manifest = JSON.parse(readFileSync(file, 'utf8'));
+  manifest.scripts['test:acceptance'] = 'npm run build && npm run test:integration';
+  writeFileSync(file, JSON.stringify(manifest));
+  assert.throws(() => collectCoverage(root, { commit: 'a'.repeat(40), noBuild: false, suites: ['unit', 'acceptance'] }), /deferred/);
+  assert.deepEqual(calls, []);
+});
+
+test('Given an archived v2 capture loses normal shutdown evidence, when imported, then strict verification fails and inspection stays unverified', (t) => {
+  const root = rootOf(t);
+  runner(t, root);
+  const result = collectCoverage(root, { commit: 'a'.repeat(40), noBuild: false });
+  writeFileSync(join(result.folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: false }));
+  assert.throws(() => importedCoverage(root, { folder: result.folder, allowUnverified: false }), /Incomplete captures are unverified/);
+  assert.equal(importedCoverage(root, { folder: result.folder, allowUnverified: true }).provenance.status, 'unverified');
+});
+
+test('Given a legacy v1 unit manifest without lifecycle evidence, when imported, then its original unit identity remains readable', (t) => {
+  const root = rootOf(t);
+  runner(t, root);
+  const result = collectCoverage(root, { commit: 'a'.repeat(40), noBuild: false });
+  rmSync(join(result.folder, 'process-4000.json'));
+  const file = join(result.folder, 'capture-manifest.json');
+  const manifest = JSON.parse(readFileSync(file, 'utf8'));
+  delete manifest.comparisonIdentity;
+  manifest.version = 1;
+  manifest.rawFingerprint = rawFingerprintOf(result.folder);
+  writeFileSync(file, JSON.stringify(manifest));
+  const imported = importedCoverage(root, { folder: result.folder, allowUnverified: false });
+  assert.equal(imported.provenance.status, 'verified');
+  assert.equal(imported.suite, 'unit');
+});
+
+test('Given a v1 manifest relabeled as acceptance, when imported, then it cannot claim legacy verified capture evidence', (t) => {
+  const root = rootOf(t);
+  runner(t, root);
+  const result = collectCoverage(root, { commit: 'a'.repeat(40), noBuild: false });
+  const file = join(result.folder, 'capture-manifest.json');
+  const manifest = JSON.parse(readFileSync(file, 'utf8'));
+  manifest.version = 1;
+  manifest.identity.suite = 'acceptance';
+  delete manifest.comparisonIdentity;
+  writeFileSync(file, JSON.stringify(manifest));
+  assert.throws(() => importedCoverage(root, { folder: result.folder, allowUnverified: false }), /legacy capture manifest must name the unit suite/);
   assert.equal(importedCoverage(root, { folder: result.folder, allowUnverified: true }).provenance.status, 'unverified');
 });

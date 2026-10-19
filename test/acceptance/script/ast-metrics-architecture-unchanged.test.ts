@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
 import { completeImportEvidence, repositoryComponents } from './fixtures/ast-metrics-component-goldens.ts';
-import { repositoryGraph } from './fixtures/ast-metrics-architecture-goldens.ts';
+import { repositoryGraph, missingOriginMainGapNotice } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, noProductionFile } from './fixtures/ast-metrics-architecture-snapshots.ts';
 import { jsonReport, repositoryFiles } from './fixtures/ast-metrics-snapshot-answers.ts';
 import { baseDoublesOnPath, foldersLeftIn, worktreesOf } from './fixtures/ast-metrics-snapshot-base.ts';
@@ -45,6 +45,8 @@ test('Given a branch that changes only a document, no coverage, and both doubles
     'Unknown function identity: 5 (no proven declaration or unique unchanged body/signature correspondence).',
     '',
     '## Trend of src/ on main', '', 'No snapshot of main in the trend store yet.',
+    '',
+    missingOriginMainGapNotice,
     '',
   ].join('\n'));
   assert.equal(result.code, 0);

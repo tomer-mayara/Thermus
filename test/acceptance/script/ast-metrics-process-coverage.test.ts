@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { astMetricsCoverageScript } from '../../support/processes/module-paths.ts';
 import { test } from 'node:test';
 import { coverageReport } from './fixtures/ast-metrics-architecture-repository-goldens.ts';
 import { processFixture, recordsIn } from './fixtures/ast-metrics-process.ts';
@@ -56,4 +58,25 @@ test('Given explicit report and output paths from a nested caller, when the proc
   assert.equal(result.code, 0, result.stderr);
   assert.equal(readFileSync(join(repository.root, 'nested/result.md'), 'utf8'), result.stdout);
   assert.match(result.stdout, /Reused verified compatible unit coverage/);
+});
+
+const { coverageOriginOf } = await import(new URL('provenance/captures.ts', pathToFileURL(astMetricsCoverageScript)).href) as typeof import('../../../script/code-quality/provenance/captures.ts');
+const { inputIdentityIn } = await import(new URL('provenance/read.ts', pathToFileURL(astMetricsCoverageScript)).href) as typeof import('../../../script/code-quality/provenance/read.ts');
+
+test('Given compatible selected-suite coverage and forbidden suite commands, when the default process runs, then it reuses every capture identity without launching a suite', { timeout: 20_000 }, async (t) => {
+  const { repository, run } = processFixture(t);
+  repository.write({ 'package.json': JSON.stringify({ scripts: { build: 'exit 9', 'test:unit': 'exit 9', 'test:acceptance': 'exit 9', 'test:integration': 'exit 9' } }) });
+  const original = verifiedCoverageFor(repository, coverageReport);
+  const identity = inputIdentityIn(original.provenance);
+  assert.ok(identity !== undefined);
+  const unit = { ...identity, status: 'verified', capturedCommit: original.commit, buildFingerprint: 'd'.repeat(64), captureManifestFingerprint: 'e'.repeat(64), comparisonIdentity: identity } as const;
+  const acceptance = { ...unit, suite: 'acceptance', inputsFingerprint: 'f'.repeat(64), captureManifestFingerprint: '9'.repeat(64) } as const;
+  const provenance = coverageOriginOf([unit, acceptance], identity);
+  repository.write({ 'ast-report/coverage.json': JSON.stringify({ ...original, suite: provenance.suite, provenance }) });
+  const result = await run();
+  assert.equal(result.code, 0, result.stderr);
+  assert.match(result.stdout, /Reused verified compatible unit \+ acceptance coverage/);
+  assert.match(result.stdout, /Coverage: unit \+ acceptance suites at/);
+  const record = recordsIn(repository)[0];
+  assert.deepEqual((record.crap as { captureProvenance: unknown }).captureProvenance, provenance);
 });

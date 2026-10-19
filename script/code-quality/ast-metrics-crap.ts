@@ -6,7 +6,7 @@ import { runCrap } from './crap/run.ts';
 const help = `Usage: node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...] [--help]
 
 Assess per-function CRAP goals: paths² × (1 − covered share)³ + paths.
-The unit suite's V8 own-character share is an approximation to path coverage.
+The selected suites' V8 own-character share is an approximation to path coverage.
 The strict limit applies to new and changed functions. New functions must also
 meet the inclusive target. Explicit paths select inspection files; source
 identity against the merge base determines which functions are new or changed.
@@ -17,7 +17,7 @@ function can retain the reason "unchanged by this PR" after the approved review.
 Options:
   --base REF            Compare against the merge base of REF and HEAD
                         (default: origin/main)
-  --coverage FILE       Read verified unit coverage from FILE
+  --coverage FILE       Read verified selected-suite coverage from FILE
                         (default: ast-report/coverage.json in the repository)
   --limit N             Require CRAP strictly below N (default: 30)
   --target N            Require new functions at or below N (default: 15)

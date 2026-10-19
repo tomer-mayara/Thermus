@@ -37,6 +37,8 @@ export interface MapSources {
   // The changed files of the pull request, as paths from the root, such as src/auth/session.ts.
   readonly touched: readonly string[];
   readonly changes?: readonly FileChange[];
+  // Actual repository inputs, or changed paths declared with offline snapshots.
+  readonly testChangesOnly?: boolean;
   // The coverage of the unit suite in the head. Without it, the report has no bands.
   readonly coverage?: CoverageReport;
   readonly coverageNotice?: string;

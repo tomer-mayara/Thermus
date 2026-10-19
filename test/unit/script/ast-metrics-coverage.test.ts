@@ -48,7 +48,7 @@ test('Given --help, when the coverage command runs, then it explains the run of 
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-coverage\.ts \[--from DIR\] \[--out FILE\] \[--no-build\] \[--allow-unverified\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-coverage\.ts \[--from DIR\] \[--out FILE\] \[--no-build\] \[--allow-unverified\] \[--suite unit\|integration\|acceptance\] \[--help\]\n/);
   for (const text of ['NODE_V8_COVERAGE', 'dist/test/unit/**/*.test.js', 'npm run build', 'dist/src/', 'ast-report/coverage.json', '__', 'Exit status 1']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
@@ -61,6 +61,8 @@ for (const [args, diagnostic] of [
   [['coverage-folder'], 'Invalid arguments. Use --help for the supported options.'],
   [['--from='], 'The --from value must name a folder.'],
   [['--out='], 'The --out value must name a file.'],
+  [['--suite', 'interface'], '--suite must be unit, integration, or acceptance.'],
+  [['--suite', 'unit', '--from', 'raw'], '--suite cannot be used with --from; imported manifests name their original suite.'],
 ] as const) {
   test(`Given the arguments ${args.join(' ')}, when the coverage command runs, then it fails with one diagnostic line`, async (t) => {
     const result = await runScript(t, astMetricsCoverageScript, { args, ...noTools });

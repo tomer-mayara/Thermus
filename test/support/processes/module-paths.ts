@@ -74,3 +74,4 @@ export const astMetricsProcessScript = fileURLToPath(new URL('script/code-qualit
 export const astMetricsBaselineScript = fileURLToPath(new URL('script/code-quality/ast-metrics-baseline.ts', repositoryRoot));
 export const astMetricsCoverageScript = fileURLToPath(new URL('script/code-quality/ast-metrics-coverage.ts', repositoryRoot));
 export const astMetricsCoverageSourceFolder = fileURLToPath(new URL('script/code-quality/coverage', repositoryRoot));
+export const astMetricsBackfillScript = fileURLToPath(new URL('script/code-quality/ast-metrics-backfill.ts', repositoryRoot));

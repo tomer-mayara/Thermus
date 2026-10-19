@@ -20,7 +20,8 @@ const concurrentRounds = 50;
 async function lockInOtherProcess(t: TestContext, directory: string) {
   const holder = spawn(process.execPath, ['--input-type=module', '-e', `
     const { lockDataDirectory } = await import(${JSON.stringify(lockModule)});
-    lockDataDirectory(${JSON.stringify(directory)});
+    const heldLock = lockDataDirectory(${JSON.stringify(directory)});
+    process.on('exit', () => heldLock.release());
     console.log('locked');
     setInterval(() => {}, 1_000);
   `], { stdio: ['ignore', 'pipe', 'inherit'] });

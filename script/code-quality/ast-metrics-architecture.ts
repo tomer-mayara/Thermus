@@ -43,7 +43,8 @@ color of the band, the table gives the count of each changed file, and a list
 names each function that the pull request added or made worse. Without the
 report, the output says that coverage is missing. Coverage must have verified
 provenance that matches the source and coverage inputs of the head snapshot,
-with the same unit suite, measurement version, runtime, and compiler. An older
+with compatible input identity, measurement version, runtime, and compiler.
+Selected-suite reports retain every suite and capture identity. An older
 capture commit is allowed when those identities match. Legacy data still shows
 structure, but cannot establish coverage compatibility. With --no-coverage, the
 command ignores the default report explicitly.
@@ -61,6 +62,12 @@ exists stays as it is. Commit the new file with the pull request. With --head
 and --base-snapshot, the command reads no store unless --trend-store names one.
 Offline --record also requires a repository that verifies the full base commit
 and its source content. Recording requires that the base is on origin/main. Without a store, the trend section says No trend store.
+Repository reports check gaps strictly between the oldest and newest displayed
+records on first-parent origin/main. Every stored full commit identity counts,
+also when its row is outside the display selection. Each missing interval gets
+one gap line. Commits outside those endpoints are not checked. Missing or shallow
+Git history gets an explicit notice. Offline reports with a store state that
+dates cannot prove omitted commits and run no Git for this check.
 
 By default, the command takes two snapshots, as script/code-quality/ast-metrics-snapshot.ts
 does: the base is the merge base of REF and HEAD, in a temporary worktree, and

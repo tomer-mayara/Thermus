@@ -24,8 +24,20 @@ for (const key of ['sourceFingerprint', 'inputsFingerprint', 'runtime', 'compile
   });
 }
 
-for (const changes of [{ suite: 'acceptance' }, { measurementVersion: 'old' }, { commit: 'f'.repeat(40) }]) {
+for (const changes of [{ suite: 'acceptance' }, { measurementVersion: 'old' }, { commit: 'f'.repeat(40) }] as const) {
   test(`Given invalid report metadata ${JSON.stringify(changes)}, when coverage is matched, then the result withholds it`, () => {
     assert.equal(coverageForHead({ ...report, ...changes }, identity).coverage, undefined);
+  });
+}
+
+const { coverageOriginOf } = await import(new URL('provenance/captures.ts', pathToFileURL(astMetricsArchitectureScript)).href) as typeof import('../../../script/code-quality/provenance/captures.ts');
+const unit = { ...identity, status: 'verified', capturedCommit: capture, buildFingerprint: 'c'.repeat(64), captureManifestFingerprint: 'd'.repeat(64), comparisonIdentity: identity } as const;
+const acceptance = { ...unit, suite: 'acceptance', inputsFingerprint: 'e'.repeat(64), captureManifestFingerprint: 'f'.repeat(64) } as const;
+for (const captures of [[acceptance], [unit, acceptance]]) {
+  test(`Given selected ${captures.map(({ suite }) => suite).join(' and ')} captures from this input tree, when compared with the unit snapshot identity, then the true suite set is compatible`, () => {
+    const provenance = coverageOriginOf(captures, identity);
+    const combined = { ...report, suite: provenance.suite, provenance };
+    assert.equal(coverageForHead(combined, identity).coverage, combined);
+    assert.equal(coverageForHead(combined, { ...identity, inputsFingerprint: '9'.repeat(64) }).coverage, undefined);
   });
 }
