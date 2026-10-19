@@ -32,6 +32,7 @@ export const hostedPortalPreload = siblingModule('use-hosted-portal-fixture').hr
 export const programEntry = fileURLToPath(new URL(`../../../src/index.${extension}`, import.meta.url));
 
 // The preloads load by URL through --import. The probe runs as the main module of a new Node process.
+export const crashChildHelper = siblingModule('crash-child').href;
 export const networkBlocker = siblingModule('deny-network').href;
 export const sqlTracer = siblingModule('trace-sqlite').href;
 export const foreignOriginProbe = fileURLToPath(siblingModule('foreign-origin-probe'));
@@ -74,3 +75,4 @@ export const astMetricsProcessScript = fileURLToPath(new URL('script/code-qualit
 export const astMetricsBaselineScript = fileURLToPath(new URL('script/code-quality/ast-metrics-baseline.ts', repositoryRoot));
 export const astMetricsCoverageScript = fileURLToPath(new URL('script/code-quality/ast-metrics-coverage.ts', repositoryRoot));
 export const astMetricsCoverageSourceFolder = fileURLToPath(new URL('script/code-quality/coverage', repositoryRoot));
+export const astMetricsBackfillScript = fileURLToPath(new URL('script/code-quality/ast-metrics-backfill.ts', repositoryRoot));

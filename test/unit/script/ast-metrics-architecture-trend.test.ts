@@ -45,7 +45,7 @@ function crapOf(tree: Snapshot): CrapDelta {
 }
 
 const provenance: VerifiedCoverageProvenance = { status: 'verified', capturedCommit: 'a'.repeat(40), sourceFingerprint: 'b'.repeat(64), inputsFingerprint: 'c'.repeat(64), buildFingerprint: 'd'.repeat(64), measurementVersion: 'own-characters-1', runtime: 'node-24', compiler: 'typescript', suite: 'unit', captureManifestFingerprint: 'e'.repeat(64) };
-const crapBasis = { kind: 'head-derived-estimate', coverageCommit: provenance.capturedCommit, sourceFingerprint: provenance.sourceFingerprint, inputsFingerprint: provenance.inputsFingerprint, buildFingerprint: provenance.buildFingerprint, measurementVersion: provenance.measurementVersion, unknownFunctions: 0 };
+const crapBasis = { kind: 'head-derived-estimate', coverageCommit: provenance.capturedCommit, sourceFingerprint: provenance.sourceFingerprint, inputsFingerprint: provenance.inputsFingerprint, buildFingerprint: provenance.buildFingerprint, measurementVersion: provenance.measurementVersion, unknownFunctions: 0, captureProvenance: provenance };
 
 test('Given a snapshot and the CRAP of its files, when the record is made, then it holds, in this order, the version, the commit, the date, the global numbers with the count of the cycles and the count of the functions at CRAP 30 or more, and each community sorted by label with its numbers and its count, and nothing for each file', () => {
   const crap = crapOf(snapshot);

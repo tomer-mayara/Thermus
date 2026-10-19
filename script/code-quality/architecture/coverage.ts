@@ -3,8 +3,8 @@
 import { jsonFieldsInFile } from '../shared/json-file.ts';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { coverageProvenanceIn } from '../provenance/read.ts';
-import type { CoverageProvenance } from '../provenance/types.ts';
+import { coverageProvenanceIn, coverageSuitesIn } from '../provenance/read.ts';
+import type { CoverageProvenance, CoverageSuite } from '../provenance/types.ts';
 import * as json from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
 
@@ -18,7 +18,7 @@ export interface CoverageFunction {
 // A src/ file that no unit test loaded is not in the report.
 export interface CoverageReport {
   readonly commit?: string;
-  readonly suite?: string;
+  readonly suite?: CoverageSuite | readonly CoverageSuite[];
   readonly measurementVersion?: string;
   readonly provenance?: CoverageProvenance;
   readonly files: readonly { readonly path: string; readonly functions: readonly CoverageFunction[] }[];
@@ -45,10 +45,11 @@ function coverageInFile(path: string): CoverageReport {
   const fields = jsonFieldsInFile(path, 'coverage');
   if (!supportedVersions.has(fields.version)) invalid(path);
   const check: Check = (value) => value ?? invalid(path);
+  if (fields.suite !== undefined && coverageSuitesIn(fields.suite) === undefined) invalid(path);
   const entries = requiredArray(fields.files, check);
   const unmeasured = unmeasuredNames(fields.unmeasuredFunctions, check);
   return {
-    commit: json.textOf(fields.commit), suite: json.textOf(fields.suite), measurementVersion: json.textOf(fields.measurementVersion),
+    commit: json.textOf(fields.commit), suite: fields.suite as CoverageReport['suite'], measurementVersion: json.textOf(fields.measurementVersion),
     provenance: coverageProvenanceIn(fields.provenance), files: entries.map((entry) => fileOf(json.objectOf(entry), check, unmeasured)),
   };
 }

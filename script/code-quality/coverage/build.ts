@@ -13,7 +13,7 @@ function buildFingerprintOf(root: string): string {
   return tree.fingerprintOf(tree.treeEntries(join(root, 'dist'), (path) => path !== manifestName));
 }
 export function assertInputs(root: string, expected: InputIdentity): void {
-  if (JSON.stringify(inputIdentityOf(root)) !== JSON.stringify(inputIdentityIn(expected))) throw new CommandError('Coverage inputs changed during capture. No coverage is written.');
+  if (JSON.stringify(inputIdentityOf(root, expected.suite)) !== JSON.stringify(inputIdentityIn(expected))) throw new CommandError('Coverage inputs changed during capture. No coverage is written.');
 }
 export function assertBuild(root: string, expected: string): void {
   if (buildFingerprintOf(root) !== expected) throw new CommandError('Emitted output changed during capture. No coverage is written.');

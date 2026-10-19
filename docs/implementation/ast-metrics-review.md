@@ -5,13 +5,15 @@ ast-metrics" in [AGENTS.md](../../AGENTS.md). AGENTS.md gives the rules; this
 guide gives the commands, what they report, the configuration, and the limits
 of the tool. If the two disagree, follow AGENTS.md and correct this guide.
 
-The facts in this guide were verified on 2026-10-17 and 2026-10-18 with
-ast-metrics 0.43.1 on this repository. A later version can behave differently; verify the limits
-again before you change the process.
+The facts in this guide were verified on 2026-10-17 through 2026-10-19 with
+ast-metrics 0.43.1 on this repository. PR #188 implements CR-10 option A,
+CR-11, and manual CR-12 in the current draft candidate; it is not merged.
+A later version can behave differently; verify the limits again before you
+change the process.
 
 ## Installation
 
-Delta, review, MCP, snapshot, CRAP, process, baseline, and online architecture
+Delta, review, MCP, snapshot, CRAP, process, baseline, backfill, and online architecture
 need the `ast-metrics` executable on PATH. On macOS, install it
 from its Homebrew tap: `brew install ast-metrics/tap/ast-metrics`. Other
 systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
@@ -33,7 +35,7 @@ them from the repository root with `pnpm exec node`.
 
 ## The commands
 
-The nine entry points and their helper folders are in
+The ten entry points and their helper folders are in
 [`script/code-quality/`](../../script/code-quality/README.md). That README explains
 CRAP before the command sections, which follow the review process order. It
 lists each command's synopsis, options and defaults, output, exits, and focused
@@ -60,13 +62,18 @@ The delta, review, snapshot, and architecture commands do not run tests.
 Run the process command for every pull request; the individual commands
 remain available for inspection and improvement passes.
 
-The coverage command runs both parts of the unit suite: emitted Node tests
+By default, the coverage command runs both parts of the unit suite: emitted Node tests
 and source portal tests. Run it, or its live test, only when `src/` changed
 or both complete parts were already selected. A focused unit package or a
 script change alone does not select both complete parts. Reuse a current
 valid report when available; otherwise, a review outside that scope uses
 the architecture report with `--no-coverage`. The missing or stale report
 does not expand the test selection.
+Explicit repeatable `--suite` options can select unit, integration, and
+acceptance coverage. Each complete requested group must already be selected
+under the test gate policy. A flag does not grant that scope. The process
+wrapper still collects only the default unit group. See the coverage section
+for package selections, capture identities, and child-process limits.
 The separate `ast-metrics-architecture-coverage.live.ts` has the same
 restriction. It collects both complete unit parts and passes its private
 report with `--coverage`. `ast-metrics-architecture.live.ts` is structural
@@ -210,15 +217,42 @@ The report lists:
 - A file whose maintainability score dropped, with the scores before and
   after (severity high).
 - A new function with more than 10 decision paths, with its file, line, and
-  name (severity high above 30, else medium).
+  name (severity high at 25 or more, else medium).
+- A new forbidden resolved import from `src/html-cleaner-pipeline/` to
+  `src/mcp/`, or from `src/website-fetcher/` to `src/auth/` (severity high).
 - A rule violation that the baseline does not list, for the rules in
   `.ast-metrics.yaml`.
 - A summary of the change in complexity, maintainability, outgoing
   dependencies, and estimated bugs, and the improvements.
 
+The wrapper validates native Markdown, JSON, counts, gate, stdout, and exit
+status before applying project policy. Native 0.43.1 warns at 10 paths; the
+wrapper removes only its medium new-function finding with numeric path count
+exactly 10. Other function warnings and native high findings remain. Adjusted
+JSON retains the complete `nativeReview` and `reviewPolicy` metadata, with
+recomputed counts and gate. Adjusted Markdown obeys `--max-findings`; JSON
+keeps every finding, and hidden high findings still fail the gate.
+
+When policy changes the report, forwarded tool stderr is labelled
+`Native ast-metrics review diagnostic:` so native counts remain distinct from
+wrapper counts. Unchanged native output and operational-failure diagnostics
+keep their original form.
+
+The layer rules use CR-13 resolved source imports and compare with the merge
+base of REF and HEAD. They check ordinary, type-only, side-effect, re-export,
+and literal dynamic imports. Known forbidden base pairs can follow proven Git
+source/target renames or unique exact-content deleted/added moves without a
+new finding. An allowed pair moved across a
+forbidden boundary is new risk. Affected guarded sources with parse errors,
+unresolved local imports, unsupported aliases, or nonliteral dynamic imports
+fail with a dependency diagnostic. Unchanged unrelated uncertainty does not
+block a document-only review. Symbol names alone cannot prove a forbidden path.
+The native baseline does not suppress these resolved-path checks. Existing
+forbidden pairs are established from the merge base, not baseline messages.
+
 The exit status is 1 when a finding of severity high exists, else 0. The
-review compares the working tree with the tip of the base ref, not with the
-merge base: update the branch from `origin/main` first, or the review lists
+native review compares the working tree with the tip of the base ref, not with
+the merge base: update the branch from `origin/main` first, or the review lists
 changes that are not yours.
 
 ### Ask the MCP server: `script/code-quality/ast-metrics-mcp.ts`
@@ -261,19 +295,20 @@ the repository.
 
 ### Measure the coverage per function: `script/code-quality/ast-metrics-coverage.ts`
 
-Use the following run only when the test selection permits both complete parts
-of the unit suite, as stated above. A current valid report covers the
-candidate's source, unit-test, and build inputs, including test helpers and
+Use the default run only when the test selection permits both complete parts
+of the unit suite, as stated above. For explicit suites, each complete requested
+group must be independently selected. A current valid report covers the
+candidate's source, test, and build inputs, including test helpers and
 fixtures. A commit that changes only documents does not invalidate coverage
 when those inputs are unchanged. The report's commit label alone does not
 prove that it is current. If you cannot verify its inputs, use the
 architecture report without coverage.
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-coverage.ts [--no-build] [--from DIR] [--allow-unverified] [--out FILE]
+pnpm exec node script/code-quality/ast-metrics-coverage.ts [--suite unit|integration|acceptance]... [--no-build] [--from DIR] [--allow-unverified] [--out FILE]
 ```
 
-The command first builds the candidate. It then runs the emitted Node unit
+By default, the command first builds the candidate. It then runs emitted Node unit
 tests (`node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"`),
 then the source portal unit tests (`node --test
 "test/unit/user-portal/**/*.test.ts"`). Both runs use one
@@ -281,11 +316,62 @@ then the source portal unit tests (`node --test
 no ast-metrics. It publishes `ast-report/coverage.json` atomically only
 after the build, both runs, and the provenance checks succeed. It retains
 the raw capture and its manifest under
-`ast-report/coverage-captures/capture-<unique>/`. The build manifest is
+`ast-report/coverage-captures/capture-<suite>-<unique>/`. The build manifest is
 `dist/.coverage-build.json`. `--no-build` accepts this output only when its
 content hash and current input identity match; timestamps and file sizes
-are insufficient. It adds no integration or acceptance suite; CR-11 proposes
-that extension.
+are insufficient.
+
+Repeat `--suite unit|integration|acceptance` to request other already-selected
+complete groups. The default is `unit`. Duplicate requests are removed in
+first-requested order. One build precedes the runs, and each suite gets a
+separate retained capture. Unit includes emitted Node unit tests and source
+portal unit tests. Integration uses the emitted integration group. Acceptance
+uses emitted acceptance tests excluding `hosted-image`, then source portal
+acceptance tests. The collector accepts the package's `test:<suite>` build
+prerequisite and direct Node test selections only. An unsupported prerequisite,
+nested command, or selection outside that suite defers collection before it
+builds or launches children. It never expands selection to obtain coverage.
+`--from DIR` imports one archived capture without execution and cannot combine
+with `--suite`.
+
+Run comparison and coverage collection sequentially in the same checkout.
+Native ast-metrics 0.43.1 `analyze --compare-with` checks out the comparison
+ref (`origin/main` by default), then returns to the candidate branch. It can
+refuse a dirty tree. Do not change
+the checkout or run delta or process comparisons while collection is active.
+A temporary checkout change can remove the collector preload and invalidate
+the capture.
+
+Compatible own-character execution is unioned across requested suites.
+Source TypeScript and emitted JavaScript for one logical file still conflict.
+The collector propagates its lifecycle preload into same-capture Node children
+and workers, including children with a reduced environment. The runner uses
+`--import`. Default ESM file workers keep Node's normal argument filtering.
+Workers with an explicit argument array receive the required preload. A default
+CommonJS eval worker does not inherit `--import` execution and stays unverified
+unless it has the explicit captured-argument adaptation.
+Explicit independent captures stay separate. Each process/thread needs normal flush-and-exit evidence
+or the approved verified pre-crash seal. Missing, untracked, unflushed, or
+unsealed killed participants prevent verified publication; a failed suite keeps
+the previous good report. A real collector proof runs only when all of its
+complete groups are already selected; fixture success does not prove that
+whole-repository collection will succeed.
+
+The complete real combined capture passed on 2026-10-19 in requested order
+`[acceptance, unit]`: 853 emitted acceptance tests and 16 portal acceptance
+tests, then 3,544 emitted unit tests and 19 portal unit tests. Every group had
+zero failures and zero skips. Both captures are verified under
+`normal-exit-or-sealed-1` and retain distinct original capture IDs. The report
+contains 115 production files and 3,430 raw V8 files; its `processes` field
+counts raw files, not distinct processes. `createApplication` was called 89
+times with covered share 1. The proof includes eight sealed unit crash children,
+the busy MCP fake's normal SIGTERM cleanup, and the registration test's clean
+server stop. Real integration capture remains deferred because that complete
+group was not selected; suite-union contracts cover it with doubles. Both collecting live checks passed, with no skips. The latest retained unit
+capture also imported as verified, with 104 production files and 880 raw V8
+files. All 13 affected live cases passed without skips: two collecting cases,
+ten structural cases, and one CRAP case with verified imported unit coverage.
+Final typechecking also passed.
 
 The collector accepts emitted JavaScript under `dist/src/` and source
 TypeScript under `src/`. It maps `dist/src/x.js` to `src/x.ts` and ignores
@@ -310,9 +396,8 @@ For each measured function, the report preserves its whole `start` and
 `end`, name, sum of calls, and numeric `coveredShare`. The module function
 and anonymous functions have the name `(anonymous)`. A complete verified
 report can establish that an absent file was not loaded by the selected
-unit suite. An imported report with unknown capture origin cannot establish
-this. Functions called only by integration or acceptance tests can show
-zero calls.
+suite set. An imported report with unknown capture origin cannot establish
+this. Functions called only by an unselected suite can show zero calls.
 
 #### How the share is counted
 
@@ -356,6 +441,64 @@ and `captureManifestFingerprint`. The commit is the original capture's
 commit, not the commit of a later import. The capture manifest also binds
 each script's path, representation, and content identity.
 
+Default unit reports retain the single string `suite: "unit"`. An explicit
+non-unit or multi-suite report uses the same ordered suite array in the report
+and provenance, such as `["unit", "acceptance"]`. Its `captures` array retains
+each original full per-suite identity and capture-manifest fingerprint.
+`comparisonIdentity` uses the canonical unit input identity to compare the
+current tree; it does not replace those true per-suite identities. Each suite
+is part of its own input hash. The aggregate `captureManifestFingerprint` is
+SHA-256 of the ordered JSON list of each capture's `suite` and
+`captureManifestFingerprint`. Readers validate the suite order and set, reject
+duplicates, and check each capture's commit, source, runtime, compiler, build,
+measurement version, and comparison identity. Legacy unit strings remain
+readable.
+
+New capture manifests use `version: 3`, retain full per-suite `identity` and
+`comparisonIdentity`, and add `completionProtocol: "normal-exit-or-sealed-1"`
+and the original `captureId`. Per-capture provenance retains both fields.
+`captureId` hashes the resolved original capture directory; import preserves it.
+`rawFingerprint` binds raw `coverage-*`, lifecycle `process-*`, `seal-request-*`,
+`seal-receipt-*`, and `signal-*` file names and contents. Version-1 unit manifests and
+version-2 manifests remain readable under their original evidence rules;
+legacy data is not relabeled as using the new protocol. Report schema stays
+version 2 and the measurement stays `own-characters-1`. The build manifest
+still uses the canonical unit identity and an emitted-output hash.
+
+Normal-exit markers record an `exitCheckpoint` after an explicit V8 flush.
+Verification requires later V8 raw evidence beyond that checkpoint. This proves
+a later flush; it does not by itself prove that termination was automatic-only.
+Parent observations in `signal-*` receipts reject signal exits for captured
+PIDs unless a verified pre-crash seal supports SIGKILL. A later flush alone
+cannot turn such a signal exit into normal completion. Signals from native
+children with no captured Node identity do not invalidate Node coverage.
+
+For intentional crashes, `test/support/processes/crash-child.ts` requests a
+seal tied to capture ID, PID, main-thread identity, and a fresh nonce. It can
+use IPC or a prepared nonce at a synchronous blocked fixture boundary; both
+paths require the same request and receipt evidence. Only known crash fixtures
+set `THERMUS_COVERAGE_CRASH=1` to install the seal IPC listener. Ordinary
+captured forks keep their normal exit and product IPC behavior without that
+listener. The OAuth fixture uses `THERMUS_COVERAGE_SEAL_NONCE` and a synchronous
+seal boundary; it adds no IPC listener. The child flushes V8, stops coverage, hashes its raw file set, writes the sealed
+marker, and blocks execution. Only a process without worker-thread history
+can seal; active workers and previous worker evidence both prevent it. The parent
+verifies the seal, sends SIGKILL, waits for closure, verifies the raw set and
+hashes again, and writes the receipt. A queued later product call must not run
+after sealing. Missing, stale, mismatched, or changed seal evidence fails
+verification. The approved protocol is explicit; an arbitrary killed child
+cannot obtain verified status by being omitted.
+
+Verified public worker cases include default ESM file workers and workers
+with explicit captured arguments. A default CommonJS eval worker without
+that adaptation stays unverified; support does not imply that all worker
+forms can supply completion evidence. Actual TypeScript entries using the `tsx`
+loader can create loader threads without that evidence. Both import and require
+preloads must reject those captures while the loader threads do not cooperate;
+raw-only or still-running loader identities cannot be ignored or called
+verified. The current emitted-unit and native TypeScript portal selections do
+not require that loader.
+
 The deterministic SHA-256 input identity covers the source tree, tests and
 helpers, non-TypeScript fixtures, scripts, configuration, package manifests,
 lockfiles, patches, migrations, Docker inputs, and files that tests read.
@@ -394,9 +537,10 @@ fails; `--from` can recover it. Legacy version-1 reports remain readable,
 but absent provenance is unverified.
 
 A document-only commit can reuse an older verified report when source and
-input fingerprints, runtime, compiler, suite, and measurement version all
-match the analyzed head snapshot. The capture commit label alone does not
-prove compatibility. Offline rendering checks the supplied head snapshot;
+input fingerprints, runtime, compiler, and measurement version all
+match the analyzed head snapshot. For explicit suites, readers verify each
+original identity and the shared canonical comparison identity. The capture
+commit label alone does not prove compatibility. Offline rendering checks the supplied head snapshot;
 it does not consult the caller's checkout or need Git.
 
 The architecture command reads the report to give each matched measured
@@ -647,8 +791,20 @@ The other notices distinguish missing data, no verified coverage provenance,
 a head snapshot without provenance, and an explicit skip. Compatible output
 adds `Coverage: unit suite at <commit8>.` after the complexity section,
 including when no production file changed. The commit names the original
-capture. Legacy snapshots can still show structure; they cannot establish
-coverage compatibility.
+capture. Explicit suite reports name their ordered suites, for example
+`Coverage: unit + acceptance suites at <commit8>.`. For a test-only candidate,
+including changed helpers, fixtures, and untracked `test/` paths of any
+extension, the report prints
+`Test changes are not judged: the base uses the coverage of the head.`
+when compatible coverage is available. Without an assessment it prints
+`Test changes are not judged: no coverage comparison was made.`
+Any changed path under `src/`, of any extension, suppresses this
+particular notice. Offline inputs require equal known source fingerprints and
+explicit test paths, with no source path, before they can establish test-only
+changes. They do not infer this from commit dates or empty metadata.
+These notices do not measure base coverage or judge changed tests. D4's
+base-coverage store remains unapproved. Legacy snapshots can still show
+structure; they cannot establish coverage compatibility.
 
 These notices do not change the selected test scope. Use verified compatible
 coverage if available. Otherwise use `--no-coverage` when collection is
@@ -893,9 +1049,10 @@ uses only the supplied title; it makes no Git or GitHub call to fill it.
 Separate maintainability and `Functions ≥ 30` chart sections use the same
 last ten records and head as the numeric table. A missing value ends a run;
 the next known value starts a new run. Risk runs also end when their basis
-changes between `measured`, `head-derived estimate`, and `legacy unknown`. Captions name
-that basis. Thus no line crosses an unknown value or joins different coverage
-bases. A run of at least two values gets a fenced `mermaid` `xychart-beta`
+changes between `measured`, `head-derived estimate`, and `legacy unknown`,
+or when the normalized selected suite set changes. Captions name that basis
+and any explicit non-unit suite set. No line crosses an unknown value or
+joins different coverage bases. A run of at least two values gets a fenced `mermaid` `xychart-beta`
 line chart. A one-value run gets its commit and value in a caption. A section
 without values says that its measure is unavailable. A constant run gets a
 nonzero y-axis range, including when every value is zero. Chart labels use
@@ -934,7 +1091,8 @@ these chart blocks, captions, and the component matrix with the numeric table.
 
 The trend store of a repository is `docs/metrics/` of its root, and the pull
 requests commit its files (step 8 of the process). It holds one JSON file for
-each commit of `main` that a pull request used as its base, named
+each recorded commit of `main`, from a verified pull request base or manual
+backfill, named
 `<date>-<commit8>.json`: the day of the committer date of the commit in the
 time zone of the commit, and the first eight characters of the commit. A file
 holds `version` 1, the actual snapshot `tool` version when known, the
@@ -986,8 +1144,9 @@ count is missing or a later run would give another count. Keep the file from
 Approved D3 retains counts from compatible head coverage as
 `head-derived-estimate`, with the original coverage commit, source and input
 fingerprints, build fingerprint, measurement version, and unknown-function
-count. The base count uses the base's decision paths
-with the head's shares; it is not a measurement of base coverage. The table
+count. New records also retain full `crap.captureProvenance`, including
+explicit suite captures and their comparison identity. The base count uses
+the base's decision paths with the head's shares; it is not a measurement of base coverage. The table
 labels historical estimates as `17 (estimate)`, the current head as
 `17 (measured)`, absent counts as `–`, and old unattributed counts as
 `22 (legacy unknown)`. A later pull request can
@@ -1002,15 +1161,46 @@ The notice associates every displayed record with its commit prefix and the
 head with `this pull request`, in table order. Absent legacy versions are
 `unknown`.
 
-Nobody runs anything at merge time. The trend therefore lags one pull
-request behind `main`, and a commit that no pull request records as a base
-gets no file. In a repository, `--trend-store` replaces `docs/metrics/`, as
+Nobody runs anything at merge time. Ordinary base recording can lag behind
+`main` and omit commits. Manual backfill can fill missing structural records.
+Repository reports check gaps strictly between the oldest and newest displayed
+records on first-parent `origin/main`. All stored full identities count, also
+when their rows are outside the display selection. Each contiguous missing
+interval gets one line: `k commits of main between <a8> and <b8> have no record.`
+The endpoints are recorded commits and are excluded from `k`. Commits outside
+those endpoints are not checked. Missing or shallow Git history gives an
+explicit reason. Offline reports with a store print
+`Gap check unavailable: offline snapshot dates cannot prove omitted commits.`;
+no-store output stays
+`No trend store.` In a repository, `--trend-store` replaces `docs/metrics/`, as
 the live test does with a temporary folder. D3 authorizes no base-coverage
 store or merge workflow; those remain D4 and D5.
 
 Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
 diagnostic line for a failure, also for a store that the command cannot read or
 write; 130 or 143 when a signal stops the base snapshot.
+
+### Backfill structural history: `script/code-quality/ast-metrics-backfill.ts`
+
+```sh
+pnpm exec node script/code-quality/ast-metrics-backfill.ts [--count N] [--allow-tool-version]
+```
+
+The default count is 10; `N` must be a positive safe integer. Help and argument
+checks run before Git or tool access. The command requires complete
+first-parent `origin/main` history and selects its latest `N` commits, or all
+available commits when fewer exist. It analyzes missing selected commits
+oldest first in exact detached temporary worktrees. It does not use a merge
+base. Full identity, date, ancestry, and immutable source content are verified
+before the no-overwrite store publishes a record under `docs/metrics/`.
+
+Existing records remain unchanged, including records without CRAP counts.
+Backfill collects structural data only. It runs no build, suite, coverage
+collector, or package install. Each tool session is bounded, and worktrees are
+removed on success, analysis failure, SIGINT, and SIGTERM. A cleanup failure
+prevents that record's publication. Earlier completed records survive a later
+failure. Exit 0 means the selected records exist; failures exit 1 and signals
+exit 130 or 143. D5 still has no approved merge-time workflow.
 
 ## The configuration
 
@@ -1035,18 +1225,41 @@ adding no config under `src/`. The root file:
   where a long function is normal. The goal of 85 of the delta command
   applies to production files for the same reason.
 - Sets the rules: maintainability 85 for each class, efferent coupling at
-  most 10, at most 150 lines and 20 decision paths for a file, at most 30
+  most 10, at most 150 lines and 40 decision paths for a file, at most 30
   lines and 20 logical lines for a function. The rule `no_community_cycles`
   is not used: it judges how ast-metrics groups the files of the whole
   repository, not an import cycle, and its baseline entry drifted with every
   change of `script/`; the architecture delta of the evolution plan shows the
   cycles of `src/` instead.
 
-`.ast-metrics-baseline.yaml` lists the violations that existed when the rules
-were last set or at a later refresh (175 after PR #165 on 2026-10-18). The
-review and `ast-metrics lint` report only a violation that the baseline does
-not list. A baseline entry carries the measured value in its message, so a
-file whose value moved appears again. Current AGENTS.md permits a refresh
+The owner approved D6 and D7 on 2026-10-19: cleaner → MCP and
+website-fetcher → auth path restrictions enforced by the review wrapper,
+a file cap of 40 paths with LOC 150 unchanged, and a new-function warning
+strictly above 10 paths. The candidate implements these rules. Selected tests,
+typechecking, and all 13 affected live cases pass. Retained
+review findings still need individual reasons. A controlled 0.43.1 capability
+check found that `coupling.forbidden`
+matches imported symbol names, not resolved source paths, and emits low
+review findings. It cannot provide the proposed high-severity path gate.
+The approved review-wrapper rules address that native limit. The native
+new-function warning starts at 10 decision paths; the wrapper applies the
+approved strict boundary above 10. Configuration now uses file cap 40 and
+LOC 150. Focused policy and pinned-tool boundary tests pass.
+
+The rule refresh changed 209 intermediate entries to 169 after the approved
+D6/D7 changes; `origin/main` has 175 entries.
+Final verification stayed at 169 entries and left the baseline byte-identical.
+The refresh uses the existing AGENTS.md exception for retained high findings.
+Final review reports 10 high maintainability findings, two medium findings,
+no low findings, and six improvements. Each retained high finding still needs
+its own reason in the pull request description. This refresh adds no baseline exception.
+
+The baseline lists rule violations that existed when the rules were set or
+refreshed. Review and `ast-metrics lint` omit listed rule violations. The
+refresh does not silence high file-maintainability regressions; those still
+need individual reasons in the pull request description. A baseline entry
+carries the measured value in its message, so a file whose value moved can
+appear again. Current AGENTS.md permits a refresh
 for two reasons only: the pull request changes `.ast-metrics.yaml` rules, or
 it keeps a finding of severity high with a reason under step 4. Refresh and
 commit the baseline in that same pull request. A third exception for violations

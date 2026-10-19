@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { fingerprintOf, treeEntries } from './tree.ts';
-import type { InputIdentity } from './types.ts';
+import type { CoverageSuite, InputIdentity } from './types.ts';
 
 const require = createRequire(import.meta.url);
 const compiler = `typescript-${(require('typescript/package.json') as { version: string }).version}`;
@@ -22,8 +22,8 @@ function accepted(path: string): boolean {
 export function sourceFingerprintOf(root: string): string {
   return fingerprintOf(treeEntries(root, (path) => path === 'src' || (path.startsWith('src/') && !generated(path))));
 }
-export function inputIdentityOf(root: string): InputIdentity {
-  const metadata = { runtime: `node-${process.versions.node}`, compiler, measurementVersion: 'own-characters-1', suite: 'unit' } as const;
+export function inputIdentityOf(root: string, suite: CoverageSuite = 'unit'): InputIdentity {
+  const metadata = { runtime: `node-${process.versions.node}`, compiler, measurementVersion: 'own-characters-1', suite } as const;
   return {
     sourceFingerprint: sourceFingerprintOf(root),
     inputsFingerprint: fingerprintOf([...treeEntries(root, accepted), ['\0measurement', Buffer.from(JSON.stringify(metadata))]]),

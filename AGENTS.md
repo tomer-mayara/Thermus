@@ -112,7 +112,7 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
 2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts` and read
    `ast-report/process.md`. It runs delta, review, coverage resolution, CRAP,
    and architecture in order. It prints and saves four report sections.
-   It reuses verified compatible unit coverage by default. Missing or stale
+   It reuses verified compatible coverage by default. Missing or stale
    coverage never starts a suite. Use `--collect-coverage` only when `src/`
    changed or both complete unit parts were already selected: emitted Node
    tests and source portal tests. The collector builds first. Record that
@@ -121,6 +121,20 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    reports; it cannot make an unassessed required goal pass. An empty default
    production-file selection succeeds without coverage or MCP for CRAP.
    A document-only commit can reuse an older capture when its inputs match.
+   The standalone collector defaults to unit coverage. Its repeatable `--suite`
+   option can collect unit, integration, or acceptance coverage only when each
+   complete suite was independently selected. The process collector still runs
+   unit only. Preserve the reported suite names and original capture identities
+   when reusing combined coverage; the command grants no extra test scope.
+   Intentional crash children need the approved verified pre-crash
+   flush/stop/seal protocol. Only known crash fixtures opt in to its IPC
+   listener with `THERMUS_COVERAGE_CRASH=1`; ordinary captured forks have no
+   injected message listener. OAuth uses a synchronous prepared nonce without
+   an IPC listener. Do not omit incomplete process or thread identities
+   or publish them as verified. A protocol fixture does not replace a complete
+   real capture proof. Normal-exit checkpoints must have later V8 flush
+   evidence. A captured PID's signal exit needs a verified seal; later raw
+   coverage alone does not prove normal termination.
 3. Maintainability goal: 85 or more for each changed production file under
    `src/`. Test and support files have no goal. Inspect low files with
    `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.
@@ -133,6 +147,11 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    `.ast-metrics-baseline.yaml` in the same pull request. The wrapper runs
    from the repository root and reports ignored entry counts before and
    after. Include the review Markdown in the description.
+   The review wrapper reports new resolved imports from
+   `src/html-cleaner-pipeline/` to `src/mcp/`, and from `src/website-fetcher/`
+   to `src/auth/`, as high findings. It compares those paths with the merge
+   base. New-function warnings start above 10 paths; high starts at 25. The
+   file rule allows at most 40 paths and 150 LOC.
 5. CRAP goals: added or changed functions below 30; added functions also at
    15 or less. The table includes unchanged and identity-unknown functions
    and states their scope. Improve missed required goals with selected unit

@@ -46,7 +46,7 @@ const typedSource = [
 test('Given emitted and typed portal unit tests with non-ASCII text, when coverage runs, then both suites run and typed offsets and shares match UTF-16 source text', async (t) => {
   const repository = GitRepository.create(t);
   repository.commit('Start', {
-    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"', 'test:unit': 'npm run build && node --test --test-concurrency=1 "dist/test/unit/**/*.test.js" && node --test "test/unit/user-portal/**/*.test.ts"' } }),
     'dist/src/emitted.js': 'export function emitted() { return 1; }\n',
     'dist/test/unit/emitted.test.js': "import { emitted } from '../../src/emitted.js'; emitted();\n",
     'src/user-portal/typed.ts': typedSource,
@@ -133,7 +133,7 @@ test('Given emitted tests that pass and portal tests that fail, when collection 
   const repository = GitRepository.create(t);
   repository.commit('Start', {
     'ast-report/coverage.json': earlierReport,
-    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"', 'test:unit': 'npm run build && node --test --test-concurrency=1 "dist/test/unit/**/*.test.js" && node --test "test/unit/user-portal/**/*.test.ts"' } }),
     'dist/src/sample.js': 'export const value = 1;\n',
     'dist/test/unit/sample.test.js': "import '../../src/sample.js';\n",
     'test/unit/user-portal/sample.test.ts': "import { test } from 'node:test'; test('portal failure', () => { throw Error('defect'); });\n",

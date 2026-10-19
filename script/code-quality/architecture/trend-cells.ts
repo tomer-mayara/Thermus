@@ -1,10 +1,12 @@
+import { trendSuiteLabelOf } from './trend-basis.ts';
 import type { TrendNumbers } from './trend-record.ts';
 
 export function countCellOf(value: Pick<TrendNumbers, 'functionsOver30' | 'crap'> | undefined): string {
   const { functionsOver30, crap } = value ?? {};
   if (functionsOver30 === undefined) return '–';
   const basis = crap === undefined ? 'legacy unknown' : crap.kind === 'measured' ? 'measured' : 'estimate';
-  return `${functionsOver30} (${basis})`;
+  const suites = trendSuiteLabelOf(crap);
+  return `${functionsOver30} (${basis}${suites === undefined ? '' : `; ${suites}`})`;
 }
 
 export function prCellOf(title: string | undefined): string {

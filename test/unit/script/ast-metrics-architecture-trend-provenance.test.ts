@@ -91,3 +91,35 @@ for (const [description, tool, hasTool] of [
     assert.equal('tool' in result, hasTool);
   });
 }
+
+const { coverageOriginOf } = await import(new URL('../provenance/captures.ts', folder).href) as typeof import('../../../script/code-quality/provenance/captures.ts');
+const { trendBasisOf } = await import(new URL('trend-basis.ts', folder).href) as typeof import('../../../script/code-quality/architecture/trend-basis.ts');
+const { trendSeriesOf } = await import(new URL('trend-series.ts', folder).href) as typeof import('../../../script/code-quality/architecture/trend-series.ts');
+const comparison = { sourceFingerprint: provenance.sourceFingerprint, inputsFingerprint: provenance.inputsFingerprint, runtime: provenance.runtime, compiler: provenance.compiler, measurementVersion: provenance.measurementVersion, suite: 'unit' } as const;
+const unitCapture = { ...provenance, comparisonIdentity: comparison };
+const acceptanceCapture = { ...unitCapture, suite: 'acceptance', inputsFingerprint: 'f'.repeat(64), captureManifestFingerprint: '9'.repeat(64) } as const;
+const multiProvenance = coverageOriginOf([unitCapture, acceptanceCapture], comparison);
+
+test('Given counts from selected suites, when stored and read, then every original suite and capture identity survives', (t) => {
+  const crap = trendBasisOf({ kind: 'measured', provenance: multiProvenance }, unknownFiles);
+  assert.deepEqual(crap.captureProvenance, multiProvenance);
+  const path = join(dataDirectory(t), 'record.json');
+  writeFileSync(path, JSON.stringify({ ...numbers, version: 1, crap }));
+  assert.deepEqual(trendNumbersInFile(path).crap, crap);
+  assert.match(trendSectionOf([numbers], { ...numbers, crap }).join('\n'), /measured; acceptance \+ unit/);
+});
+
+test('Given unit and combined count sources with reordered suite requests, when charts are made, then different sets split while equivalent sets share a run', () => {
+  const unitBasis = trendBasisOf({ kind: 'measured', provenance: unitCapture }, unknownFiles);
+  const combinedBasis = trendBasisOf({ kind: 'measured', provenance: multiProvenance }, unknownFiles);
+  const reversedBasis = trendBasisOf({ kind: 'measured', provenance: coverageOriginOf([acceptanceCapture, unitCapture], comparison) }, unknownFiles);
+  const series = trendSeriesOf([{ ...numbers, crap: unitBasis }, { ...numbers, crap: combinedBasis }], { ...numbers, crap: reversedBasis });
+  assert.deepEqual(series[1].runs.map((run) => run.length), [1, 2]);
+});
+
+test('Given a stored combined count with missing suite capture evidence, when read, then it cannot be verified as trend evidence', (t) => {
+  const crap = trendBasisOf({ kind: 'measured', provenance: multiProvenance }, unknownFiles);
+  const path = join(dataDirectory(t), 'record.json');
+  writeFileSync(path, JSON.stringify({ ...numbers, version: 1, crap: { ...crap, captureProvenance: { ...multiProvenance, captures: [unitCapture] } } }));
+  assert.throws(() => trendNumbersInFile(path), /not a valid trend file/);
+});

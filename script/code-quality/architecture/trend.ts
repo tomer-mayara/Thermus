@@ -2,6 +2,9 @@ import { join, resolve } from 'node:path';
 import type { CrapDelta } from './crap-delta.ts';
 import { trendSectionOf } from './trend-table.ts';
 import { trendRecordsOf } from './trend-record.ts';
+import { firstParentMainHistory } from './main-history.ts';
+import { storedTrendRecordsIn } from './trend-history.ts';
+import { trendGapLinesOf } from './trend-gaps.ts';
 import { trendOfStore } from './trend-store.ts';
 import { recordBaseIfRequested } from './trend-verification.ts';
 import type { MapSources } from './types.ts';
@@ -20,7 +23,11 @@ export function trendLinesOf(choice: StoreChoice, sources: MapSources, delta: Cr
   const records = trendRecordsOf(sources, delta);
   const write = recordBaseIfRequested(choice.record, store, sources.base);
   if (store === undefined) return trendSectionOf(undefined, records.head);
-  return trendSectionOf(trendOfStore(store, write ? records.base : undefined), records.head);
+  const displayed = trendOfStore(store, write ? records.base : undefined);
+  const stored = storedTrendRecordsIn(store).map(({ numbers }) => numbers);
+  const history = choice.source.kind === 'repository' ? firstParentMainHistory(repositoryRoot()) : undefined;
+  const gaps = trendGapLinesOf(history, displayed, stored);
+  return [...trendSectionOf(displayed, records.head), ...(gaps.length === 0 ? [] : ['', ...gaps])];
 }
 
 // Two snapshot files can render outside a repository, with no Git available.

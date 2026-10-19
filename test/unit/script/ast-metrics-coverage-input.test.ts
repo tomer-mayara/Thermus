@@ -11,8 +11,9 @@ import { writeV8Coverage } from '../../support/fixtures/v8-coverage.ts';
 import { astMetricsCoverageScript } from '../../support/processes/module-paths.ts';
 
 const scriptFolder = pathToFileURL(astMetricsCoverageScript);
+const { captureIdOf, completionProtocol } = await import(new URL('coverage/protocol.ts', scriptFolder).href) as typeof import('../../../script/code-quality/coverage/protocol.ts');
 const { sourceScriptsIn } = await import(new URL('coverage/input.ts', scriptFolder).href) as typeof import('../../../script/code-quality/coverage/input.ts');
-const { withUnitSuiteCoverage } = await import(new URL('coverage/run.ts', scriptFolder).href) as typeof import('../../../script/code-quality/coverage/run.ts');
+const { withSuiteCoverage } = await import(new URL('coverage/run.ts', scriptFolder).href) as typeof import('../../../script/code-quality/coverage/run.ts');
 
 function rootOf(t: TestContext): string {
   const root = mkdtempSync(join(tmpdir(), 'thermus-coverage-input-'));
@@ -23,16 +24,20 @@ function rootOf(t: TestContext): string {
 test('Given both unit parts, when coverage runs, then both Node calls share one capture folder in suite order', (t) => {
   const root = rootOf(t);
   mkdirSync(join(root, 'dist'));
+  writeFileSync(join(root, 'package.json'), JSON.stringify({ scripts: { 'test:unit': 'npm run build && node --test --test-concurrency=1 "dist/test/unit/**/*.test.js" && node --test "test/unit/user-portal/**/*.test.ts"' } }));
   const calls: { args: readonly string[]; folder: string | undefined }[] = [];
   t.mock.method(childProcess, 'spawnSync', (_file: string, args: readonly string[], options: childProcess.SpawnSyncOptions) => {
     calls.push({ args, folder: options.env?.NODE_V8_COVERAGE });
     assert.equal(options.env?.NODE_TEST_CONTEXT, undefined);
+    const folder = options.env?.NODE_V8_COVERAGE as string;
+    writeV8Coverage(folder, root, [{ 'dist/src/a.js': [['a', [0, 10, 1]]] }]);
+    writeFileSync(join(folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: true, state: 'normal-exit', exitCheckpoint: [{ name: 'coverage-4000-1792300000000-0.json', hash: '0'.repeat(64) }], completionProtocol, captureId: captureIdOf(folder) }));
     return { status: 0, signal: null, output: [], pid: 0, stdout: null, stderr: null };
   });
 
   syncBuiltinESMExports();
   t.after(() => { t.mock.restoreAll(); syncBuiltinESMExports(); });
-  withUnitSuiteCoverage(root, (folder) => {
+  withSuiteCoverage(root, { suite: 'unit' }, (folder) => {
     assert.deepEqual(calls, [
       { args: ['--test', '--test-concurrency=1', 'dist/test/unit/**/*.test.js'], folder },
       { args: ['--test', 'test/unit/user-portal/**/*.test.ts'], folder },

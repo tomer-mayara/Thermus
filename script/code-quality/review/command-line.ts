@@ -10,6 +10,12 @@ violation that .ast-metrics-baseline.yaml at the repository root lists.
 
 The command runs ast-metrics review at the repository root, prints its Markdown
 report, and writes fresh reports to ast-report/review.md and ast-report/review.json.
+The wrapper warns for new functions above ten paths and keeps native high
+severity at 25 paths. It also blocks new resolved imports from
+src/html-cleaner-pipeline/ to src/mcp/, and from src/website-fetcher/ to src/auth/.
+Layer rules compare with the merge base. Uncertain imports in affected guarded
+sources fail the command. Adjusted JSON retains the complete nativeReview.
+The native baseline does not suppress these resolved-path checks.
 
 Options:
   --base REF          Git ref to compare with (default: origin/main)

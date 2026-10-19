@@ -18,5 +18,7 @@ export function resolveProcessCoverage(root: string, options: ProcessOptions, re
   const supplied = coverageOfRepository(root, options.coverage === undefined ? undefined : file);
   const selected = coverageForHead(supplied, inputIdentityOf(root));
   if (selected.coverage === undefined) return { required, notice: selected.coverageNotice ?? 'Coverage is unavailable.' };
-  return { file, required, notice: options.collectCoverage ? 'Collected verified compatible unit coverage.' : 'Reused verified compatible unit coverage.' };
+  const suites = selected.coverage.suite;
+  const label = Array.isArray(suites) ? suites.join(' + ') : suites;
+  return { file, required, notice: `${options.collectCoverage ? 'Collected' : 'Reused'} verified compatible ${label} coverage.` };
 }

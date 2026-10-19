@@ -99,7 +99,7 @@ test('Given a compiler helper with a function inside it and the script of a test
 
 // A build of one source file and one unit test file that imports it, as ES modules like the build of this repository.
 const build = {
-  'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
+  'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"', 'test:unit': 'npm run build && node --test --test-concurrency=1 "dist/test/unit/**/*.test.js" && node --test "test/unit/user-portal/**/*.test.ts"' } }),
   'dist/src/sample.js': "export function used(flag) {\n  if (flag) {\n    return 'yes';\n  }\n  return 'no';\n}\n\nexport function unused() {\n  return 0;\n}\n",
   'test/unit/user-portal/sample.test.ts': "import { test } from 'node:test'; test('portal part', () => {});\n",
   'dist/test/unit/sample.test.js': [
@@ -136,4 +136,59 @@ test('Given a build whose unit suite passes, when the command runs without --fro
   // The test never gives false to used, so its last return stays uncovered.
   assert.ok(used !== undefined && used.coveredShare > 0 && used.coveredShare < 1, JSON.stringify(used));
   assert.deepEqual(readdirSync(temporary).filter((name) => name.startsWith('thermus-coverage-')), []);
+});
+
+test('Given unit and acceptance runs where only acceptance calls unused, when both suites are selected, then their own-character coverage is a verified union in requested order', { timeout }, async (t) => {
+  const repository = GitRepository.create(t);
+  repository.commit('Start', {
+    ...build,
+    'package.json': JSON.stringify({ type: 'module', scripts: {
+      build: 'node -e "process.exit(0)"',
+      'test:unit': 'npm run build && node --test "dist/test/unit/**/*.test.js"',
+      'test:acceptance': 'npm run build && node --test "dist/test/acceptance/**/*.test.js"',
+    } }),
+    'dist/test/acceptance/sample.test.js': "import { test } from 'node:test'; import { unused } from '../../src/sample.js'; test('second suite', () => unused());\n",
+  });
+  const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, args: ['--suite', 'unit', '--suite', 'acceptance', '--suite', 'unit'] });
+  assert.equal(result.code, 0, result.stderr);
+  const report = reportIn(repository) as unknown as { suite: string[]; provenance: { status: string; captures: { suite: string; captureManifestFingerprint: string }[] } };
+  assert.deepEqual(report.suite, ['unit', 'acceptance']);
+  assert.equal(report.provenance.status, 'verified');
+  assert.deepEqual(report.provenance.captures.map(({ suite }) => suite), ['unit', 'acceptance']);
+  assert.equal(new Set(report.provenance.captures.map(({ captureManifestFingerprint }) => captureManifestFingerprint)).size, 2);
+  assert.equal(functionsOf(reportIn(repository), 'src/sample.ts').find(({ name }) => name === 'unused')?.coveredShare, 1);
+});
+
+test('Given only acceptance is selected, when its normally exiting child returns status one, then the child contributes coverage and the report names acceptance alone', { timeout }, async (t) => {
+  const repository = GitRepository.create(t);
+  repository.commit('Start', {
+    ...build,
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"', 'test:acceptance': 'npm run build && node --test "dist/test/acceptance/**/*.test.js"' } }),
+    'dist/test/acceptance/child.test.js': [
+      "import assert from 'node:assert/strict'; import { spawnSync } from 'node:child_process'; import { test } from 'node:test';",
+      "test('normal child shutdown', () => { const child = spawnSync(process.execPath, ['--input-type=module', '-e', \"import { unused } from './dist/src/sample.js'; unused(); process.exitCode = 1;\"], { env: process.env }); assert.equal(child.status, 1); });",
+    ].join('\n'),
+  });
+  const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, args: ['--suite', 'acceptance'] });
+  assert.equal(result.code, 0, result.stderr);
+  const report = reportIn(repository);
+  assert.deepEqual(report.suite, ['acceptance']);
+  assert.equal(functionsOf(report, 'src/sample.ts').find(({ name }) => name === 'unused')?.coveredShare, 1);
+  const captures = readdirSync(join(repository.root, 'ast-report/coverage-captures'));
+  const imported = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, args: ['--from', join('ast-report/coverage-captures', captures[0])] });
+  assert.equal(imported.code, 0, imported.stderr);
+  assert.deepEqual(reportIn(repository).suite, ['acceptance']);
+});
+
+test('Given an acceptance worker inherits capture settings and exits normally, when coverage is collected, then its own thread flush contributes', { timeout }, async (t) => {
+  const repository = GitRepository.create(t);
+  repository.commit('Start', {
+    ...build,
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"', 'test:acceptance': 'npm run build && node --test "dist/test/acceptance/**/*.test.js"' } }),
+    'dist/worker.js': "import { unused } from './src/sample.js'; unused();\n",
+    'dist/test/acceptance/worker.test.js': "import { Worker } from 'node:worker_threads'; import { once } from 'node:events'; import { test } from 'node:test'; test('worker shutdown', async () => { const worker = new Worker(new URL('../../worker.js', import.meta.url)); await once(worker, 'exit'); });\n",
+  });
+  const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, args: ['--suite', 'acceptance'] });
+  assert.equal(result.code, 0, result.stderr);
+  assert.equal(functionsOf(reportIn(repository), 'src/sample.ts').find(({ name }) => name === 'unused')?.coveredShare, 1);
 });

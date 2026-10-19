@@ -26,10 +26,12 @@ test('Given the real ast-metrics and no source edits, when architecture runs wit
   assert.equal(git('status', '--porcelain', '--', 'src'), '', 'The check needs a src/ without uncommitted changes.');
   const folder = dataDirectory(t);
   const store = join(folder, 'metrics');
+  const changedPaths = [git('diff', '--name-only', '-z', '--no-renames', 'HEAD', '--'), git('ls-files', '-z', '--others', '--exclude-standard')].join('\0').split('\0');
+  const testChangesOnly = changedPaths.some((path) => path.startsWith('test/')) && !changedPaths.some((path) => path.startsWith('src/'));
   const args = ['--base', 'HEAD', '--trend-store', store, '--no-coverage'];
   const result = await runScript(t, astMetricsArchitectureScript, { args, cwd: root, env: { TMPDIR: folder } });
   assert.equal(result.code, 0, result.stderr);
-  assertArchitectureOfHead(result.stdout, git('rev-parse', 'HEAD').trim(), git('ls-files', '--', 'src'));
+  assertArchitectureOfHead(result.stdout, git('rev-parse', 'HEAD').trim(), { sourceInventory: git('ls-files', '--', 'src'), testChangesOnly });
   assert.equal(existsSync(store), false);
   assert.deepEqual(readdirSync(folder).filter((name) => name.startsWith('thermus-snapshot-base-')), []);
   const worktrees = git('worktree', 'list', '--porcelain');

@@ -223,6 +223,7 @@ lists the available focused tests and identifies both coverage collectors.
 
 | Changed module area or contract | Affected live contract |
 | --- | --- |
+| `ast-metrics-review.ts`, `review/`, approved layer resolution or warning policy, or `.ast-metrics.yaml` cap changes | Focused review policy and report tests; `ast-metrics-rules.live.ts` for affected pinned-tool capability and rule boundaries. These start no coverage collector. |
 | `ast-metrics-mcp.ts`, `mcp/`, or MCP double behavior | `ast-metrics-mcp.live.ts`; snapshot and architecture contracts only when their MCP use is affected. |
 | `ast-metrics-snapshot.ts`, `snapshot/`, snapshot identity/provenance, or analysis/MCP snapshot answers | `ast-metrics-snapshot.live.ts`; structural architecture when its snapshot input is affected. |
 | `ast-metrics-coverage.ts`, `coverage/`, capture provenance, or build/suite collection | `ast-metrics-coverage.live.ts`; collecting architecture when report compatibility or joining is affected. Both are subject to the collector limit below. |
@@ -231,6 +232,8 @@ lists the available focused tests and identifies both coverage collectors.
 | `ast-metrics-crap.ts`, `crap/`, or its source classification, coverage join, goal advice, or threshold comparisons | `ast-metrics-crap.live.ts` with an existing compatible report; select the affected focused tests too. This live file starts no build or collector. |
 | Shared repository, identity, provenance, process, or double helpers | Only the focused and live contracts that consume the changed behavior. Apply the collector limit to each collecting consumer. |
 | `ast-metrics-process.ts`, `process/`, `ast-metrics-baseline.ts`, `baseline/`, or structured review outcomes | Affected ordinary process, baseline, and stage-outcome contracts. Add a live contract only when a stage's real behavior or a shared dependency is affected. Process tests grant no collection eligibility. |
+| `ast-metrics-backfill.ts`, `backfill/`, exact commit snapshots, or history gaps | Backfill and gap contracts with doubles; snapshot live when exact worktree behavior changes, and structural architecture live when trend rendering changes. Backfill starts no tests or coverage. |
+| Native rule configuration or the pinned tool's rule capabilities | `ast-metrics-rules.live.ts` uses disposable repositories to check the actual coupling and new-function contracts. It starts no product test suite. |
 | README command help or either test inventory | The existing focused `script-readme.test.ts` contract. Reading a listed command does not select that command. |
 
 `ast-metrics-architecture.live.ts` contains only the structural case and
@@ -245,6 +248,16 @@ not permission to expand the independently selected tests. Missing or stale
 coverage never starts collection automatically; `--skip-coverage` cannot
 make an unassessed required goal pass. Keep an affected
 collector deferred outside that scope. Deferred is not passed.
+
+The standalone collector also accepts repeated `--suite unit|integration|acceptance`.
+Each requested complete suite must already belong to the selected union. It reads
+the package-defined test commands, builds once, and captures each suite separately.
+Unsupported prerequisites or nested suite commands defer collection before launch.
+The process command's `--collect-coverage` still collects unit only. A real proof
+of another suite's coverage is deferred when that suite was not selected; use
+the affected collector contracts with doubles in that case. Preserve suite names
+and all capture origins in combined reports. An interrupted child without flush
+evidence leaves the capture unverified and cannot replace a valid report.
 
 For a slice that changes only these dedicated live files and their documents,
 run the changed MCP, snapshot, and structural architecture contracts and the
@@ -287,8 +300,8 @@ AST_METRICS_CRAP_COVERAGE=/absolute/path/coverage.json node --test dist/test/acc
 Without that variable it reads `ast-report/coverage.json`. It starts no build,
 suite, or collector. Missing ast-metrics or coverage gives an explicit skip;
 record the required assessment as deferred, not passed. A present stale report
-fails. Collect a report only when the independent test selection permits both
-complete unit parts; an unavailable report does not expand that selection.
+fails. Collect a report only when the independent selection permits each
+requested complete suite; an unavailable report does not expand that selection.
 
 ### Keep the selection through nested commands
 
@@ -297,13 +310,22 @@ builds. Without a `src/` change, a command must not add test groups outside
 the selected union or turn focused tests into a complete suite. In
 particular, do not add `npm run check`, `npm run build:hosted`, or default
 ast-metrics coverage collection only because a changed file is one of
-their inputs. The coverage command runs both complete parts of the unit
+their inputs. The default coverage command runs both complete parts of the unit
 suite: emitted Node tests and source portal tests. Use it only when both
-complete parts are already selected or rule 1 applies. A focused unit file
-or package does not select both complete parts. The same limit applies to
-a live metrics test that starts coverage collection. Use an existing coverage file only when it is valid for the
-source, unit-test, and build inputs, or report metrics without coverage
+complete parts are already selected or rule 1 applies. Each additional `--suite`
+must also be selected independently. A focused unit file or package does not
+select both complete parts. The same limit applies to a live metrics test that
+starts coverage collection. Use an existing coverage file only when it is valid
+for the source, selected-suite, and build inputs, or report metrics without coverage
 as the review guide permits.
+
+Intentional crash children need the approved verified pre-crash flush/stop/seal
+protocol. Only known crash fixtures set `THERMUS_COVERAGE_CRASH=1` to install
+the seal IPC listener. Ordinary captured forks have no injected message
+listener. OAuth uses a synchronous prepared nonce without an IPC listener.
+Incomplete process or thread identities must not be discarded or
+reported as verified. Passing a protocol fixture does not prove a complete real
+capture. These rules grant no additional suite selection.
 
 Dedicated tests keep their own commands: for example,
 `npm run test:mcp:renderer`, `npm run test:hosted-live`,

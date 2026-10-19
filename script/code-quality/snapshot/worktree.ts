@@ -48,7 +48,7 @@ export function addTemporaryWorktree(root: string, commit: string, notice: Notic
 // No hook of the repository runs, because a hook, such as one that installs packages, has nothing to do in the
 // temporary tree.
 function addWorktree(root: string, folder: string, commit: string): void {
-  git(root, ['-c', 'core.hooksPath=/dev/null', 'worktree', 'add', '--detach', folder, commit], `git worktree add failed for the merge base ${commit}.`);
+  git(root, ['-c', 'core.hooksPath=/dev/null', 'worktree', 'add', '--detach', folder, commit], `git worktree add failed for the commit ${commit}.`);
 }
 
 // Gives the function that ends the guard. A signal can come while a synchronous step runs, such as the analysis; the

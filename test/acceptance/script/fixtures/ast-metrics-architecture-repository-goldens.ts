@@ -4,6 +4,7 @@ import { bandedLegend, bandedTableHead, functionsSection } from './ast-metrics-a
 import { bandsNeedTheCoverage, complexityHeading, legend, tableHead } from './ast-metrics-architecture-snapshots.ts';
 import { fileMetricsAnswers, serverAnswers } from './ast-metrics-snapshot-answers.ts';
 import type { GitRepository } from './git-repository.ts';
+import { missingOriginMainGapNotice } from './ast-metrics-architecture-goldens.ts';
 
 const plainGraph = [
     '```mermaid',
@@ -123,6 +124,8 @@ export function coveredRepositoryMarkdown(repository: GitRepository): string {
     '## Trend of src/ on main',
     '',
     'No snapshot of main in the trend store yet.',
+    '',
+    missingOriginMainGapNotice,
     '',
   ].join('\n');
 }

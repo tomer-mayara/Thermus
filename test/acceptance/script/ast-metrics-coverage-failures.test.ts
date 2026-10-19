@@ -23,12 +23,12 @@ function reportIn(repository: GitRepository): string {
   return readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8');
 }
 
-test('Given no --from and no dist/ folder, when the command runs, then it fails with a diagnostic that says to build first', { timeout }, async (t) => {
+test('Given no package suite selection, when the command runs, then collection is deferred before build', { timeout }, async (t) => {
   const repository = repositoryWithReport(t);
 
   const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root });
 
-  assert.match(result.stderr, /ast-metrics-coverage: The build failed/);
+  assert.match(result.stderr, /ast-metrics-coverage: The package has no test:unit script. Collection is deferred/);
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
   assert.equal(reportIn(repository), earlierReport);
@@ -36,7 +36,7 @@ test('Given no --from and no dist/ folder, when the command runs, then it fails 
 
 test('Given a build whose unit suite fails, when the command runs, then the test output reaches stderr, the command fails, keeps the earlier report, and removes its temporary folder', { timeout }, async (t) => {
   const repository = repositoryWithReport(t, {
-    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"', 'test:unit': 'npm run build && node --test --test-concurrency=1 "dist/test/unit/**/*.test.js" && node --test "test/unit/user-portal/**/*.test.ts"' } }),
     'dist/src/sample.js': 'export const sample = 1;\n',
     'dist/test/unit/sample.test.js': "import { test } from 'node:test';\ntest('Given a defect, when the test runs, then it fails', () => { throw new Error('defect'); });\n",
   });
@@ -75,3 +75,29 @@ test('Given coverage from two builds whose whole ranges have different lengths, 
   assert.match(result.stderr, /Invalid coverage range.*sample.*length 400/);
   assert.equal(reportIn(repository), earlierReport);
 });
+
+for (const failure of ['failed suite', 'killed child', 'representation conflict'] as const) {
+  test(`Given selected unit and acceptance runs with a ${failure}, when collection runs, then no union replaces the good report`, { timeout }, async (t) => {
+    const childCase = [
+      "import assert from 'node:assert/strict'; import { spawn } from 'node:child_process'; import { once } from 'node:events'; import { test } from 'node:test';",
+      "test('killed captured child', async () => { const child = spawn(process.execPath, ['--input-type=module', '-e', \"import './dist/src/sample.js'; process.stdout.write('ready'); setInterval(() => {}, 1000);\"], { env: process.env, stdio: ['ignore', 'pipe', 'inherit'] }); await once(child.stdout, 'data'); child.kill('SIGKILL'); await once(child, 'exit'); });",
+    ].join('\n');
+    const repository = repositoryWithReport(t, {
+      'package.json': JSON.stringify({ type: 'module', scripts: {
+        build: 'node -e "process.exit(0)"',
+        'test:unit': 'npm run build && node --test "dist/test/unit/**/*.test.js"',
+        'test:acceptance': 'npm run build && node --test "dist/test/acceptance/**/*.test.js"',
+      } }),
+      'src/sample.ts': 'export function sample() { return 1; }\n',
+      'dist/src/sample.js': 'export function sample() { return 1; }\n',
+      'dist/test/unit/sample.test.js': "import { test } from 'node:test'; import { sample } from '../../src/sample.js'; test('first suite', () => sample());\n",
+      'dist/test/acceptance/sample.test.js': failure === 'killed child' ? childCase : failure === 'failed suite'
+        ? "import { test } from 'node:test'; test('second suite failed', () => { throw Error('failed'); });\n"
+        : "import { test } from 'node:test'; import { sample } from '../../../src/sample.ts'; test('source representation', () => sample());\n",
+    });
+    const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, args: ['--suite', 'unit', '--suite', 'acceptance'] });
+    assert.equal(result.code, 1, result.stderr);
+    assert.match(result.stderr, failure === 'failed suite' ? /acceptance suite failed/ : failure === 'killed child' ? /Incomplete captures are unverified/ : /Incompatible coverage representation/);
+    assert.equal(reportIn(repository), earlierReport);
+  });
+}
