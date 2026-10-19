@@ -1,6 +1,7 @@
 // The shape of a snapshot file follows version 1 of script/code-quality/snapshot/types.ts. The check covers the fields
 // that the map, the complexity table, and the trend read, so that a wrong file, such as another report of ast-metrics,
 // fails it.
+import { dependenciesIn } from '../dependencies/read.ts';
 import { jsonFieldsInFile } from '../shared/json-file.ts';
 import { inputIdentityIn } from '../provenance/read.ts';
 import { identityForMetric } from '../identity/metric.ts';
@@ -42,6 +43,7 @@ function snapshotOf(fields: Fields, check: Check): MapSnapshot {
     },
     communities: json.arrayOf(fields.communities).map((entry) => communityOf(json.objectOf(entry), check)),
     files: json.arrayOf(fields.files).map((entry) => fileOf(json.objectOf(entry), check)),
+    dependencies: dependenciesIn(fields.dependencies, json.arrayOf(fields.files).map((entry) => check(json.textOf(json.objectOf(entry).path)))),
   };
 }
 
@@ -67,7 +69,7 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
 function fileOf(fields: Fields, check: Check): TableFile {
   const functions = json.arrayOf(fields.functions).map((entry) => functionOf(json.objectOf(entry), check));
   const sourceEvidence = fileEvidenceIn(fields.sourceEvidence, Array.isArray(fields.functions) ? functions : undefined);
-  return { sourceEvidence, path: check(json.textOf(fields.path)), maintainability: json.numberOf(fields.maintainability), paths: json.numberOf(fields.paths), risk: json.numberOf(fields.risk), functions };
+  return { sourceEvidence, path: check(json.textOf(fields.path)), maintainability: json.numberOf(fields.maintainability), paths: json.numberOf(fields.paths), loc: json.numberOf(fields.loc), risk: json.numberOf(fields.risk), functions };
 }
 
 function functionOf(fields: Fields, check: Check): MapFunction {

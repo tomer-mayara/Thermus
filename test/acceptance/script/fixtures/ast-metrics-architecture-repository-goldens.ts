@@ -1,4 +1,5 @@
 import type { AstMetricsMcpAnswers } from '../../../support/doubles/ast-metrics/ast-metrics-mcp-fake-path.ts';
+import { completeImportEvidence, componentGolden, goodDefinition, warningDefinition, repositoryComponents } from './ast-metrics-component-goldens.ts';
 import { bandedLegend, bandedTableHead, functionsSection } from './ast-metrics-architecture-coverage.ts';
 import { bandsNeedTheCoverage, complexityHeading, legend, tableHead } from './ast-metrics-architecture-snapshots.ts';
 import { fileMetricsAnswers, serverAnswers } from './ast-metrics-snapshot-answers.ts';
@@ -24,7 +25,7 @@ const plainGraph = [
     legend,
 ];
 
-export function repositoryMarkdownOf({ baseCommit, unknownIdentity }: { readonly baseCommit: string; readonly unknownIdentity: number }, authNode: string, rows: readonly string[]): string {
+export function repositoryMarkdownOf({ baseCommit, unknownIdentity, authComponent }: { readonly baseCommit: string; readonly unknownIdentity: number; readonly authComponent?: string }, authNode: string, rows: readonly string[]): string {
   return [
     `## Architecture of src/: base ${baseCommit.slice(0, 8)} → head`,
     '',
@@ -33,6 +34,7 @@ export function repositoryMarkdownOf({ baseCommit, unknownIdentity }: { readonly
     bandsNeedTheCoverage,
     '',
     ...plainGraph.map((line) => line === 'AUTH_NODE' ? authNode : line),
+    ...completeImportEvidence, '', ...repositoryComponents({ touched: true, authNode: authComponent }),
     '',
     complexityHeading,
     '',
@@ -98,7 +100,12 @@ export function coveredRepositoryMarkdown(repository: GitRepository): string {
     '',
     'Modularity 0.42 → 0.42 · cross share 0.33 → 0.33 · cycles 1 → 1 · communities 3 → 3 · functions ≥ 30: 0 → 1',
     '',
-    ...coveredGraph,
+    ...coveredGraph, ...completeImportEvidence, '',
+    ...componentGolden([
+      '  c_admin["admin<br/>1 file · MI 70.1 · paths 4<br/>● good: 0 fn ≥ 30"]',
+      '  c_auth["auth<br/>2 files · MI 70.4 · paths 9<br/>▲ warning: 1 fn ≥ 30 (+1); assessment incomplete: 1 unknown"]',
+      '  c_kernel["kernel<br/>1 file · paths 0<br/>● good: 0 fn ≥ 30"]',
+    ], ['  class c_auth touched', '  class c_admin,c_kernel good', '  class c_auth warning'], { legacy: false, banded: true, bands: [goodDefinition, warningDefinition] }),
     '',
     complexityHeading,
     '',

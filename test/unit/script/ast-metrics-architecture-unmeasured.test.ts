@@ -29,7 +29,7 @@ test('Given unknown functions below 30, when communities are rendered, then head
 
   assert.equal(report.includes('● good'), true, 'The legend still defines the existing good band.');
   assert.equal(report.includes('classDef good'), false);
-  assert.equal(report.split('\n').filter((line) => line.includes('assessment incomplete: 1 unknown; 0 known fn ≥ 30')).length, 2);
+  assert.equal(report.split('## Components of src/')[0].split('\n').filter((line) => line.includes('assessment incomplete: 1 unknown; 0 known fn ≥ 30')).length, 2);
 });
 
 test('Given both duplicate and anonymous lower bounds, when risk is counted, then each counts once and neither identity is guessed', () => {

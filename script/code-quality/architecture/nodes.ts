@@ -40,5 +40,5 @@ function goneNodeOf(community: MapCommunity, marks: NodeMarks): MapNode {
 
 function changeOf(after: CommunityNumbers, before: CommunityNumbers): CommunityNumbers {
   const maintainability = after.maintainability === undefined || before.maintainability === undefined ? undefined : after.maintainability - before.maintainability;
-  return { files: after.files - before.files, maintainability, paths: after.paths - before.paths };
+  return { files: after.files - before.files, maintainability, paths: after.paths === undefined || before.paths === undefined ? undefined : after.paths - before.paths };
 }

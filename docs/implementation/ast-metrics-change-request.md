@@ -52,8 +52,11 @@ Delivery status:
   goals and approved D1/D2 exceptions.
 - PR #183 merged delivery group 10, CR-09: the composed process with
   coverage reuse by default and the baseline wrapper.
-- PR #184 implements delivery group 11, CR-17: remove proven duplication
-  while preserving command contracts. Owner review is pending.
+- PR #184 merged delivery group 11, CR-17: remove proven duplication
+  while preserving command contracts.
+- PR #185 implements CR-13: retain source dependency evidence, explain
+  community edge changes, and show stable source-folder components.
+  Owner review is pending. CR-14 charts and component trends remain follow-up work.
 - The other CRs have not been implemented.
 
 Contents:
@@ -100,8 +103,9 @@ The review found these problems:
    goals before Ready. The command still reports misses or unknown required
    assessments with exit 1. CR-09 in PR #183 composes these assessments and
    adds the baseline wrapper.
-6. The graph shows clusters, not designed components. CR-13 adds the
-   component view. CR-14 adds charts and component trends.
+6. At the proposal baseline, the graph shows dependency clusters. CR-13 in
+   PR #185 adds the designed component view. CR-14 charts and component
+   trends remain follow-up work.
 7. At the proposal baseline, an unchanged map had no drawing. CR-24 in
    PR #176 always prints it, with bands when compatible coverage exists.
    Missing bands do not authorize a broader test run.
@@ -925,6 +929,16 @@ module paths, and paths test.
 
 P2 · M–L · gap. Coordinate CR-03/CR-05 metadata and CR-24 output.
 
+Implementation: PR #185. The raw 0.43.1 report has coupling counts and
+namespace relations, but no complete file import pairs. The snapshot uses
+the TypeScript parser supplied by the existing `ts-morph` dependency.
+The implementation and live contracts retain normalized import evidence
+and stable folder nodes without collecting coverage. Partial dependency
+metadata keeps known head component edges and proven cycles, with neutral
+edge counts and a notice that more dependencies and cycles may exist.
+Missing dependency metadata keeps all component edges unavailable.
+Owner review is pending.
+
 **Evidence.** Dependency communities mix source folders and can regroup.
 Historical `page-fetch` included cleaner, fetcher, and MCP files. Community
 labels are not stable designed-component identities.
@@ -1654,21 +1668,41 @@ captures write it, including an explicitly permitted version. Legacy absent
 values mean unknown. Offline rendering needs no installed tool and reports
 different or missing base/head versions.
 
-Proposed extensions remain dependencies with unresolved diagnostics (CR-13)
-and optional commit `title` (CR-14), for example:
+CR-13 in PR #185 adds optional dependency evidence without changing snapshot
+version 1:
 
 ```json
 {
   "dependencies": {
-    "version": 1, "complete": true,
-    "pairs": [{ "from": "src/application.ts", "to": "src/fetch-tool.ts", "kind": "dynamic-literal" }],
-    "unresolved": []
-  },
-  "title": "Example change (#123)"
+    "version": 1,
+    "pairs": [{ "from": "src/application.ts", "to": "src/fetch-tool.ts", "kinds": ["dynamic"] }],
+    "issues": []
+  }
 }
 ```
 
-Absent dependency metadata means unknown, not zero edges. Source evidence
+Pairs sort by `from` and `to`; each unique pair retains sorted unique
+`kinds`: `static`, `type`, `re-export`, `side-effect`, or `dynamic`.
+The parser handles multiline syntax, import-type expressions, TypeScript
+`import = require`, inline type imports and re-exports, string literals,
+and dynamic imports with no-substitution template literals.
+Comments and unrelated strings give no dependency.
+Resolution normalizes `.` and `..` to POSIX paths. A target must stay under
+`src/` and belong to the analyzed file set. An explicit `.js` suffix maps
+to `.ts`; other explicit suffixes require an exact analyzed path.
+Extensionless local imports try `.ts`, then `/index.ts`. Directory imports
+include `./` and trailing slashes. No runtime or
+alias target is guessed. Bare package imports are ignored. `#` aliases
+give `unsupported-alias`; absolute or backslash specifiers give `outside-src`.
+
+Each issue has `path`, optional `specifier`, and `reason`: `unresolved-local`,
+`non-literal-dynamic`, `unsupported-alias`, `parse-error`, or `outside-src`.
+Issues sort by path, specifier, and reason and have no duplicates.
+A parse error withholds speculative pairs for that file. Snapshot capture
+rejects symlinks in source path segments. Readers validate
+the evidence and all pair endpoints without reading checkout sources.
+Absent dependency metadata means unknown, not zero edges. Optional commit
+`title` remains CR-14 work. Source evidence
 states coordinate space and normalization version. Missing identity limits
 matching; readers must not guess it from names or the caller's checkout.
 
@@ -1732,8 +1766,16 @@ overwrite. Record-shaped directories and symlinks fail. A busy lock has a
 five-second limit; recovery requires confirming that no writer is active. An existing record stays unchanged, including
 one without counts. Keep the file from `main` in a merge conflict. CR-08 adds
 optional `tool` from the base snapshot to new records; a legacy absent value
-is unknown. Existing records are not rewritten. CR-13's components and
-CR-14's title remain proposed fields. D3
+is unknown. Existing records are not rewritten. CR-13 adds optional
+`components`, sorted by stable `name`, with `files`, `loc`, optional
+`maintainability`, `paths`, and optional `functionsOver30` and `crap`.
+Each component's `crap` uses the D3 shape above with its own
+`unknownFunctions`, `head-derived-estimate` for base records, and `measured`
+for the current head. Counts and provenance require verified coverage and
+complete member assessments. Missing per-file LOC or paths in any component
+withholds the entire `components` field. Absent legacy components mean unknown.
+CR-14's title and component trend
+charts remain proposed. D3
 authorizes neither base-coverage storage nor a merge workflow; D4 and D5
 remain open.
 
@@ -1900,9 +1942,10 @@ no approval for their proposals. Current AGENTS.md remains authoritative.
 >    test changes affect collection scope.
 > 6. Run the process on the complete candidate after fixes. Reuse still-valid
 >    coverage; a final report does not require another collection. Include its
->    full Markdown in the pull request description: review, architecture delta,
->    complexity, trend, and CRAP or the unavailable-assessment reason. Paste
->    the fenced `mermaid` graph and its legend unchanged, including on
+>    full Markdown in the pull request description: review, community and
+>    component architecture deltas, complexity, trend, and CRAP or the
+>    unavailable-assessment reason. Paste both fenced `mermaid` graphs,
+>    their legends, and import evidence unchanged, including on
 >    document-only changes and reports without coverage. Include
 >    `The map did not change.` and `No production file changed.` when present.
 >    Historical counts from head coverage are estimates. Preserve their

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
-import { noProductionFile, trendHeading } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { assertArchitectureOfHead } from './fixtures/ast-metrics-live-assertions.ts';
 
 // These checks run the real ast-metrics on this repository. They need the executable on PATH; the guide is
 // docs/implementation/ast-metrics-review.md. Without it, Node reports the checks as skipped. With --base HEAD, the base
@@ -22,31 +22,14 @@ function git(...args: string[]): string {
 }
 
 // A structural run explicitly skips coverage and reads the empty private trend store without recording.
-test('Given the real ast-metrics and no source edits, when architecture runs with explicit coverage skip, then equal structure includes every community and creates no record or worktree', { timeout: 30_000, skip }, async (t) => {
+test('Given the real ast-metrics and no source edits, when architecture runs with explicit coverage skip, then equal structure includes every community and populated source component and creates no record or worktree', { timeout: 30_000, skip }, async (t) => {
   assert.equal(git('status', '--porcelain', '--', 'src'), '', 'The check needs a src/ without uncommitted changes.');
   const folder = dataDirectory(t);
   const store = join(folder, 'metrics');
   const args = ['--base', 'HEAD', '--trend-store', store, '--no-coverage'];
   const result = await runScript(t, astMetricsArchitectureScript, { args, cwd: root, env: { TMPDIR: folder } });
   assert.equal(result.code, 0, result.stderr);
-  const [header, , summary] = result.stdout.split('\n');
-  const commit = git('rev-parse', 'HEAD').trim();
-  assert.equal(header, `## Architecture of src/: base ${commit.slice(0, 8)} → head`);
-  const sides = [...summary.matchAll(/(\S+) → (\S+)/g)].map(([, before, after]) => [before, after]);
-  assert.equal(sides.length, 4, summary);
-  assert.deepEqual(sides.filter(([before, after]) => before !== after), [], summary);
-  const notice = 'Coverage was skipped with --no-coverage: the bands are withheld.';
-  assert.ok(result.stdout.includes([summary, '', notice, '', 'The map did not change.', '', '```mermaid', 'flowchart LR'].join('\n')), result.stdout);
-  const nodes = result.stdout.split('\n').filter((line) => /^ {2}c_\w+\["/.test(line));
-  const communityCount = summary.match(/communities (\d+) → (\d+)/);
-  assert.ok(communityCount, summary);
-  assert.equal(nodes.length, Number(communityCount[2]), result.stdout);
-  const complexity = result.stdout.slice(result.stdout.indexOf(noProductionFile[0]), result.stdout.indexOf(trendHeading)).trimEnd().split('\n');
-  assert.deepEqual(complexity.slice(0, noProductionFile.length), noProductionFile);
-  const identityNotices = complexity.slice(noProductionFile.length).filter((line) => line !== '');
-  assert.ok(identityNotices.length <= 1, result.stdout);
-  for (const identityNotice of identityNotices) assert.match(identityNotice, /^Unknown function identity: [1-9]\d* \(no proven declaration or unique unchanged body\/signature correspondence\)\.$/u);
-  assert.match(result.stdout, /\nLegend: /);
+  assertArchitectureOfHead(result.stdout, git('rev-parse', 'HEAD').trim(), git('ls-files', '--', 'src'));
   assert.equal(existsSync(store), false);
   assert.deepEqual(readdirSync(folder).filter((name) => name.startsWith('thermus-snapshot-base-')), []);
   const worktrees = git('worktree', 'list', '--porcelain');

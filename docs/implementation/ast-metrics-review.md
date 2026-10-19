@@ -69,8 +69,10 @@ use private trend stores. Structural architecture checks worktree cleanup.
 Live contracts use repository invariants rather than fixed community, cycle,
 or file counts. Snapshot checks the shared kernel, unique labels, source
 members, valid community and cycle references, positive file and function
-counts, HEAD, deadlines, and cleanup. Structural architecture checks equal
-metrics, every reported community, and the complete graph and legend. MCP
+counts, HEAD, deadlines, and cleanup. It also checks unique normalized source
+dependency pairs and the literal dynamic import in `application.ts`.
+Structural architecture checks equal metrics, every reported community,
+each populated source folder component, and both complete graphs and legends. MCP
 checks the function table without requiring an incidental function name.
 Coverage retains the explicit proof that portal unit tests call
 `initializePortal`.
@@ -522,6 +524,19 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
   compiler, suite, and measurement version. These inputs are checked before
   and after analysis. The commit label alone does not identify uncommitted
   snapshot content.
+- `dependencies`: version 1 source dependency evidence: normalized `pairs`
+  with `from`, `to`, and `kinds`, plus `issues` for unresolved evidence.
+  The pairs keep local static imports, type imports, re-exports, side-effect
+  imports, and literal dynamic imports. They include imports within one
+  component and deduplicate each source/target file pair.
+
+The raw 0.43.1 JSON gives file coupling counts and namespace relations, but
+does not give complete file import pairs. The snapshot therefore uses the
+TypeScript parser supplied by `ts-morph`. It ignores package imports and
+reports local resolution failures, unsupported aliases, non-literal dynamic
+imports, parse errors, and targets outside `src/`. Unknown evidence is not
+an empty dependency set. See the [dependency format](ast-metrics-change-request.md#a2-snapshot)
+for the resolution rules and issue reasons.
 
 Each file can also hold `sourceEvidence` with normalization version
 `typescript-tokens-v1`, coordinates `utf16`, and a `complete` flag. Each
@@ -637,10 +652,12 @@ base commit> → head`, one summary line (modularity and cross share with two
 decimals, cycles, communities with the shared kernel, base → head, with
 ` (n new, m gone)` when there are such, and with coverage
 ` · functions ≥ 30: <base> → <head>`, the count of the functions at CRAP 30
-or more in all of `src/`), then the Mermaid graph with its legend, then the
-complexity section, and last the trend section (see "The trend"). The graph
-always appears. When the map did not change, `The map did not change.`
-appears above it. Equal snapshots with no touched files keep every node and
+or more in all of `src/`), then the community Mermaid graph with its legend
+and import evidence, then `## Components of src/` with its graph and legend,
+then the complexity section, and last the trend section (see "The trend"). Each graph
+always appears. When the community map did not change, `The map did not change.`
+appears above it. With complete dependency evidence, an unchanged component
+map says `The component map did not change.` Equal snapshots with no touched files keep every node and
 dependency without change arrows or touched borders; compatible coverage
 still supplies the bands.
 Without valid coverage, keep the graph and the specific withholding notice,
@@ -648,8 +665,8 @@ without bands. Invalid report envelopes still stop the command. With valid
 coverage, individual unknowns can still make an assessment incomplete; the
 band rules below explain that separate case.
 
-Paste the fenced `mermaid` block and its legend unchanged into every pull
-request body, including a pull request that changes only documents or has
+Paste both fenced `mermaid` blocks, their legends, and import evidence
+unchanged into every pull request body, including a pull request that changes only documents or has
 no current valid coverage. Prose does not replace the graph. This requirement
 does not expand the selected test scope or permit coverage collection outside it.
 
@@ -798,6 +815,53 @@ functions are displayed without a name match. These bands are T6 of the
 [evolution plan](architecture-evolution-plan.md), which
 gives their reasons and their limits.
 
+#### Components and import evidence
+
+The component view follows the designed source folders. A node is a
+top-level folder under `src/`; root files belong to `src`. Every populated
+component appears, including a component with no cross-component imports.
+Names stay stable when the dependency tool regroups its communities.
+Each node gives its file count, LOC-weighted maintainability, and decision
+paths. Eligible CRAP counts and bands use the same assessment and change
+rules as the community view.
+
+A component edge counts each importing file once for each target component.
+Several target files in that component still contribute one. Imports inside
+one component remain in snapshot evidence but give no component self-edge
+or self-cycle. Cross-component cycles and new, gone, and touched states use
+the existing map encoding. The component graph always appears, including
+on an unchanged candidate and without coverage.
+
+Below the community graph, new and gone community edges show at most ten
+file → file pairs each, followed by the omitted count when needed. The
+evidence separates changed imports from unchanged imports that community
+regrouping moved to another edge. Files with a changed matched community
+show `path: old → new`. Proven file renames use the same CR-05 evidence as
+the complexity table; a shared basename does not prove a move. Tool edge
+reference counts and deduplicated file pairs have different units.
+Base pairs translate both endpoints through proven renames before the
+comparison. A kind change on the same pair does not add or remove an import.
+An added import requires complete base evidence; a removed import requires
+complete head evidence. Otherwise the change is unknown. Missing dependency
+metadata withholds import explanations. Known issues stay visible even
+when the other snapshot has no metadata. Unmatched community identities
+are reported separately from matched-community regrouping.
+
+Legacy snapshots without dependencies still show their community map and
+component nodes from file metrics. The report states that component edges
+and import explanations are unavailable. When both snapshots have dependency
+metadata but either has issues, the component graph keeps known head edges
+and cycles proven in that known subgraph. Edge lines show known counts with
+no new/gone labels or count deltas; gone base edges are omitted. The report
+does not claim that cycles changed or that the component map stayed the same.
+Its incomplete-evidence notice states that more dependencies and cycles may
+exist. Diagnostics remain visible. For example, the stylesheet import
+`./style.css` in `src/user-portal/main.ts` is `unresolved-local`, because CSS
+is outside the analyzed TypeScript file set.
+Missing metrics remain unavailable. Offline mode
+uses only the supplied snapshots and change evidence; it never reads the
+caller's source files to fill these gaps.
+
 #### The trend
 
 The trend section has the heading `## Trend of src/ on main` and a table with
@@ -823,7 +887,15 @@ snapshot of the merge base (`modularity`, `crossShare`, `cycles` as a count,
 `maintainability`, `paths`, `files`, `functions`, and with coverage
 `functionsOver30`), and each community, sorted by label, with its `label`,
 `files`, `loc`, `maintainability`, `paths`, and with coverage
-`functionsOver30`. It holds nothing for each file. The JSON has two spaces and
+`functionsOver30`. New records also hold `components`, sorted by stable
+`name`, with `files`, `loc`, optional `maintainability`, `paths`, and eligible
+`functionsOver30` and `crap` provenance. Each component keeps its own
+unknown-function count. Counts and provenance are absent unless verified
+coverage and complete member assessments support them. If any component
+lacks per-file LOC or paths, the whole record `components` field is omitted.
+Legacy records can omit components;
+that absence means unknown. Component trend charts remain CR-14 work.
+It holds nothing for each file. The JSON has two spaces and
 a newline at the end, so that two files diff well.
 
 Architecture runs are read-only unless `--record` is present. The complete
@@ -846,7 +918,8 @@ uses only an explicit `--trend-store DIR`; without one the trend section says
 Record identity uses the full SHA. A short filename prefix collision, a
 malformed store, or conflicting records fail before publication. Every
 record-shaped path must be a regular file; its filename date and prefix
-must agree with its content. Required global and community fields and
+must agree with its content. Required global and community fields, optional
+component fields, and
 optional provenance are validated before a write. A new
 record is published atomically without overwrite, including concurrent
 writers. A store lock bounds contention to five seconds. If a failed run

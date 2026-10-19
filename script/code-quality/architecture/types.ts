@@ -1,5 +1,6 @@
 // The data of the architecture delta of docs/implementation/architecture-evolution-plan.md ("The views"): two snapshots
 // of src/, the map that compares them, and the files of the complexity table.
+import type { DependencyEvidence } from '../dependencies/types.ts';
 import type { FileChange } from '../delta/changes.ts';
 import type { InputIdentity } from '../provenance/types.ts';
 import type { CoverageReport } from './coverage.ts';
@@ -13,6 +14,7 @@ export interface MapSnapshot {
   readonly commit: string;
   readonly date: string;
   readonly provenance?: InputIdentity;
+  readonly dependencies?: DependencyEvidence;
   readonly global: Snapshot['global'];
   readonly communities: readonly MapCommunity[];
   readonly files: readonly TableFile[];
@@ -22,7 +24,7 @@ export type MapCommunity = Pick<SnapshotCommunity, 'id' | 'label' | 'members' | 
 
 // A snapshot of script/code-quality/ast-metrics-snapshot.ts gives each file its decision paths and its functions, but a snapshot file
 // can leave them out: the table then says that they are not measured.
-export type TableFile = Pick<SnapshotFile, 'path' | 'maintainability' | 'risk' | 'sourceEvidence'> & Partial<Pick<SnapshotFile, 'paths'>> & {
+export type TableFile = Pick<SnapshotFile, 'path' | 'maintainability' | 'risk' | 'sourceEvidence'> & Partial<Pick<SnapshotFile, 'paths' | 'loc'>> & {
   readonly functions?: readonly MapFunction[];
 };
 
@@ -61,7 +63,7 @@ type Status = 'kept' | 'new' | 'gone';
 export interface CommunityNumbers {
   readonly files: number;
   readonly maintainability?: number;
-  readonly paths: number;
+  readonly paths?: number;
 }
 
 export interface MapNode {

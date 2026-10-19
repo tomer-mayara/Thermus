@@ -272,6 +272,15 @@ HEAD, deadlines, and worktree cleanup. Community, cycle, and file counts
 can change without breaking these invariants. Ordinary suites do not select
 it; an absent-tool skip is not a pass.
 
+`test/unit/script/ast-metrics-dependencies.test.ts` checks the source parser:
+all local import forms, multiline syntax, unrelated comments and strings,
+package imports, normalized resolution, duplicate kinds, and unresolved
+evidence. `ast-metrics-dependencies-read.test.ts` checks optional legacy
+data and refuses invalid evidence. `test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts`
+checks retained dependency pairs and issues through the snapshot command.
+The snapshot live cases also check unique normalized pairs between analyzed
+source files and the real literal dynamic import from `application.ts`.
+
 `test/acceptance/script/ast-metrics-snapshot-provenance.test.ts` checks that
 capture records source and expected coverage-input identity and refuses to
 publish after input mutation during analysis.
@@ -477,7 +486,25 @@ stores isolate every case.
 real tool, `--base HEAD`, `--no-coverage`, and a private trend store. It
 checks equal summary values, every reported community, the complete graph
 and legend, no production file changes, no record, and no worktree left.
-It starts no suite.
+It also checks every populated source-folder component and its graph and
+legend. It starts no suite.
+
+`test/unit/script/ast-metrics-architecture-components.test.ts` checks stable
+folder nodes, importing-file counts per target component, internal imports
+without self-edges or cycles, cross-component cycles, changed states, and
+legacy or incomplete evidence. `ast-metrics-architecture-component-records.test.ts`
+checks sorted component metrics and D3 provenance, absent unknown data,
+and legacy record reading. `test/acceptance/script/ast-metrics-architecture-components.test.ts`
+checks the always-visible component graph through the offline command.
+Component trend charts remain outside CR-13.
+
+`ast-metrics-community-evidence.test.ts` in the unit and acceptance script
+groups checks import changes separately from community regrouping, proven
+source and target path moves, evidence-kind changes on an unchanged pair,
+partial or legacy evidence, and the ten-pair limit with its omitted count.
+The acceptance cases compare complete offline Markdown in
+`fixtures/community-evidence/`; the shared fixture data is in
+`test/support/fixtures/ast-metrics-community-evidence.ts`.
 
 `ast-metrics-architecture-coverage.live.ts` separately builds and collects
 both complete unit parts to a private report, then passes it with
@@ -517,6 +544,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-components.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
@@ -529,6 +557,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-baseline.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
@@ -555,6 +584,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
@@ -565,6 +595,8 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-component-records.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-components.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
@@ -580,6 +612,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-baseline.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
@@ -589,6 +622,8 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-dependencies-read.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-dependencies.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
@@ -598,10 +633,12 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-tool-version.test.ts | no |
+
 <!-- code-quality-tests:end -->
 
 See [the script guide](../../script/README.md) and

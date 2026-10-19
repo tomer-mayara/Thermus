@@ -1,5 +1,6 @@
 // The build is pure, so that its rules have unit tests without git and ast-metrics: tree.ts runs
 // them and gives the answers.
+import { dependenciesOf } from '../dependencies/source.ts';
 import { snapshotCommunitiesOf } from './communities.ts';
 import { functionEvidenceOf } from '../identity/source.ts';
 import { serverCommunitiesOf, snapshotFunctionsOf } from './input.ts';
@@ -39,6 +40,7 @@ export function snapshotOf(sources: SnapshotSources): Snapshot {
     },
     communities: snapshotCommunitiesOf(map, sources.files),
     files,
+    ...(sources.sourceTexts ? { dependencies: dependenciesOf(sources.sourceTexts, files.map((file) => file.path)) } : {}),
   };
 }
 

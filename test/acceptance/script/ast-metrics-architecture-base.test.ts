@@ -53,7 +53,7 @@ test('Given a branch that changes one src/ file and adds one, a working tree tha
   const result = await runScript(t, astMetricsArchitectureScript, { args: ['--base', 'main'], cwd: repository.root, env: doubles.env });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, withEmptyTrend(repositoryMarkdownOf({ baseCommit: mergeBase, unknownIdentity: 6 }, '  c_auth["auth<br/>2 files · MI 64.8 ↓5.6 · paths 12 ↑3"]', [
+  assert.equal(result.stdout, withEmptyTrend(repositoryMarkdownOf({ baseCommit: mergeBase, unknownIdentity: 6, authComponent: '  c_auth["auth<br/>3 files ↑1 · MI 68.4 ↓2.0 · paths 14 ↑5"]' }, '  c_auth["auth<br/>2 files · MI 64.8 ↓5.6 · paths 12 ↑3"]', [
     '| src/auth/audit.ts | new → 90.0 | new → 2 | |',
     '| src/auth/session.ts | 61.2 → 55.5 ↓5.7 | 6 → 9 ↑3 | 1 |',
   ])));

@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
+import { legacyImportEvidence, componentGolden, componentNodes } from './fixtures/ast-metrics-component-goldens.ts';
 import { baseEdges, baseGraph, baseNodes, graphDefinitions } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, baseSnapshot, community, complexityHeading, edge, edited, legend, noProductionFile, noTrend, snapshotArguments, tableHead } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
@@ -21,8 +22,11 @@ const noTools = { PATH: '' };
 const header = '## Architecture of src/: base a1b2c3d4 → head';
 const equalSummary = 'Modularity 0.52 → 0.52 · cross share 0.26 → 0.26 · cycles 0 → 0 · communities 4 → 4';
 
-function markdown(summary: string, picture: readonly string[], complexity: readonly string[] = noProductionFile): string {
-  return [header, '', summary, '', bandsNeedTheCoverage, '', 'Tool versions: base ast-metrics unknown; head ast-metrics unknown.', '', ...picture, '', ...complexity, '', ...noTrend, ''].join('\n');
+interface ReportParts { readonly complexity?: readonly string[]; readonly components?: readonly string[]; readonly movements?: readonly string[] }
+
+function markdown(summary: string, picture: readonly string[], parts: ReportParts = {}): string {
+  const { complexity = noProductionFile, components = componentGolden(), movements = [] } = parts;
+  return [header, '', summary, '', bandsNeedTheCoverage, '', 'Tool versions: base ast-metrics unknown; head ast-metrics unknown.', '', ...picture, ...legacyImportEvidence, ...movements, '', ...components, '', ...complexity, '', ...noTrend, ''].join('\n');
 }
 
 // The lines of the graph between the edges and the end of the block.
@@ -111,7 +115,12 @@ test('Given a base community whose files split into two head communities, each w
     '  linkStyle 0 stroke:#999999,stroke-dasharray:4 4',
     '  linkStyle 1 stroke:#999999,stroke-dasharray:4 4',
     '  linkStyle 6 stroke:#999999,stroke-dasharray:4 4',
-  ], ['  class c_auth gone'])));
+  ], ['  class c_auth gone']), { movements: ['', '### Unmatched community identity', '',
+    '- `src/auth/roles.ts`: auth → auth (users).',
+    '- `src/auth/session.ts`: auth → auth (session).',
+    '- `src/auth/tokens.ts`: auth → auth (session).',
+    '- `src/auth/users.ts`: auth → auth (users).',
+  ] }));
   assert.equal(result.code, 0);
 });
 
@@ -135,12 +144,12 @@ test('Given --touched with a file of one community whose maintainability fell by
     baseNodes.src,
     '  c_auth -- "12 ↑2" --> c_hosted_admin',
     ...baseEdges.slice(1),
-  ], ['  class c_hosted_admin touched']), [
+  ], ['  class c_hosted_admin touched']), { complexity: [
     complexityHeading,
     '',
     ...tableHead,
     '| src/hosted-admin/routes.ts | 70.0 → 66.0 ↓4.0 | 30 → 36 ↑6 | 6 |',
-  ]));
+  ], components: componentGolden(Object.values({ ...componentNodes, hostedAdmin: '  c_hosted_admin["hosted-admin<br/>2 files · MI 64.6 ↓2.0 · paths 81 ↑6"]' }), ['  class c_hosted_admin touched']) }));
   assert.equal(result.code, 0);
 });
 
@@ -155,7 +164,7 @@ test('Given a head whose numbers and references changed but whose communities, d
     baseNodes.src,
     '  c_auth -- "12 ↑2" --> c_hosted_admin',
     ...baseEdges.slice(1),
-  ])]));
+  ])], { components: componentGolden(Object.values({ ...componentNodes, hostedAdmin: '  c_hosted_admin["hosted-admin<br/>2 files · MI 64.6 ↓2.0 · paths 81 ↑6"]' })) }));
   assert.equal(result.code, 0);
 });
 

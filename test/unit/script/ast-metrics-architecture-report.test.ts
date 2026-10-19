@@ -29,7 +29,8 @@ function reportOf(base: Snapshot, head: Snapshot, touched: readonly string[] = [
 }
 
 function graphLines(report: string, pattern: RegExp): string[] {
-  return report.split('\n').filter((line) => pattern.test(line));
+  const communityGraph = report.split('```mermaid')[1]?.split('```')[0] ?? '';
+  return communityGraph.split('\n').filter((line) => pattern.test(line));
 }
 
 const nodeLines = (report: string): string[] => graphLines(report, /^ {2}c_\w+\["/);

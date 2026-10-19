@@ -1,3 +1,4 @@
+import type { DependencyEvidence } from '../dependencies/types.ts';
 import type { InputIdentity } from '../provenance/types.ts';
 import type { FunctionIdentity, SourceEvidence } from '../identity/types.ts';
 
@@ -17,6 +18,7 @@ export interface Snapshot {
   readonly commit: string;
   readonly date: string;
   readonly provenance?: InputIdentity;
+  readonly dependencies?: DependencyEvidence;
   readonly global: GlobalNumbers;
   readonly communities: readonly SnapshotCommunity[];
   readonly files: readonly SnapshotFile[];
