@@ -54,9 +54,10 @@ Delivery status:
   coverage reuse by default and the baseline wrapper.
 - PR #184 merged delivery group 11, CR-17: remove proven duplication
   while preserving command contracts.
-- PR #185 implements CR-13: retain source dependency evidence, explain
+- PR #185 merged CR-13: retain source dependency evidence, explain
   community edge changes, and show stable source-folder components.
-  Owner review is pending. CR-14 charts and component trends remain follow-up work.
+- PR #186 implements CR-14: global trend charts, commit titles and PR
+  numbers, and a stable component trend matrix. Owner review is pending.
 - The other CRs have not been implemented.
 
 Contents:
@@ -104,8 +105,8 @@ The review found these problems:
    assessments with exit 1. CR-09 in PR #183 composes these assessments and
    adds the baseline wrapper.
 6. At the proposal baseline, the graph shows dependency clusters. CR-13 in
-   PR #185 adds the designed component view. CR-14 charts and component
-   trends remain follow-up work.
+   PR #185 adds the designed component view. PR #186 implements CR-14
+   charts and component trends; owner review is pending.
 7. At the proposal baseline, an unchanged map had no drawing. CR-24 in
    PR #176 always prints it, with bands when compatible coverage exists.
    Missing bands do not authorize a broader test run.
@@ -929,7 +930,7 @@ module paths, and paths test.
 
 P2 · M–L · gap. Coordinate CR-03/CR-05 metadata and CR-24 output.
 
-Implementation: PR #185. The raw 0.43.1 report has coupling counts and
+Merged in PR #185 (`116db85e`). The raw 0.43.1 report has coupling counts and
 namespace relations, but no complete file import pairs. The snapshot uses
 the TypeScript parser supplied by the existing `ts-morph` dependency.
 The implementation and live contracts retain normalized import evidence
@@ -937,7 +938,6 @@ and stable folder nodes without collecting coverage. Partial dependency
 metadata keeps known head component edges and proven cycles, with neutral
 edge counts and a notice that more dependencies and cycles may exist.
 Missing dependency metadata keeps all component edges unavailable.
-Owner review is pending.
 
 **Evidence.** Dependency communities mix source folders and can regroup.
 Historical `page-fetch` included cleaner, fetcher, and MCP files. Community
@@ -998,7 +998,8 @@ P3 · S–M · gap. Depends on CR-13 and CR-04's implementation of approved D3.
 
 **Required behavior.** During implementation, verify GitHub `xychart-beta`
 rendering with a disposable two-point test comment under the owner's
-authorization. Rendering has not been verified in this review. If supported,
+authorization. It was unverified at proposal review; the implementation
+verification is recorded below. If supported,
 show separate maintainability and functions-at-30 charts. Otherwise use
 `▁▂▃▄▅▆▇█` sparklines with an explained scale. Keep numeric tables.
 
@@ -1020,6 +1021,26 @@ Check syntax with the chosen renderer/parser and escape labels. Syntax
 validation is separate from proof of GitHub rendering; record both honestly.
 
 **Documents.** Guide, README, plan trend view, inventory, record format.
+
+**Implementation: PR #186; owner review pending.** Repository snapshots and
+new records retain optional `title` without a schema-version or tool-pin
+change. A terminal `(#<n>)` supplies the global table's `PR` column; unknown
+titles stay unknown without a Git or GitHub lookup. The same last ten
+records and head supply the global table, chart sections, and stable-name
+component matrix. Matrix cells label maintainability and risk separately.
+
+A two-point `xychart-beta` probe rendered in a real GitHub pull request
+comment on 2026-10-19. The implementation uses that basic syntax.
+The documented [Mermaid XY chart syntax](https://mermaid.js.org/syntax/xyChart.html)
+defines numeric line values but no missing-value token. Separate contiguous
+runs preserve gaps; risk runs also split at D3 basis changes. Runs with at
+least two values get charts, single values get explicit captions, empty
+series get an unavailable message, and constant runs get a nonzero y-axis
+range. This can produce several small charts. It does not rely on newer
+features that were not verified on GitHub. See the
+[GitHub diagram guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
+for fenced diagrams and renderer-version checks. Numeric tables retain all
+values, D3 labels, and gaps.
 
 ### CR-15. Add approved layer rules native to ast-metrics
 
@@ -1701,8 +1722,11 @@ Issues sort by path, specifier, and reason and have no duplicates.
 A parse error withholds speculative pairs for that file. Snapshot capture
 rejects symlinks in source path segments. Readers validate
 the evidence and all pair endpoints without reading checkout sources.
-Absent dependency metadata means unknown, not zero edges. Optional commit
-`title` remains CR-14 work. Source evidence
+Absent dependency metadata means unknown, not zero edges. CR-14 in PR #186
+adds optional string `title`, the first line of the commit message, to new
+repository snapshots. Legacy and offline snapshots can omit it. Readers
+reject a present nonstring title and never obtain an absent title from Git
+or GitHub during offline rendering. Source evidence
 states coordinate space and normalization version. Missing identity limits
 matching; readers must not guess it from names or the caller's checkout.
 
@@ -1774,8 +1798,12 @@ Each component's `crap` uses the D3 shape above with its own
 for the current head. Counts and provenance require verified coverage and
 complete member assessments. Missing per-file LOC or paths in any component
 withholds the entire `components` field. Absent legacy components mean unknown.
-CR-14's title and component trend
-charts remain proposed. D3
+CR-14 in PR #186 retains optional string `title` from the snapshot in new
+records. Legacy records can omit it and are not rewritten. A terminal
+`(#<n>)` supplies a PR number only for display; other titles give an unknown
+PR. Its global charts and stable component matrix use the same last ten
+records and head. Missing fields stay unknown, and count labels preserve
+their D3 basis. D3
 authorizes neither base-coverage storage nor a merge workflow; D4 and D5
 remain open.
 

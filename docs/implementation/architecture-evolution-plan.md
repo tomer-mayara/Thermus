@@ -16,10 +16,11 @@ the tool version pin. PR #182 merged CR-22: per-function CRAP goals,
 actionable coverage advice, and the approved D1/D2 process. PR #183 merged
 CR-09: the composed review process and the baseline wrapper. PR #184 merged
 CR-17: share proven command checks, JSON reading, and ordering while preserving
-the nine entry points, diagnostics, and report contracts. PR #185 implements
+the nine entry points, diagnostics, and report contracts. PR #185 merged
 CR-13: source dependency evidence, community import explanations, and a
-stable component map. It awaits owner review. CR-14 charts and component
-trend views remain follow-up work.
+stable component map. PR #186 implements CR-14: global trend charts, commit
+titles and PR numbers, and a stable component trend matrix. Owner review
+is pending.
 The CRAP delta was already calculated once before CR-17. D9 remains open.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
@@ -124,7 +125,8 @@ identified below:
 The snapshot of one tree, `snapshot.json`, holds the global numbers
 (modularity, cross share, cycles, LOC-weighted maintainability of `src/`,
 file and function counts), the `src/` communities with their members and
-references, the per-file metrics, per-function decision paths, and normalized
+references, the per-file metrics, per-function decision paths, optional commit
+`title` (the first message line), and normalized
 source dependency pairs with unresolved-evidence issues. It
 holds no coverage or CRAP. `tool` names the actual checked ast-metrics
 version. A legacy snapshot without `tool` has an unknown version. One
@@ -191,12 +193,22 @@ All views appear in the pull request body through the AGENTS.md process:
    functions with CRAP at 30 or more, before to after, as a column, and
    then the functions that the pull request added or made worse and that
    have CRAP at 30 or more, with their complexity and coverage.
-3. **Trend.** One table of the last ten snapshots of `main`: modularity, cross
-   share, cycles, LOC-weighted maintainability, functions with CRAP at 30 or
-   more. The store is `docs/metrics/<date>-<commit>.json`, one file per
+3. **Trend.** One table of the last ten snapshots of `main` and the head:
+   modularity, cross share, cycles, LOC-weighted maintainability, functions
+   with CRAP at 30 or more. The store is `docs/metrics/<date>-<commit>.json`, one file per
    `main` commit, holding global, community, and stable component numbers.
    Component counts retain D3 provenance. Legacy absent component data is
-   unknown. CR-14 will add component trend views.
+   unknown. The table's `PR` column uses a terminal `(#<n>)` in the optional
+   commit title; an absent suffix gives `–` without a Git or GitHub lookup.
+   Separate maintainability and functions-at-30 chart sections use the same
+   window. A missing value splits a run. Risk runs also split when the D3
+   basis changes between measured, estimate, and legacy unknown. Runs of at
+   least two values use `xychart-beta`; a single value gets a caption, and
+   an empty series gets an unavailable message. Constant runs have a
+   nonzero y-axis range. `### Trend by component` keeps stable, sorted
+   component rows and chronological commit columns. Each cell labels `MI`
+   and `functions ≥ 30` independently, with D3 risk labels and a dash for
+   each missing measure. No historical component absence is called zero.
    Nobody runs anything at merge time. The complete-candidate review uses
    `--record` to write a missing base record after the full commit and its
    ancestry on `origin/main` are verified. Exploratory runs are read-only.
@@ -476,8 +488,16 @@ their fenced block and legend unchanged in every pull request body. The original
   has issues, the component view shows known head edges and cycles proven
   in that known subgraph. Edge counts have no change labels or deltas;
   removed base edges and cycle-change or unchanged-map claims are withheld.
-  The report states that more dependencies and cycles may exist. Charts and
-  component trend views remain CR-14 work.
+  The report states that more dependencies and cycles may exist.
+- The documented [Mermaid XY syntax](https://mermaid.js.org/syntax/xyChart.html)
+  has numeric line values and no missing-value token. CR-14 uses separate
+  contiguous runs to preserve gaps and count provenance. This can produce
+  several charts for one measure. A two-point `xychart-beta` probe rendered
+  in a real GitHub pull request comment on 2026-10-19. This verifies the
+  basic syntax used here, not newer Mermaid features. The
+  [GitHub diagram guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
+  explains fenced diagrams and renderer-version checks. The numeric table
+  and component matrix preserve all values and gaps.
 - Coverage comes only from the unit suite: emitted Node tests and source
   portal tests. PR #177 implements the portal part under CR-01. CR-11
   proposes other suites. Compatible architecture output names the unit

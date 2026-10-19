@@ -5,7 +5,7 @@ import { validHash, validTrendEvidence } from './trend-basis.ts';
 import type { TrendRecord } from './trend-record.ts';
 
 const recordFields: schema.Fields = {
-  version: schema.version, tool: schema.optional(schema.nonemptyText), commit: schema.commit, date: schema.date, modularity: schema.finite, crossShare: schema.finite, cycles: schema.count,
+  version: schema.version, tool: schema.optional(schema.nonemptyText), commit: schema.commit, date: schema.date, title: schema.optional(schema.text), modularity: schema.finite, crossShare: schema.finite, cycles: schema.count,
   paths: schema.count, files: schema.count, functions: schema.count, communities: validCommunities, components: schema.optional(validComponents),
   maintainability: schema.optional(schema.finite), functionsOver30: schema.optional(schema.count), sourceFingerprint: schema.optional(validHash),
 };

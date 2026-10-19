@@ -32,6 +32,7 @@ function snapshotIn(path: string): unknown {
 // src/kernel/ids.ts (no index, 10 lines) as zero it is 67.0. For auth: (61.24 × 100 + 88.8 × 50) / 150 = 70.43.
 const expectedSnapshot = {
   tool: '0.43.1',
+  title: 'Add the files',
   version: 1,
   dependencies: { version: 1, pairs: [], issues: [] },
   global: { modularity: 0.42, crossShare: 0.33, cycles: [['admin', 'auth']], maintainability: 70.3, paths: 13, files: 4, functions: 5 },

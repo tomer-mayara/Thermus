@@ -22,10 +22,11 @@ export async function snapshotOfTree(root: string, timeoutMs: number, checked?: 
   const provenance = inputIdentityOf(root);
   const commit = repository.git(root, ['rev-parse', '--verify', 'HEAD'], 'The repository has no commit at HEAD.').trim();
   const date = repository.git(root, ['show', '-s', '--format=%cI', 'HEAD'], 'git show failed for HEAD.').trim();
+  const title = repository.git(root, ['show', '-s', '--format=%s', 'HEAD'], 'git show failed for HEAD.').split(/\r?\n/u)[0];
   const files = sourceFilesOf(analysisReportOf(root, analyzedFolder), root);
   const paths = files.map((file) => file.path);
   const answers = await withAstMetricsServer({ root, folder: analyzedFolder, checked: tool }, timeoutMs, (server) => serverAnswersOf(server, paths));
-  const snapshot = snapshotOf({ commit, date, files, ...answers, sourceTexts: sourceTextsOf(root, paths) });
+  const snapshot = snapshotOf({ commit, date, title, files, ...answers, sourceTexts: sourceTextsOf(root, paths) });
   if (JSON.stringify(provenance) !== JSON.stringify(inputIdentityOf(root))) {
     throw new repository.CommandError('The inputs changed during the snapshot. No snapshot was published.');
   }

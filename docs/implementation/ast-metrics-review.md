@@ -865,7 +865,7 @@ caller's source files to fill these gaps.
 #### The trend
 
 The trend section has the heading `## Trend of src/ on main` and a table with
-the columns `Commit`, `Date`, `Modularity`, `Cross share`, `Cycles`,
+the columns `Commit`, `PR`, `Date`, `Modularity`, `Cross share`, `Cycles`,
 `Maintainability`, and `Functions ≥ 30`: one row for each of the last ten
 records of the trend store by the time of their dates, oldest first (two
 records of the same time in the order of their file names), and the head as
@@ -876,13 +876,61 @@ maintainability of `src/` with one decimal, and the count of the functions at
 CRAP 30 or more in all of `src/`, as the summary line counts it. A value that a
 record does not have, such as the count of a run without coverage, is `–`.
 
+New repository snapshots hold optional `title`, the first line of the commit
+message. New records retain that title. A terminal `(#<n>)` supplies `#<n>`
+in the global table's `PR` column. A missing title or a title without that
+terminal suffix gives `–`. Legacy records are not changed. Offline rendering
+uses only the supplied title; it makes no Git or GitHub call to fill it.
+
+Separate maintainability and `Functions ≥ 30` chart sections use the same
+last ten records and head as the numeric table. A missing value ends a run;
+the next known value starts a new run. Risk runs also end when their basis
+changes between `measured`, `head-derived estimate`, and `legacy unknown`. Captions name
+that basis. Thus no line crosses an unknown value or joins different coverage
+bases. A run of at least two values gets a fenced `mermaid` `xychart-beta`
+line chart. A one-value run gets its commit and value in a caption. A section
+without values says that its measure is unavailable. A constant run gets a
+nonzero y-axis range, including when every value is zero. Chart labels use
+eight hexadecimal commit characters or `this pull request`; an invalid
+commit prefix becomes the literal `unknown`. Chart values and axis bounds
+use exact decimal text without exponent notation. Numeric tables retain
+every value and gap. Mermaid frontmatter rotates commit labels 45 degrees
+so the full eleven-point window remains readable.
+
+This uses separate charts for contiguous runs because the documented
+[Mermaid XY chart syntax](https://mermaid.js.org/syntax/xyChart.html) takes
+numeric line values and defines no missing-value token. This can produce
+several small charts instead of one continuous chart. A two-point
+`xychart-beta` probe rendered in a real GitHub pull request comment on
+2026-10-19 during CR-14 implementation. The disposable comment was removed
+after its body and rendered image were saved. A later GitHub pull request
+preview also verified separated, rotated labels over the full eleven-point
+window. These checks cover the syntax used here; GitHub's renderer version
+was not identified. Separately,
+the actual Mermaid 12.2.0 parser accepted the generated chart blocks from a
+temporary installation, with no repository dependency added. Parser acceptance
+does not establish support for newer features on GitHub. See
+[GitHub's diagram guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
+for fenced diagrams and the renderer-version check.
+
+`### Trend by component` is a matrix over the same chronological window.
+Rows use stable component names, sorted by name across the displayed records
+and head. Columns use the record commit prefixes, then `this pull request`.
+Each cell labels `MI` and `functions ≥ 30` separately; the latter retains
+its D3 basis. Missing component data, a missing component, or a missing
+metric gives `–` for that measure. A missing legacy field never implies
+zero or that a component did not exist. If no displayed record or head has
+components, the section says `No component history in these records.`
+Community labels are not joined across history. The complete report in the pull request description includes
+these chart blocks, captions, and the component matrix with the numeric table.
+
 The trend store of a repository is `docs/metrics/` of its root, and the pull
 requests commit its files (step 8 of the process). It holds one JSON file for
 each commit of `main` that a pull request used as its base, named
 `<date>-<commit8>.json`: the day of the committer date of the commit in the
 time zone of the commit, and the first eight characters of the commit. A file
 holds `version` 1, the actual snapshot `tool` version when known, the
-`commit`, its `date`, the global numbers of the
+`commit`, its `date`, optional commit `title`, the global numbers of the
 snapshot of the merge base (`modularity`, `crossShare`, `cycles` as a count,
 `maintainability`, `paths`, `files`, `functions`, and with coverage
 `functionsOver30`), and each community, sorted by label, with its `label`,
@@ -893,8 +941,7 @@ snapshot of the merge base (`modularity`, `crossShare`, `cycles` as a count,
 unknown-function count. Counts and provenance are absent unless verified
 coverage and complete member assessments support them. If any component
 lacks per-file LOC or paths, the whole record `components` field is omitted.
-Legacy records can omit components;
-that absence means unknown. Component trend charts remain CR-14 work.
+Legacy records can omit components; that absence means unknown.
 It holds nothing for each file. The JSON has two spaces and
 a newline at the end, so that two files diff well.
 

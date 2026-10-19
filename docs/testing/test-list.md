@@ -430,6 +430,31 @@ with manual recovery guidance, and concurrent publication without overwrite.
 malformed required fields and malformed optional tool versions fail before
 publication and name the bad file.
 
+`test/unit/script/ast-metrics-snapshot-title.test.ts` and
+`test/acceptance/script/ast-metrics-snapshot-title.test.ts` check optional
+commit titles through snapshot reading and repository capture.
+`test/unit/script/ast-metrics-architecture-trend-title.test.ts` checks title
+preservation in records and table inputs, legacy absence, and refused
+nonstring titles. The complete snapshot golden also checks the captured title.
+
+`ast-metrics-architecture-trend-view.test.ts` in the unit and acceptance
+script groups checks terminal-only PR suffixes, the chronological component
+matrix with stable sorted names, independent MI and risk labels, zero versus
+missing values, D3 provenance, escaped labels, and empty or absent stores.
+The acceptance case compares the complete three-record trend Markdown
+through the offline command. `fixtures/ast-metrics-trend-view.ts` supplies
+its record, snapshot, and expected Markdown data.
+
+`ast-metrics-architecture-trend-charts.test.ts` in the unit and acceptance
+script groups checks separate maintainability and risk charts, missing-value
+gaps, splits at count-basis changes, single values, empty series, constant
+zero and nonzero axes, safe commit labels, and exact decimal output for tiny
+and large finite values without exponents. Unit cases check the documented
+numeric Mermaid grammar and frontmatter for 45-degree x-axis labels. The
+acceptance case uses three stored records through the offline command.
+Parser validation is separate from the two-point and full-window rotated
+GitHub rendering checks recorded in the review guide.
+
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from
 `fixtures/ast-metrics-architecture-snapshots.ts`: equal snapshots with no
@@ -551,6 +576,8 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-trend-charts.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-trend-view.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
@@ -588,6 +615,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-stage-outcomes.test.ts | no |
@@ -604,10 +632,13 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-architecture-provenance.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-charts.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-provenance.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-publication.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-title.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-view.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
@@ -634,6 +665,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
