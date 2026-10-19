@@ -69,7 +69,13 @@ command without Usage or Options, missing ordinary and live tests, stale extra
 tests, incorrect collector labels or test kinds, and duplicate tests. Every
 failure names the command, option, synopsis, or test. Both document inventories
 must match the discovered ordinary/live set and its coverage collector labels.
-The test reads listed commands and never executes them.
+The test reads listed commands and never executes them. The
+[detailed README](../../script/code-quality/README.md) explains CRAP before its
+process-ordered command sections. Changes to documented help contracts or
+either test inventory select this existing focused contract under the
+[test gate policy](../implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts).
+Other README prose can have no applicable test. No new prose test or broader
+suite is selected.
 
 `test/acceptance/script/ast-metrics-mcp-help.test.ts` checks that MCP help gives
 0 to 128 as the maintainability range, identifies the lines column as LOC rather

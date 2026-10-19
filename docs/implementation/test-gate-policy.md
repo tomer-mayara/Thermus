@@ -184,7 +184,10 @@ lists the complete available ordinary and live script tests, including the
 coverage collectors. Its focused documentation contract is
 `npm run build && node --test dist/test/acceptance/script/script-readme.test.js`.
 It reads command help and the two document inventories without running their
-listed commands. Use the path rules above to select it and other affected tests.
+listed commands. For changes to documented help contracts or either test
+inventory, use this existing focused contract; add no prose test, broader
+suite, or live collector. Other README prose can have no applicable test. Use
+the path rules above to select it and other affected tests.
 
 A shared support change does not select every suite because the file is
 under `test/support/`. Find its actual consumers and record the selected

@@ -151,16 +151,20 @@ pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/scr
 # Measure and review code quality
 
 The nine ast-metrics commands and their helpers are in
-[`code-quality/`](code-quality/README.md). That guide gives the commands,
+[`code-quality/`](code-quality/README.md). That guide explains CRAP before
+the command sections, which follow the review process order. It gives the
 source layout, Usage/Options contracts, and the complete ordinary/live test
 inventory. Select affected tests from that inventory; the full list does not
 require a run of every file. The documentation contract runs each command's
-help without child processes and checks the same test set in both guides.
+help without child processes and checks the same test set in the README and
+[test inventory](../docs/testing/test-list.md#ast-metrics-commands).
 The coverage command builds first and collects both complete parts of the
-unit suite: emitted Node tests and source portal tests. Its live file and
-the coverage case of the architecture live file have the same scope under
-the test gate policy. Both use private output reports. Structural
-architecture uses `--no-coverage`. The report always includes community
+unit suite: emitted Node tests and source portal tests. Its
+`ast-metrics-coverage.live.ts` and the separate
+`ast-metrics-architecture-coverage.live.ts` have the same collector limit under
+the [test gate policy](../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts).
+Both use private output reports. Structural `ast-metrics-architecture.live.ts`
+uses `--no-coverage` and starts no suite. The report always includes community
 and source-folder component graphs, their legends, and import evidence.
 Snapshots retain normalized source dependency pairs for offline reports;
 legacy missing evidence remains unavailable. Exploratory architecture is read-only;
