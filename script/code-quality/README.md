@@ -1,70 +1,82 @@
 # Measure and review a pull request with ast-metrics
 
-The commands below wrap the ast-metrics CLI for the process "Code quality review
-with ast-metrics" in [AGENTS.md](../../AGENTS.md). They carry the correct syntax
-of the tool. Use the baseline wrapper only for a retained high-severity
-review finding with a written reason,
-or when `.ast-metrics.yaml` rules change. Commit the resulting baseline. A
-violation already on `main` is not a third exception. Run the commands from
-the repository root; the static commands need no build. A coverage run builds
-compiled Node unit tests before it runs both complete unit parts. Delta, review, MCP,
-snapshot, CRAP, process, baseline, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
-on macOS). The wrappers pin 0.43.1. They check CLI results with
-`ast-metrics version` and MCP results with the initialization response.
+These commands implement the process in [AGENTS.md](../../AGENTS.md). Update
+from `origin/main`, select tests from the complete candidate, then run the
+[complete process](#run-the-complete-review-process). Use the individual
+commands to inspect a result or repeat an improvement pass with the same base.
+The [review guide](../../docs/implementation/ast-metrics-review.md) gives the
+measurement rules, formats, configuration, and limits. The
+[script index](../README.md) links this command reference.
+
+Run commands from the repository root. Static analysis needs no build.
+Coverage collection builds compiled Node tests before it runs both complete
+unit parts. Only a change under `src/` selects the full ordinary suite
+(`npm test`) and the remaining checks in the
+[test gate policy](../../docs/implementation/test-gate-policy.md). Other
+changes select affected groups and existing focused tests. Do not add
+`npm run check`, which repeats unit and portal tests. A command or live test
+must not start a broader suite through a nested coverage call.
+
+Tool operations need `ast-metrics` on PATH (`brew install
+ast-metrics/tap/ast-metrics` on macOS). The wrappers pin 0.43.1 and check CLI
+results with `ast-metrics version`, and MCP results with initialization.
 `--allow-tool-version` permits another actual version for that run and its
-child operations. A mismatch otherwise fails before results are consumed.
+child operations; a mismatch otherwise fails before results are consumed.
 Help, offline architecture rendering, and coverage collection need no
-installed ast-metrics. A pin change needs the applicable live contracts and
-fixture review. The
-[ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
-explains what each command reports, the configuration, and the limits of the
-tool.
+installed ast-metrics. Delta and CRAP also need no tool for an empty default
+selection. A pin change needs the applicable live contracts and fixture review.
+MCP operations start and stop their server within a deadline, also after a
+failure. Do not start or register a persistent server.
 
 ## Source layout
 
-The nine command entry points stay in this folder:
+The nine command entry points stay in this folder, in process order:
 
 | Entry point | Purpose |
-|---|---|
+| --- | --- |
 | `ast-metrics-delta.ts` | Measure changed TypeScript files. |
-| `ast-metrics-mcp.ts` | Make one call to the ast-metrics MCP server. |
+| `ast-metrics-mcp.ts` | Inspect one result through MCP. |
 | `ast-metrics-review.ts` | Report changes in code quality. |
-| `ast-metrics-coverage.ts` | Collect unit test coverage per function. |
-| `ast-metrics-crap.ts` | Assess per-function CRAP goals and give coverage or split advice. |
-| `ast-metrics-architecture.ts` | Compare architecture snapshots and show the trend. |
-| `ast-metrics-snapshot.ts` | Capture the metrics of one source tree. |
+| `ast-metrics-coverage.ts` | Collect unit coverage per function. |
+| `ast-metrics-crap.ts` | Assess function goals and give coverage or split advice. |
+| `ast-metrics-architecture.ts` | Compare architecture snapshots and show history. |
+| `ast-metrics-snapshot.ts` | Capture one source tree. |
 | `ast-metrics-process.ts` | Run the complete review and save its four sections. |
-| `ast-metrics-baseline.ts` | Refresh an allowed baseline and report ignored entry counts. |
+| `ast-metrics-baseline.ts` | Refresh an allowed baseline and report ignored counts. |
 
-Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
-`review/`, `coverage/`, `crap/`, `architecture/`, `process/`, `baseline/`,
-`identity/`, `dependencies/`, and `provenance/`. The `identity/` folder owns source evidence and
-function identity. The `provenance/` folder owns input identity and its checked readers.
-The `dependencies/` folder owns parsed source imports, resolution, and checked
-snapshot dependency evidence.
-The `shared/` folder holds common argument and limit checks, JSON readers,
-text ordering, number calculations, and repository commands. JSON file reads
-keep file-kind diagnostics; consumers check their own schemas. Text ordering
-compares UTF-16 code units and returns zero for ties. Locale-sensitive ordering
-keeps its own comparator. Each command keeps its error output contract.
+The matching helper folders (`delta/`, `mcp/`, `review/`, `coverage/`,
+`crap/`, `architecture/`, `snapshot/`, `process/`, and `baseline/`) own each
+command's work. `identity/` owns source evidence and function identity;
+`provenance/` owns input identity and checked readers; `dependencies/` owns
+parsed imports, resolution, and checked snapshot dependency evidence.
+`shared/` owns common argument checks, limits, JSON readers, ordering,
+number calculations, and repository commands. JSON readers retain file-kind
+diagnostics; consumers check their schemas. Text ordering compares UTF-16
+code units and preserves ties. Locale-sensitive names keep their comparator.
 
-Select tests with the [test gate policy](../../docs/implementation/test-gate-policy.md).
-Only a change under `src/` requires the full ordinary suite (`npm test`) and
-the remaining static and build checks in that policy. Do not add
-`npm run check`, which would repeat unit and portal tests. For other changes,
-run only affected test groups and existing focused tests. Keep the
-delta, review, CRAP, and architecture steps for each pull request, through
-the process command. This scope also applies to tests and commands that
-start other tests: a focused caller must not expand it indirectly.
+Tests put CLI or MCP doubles from `test/support/doubles/ast-metrics/` first
+on PATH. The CLI fake writes configured analysis, review, and baseline
+results and logs arguments and working directories. It delegates `mcp` to
+the MCP fake, which speaks line-based JSON-RPC, supplies configured metrics,
+and can simulate a timeout or an early exit. Their path helpers and the Git
+stub isolate tests from installed tools and repository state. They are test
+doubles, not real-tool checks. Shared process drivers live in
+`test/support/processes/`; fixtures, drivers, and isolation helpers follow
+the [test code layout](../../docs/testing/test-code-layout.md).
 
 ## CRAP scores and goals
 
-For decision paths `p` and covered share `c`, `CRAP = p² × (1 − c)³ + p`.
-This repository measures V8 coverage of each function's own characters;
-it approximates the original basis-path coverage measure. The approved
-project goal is CRAP < 30 for added or changed functions, with the inclusive
-target CRAP ≤ 15 for added functions. Bands and risk counts keep CRAP ≥ 30
-as their boundary. Target 15 is a project decision, not a universal grade.
+For decision paths `p` and covered share `c` from 0 to 1:
+
+`CRAP = p² × (1 − c)³ + p`
+
+This repository uses V8 coverage of each function's own characters. It
+approximates the original basis-path coverage measure. Added or changed
+functions have the strict goal **CRAP < 30**. Added functions also have the
+inclusive target **CRAP ≤ 15**. Target 15 is an approved project decision,
+not a universal grade. Architecture bands and risk counts use **CRAP ≥ 30**;
+a new function above 15 but below 30 can miss its target without adding
+critical architecture risk.
 
 | Paths | Minimum whole percent for CRAP < 30 | Minimum whole percent for CRAP ≤ 15 |
 | --- | --- | --- |
@@ -78,35 +90,138 @@ as their boundary. Target 15 is a project decision, not a universal grade.
 | 30 | split | split |
 | 35 | split | split |
 
-The recommendation is the smallest whole percentage that meets the actual
-inequality. `split` means no coverage percentage can meet it. At a positive
-crossing `c = 1 − ((L − p) / p²)^(1/3)`, strict comparison uses
-`floor(100c) + 1`, inclusive comparison uses `ceil(100c)`, and both check
-the candidate. Zero paths and already-passing zero coverage need no division.
-At 30 paths full coverage cannot get below 30. At 15 paths full coverage
-meets target 15. Five paths at zero coverage and 25 paths at 80% equal 30
-and fail the strict limit. Decisions use unrounded values across commands;
-display precision or explicit inequalities preserve the boundaries at
-29.96 and 15.04.
+Each recommendation is the smallest whole percentage that meets the actual
+inequality. At a positive crossing `c = 1 − ((L − p) / p²)^(1/3)`, strict
+comparison uses `floor(100c) + 1`; inclusive comparison uses `ceil(100c)`.
+Both check the candidate. Zero paths and already-passing zero coverage need
+no division. `split` means no coverage share can meet the goal. Five paths
+at zero coverage and 25 paths at 80% equal 30 and fail the strict goal.
+At 30 paths even full coverage fails it; at 15 paths full coverage meets 15.
+Decisions use unrounded scores. Display precision or an explicit inequality
+keeps 29.96 visibly below 30 and 15.04 above 15.
 
-Coverage must have verified provenance compatible with the candidate's
-source, unit-test, and build inputs, including helpers and fixtures. A
-prose-only commit can reuse an older compatible report. Matching uses each
-file and its unique supported V8 function name. Anonymous and duplicate
-names, compiler helpers, missing matches, and zero-own exclusions have no
-exact score. Source evidence separately proves new, changed, or unchanged
-identity; name equality alone cannot prove copies, changed extractions, or
-unresolved moves. Unknown data stays unknown. A path count is a lower bound
-on CRAP and can prove a violation at 30 or more.
+### Own characters, joins, and unknowns
 
-Architecture joins compatible head coverage with proven base/head pairs to
-estimate base risk. Stored head-derived estimates retain their origin and
-unknown count; they are not measurements of base coverage. Missing historical
-values stay absent. The architecture report has both complete graphs,
-legends, and import evidence with or without coverage, bands when justified, the complexity table,
-added or worsened risk list, and trend. See the
-[guide](../../docs/implementation/ast-metrics-review.md#the-crap-goal) for
-identity limits, goal exceptions, and exact boundary rules.
+A function owns its whole UTF-16 range minus the union of strictly contained
+functions across compatible processes. Equal ranges do not establish
+parenthood; descendants are subtracted once. Compiler helpers and their
+descendants are subtracted before exclusion. Each process clears zero-count
+blocks, and execution is unioned across processes over the remaining own
+characters. A function with no own characters has no measured share and is
+listed in `unmeasuredFunctions`. This is character coverage, not basis-path
+coverage. The [coverage guide](../../docs/implementation/ast-metrics-review.md#measure-the-coverage-per-function-scriptcode-qualityast-metrics-coveragets)
+gives the range and representation rules.
+
+Coverage joins by file and unique supported V8 name: a method uses its own
+name, and a constructor uses its class name. Anonymous functions, duplicate
+names, and missing matches have no exact CRAP. Only a complete verified
+report can show that a missing file was not loaded; its unique supported
+named functions then use share 0. Anonymous functions stay unknown even
+when their file is absent. A missing name within a present file stays unknown.
+Without a share, paths are a lower bound: `CRAP ≥ paths`. At least 30 paths
+proves a violation; fewer paths do not prove a pass. Unknowns include
+zero-own exclusions and known lower-bound violations.
+
+Function identity is separate from this coverage join. In the same file or
+a proven file rename, a unique declaration kind/owner/name pair proves
+continuity. Equal body/signature hashes mean unchanged; edits mean changed.
+Otherwise, only a unique unchanged body/signature pair can prove a move or
+rename. New classification needs complete source evidence and no unresolved
+base partner or move candidate. Name equality alone cannot resolve copies,
+duplicate bodies, anonymous functions, or changed extractions. Legacy or
+incomplete evidence stays identity unknown. Offline rendering does not read
+the caller's checkout to fill a gap. Unknown identity cannot be called added
+or worse, and cannot pass a required goal.
+
+### Provenance and base estimates
+
+Reuse requires verified provenance compatible with the candidate's source,
+unit-test, and build inputs, plus runtime, compiler, suite, and measurement
+version. Helpers, fixtures, configuration, manifests, and lockfiles count.
+Generated output and unrelated prose do not change the input identity;
+Markdown fixtures under `src/` and `test/` do. Thus an older capture can
+remain valid after a prose-only commit. Legacy or unverified reports cannot
+enable bands or historical risk counts. See
+[capture provenance and reuse](../../docs/implementation/ast-metrics-review.md#capture-provenance-and-reuse)
+for fingerprint and import mechanics.
+
+The base gets no coverage run. A proven base/head function pair combines
+base paths with the compatible head share to estimate base CRAP. A removed
+or unmatched base function has no exact estimate; its paths can still prove
+a lower-bound violation. Stored head-derived counts are **estimates**, not
+measured base coverage. They keep the original coverage commit,
+fingerprints, measurement version, and unknown-function count. They belong
+to the first recording pull request; another head can give a different
+estimate for the same base. Missing historical values remain absent.
+
+### Bands, report columns, lists, and trends
+
+Community and component nodes use the same three bands:
+
+| Band | Required evidence |
+| --- | --- |
+| good | Every function is assessed, no file metrics are missing, and no function reaches 30. |
+| warning | Known violations exist, but none is proven added or worse. |
+| critical | At least one violation is proven added or worse. |
+
+A proven new function at 30 or more is added risk, including a known lower
+bound. A proven pair is worse only when exact head CRAP reaches 30 and
+crosses 30 or exceeds its exact base estimate. A larger lower bound alone
+cannot prove worsening against an unknown value. Gone nodes use known base
+estimates. Unknown assessments prevent good; known violations can still
+support warning or critical. Nodes state `assessment incomplete: N unknown`
+and separately count an `unmeasured file` when function metrics are absent.
+A node with no justified band has no band color. These rules add no fourth
+band.
+
+The CRAP command table has `File`, `Function`, `Change`, `Paths`, `Coverage`,
+`CRAP`, and `To do`, including unchanged and identity-unknown functions.
+Rows sort by score or lower bound descending, then file, function, and
+stable source identity. Bounds cannot give an exact ranking of unknown
+risks. Advice gives `ok`, strict-limit coverage or `split`, and target advice
+such as `for 15: cover ≥ k%` or `for 15: split`. The summary separates known
+limit violations, measured target misses, unmeasured functions, and
+unresolved required assessments or identities. For example, a changed
+function with `Paths: 20` and `Coverage: 50%` has `CRAP: 70`; its `To do`
+shows `cover ≥ 71%` for the strict limit. A new function with four paths and
+zero coverage has CRAP 20: it passes the strict limit, but its target advice
+says `for 15: cover ≥ 12%`.
+
+Architecture's changed-file table has `File`, `Maintainability`,
+`Decision paths`, and `Risk rank`. Values show base → head, with `new`,
+`gone`, or `not measured` when applicable. Risk rank is among the head's ten
+riskiest files. Compatible coverage adds `CRAP ≥ 30` counts per side;
+unassessed sides show `not measured`. The list `Functions at CRAP 30 or more,
+added or worse` names proven additions and regressions. The report also gives
+unmatched counts, identity unknowns, base functions without estimated shares,
+and unmeasured functions of changed files with at least five paths. Those
+lists sort by path and name. No changed production file gives
+`No production file changed.`
+
+The trend uses the same last ten stored `main` records, oldest first, plus
+head, for its global table, maintainability/risk charts, and component
+matrix. Global columns are `Commit`, `PR`, `Date`, `Modularity`, `Cross share`,
+`Cycles`, `Maintainability`, and `Functions ≥ 30`. Component cells label
+`MI` and `functions ≥ 30` separately. Risk values keep their basis: head is
+`measured`, stored head-derived values are `estimate`, and old counts without
+provenance are `legacy unknown`. Counts include known lower-bound
+violations; other unknown functions are not counted. Missing values show `–`.
+Charts split at gaps and changes of risk basis; they do not connect unlike
+assessments.
+Runs of at least two values get a fenced Mermaid line chart; one value gets
+a caption, and empty series say unavailable. Mixed tool versions get a
+notice. Only a terminal `(#<n>)` in a commit title supplies the `PR`
+column; offline rendering makes no GitHub lookup. See the
+[architecture guide](../../docs/implementation/ast-metrics-review.md#show-the-architecture-delta-scriptcode-qualityast-metrics-architecturets)
+for graph encoding, matching, and trend mechanics.
+
+For required CRAP misses, improve selected tests or reduce paths for at most
+three cycles with the same base. Record score or bound, paths, coverage,
+classification, and reason for each unresolved goal, including new functions
+above 15 but below 30 and unknown assessments. An unchanged high function can
+retain `unchanged by this PR`. Ready may proceed with documented exceptions;
+the command still exits 1. Exceptions do not excuse tool failures. Reselect
+tests after test changes; missing coverage never authorizes a broader suite.
 
 ## Measure the delta
 
@@ -121,20 +236,22 @@ Options:
   --help, -h      Show this help
 ```
 
-Lists each TypeScript file that the branch adds or changes against the merge
-base with `--base` (default `origin/main`), with its maintainability score:
-the production files under `src/` first, lowest first, then the other files,
-then the files without a measurement. Committed, staged, unstaged, untracked,
-and renamed files count; deleted files do not. The goal of `--min` (default
-85, an integer from 0 to 128) applies to the production files; a test file or
-a support file is listed with `no goal`. Exit status 1 when a production file
-is below the goal, else 0. The run writes the HTML report to `ast-report/`,
-with `compare.html` for the comparison with the base; `--no-compare` skips
-the comparison.
+Lists added or changed TypeScript files against the merge base of `--base`:
+production `src/` files first, lowest maintainability first, then other
+files and files without measurements. Committed, staged, unstaged,
+untracked, and renamed files count; deleted files do not. The production
+maintainability goal is `--min`; test and support files have `no goal`.
+It writes HTML to `ast-report/`, including `compare.html` unless
+`--no-compare` is set. An empty selection prints a notice without tool access.
 
-Focused tests: select the `ast-metrics-delta*.test.ts` rows in the
-[available test inventory](#available-tests). Run a live row only within its
-listed scope.
+Exit 0 means no production file missed the goal; exit 1 means a missed goal,
+invalid input, or an analysis failure. Maintainability ranges from 0 to 128;
+more is better. Inspect low files with MCP and repeat for at most three
+passes. Record any remaining score below 85 and its reason.
+
+Focused tests: affected `ast-metrics-delta*.test.ts` rows in the
+[available inventory](#available-tests), plus shared helpers when changed.
+These patterns help selection; they do not select every listed test.
 
 ## Ask the MCP server
 
@@ -161,21 +278,20 @@ Options:
 ```
 
 Starts `ast-metrics mcp`, makes one call over standard input and output,
-prints the answer, and lets the server exit; no server stays behind. `file`
-prints the score, the decision paths, and the lines of each function in a
-file, lowest score first. The score is the maintainability index, from 0 to
-128; more is better. The lines column is LOC, not source positions.
-`--json` prints the raw answer. The path is
-relative to the current folder, or absolute inside the repository.
-`--timeout-ms` sets the deadline (default 60000 ms; after a timeout the
-command stops the server). Exit status 0 means the answer was printed.
-Exit status 1 with one diagnostic line on stderr
-for a file that is not in the analysis, an unknown tool, a timeout, a server
-that exits before it answers, or a missing executable.
+prints the answer, then stops the server. `file` prints file and function
+maintainability, decision paths, and LOC, lowest score first. LOC counts
+lines of code; it is not a source position. `--json` preserves the server
+answer. Other subcommands print the results shown above. Limits delegated
+to ast-metrics have no wrapper-owned default. Paths resolve from the current
+folder and must stay within the repository.
 
-Focused tests: select the `ast-metrics-mcp*.test.ts` rows in the
-[available test inventory](#available-tests). Run a live row only within its
-listed scope.
+Exit 0 means the answer was printed. Exit 1 gives one diagnostic line for
+invalid input, an unknown tool or file, a timeout, an early server exit,
+a version mismatch, or a missing executable. A timeout stops the server.
+
+Focused tests: affected `ast-metrics-mcp*.test.ts` rows in the
+[available inventory](#available-tests). Select its live contract only when
+applicable under the policy.
 
 ## Review the delta
 
@@ -189,16 +305,79 @@ Options:
   --help, -h          Show this help
 ```
 
-Prints the Markdown review of `ast-metrics review` against `--base` (default
-`origin/main`) and writes it to `ast-report/review.md`: files whose score
-dropped, new functions with more than 10 decision paths, new rule
-violations, and the summary of the change. It also writes the current structured
-review to `ast-report/review.json`; stale files cannot supply a later result. Exit status 1 when a finding of
-severity high exists, else 0. Update the branch from the base first.
+Prints the Markdown review and writes `ast-report/review.md` and
+`ast-report/review.json`: score drops, new functions with more than ten
+decision paths, new rule violations, and a change summary. It removes stale
+outputs before analysis and checks the current structured result against
+the Markdown and tool status. Update the branch from the base first.
 
-Focused tests: select the `ast-metrics-review*.test.ts` rows in the
-[available test inventory](#available-tests). Run a live row only within its
-listed scope.
+Exit 0 means no high-severity finding; exit 1 means such a finding, invalid
+input, or a tool/report failure. Correct high findings or record a reason.
+Refresh the baseline only within the [allowed policy](#refresh-an-allowed-baseline).
+
+Focused tests: affected `ast-metrics-review*.test.ts` rows in the
+[available inventory](#available-tests).
+
+## Measure the coverage per function
+
+```text
+Usage: pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE] [--no-build] [--allow-unverified] [--help]
+
+Options:
+  --from DIR    Read the coverage files of an earlier run of the unit suite from
+                DIR, and do not run the suite
+  --no-build    Reuse dist/ only with a matching .coverage-build.json manifest
+  --allow-unverified  Inspect --from data without verified capture evidence
+  --out FILE    Write the report to FILE (default: ast-report/coverage.json)
+  --help, -h    Show this help
+```
+
+Run collection, or a live collector, only when `src/` changed or both
+complete unit parts were independently selected: emitted Node tests and
+source portal tests. A focused unit package does not select both parts.
+Reuse compatible data when possible. If compatible coverage is unavailable
+and collection is outside scope, retain the unavailable assessment and
+architecture graph without bands.
+
+Runs `npm run build`, then
+`node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"`, then
+`node --test "test/unit/user-portal/**/*.test.ts"` with one temporary
+`NODE_V8_COVERAGE` folder. Suite output goes to stderr. It checks inputs and
+emitted output through capture, archives successful raw data and
+`capture-manifest.json` under
+`ast-report/coverage-captures/capture-<unique>/`, then atomically publishes
+the report. Schema is `version: 2`, `suite: "unit"`, and
+`measurementVersion: "own-characters-1"`.
+
+Each file records its representation and SHA-256 content identity.
+`dist/src/x.js` maps to `src/x.ts`; source TypeScript under `src/` is also
+accepted. Offsets stay in that representation's UTF-16 coordinates;
+different representations cannot be unioned without conversion. The reader
+validates whole ranges, counts, nesting, script bounds, content identities,
+and safe summed calls before computing own-character coverage. Each
+measured function keeps name, whole range, calls, and covered share;
+zero-own functions are listed separately. See the
+[coverage guide](../../docs/implementation/ast-metrics-review.md#measure-the-coverage-per-function-scriptcode-qualityast-metrics-coveragets)
+for sourceURL trailers and exact validation rules.
+
+`--no-build` requires `dist/.coverage-build.json` to verify current inputs
+and all emitted content. `--from DIR` runs no build or suite: it validates
+the original capture, raw content, and current inputs/build while retaining
+the original commit. Raw V8 URLs require the original checkout path; offline
+rendering of a completed report does not. `--allow-unverified` is valid only
+with `--from` and writes inspection data with its reason, original
+information when available, and `commit: null` if unknown. It cannot enable
+bands or history. `--no-build` and `--from` are mutually exclusive.
+
+Exit 0 means the report was written. Invalid options, a failed build or
+suite, invalid raw data, failed provenance, or publication failure exits 1
+and preserves an earlier report. Archived raw data survive a later report
+publication failure for recovery with `--from`. No ast-metrics is required.
+
+Focused tests: affected `ast-metrics-coverage*.test.ts` and
+`ast-metrics-provenance-*.test.ts` rows in the
+[available inventory](#available-tests). Collector live rows have the scope
+above, even when a focused caller would otherwise select them.
 
 ## Assess per-function CRAP goals
 
@@ -216,166 +395,38 @@ Options:
   --help, -h            Show this help
 ```
 
-`N` is a finite positive decimal with at most six fractional digits. Its
-decimal digits must form a safe integer after the point is removed (at most
-9007199254740991). The target must be less than the limit. Each `PATH` is an
-existing TypeScript file under `src/`, relative to the current folder or
-absolute. The default selection includes changed and untracked production
-files and excludes deletions. Explicit inspection paths keep the proven
-classification against the merge base; they do not make every function new.
+Thresholds are finite positive decimals with at most six fractional digits.
+After removing the point, the digits must form a safe integer (at most
+9007199254740991); target must be below limit. Each `PATH` is an existing
+TypeScript file under `src/`, relative to the current folder or absolute.
+The default selects changed and untracked production files, excluding
+deletions. Explicit paths keep their proven classification against the base;
+they do not make every function new.
 
-An empty default selection prints `No production files to assess.` and exits
-0 without coverage or MCP. Other runs require compatible verified unit
-coverage before measurement. Missing, stale, or unverified coverage gives a
-specific error and no measured table. The command uses one bounded MCP
-session across selected files and no full architecture snapshot. It starts
-no build or test suite.
+An empty default selection prints `No production files to assess.` and
+exits 0 without coverage or MCP. Other runs need compatible verified unit
+coverage before measurement. Missing, stale, or unverified coverage gives
+a specific error and no measured table. The command uses one bounded MCP
+session for the selected files; it starts no build, suite, or full
+architecture snapshot. Output follows the [CRAP rules above](#crap-scores-and-goals).
 
-The table gives `File`, `Function`, `Change`, `Paths`, `Coverage`, `CRAP`,
-and `To do` for all functions of selected files, including unchanged and
-identity-unknown functions. Under the limit, advice says `ok`, with
-`for 15: cover ≥ k%` or `for 15: split` when the inclusive target is missed.
-At or above the limit, advice gives strict-limit coverage or `split`.
-Unknown coverage gives a marked lower bound and `no coverage data`, or a
-split when paths alone prove the goal impossible. Unknown identity states
-which goal cannot be classified. Rows sort by exact score or numeric lower
-bound descending, then file, function, and stable source identity. Bounds
-do not establish an exact ranking of unknown risks. The summary separates
-known limit violations, measured target misses, unmeasured functions, and
-unresolved required assessments or identities.
+Exit 0 means applicable assessments passed or the default selection was
+empty. Exit 1 means a known inspected limit violation, required new-target
+miss, unknown required goal, invalid input, or tool failure. It also reports
+unchanged high functions. Documented exceptions do not change this result.
+If compatible coverage is unavailable and collection is outside scope,
+record a deferred assessment.
 
-Exit 0 means all applicable assessments passed, or the default production
-selection was empty. Exit 1 means a known inspected limit violation, a
-required new-target miss, an unknown required goal, invalid input, or a tool
-failure. Unchanged high functions can retain `unchanged by this PR` in the
-review; the command still reports their violations. Under approved D2,
-improve required misses for at most three cycles with selected unit tests
-or fewer paths. Record score or bound, paths, coverage, classification, and
-reason for all unresolved required goals, including new functions above
-15 but below 30 and unknown data. Ready may proceed with recorded reasons;
-exceptions do not change the command result or excuse tool failures.
-
-Reuse compatible coverage. If collection is outside the selected scope,
-record the unavailable assessment as deferred and keep the architecture
-graph without bands. The process command composes these assessments; the
-baseline wrapper refreshes only an allowed baseline.
-
-Focused tests: select the `ast-metrics-crap*.test.ts` rows in the
-[available inventory](#available-tests). Select the live contract only when
-its behavior or a shared dependency changes. It reuses a compatible report
-and starts no collector:
+Focused tests: affected `ast-metrics-crap*.test.ts` rows in the
+[available inventory](#available-tests). The live contract reuses compatible
+coverage and starts no collector:
 
 ```sh
 AST_METRICS_CRAP_COVERAGE=/absolute/path/coverage.json node --test dist/test/acceptance/script/ast-metrics-crap.live.js
 ```
 
-Without the variable it reads `ast-report/coverage.json`. Missing tool or
-report gives an explicit skip, which is not a pass; record the assessment as
-deferred. A present stale report fails. Collect only when the independent
-test selection permits both complete unit parts.
-
-## Measure the coverage per function
-
-The command builds first. Run it, or its live test, only
-when `src/` changed or both complete parts of the unit suite were already
-selected: emitted Node tests and source portal tests. A focused unit package
-does not select both complete parts. Reuse current valid coverage when available;
-otherwise, use the architecture report without bands, with its graph and
-legend, outside that scope. Current coverage must describe the candidate's
-source, unit-test, and build inputs, including test helpers and fixtures.
-A commit that changes only documents does not invalidate coverage when those
-inputs are unchanged.
-
-```text
-Usage: pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE] [--no-build] [--allow-unverified] [--help]
-
-Options:
-  --from DIR    Read the coverage files of an earlier run of the unit suite from
-                DIR, and do not run the suite
-  --no-build    Reuse dist/ only with a matching .coverage-build.json manifest
-  --allow-unverified  Inspect --from data without verified capture evidence
-  --out FILE    Write the report to FILE (default: ast-report/coverage.json)
-  --help, -h    Show this help
-```
-
-Runs `npm run build`, then
-`node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"`, then
-`node --test "test/unit/user-portal/**/*.test.ts"`, with one temporary
-`NODE_V8_COVERAGE` folder. Suite output goes to stderr. It checks inputs
-and output throughout capture and atomically publishes
-`ast-report/coverage.json` only after both runs succeed. Successful raw data
-and `capture-manifest.json` stay under
-`ast-report/coverage-captures/capture-<unique>/`. The report keeps
-`suite: "unit"` and schema `version: 2`; `measurementVersion` is
-`own-characters-1`.
-
-Each source file records `representation` (`emitted-javascript` or
-`source-typescript`) and `contentIdentity` (SHA-256 of the original file's
-UTF-8 text). `dist/src/x.js` maps to `src/x.ts`; source `.ts` URLs under `src/`
-are accepted directly. Test scripts and outside paths are ignored. Offsets
-use UTF-16 code units in that representation. Different representations
-for one logical file cannot be unioned without source-map conversion.
-
-For source TypeScript on Node 24.20.0, named function offsets stay aligned
-with the original UTF-16 source. The anonymous module range also includes
-the exact appended `\n\n//# sourceURL=<file URL>` trailer. Its identified
-length includes that trailer; the content hash excludes it. Whole V8 ranges
-are preserved and validated against that exact length, without clamping.
-Thus named functions measure source characters, while the anonymous module
-can include generated sourceURL characters.
-
-Each measured function preserves its name, whole range, summed calls, and
-numeric covered share. Its own characters exclude the union of strictly
-contained functions from all compatible processes. Equal ranges do not
-establish parenthood; grandchildren are subtracted once. Helpers and their
-descendants are subtracted before exclusion. Each process clears zero-count
-blocks; a positive overlapping block does not restore them. Execution is
-unioned over own characters across processes. A zero-own function appears instead in
-`unmeasuredFunctions` with `path`, `name`, `start`, `end`, and
-`reason: "no-own-characters"`. It has no measured share or CRAP. This is a
-character-coverage approximation, not basis-path coverage.
-
-The collector rejects invalid raw offsets or counts, empty or inverted
-ranges, blocks outside their whole range, script bounds violations,
-crossing ranges, conflicting content identities, and unsafe summed calls.
-Every offset and count must be a finite nonnegative safe integer. Valid
-nonempty functions with no own characters are unmeasured, not invalid.
-
-Verified `provenance` holds the source and input fingerprints, runtime,
-compiler, unit suite, measurement version, original `capturedCommit`,
-`buildFingerprint`, and `captureManifestFingerprint`. It covers test helpers,
-fixtures, configuration, manifests, lockfiles, and other test inputs as well
-as TypeScript. Paths, content, and executable modes are hashed in lexical
-order with unambiguous framing. Symlinks include their link text and target
-content; dangling links and cycles fail. Generated output and unrelated
-prose do not affect this identity. Markdown fixtures under `src/` and
-`test/` remain inputs. See the
-[review guide](../../docs/implementation/ast-metrics-review.md#capture-provenance-and-reuse)
-for the exact input selection and limits.
-
-`--no-build` reuses output only when `dist/.coverage-build.json` verifies
-current inputs and all emitted content. `--from DIR` starts no build or
-suite. It validates the original capture manifest, raw content, script
-identities, and current inputs/build, preserving the original commit. Raw
-V8 URLs are absolute: import requires the original checkout path. This
-restriction does not apply to offline rendering of a completed report and
-snapshot. Arbitrary raw data cannot become verified by import.
-`--allow-unverified` is valid only with `--from`; it writes inspection data
-with an explicit reason, available original information, and `commit: null`
-when no original commit is available. Neither such output nor legacy
-version-1 reports without verified provenance enable bands or historical
-counts. `--no-build` and `--from` are mutually exclusive.
-Only a complete verified report can establish that an absent file was not
-loaded by the selected suite. The command and its live test need no
-ast-metrics. Exit status 0 means the report was written. A failed build,
-suite, provenance check, or invalid capture exits 1 and preserves an earlier
-report. If report publication fails after a successful archive, its raw data
-remain available for `--from` recovery.
-
-Focused tests: select the `ast-metrics-coverage*.test.ts` and
-`ast-metrics-provenance-*.test.ts` rows in the
-[available test inventory](#available-tests). Run a live row only within its
-listed scope.
+Without that variable it reads `ast-report/coverage.json`. A missing tool or
+report skips explicitly; a skip is not a pass. A present stale report fails.
 
 ## Show the architecture delta
 
@@ -402,178 +453,89 @@ Options:
   --help, -h            Show this help
 ```
 
-Prints the architecture delta of `src/` as Markdown: a header with the base
-commit, one summary line (modularity, cross share, cycles, communities, base
-→ head), and a fenced Mermaid graph of the communities with their changes
-and its legend. The graph always appears. For an unchanged map, `The map did
-not change.` appears above the graph; equal snapshots with no touched files
-keep all nodes and dependencies without change arrows or touched borders.
-Import evidence below the community graph separates changed imports from
-unchanged imports regrouped by the tool, with at most ten file pairs per
-changed edge and an omitted count. Tool reference counts and file-pair
-counts have different units. Proven moves use CR-05 evidence.
-Next, `## Components of src/` always shows each populated top-level source
-folder, plus `src` for root files, with its own graph and legend. It uses
-file counts, LOC-weighted maintainability, paths, and eligible CRAP bands.
-Each cross-component edge counts an importing file once per target
-component. Internal imports give no self-edge or self-cycle.
-Then it prints the complexity table of the changed `src/` files: the maintainability and the
-decision paths of each file, base → head (`new`, `gone`, or `not measured`
-when a side has no value), and its rank among the ten riskiest files of the
-head, or `No production file changed.` By default it snapshots the merge base of
-`--base` (default `origin/main`) in a temporary worktree and the working
-tree. File status includes additions, modifications, renames, and deletions.
-A rename has one row labeled `newpath (renamed from oldpath)` with the old
-base path's values. A deletion has gone head cells and touches its base community. Delta omits
-deleted files; architecture retains them. With `--head` and `--base-snapshot`,
-it reads two snapshot files and runs no tool. `--changes FILE` gives status
-and rename proof tied to both snapshots' commits and source fingerprints.
-`--touched` selects root-relative paths, separated by commas, without rename
-proof. If both are present, `--touched` selects rows and `--changes` supplies
-independent correspondence evidence. Without either option, no changed-file
-rows are selected. Repository mode rejects `--changes`; Git owns its status
-evidence. See the [offline change format](../../docs/implementation/ast-metrics-change-request.md#a4-offline-change-metadata). With a verified compatible report of the coverage
-command (`--coverage`, or `ast-report/coverage.json` of the repository),
-each community gets a CRAP band (good, warning, or critical) from its
-functions at CRAP 30 or more and their change against the base, the table
-gets the column `CRAP ≥ 30`, and a list names each function that the pull
-request added or made worse. Last, it prints the trend table, separate global
-maintainability and risk chart sections, and `### Trend by component` over
-the same last ten records of `main` and head. Only `--record` writes
-a missing merge-base record to `docs/metrics/` (or `--trend-store`). It
-verifies the full base commit, its ancestry on `origin/main`, and its source
-content and committer date before writing. Offline `--record` also needs a repository for
-these checks. A non-ancestor gives `No record: <base8> is not on origin/main.`
-and renders existing history without a write. Missing refs and unverifiable
-identity fail. Records use full SHAs; prefix collisions and malformed stores
-fail. Record-shaped directories and symlinks also fail. Atomic publication
-never overwrites an existing record, including
-concurrent writes. Keep the record from `main` in a merge conflict. Exit
-status 0 when the Markdown is printed; 1 with one diagnostic line for a failure. The
-[ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
-gives the matching rule, the encoding, the bands, the rules of the table, and
-the trend store.
+Prints Markdown in this order: base/head summary, community graph and
+legend with import evidence, component graph and legend, changed-file
+complexity, then global and component trends. Both fenced Mermaid graphs
+always appear. An unchanged community map keeps `The map did not change.`;
+with complete evidence the component view can say
+`The component map did not change.` Paste both graphs, legends, import
+evidence, tables, and trend charts unchanged into the pull request body,
+including for document-only changes and reports without coverage.
 
-Different or missing snapshot versions produce `Tool versions: base
-ast-metrics <version or unknown>; head ast-metrics <version or unknown>.`
-Equal known versions need no notice.
-Offline rendering uses the stored values and checks no installed tool.
+Repository mode snapshots the merge base in a temporary worktree and the
+working tree. Git supplies additions, modifications, renames, and deletions.
+A rename has one `newpath (renamed from oldpath)` row using old base values;
+a deletion has gone head cells and touches its base community. `--out` also
+saves the report relative to the current folder.
 
-Coverage must match the supplied head snapshot's source and input
-fingerprints, runtime, compiler, unit suite, and measurement version.
-`--no-coverage` ignores default coverage and conflicts with `--coverage`.
-Missing, legacy, unverified, or stale coverage withholds bands, the CRAP
-column, and assessed-function list, with a specific notice after the summary.
-Report and explicit-skip notices also go to stderr. Structural rendering
-still exits 0. A stale report names the original capture commit; compatible
-output says `Coverage: unit suite at <commit8>.` after complexity, also when
-no production file changed. An older capture can match after a prose-only
-commit. Offline matching uses only the supplied head's provenance and needs
-no Git; a legacy head cannot establish compatibility.
+Offline mode requires both `--head` and `--base-snapshot` and runs no tool.
+`--changes` gives version-1 status and rename proof tied to both snapshots'
+commits and source fingerprints. Repository mode rejects it. `--touched`
+selects root-relative comma-separated paths without rename proof. With both,
+it selects rows while `--changes` supplies correspondence evidence; with
+neither, offline mode has no changed-file rows. Offline readers use supplied
+evidence, not the caller's source tree. See the
+[offline change format](../../docs/implementation/ast-metrics-change-request.md#a4-offline-change-metadata).
 
-A missing or stale report does not authorize a broader suite. Use
-`--no-coverage` outside the collection scope. Paste the fenced `mermaid`
-blocks, their legends, and import evidence unchanged into every pull request body, including one
-that changes only documents or has no valid coverage.
+Coverage defaults to the repository report when present; offline mode needs
+explicit `--coverage`. `--no-coverage` ignores the default and conflicts with
+`--coverage`. Missing, legacy, unverified, stale, or skipped coverage keeps
+structure with a specific withholding notice and no bands, CRAP column, or
+assessed-function list. Report and explicit-skip notices also go to stderr.
+An invalid report envelope fails. Compatible data adds
+`Coverage: unit suite at <commit8>.`, naming the original capture, even when
+no production file changed. See the [CRAP rules](#crap-scores-and-goals) for
+incomplete assessments with valid coverage.
 
-Snapshots retain normalized dependency pairs from the TypeScript parser in
-`ts-morph`: local static, type, re-export, side-effect, and literal dynamic
-imports. The raw 0.43.1 report gives coupling counts and namespace relations,
-but no complete file-pair evidence. Packages are ignored; unresolved local
-imports, unsupported aliases, non-literal dynamic imports, parse errors,
-and outside-source targets remain explicit issues. See the
+Components are populated top-level `src/` folders, plus `src` for root files.
+Nodes use file counts, LOC-weighted maintainability, paths, and eligible
+bands. Each importing file counts once per target component; internal
+imports make no self-edge or self-cycle. Import evidence shows up to ten
+file pairs per changed community edge and an omitted count. It separates
+changed imports from unchanged imports regrouped by the tool. Tool reference
+counts and file-pair counts have different units.
+
+Snapshots preserve parser-derived local static, type, re-export,
+side-effect, and literal dynamic import pairs. Packages are ignored;
+unresolved local imports, unsupported aliases, non-literal dynamic imports,
+parse errors, and outside-source targets stay explicit issues. Legacy data
+without dependencies withhold component edges and import explanations.
+Incomplete evidence keeps known head edges and proven cycles, without
+new/gone labels, count deltas, gone edges, cycle-change claims, or a component
+unchanged claim. The notice says more dependencies and cycles may exist.
+Missing metrics stay unavailable. See the
 [snapshot format](../../docs/implementation/ast-metrics-change-request.md#a2-snapshot)
-for resolution and normalization. Legacy snapshots without dependency data
-keep component edges and import explanations unavailable. When both snapshots
-have dependency metadata but either has issues, known head edges and cycles
-proven in that known subgraph still appear. Edge counts have no new/gone labels
-or count deltas. Gone base edges, cycle-change claims, and the component
-unchanged-map claim are withheld. The notice states that more dependencies
-and cycles may exist. With complete evidence, an unchanged component graph
-says `The component map did not change.` Missing file metrics remain
-unavailable. Offline mode reads only supplied evidence.
-New trend records add stable-name `components` with metrics and D3 count
-provenance per component. Counts need verified coverage and complete member
-assessments. A component without per-file LOC or paths withholds the whole
-record field. Legacy absence means unknown. The component trend matrix has
-stable, sorted component rows and chronological commit columns, then the
-head. Each cell labels `MI` and `functions ≥ 30` independently. Risk cells
-keep their D3 basis; each missing measure gives `–`, including missing legacy
-component data. Community labels are not joined across history.
+for dependency resolution and source evidence.
 
-Source evidence supplies function correspondence. Within the same file or
-a proven file rename, a unique declaration kind/owner/name pair keeps its
-identity through body or signature edits. Otherwise, a unique unchanged
-body/signature pair can prove a move or rename, including a move to an
-untracked file. A new function requires complete evidence for its head file
-and all base files, proven partners for all base declarations, and no matching
-base body or unresolved move candidate. Name equality alone, copies, duplicate bodies, anonymous functions,
-and changed extractions cannot prove correspondence. Legacy snapshots stay
-readable, but missing evidence remains identity unknown; offline rendering
-never reads the caller's checkout for proof. Unknown identity is not called
-added or worse. A base function without a proven head partner has no exact
-CRAP estimate, including a removed function. Its path count can still prove
-a lower-bound violation at 30 or more. The report counts these unknowns
-separately. `Unknown function identity: N (no proven declaration or unique
-unchanged body/signature correspondence).` appears when identity unknowns
-exist, even without coverage. Compatible coverage always adds
-`Base functions without an estimated covered share: N.` after complexity.
-An unmatched function with at least 30 paths is a known violation: its CRAP
-is at least its paths. It counts in risk totals and displays `≥ <paths>`.
-It is added risk only with proof that it is new. A larger lower bound alone
-does not prove worsening against an unknown base value. Unknown assessment
-withholds good; known violations can still support warning or critical.
-The unknown count includes every function without a share, also known
-lower-bound violations and zero-own exclusions.
-The node adds `assessment incomplete: N unknown`; a node without a justified
-band has no band color. Missing function metrics count separately as
-`1 unmeasured file`, without a guessed function count. These rules add no
-fourth band.
-Below the unmatched summary, the report lists unmeasured functions of changed
-files with at least five paths, sorted by path and name, for example
-``- `src/x.ts` `(anonymous)`: paths 5, covered unknown, CRAP ≥ 5``.
+Only `--record` writes a missing base record to the trend store. It verifies
+the full base SHA, ancestry on `origin/main`, source content, and committer
+date. Offline recording also needs a repository. A non-ancestor prints
+`No record: <base8> is not on origin/main.` and renders existing history;
+missing refs or unverifiable identity fail. Publication never overwrites an
+existing record, including concurrent writes. Malformed stores, prefix
+collisions, record-shaped directories, and symlinks fail. Commit a new record;
+keep the `main` file in a conflict. No record runs at merge time.
 
-New trend records retain the base snapshot's actual `tool` version when
-known. Legacy snapshots and records without it have an unknown tool version;
-no installed version is substituted during offline rendering.
-Stored head-derived counts are labeled `estimate`, the head row is
-`measured`, old counts without provenance are `legacy unknown`, and absent
-counts show `–`. Estimate provenance records the original coverage commit,
-fingerprints, measurement version, and unknown-function count. The stored
-value belongs to the first recording pull request; another head can give a
-different estimate for the same base. Missing counts stay missing.
-New snapshots and records can hold commit `title`, the first message line.
-Only a terminal `(#<n>)` supplies `#<n>` in the global table's `PR` column.
-A missing title or suffix gives `–`; offline mode makes no Git or GitHub
-lookup and existing records stay unchanged.
-
-The chart sections split at missing values; risk sections also split when
-the D3 basis changes. Each contiguous run of at least two values gets a
-fenced `mermaid` `xychart-beta` line chart with an explicit basis caption
-for risk. A single value gets a caption, empty series get an unavailable
-message, and constant runs get a nonzero y-axis range. Mermaid frontmatter
-rotates commit labels 45 degrees so the full eleven-point window remains
-readable. The numeric tables retain all gaps and values. The documented
-[Mermaid XY syntax](https://mermaid.js.org/syntax/xyChart.html) defines numeric
-line values but no missing-value token, so several small charts can appear
-for one measure. A two-point `xychart-beta` probe rendered in a real GitHub
-pull request comment on 2026-10-19. This verifies the basic syntax used here,
-not newer features. The
-[GitHub diagram guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
-explains fenced diagrams and renderer-version checks. Keep these charts,
-captions, and the component matrix in the complete pull request report.
-
-Mixed tool versions in the displayed history and head add
-`Trend tool versions: <commit8>: ast-metrics X; this pull request: ast-metrics Y.`
-The notice names each displayed commit and the head in table order; absent
-legacy versions are `unknown`.
-Without an offline trend store, the section says `No trend store.` A
-configured empty store without `--record` says
+Records retain the base's actual tool version, title, stable-name component
+metrics, and eligible estimated risk provenance. Legacy absence stays unknown.
+Missing component LOC or paths withholds the whole component record field;
+missing member function metrics withhold that component's risk count.
+Different or missing snapshot versions get a `Tool versions:` notice;
+mixed trend versions get a `Trend tool versions:` notice. An offline run
+without a store says `No trend store.`;
+a configured empty store without recording says
 `No snapshot of main in the trend store yet.`
 
-Focused tests: select the `ast-metrics-architecture*.test.ts` rows in the
-[available test inventory](#available-tests). Run a live row only within its
-listed scope.
+Exit 0 means structural Markdown was printed; this report is not a goal gate.
+Exit 1 means invalid input, analysis/read/record failure, with one diagnostic
+line and no Markdown. SIGINT/SIGTERM during base capture remove its worktree
+and exit 130/143. Coverage unavailability alone does not fail structure or
+permit collection outside test scope.
+
+Focused tests: affected `ast-metrics-architecture*.test.ts` and
+`ast-metrics-community-evidence.test.ts` rows in the
+[available inventory](#available-tests). Select structural and collector
+live contracts separately under their listed scope.
 
 ## Take a snapshot
 
@@ -590,52 +552,44 @@ Options:
   --help, -h       Show this help
 ```
 
-Writes the snapshot of the working tree to `ast-report/snapshot.json`, or to
-`--out` (relative to the current folder): the global numbers of `src/`, the
-`src/` communities with labels, members, references, and edges, and each
-`src/` file with its metrics and functions, from one `ast-metrics analyze
-src` run and one session of `ast-metrics mcp src`, so that only a change of
-`src/` changes the communities. The file is written only after all calls
-succeeded and its input identity is unchanged. `tool` names the actual
-checked ast-metrics version, including an explicitly permitted version. The
-optional `title` is the commit message's first line. Legacy snapshots can
-omit it; a present title must be a string. The optional `provenance`
-field holds source and expected coverage-input fingerprints, runtime,
-compiler, suite, and measurement version. Each file can hold optional
-`sourceEvidence` (`version: "typescript-tokens-v1"`, `coordinates: "utf16"`,
-`complete`) and each supported function can hold optional `identity`
-(version, declaration kind, lexical owner, name, source start/end, and SHA-256
-body/signature hashes). Ranges use zero-based UTF-16 units and exclude the
-end. Token normalization ignores whitespace and comments but preserves
-executable syntax and literal spelling. The signature omits the declaration
-binding name; recursive body references remain. Anonymous functions,
-duplicate names, and unsupported owners stay unknown. Source parse errors withhold identity and set `complete: false`. Completeness requires every executable function to be supported and
-every metric to have one declaration. Legacy snapshots remain readable
-for structure. See the [snapshot format](../../docs/implementation/ast-metrics-change-request.md#a2-snapshot). Exit status 0 means the snapshot was written. `--timeout-ms`
-sets the deadline of the session (default 60000
-ms). Exit status 1, with one diagnostic line on stderr, for a missing
-executable, a failed analysis, or a failed call. With `--base REF`, the
-snapshot is of the merge base of REF and HEAD: the command analyzes that
-commit in a temporary worktree under the system temporary folder, removes
-the worktree again (also after a failure, and on SIGINT or SIGTERM with exit
-status 130 or 143), and writes `ast-report/snapshot-base.json` by default. A
-run first removes the temporary worktrees that interrupted runs left, and
-says on stderr how many. The worktree needs no `pnpm install`, and no hook
-of the repository runs in it. The
-[ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
-describes the file. The snapshot stores no coverage or CRAP; the architecture
-command joins coverage when it makes the report.
+Writes global `src/` metrics, communities, files and functions, source
+identity, and dependency evidence. It uses one `ast-metrics analyze src`
+run and one bounded `ast-metrics mcp src` session; only source changes alter
+communities. Publication requires every call to succeed and unchanged input
+identity. The snapshot stores no coverage or CRAP; architecture joins those
+when reporting.
+
+`tool` keeps the checked actual version, including an explicit override.
+Optional `title` is the commit message's first line; optional `provenance`
+contains source and expected coverage-input fingerprints, runtime, compiler,
+suite, and measurement version. Optional source evidence uses
+`typescript-tokens-v1`, UTF-16 ranges, and completeness. Supported function
+identity keeps kind, owner, name, range, and body/signature hashes. Token
+normalization ignores whitespace and comments but retains executable syntax
+and literal spelling. Anonymous functions, duplicate names, unsupported
+owners, and parse errors limit identity. Legacy snapshots remain readable
+for structure. The [snapshot guide](../../docs/implementation/ast-metrics-review.md#take-a-snapshot-scriptcode-qualityast-metrics-snapshotts)
+gives exact fields and completeness rules.
 
 Community labels use the largest source namespace by member count, without
-`src/`; ties use the first name in lexical order. Root files use `src`, and
-the shared kernel uses `shared kernel`. Duplicate labels append the basename
-of the hub in parentheses. Maintainability is weighted by LOC. LOC is a count
-of lines of code, not a source position.
+`src/`; ties use lexical order. Root files use `src`, the shared kernel uses
+`shared kernel`, and duplicate labels append the hub basename. Maintainability
+is weighted by LOC. LOC is a line count, not a source position.
 
-Focused tests: select the `ast-metrics-snapshot*.test.ts` and
-`ast-metrics-dependencies*.test.ts` rows in the
-[available test inventory](#available-tests). Run a live row only within its
-listed scope.
+`--base` captures the merge base in a temporary worktree under the system
+temporary folder. It needs no install or repository hook. The command removes
+it after success, failure, SIGINT, or SIGTERM, and clears abandoned worktrees
+from interrupted runs, reporting that count on stderr. Explicit `--out`
+resolves from the current folder; defaults are at the repository root.
+
+Exit 0 means the snapshot was written. Exit 1 gives one diagnostic line for
+invalid input, a missing executable, failed analysis/call, or publication
+failure. SIGINT/SIGTERM during base capture exit 130/143 after cleanup.
+
+Focused tests: affected `ast-metrics-snapshot*.test.ts`,
+`ast-metrics-dependencies*.test.ts`, and source-evidence rows in the
+[available inventory](#available-tests). Select its live contract only within
+policy scope.
 
 ## Run the complete review process
 
@@ -654,44 +608,40 @@ Options:
 
 Run this on the complete candidate after updating from `origin/main` and
 selecting tests. It runs delta, review, coverage resolution, CRAP, and
-architecture in order. It prints and saves four sections: delta, review,
-CRAP, and architecture. The report retains the stage Markdown, including
-all tables, drawings, and legends. A text fence preserves the delta's aligned
-rows in the pull request body. `--base` reaches every comparison;
-`--allow-tool-version` reaches each tool operation. Explicit file paths
-resolve from the current folder; default paths use the repository root.
+architecture in order. It prints and saves four report sections: delta,
+review, CRAP, and architecture, preserving all stage tables, drawings,
+legends, and notices. A text fence keeps delta's aligned rows. `--base`
+reaches each comparison and the version override reaches each tool operation.
+Explicit paths resolve from the current folder; defaults use the repository root.
 
-Coverage reuse is the default. `--coverage FILE` selects another report.
-Reuse requires verified capture provenance compatible with the candidate's
-source, unit-test, and build inputs. Missing or stale data never starts a
-suite. `--collect-coverage` builds and collects both complete unit parts
-once. Use it only when `src/` changed or both parts were independently
-selected: emitted Node tests and source portal tests. Record that selection
-in the pull request evidence. `--skip-coverage` ignores all reports and
-renders structure without bands. Give only one coverage option; conflicting
-reuse, collection, and skip options fail.
+Reuse of compatible verified coverage is the default. Missing or stale data
+never starts a suite. `--coverage` selects another report.
+`--collect-coverage` builds and collects both complete unit parts once; use
+it only when `src/` changed or both parts were independently selected, and
+record that selection. `--skip-coverage` ignores all reports and renders
+structure without bands. Reuse, collection, and skip choices conflict.
 
-An empty default production-file selection has no required CRAP goals. It
-prints `No production files to assess.` without coverage or MCP for that
-stage. A document-only run can finish and record structure without coverage
-counts. A nonempty required selection without sufficient data stays
-unresolved and exits 1, even with explicit skip.
+An empty default production selection prints `No production files to
+assess.` without coverage or MCP for CRAP. A document-only run can finish
+and record structure without risk counts. Nonempty required goals without
+sufficient data stay unresolved, including with explicit skip.
 
-Completed goal misses continue to give all evidence and exit 1. Operational
-failures leave clear partial results and dependent sections unavailable;
-they also exit 1. No failed analysis or unavailable required assessment
-writes history. After all required analyses complete, the process requests
-architecture recording under the verified-base rules, including when a
-completed assessment misses a goal. Existing records stay unchanged. Exit
-0 requires completed passing assessments. Invalid options and recording
-failures exit 1. Approved goal exceptions do not excuse tool failures or
-change these exit results. Exploratory standalone architecture stays
+Completed goal misses retain the full evidence. Operational failures leave
+partial results and dependent sections unavailable. Only after all required
+analyses complete does the process request verified base recording; completed
+goal misses can record, unavailable required assessments and failures cannot.
+Existing history stays unchanged. Exploratory standalone architecture stays
 read-only without `--record`.
 
-Focused tests: select the process and stage-outcome rows in the
-[available test inventory](#available-tests). Process doubles never start
-application coverage implicitly. A new process test does not select both
-complete unit parts or every live contract.
+Exit 0 requires completed passing assessments. Goal misses, unresolved
+required data, invalid options, tool failures, and recording failures exit 1.
+Approved exceptions do not change these results or excuse tool failures.
+
+Focused tests: affected `ast-metrics-process*.test.ts` and
+`ast-metrics-stage-outcomes.test.ts` rows in the
+[available inventory](#available-tests). Process doubles never start coverage
+implicitly. A process test alone selects neither both complete unit parts
+nor all live contracts.
 
 ## Refresh an allowed baseline
 
@@ -703,84 +653,59 @@ Options:
   --help, -h            Show this help before Git or tool access
 ```
 
-Runs `ast-metrics baseline` from the repository root, with the pinned tool
-check or an explicit version override. It reports the number of YAML ignored
-entries before and after the refresh. A missing baseline starts at zero.
-Exit 0 means the refresh succeeded and both counts are valid; failures exit
-1. Help needs no Git or tool access.
+Runs `ast-metrics baseline` from the repository root after the pinned
+version check or an explicit override. It prints the YAML ignored-entry
+counts before and after; a missing baseline starts at zero. Exit 0 means
+refresh succeeded and both counts are valid; invalid input, invalid YAML,
+or tool failure exits 1. Help needs no Git or tool access.
 
-This wrapper adds no permission to change `.ast-metrics-baseline.yaml`. Use
-it only for a retained high finding with a written reason or a change to
-`.ast-metrics.yaml` rules. Commit the resulting baseline in the same pull
-request. A violation already on `main` is not a third exception.
+Use this wrapper only for a retained high-severity finding with a written
+reason or a change to `.ast-metrics.yaml` rules. Commit the resulting
+`.ast-metrics-baseline.yaml` in the same pull request. A violation already
+on `main` is not a third exception; the wrapper grants no extra permission.
 
-Focused tests: select the `ast-metrics-baseline.test.ts` rows in the
-[available test inventory](#available-tests).
+Focused tests: affected `ast-metrics-baseline.test.ts` rows in the
+[available inventory](#available-tests).
 
 ## Available tests
 
-This is the complete available inventory, not a requirement to run every file.
-The documentation contract discovers it from the test tree in lexical order.
-Select affected tests with the [test gate policy](../../docs/implementation/test-gate-policy.md).
-After a clean build, a focused command uses the emitted path of a selected row:
-replace `test/` with `dist/test/` and `.ts` with `.js`.
+This is the complete available inventory, not a requirement to run every
+file. Select affected rows with the
+[test gate policy](../../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts),
+following changed shared helpers and fixtures to their consumers. Each
+command's test patterns are selection aids. After a clean build, replace
+`test/` with `dist/test/` and `.ts` with `.js` for an emitted focused test.
+The documentation contract can also run directly from source:
 
 ```sh
-pnpm run build
-pnpm exec node --test dist/test/acceptance/script/script-readme.test.js
+node --test test/acceptance/script/script-readme.test.ts
 ```
 
-That documentation test reads real `--help` with an empty PATH and forbids all
-child processes. It checks the Usage/Options contracts above and this inventory
+That test reads real `--help` with an empty PATH and forbids child processes.
+It checks exact Usage/Options contracts, declared defaults, and this inventory
 against the [test inventory](../../docs/testing/test-list.md#ast-metrics-commands).
-It reads listed test commands; it does not execute them. Prose changes alone do
-not select a broader suite through a command reference.
+It reads command references; it never executes the listed test commands.
+Prose changes alone do not select a broader suite through those references.
 
-Live contracts check invariants of the current repository, not fixed community,
-cycle, or file counts. MCP checks the function table and missing-file error.
-Snapshot checks the shared kernel, unique labels, source members, valid
-community and cycle references, positive file and function counts, HEAD,
-deadlines, and worktree cleanup. It also checks normalized unique dependency
-pairs between analyzed source files and the literal dynamic import in
-`application.ts`.
+Live contracts check repository invariants, not fixed community, cycle, or
+file counts. MCP checks function output and missing files. Snapshot checks
+source membership, labels, references, counts, HEAD, dependency pairs,
+deadlines, and worktree cleanup. Architecture acceptance cases share full
+graph fixtures; the document-only case proves no suite runs.
 
-`ast-metrics-architecture.live.ts` is structural only. It uses `--no-coverage`,
-checks equal metrics, every reported community, each populated source-folder
-component, and both graphs and legends, and starts
-no suite. `ast-metrics-architecture-coverage.live.ts` separately collects both
-complete unit parts and passes its private report with `--coverage`.
-`ast-metrics-coverage.live.ts` also collects both complete parts and keeps the
-explicit proof that portal unit tests call `initializePortal`.
-Both collectors assert that the default report stays unchanged. Each
-architecture file uses a temporary trend store and writes no repository
-trend record. Structural architecture checks that no worktree stays.
+`ast-metrics-architecture.live.ts` uses `--no-coverage` and checks structure,
+components, graphs, legends, and cleanup without starting a suite.
+`ast-metrics-architecture-coverage.live.ts` and `ast-metrics-coverage.live.ts`
+collect both complete unit parts. The latter also proves that portal tests
+call `initializePortal`. Both keep the default report unchanged. Architecture
+live cases use temporary trend stores and write no repository record.
 
-MCP, snapshot, and both architecture live files need ast-metrics on PATH and
-skip when it is absent. The coverage live file needs no ast-metrics. A skip is
-not a pass. Run either collector only when `src/` changed or both complete
-unit parts were independently selected: emitted Node tests and source portal
-tests. Otherwise record it as deferred, not passed. A build only prepares
-emitted tests. Command and double changes select the affected focused and live
-contracts, as mapped in the [policy](../../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts);
-they do not select all live files.
-
-`ast-metrics-tool-version.test.ts` checks that a later read-only architecture
-run preserves a stored record's tool version and leaves the file unchanged.
-The unit `ast-metrics-architecture-trend-provenance.test.ts` checks that table-number
-reads preserve a present version and keep it absent for legacy records.
-
-`ast-metrics-json-file.test.ts` checks exact read and schema diagnostics
-through the snapshot, coverage, trend, and change metadata readers for missing
-files, malformed JSON, arrays, null, and empty objects.
-
-`ast-metrics-order.test.ts` checks meaningful ties in map, risk, file,
-community, namespace, and coverage ordering. Equal keys preserve input order,
-and locale-sensitive coverage names keep their existing ordering contract.
-
-Architecture acceptance cases share complete base, banded, and repository
-drawings in `test/acceptance/script/fixtures/ast-metrics-architecture-goldens.ts`.
-The document-only case in `ast-metrics-architecture-unchanged.test.ts` checks
-the complete graph without bands and proves that no test suite runs.
+MCP, snapshot, CRAP, and architecture live cases need ast-metrics and skip
+explicitly when unavailable. CRAP also needs reusable compatible coverage.
+A skip is not a pass. Coverage collection itself needs no ast-metrics.
+Run a collector only when `src/` changed or both complete unit parts were
+independently selected; otherwise record it as deferred. A build only prepares
+emitted tests. Changes to one command or double do not select all live files.
 
 <!-- code-quality-tests:start -->
 

@@ -18,9 +18,12 @@ CR-09: the composed review process and the baseline wrapper. PR #184 merged
 CR-17: share proven command checks, JSON reading, and ordering while preserving
 the nine entry points, diagnostics, and report contracts. PR #185 merged
 CR-13: source dependency evidence, community import explanations, and a
-stable component map. PR #186 implements CR-14: global trend charts, commit
-titles and PR numbers, and a stable component trend matrix. Owner review
-is pending.
+stable component map. PR #186 merged CR-14: global trend charts, commit
+titles and PR numbers, and a stable component trend matrix. PR #187 implements
+the CR-23 content consolidation; merge is pending. The detailed README explains
+CRAP before commands, puts commands in process order, and links their focused
+tests. Its help contracts and both test inventories remain checked by the
+existing documentation contract.
 The CRAP delta was already calculated once before CR-17. D9 remains open.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on

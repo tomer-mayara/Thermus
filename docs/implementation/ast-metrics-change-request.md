@@ -30,8 +30,8 @@ It authorizes no base-coverage storage or merge workflow.
 
 Delivery status:
 
-- PR #175 merged CR-16 and the CR-23 contract-test foundation. CR-23's later
-  content consolidation remains.
+- PR #175 merged CR-16 and the CR-23 contract-test foundation. PR #187
+  implements CR-23's content consolidation; merge is pending.
 - PR #176 merged delivery group 2, CR-24: always print the architecture
   drawing and require its fenced block and legend in the pull request body.
 - PR #177 merged delivery group 3, CR-01 and CR-02: collect portal unit
@@ -56,8 +56,8 @@ Delivery status:
   while preserving command contracts.
 - PR #185 merged CR-13: retain source dependency evidence, explain
   community edge changes, and show stable source-folder components.
-- PR #186 implements CR-14: global trend charts, commit titles and PR
-  numbers, and a stable component trend matrix. Owner review is pending.
+- PR #186 merged CR-14: global trend charts, commit titles and PR
+  numbers, and a stable component trend matrix.
 - The other CRs have not been implemented.
 
 Contents:
@@ -105,8 +105,8 @@ The review found these problems:
    assessments with exit 1. CR-09 in PR #183 composes these assessments and
    adds the baseline wrapper.
 6. At the proposal baseline, the graph shows dependency clusters. CR-13 in
-   PR #185 adds the designed component view. PR #186 implements CR-14
-   charts and component trends; owner review is pending.
+   PR #185 adds the designed component view. PR #186 merged CR-14
+   charts and component trends.
 7. At the proposal baseline, an unchanged map had no drawing. CR-24 in
    PR #176 always prints it, with bands when compatible coverage exists.
    Missing bands do not authorize a broader test run.
@@ -1022,7 +1022,7 @@ validation is separate from proof of GitHub rendering; record both honestly.
 
 **Documents.** Guide, README, plan trend view, inventory, record format.
 
-**Implementation: PR #186; owner review pending.** Repository snapshots and
+**Delivery.** Merged in PR #186. Repository snapshots and
 new records retain optional `title` without a schema-version or tool-pin
 change. A terminal `(#<n>)` supplies the global table's `PR` column; unknown
 titles stay unknown without a Git or GitHub lookup. The same last ten
@@ -1368,6 +1368,16 @@ not authorize broader runs through command references.
 **Documents.** Detailed README, script index, inventory, and the policy's
 focused-command reference. Every command CR updates its own section;
 the final content pass consolidates explanations, not missing contracts.
+
+**Delivery.** The contract-test foundation merged in PR #175. The content
+consolidation is implemented in PR #187; pending merge. The detailed
+README explains CRAP before the commands and orders the nine available
+commands by process. It describes their output, options and defaults, exits,
+focused tests, helpers, and doubles. The script index, review guide, plan,
+inventory, and focused-command reference are aligned. The existing contract
+checks help and both complete test inventories; this prose pass adds no
+executable test or command behavior. Inventory rows do not select tests.
+No new command, option, coverage source, or baseline exception is approved.
 
 ### CR-24. Print the architecture drawing on every pull request
 

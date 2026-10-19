@@ -34,8 +34,11 @@ them from the repository root with `pnpm exec node`.
 ## The commands
 
 The nine entry points and their helper folders are in
-[`script/code-quality/`](../../script/code-quality/README.md). Use these wrappers
-for the review process. The process wrapper composes the complete review.
+[`script/code-quality/`](../../script/code-quality/README.md). That README explains
+CRAP before the command sections, which follow the review process order. It
+lists each command's synopsis, options and defaults, output, exits, and focused
+tests. Use these wrappers for the review process. The process wrapper composes
+the complete review.
 The baseline wrapper reports counts for an allowed refresh. Shared helpers
 handle repeated argument and limit checks, JSON file reads, and UTF-16 text
 ordering. Consumers keep their schema checks and file-kind diagnostics.
@@ -48,6 +51,11 @@ commands. Only a change under `src/` requires the full ordinary suite
 (`npm test`) and the remaining static and build checks in that policy.
 Do not add `npm run check`, which would repeat unit and portal tests.
 For other changes, run only affected test groups and existing focused tests.
+The existing `script-readme.test.ts` contract checks command help and both test
+inventories. Changes to documented help contracts or either test inventory
+select that focused contract. They do not select listed commands, live
+collectors, or a complete suite. See the
+[focused command](test-gate-policy.md#select-by-changed-path).
 The delta, review, snapshot, and architecture commands do not run tests.
 Run the process command for every pull request; the individual commands
 remain available for inspection and improvement passes.
