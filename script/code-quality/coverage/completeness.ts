@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CaptureProtocol } from './protocol.ts';
 import { completedMarker, assertSignalOutcomes } from './termination.ts';
+import { verifiedLoadersIn } from './loader-validation.ts';
 import { CommandError } from '../shared/repository.ts';
 
 const incomplete = 'A captured child did not flush coverage on normal shutdown. Incomplete captures are unverified.';
@@ -21,6 +22,7 @@ function shutdownEvidenceIn(folder: string, evidence: { names: readonly string[]
   const observed = new Set<string>();
   const completed = new Set<string>();
   const sealed = new Set<string>();
+  const records = new Map<string, ReturnType<typeof shutdownMarkerIn>>();
   for (const marker of markers) {
     const file = join(folder, marker);
     const record = shutdownMarkerIn(file);
@@ -29,23 +31,25 @@ function shutdownEvidenceIn(folder: string, evidence: { names: readonly string[]
     const identity = `${pid}:${threadId}`;
     if (observed.has(identity)) throw new CommandError(`Duplicate process shutdown evidence for pid ${pid}/thread ${threadId}. Incomplete captures are unverified.`);
     observed.add(identity);
+    records.set(identity, record);
     if (complete) completed.add(identity);
     if (complete && record.state === 'sealed-before-crash') sealed.add(identity);
   }
+  for (const identity of verifiedLoadersIn(folder, { ...evidence, markers: records, completed })) completed.add(identity);
   return { observed, completed, sealed };
 }
-function shutdownMarkerIn(file: string): Record<string, unknown> & { pid: number; threadId: number; complete: boolean } {
+function shutdownMarkerIn(file: string): Record<string, unknown> & { pid: number; threadId: number } {
   let record;
   try { record = JSON.parse(readFileSync(file, 'utf8')); } catch { record = {}; }
   if (record === null || !Number.isSafeInteger(record.pid) || record.pid <= 0 || !Number.isSafeInteger(record.threadId) || record.threadId < 0) throw new CommandError(`${incomplete} Invalid marker: ${file}.`);
-  return { ...record, complete: record.complete === true };
+  return record;
 }
 function capturedIdentitiesIn(names: readonly string[]): ReadonlySet<string> {
   return new Set(names.flatMap((name) => {
     if (!/^coverage-.*\.json$/.test(name)) return [];
-    const match = /^coverage-(\d+)-\d+-(\d+)\.json$/.exec(name);
-    if (match === null) throw new CommandError(`${incomplete} Invalid V8 file identity: ${name}.`);
-    return [`${Number(match[1])}:${Number(match[2])}`];
+    const match = /^coverage-([1-9]\d*)-([1-9]\d*)-(0|[1-9]\d*)\.json$/.exec(name);
+    if (match === null || !match.slice(1).every((value) => Number.isSafeInteger(Number(value)))) throw new CommandError(`${incomplete} Invalid V8 file identity: ${name}.`);
+    return [`${Number(match[1])}:${Number(match[3])}`];
   }));
 }
 function missingIdentitiesOf(identities: ReadonlySet<string>): string {

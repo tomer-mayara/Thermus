@@ -29,7 +29,7 @@ test('Given earlier product work and a queued later call, when the child seals c
   const functions = report.files.find(({ path }: { path: string }) => path === 'src/sample.ts').functions;
   assert.equal(functions.find(({ name }: { name: string }) => name === 'earlier').coveredShare, 1);
   assert.equal(functions.find(({ name }: { name: string }) => name === 'later').coveredShare, 0);
-  assert.equal(report.provenance.completionProtocol, 'normal-exit-or-sealed-1');
+  assert.equal(report.provenance.completionProtocol, 'normal-exit-or-sealed-or-loader-1');
   const [archive] = readdirSync(join(repository.root, 'ast-report/coverage-captures'));
   const imported = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, args: ['--from', join('ast-report/coverage-captures', archive)] });
   assert.equal(imported.code, 0, imported.stderr);

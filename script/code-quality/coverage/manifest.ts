@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { fingerprintOf } from '../provenance/tree.ts';
 import type * as provenance from '../provenance/types.ts';
 import { assertCompleteCapture } from './completeness.ts';
+import { assertLegacyLoaderAbsence } from './loader-validation.ts';
 import * as json from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
 import * as format from './manifest-format.ts';
@@ -12,7 +13,7 @@ export type { CaptureManifest } from './manifest-format.ts';
 const captureManifestName = 'capture-manifest.json';
 
 export function rawFingerprintOf(folder: string): string {
-  const names = fs.readdirSync(folder).filter((name) => /^(coverage|process|seal-request|seal-receipt|signal)-.*\.json$/.test(name));
+  const names = fs.readdirSync(folder).filter((name) => /^(coverage|process|seal-request|seal-receipt|loader|signal)-.*\.json$/.test(name));
   if (!names.some((name) => name.startsWith('coverage-'))) throw new CommandError('The capture manifest has no raw V8 data.');
   return fingerprintOf(names.map((name) => [name, fs.readFileSync(join(folder, name))]));
 }
@@ -20,9 +21,10 @@ export function readCaptureManifest(folder: string): { manifest: format.CaptureM
   const text = fs.readFileSync(join(folder, captureManifestName), 'utf8');
   const record = json.objectOf(json.jsonOf(text));
   const manifest = format.manifestIn(record);
+  if (manifest.version === 1) assertLegacyLoaderAbsence(folder);
   if (manifest.version !== 1) {
     format.assertComparisonIdentity(manifest);
-    assertCompleteCapture(folder, manifest.version === 3 ? format.protocolOf(manifest) : undefined);
+    assertCompleteCapture(folder, manifest.version >= 3 ? format.protocolOf(manifest) : undefined);
   }
   return { manifest, provenance: provenanceOf(manifest, text) };
 }
@@ -32,5 +34,5 @@ export function writeCaptureManifest(folder: string, manifest: format.CaptureMan
   return provenanceOf(manifest, text);
 }
 function provenanceOf(manifest: format.CaptureManifest, text: string): provenance.VerifiedCoverageProvenance {
-  return { ...manifest.identity, ...(manifest.version === 3 ? format.protocolOf(manifest) : {}), ...(manifest.comparisonIdentity === undefined ? {} : { comparisonIdentity: manifest.comparisonIdentity }), status: 'verified', capturedCommit: manifest.capturedCommit, buildFingerprint: manifest.buildFingerprint, captureManifestFingerprint: createHash('sha256').update(text).digest('hex') };
+  return { ...manifest.identity, ...(manifest.version >= 3 ? format.protocolOf(manifest) : {}), ...(manifest.comparisonIdentity === undefined ? {} : { comparisonIdentity: manifest.comparisonIdentity }), status: 'verified', capturedCommit: manifest.capturedCommit, buildFingerprint: manifest.buildFingerprint, captureManifestFingerprint: createHash('sha256').update(text).digest('hex') };
 }

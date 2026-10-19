@@ -11,6 +11,17 @@ Real integration capture remains deferred because its complete group was not
 selected. Loader-thread coverage remains unsupported and unverified.
 The study, dated observations, and completed ticket evidence below remain history.
 
+Current loader follow-up, PR #193, 2026-10-19: at `c620cf8f`, all 535 real
+integration tests passed, but capture verification rejected four raw-only `tsx`
+loader threads. The owner requested the actual loader lifecycle fix while
+preserving those tests. The new version-4 protocol binds capture, PID, loader
+thread, owner thread, and nonce. Genuine owner exit must finish its listeners
+before the loader flushes and parks. Verification requires an intact checkpoint,
+a distinct later V8 flush, and normal owner completion. The private exit guard
+depends on pinned Node 24.20.0 and fails closed when absent. Complete integration
+capture and strict archived reimport remain pending. This current note leaves
+the earlier dated evidence and deferrals below as history.
+
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
 "Review record"). Historical tickets T1 to T7 are done (see the appendix).
 PR #175 completed CR-16 and the CR-23 contract-test foundation. PR #176

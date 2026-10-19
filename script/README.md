@@ -204,10 +204,25 @@ wrapper is needed; they do not prove those project rules. The verified
 pre-crash flush/stop/seal protocol is implemented. Complete acceptance and unit
 capture passed in order `[acceptance, unit]`: 853 emitted plus 16 portal
 acceptance tests, then 3,544 emitted plus 19 portal unit tests, all with zero
-failures and skips. Both captures are verified. Real integration capture is
-deferred because that group was not selected. The 13 live cases include two
+failures and skips. Both earlier captures are verified. That proof did not
+select integration. The 13 live cases include two
 collecting cases, ten structural cases, and one CRAP case with verified imported
 unit coverage. Only known crash fixtures opt in to the seal
 IPC listener with `THERMUS_COVERAGE_CRASH=1`. Ordinary captured forks have no
 injected message listener; OAuth uses a synchronous prepared nonce without
 one. No approval expands test selection.
+
+The loader follow-up uses capture-manifest version 4 and
+`normal-exit-or-sealed-or-loader-1`. It observes the actual `tsx` loader thread
+through `module.register()` under both capture preload modes for actual
+asynchronous loaders. It verifies a capture/PID/thread/owner/nonce exchange after genuine owner exit listeners finish. It requires an intact
+checkpoint, a distinct later V8 flush, and normal owner completion. The loader
+parks without stopping coverage. A manually emitted exit event cannot stop
+capture. Its private genuine-exit guard is specific to pinned Node 24.20.0;
+missing guard evidence fails closed. A require preload first records an incomplete
+loader participant and the observer binds its owner to that same marker.
+Noncooperating ordinary workers, including the unreferenced esbuild worker from
+a direct require-preload `tsx` invocation, remain unverified. Manifest versions
+1, 2, and 3 keep their original rules. At `c620cf8f`, all 535 real integration tests passed, but four
+raw-only loader threads prevented verified publication. Complete capture and
+strict archived reimport with the new protocol remain pending.

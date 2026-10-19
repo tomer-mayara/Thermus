@@ -105,6 +105,18 @@ Owner decisions on 2026-10-19:
   supply no missing verification evidence. Real integration capture remains
   deferred; loader-thread coverage remains unsupported and unverified.
 
+Current loader follow-up, PR #193, 2026-10-19: the owner requested verified
+capture of the real `tsx` loader threads without replacing the existing tests.
+At `c620cf8f`, all 535 integration tests passed, but strict capture verification
+rejected four raw-only loader threads. That run did not produce verified
+coverage. The follow-up adds a version-4 capture protocol with actual loader and
+owner identities, a nonce-bound shutdown exchange after genuine owner exit,
+and an intact checkpoint plus a distinct later V8 flush. The private genuine-exit
+guard depends on pinned Node 24.20.0 and fails closed when absent. Legacy
+manifests keep their original rules. Complete real integration capture and
+strict archived reimport are pending. This note updates current work only; the
+dated delivery and archival evidence below keeps its original scope and result.
+
 Contents:
 
 1. Summary

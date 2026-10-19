@@ -81,6 +81,7 @@ export function coverageSuitesIn(value: unknown): readonly CoverageSuite[] | und
 
 function captureProtocolIn(record: JsonObject): Pick<VerifiedCoverageProvenance, 'completionProtocol' | 'captureId'> | undefined {
   if (record.completionProtocol === undefined && record.captureId === undefined) return {};
-  if (record.completionProtocol !== 'normal-exit-or-sealed-1' || !isHash(record.captureId)) return undefined;
+  if (record.completionProtocol !== 'normal-exit-or-sealed-1' && record.completionProtocol !== 'normal-exit-or-sealed-or-loader-1') return undefined;
+  if (!isHash(record.captureId)) return undefined;
   return { completionProtocol: record.completionProtocol, captureId: record.captureId };
 }

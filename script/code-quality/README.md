@@ -58,6 +58,10 @@ and parent signal observations live in `coverage/propagation.ts` and
 the cooperating intentional-crash fixture protocol. `coverage/suite-capture.ts`
 owns one suite's capture and archive lifecycle; `coverage/manifest-format.ts`
 checks manifest schema, version, comparison identity, and completion protocol.
+`coverage/loader-contract.ts` defines the loader handshake, `loader-runtime.ts`
+coordinates its owner, and `loader-observer.ts` runs in the actual loader thread.
+`loader-validation.ts` checks participant and owner evidence;
+`loader-checkpoint.ts` checks canonical raw identities, hashes, and the final flush.
 `shared/` owns common argument checks, limits, JSON readers, ordering,
 number calculations, and repository commands. JSON readers retain file-kind
 diagnostics; consumers check their schemas. Text ordering compares UTF-16
@@ -410,8 +414,8 @@ report publication. Compatible own-character execution is unioned across
 processes and selected suites.
 
 Cooperating Node child processes and workers inherit the capture settings.
-Each process/thread needs normal completion evidence or a verified pre-crash
-seal. Other missing, untracked, unflushed, or killed participants reject the
+Each process/thread needs normal completion evidence, verified loader shutdown
+evidence, or a verified pre-crash seal. Other missing, untracked, unflushed, or killed participants reject the
 capture and preserve the earlier report. A child that exits normally with
 status 1 can still contribute complete coverage. An incomplete capture cannot
 be called verified or justify expanding the selected suites.
@@ -440,12 +444,33 @@ Default ESM file workers keep Node's normal argument filtering and have
 verified lifecycle coverage. A default CommonJS eval worker does not execute
 inherited `--import` and stays unverified unless it uses the explicit
 captured-argument adaptation.
-Actual `tsx` entry loaders can create threads without complete shutdown
-evidence. Such captures are rejected unless those threads cooperate. Do not
-ignore raw-only or running loader identities; the emitted-unit and native
-TypeScript portal selections need no `tsx` loader.
+Real `pnpm` and `tsx` entries keep their loader and executable tests. For actual
+asynchronous loaders, both import and require capture preloads register an
+observer with public `module.register()` in the actual loader thread. A persistent request, acknowledgement, and owner
+receipt bind the capture ID, PID, loader and owner thread IDs, and nonce under
+`loaderProtocol: "loader-flush-park-1"`. The evidence files are
+`loader-request-*`, `loader-ack-*`, and `loader-receipt-*`; a `loader-parked`
+marker retains `complete: false` until the verifier checks that exchange.
+Node 24.20.0 runs require preloads in that loader thread too. The preload writes
+an incomplete `loader-awaiting-owner` marker, and the observer adopts the same
+marker after it binds the actual owner. An ownerless participant stays unverified.
+A direct require preload with `node --import tsx` can instead use synchronous
+hooks and start an unreferenced ordinary esbuild worker. The loader protocol
+does not approve that noncooperating worker; the capture still fails strictly.
+Only genuine owner exit, after its exit listeners finish, requests the loader
+flush. A manually emitted `exit` event cannot end capture early. This uses the
+private `process._exiting === true` guard in pinned Node 24.20.0; an absent or
+different value leaves the participant incomplete. The
+[guide](../../docs/implementation/ast-metrics-review.md#capture-provenance-and-reuse)
+links the pinned Node sources and states this implementation limit.
+The loader takes coverage and parks without stopping coverage. Verification
+requires the intact checkpoint, a distinct later V8 flush, matching handshake,
+and a normally completed owner. The complete exchange has a three-second
+deadline. Signal deaths, missing or changed evidence, and raw-only or running
+identities still reject publication. Worker evidence still prevents a pre-crash
+seal. A focused loader fixture does not prove a complete real capture.
 
-The complete real combined capture passed on 2026-10-19 in requested order
+The earlier complete real combined capture passed on 2026-10-19 in requested order
 `[acceptance, unit]`: 853 emitted acceptance tests and 16 portal acceptance
 tests, then 3,544 emitted unit tests and 19 portal unit tests. Every group had
 zero failures and zero skips. Both captures are verified under
@@ -454,20 +479,26 @@ contains 115 production files and 3,430 raw V8 files; its `processes` field
 counts raw files, not distinct processes. `createApplication` was called 89
 times with covered share 1. The proof includes eight sealed unit crash children,
 the busy MCP fake's normal SIGTERM cleanup, and the registration test's clean
-server stop. Real integration capture remains deferred because that complete
-group was not selected; suite-union contracts cover it with doubles. Both collecting live checks passed, with no skips. The latest retained unit
+server stop. That earlier proof did not select the complete integration group; its
+suite-union contracts used doubles. Both collecting live checks passed, with no skips. The latest retained unit
 capture also imported as verified, with 104 production files and 880 raw V8
 files. All 13 affected live cases passed without skips: two collecting cases,
 ten structural cases, and one CRAP case with verified imported unit coverage.
 Final typechecking also passed.
 
+Current loader follow-up: at `c620cf8f`, all 535 real integration tests passed,
+but capture verification rejected four raw-only `tsx` loader threads. Passing
+tests did not make that capture verified. The new loader protocol requires a
+complete real integration capture and strict archived reimport before this
+follow-up can claim verification. That proof is pending.
+
 Schema stays `version: 2` and `measurementVersion: "own-characters-1"`.
-New capture manifests use version 3 with
-`completionProtocol: "normal-exit-or-sealed-1"` and original `captureId`, also
+New capture manifests use version 4 with
+`completionProtocol: "normal-exit-or-sealed-or-loader-1"` and original `captureId`, also
 retained in per-capture provenance. Their raw fingerprint includes coverage,
-lifecycle, seal-request, seal-receipt, and signal-outcome evidence. Legacy version-1 unit and
-version-2 manifests retain their original rules; they are not silently promoted
-to the new protocol.
+lifecycle, seal-request, seal-receipt, signal-outcome, and loader handshake
+evidence. Manifest versions 1, 2, and 3 retain their original rules; they are
+not silently promoted to the new protocol.
 Single-unit reports retain `suite: "unit"`; new nonunit and combined reports
 use a suite array and `provenance.captures` with every original suite identity.
 Version-2 capture manifests retain the suite identity and canonical unit
@@ -938,6 +969,9 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-crash.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-loader-exit.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-loader-refusal.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-loader.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
@@ -1004,6 +1038,10 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-checkpoint.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-manifest.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-runtime.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-validation.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-propagation.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-seal.test.ts | no |
