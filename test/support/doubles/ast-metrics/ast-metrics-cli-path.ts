@@ -6,6 +6,7 @@ import { astMetricsCliFake, gitCliStub } from '../../processes/module-paths.ts';
 
 // The answers of ast-metrics-cli-fake.ts. Without an answer, the fake writes empty reports and exits 0.
 export interface AstMetricsCliAnswers {
+  readonly version?: string;
   // The OpenMetrics text that analyze writes. {root} stands for the working directory of the call.
   readonly metrics?: string;
   // The JSON report that analyze writes for --report-json. {root} stands for the working directory of the call.
@@ -66,6 +67,7 @@ export function pathWithGitStub(t: TestContext, root: string): string {
 
 function answerSettings(folder: string, answers: AstMetricsCliAnswers): Record<string, string> {
   const settings: Record<string, string> = {};
+  if (answers.version !== undefined) settings.AST_METRICS_FAKE_VERSION = answers.version;
   if (answers.metrics !== undefined) {
     settings.AST_METRICS_FAKE_METRICS_FILE = join(folder, 'metrics.txt');
     writeFileSync(settings.AST_METRICS_FAKE_METRICS_FILE, answers.metrics);

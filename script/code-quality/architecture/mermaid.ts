@@ -1,11 +1,11 @@
 // The Mermaid graph of the encoding of docs/implementation/architecture-evolution-plan.md: the border width shows a
 // touched community, the border color its band, and the line of an edge shows a cycle, a new, or a gone dependency.
 import { changeText } from './format.ts';
-import type { ArchitectureMap, Band, MapEdge, MapNode, NodeBand } from './types.ts';
+import { bandTextOf } from './band-label.ts';
+import type { ArchitectureMap, Band, MapEdge, MapNode } from './types.ts';
 
 const cycleStyle = 'stroke:#d03b3b,stroke-width:2px';
 const goneStyle = 'stroke:#999999,stroke-dasharray:4 4';
-const bandSymbols: Readonly<Record<Band, string>> = { good: '●', warning: '▲', critical: '■' };
 
 // The fixed status colors of the plan, in the order of the class lines. A band class sets the color only: a width of its
 // own would replace the thick border of a touched community, because a later class wins.
@@ -70,13 +70,6 @@ function nodeTextOf(node: MapNode): string {
   const title = node.status === 'kept' ? node.label : `${node.label} · ${node.status}`;
   const lines = [title.replace(/["`]/g, "'"), numbersOf(node).join(' · ')];
   return (node.band === undefined ? lines : [...lines, bandTextOf(node.band)]).join('<br/>');
-}
-
-// The band never comes as a color alone: its line has the symbol and the word, such as ■ critical: 6 fn ≥ 30 (+2). The
-// minus sign is U+2212.
-function bandTextOf({ band, count, change = 0 }: NodeBand): string {
-  const sign = change > 0 ? '+' : '−';
-  return `${bandSymbols[band]} ${band}: ${count} fn ≥ 30${change === 0 ? '' : ` (${sign}${Math.abs(change)})`}`;
 }
 
 // A community without code, such as one of types only, has no maintainability.

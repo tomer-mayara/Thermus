@@ -66,7 +66,7 @@ for (const [signal, status] of [['SIGTERM', 143], ['SIGINT', 130]] as const) {
     const repository = baseRepository(t);
     const doubles = baseDoublesOnPath(t, { delayMs: 1_500 });
 
-    const result = await runScript(t, astMetricsSnapshotScript, { args, cwd: repository.root, env: doubles.env, stop: { signal, when: () => doubles.cli.calls().length > 0 } });
+    const result = await runScript(t, astMetricsSnapshotScript, { args, cwd: repository.root, env: doubles.env, stop: { signal, when: () => doubles.cli.calls().some(({ argv }) => argv[0] === 'analyze') } });
 
     assert.equal(result.stderr, `ast-metrics-snapshot: Stopped by ${signal}. The temporary worktree is removed.\n`);
     assert.equal(result.stdout, '');

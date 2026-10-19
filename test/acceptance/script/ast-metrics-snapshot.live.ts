@@ -25,6 +25,7 @@ function snapshotIn(path: string): Snapshot {
 }
 
 function assertSnapshotOfHead(snapshot: Snapshot): void {
+  assert.equal(snapshot.tool, '0.43.1');
   const labels = snapshot.communities.map(({ label }) => label);
   assert.ok(labels.includes('shared kernel'), labels.join(', '));
   assert.equal(new Set(labels).size, labels.length, labels.join(', '));

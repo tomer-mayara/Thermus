@@ -97,14 +97,14 @@ test('Given a community that has one function at 30 or more fewer than in the ba
   assert.deepEqual(nodeLines(report), ['  c_shrunk["shrunk<br/>1 file · paths 10<br/>▲ warning: 1 fn ≥ 30 (−1)"]']);
 });
 
-test('Given a gone community with a function at 30 or more in the base and a gone one without, when the report is made, then each shows its base count with warning or good, and a new community shows its head count without a false new-function claim', () => {
+test('Given a gone community with a function at 30 or more in the base and a gone one without, when the report is made, then each shows its base count and any incomplete estimate, and a new community shows its head count without a false new-function claim', () => {
   const base = snapshotOf([community('0', 'calm', [['small', 4]]), community('1', 'old', [['big', 7]])]);
   const head = snapshotOf([community('2', 'young', [['big', 7], ['fresh', 6]])]);
 
   const report = reportOf(base, head, []);
 
   assert.deepEqual(nodeLines(report), [
-    '  c_calm["calm · gone<br/>1 file · paths 10<br/>● good: 0 fn ≥ 30"]',
+    '  c_calm["calm · gone<br/>1 file · paths 10<br/>assessment incomplete: 1 unknown; 0 known fn ≥ 30"]',
     '  c_old["old · gone<br/>1 file · paths 10<br/>▲ warning: 1 fn ≥ 30"]',
     '  c_young["young · new<br/>1 file · paths 10<br/>▲ warning: 2 fn ≥ 30"]',
   ]);
@@ -139,7 +139,7 @@ test('Given nodes that are all good, when the report is made, then the block def
   assert.deepEqual(classLines(report), ['  classDef touched stroke-width:3px', '  classDef gone stroke-dasharray:4 4,color:#999999', '  classDef good stroke:#0ca30c', '  class c_calm touched', '  class c_calm,c_quiet good']);
 });
 
-const bandLegend = 'border color = the CRAP band of the community (● good: no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers =';
+const bandLegend = 'border color = the CRAP band of the community (● good: complete assessment, no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers =';
 
 test('Given a coverage report, when the report is made, then the summary line ends with the count of the functions at 30 or more in all of src/, files in no community included, the legend names the bands before the numbers, and no line says that the bands need the coverage', () => {
   const base = snapshotOf([community('0', 'known', [['big', 5]])], { 'src/loose.ts': [['wide', 9]] });
@@ -148,7 +148,7 @@ test('Given a coverage report, when the report is made, then the summary line en
   const report = reportOf(base, head, ['src/known.ts']);
 
   assert.equal(report.split('\n')[2], 'Modularity 0.50 → 0.50 · cross share 0.25 → 0.25 · cycles 0 → 0 · communities 1 → 1 · functions ≥ 30: 2 → 4');
-  assert.equal(report.split('\n')[4], '```mermaid');
+  assert.equal(report.split('\n')[4], 'Tool versions: base ast-metrics unknown; head ast-metrics unknown.');
   assert.ok(report.includes(bandLegend), report);
   assert.equal(report.includes('Bands need the coverage'), false, report);
 });

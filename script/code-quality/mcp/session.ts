@@ -3,6 +3,7 @@
 import { ProtocolError } from '@modelcontextprotocol/client';
 import type { AstMetricsWork } from './server.ts';
 import { ServerProcess } from './server-process.ts';
+import type { ToolVersionPolicy } from '../shared/tool-version.ts';
 import { CommandError, notInstalled } from '../shared/repository.ts';
 
 function failureOf(error: unknown): CommandError {
@@ -13,7 +14,7 @@ function failureOf(error: unknown): CommandError {
 }
 
 // The repository root, which the server analyzes, or the root and the one folder in it that the server analyzes.
-export type AnalyzedTree = string | { readonly root: string; readonly folder: string };
+export type AnalyzedTree = string | ({ readonly root: string; readonly folder?: string } & ToolVersionPolicy);
 
 // Each failure, also the end of the deadline, becomes a CommandError.
 export async function withAstMetricsServer<T>(tree: AnalyzedTree, timeoutMs: number, work: AstMetricsWork<T>): Promise<T> {
@@ -25,7 +26,7 @@ export async function withAstMetricsServer<T>(tree: AnalyzedTree, timeoutMs: num
     controller.signal.addEventListener('abort', () => reject(timeout), { once: true });
   });
   try {
-    return await Promise.race([server.run(work, { signal: controller.signal, timeout: timeoutMs }), timedOut]);
+    return await Promise.race([server.run(work, { signal: controller.signal, timeout: timeoutMs }, typeof tree === 'string' ? {} : tree), timedOut]);
   } catch (error) {
     throw controller.signal.aborted ? timeout : failureOf(error);
   } finally {

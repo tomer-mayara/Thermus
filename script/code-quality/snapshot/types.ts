@@ -10,6 +10,7 @@ import type { FunctionIdentity, SourceEvidence } from '../identity/types.ts';
 // snapshots diff well.
 
 export interface Snapshot {
+  readonly tool?: string;
   readonly version: 1;
   // The commit of HEAD of the analyzed tree and its committer date (ISO 8601): with --base, the merge base. The files of
   // the working tree can hold changes that are not committed.

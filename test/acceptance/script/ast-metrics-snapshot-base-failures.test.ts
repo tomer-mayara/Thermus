@@ -21,7 +21,7 @@ test('Given an analysis of the merge base that exits 2 with an error text, when 
   assert.equal(result.stderr, 'ast-metrics-snapshot: ast-metrics analyze failed with exit status 2. Its stderr: The analysis stopped. No report.\n');
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
-  const [analysis, ...otherCalls] = doubles.cli.calls();
+  const [, analysis, ...otherCalls] = doubles.cli.calls();
   assert.deepEqual([dirname(analysis.cwd), otherCalls], [doubles.temporaryFolder, []]);
   assert.deepEqual(worktreesOf(repository), [repository.root]);
   assert.deepEqual(foldersLeftIn(doubles), []);

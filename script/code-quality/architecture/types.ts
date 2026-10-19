@@ -9,6 +9,7 @@ import type { Snapshot, SnapshotCommunity, SnapshotFile, SnapshotFunction } from
 // script/code-quality/ast-metrics-snapshot.ts has all of them, and so has a snapshot file after its check. The trend keeps the global
 // numbers and the numbers of each community, and the date of the commit names its record.
 export interface MapSnapshot {
+  readonly tool?: string;
   readonly commit: string;
   readonly date: string;
   readonly provenance?: InputIdentity;
@@ -42,7 +43,10 @@ export interface MapSources {
 export type Band = 'good' | 'warning' | 'critical';
 
 export interface NodeBand {
-  readonly band: Band;
+  readonly band?: Band;
+  // An unknown covered share prevents a complete assessment.
+  readonly unknown?: number;
+  readonly unmeasuredFiles?: number;
   // The functions that are over: in the head, or in the base for a gone community.
   readonly count: number;
   // Head minus base, and the band of the base, for a kept community.

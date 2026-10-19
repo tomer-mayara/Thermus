@@ -11,12 +11,25 @@ again before you change the process.
 
 ## Installation
 
-The commands need the `ast-metrics` executable on PATH. On macOS, install it
+Delta, review, MCP, snapshot, and online architecture need the `ast-metrics`
+executable on PATH. On macOS, install it
 from its Homebrew tap: `brew install ast-metrics/tap/ast-metrics`. Other
 systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
-`ast-metrics version`: this guide is verified with 0.43.1. The commands under
-`script/code-quality/` need no build; run them from the repository root with
-`pnpm exec node`.
+`ast-metrics version`: the wrappers pin 0.43.1. CLI calls check that
+subcommand, and MCP calls check initialization's `serverInfo.version`. Each
+operation checks before it consumes results and reuses the checked value in
+its child operations. In a composite snapshot or architecture run, every MCP
+initialization must also match the checked CLI version, even with an
+override. A mismatch gives `ast-metrics <v> is not the pinned
+<p>; run with --allow-tool-version to continue.` Pass `--allow-tool-version`
+to the outer command to permit another actual version throughout that run.
+The override does not change the pin. A pin change needs the applicable live
+contracts and fixture review.
+
+Help and offline architecture rendering start no tool and check no installed
+version. Coverage collection does not invoke ast-metrics and has no tool
+version option. The commands under `script/code-quality/` need no build; run
+them from the repository root with `pnpm exec node`.
 
 ## The commands
 
@@ -71,7 +84,7 @@ and adds no complete suite. A build only prepares emitted test files.
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare]
+pnpm exec node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--allow-tool-version]
 ```
 
 The delta is each TypeScript file that the branch adds or changes against the
@@ -111,7 +124,7 @@ split into focused files raises it more than a local rewrite.
 ### Review the delta: `script/code-quality/ast-metrics-review.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-review.ts [--base REF] [--max-findings N]
+pnpm exec node script/code-quality/ast-metrics-review.ts [--base REF] [--max-findings N] [--allow-tool-version]
 ```
 
 The command runs `ast-metrics review` against `--base` (default
@@ -161,6 +174,7 @@ follow your edits. A call takes about one second.
   always change together.
 - `call` reaches every tool of the server; `tools` lists them.
 
+Each MCP subcommand accepts the common `--allow-tool-version` override.
 When `--limit` or `--max-cyclomatic` is absent, the wrapper omits that tool
 argument and delegates the default to ast-metrics.
 
@@ -311,7 +325,8 @@ it does not consult the caller's checkout or need Git.
 
 The architecture command reads the report to give each matched measured
 function its CRAP and each community its band (see "Show the architecture
-delta"). Zero-own functions remain unmatched and get no CRAP. An unmeasured
+delta"). Zero-own functions remain unmatched and get no exact CRAP. Their
+path count can still prove a violation at 30 or more. An unmeasured
 entry also blocks a measured same-name entry from supplying a share; name
 equality alone cannot distinguish them. After a change of `src/`, collect
 coverage again if no current valid report is available and both complete
@@ -320,7 +335,7 @@ parts of the unit suite are within scope.
 ### Take a snapshot: `script/code-quality/ast-metrics-snapshot.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS]
+pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS] [--allow-tool-version]
 ```
 
 The command writes the snapshot of the working tree to
@@ -329,6 +344,8 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
 `ast-metrics mcp src` with `get_communities` and `get_file_metrics` for each
 `src/` file (about one second on this repository). The file holds:
 
+- `tool`: the actual checked ast-metrics version, including an explicitly
+  permitted version. Legacy snapshots can omit it; their version is unknown.
 - `commit` and `date`: HEAD and its committer date. The files can hold
   changes that are not committed.
 - `global`: modularity, cross share, and cycles from `get_communities`, the
@@ -398,7 +415,7 @@ the diagnostic then names the folder that stays.
 ### Show the architecture delta: `script/code-quality/ast-metrics-architecture.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--record] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
+pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--record] [--trend-store DIR] [--timeout-ms MS] [--out FILE] [--allow-tool-version]
 ```
 
 The command prints the architecture delta of `src/`, the complexity table of
@@ -418,6 +435,11 @@ for those snapshots. `--touched` supplies root-relative paths separated by
 commas, with no rename proof. With both options, `--touched` selects the
 rows while `--changes` supplies independent correspondence evidence. Without
 either option, there are no changed-file rows. See the [offline change format](ast-metrics-change-request.md#a4-offline-change-metadata).
+
+Different or missing snapshot versions produce `Tool versions: base
+ast-metrics <version or unknown>; head ast-metrics <version or unknown>.`
+Equal known versions need no notice.
+Offline rendering uses the stored values and checks no installed tool.
 
 The coverage comes from `--coverage` (a report of the coverage command,
 relative to the current folder), else from `ast-report/coverage.json` in the
@@ -460,8 +482,9 @@ appears above it. Equal snapshots with no touched files keep every node and
 dependency without change arrows or touched borders; compatible coverage
 still supplies the bands.
 Without valid coverage, keep the graph and the specific withholding notice,
-without bands. Invalid report envelopes still stop the command. CR-07
-incomplete-assessment behavior remains follow-up work.
+without bands. Invalid report envelopes still stop the command. With valid
+coverage, individual unknowns can still make an assessment incomplete; the
+band rules below explain that separate case.
 
 Paste the fenced `mermaid` block and its legend unchanged into every pull
 request body, including a pull request that changes only documents or has
@@ -503,7 +526,7 @@ decision paths in the snapshot and share is its covered share in the
 coverage report. A function at 30.0 or more is over the limit. The function
 of the report has the same name in the entry of the same path, with the name
 that V8 gives: ast-metrics names a method `module\Class.method`, V8 names it
-`method`, and V8 names a constructor `Class`. A function gets no CRAP and
+`method`, and V8 names a constructor `Class`. A function gets no exact CRAP and
 counts as unmatched when it is anonymous (also a method without a name, such
 as `module\Class.`), when the file of the snapshot or of the report has its
 name twice, or when the report has the file but not the name, including a zero-own
@@ -518,8 +541,9 @@ dated observations, not assertions about the current tree.
 
 The base tree gets no coverage run, so its CRAP is a head-derived estimate.
 A proven base/head function pair uses the base decision paths with the head
-covered share. A base function without a proven head partner has no estimated
+covered share. A base function without a proven head partner has no exact estimated
 CRAP. Removed functions and files remain unknown; they do not get zero share.
+Its path count can still prove a lower-bound violation at 30 or more.
 The report counts unknown base estimates separately, including those of
 removed functions. Equal supported trees give equal counts.
 
@@ -538,18 +562,37 @@ evidence limit classification to identity unknown. Offline readers never
 read the caller's checkout to fill the gap. Unknown identity is not called
 new or worse.
 
-The bands: a community is good when none of its assessed functions is at
-CRAP 30 or more, warning when some are and none is proven added or worse,
-and critical when one is proven added or worse. A proven pair is worse when
-the head CRAP is at least 30 and either crosses 30 or exceeds the base value.
-A proven new function at 30 or more is added. Unknown correspondence gives
-neither claim. A gone community uses its known base estimates; base unknowns
-remain visible. These rules also apply to changed-file rows and the list
+Without a covered share, CRAP is at least the decision paths. An unmatched
+function with 30 or more paths is therefore a known violation. It counts
+in risk totals and displays `≥ <paths>` rather than an exact value. A
+function below 30 paths with unknown coverage has unknown assessment; the
+lower bound does not establish that it passes. Zero-own-character functions
+follow these same rules.
+
+The bands: a community is good only when every function is assessed and
+none reaches CRAP 30. It is warning when some are known violations and
+none is proven added or worse, and critical when one is proven added or
+worse. A proven pair is worse when its exact head CRAP is at least 30 and
+either crosses 30 or exceeds its exact base value. A lower bound alone
+does not prove worsening against an unknown base value. A proven new
+function at 30 or more, including a lower bound, is added. Unknown
+correspondence gives neither claim. A gone community uses its known base
+estimates; base unknowns remain visible. These rules also apply to
+changed-file rows and the list
 below the table. `Unknown function identity: N (no proven declaration or
 unique unchanged body/signature correspondence).` appears when identity
 unknowns exist, even without coverage. Compatible coverage always adds
 `Base functions without an estimated covered share: N.` after complexity.
-CR-07's incomplete-coverage bands remain follow-up work.
+The incomplete count includes all functions without a share, including
+known lower-bound violations and zero-own exclusions.
+A community with unknown assessment cannot establish an unqualified good
+band. Known violations can still justify warning or critical, followed by
+`; assessment incomplete: N unknown` in the node text. Without a justified
+band, the node says `assessment incomplete: N unknown; 0 known fn ≥ 30`
+and has no band color. Missing function metrics count separately as
+`1 unmeasured file`, without an invented function count. Both cases can
+appear together as `assessment incomplete: 2 unknown; 1 unmeasured file`.
+These rules add no fourth band.
 
 The complexity section has the heading `## Complexity of the changed files`
 and a table with the columns `File`, `Maintainability`, `Decision paths`, and
@@ -573,16 +616,22 @@ pull request that changes only documents.
 With coverage, the column `CRAP ≥ 30` comes after `Decision paths`: the
 count of the functions at CRAP 30 or more of the file in the base and in the
 head, such as `1 → 2 ↑1`, `new → 2`, or `3 → gone`, and `not measured` for a
-side without a function that has a CRAP, such as a file of types or a file
-with unmatched functions only. After the table come the heading
+side without an assessed function or a known lower-bound violation, such
+as a file of types or a file with only unmatched functions below 30 paths.
+After the table come the heading
 `### Functions at CRAP 30 or more, added or worse` and one line for each
 such function of the changed files, sorted by path and name, such as
 ``- `src/x.ts` `name`: paths 12, covered 0.25, CRAP 72.8 (base 41.0)``, with
 `(base new)` for an added function, or the line `None.`. A method shows as
 `Class.method`, without the module, which the path names. The last line is
 `Unmatched functions: <n> (anonymous, duplicate, or not in the coverage).`,
-the count of the functions of the changed files that have no CRAP. These
-bands are T6 of the [evolution plan](architecture-evolution-plan.md), which
+the count of the functions of the changed files that have no exact CRAP,
+including known lower-bound violations. Directly below that summary, the
+report lists unmeasured functions in changed files with at least five paths,
+sorted by path and name, for example
+``- `src/x.ts` `(anonymous)`: paths 5, covered unknown, CRAP ≥ 5``. Anonymous
+functions are displayed without a name match. These bands are T6 of the
+[evolution plan](architecture-evolution-plan.md), which
 gives their reasons and their limits.
 
 #### The trend
@@ -604,7 +653,8 @@ requests commit its files (step 7 of the process). It holds one JSON file for
 each commit of `main` that a pull request used as its base, named
 `<date>-<commit8>.json`: the day of the committer date of the commit in the
 time zone of the commit, and the first eight characters of the commit. A file
-holds `version` 1, the `commit`, its `date`, the global numbers of the
+holds `version` 1, the actual snapshot `tool` version when known, the
+`commit`, its `date`, the global numbers of the
 snapshot of the merge base (`modularity`, `crossShare`, `cycles` as a count,
 `maintainability`, `paths`, `files`, `functions`, and with coverage
 `functionsOver30`), and each community, sorted by label, with its `label`,
@@ -653,6 +703,12 @@ produce another estimate for one base, but the stored value belongs to the
 first recording pull request. Missing, stale, or unverified coverage gives
 absent count fields, never zero. Existing legacy counts stay immutable and
 are labeled legacy unknown.
+
+When the displayed records and head contain different tool versions, the
+trend appends `Trend tool versions: <commit8>: ast-metrics X; this pull request: ast-metrics Y.`
+The notice associates every displayed record with its commit prefix and the
+head with `this pull request`, in table order. Absent legacy versions are
+`unknown`.
 
 Nobody runs anything at merge time. The trend therefore lags one pull
 request behind `main`, and a commit that no pull request records as a base

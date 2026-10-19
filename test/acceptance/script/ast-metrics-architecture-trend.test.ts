@@ -44,10 +44,10 @@ const scenarios: readonly TrendScenario[] = [
     name: 'Given compatible head coverage, when recording an ancestor, then history says estimate and the head says measured',
     given: 'compatible coverage', run: 'record',
     expected: {
-      code: 0, records: 1, stdout: /4 \(estimate\)[\s\S]*4 \(measured\)/,
-      record: () => ({ functionsOver30: 4 }),
+      code: 0, records: 1, stdout: /5 \(estimate\)[\s\S]*5 \(measured\)/,
+      record: () => ({ functionsOver30: 5 }),
       crap: ({ snapshot }) => ({ kind: 'head-derived-estimate', coverageCommit: snapshot.commit, sourceFingerprint: snapshot.provenance.sourceFingerprint, unknownFunctions: 2 }),
-      communities: { auth: 1 },
+      communities: { auth: 2 },
     },
   },
 ];

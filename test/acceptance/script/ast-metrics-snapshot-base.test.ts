@@ -22,7 +22,7 @@ function snapshotIn(path: string): SnapshotParts {
 }
 
 function workingFoldersOfAllCalls(doubles: BaseSnapshotDoubles): string[] {
-  return [...new Set([...doubles.cli.calls().map(({ cwd }) => cwd), ...doubles.server.requests().map(({ cwd }) => cwd)])];
+  return [...new Set([...doubles.cli.calls().filter(({ argv }) => argv[0] !== 'version').map(({ cwd }) => cwd), ...doubles.server.requests().map(({ cwd }) => cwd)])];
 }
 
 test('Given a branch that changes one src/ file and adds one, and a main that moved on after the fork, when the snapshot runs with --base main, then ast-report/snapshot-base.json holds the files of the merge base with their numbers and names the merge base and its date, from the calls in a temporary worktree', { timeout }, async (t) => {
@@ -47,7 +47,7 @@ test('Given a branch that changes one src/ file and adds one, and a main that mo
   const folders = workingFoldersOfAllCalls(doubles);
   assert.equal(folders.length, 1, folders.join(', '));
   assert.deepEqual([dirname(folders[0]), basename(folders[0]).startsWith(worktreePrefix)], [doubles.temporaryFolder, true], folders[0]);
-  assert.deepEqual(doubles.cli.calls().map(({ argv }) => argv[0]), ['analyze', 'mcp']);
+  assert.deepEqual(doubles.cli.calls().map(({ argv }) => argv[0]), ['version', 'analyze', 'mcp']);
   assert.deepEqual(doubles.server.calls().map(({ tool, arguments: values }) => [tool, values]), [
     ['get_communities', { with_members: true }],
     ...sourceFiles.map((path) => ['get_file_metrics', { path }]),
@@ -77,7 +77,7 @@ test('Given a snapshot of the merge base that succeeds, when the command ends, t
   assert.equal(result.code, 0, result.stderr);
   assert.deepEqual(worktreesOf(repository), [repository.root]);
   assert.deepEqual(foldersLeftIn(doubles), []);
-  const [analysis] = doubles.cli.calls();
+  const [, analysis] = doubles.cli.calls();
   assert.equal(dirname(analysis.cwd), doubles.temporaryFolder);
   assert.equal(existsSync(analysis.cwd), false, `The worktree ${analysis.cwd} stays.`);
 });

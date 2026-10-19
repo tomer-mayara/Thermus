@@ -2,7 +2,7 @@
 // 3): the global numbers of the snapshot and the numbers of each community, and nothing for each file, so that a record
 // stays small and its numbers stay comparable from commit to commit. The record is pure, so that its rules have unit
 // tests without git and ast-metrics.
-import * as bands from './bands.ts';
+import * as riskCounts from './risk-counts.ts';
 import type { FileCrap } from './crap.ts';
 import { trendBasisOf, type TrendCoverage, type TrendCrapBasis } from './trend-basis.ts';
 import { textOrder } from './order.ts';
@@ -23,6 +23,7 @@ interface TrendCommunity {
 // not have is absent. cycles is the count of the cycles between communities.
 export interface TrendRecord {
   readonly version: 1;
+  readonly tool?: string;
   readonly commit: string;
   readonly date: string;
   readonly modularity: number;
@@ -39,7 +40,7 @@ export interface TrendRecord {
 }
 
 // The numbers of one row of the trend table.
-export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30' | 'crap'>;
+export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'tool' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30' | 'crap'>;
 
 // The CRAP of each file of the snapshot, by path, as the CRAP delta gives it.
 type FilesCrap = ReadonlyMap<string, FileCrap>;
@@ -50,8 +51,8 @@ function trendRecordOf(snapshot: MapSnapshot, crap: FilesCrap | undefined, cover
   const assessed = coverage === undefined ? undefined : crap;
   const communities = [...snapshot.communities].sort((first, second) => textOrder(first.label, second.label));
   return {
-    version: 1, commit: snapshot.commit, date: snapshot.date,
-    modularity, crossShare, cycles: cycles.length, maintainability, paths, files, functions, functionsOver30: assessed && bands.totalCountOf(assessed),
+    version: 1, tool: snapshot.tool, commit: snapshot.commit, date: snapshot.date,
+    modularity, crossShare, cycles: cycles.length, maintainability, paths, files, functions, functionsOver30: assessed && riskCounts.totalCountOf(assessed),
     communities: communities.map((community) => trendCommunityOf(community, assessed)),
     sourceFingerprint: snapshot.provenance?.sourceFingerprint,
     crap: assessed && coverage && trendBasisOf(coverage, assessed),
@@ -60,7 +61,7 @@ function trendRecordOf(snapshot: MapSnapshot, crap: FilesCrap | undefined, cover
 
 function trendCommunityOf(community: MapCommunity, crap: FilesCrap | undefined): TrendCommunity {
   const { label, files, loc, maintainability, paths } = community;
-  return { label, files, loc, maintainability, paths, functionsOver30: crap && bands.countOf(bands.memberFunctionsOf(crap, community)) };
+  return { label, files, loc, maintainability, paths, functionsOver30: crap && riskCounts.countOf(riskCounts.memberFunctionsOf(crap, community)) };
 }
 
 export function trendRecordsOf(sources: MapSources, delta: CrapDelta | undefined) {

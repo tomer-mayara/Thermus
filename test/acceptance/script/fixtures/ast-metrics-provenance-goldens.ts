@@ -19,6 +19,7 @@ export function offlineProvenanceMarkdown({ notice, commit }: CoverageAssessment
   const graph = commit === undefined ? baseGraph : emptyCoverageGraph;
   return ['## Architecture of src/: base a1b2c3d4 → head', '',
     `${summary}${commit === undefined ? '' : ' · functions ≥ 30: 0 → 0'}`, ...assessment, '',
+    'Tool versions: base ast-metrics unknown; head ast-metrics unknown.', '',
     'The map did not change.', '', ...graph, '', ...noProductionFile, ...footer, '', ...noTrend, ''].join('\n');
 }
 
@@ -29,7 +30,7 @@ export function repositoryProvenanceMarkdown(base: string, { notice, commit }: C
   const trend = offline ? noTrend : [trendHeading, '', 'No snapshot of main in the trend store yet.'];
   return [`## Architecture of src/: base ${base.slice(0, 8)} → head`, '',
     `${summary}${commit === undefined ? '' : ' · functions ≥ 30: 0 → 0'}`, ...assessment, '',
-    'The map did not change.', '', ...repositoryGraph(commit !== undefined), '', ...noProductionFile,
+    ...(commit === undefined ? ['The map did not change.', ''] : []), ...repositoryGraph(commit !== undefined), '', ...noProductionFile,
     '', 'Unknown function identity: 5 (no proven declaration or unique unchanged body/signature correspondence).',
     ...footer, '', ...trend, ''].join('\n');
 }

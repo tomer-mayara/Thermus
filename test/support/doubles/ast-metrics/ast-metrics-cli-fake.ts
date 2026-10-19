@@ -71,7 +71,9 @@ if (settings.AST_METRICS_FAKE_LOG) {
 }
 const commandName = String(args[0]);
 const command = new Map([['analyze', analyze], ['review', review]]).get(commandName);
-if (commandName === 'mcp') {
+if (commandName === 'version') {
+  process.stdout.write(`◉ AST Metrics > Version\n\n  Current version      ${settings.AST_METRICS_FAKE_VERSION ?? '0.43.1'}\n  OS                   linux\n  Architecture         amd64\n`);
+} else if (commandName === 'mcp') {
   // The fake of the server reads its settings and starts to serve when it loads.
   await import(new URL('./ast-metrics-mcp-fake.ts', import.meta.url).href);
 } else if (command) {

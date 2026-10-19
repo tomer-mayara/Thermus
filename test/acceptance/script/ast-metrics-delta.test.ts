@@ -38,7 +38,7 @@ test('Given a branch with a committed change, a committed new file, an edit with
     '',
   ].join('\n'));
   assert.equal(result.code, 1);
-  assert.deepEqual(fake.calls(), [{ argv: ['analyze', '--compare-with=main', ...reportArgs], cwd: repository.root }]);
+  assert.deepEqual(fake.calls(), [{ argv: ['version'], cwd: repository.root }, { argv: ['analyze', '--compare-with=main', ...reportArgs], cwd: repository.root }]);
 });
 
 test('Given a branch that changes no TypeScript file, when the check runs, then it says so, passes, and does not run ast-metrics', { timeout }, async (t) => {
@@ -90,7 +90,7 @@ test('Given --no-compare, when the check runs, then ast-metrics gets no comparis
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, '  90.0  src/a.ts\nResult: all 1 production file at 85 or more.\n');
   assert.equal(result.code, 0);
-  assert.deepEqual(fake.calls(), [{ argv: ['analyze', ...reportArgs], cwd: repository.root }]);
+  assert.deepEqual(fake.calls(), [{ argv: ['version'], cwd: repository.root }, { argv: ['analyze', ...reportArgs], cwd: repository.root }]);
 });
 
 test('Given origin/main and no --base, when the check runs, then it compares with origin/main', { timeout }, async (t) => {
@@ -103,5 +103,5 @@ test('Given origin/main and no --base, when the check runs, then it compares wit
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, '  90.0  src/a.ts\nResult: all 1 production file at 85 or more.\nComparison with origin/main: ast-report/compare.html\n');
   assert.equal(result.code, 0);
-  assert.deepEqual(fake.calls().map((call) => call.argv), [['analyze', '--compare-with=origin/main', ...reportArgs]]);
+  assert.deepEqual(fake.calls().map((call) => call.argv), [['version'], ['analyze', '--compare-with=origin/main', ...reportArgs]]);
 });

@@ -31,6 +31,7 @@ function snapshotIn(path: string): unknown {
 // (61.24 × 100 + 88.8 × 50 + 70.06 × 50) / 200 = 70.335, so 70.3. The plain mean of the three files is 73.4, and with
 // src/kernel/ids.ts (no index, 10 lines) as zero it is 67.0. For auth: (61.24 × 100 + 88.8 × 50) / 150 = 70.43.
 const expectedSnapshot = {
+  tool: '0.43.1',
   version: 1,
   global: { modularity: 0.42, crossShare: 0.33, cycles: [['admin', 'auth']], maintainability: 70.3, paths: 13, files: 4, functions: 5 },
   communities: [
@@ -92,7 +93,8 @@ test('Given the doubles, when the snapshot runs, then the analysis and the MCP s
   const result = await runScript(t, astMetricsSnapshotScript, { cwd: repository.root, env: doubles.env });
 
   assert.equal(result.code, 0, result.stderr);
-  const [analysis, session, ...otherCalls] = doubles.cli.calls();
+  const [version, analysis, session, ...otherCalls] = doubles.cli.calls();
+  assert.deepEqual(version, { argv: ['version'], cwd: repository.root });
   assert.deepEqual(otherCalls, []);
   assert.match(analysis.argv[1], /^--report-json=\/.+\/report\.json$/);
   assert.deepEqual([analysis.argv.toSpliced(1, 1), analysis.cwd], [['analyze', '--report-summary=false', 'src'], repository.root]);

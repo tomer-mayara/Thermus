@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import { Client, type RequestOptions } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+import { checkServerToolVersion, type ToolVersionPolicy } from '../shared/tool-version.ts';
 import { CommandError } from '../shared/repository.ts';
 import { serverOf, type AstMetricsWork } from './server.ts';
 
@@ -66,12 +67,13 @@ export class ServerProcess {
 
   // The SDK waits without end for a write to a server that has exited, and its request timeout does not cover the
   // notifications/initialized message. So the exit of the server also ends the call.
-  run<T>(work: AstMetricsWork<T>, callOptions: RequestOptions): Promise<T> {
-    return Promise.race([this.#call(work, callOptions), this.#exit]);
+  run<T>(work: AstMetricsWork<T>, callOptions: RequestOptions, policy: ToolVersionPolicy): Promise<T> {
+    return Promise.race([this.#call(work, callOptions, policy), this.#exit]);
   }
 
-  async #call<T>(work: AstMetricsWork<T>, callOptions: RequestOptions): Promise<T> {
+  async #call<T>(work: AstMetricsWork<T>, callOptions: RequestOptions, policy: ToolVersionPolicy): Promise<T> {
     await this.#client.connect(this.#transport, callOptions);
+    checkServerToolVersion(this.#client.getServerVersion()?.version, policy);
     return work(serverOf(this.#client, callOptions));
   }
 

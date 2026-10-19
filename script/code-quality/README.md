@@ -9,8 +9,13 @@ violation already on `main` is not a third exception. Run the commands from
 the repository root; the static commands need no build. A coverage run builds
 compiled Node unit tests before it runs both complete unit parts. Delta, review, MCP,
 snapshot, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
-on macOS; the process is
-verified with 0.43.1). The
+on macOS). The wrappers pin 0.43.1. They check CLI results with
+`ast-metrics version` and MCP results with the initialization response.
+`--allow-tool-version` permits another actual version for that run and its
+child operations. A mismatch otherwise fails before results are consumed.
+Help, offline architecture rendering, and coverage collection need no
+installed ast-metrics. A pin change needs the applicable live contracts and
+fixture review. The
 [ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
 explains what each command reports, the configuration, and the limits of the
 tool.
@@ -45,12 +50,13 @@ tests: a focused caller must not expand it indirectly.
 ## Measure the delta
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--allow-tool-version] [--help]
 
 Options:
   --base REF      Git ref to compare with (default: origin/main)
   --min SCORE     Goal for each production file (integer 0..128; default: 85)
   --no-compare    Do not add the comparison with REF to the HTML report
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h      Show this help
 ```
 
@@ -89,6 +95,7 @@ Options:
   --limit N           complex, risky: the maximum number of results (default: delegated to ast-metrics)
   --max-cyclomatic N  complex: show the items above this complexity (default: delegated to ast-metrics)
   --timeout-ms MS     Deadline of the MCP call (100..300000; default: 60000)
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h          Show this help
 ```
 
@@ -112,11 +119,12 @@ listed scope.
 ## Review the delta
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-review.ts [--base REF] [--max-findings N] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-review.ts [--base REF] [--max-findings N] [--allow-tool-version] [--help]
 
 Options:
   --base REF          Git ref to compare with (default: origin/main)
   --max-findings N    Most findings in the report (integer 1..1000; default: 50)
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h          Show this help
 ```
 
@@ -236,7 +244,7 @@ listed scope.
 ## Show the architecture delta
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--allow-tool-version] [--help]
 
 Options:
   --base REF            The base of the pull request (default: origin/main)
@@ -254,6 +262,7 @@ Options:
   --timeout-ms MS       Deadline of each MCP session (100..300000; default: 60000)
   --out FILE            Also write the Markdown to FILE, relative to the current
                         folder
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h            Show this help
 ```
 
@@ -299,6 +308,11 @@ status 0 when the Markdown is printed; 1 with one diagnostic line for a failure.
 gives the matching rule, the encoding, the bands, the rules of the table, and
 the trend store.
 
+Different or missing snapshot versions produce `Tool versions: base
+ast-metrics <version or unknown>; head ast-metrics <version or unknown>.`
+Equal known versions need no notice.
+Offline rendering uses the stored values and checks no installed tool.
+
 Coverage must match the supplied head snapshot's source and input
 fingerprints, runtime, compiler, unit suite, and measurement version.
 `--no-coverage` ignores default coverage and conflicts with `--coverage`.
@@ -326,20 +340,41 @@ base body or unresolved move candidate. Name equality alone, copies, duplicate b
 and changed extractions cannot prove correspondence. Legacy snapshots stay
 readable, but missing evidence remains identity unknown; offline rendering
 never reads the caller's checkout for proof. Unknown identity is not called
-added or worse. A base function without a proven head partner has no CRAP
-estimate, including a removed function. The report counts these unknowns
+added or worse. A base function without a proven head partner has no exact
+CRAP estimate, including a removed function. Its path count can still prove
+a lower-bound violation at 30 or more. The report counts these unknowns
 separately. `Unknown function identity: N (no proven declaration or unique
 unchanged body/signature correspondence).` appears when identity unknowns
 exist, even without coverage. Compatible coverage always adds
 `Base functions without an estimated covered share: N.` after complexity.
-CR-07's incomplete-coverage bands remain follow-up work.
+An unmatched function with at least 30 paths is a known violation: its CRAP
+is at least its paths. It counts in risk totals and displays `≥ <paths>`.
+It is added risk only with proof that it is new. A larger lower bound alone
+does not prove worsening against an unknown base value. Unknown assessment
+withholds good; known violations can still support warning or critical.
+The unknown count includes every function without a share, also known
+lower-bound violations and zero-own exclusions.
+The node adds `assessment incomplete: N unknown`; a node without a justified
+band has no band color. Missing function metrics count separately as
+`1 unmeasured file`, without a guessed function count. These rules add no
+fourth band.
+Below the unmatched summary, the report lists unmeasured functions of changed
+files with at least five paths, sorted by path and name, for example
+``- `src/x.ts` `(anonymous)`: paths 5, covered unknown, CRAP ≥ 5``.
 
+New trend records retain the base snapshot's actual `tool` version when
+known. Legacy snapshots and records without it have an unknown tool version;
+no installed version is substituted during offline rendering.
 Stored head-derived counts are labeled `estimate`, the head row is
 `measured`, old counts without provenance are `legacy unknown`, and absent
 counts show `–`. Estimate provenance records the original coverage commit,
 fingerprints, measurement version, and unknown-function count. The stored
 value belongs to the first recording pull request; another head can give a
 different estimate for the same base. Missing counts stay missing.
+Mixed tool versions in the displayed history and head add
+`Trend tool versions: <commit8>: ast-metrics X; this pull request: ast-metrics Y.`
+The notice names each displayed commit and the head in table order; absent
+legacy versions are `unknown`.
 Without an offline trend store, the section says `No trend store.` A
 configured empty store without `--record` says
 `No snapshot of main in the trend store yet.`
@@ -351,7 +386,7 @@ listed scope.
 ## Take a snapshot
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS] [--allow-tool-version] [--help]
 
 Options:
   --base REF       Take the snapshot of the merge base of REF and HEAD
@@ -359,6 +394,7 @@ Options:
                    ast-report/snapshot.json in the repository root, or
                    ast-report/snapshot-base.json with --base)
   --timeout-ms MS  Deadline of the MCP session (100..300000; default: 60000)
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h       Show this help
 ```
 
@@ -368,7 +404,9 @@ Writes the snapshot of the working tree to `ast-report/snapshot.json`, or to
 `src/` file with its metrics and functions, from one `ast-metrics analyze
 src` run and one session of `ast-metrics mcp src`, so that only a change of
 `src/` changes the communities. The file is written only after all calls
-succeeded and its input identity is unchanged. The optional `provenance`
+succeeded and its input identity is unchanged. `tool` names the actual
+checked ast-metrics version, including an explicitly permitted version. The
+optional `provenance`
 field holds source and expected coverage-input fingerprints, runtime,
 compiler, suite, and measurement version. Each file can hold optional
 `sourceEvidence` (`version: "typescript-tokens-v1"`, `coordinates: "utf16"`,
@@ -455,6 +493,7 @@ The document-only case in `ast-metrics-architecture-unchanged.test.ts` checks
 the complete graph without bands and proves that no test suite runs.
 
 <!-- code-quality-tests:start -->
+
 | Kind | Test file | Collects full unit coverage |
 | --- | --- | --- |
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
@@ -468,6 +507,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
@@ -491,6 +531,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-tool-version.test.ts | no |
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
@@ -506,6 +547,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-architecture-trend-publication.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
@@ -521,4 +563,5 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-tool-version.test.ts | no |
 <!-- code-quality-tests:end -->

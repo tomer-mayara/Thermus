@@ -17,7 +17,7 @@ const root = fileURLToPath(repositoryRoot);
 
 // --base HEAD needs a src/ without uncommitted edits. --touched names each src/ file so that every community appears.
 // Unknown function identity can withhold a base estimate, even when both snapshots have the same source.
-test('Given the coverage report of the real unit suite and no source edits, when architecture runs with --base HEAD and each src/ file touched, then head risk counts bound base estimates, every node has a good or warning band, no function is added or worse, and the default report stays unchanged within 5 minutes', { timeout: 300_000, skip }, async (t) => {
+test('Given the coverage report of the real unit suite and no source edits, when architecture runs with --base HEAD and each src/ file touched, then head risk counts bound base estimates, every node has an assessable band or an incomplete note, no function is added or worse, and the default report stays unchanged within 5 minutes', { timeout: 300_000, skip }, async (t) => {
   assert.equal(execFileSync('git', ['status', '--porcelain', '--', 'src'], { cwd: root, encoding: 'utf8' }), '', 'The check needs a src/ without uncommitted changes.');
   const folder = dataDirectory(t);
   const coverageReport = join(folder, 'coverage.json');
@@ -39,7 +39,7 @@ test('Given the coverage report of the real unit suite and no source edits, when
   assert.ok(Number(counts[1]) <= Number(counts[2]), lines[2]);
   const nodes = lines.filter((line) => /^ {2}c_\w+\["/.test(line));
   assert.ok(nodes.length > 0, result.stdout);
-  assert.deepEqual(nodes.filter((line) => !/<br\/>(● good|▲ warning): \d+ fn ≥ 30(?: \(\+\d+\))?"\]$/.test(line)), [], result.stdout);
+  assert.deepEqual(nodes.filter((line) => !/<br\/>(?:(?:● good|▲ warning): \d+ fn ≥ 30(?: \(\+\d+\))?(?:; assessment incomplete: \d+ unknown)?|assessment incomplete: \d+ unknown; 0 known fn ≥ 30)"\]$/.test(line)), [], result.stdout);
   const cells = lines.filter((line) => line.startsWith('| src/')).map((row) => row.split(' | ')[3]);
   assert.equal(cells.length, touched.length, result.stdout);
   for (const cell of cells) {

@@ -75,6 +75,19 @@ The test reads listed commands and never executes them.
 0 to 128 as the maintainability range, identifies the lines column as LOC rather
 than source positions, and declares delegated defaults for the two tool options.
 
+`test/unit/script/ast-metrics-tool-version.test.ts` checks the 0.43.1 pin,
+explicit override, a missing version, the CLI version subcommand, reuse of
+the checked value, MCP agreement within a composite run, and notices for
+different or missing snapshot versions.
+`test/acceptance/script/ast-metrics-tool-version.test.ts` checks refusal
+before analysis or record writes and explicit override for delta, review,
+snapshot, online architecture, and MCP. New snapshots and records retain
+the actual version. An overridden snapshot refuses disagreement between
+the CLI and MCP before any MCP tool call or snapshot publication. Offline
+rendering with an empty PATH identifies different versions and rejects
+malformed snapshot tool metadata. Help starts no tool; coverage imports work
+without ast-metrics. Coverage has no version option.
+
 The six commands run from source in `script/code-quality/`. See the
 [code quality script guide](../../script/code-quality/README.md) for their
 entry points and helper folders.
@@ -268,7 +281,9 @@ including removed functions, receive no estimated covered share.
 
 `ast-metrics-architecture-crap.test.ts` checks the pure CRAP formula, rounding,
 and coverage join by file and V8 name. Anonymous, duplicate, missing, and
-unmeasured function entries get no CRAP. A complete verified report can treat
+unmeasured function entries get no exact CRAP. Tests count unmatched
+functions at 30 or more paths as known violations, preserve their lower
+bounds, and cover zero-own exclusions. A complete verified report can treat
 an absent head file as uncovered. Source correspondence separately controls
 which base functions can use a head share and which functions are new or
 worse. Tests check equal supported trees and unknown base estimates.
@@ -297,6 +312,16 @@ the CRAP column (counts with their arrows, `new`, `gone`, and `not
 measured`) and the list after the table (sorted by path and name, `base new`
 or the base CRAP, the share and the CRAP, a method without its module, and
 the unmatched count of the changed files only).
+`test/unit/script/ast-metrics-architecture-unmeasured.test.ts` checks
+incomplete head and gone communities with no good band, known warning or
+critical lower-bound violations, ambiguous names counted once each,
+unmeasured files without a guessed function count, and risk totals that
+retain unknown-share counts. It checks the list of unmeasured functions
+at five paths or more, sorted by path and name.
+`test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts` checks
+that a zero-own exclusion with 30 paths is a known violation with unknown
+coverage and a CRAP lower bound. Existing band goldens also show the
+unmatched `refresh` function at 30 and an anonymous function at five paths.
 `ast-metrics-architecture-trend.test.ts` checks the pure record of a snapshot
 and the pure trend section: the fields of the record in their order, the count
 of the cycles, the counts of the functions at CRAP 30 or more of `src/` and of
@@ -416,6 +441,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 ```
 
 <!-- code-quality-tests:start -->
+
 | Kind | Test file | Collects full unit coverage |
 | --- | --- | --- |
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
@@ -429,6 +455,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
@@ -452,6 +479,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-tool-version.test.ts | no |
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
@@ -467,6 +495,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-architecture-trend-publication.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
@@ -482,6 +511,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-tool-version.test.ts | no |
 <!-- code-quality-tests:end -->
 
 See [the script guide](../../script/README.md) and

@@ -16,7 +16,7 @@ const communityFields: Fields = {
   maintainability: optional(finite), functionsOver30: optional(count),
 };
 const recordFields: Fields = {
-  version, commit, date, modularity: finite, crossShare: finite, cycles: count,
+  version, tool: optional(nonemptyText), commit, date, modularity: finite, crossShare: finite, cycles: count,
   paths: count, files: count, functions: count, communities: validCommunities,
   maintainability: optional(finite), functionsOver30: optional(count), sourceFingerprint: optional(validHash),
 };

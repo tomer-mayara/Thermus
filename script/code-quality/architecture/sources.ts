@@ -1,3 +1,4 @@
+import { cliToolVersion } from '../shared/tool-version.ts';
 import type { ArchitectureCommand } from './command-line.ts';
 import { snapshotInFile } from './file.ts';
 import { changesInFile } from './changes.ts';
@@ -6,7 +7,7 @@ import type { FileChange } from '../delta/changes.ts';
 import { changesInSource } from '../delta/source.ts';
 import { snapshotOfBase } from '../snapshot/base.ts';
 import { snapshotOfTree } from '../snapshot/tree.ts';
-import { repositoryRoot } from '../shared/repository.ts';
+import * as repositoryContext from '../shared/repository.ts';
 
 type SnapshotOptions = Pick<Extract<ArchitectureCommand, { readonly kind: 'report' }>, 'source' | 'touched' | 'changes'>;
 
@@ -18,10 +19,12 @@ export async function snapshotSourcesOf({ source, touched, changes: file }: Snap
     const changes = file === undefined ? undefined : changesInFile(file, base, head);
     return { base, head, changes, touched: touched ?? touchedPaths(changes ?? []) };
   }
-  const root = repository ?? repositoryRoot();
-  const base = await snapshotOfBase({ root, ref: source.ref, timeoutMs: source.timeoutMs, notice });
+  const root = repository ?? repositoryContext.repositoryRoot();
+  repositoryContext.verifyBase(root, source.ref);
+  const checked = cliToolVersion(root, source.allowToolVersion);
+  const base = await snapshotOfBase({ toolVersion: checked, root, ref: source.ref, timeoutMs: source.timeoutMs, notice });
   const changes = changesInSource(deltaChanges(root, source.ref));
-  return { base, head: await snapshotOfTree(root, source.timeoutMs), changes, touched: touched ?? touchedPaths(changes) };
+  return { base, head: await snapshotOfTree(root, source.timeoutMs, checked), changes, touched: touched ?? touchedPaths(changes) };
 }
 
 function touchedPaths(changes: readonly FileChange[]): string[] {

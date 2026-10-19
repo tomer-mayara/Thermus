@@ -1,3 +1,4 @@
+import { trendToolNoticeOf } from './tool-notice.ts';
 import { rowOf } from './table.ts';
 import type { TrendNumbers } from './trend-record.ts';
 
@@ -15,8 +16,8 @@ export function trendSectionOf(stored: readonly TrendNumbers[] | undefined, head
   if (stored.length === 0) return [heading, '', 'No snapshot of main in the trend store yet.'];
   const rows = stored.map((record) => rowOf([record.commit.slice(0, 8), record.date.slice(0, 10), ...numbersOf(record)]));
   const note = stored.some((record) => record.crap?.kind === 'head-derived-estimate')
-    ? ['', 'Historical estimates use head coverage from the first recording pull request. Later estimates for the same base can differ. Unknown functions are excluded from each count.'] : [];
-  return [heading, '', rowOf(columns), rowOf(columns.map(() => '---')), ...rows, rowOf(['this pull request', '', ...numbersOf(head)]), ...note];
+    ? ['', 'Historical estimates use head coverage from the first recording pull request. Later estimates for the same base can differ. Counts include known lower-bound violations; other unknown functions are not counted.'] : [];
+  return [heading, '', rowOf(columns), rowOf(columns.map(() => '---')), ...rows, rowOf(['this pull request', '', ...numbersOf(head)]), ...note, ...trendToolNoticeOf([...stored, { ...head, commit: undefined }])];
 }
 
 // A share keeps two decimals and a score one, as in the summary line and in the map.
