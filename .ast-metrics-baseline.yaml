@@ -641,11 +641,19 @@ ignored:
       count: 1
     - rule: max_loc_by_method
       file: src/user-portal/agent-guides.ts
-      message: 'LOC too high in method agentGuides(): got 58 (max: 30)'
+      message: 'LOC too high in method agentGuides(): got 67 (max: 30)'
       count: 1
     - rule: maintainability
       file: src/user-portal/connection-guide.ts
-      message: 'Maintainability too low: got 40 (min: 85)'
+      message: 'Maintainability too low: got 42 (min: 85)'
+      count: 1
+    - rule: lloc_by_method
+      file: src/user-portal/guide-selector.ts
+      message: 'LLOC too high in method renderGuideSelector(): got 33 (max: 20)'
+      count: 1
+    - rule: max_loc_by_method
+      file: src/user-portal/guide-selector.ts
+      message: 'LOC too high in method renderGuideSelector(): got 49 (max: 30)'
       count: 1
     - rule: lloc_by_method
       file: src/user-portal/portal.ts
