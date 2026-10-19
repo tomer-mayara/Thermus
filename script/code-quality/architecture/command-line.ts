@@ -1,5 +1,6 @@
 import { parseArgs } from 'node:util';
 import { CommandError } from '../shared/repository.ts';
+import { checkedOptionsOf } from './command-options.ts';
 
 // With two snapshot files, the command runs neither git nor ast-metrics.
 type SnapshotSource =
@@ -27,22 +28,12 @@ type Values = ReturnType<typeof parsedValues>;
 export function commandOf(args: readonly string[]): ArchitectureCommand {
   const values = parsedValues(args);
   if (values.help) return { kind: 'help' };
-  validatePaths(values);
-  // git would take a ref that starts with a dash as an option.
-  if (!/^[^-]/u.test(values.base)) throw new CommandError('The --base value must name a git ref.');
+  const { timeoutMs } = checkedOptionsOf(values);
   const touched = values.touched?.split(',').filter((path) => path !== '');
   const files = { noCoverage: values['no-coverage'] === true, record: values.record === true, coverage: values.coverage, trendStore: values['trend-store'], out: values.out };
-  const source = sourceOf(values, timeoutOf(values['timeout-ms']));
+  const source = sourceOf(values, timeoutMs);
   if (values.changes !== undefined && source.kind === 'repository') throw new CommandError('Give --changes only with --head and --base-snapshot; repository mode uses Git changes.');
   return { kind: 'report', source, touched, changes: values.changes, ...files };
-}
-
-function validatePaths(values: Values): void {
-  if (values.out === '') throw new CommandError('The --out value must name a file.');
-  if (values['no-coverage'] && values.coverage !== undefined) throw new CommandError('Give --coverage or --no-coverage, not both.');
-  if (values.coverage === '') throw new CommandError('The --coverage value must name a file.');
-  if (values.changes === '') throw new CommandError('The --changes value must name a file.');
-  if (values['trend-store'] === '') throw new CommandError('The --trend-store value must name a folder.');
 }
 
 function parsedValues(args: readonly string[]) {
@@ -58,10 +49,4 @@ function sourceOf(values: Values, timeoutMs: number): SnapshotSource {
   if (head === undefined && base === undefined) return { kind: 'repository', ref: values.base, timeoutMs };
   if (!head || !base) throw new CommandError('Give --head and --base-snapshot together, each with a snapshot file.');
   return { kind: 'files', head, base };
-}
-
-function timeoutOf(text: string): number {
-  const value = Number(text);
-  if (!/^\d+$/.test(text) || value < 100 || value > 300_000) throw new CommandError('The --timeout-ms value must be an integer from 100 to 300000.');
-  return value;
 }

@@ -3,9 +3,8 @@
 // fails it.
 import { readFileSync } from 'node:fs';
 import { inputIdentityIn } from '../provenance/read.ts';
-import { functionIdentityIn } from '../identity/read.ts';
-import { metricMatchesIdentity } from '../identity/metric.ts';
-import { sourceEvidenceIn } from '../identity/source-read.ts';
+import { identityForMetric } from '../identity/metric.ts';
+import { fileEvidenceIn } from '../identity/file.ts';
 import * as json from '../shared/json.ts';
 import type { MapSnapshot } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
@@ -74,41 +73,12 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
 // a file of types, has none to join with the coverage.
 function fileOf(fields: Fields, check: Check): TableFile {
   const functions = json.arrayOf(fields.functions).map((entry) => functionOf(json.objectOf(entry), check));
-  const sourceEvidence = sourceEvidenceIn(fields.sourceEvidence);
-  if (!uniqueIdentityRanges(functions)) {
-    throw new CommandError('The snapshot binds more than one metric to the same source range.');
-  }
-  if (sourceEvidence?.complete && (!Array.isArray(fields.functions) || !completeIdentities(functions))) {
-    throw new CommandError('The snapshot claims complete source evidence for an unknown function.');
-  }
+  const sourceEvidence = fileEvidenceIn(fields.sourceEvidence, Array.isArray(fields.functions) ? functions : undefined);
   return { sourceEvidence, path: check(json.textOf(fields.path)), maintainability: json.numberOf(fields.maintainability), paths: json.numberOf(fields.paths), risk: json.numberOf(fields.risk), functions };
 }
 
 function functionOf(fields: Fields, check: Check): MapFunction {
   const name = check(json.textOf(fields.name));
-  const identity = functionIdentityIn(fields.identity);
-  if (identity && !metricMatchesIdentity(name, identity)) {
-    throw new CommandError('The snapshot binds a metric name to an unrelated source identity.');
-  }
+  const identity = identityForMetric(name, fields.identity);
   return { name, paths: check(json.numberOf(fields.paths)), identity };
-}
-
-function completeIdentities(functions: readonly MapFunction[]): boolean {
-  const declarations = new Set<string>();
-  const ranges = new Set<string>();
-  for (const entry of functions) {
-    if (!entry.identity) return false;
-    const { kind, owner, name, start, end } = entry.identity;
-    const declaration = JSON.stringify([kind, owner, name]);
-    const range = JSON.stringify([start, end]);
-    if (declarations.has(declaration) || ranges.has(range)) return false;
-    declarations.add(declaration);
-    ranges.add(range);
-  }
-  return true;
-}
-
-function uniqueIdentityRanges(functions: readonly MapFunction[]): boolean {
-  const ranges = functions.flatMap((entry) => entry.identity ? [JSON.stringify([entry.identity.start, entry.identity.end])] : []);
-  return new Set(ranges).size === ranges.length;
 }

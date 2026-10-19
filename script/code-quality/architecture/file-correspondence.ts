@@ -10,3 +10,18 @@ export function fileMappingOf(changes: readonly FileChange[] = []): { readonly b
   });
   return { before: new Map(pairs.map(([before, after]) => [after, before])), after: new Map(pairs) };
 }
+
+export interface FileComparison {
+  readonly path: string;
+  readonly basePath: string;
+  readonly label: string;
+}
+
+export function changedFilesOf(touched: readonly string[], changes: readonly FileChange[] | undefined): FileComparison[] {
+  const { before, after } = fileMappingOf(changes);
+  const paths = [...new Set(touched.map((path) => after.get(path) ?? path).filter((path) => path.startsWith('src/')))].sort();
+  return paths.map((path) => {
+    const oldPath = before.get(path);
+    return { path, basePath: oldPath ?? path, label: oldPath === undefined ? path : `${path} (renamed from ${oldPath})` };
+  });
+}

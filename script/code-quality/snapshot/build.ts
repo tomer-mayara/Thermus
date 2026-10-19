@@ -4,7 +4,7 @@ import { snapshotCommunitiesOf } from './communities.ts';
 import { functionEvidenceOf } from '../identity/source.ts';
 import { serverCommunitiesOf, snapshotFunctionsOf } from './input.ts';
 import { communityMapOf } from './map.ts';
-import { rounded, sumOf, weightedMaintainability } from '../shared/numbers.ts';
+import * as numbers from '../shared/numbers.ts';
 import type { FileMeasurement, Snapshot, SnapshotFile } from './types.ts';
 
 export interface SnapshotSources {
@@ -29,13 +29,13 @@ export function snapshotOf(sources: SnapshotSources): Snapshot {
     commit: sources.commit,
     date: sources.date,
     global: {
-      modularity: rounded(answer.modularity, 2),
-      crossShare: rounded(answer.crossShare, 2),
+      modularity: numbers.rounded(answer.modularity, 2),
+      crossShare: numbers.rounded(answer.crossShare, 2),
       cycles: map.cycles,
-      maintainability: weightedMaintainability(sources.files),
-      paths: sumOf(sources.files.map((file) => file.paths)),
+      maintainability: numbers.weightedMaintainability(sources.files),
+      paths: numbers.sumOf(sources.files.map((file) => file.paths)),
       files: files.length,
-      functions: sumOf(files.map((file) => file.functions.length)),
+      functions: numbers.sumOf(files.map((file) => file.functions.length)),
     },
     communities: snapshotCommunitiesOf(map, sources.files),
     files,
@@ -47,10 +47,10 @@ function snapshotFileOf(file: FileMeasurement, community: string | null, functio
   return {
     path: file.path,
     community,
-    maintainability: rounded(file.maintainability, 1),
+    maintainability: numbers.rounded(file.maintainability, 1),
     paths: file.paths,
     loc: file.loc,
-    risk: rounded(file.risk, 2),
+    risk: numbers.rounded(file.risk, 2),
     functions: snapshotFunctionsOf(file.path, functions),
   };
 }
