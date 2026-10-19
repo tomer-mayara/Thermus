@@ -40,6 +40,9 @@ RUN test -n "$RUSTUP_TOOLCHAIN" \
  && rm -rf node_modules/.pnpm/adblock-rs@*/node_modules/adblock-rs/target
 
 FROM production-dependencies AS checked-build
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
 RUN test -n "$RUSTUP_TOOLCHAIN" && pnpm install --frozen-lockfile
 COPY --from=lightpanda /opt/lightpanda /opt/lightpanda
 ENV LIGHTPANDA_BIN=/opt/lightpanda/1.0.0/lightpanda \

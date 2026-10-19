@@ -33,7 +33,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
-| Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, OpenSSL, free local port 46443, and local loopback access. The Docker build supplies the renderer. |
+| Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, Git and OpenSSL in `PATH`, free local port 46443, and local loopback access. The Docker build supplies Git and the renderer. |
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
@@ -535,7 +535,7 @@ then runs these emitted files directly, without another build:
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
 excludes the Axiom tests, public-site renderer smoke test, live WorkOS gate,
-and Docker gates. The command needs the pinned Node and dependencies, OpenSSL
+and Docker gates. The command needs the pinned Node and dependencies, Git and OpenSSL
 in `PATH`, a free local port 46443, local loopback connections, and the
 absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no live credential or
 public network access. When that aggregate gate is selected, a local command is:
@@ -544,7 +544,8 @@ public network access. When that aggregate gate is selected, a local command is:
 LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" npm run build:hosted
 ```
 
-`Dockerfile.hosted` supplies its checked renderer and runs this command with
+`Dockerfile.hosted` installs Git in its check stage, supplies its checked renderer,
+and runs this command with
 `RUN --network=none`. The final runtime copies backend and portal outputs
 from that checked stage, so BuildKit cannot skip its checks. The final stage
 then checks the assembled outputs with the production dependencies, as the
@@ -554,18 +555,13 @@ inside the build. These checks supplement the pull request runs only when
 the hosted build gate is selected. Every real hosted image build still runs
 the complete checks; the path selection does not weaken the image.
 
-The check stage of `Dockerfile.hosted` has no git executable, no `.git`
-folder (`Dockerfile.hosted.dockerignore` excludes it), and no ast-metrics.
-So a unit test of a script must not depend on git or ast-metrics; the unit
-tests of the ast-metrics commands put a stub of git first on a PATH that
-holds nothing else (`test/support/doubles/ast-metrics/git-cli-stub.ts`).
-A run of the unit tests of the scripts with a PATH that holds only `node` is
-the local stand-in for that part of the image gate:
-
-```sh
-mkdir -p /tmp/node-only && ln -sf "$(command -v node)" /tmp/node-only/node
-env PATH=/tmp/node-only node --test "test/unit/script/*.test.ts"
-```
+The check stage has Git for tests that create their own temporary repositories,
+including `test/unit/script/ast-metrics-architecture-test-changes.test.ts`.
+It has no checkout `.git` folder (`Dockerfile.hosted.dockerignore` excludes it)
+and no ast-metrics executable. Tests must not depend on either. Tests that
+isolate the Git CLI use `test/support/doubles/ast-metrics/git-cli-stub.ts` on
+their own restricted PATH. Git is installed before the offline gate and stays
+out of the production-dependencies and runtime stages.
 
 ### Acceptance: hosted build with constrained CPU
 
