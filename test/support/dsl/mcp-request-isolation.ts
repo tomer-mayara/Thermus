@@ -23,4 +23,3 @@ export function assertRecord(record: Record<string, unknown> | undefined, subjec
   assert.equal(record.reason, `Read ${subject}'s separate page`);
   assert.equal(record.status, status);
 }
-

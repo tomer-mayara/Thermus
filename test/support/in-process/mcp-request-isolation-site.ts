@@ -128,4 +128,3 @@ export async function openSite(t: TestContext, era: McpProtocolEra) {
   }
   return { pages, records, steps, recorded, pipelineUrls, operationContexts, operationExecutions, access, server, listener, connect };
 }
-
