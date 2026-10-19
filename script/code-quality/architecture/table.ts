@@ -5,11 +5,10 @@ import { changedFilesOf, type FileComparison } from './file-correspondence.ts';
 import { measureCellsOf } from './format.ts';
 import type { CrapDelta } from './crap-delta.ts';
 import { crapCellOf, functionListOf } from './functions.ts';
-import { textOrder } from './order.ts';
+import { riskRanksOf } from './order.ts';
 import type { MapSources, TableFile } from './types.ts';
 
 const heading = '## Complexity of the changed files';
-const rankedFiles = 10;
 
 // The snapshots hold only src/ files, so a changed file elsewhere, such as a test, gets no row.
 export function complexityTableOf({ base, head, touched, changes }: MapSources, delta: CrapDelta | undefined): string[] {
@@ -34,13 +33,6 @@ function rowCellsOf({ path, basePath, label }: FileComparison, context: TableCon
   const crapCells = delta === undefined ? [] : [crapCellOf(delta, path, basePath)];
   const rank = after === undefined && before !== undefined ? 'gone' : `${context.ranks.get(path) ?? ''}`;
   return [label, ...measureCellsOf(before, after), ...crapCells, rank];
-}
-
-// A tie goes to the first path, so that the rank does not depend on the order of the files in a snapshot file.
-function riskRanksOf(files: readonly TableFile[]): ReadonlyMap<string, number> {
-  const scored = files.flatMap(({ path, risk }) => (risk === undefined ? [] : [{ path, risk }]));
-  scored.sort((first, second) => second.risk - first.risk || textOrder(first.path, second.path));
-  return new Map(scored.slice(0, rankedFiles).map(({ path }, index) => [path, index + 1]));
 }
 
 function filesByPath(files: readonly TableFile[]): ReadonlyMap<string, TableFile> {
