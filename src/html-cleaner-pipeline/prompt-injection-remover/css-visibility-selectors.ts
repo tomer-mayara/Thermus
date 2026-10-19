@@ -4,6 +4,7 @@ import { DomUtils } from 'htmlparser2';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { selectorSpecificity } from './css-visibility-rules.ts';
 import { simpleSelectorPredicate } from './css-selector-predicates.ts';
+import { CssSelectorIndex } from './css-selector-index.ts';
 
 export type HtmlElement = Htmlparser2TreeAdapterMap['element'];
 export type HtmlDocument = Htmlparser2TreeAdapterMap['document'];
@@ -42,15 +43,16 @@ export function documentElements(document: HtmlDocument, includeTemplateContent 
   return elements;
 }
 
-function boundedAdapter(quirksMode: boolean) {
+function boundedAdapter(quirksMode: boolean, document: HtmlDocument) {
   let remaining = maxSelectorWork;
-  const classTokens = new WeakMap<HtmlElement, Set<string>>();
   const spend = (cost = 1) => {
     remaining -= cost;
     if (remaining < 0) throw new CssSelectorLimitError('work');
   };
+  const index = new CssSelectorIndex(() => documentElements(document), quirksMode, spend);
   return {
     ...DomUtils,
+    index,
     isTag(node: HtmlNode): node is HtmlElement {
       spend();
       return adapter.isElementNode(node);
@@ -65,16 +67,7 @@ function boundedAdapter(quirksMode: boolean) {
       return value;
     },
     hasClass(element: HtmlElement, name: string) {
-      spend();
-      let tokens = classTokens.get(element);
-      if (tokens === undefined) {
-        const value = DomUtils.getAttributeValue(element, 'class') ?? '';
-        spend(value.length);
-        const normalized = quirksMode ? value.replace(/[A-Z]/g, (character) => character.toLowerCase()) : value;
-        tokens = new Set(normalized.split(/[\t\n\f\r ]/));
-        classTokens.set(element, tokens);
-      }
-      return tokens.has(name);
+      return index.hasClass(element, name);
     },
     getName(element: HtmlElement) {
       spend(1 + element.name.length);
@@ -113,7 +106,7 @@ function compileSelector(selector: Selector, options: {
 export function createSelectorMatcher(document: HtmlDocument) {
   const quirksMode = document['x-mode'] === 'quirks';
   const options = {
-    adapter: boundedAdapter(quirksMode),
+    adapter: boundedAdapter(quirksMode, document),
     quirksMode,
   };
   return (prelude: CssNode) => {
@@ -129,7 +122,7 @@ export function createSelectorMatcher(document: HtmlDocument) {
       const css = generate(selector);
       if (css.length > maxSelectorLength) throw new CssSelectorLimitError('size');
       try {
-        selectors.push({ specificity, query: compileSelector(selector, options) });
+        selectors.push({ specificity, query: compileSelector(selector, options), candidates: () => options.adapter.index.candidates(selector) });
       } catch (error) {
         if (error instanceof RangeError) throw error;
         return undefined;

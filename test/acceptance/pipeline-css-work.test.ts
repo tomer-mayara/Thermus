@@ -54,3 +54,33 @@ test('Given a page that reveals its body with a delayed opacity animation, when 
   assert.deepEqual(result.found, ['html-comments', 'hidden-html']);
   assert.equal(result.scanWithholding, undefined);
 });
+
+test('Given a large page with thousands of unused class and descendant rules, when the production pipeline converts it, then it keeps visible paragraphs and still removes hidden content', async () => {
+  const pipeline = new HtmlToMarkdownPipeline([
+    new CleanHtmlAdsAdblockRs(''),
+    new PromptInjectionRemoverSanitizer(),
+    new CleanHtmlToMarkdownDefuddle(),
+  ]);
+  const paragraphs = Array.from({ length: 1_000 }, () => 'Visible report.');
+  const rules = Array.from({ length: 3_000 }, (_, index) =>
+    `.player${index} .controls{display:block}#notice${index} button *{opacity:1}`,
+  ).join('');
+  const html = '<!doctype html><html><head><style>' + rules
+    + '.report > .payload{display:none}.before + .adjacent{display:none}'
+    + '</style></head><body><main class="report">'
+    + paragraphs.map((text) => `<p class="story">${text}</p>`).join('')
+    + '<p class="payload">Hidden instruction.</p>'
+    + '<p class="before">Visible control.</p><p class="adjacent">Hidden sibling.</p>'
+    + '</main></body></html>';
+
+  const result = await pipeline.process({
+    requestedUrl: 'https://example.com/report',
+    finalUrl: 'https://example.com/report',
+    html,
+  });
+
+  assert.equal(result.markdown, [...paragraphs, 'Visible control.'].join('\n\n'));
+  assert.doesNotMatch(result.html, /Hidden instruction|Hidden sibling/);
+  assert.deepEqual(result.found, ['hidden-html']);
+  assert.equal(result.scanWithholding, undefined);
+});
