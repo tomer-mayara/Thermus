@@ -1,6 +1,6 @@
 import { fileMappingOf } from './file-correspondence.ts';
 // ast-metrics renumbers and renames its communities when code grows elsewhere, so a head community is the base
-// community that has most of the same files (docs/implementation/architecture-evolution-plan.md, "Community identity").
+// community that has most of the same files; see docs/implementation/ast-metrics-review.md, "Show the architecture delta".
 import type { FileChange } from '../delta/changes.ts';
 import { textOrder } from '../shared/order.ts';
 import type { MapCommunity } from './types.ts';

@@ -1,5 +1,5 @@
-// The record of one snapshot in the trend store of docs/implementation/architecture-evolution-plan.md ("The views", view
-// 3): the global numbers of the snapshot and the numbers of each community, and nothing for each file, so that a record
+// A trend record; see docs/implementation/ast-metrics-review.md, "The trend".
+// It holds global and community numbers, stable components, and no per-file numbers, so that a record
 // stays small and its numbers stay comparable from commit to commit. The record is pure, so that its rules have unit
 // tests without git and ast-metrics.
 import * as componentRecord from './component-record.ts';

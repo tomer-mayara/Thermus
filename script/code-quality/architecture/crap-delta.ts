@@ -1,5 +1,5 @@
-// The change of the CRAP of each function of the head against the base, which the bands of
-// docs/implementation/architecture-evolution-plan.md ("Bands") follow: they judge the change, not the total.
+// The CRAP change of each head function against the base controls the bands.
+// See docs/implementation/ast-metrics-review.md, "Show the architecture delta": bands judge the change, not the total.
 import { crapLimit, isOver, type FileCrap, type FunctionCrap } from './crap.ts';
 import { compareCrap } from './crap-score.ts';
 import type { FunctionCorrespondence } from './correspondence.ts';

@@ -11,8 +11,8 @@ export interface CommunityMap {
   communityOf(path: string): string | null;
 }
 
-// The map covers src/ only (decision 4 of docs/implementation/architecture-evolution-plan.md), so an edge or a cycle
-// through a community outside src/ is not on it.
+// The map covers src/ only; see docs/implementation/ast-metrics-review.md, "Take a snapshot".
+// An edge or a cycle through a community outside src/ is not on it.
 export function communityMapOf(answer: ServerCommunities): CommunityMap {
   const communities = answer.communities.filter((community) => community.members.some(isSourcePath));
   const labels = labelsOf(communities);

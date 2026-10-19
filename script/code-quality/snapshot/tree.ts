@@ -1,5 +1,5 @@
-// A module, not a part of script/code-quality/ast-metrics-snapshot.ts, because the later commands of
-// docs/implementation/architecture-evolution-plan.md make snapshots too.
+// Snapshot and architecture commands share this module to capture a tree.
+// See docs/implementation/ast-metrics-review.md, "Take a snapshot" and "Show the architecture delta".
 import * as toolVersion from '../shared/tool-version.ts';
 import { withAstMetricsServer } from '../mcp/session.ts';
 import type { AstMetricsServer } from '../mcp/server.ts';

@@ -1,4 +1,4 @@
-// The bands of docs/implementation/architecture-evolution-plan.md ("Bands"). A band follows the change: good when no
+// Bands: docs/implementation/ast-metrics-review.md, "Show the architecture delta". A band follows the change: good when no
 // function is at CRAP 30 or more, warning when some are but the pull request added or made worse none of them, and
 // critical when it added or made worse one.
 import type { FunctionCrap } from './crap.ts';

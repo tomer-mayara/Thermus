@@ -3,8 +3,8 @@ import type { InputIdentity } from '../provenance/types.ts';
 import type { FunctionIdentity, SourceEvidence } from '../identity/types.ts';
 
 // The snapshot of one tree, as script/code-quality/ast-metrics-snapshot.ts writes it to snapshot.json: the numbers of ast-metrics for
-// the files under src/ and their communities. docs/implementation/architecture-evolution-plan.md ("The snapshot") gives
-// its purpose; the later commands of the plan read it.
+// the files under src/ and their communities. See docs/implementation/ast-metrics-review.md, "Take a snapshot",
+// for its fields and purpose; the architecture command reads it.
 //
 // A score keeps one decimal and a share two; a count is an integer. A field that ast-metrics did not measure is absent,
 // such as the maintainability of a file of types. Communities are sorted by label and files by path, so that two

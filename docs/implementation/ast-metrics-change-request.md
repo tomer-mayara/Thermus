@@ -4,12 +4,13 @@
 | --- | --- |
 | Repository | `tomer-mayara/Thermus` |
 | Baseline | `main` at `7c302fa5`, after the reorganization in PR #170 (`94adf2d2`) and scoped test gates in PR #172 |
-| Owner | Tomer Mayara; decides the open items and merges implementation pull requests |
-| Status | Revision 4, 2026-10-18. Staged implementation, D1–D3, D6, D7, and the CR-11 pre-crash capture protocol are approved; delivery and verification status are recorded below. D4, D5, D8, and D9 remain open. |
+| Owner | Tomer Mayara; approves decisions and merges implementation pull requests |
+| Status | Revision 4 delivery record, updated 2026-10-19. Approved implementation is merged through PR #190. D4/CR-10 option B and D5 are deferred; D8 keeps the two baseline exceptions and D9 keeps command-specific diagnostics. CR-21 archives the plan in PR #191. |
 | Audience | An engineering team that has not worked in this repository |
 
-This proposal is standalone. Read sections 1 to 3 and Appendix D before
-implementing a CR. Current [AGENTS.md](../../AGENTS.md) and the
+This delivery record preserves the proposal and its evidence. Read sections
+1 to 3 and Appendix D before implementing any deferred work. Current
+[AGENTS.md](../../AGENTS.md) and the
 [test gate policy](test-gate-policy.md) apply until an approved implementation
 changes them. CR-09 implements the composed process in Appendix D;
 AGENTS.md remains authoritative.
@@ -24,7 +25,8 @@ On 2026-10-18, the owner approved the recommendations for D1, D2, and D3
 with “Use those recommendations”: CRAP ≤ 15 for new functions, goals with
 documented exceptions after at most three improvement cycles, and clearly
 labeled head-derived trend estimates. Section 3.2 records these decisions.
-D4, D5, D8, and D9 remain open. The earlier D1–D3 approval itself changed no runtime behavior;
+The owner disposed of D4, D5, D8, and D9 on 2026-10-19 as recorded below.
+The earlier D1–D3 approval itself changed no runtime behavior;
 PR #182 merged D1/D2 in CR-22. PR #183 merged CR-09 and composes those stages.
 It authorizes no base-coverage storage or merge workflow.
 
@@ -40,10 +42,9 @@ Delivery status:
   verify capture provenance, make trend writes explicit and safe, and label
   historical estimates under approved D3.
 - PR #173 already converted and organized the fetch-url scripts as
-  TypeScript. PR #189 implements CR-19's remaining cleanup: the four
-  helper exports are private, and all 31 characterization cases use existing
-  public entry points. Its selected checks and quality process pass; the PR
-  awaits merge.
+  TypeScript. PR #189 merged CR-19's remaining cleanup at `1bc81715`: the
+  four helper exports are private, and all 31 characterization cases use
+  existing public entry points. Its selected checks and quality process pass.
 - PR #179 merged delivery group 6, CR-05: file status, source evidence,
   and conservative function correspondence.
 - PR #180 merged delivery group 7, CR-06: live invariants and separate
@@ -73,7 +74,12 @@ Delivery status:
   169 and left the baseline byte-identical. The refresh uses the existing
   retained-high exception. The pull request description records
   individual retained-high reasons; a refresh does not silence high file-maintainability regressions.
-- The other CRs have not been implemented.
+- PR #190 merged CR-20 at `73c70570`: the request-isolation acceptance
+  cases are split into three concern files with the same ten cases. Its
+  selected acceptance checks, typechecking, and inventory contract pass.
+- CR-21 archives the plan in PR #191. The guide keeps the current
+  contracts, and the archive preserves historical evidence. Deferred work
+  remains deferred.
 
 Owner decisions on 2026-10-19:
 
@@ -88,8 +94,16 @@ Owner decisions on 2026-10-19:
   intentional crash children. Other incomplete capture identities must still
   fail verification. The complete acceptance and unit capture now passes with
   strict completion checks; real integration capture remains deferred.
-- D4 option B, D5's merge workflow, D8, and D9 remain open. No decision
-  expands the selected tests or supplies missing verification evidence.
+- D4 defers CR-10 option B, the measured base-coverage store. CR-10 option A
+  remains the supported test-change notice. D5 defers the merge-time record
+  workflow; manual structural backfill remains supported.
+- D8 retains the existing two baseline exceptions and rejects a third
+  exception for violations already on `main`.
+- D9 retains each command's unexpected-error diagnostics. It approves no
+  shared normalization or conversion from stack output to one line.
+- These dispositions allow CR-21 archival. They expand no selected tests and
+  supply no missing verification evidence. Real integration capture remains
+  deferred; loader-thread coverage remains unsupported and unverified.
 
 Contents:
 
@@ -217,8 +231,9 @@ documents used by every CR are:
 
 - [Review guide](ast-metrics-review.md): commands, configuration, goals,
   and limits; called “the guide” below.
-- [Architecture evolution plan](architecture-evolution-plan.md): original
-  study, design, decisions, and completed T1 to T7; called “the plan”.
+- [Archived architecture evolution plan](../archive/architecture-evolution-plan.md):
+  original study, design, decisions, and completed T1 to T7; called “the plan”.
+  Current contracts and limits are in the guide.
 - [Test inventory](../testing/test-list.md): cases and focused commands.
 - [Test code layout](../testing/test-code-layout.md): support placement and
   dependency rules.
@@ -334,7 +349,7 @@ test group. Do not run the full inventory merely because it is listed.
 
 1. Use TypeScript and erasable syntax under `script/`, with `import type`
    and `.ts` imports. PR #173 converted fetch-url to this layout; PR #189
-   implements CR-19's remaining helper export cleanup.
+   merged CR-19's remaining helper export cleanup.
 2. Apply the owner-approved CR-18 file cap of 40 paths and keep LOC 150.
    Verify the strict new-function warning above 10 paths. Explain retained findings
    under the review process. Do not split only to hit a count. Follow the
@@ -396,17 +411,17 @@ current command or AGENTS.md rule.
 
 D6 and D7 were approved on 2026-10-19 and are implemented. Focused policy
 and pinned-tool boundary tests pass. Selected tests, typechecking, and all 13
-affected live cases pass. D4, D5, D8, and D9 remain open. Their
-recommendations are proposals, not approval. Do not invent an open answer.
+affected live cases pass. On 2026-10-19, the owner approved the dispositions
+for D4, D5, D8, and D9 below. Deferral does not mean implementation or proof.
 
-| ID | CR | Decision and status | Contract or recommendation |
+| ID | CR | Decision and status | Contract or disposition |
 | --- | --- | --- | --- |
-| D4 | CR-10 | Store and use coverage of merged trees beyond option A. | Land the warning first. Decide capture, identity, retention, and size before option B. D3 does not approve this storage. |
-| D5 | CR-12 | Workflow to record every merge on `main`. | Keep manual backfill until workflow behavior is approved. |
+| D4, deferred 2026-10-19 | CR-10 option B | Defer measured base-coverage storage. | Keep implemented option A. A future proposal must define capture, identity, retention, and size before implementation; D3 grants no storage approval. |
+| D5, deferred 2026-10-19 | CR-12 | Defer the merge-time record workflow. | Keep ordinary base recording and manual structural backfill. No merge-time job is approved. |
 | D6, approved 2026-10-19 | CR-15 | Cleaner → MCP and website-fetcher → auth are forbidden. | Enforce resolved target paths in the review wrapper with high findings; the pinned native rule cannot provide this gate. Implemented; focused policy tests pass. Selected tests, typechecking, and all 13 affected live cases pass. |
 | D7, approved 2026-10-19 | CR-18 | File cap 40, file LOC 150 unchanged, new-function warning strictly above 10 paths. | Prove the approved boundary separately from the native warning, which starts at 10. Implemented; focused boundary tests pass. Selected tests, typechecking, and all 13 affected live cases pass. |
-| D8 | CR-16 / Appendix D | Third baseline exception for violations already on `main`. | Keep the current two exceptions until approved. Historical practice does not grant permission. |
-| D9 | CR-17 | Normalize unexpected errors to one line or preserve stack output. | Preserve command contracts during deduplication. A diagnostic behavior change needs approval and tests. |
+| D8, resolved 2026-10-19 | CR-16 / Appendix D | Keep the two baseline exceptions; reject a third for violations already on `main`. | Refresh only for changed rules or a retained high finding with a reason under AGENTS.md. Historical practice grants no exception. |
+| D9, resolved 2026-10-19 | CR-17 | Keep command-specific unexpected-error diagnostics. | Preserve existing stack or one-line output for each command. Shared normalization is not approved. |
 
 ## 4. Change requests
 
@@ -624,7 +639,8 @@ Stale, missing, or unverified data gives absent fields, not zero. Existing
 records remain immutable and readers label missing provenance as legacy
 unknown. Common structural write safety can land independently of the
 count implementation. D3 approves neither a base-coverage store nor a
-merge workflow; D4 and D5 remain open. It does not authorize broader suites.
+merge workflow; both are deferred under D4 and D5. It does not authorize
+broader suites.
 
 **Acceptance criteria and tests.** Cover ancestors, non-ancestors, missing
 refs, offline verification, no write without the flag, repeated/concurrent
@@ -900,7 +916,8 @@ source fingerprints and explicit test paths, with no source path. Empty
 metadata does not establish test-only changes. Option A judges no tests and
 stores no measured base coverage.
 
-**Option B, pending D4.** Store coverage captured for merged input identities
+**Option B, deferred by D4 on 2026-10-19.** The proposal was to store
+coverage captured for merged input identities
 and use it for compatible bases. Before approval, define capture time,
 build/fixture identity, measurement version, size, retention, and merge
 mapping. Revision 3 proposed a Git tree key under `docs/metrics/coverage/`.
@@ -1033,7 +1050,8 @@ selected records present, 1 for failure, and 130/143 for stop signals.
 **Acceptance criteria and tests.** A temporary history writes only missing
 exact-commit records and shows correct gaps. Test count validation, existing
 records, cleanup on failure, unavailable history, and offline rendering.
-Ordinary cases use doubles. A merge-time workflow is still pending D5.
+Ordinary cases use doubles. D5 defers a merge-time workflow; the delivered
+manual backfill remains supported.
 
 **Documents.** Guide, README and index, plan limits, inventory, knip,
 module paths, and paths test.
@@ -1211,7 +1229,7 @@ P2 · S–M · mistake. Land early; maintain alignment through all CRs.
 | Empty trend text | Offline mode without a store says `No trend store.` A configured empty store gets a different message. This changes runtime output. |
 | Config lookup | Verify root versus analyzed-folder behavior in a controlled fixture during implementation, then align comment and guide. This review did not run that check. |
 | Drop threshold | Use the dated seven-point and 1.3-point observations, not an invented ten-point rule. |
-| Baseline exceptions | Keep current two reasons; a third remains D8. |
+| Baseline exceptions | D8 retains the two current reasons and rejects a third for violations already on `main`. |
 | Paths and status | Use the reorganized layout and distinguish historical completed tickets from proposed CRs. |
 
 **Acceptance criteria and tests.** Documents match inspected behavior.
@@ -1239,8 +1257,9 @@ types behind casts. The `tools` case tests the documented contract rather
 than the fake's private list. No export exists only for tests.
 
 Unexpected error handling differs today. A shared handler can preserve
-that difference; converting stacks to one-line messages changes behavior
-and waits for D9 and a separate test. It cannot be called unchanged output.
+that difference. D9 retains the command-specific diagnostics and approves no
+conversion from stack output to one line. A future diagnostic change needs
+separate approval and tests; it cannot be called unchanged output.
 
 **Acceptance criteria and tests.** Existing characterization and goldens
 pass except the deliberately improved tool assertion or separately approved
@@ -1258,7 +1277,7 @@ File-kind read diagnostics and each consumer's schema checks stay intact.
 Text ordering returns zero for ties; locale-sensitive ordering keeps its
 existing contract. Tests use production types and the documented MCP tools
 contract. The architecture command already calculated the CRAP delta once
-before this CR. D9 remains open, so unexpected error output stays unchanged.
+before this CR. D9 retains the existing unexpected-error output for each command.
 
 ### CR-18. Revisit rule caps
 
@@ -1301,8 +1320,8 @@ The script conversion alone selects no product integration, interface, or
 hosted gate. Habit-hooks no longer reports the removed unused exports.
 
 **Delivery.** PR #173 completed the TypeScript conversion and path updates.
-PR #189 implements the remaining export cleanup without changing production
-logic: `readyToken`, `discoverHostedAuthorization`, `callbackResult`, and
+PR #189 merged the remaining export cleanup at `1bc81715` without changing
+production logic: `readyToken`, `discoverHostedAuthorization`, `callbackResult`, and
 `launchBrowser` stay private. No replacement export or test seam is added.
 All 31 existing unit and interface case names and inputs remain. The focused
 cases passed before and after the refactor. Token tests now observe saved
@@ -1336,7 +1355,7 @@ and the acceptance group selected by the test change. No source change
 means no automatic ordinary full suite or hosted build. Update inventory
 and affected support-layout references.
 
-**Delivery candidate, PR #190.** The concurrency cases stay in
+**Delivery.** PR #190 merged this split at `73c70570`. The concurrency cases stay in
 `http-request-isolation.test.ts`. Cancellation and shutdown cases move to
 `http-request-cancellation.test.ts`, and prior-success refusals move to
 `http-request-refusals.test.ts`. The three files use the shared in-process
@@ -1358,6 +1377,19 @@ evidence as history. Do not call pending work complete to permit archiving.
 **Acceptance criteria and review.** Live contracts remain in the guide,
 historical links resolve to the archive, and no executable test is added
 for prose. CR-21 is last, not an item that can land at any time.
+
+**Delivery, PR #191.** Approved implementation is merged through
+PR #190. The owner explicitly deferred D4/CR-10 option B and D5, retained
+the two baseline exceptions under D8, and retained command-specific
+unexpected-error diagnostics under D9. The plan is now at
+[`docs/archive/architecture-evolution-plan.md`](../archive/architecture-evolution-plan.md).
+The guide already holds all five design decisions and the applicable limits;
+it now records these dispositions. Current-behavior comments point to the
+guide, and historical links point to the archive. Ticket evidence is preserved.
+Real integration capture remains deferred because its complete group was not
+selected; fixture proofs do not replace it. Loader-thread coverage remains
+unsupported and unverified. This closeout adds no executable prose test and
+changes no runtime behavior.
 
 ### CR-22. Add a per-function CRAP goal and actionable report
 
@@ -1608,10 +1640,10 @@ or option updates its own README and contract in the same PR.
 | 14 | CR-23 content consolidation | Consolidate explanation; earlier command PRs already update their own sections. |
 | 15, PR #188 | CR-10 option A, CR-11, CR-12 | Test-change notice, independently selected suite capture, and manual structural backfill; no merge workflow. |
 | Implemented in PR #188 | CR-15, CR-18, CR-11 pre-crash protocol | Approved on 2026-10-19. Focused policy, boundary, and crash-protocol tests pass. Complete acceptance and unit capture passes. Selected tests, typechecking, and all 13 affected live cases pass. |
-| Pending owner | CR-10 option B and merge workflow | D4 option B and D5 remain open, as do D8 and D9. |
-| Implemented in PR #189 | CR-19 | TypeScript conversion merged in PR #173; private helper cleanup preserves all 31 focused cases. Selected unit and interface groups, focused command and inventory cases, typechecking, habit-hooks, and the quality process pass. |
-| Implemented in PR #190 | CR-20 | Three concern files preserve all ten cases. Focused cases, 853 emitted acceptance tests, 16 portal acceptance tests, typechecking, and the inventory contract pass. |
-| Last | CR-21 | Archive only when dependent work is complete or explicitly disposed of in a living specification. |
+| Disposed by owner, 2026-10-19 | D4, D5, D8, D9 | Defer CR-10 option B and the merge workflow; retain the two baseline exceptions and command-specific diagnostics. |
+| Merged in PR #189 at `1bc81715` | CR-19 | TypeScript conversion merged in PR #173; private helper cleanup preserves all 31 focused cases. Selected unit and interface groups, focused command and inventory cases, typechecking, habit-hooks, and the quality process pass. |
+| Merged in PR #190 at `73c70570` | CR-20 | Three concern files preserve all ten cases. Focused cases, 853 emitted acceptance tests, 16 portal acceptance tests, typechecking, and the inventory contract pass. |
+| Implemented in PR #191 | CR-21 | Archive after merged implementation and explicit dispositions; current contracts stay in the guide. |
 
 CR-04 depends on CR-03. CR-05 uses CR-03 identity. CR-22 depends on
 CR-01 to CR-03, CR-05, and CR-07; D1 and D2 are approved. CR-09 depends
@@ -1661,7 +1693,7 @@ the full coverage project.
   source fixtures for analysis behavior.
 - A component mapping file or cognitive-complexity tooling.
 - A project-wide CRAP percentage grade.
-- A merge workflow until D5 or a base-coverage store until D4.
+- The merge workflow and measured base-coverage store deferred under D5 and D4.
 - Rewriting existing records or silently extending baseline exceptions.
 - Blanket suites for script/document changes.
 - Implementing CRs merely because this proposal is updated.
@@ -2034,7 +2066,7 @@ PR. Its global charts and stable component matrix use the same last ten
 records and head. Missing fields stay unknown, and count labels preserve
 their D3 basis. D3
 authorizes neither base-coverage storage nor a merge workflow; D4 and D5
-remain open.
+explicitly defer both.
 
 ### A.4 Offline change metadata
 

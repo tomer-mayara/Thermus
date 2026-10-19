@@ -1,5 +1,5 @@
-// A module, not a part of script/code-quality/ast-metrics-snapshot.ts, because the later commands of
-// docs/implementation/architecture-evolution-plan.md compare the snapshot of the merge base with the snapshot of the head.
+// Snapshot and architecture commands compare the merge base with the head through this shared module.
+// See docs/implementation/ast-metrics-review.md, "Take a snapshot" and "Show the architecture delta".
 import type { CheckedToolVersion } from '../shared/tool-version.ts';
 import type { Notice } from './sweep.ts';
 import { snapshotOfCommit } from './commit.ts';
