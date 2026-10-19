@@ -13,4 +13,3 @@ export function declarationName(node: Declaration): string | undefined {
   if ((ts.isArrowFunction(node) || ts.isFunctionExpression(node)) && ts.isVariableDeclaration(node.parent) && ts.isIdentifier(node.parent.name)) return node.parent.name.text;
   return undefined;
 }
-

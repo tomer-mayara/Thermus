@@ -33,4 +33,3 @@ function checkIdentity(value: unknown, snapshot: MapSnapshot, side: string): voi
     throw new CommandError(`The changes ${side} identity does not match the supplied snapshot commit and source fingerprint.`);
   }
 }
-

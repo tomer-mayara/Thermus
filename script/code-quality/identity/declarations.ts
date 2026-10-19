@@ -30,4 +30,3 @@ function ownerOf(node: Declaration): string | undefined {
   }
   return owners.join('/');
 }
-

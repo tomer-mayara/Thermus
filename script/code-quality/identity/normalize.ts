@@ -29,4 +29,3 @@ export function identityOf(candidate: IdentitySource): FunctionIdentity {
     body: syntaxFingerprint(candidate.body), signature: syntaxFingerprint(variableType ? [node, variableType] : [node], excluded),
   };
 }
-
