@@ -209,6 +209,15 @@ marker path { fill: none; stroke-width: 2; }
 
 .connection-widget { margin-top: 24px; min-width: 0; }
 .connection-widget label { display: block; margin-bottom: 8px; font-weight: 600; }
+.guide-method { margin: 0 0 20px; padding: 0; border: 0; min-width: 0; }
+.guide-method legend { margin-bottom: 8px; padding: 0; font-weight: 600; }
+.guide-method-options { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid #7b7e88; border-radius: 8px; background: #17181d; }
+.connection-widget .guide-method label { position: relative; margin: 0; cursor: pointer; }
+.guide-method input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.guide-method span { display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 8px; border-radius: 4px; text-align: center; }
+.guide-method input:checked + span { color: #17181d; background: #f3f2ee; }
+.guide-method input:focus-visible + span { outline: 2px solid #e8552a; outline-offset: -2px; }
+.guide-method label:hover input:not(:checked) + span { background: #2c2d34; }
 .connection-widget select {
   width: 100%;
   min-height: 48px;

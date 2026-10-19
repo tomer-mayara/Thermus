@@ -130,15 +130,16 @@ test('Given product access at a custom endpoint, when the portal opens, then Cla
 });
 
 const clientGuides = [
-  ['codex', /codex mcp add/, 'https://learn.chatgpt.com/docs/extend/mcp?surface=cli'],
-  ['cursor', /mcpServers/, 'https://cursor.com/docs/mcp'],
-  ['vscode', /"servers"/, 'https://code.visualstudio.com/docs/agent-customization/mcp-servers'],
-  ['claude', /custom connector/i, 'https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp'],
-  ['chatgpt', /Add custom MCP server/i, 'https://developers.openai.com/api/docs/guides/custom-mcp-server'],
-  ['other', /remote HTTP/i, 'https://modelcontextprotocol.io/docs/learn/client-concepts'],
+  ['cli', 'codex', /codex mcp add/, 'https://learn.chatgpt.com/docs/extend/mcp?surface=cli'],
+  ['desktop', 'cursor', /mcpServers/, 'https://cursor.com/docs/mcp'],
+  ['desktop', 'vscode', /MCP: Add Server/, 'https://code.visualstudio.com/docs/agent-customization/mcp-servers'],
+  ['desktop', 'claude', /custom connector/i, 'https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp'],
+  ['desktop', 'codex-app', /Settings → MCP servers → Add server/, 'https://learn.chatgpt.com/docs/extend/mcp?surface=app'],
+  ['desktop', 'chatgpt', /Use ChatGPT on the web.*Add custom MCP server/i, 'https://developers.openai.com/api/docs/guides/custom-mcp-server'],
+  ['desktop', 'other', /remote HTTP/i, 'https://modelcontextprotocol.io/docs/learn/client-concepts'],
 ] as const;
 
-for (const [value, expected, guideUrl] of clientGuides) {
+for (const [method, value, expected, guideUrl] of clientGuides) {
   test(`Given product access, when the user selects ${value}, then its quick guide uses the configured endpoint without another request`, async () => {
     const mcpUrl = 'https://gateway.example/team/thermus/mcp';
     const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', roles: ['user'], plan: 'free', mcpUrl } });
@@ -146,6 +147,10 @@ for (const [value, expected, guideUrl] of clientGuides) {
     const view = document.defaultView;
     assert.ok(select);
     assert.ok(view);
+    const radio = document.querySelector<HTMLInputElement>(`input[name="connection-method"][value="${method}"]`);
+    assert.ok(radio);
+    radio.checked = true;
+    radio.dispatchEvent(new view.Event('change'));
     for (const option of select.querySelectorAll('option')) option.removeAttribute('selected');
     const selected = select.querySelector<HTMLOptionElement>(`option[value="${value}"]`);
     assert.ok(selected);
@@ -163,3 +168,36 @@ for (const [value, expected, guideUrl] of clientGuides) {
     assert.deepEqual(requests, ['session', 'portal/access']);
   });
 }
+
+
+test('Given a signed-in user at a custom endpoint, when they choose Desktop Apps and return to CLI, then each setup method offers its own apps without another request', async () => {
+  const mcpUrl = 'https://gateway.example/team/thermus/mcp';
+  const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', roles: ['user'], plan: 'free', mcpUrl } });
+  const view = document.defaultView;
+  assert.ok(view);
+  const methods = document.querySelector('fieldset');
+  assert.equal(methods?.querySelector('legend')?.textContent, 'Connect with');
+  assert.deepEqual([...methods!.querySelectorAll('label')].map((label) => label.textContent), ['CLI', 'Desktop Apps']);
+  const select = document.querySelector<HTMLSelectElement>('#ai-agent');
+  assert.ok(select);
+  assert.deepEqual([...select.querySelectorAll('option')].map((option) => option.textContent), ['Claude Code', 'Codex CLI']);
+  for (const method of ['desktop', 'cli']) {
+    const radio = document.querySelector<HTMLInputElement>(`input[name="connection-method"][value="${method}"]`);
+    assert.ok(radio);
+    radio.checked = true;
+    radio.dispatchEvent(new view.Event('change'));
+    if (method === 'desktop') {
+      assert.equal(select.value, 'claude');
+      assert.equal(document.querySelector('label[for="ai-agent"]')?.textContent, 'Your desktop app');
+      assert.deepEqual([...select.querySelectorAll('option')].map((option) => option.textContent), ['Claude (web / desktop)', 'Codex app', 'ChatGPT (web setup)', 'Cursor', 'VS Code', 'Other MCP client']);
+      assert.equal(document.querySelector('.add-content code')?.textContent, mcpUrl);
+      assert.match(document.querySelector('.add-content')?.textContent ?? '', /Connectors/);
+      assert.match(document.querySelector('.authorize-content')?.textContent ?? '', /Sign in.*workspace.*Approve/s);
+    } else {
+      assert.equal(select.value, 'claude-code');
+      assert.equal(document.querySelector('label[for="ai-agent"]')?.textContent, 'Your AI agent');
+      assert.match(document.querySelector('.add-content code')?.textContent ?? '', /claude mcp add/);
+    }
+  }
+  assert.deepEqual(requests, ['session', 'portal/access']);
+});

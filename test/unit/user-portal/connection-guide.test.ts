@@ -23,7 +23,12 @@ function guide(writeText?: (text: string) => Promise<void>, endpoint = 'https://
     element<HTMLOptionElement>(select, `option[value="${value}"]`).selected = true;
     select.dispatchEvent(new view.Event('change'));
   };
-  return { section, changeAgent };
+  const changeMethod = (value: 'cli' | 'desktop') => {
+    const radio = element<HTMLInputElement>(section, `input[name="connection-method"][value="${value}"]`);
+    radio.checked = true;
+    radio.dispatchEvent(new view.Event('change'));
+  };
+  return { section, changeAgent, changeMethod };
 }
 
 const flushCopy = async () => { await Promise.resolve(); await Promise.resolve(); };
@@ -69,19 +74,62 @@ test('Given a pending copy, when the agent changes before it resolves, then the 
   assert.equal(section.querySelector('[role="status"]')?.textContent, 'Codex CLI guide selected.');
 });
 
-test('Given a dynamic endpoint, when CLI and JSON instructions render, then they preserve its value without executing shell or HTML', () => {
+test('Given a dynamic endpoint, when CLI, JSON and desktop URL instructions render, then they preserve its value without executing shell or HTML', () => {
   const endpoint = 'https://gateway.example/team/mcp?name=O\'Brien&x=$(false)&tag="<img src=x>"';
-  const { section, changeAgent } = guide(undefined, endpoint);
+  const { section, changeAgent, changeMethod } = guide(undefined, endpoint);
   for (const agent of ['claude-code', 'codex']) {
     changeAgent(agent);
     const command = element(section, '.add-content code').textContent ?? '';
     const shellArguments = execFileSync('/bin/sh', ['-c', command.replace(/^(claude|codex) /, 'printf \'%s\\n\' ')], { encoding: 'utf8' }).trim().split('\n');
     assert.ok(shellArguments.includes(endpoint), `${agent} preserves the endpoint as one argument`);
   }
-  for (const agent of ['cursor', 'vscode']) {
+  changeMethod('desktop');
+  changeAgent('cursor');
+  const config = JSON.parse(element(section, '.add-content code').textContent ?? '');
+  assert.equal(config.mcpServers.thermus.url, endpoint);
+  for (const agent of ['claude', 'codex-app', 'chatgpt', 'vscode', 'other']) {
     changeAgent(agent);
-    const config = JSON.parse(element(section, '.add-content code').textContent ?? '');
-    assert.equal(agent === 'cursor' ? config.mcpServers.thermus.url : config.servers.thermus.url, endpoint);
+    assert.equal(element(section, '.add-content code').textContent, endpoint);
   }
   assert.equal(section.querySelector('img'), null);
+});
+
+
+test('Given selections in both setup methods, when the user switches methods, then each method keeps its selected app', () => {
+  const { section, changeAgent, changeMethod } = guide();
+  changeAgent('codex');
+  changeMethod('desktop');
+  assert.equal(element<HTMLSelectElement>(section, 'select').value, 'claude');
+  changeAgent('vscode');
+  changeMethod('cli');
+  assert.equal(element<HTMLSelectElement>(section, 'select').value, 'codex');
+  changeMethod('desktop');
+  assert.equal(element<HTMLSelectElement>(section, 'select').value, 'vscode');
+  assert.equal(element(section, '[role="status"]').textContent, 'VS Code guide selected.');
+});
+
+for (const outcome of ['resolve', 'reject'] as const) {
+  test(`Given a pending copy that will ${outcome}, when the setup method changes, then old feedback cannot replace the selected app status`, async () => {
+    let finish!: () => void;
+    const { section, changeMethod } = guide(() => new Promise<void>((resolve, reject) => {
+      finish = outcome === 'resolve' ? resolve : () => reject(new Error('Denied'));
+    }));
+    element<HTMLButtonElement>(section, '.copy-command').click();
+    changeMethod('desktop');
+    finish();
+    await flushCopy();
+    assert.equal(element(section, '[role="status"]').textContent, 'Claude (web / desktop) guide selected.');
+    assert.equal(element(section, '.copy-url').textContent, 'Copy URL');
+  });
+}
+
+test('Given desktop app setup, when the URL, endpoint and prompt are copied, then the clipboard receives the displayed values', async () => {
+  const writes: string[] = [];
+  const { section, changeMethod } = guide(async (text) => { writes.push(text); });
+  changeMethod('desktop');
+  for (const kind of ['url', 'endpoint', 'prompt']) {
+    element<HTMLButtonElement>(section, `.copy-${kind}`).click();
+    await flushCopy();
+  }
+  assert.deepEqual(writes, ['https://gateway.example/team/mcp', 'https://gateway.example/team/mcp', element(section, '.test-prompt').textContent]);
 });
