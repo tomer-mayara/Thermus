@@ -591,7 +591,8 @@ Run this on the complete candidate after updating from `origin/main` and
 selecting tests. It runs delta, review, coverage resolution, CRAP, and
 architecture in order. It prints and saves four sections: delta, review,
 CRAP, and architecture. The report retains the stage Markdown, including
-all tables, drawings, and legends. `--base` reaches every comparison;
+all tables, drawings, and legends. A text fence preserves the delta's aligned
+rows in the pull request body. `--base` reaches every comparison;
 `--allow-tool-version` reaches each tool operation. Explicit file paths
 resolve from the current folder; default paths use the repository root.
 

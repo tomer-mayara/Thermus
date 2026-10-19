@@ -103,7 +103,8 @@ explicit override, and failed tools or malformed output without success counts.
 
 `test/unit/script/ast-metrics-process.test.ts` checks stage order, completed
 goal misses, operational failures, unavailable required coverage, an empty
-production selection, recording failure, and option conflicts.
+production selection, recording failure, and option conflicts. It checks a
+fenced delta with aligned rows and preserves indentation in Markdown stages.
 The acceptance process files check the complete command with tool and Git
 doubles: `ast-metrics-process.test.ts` checks the document-only four-section
 report and structural record without a CRAP session or suite;

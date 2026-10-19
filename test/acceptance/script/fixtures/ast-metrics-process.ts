@@ -33,7 +33,7 @@ export function documentProcessMarkdown(repository: GitRepository): string {
   const commit = repository.git('rev-parse', 'main').trim();
   const date = repository.git('show', '-s', '--format=%cI', 'main').trim().slice(0, 10);
   return [
-    '# Code quality process', '', '## Delta', '', 'Status: passed.', '', 'No TypeScript file is added or changed against origin/main.', '',
+    '# Code quality process', '', '## Delta', '', 'Status: passed.', '', '```text', 'No TypeScript file is added or changed against origin/main.', '```', '',
     '## Review', '', 'Status: passed.', '', noFinding.trim(), '',
     '## CRAP', '', 'Status: passed.', '', missingCoverage, '', 'No production files to assess.', '',
     '## Architecture', '', 'Status: passed.', '', `## Architecture of src/: base ${commit.slice(0, 8)} → head`, '',

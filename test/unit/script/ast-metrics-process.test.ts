@@ -8,6 +8,7 @@ import type { ProcessOperations } from '../../../script/code-quality/process/typ
 
 const { processCommandOf } = await import(new URL('process/command-line.ts', pathToFileURL(astMetricsProcessScript)).href) as typeof import('../../../script/code-quality/process/command-line.ts');
 const { runProcess } = await import(new URL('process/run.ts', pathToFileURL(astMetricsProcessScript)).href) as typeof import('../../../script/code-quality/process/run.ts');
+const { processReportOf } = await import(new URL('process/report.ts', pathToFileURL(astMetricsProcessScript)).href) as typeof import('../../../script/code-quality/process/report.ts');
 
 function scenario(overrides: Partial<ProcessOperations> = {}) {
   const calls: string[] = [];
@@ -30,14 +31,24 @@ test('completed stages run in order and publish only after all analysis complete
   const report = await runProcess(operations);
   assert.deepEqual(calls, ['delta', 'review', 'coverage', 'crap', 'architecture', 'record']);
   assert.equal(report.passed, true);
-  assert.equal(report.text, '# Code quality process\n\n## Delta\n\nStatus: passed.\n\nDelta evidence.\n\n## Review\n\nStatus: passed.\n\nReview evidence.\n\n## CRAP\n\nStatus: passed.\n\nCoverage reused.\n\nCRAP evidence.\n\n## Architecture\n\nStatus: passed.\n\nRecorded architecture evidence.\n');
+  assert.equal(report.text, '# Code quality process\n\n## Delta\n\nStatus: passed.\n\n```text\nDelta evidence.\n```\n\n## Review\n\nStatus: passed.\n\nReview evidence.\n\n## CRAP\n\nStatus: passed.\n\nCoverage reused.\n\nCRAP evidence.\n\n## Architecture\n\nStatus: passed.\n\nRecorded architecture evidence.\n');
+});
+
+test('the Delta text fence preserves aligned rows and other Markdown keeps its leading indentation', () => {
+  const report = processReportOf([
+    { name: 'Delta', status: 'passed', text: '   50  src/a.ts\n   90  src/b.ts\n' },
+    { name: 'Review', status: 'passed', text: '  - review finding\n\n' },
+    { name: 'CRAP', status: 'passed', text: '    CRAP evidence\n' },
+    { name: 'Architecture', status: 'passed', text: '```mermaid\n  flowchart LR\n```\n' },
+  ]);
+  assert.equal(report, '# Code quality process\n\n## Delta\n\nStatus: passed.\n\n```text\n   50  src/a.ts\n   90  src/b.ts\n```\n\n## Review\n\nStatus: passed.\n\n  - review finding\n\n\n## CRAP\n\nStatus: passed.\n\n    CRAP evidence\n\n## Architecture\n\nStatus: passed.\n\n```mermaid\n  flowchart LR\n```\n');
 });
 
 test('completed goal misses continue through all evidence and may record', async () => {
   const { calls, operations } = scenario({ delta: () => ({ text: 'Below 85.', passed: false }), crap: async () => ({ text: 'Above target.', passed: false }) });
   const report = await runProcess(operations);
   assert.equal(report.passed, false);
-  assert.match(report.text, /Status: goal miss\.\n\nBelow 85\./);
+  assert.match(report.text, /Status: goal miss\.\n\n```text\nBelow 85\./);
   assert.match(report.text, /Above target\./);
   assert.equal(calls.at(-1), 'record');
 });
@@ -47,7 +58,7 @@ for (const stage of ['delta', 'review', 'coverage', 'crap', 'architecture'] as c
     const { calls, operations } = scenario({ [stage]: () => { throw new Error('Tool failed.'); } });
     const report = await runProcess(operations);
     assert.equal(report.passed, false);
-    assert.match(report.text, /Status: failed\.\n\nTool failed\./);
+    assert.match(report.text, stage === 'delta' ? /Status: failed\.\n\n```text\nTool failed\./ : /Status: failed\.\n\nTool failed\./);
     assert.equal(calls.includes('record'), false);
     assert.equal([...report.text.matchAll(/^## /gm)].length, 4);
   });
