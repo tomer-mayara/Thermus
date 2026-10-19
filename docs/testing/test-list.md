@@ -2847,7 +2847,7 @@ Modern client cancellation aborts its call stream. Legacy cancellation coverage
 aborts that stream through the public SDK fetch option. A legacy cancel
 notification alone cannot reach a call on a different stateless request server.
 
-**MCP HTTP shutdown and request isolation** (`test/acceptance/mcp/http-shutdown.test.ts`, `http-renderer-shutdown.test.ts`, `http-request-isolation.test.ts`, `http-cancelled-shutdown.test.ts`)
+**MCP HTTP shutdown and request isolation** (`test/acceptance/mcp/http-shutdown.test.ts`, `http-renderer-shutdown.test.ts`, `http-request-isolation.test.ts`, `http-request-cancellation.test.ts`, `http-request-refusals.test.ts`, `http-cancelled-shutdown.test.ts`)
 
 These cases use the real SDK client and HTTP bridge in both eras. Shutdown uses
 the application lifetime with a provider cleanup probe. Fetcher, pipeline, and
@@ -2859,6 +2859,23 @@ doubles of `controlledRenderer`. The renderer child is a `RendererChildDouble`, 
 the cases check the signals that it records. No renderer executable runs. They
 observe the child, readiness timer, abort listener, and delayed process
 callback through the real MCP HTTP path.
+
+CR-20 splits the request-isolation cases by concern. The concurrency file
+`http-request-isolation.test.ts` has two cases. The cancellation and shutdown
+file `http-request-cancellation.test.ts` has four cases. The refusal file
+`http-request-refusals.test.ts` has four cases. All ten names and test bodies
+stay unchanged, including their 5,000 ms deadlines. The three files share
+`test/support/in-process/mcp-request-isolation-site.ts` for site composition
+and `test/support/dsl/mcp-request-isolation.ts` for the page call and assertions.
+The site keeps its 1,000 ms shutdown grace period and cleanup order.
+
+The focused run passed all ten cases before and after this split on Node
+24.20.0. The complete acceptance group passed 853 emitted tests and 16 portal
+tests. The inventory contract passed all 18 cases.
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/http-request-isolation.test.js dist/test/acceptance/mcp/http-request-cancellation.test.js dist/test/acceptance/mcp/http-request-refusals.test.js
+```
 
 [V] Cancels active work before listener drain and awaits fetch cleanup before provider close
 [V] Refuses new connections, skips later pipeline work, records cancellation once, and permits repeated close

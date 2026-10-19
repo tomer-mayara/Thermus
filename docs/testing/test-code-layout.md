@@ -134,6 +134,14 @@ test/
     isolation/           per-test isolation in the test process
 ```
 
+The MCP request-isolation acceptance cases use
+`S/in-process/mcp-request-isolation-site.ts` for their shared site and its
+controlled fetch, identity, and access collaborators. Their page call and
+result/record assertions live in `S/dsl/mcp-request-isolation.ts`. The three
+case files cover concurrency, cancellation and shutdown, and refusals after
+success. They share these existing scenario operations; no general site
+framework is needed.
+
 Two axes stay apart. The top folders under `test/` give the test type.
 AGENTS.md decides the type by the packages that a test executes, not by the
 folder of its helpers. The folders under `S/` give the layer role. The four
