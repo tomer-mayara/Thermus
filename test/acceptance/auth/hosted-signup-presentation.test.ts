@@ -36,7 +36,7 @@ test('Given a new visitor, when free signup opens, then the branded two-step pag
   assert.deepEqual(site.signupFake.organizations, []);
 });
 
-test('Given an eligible identity, when activation opens, then both full documents precede the exact unchecked agreement and only the existing activation fields are submitted', async (t) => {
+test('Given an eligible identity, when free access is activated, then the readable agreement leads to a branded organization selector and its selection opens the workspace', async (t) => {
   const site = await serveWorkOSSite(t, { config: hostedRootConfig, organizations: [], signupFake: true,
     signup: { enabled: true, documents: approvedSignupDocuments } });
   const user = { id: 'user_PRESENTATION', email: 'person@example.com', firstName: 'Person', emailVerified: true };
@@ -65,4 +65,20 @@ test('Given an eligible identity, when activation opens, then both full document
   assert.equal(accepted.status, 303);
   assert.equal(accepted.location?.pathname, '/organizations');
   assert.equal(accepted.location?.searchParams.get('return_to'), '/');
+  const selection = await browser.follow(accepted);
+  const selector = parseHTML(selection.body).document;
+  assert.equal(selection.status, 200);
+  assert.equal(selector.querySelector('h1')?.textContent, 'Select an organization');
+  assert.equal(selector.querySelector('header img')?.getAttribute('src'), '/assets/thermus-logo.svg');
+  assert.equal(selector.querySelector('.organization-card h2')?.textContent, 'Your organizations');
+  assert.equal(selector.querySelector('.skip-link')?.getAttribute('href'), '#main-content');
+  const choices = formsIn(selection.body);
+  assert.equal(choices.length, 1);
+  assert.equal(choices[0]?.label, 'Personal workspace');
+  assert.equal(choices[0]?.fields.return_to, '/');
+  const selected = await browser.submit(choices[0]!);
+  assert.equal(selected.status, 303);
+  assert.equal(selected.location?.pathname, '/');
+  const session = JSON.parse((await browser.open('session')).body) as { organizationId: string };
+  assert.equal(session.organizationId, choices[0]?.fields.organization_id);
 });
