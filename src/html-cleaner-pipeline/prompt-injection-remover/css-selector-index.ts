@@ -29,7 +29,8 @@ export class CssSelectorIndex {
   }
 
   private normalize(value: string): string {
-    return value.replace(/[A-Z]/g, (character) => character.toLowerCase());
+    const lowerCharacter = (character: string) => character.toLowerCase();
+    return value.replace(/[A-Z]/g, lowerCharacter);
   }
 
   private classTokens(element: HtmlElement): Set<string> {
@@ -125,7 +126,8 @@ export class CssSelectorIndex {
       members = new Set(scope);
       this.scopeMembers.set(scope, members);
     }
-    return candidates.filter((element) => { this.spend(); return members.has(element); });
+    const isInScope = (element: HtmlElement) => { this.spend(); return members.has(element); };
+    return candidates.filter(isInScope);
   }
 
   private refineSelection(selection: CandidateSelection | undefined, matches: readonly HtmlElement[], distance: number): CandidateSelection {
