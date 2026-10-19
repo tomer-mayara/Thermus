@@ -30,7 +30,7 @@ h2{font-size:32px}
 .organization-list{display:grid;gap:12px;list-style:none;margin:0;padding:0}
 .organization-list li,.organization-list form{min-width:0;margin:0}
 .organization-list button{position:relative;display:block;min-height:80px;width:100%;padding:20px 56px 20px 20px;border:1px solid #7B7E88;border-radius:8px;background:#17181D;color:#F3F2EE;font:600 18px/1.5 "IBM Plex Sans",system-ui,sans-serif;text-align:left;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
-.organization-list button:after{content:"→";position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:24px;font-weight:400;color:#E8552A}
+.organization-list button:after{content:"→" / "";position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:24px;font-weight:400;color:#E8552A}
 .organization-list button:hover{background:#2C2D34;border-color:#F3F2EE}
 .organization-list [aria-current="true"] button{border-color:#E8552A;box-shadow:inset 3px 0 #E8552A}
 .selection-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E;color:#B4BAC0;font-size:12px}
