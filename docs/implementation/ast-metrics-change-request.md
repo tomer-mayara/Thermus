@@ -1336,6 +1336,15 @@ and the acceptance group selected by the test change. No source change
 means no automatic ordinary full suite or hosted build. Update inventory
 and affected support-layout references.
 
+**Delivery candidate, PR #190.** The concurrency cases stay in
+`http-request-isolation.test.ts`. Cancellation and shutdown cases move to
+`http-request-cancellation.test.ts`, and prior-success refusals move to
+`http-request-refusals.test.ts`. The three files use the shared in-process
+request-isolation site and DSL. All ten generated case names and all test
+bodies stay unchanged. Focused runs pass 10/10 before and after the split.
+The complete acceptance group passes: 853 emitted tests and 16 portal tests.
+Typechecking and the 18-case inventory contract pass. No source file changed.
+
 ### CR-21. Archive the completed architecture plan
 
 P3 · S. Depends on completion or explicit disposition of all CRs still
@@ -1601,7 +1610,7 @@ or option updates its own README and contract in the same PR.
 | Implemented in PR #188 | CR-15, CR-18, CR-11 pre-crash protocol | Approved on 2026-10-19. Focused policy, boundary, and crash-protocol tests pass. Complete acceptance and unit capture passes. Selected tests, typechecking, and all 13 affected live cases pass. |
 | Pending owner | CR-10 option B and merge workflow | D4 option B and D5 remain open, as do D8 and D9. |
 | Implemented in PR #189 | CR-19 | TypeScript conversion merged in PR #173; private helper cleanup preserves all 31 focused cases. Selected unit and interface groups, focused command and inventory cases, typechecking, habit-hooks, and the quality process pass. |
-| Independent | CR-20 | Separate cleanup and its selected checks. |
+| Implemented in PR #190 | CR-20 | Three concern files preserve all ten cases. Focused cases, 853 emitted acceptance tests, 16 portal acceptance tests, typechecking, and the inventory contract pass. |
 | Last | CR-21 | Archive only when dependent work is complete or explicitly disposed of in a living specification. |
 
 CR-04 depends on CR-03. CR-05 uses CR-03 identity. CR-22 depends on
