@@ -105,6 +105,29 @@ Owner decisions on 2026-10-19:
   supply no missing verification evidence. Real integration capture remains
   deferred; loader-thread coverage remains unsupported and unverified.
 
+Current loader follow-up, PR #193, 2026-10-19: the owner requested verified
+capture of the real `tsx` loader threads without replacing the existing tests.
+At `c620cf8f`, all 535 integration tests passed, but strict capture verification
+rejected four raw-only loader threads. That run did not produce verified
+coverage. The follow-up adds a version-4 capture protocol with actual loader and
+owner identities, a nonce-bound shutdown exchange after genuine owner exit,
+and an intact checkpoint plus a distinct later V8 flush. The private genuine-exit
+guard depends on pinned Node 24.20.0 and fails closed when absent. Legacy
+manifests keep their original rules.
+
+The complete real integration capture passed on 2026-10-19 at
+`88bfbf7193e990474be87170b62e10cb7d8118ce`, on top of `main` at `bc722eef`
+(PR #192). All 535 tests in 44 suites passed, with zero failures, cancellations,
+skips, or todos. The unchanged real work-slice tests ran through `pnpm` and
+`tsx`. The version-4 archive retains 226 raw files and all 113 participants:
+109 normal-exit owners and four real internal loaders. Each loader has matching
+owner and handshake evidence, an unchanged one-file checkpoint, and one distinct
+later V8 flush. Strict `--from` reimport exited 0 and produced a byte-identical
+report while keeping `["integration"]` and the original nested capture identity.
+The default coverage report stayed unchanged. This full capture is separate
+from the protocol fixtures. This note updates current work only; the dated
+delivery and archival evidence below keeps its original scope and result.
+
 Contents:
 
 1. Summary

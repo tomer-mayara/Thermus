@@ -357,14 +357,15 @@ and workers, including children with a reduced environment. The runner uses
 Workers with an explicit argument array receive the required preload. A default
 CommonJS eval worker does not inherit `--import` execution and stays unverified
 unless it has the explicit captured-argument adaptation.
-Explicit independent captures stay separate. Each process/thread needs normal flush-and-exit evidence
-or the approved verified pre-crash seal. Missing, untracked, unflushed, or
+Explicit independent captures stay separate. Each process/thread needs normal flush-and-exit evidence,
+the verified loader shutdown protocol described below, or the approved verified
+pre-crash seal. Missing, untracked, unflushed, or
 unsealed killed participants prevent verified publication; a failed suite keeps
 the previous good report. A real collector proof runs only when all of its
 complete groups are already selected; fixture success does not prove that
 whole-repository collection will succeed.
 
-The complete real combined capture passed on 2026-10-19 in requested order
+The earlier complete real combined capture passed on 2026-10-19 in requested order
 `[acceptance, unit]`: 853 emitted acceptance tests and 16 portal acceptance
 tests, then 3,544 emitted unit tests and 19 portal unit tests. Every group had
 zero failures and zero skips. Both captures are verified under
@@ -373,12 +374,35 @@ contains 115 production files and 3,430 raw V8 files; its `processes` field
 counts raw files, not distinct processes. `createApplication` was called 89
 times with covered share 1. The proof includes eight sealed unit crash children,
 the busy MCP fake's normal SIGTERM cleanup, and the registration test's clean
-server stop. Real integration capture remains deferred because that complete
-group was not selected; suite-union contracts cover it with doubles. Both collecting live checks passed, with no skips. The latest retained unit
+server stop. That earlier proof did not select the complete integration group; its
+suite-union contracts used doubles. Both collecting live checks passed, with no skips. The latest retained unit
 capture also imported as verified, with 104 production files and 880 raw V8
 files. All 13 affected live cases passed without skips: two collecting cases,
 ten structural cases, and one CRAP case with verified imported unit coverage.
 Final typechecking also passed.
+
+Current loader proof, 2026-10-19: the complete real integration capture passed
+at `88bfbf7193e990474be87170b62e10cb7d8118ce`, on top of `main` at `bc722eef`
+(PR #192). All 535 tests in 44 suites passed, with zero failures, cancellations,
+skips, or todos. Collection completed with exit 0 in 29.671 seconds. This is a
+complete repository capture, separate from the small protocol fixtures. The
+existing real work-slice tests were unchanged.
+
+The retained `capture-integration-aQqaHK` archive uses manifest version 4 and
+`normal-exit-or-sealed-or-loader-1`. It contains 226 raw V8 files from 109 PIDs
+and 113 participant identities: 109 normal-exit owners and four actual internal
+`tsx` loader threads. Every loader has matching request, acknowledgement, and
+owner receipt evidence, an unchanged one-file checkpoint, one distinct later
+V8 flush, and a normally completed matching owner. The report covers 110 source
+files and records 24 calls to `createApplication`.
+
+Strict `--from` reimport exited 0 in 2.447 seconds and produced a byte-identical
+report. It kept `["integration"]`, the original capture commit, and the nested original capture
+identity. The default `ast-report/coverage.json` stayed unchanged. Local evidence
+is under `ast-report/loader-integration-final-2026-10-19/`.
+The earlier `c620cf8f` run also passed all 535 integration tests, but its four
+raw-only loader threads caused strict verification to fail. That failed capture
+remains historical evidence; it was not promoted to verified status.
 
 The collector accepts emitted JavaScript under `dist/src/` and source
 TypeScript under `src/`. It maps `dist/src/x.js` to `src/x.ts` and ignores
@@ -461,13 +485,14 @@ duplicates, and check each capture's commit, source, runtime, compiler, build,
 measurement version, and comparison identity. Legacy unit strings remain
 readable.
 
-New capture manifests use `version: 3`, retain full per-suite `identity` and
-`comparisonIdentity`, and add `completionProtocol: "normal-exit-or-sealed-1"`
-and the original `captureId`. Per-capture provenance retains both fields.
+New capture manifests use `version: 4`, retain full per-suite `identity` and
+`comparisonIdentity`, and use
+`completionProtocol: "normal-exit-or-sealed-or-loader-1"` with the original
+`captureId`. Per-capture provenance retains both fields.
 `captureId` hashes the resolved original capture directory; import preserves it.
 `rawFingerprint` binds raw `coverage-*`, lifecycle `process-*`, `seal-request-*`,
-`seal-receipt-*`, and `signal-*` file names and contents. Version-1 unit manifests and
-version-2 manifests remain readable under their original evidence rules;
+`seal-receipt-*`, `signal-*`, and loader handshake file names and contents.
+Manifest versions 1, 2, and 3 remain readable under their original evidence rules;
 legacy data is not relabeled as using the new protocol. Report schema stays
 version 2 and the measurement stays `own-characters-1`. The build manifest
 still uses the canonical unit identity and an emitted-output hash.
@@ -499,12 +524,53 @@ cannot obtain verified status by being omitted.
 Verified public worker cases include default ESM file workers and workers
 with explicit captured arguments. A default CommonJS eval worker without
 that adaptation stays unverified; support does not imply that all worker
-forms can supply completion evidence. Actual TypeScript entries using the `tsx`
-loader can create loader threads without that evidence. Both import and require
-preloads must reject those captures while the loader threads do not cooperate;
-raw-only or still-running loader identities cannot be ignored or called
-verified. The current emitted-unit and native TypeScript portal selections do
-not require that loader.
+forms can supply completion evidence.
+
+A capture preload registers an observer in the actual asynchronous loader thread
+through public [`module.register()`](https://nodejs.org/download/release/v24.20.0/docs/api/module.html#asynchronous-customization-hooks).
+This covers actual asynchronous loaders used by real `pnpm` and `tsx`
+TypeScript entries with either the import or require capture preload. It does
+not replace the entry or its loader. The loader and its owner exchange a
+capture ID, PID, actual loader thread ID, owner thread ID,
+and nonce. Persistent `loader-request-*`, `loader-ack-*`, and
+`loader-receipt-*` files bind that exchange to the captured participant under
+`loaderProtocol: "loader-flush-park-1"`. A `loader-parked` process marker keeps
+`complete: false`; only the checked shutdown exchange can approve it.
+
+Pinned Node 24.20.0 also runs `--require` preloads inside its asynchronous loader
+thread, as shown in the [loader worker source](https://github.com/nodejs/node/blob/v24.20.0/lib/internal/modules/esm/worker.js).
+The lifecycle preload first writes an incomplete `loader-awaiting-owner` marker.
+The observer adopts that same marker only after it binds the actual loader and
+owner identities. It does not create a second ordinary worker marker or omit the
+thread. Without an owner, that participant stays unverified.
+
+This support does not certify every `tsx` invocation or generic worker. A direct
+require capture preload with `node --import tsx` can select synchronous hooks
+and start an unreferenced ordinary esbuild worker. That worker still needs its
+own completion evidence and the capture is refused when it does not cooperate.
+The positive require-preload case explicitly registers the asynchronous
+`tsx/esm` loader through public `module.register()` and uses its namespaced
+typed import, while retaining the real `pnpm` and `node --import tsx` chain.
+
+The owner requests the final loader flush only after its genuine exit listeners
+finish. A manually emitted `exit` event must not start this exchange or stop
+later application work. The guard checks the private `process._exiting === true`
+state in pinned Node 24.20.0. Its basis is Node's
+[`process.exit()` implementation](https://github.com/nodejs/node/blob/v24.20.0/lib/internal/process/per_thread.js)
+and [native exit hook](https://github.com/nodejs/node/blob/v24.20.0/src/api/hooks.cc).
+This is a version-specific implementation dependency, not a public Node API
+promise. An absent or different guard value leaves the participant incomplete.
+
+After the owner exit listeners finish, the loader calls `takeCoverage()` and
+parks without calling `stopCoverage()`. Verification requires an intact
+checkpoint, a distinct later V8 flush, matching handshake evidence, and normal
+completion of the owner. The complete exchange, including the clock advance
+needed to distinguish raw flush files, has a three-second deadline. Missing,
+stale, duplicate, malformed, changed, or wrong-owner evidence fails closed.
+Signal death cannot use loader completion, and a normal-owner claim cannot hide
+raw-only or still-running thread identities. Active or earlier worker evidence
+continues to prevent a pre-crash seal. A focused protocol test does not prove
+that a complete repository capture succeeds.
 
 The deterministic SHA-256 input identity covers the source tree, tests and
 helpers, non-TypeScript fixtures, scripts, configuration, package manifests,

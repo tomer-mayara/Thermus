@@ -2,6 +2,8 @@ import { captureSetFingerprintOf } from './captures.ts';
 import { objectOf, type JsonObject } from '../shared/json.ts';
 import type { CoverageProvenance, CoverageSuite, InputIdentity, VerifiedCoverageProvenance } from './types.ts';
 
+const captureProtocols = new Set<unknown>(['normal-exit-or-sealed-1', 'normal-exit-or-sealed-or-loader-1']);
+
 function isHash(value: unknown): value is string {
   return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 }
@@ -81,6 +83,6 @@ export function coverageSuitesIn(value: unknown): readonly CoverageSuite[] | und
 
 function captureProtocolIn(record: JsonObject): Pick<VerifiedCoverageProvenance, 'completionProtocol' | 'captureId'> | undefined {
   if (record.completionProtocol === undefined && record.captureId === undefined) return {};
-  if (record.completionProtocol !== 'normal-exit-or-sealed-1' || !isHash(record.captureId)) return undefined;
-  return { completionProtocol: record.completionProtocol, captureId: record.captureId };
+  if (!captureProtocols.has(record.completionProtocol) || !isHash(record.captureId)) return undefined;
+  return { completionProtocol: record.completionProtocol as VerifiedCoverageProvenance['completionProtocol'], captureId: record.captureId };
 }

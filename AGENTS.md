@@ -134,7 +134,11 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    or publish them as verified. A protocol fixture does not replace a complete
    real capture proof. Normal-exit checkpoints must have later V8 flush
    evidence. A captured PID's signal exit needs a verified seal; later raw
-   coverage alone does not prove normal termination.
+   coverage alone does not prove normal termination. Real loader threads need
+   the verified loader shutdown exchange: actual thread and owner identities,
+   a completed normal owner, an intact checkpoint, and a distinct later V8 flush.
+   Do not stop capture on a manually emitted exit event. The genuine-exit guard
+   depends on pinned Node 24.20.0; missing guard evidence fails closed.
 3. Maintainability goal: 85 or more for each changed production file under
    `src/`. Test and support files have no goal. Inspect low files with
    `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.

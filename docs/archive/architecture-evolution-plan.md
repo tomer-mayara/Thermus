@@ -11,6 +11,27 @@ Real integration capture remains deferred because its complete group was not
 selected. Loader-thread coverage remains unsupported and unverified.
 The study, dated observations, and completed ticket evidence below remain history.
 
+Current loader follow-up, PR #193, 2026-10-19: at `c620cf8f`, all 535 real
+integration tests passed, but capture verification rejected four raw-only `tsx`
+loader threads. The owner requested the actual loader lifecycle fix while
+preserving those tests. The new version-4 protocol binds capture, PID, loader
+thread, owner thread, and nonce. Genuine owner exit must finish its listeners
+before the loader flushes and parks. Verification requires an intact checkpoint,
+a distinct later V8 flush, and normal owner completion. The private exit guard
+depends on pinned Node 24.20.0 and fails closed when absent.
+
+The complete real integration capture passed on 2026-10-19 at
+`88bfbf7193e990474be87170b62e10cb7d8118ce`, on top of `main` at `bc722eef`
+(PR #192): 535 tests in 44 suites, zero failures, cancellations, skips, or todos.
+It kept the real work-slice tests unchanged. The version-4 archive has 226 raw
+files and all 113 participants: 109 normal-exit owners and four real internal
+`tsx` loaders. Each loader has matching owner and handshake evidence, an intact
+one-file checkpoint, and one distinct later V8 flush. Strict archived reimport
+exited 0 and produced a byte-identical report with the original
+`["integration"]` capture identity. The default coverage report stayed unchanged.
+This full capture is separate from the protocol fixtures. This current note
+leaves the earlier dated evidence and deferrals below as history.
+
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
 "Review record"). Historical tickets T1 to T7 are done (see the appendix).
 PR #175 completed CR-16 and the CR-23 contract-test foundation. PR #176
