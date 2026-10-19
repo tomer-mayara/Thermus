@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { fetchUrlScript } from '../../support/processes/module-paths.ts';
 
-const { readyToken } = await import(new URL('fetch-url/oauth.mjs', pathToFileURL(fetchUrlScript)).href);
+const { readyToken } = await import(new URL('helper/oauth.mjs', pathToFileURL(fetchUrlScript)).href);
 const valid = { access_token: 'opaque-access', refresh_token: 'opaque-refresh', token_type: 'bEaReR', expires_in: 300, scope: 'openid offline_access' };
 
 test('Given an OAuth response, when it becomes ready credentials, then expiry uses request start and unused identity data is discarded', () => {

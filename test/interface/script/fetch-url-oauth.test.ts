@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { fetchUrlScript } from '../../support/processes/module-paths.ts';
 
-const { discoverHostedAuthorization } = await import(new URL('fetch-url/oauth.mjs', pathToFileURL(fetchUrlScript)).href);
+const { discoverHostedAuthorization } = await import(new URL('helper/oauth.mjs', pathToFileURL(fetchUrlScript)).href);
 const profile = { endpoint: 'https://gateway.example/mcp', issuer: 'https://issuer.example', clientId: 'public-test-client' };
 const authorizationMetadata = {
   issuer: profile.issuer, authorization_endpoint: `${profile.issuer}/authorize`, token_endpoint: `${profile.issuer}/token`,

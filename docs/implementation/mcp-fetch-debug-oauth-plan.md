@@ -4,7 +4,7 @@ Status: **Implemented and validated; awaiting owner review**. Date: **2026-10-17
 
 ## Purpose and current behavior
 
-Before this upgrade, [fetch-url.mjs](../../script/fetch-url.mjs) accepted a
+Before this upgrade, [fetch-url.mjs](../../script/fetch-url/fetch-url.mjs) accepted a
 supplied Bearer credential, connected through the pinned MCP client, called
 `getURLAsMarkdown` with `{url, reason}`, and printed exact Markdown. It did not
 sign in or refresh. The [original specification](mcp-fetch-debug.md) records
@@ -48,9 +48,9 @@ If `THERMUS_API_KEY` is present, give a useful instruction to unset it first.
 Fetch still requires a URL and reason. Use:
 
 ```sh
-pnpm exec node script/fetch-url.mjs --login
-pnpm exec node script/fetch-url.mjs --url 'https://example.com/' --reason 'Inspect the page content'
-pnpm exec node script/fetch-url.mjs --logout
+pnpm exec node script/fetch-url/fetch-url.mjs --login
+pnpm exec node script/fetch-url/fetch-url.mjs --url 'https://example.com/' --reason 'Inspect the page content'
+pnpm exec node script/fetch-url/fetch-url.mjs --logout
 ```
 
 Fetch success prints exact Markdown; controls print no stdout. Diagnostics
@@ -316,8 +316,8 @@ state were removed after the test.
 
 Code candidate: `682eea29d38373c7efa35e889d61b1b48d3b2d13`.
 
-`script/fetch-url.mjs` is the only command entry point. Its four internal
-modules are under `script/fetch-url/`: `oauth.mjs`, `browser.mjs`,
+`script/fetch-url/fetch-url.mjs` is the only command entry point. Its four internal
+modules are under `script/fetch-url/helper/`: `oauth.mjs`, `browser.mjs`,
 `credential-store.mjs`, and `errors.mjs`. The helper bodies are unchanged
 apart from relative import paths. The folder change keeps the CLI options and
 OAuth behavior the same. The manager reviewed the CLI/OAuth implementation,

@@ -1,4 +1,4 @@
-import { runFetchUrlCommand } from '../../../script/fetch-url.mjs';
+import { runFetchUrlCommand } from '../../../script/fetch-url/fetch-url.mjs';
 
 const settings = JSON.parse(process.env.THERMUS_TEST_OAUTH);
 if (settings.failSync) {

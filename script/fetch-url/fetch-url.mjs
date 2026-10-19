@@ -2,7 +2,7 @@
 import { pathToFileURL } from 'node:url';
 import { Client, StreamableHTTPClientTransport, SdkHttpError, UnauthorizedError } from '@modelcontextprotocol/client';
 import { parseArgs } from 'node:util';
-import { FetchUrlError } from './fetch-url/errors.mjs';
+import { FetchUrlError } from './helper/errors.mjs';
 
 
 const hostedEndpoint = 'https://app.thermus.ai/mcp';
@@ -67,8 +67,8 @@ function httpUrl(value, label) {
   return url;
 }
 
-const help = `Usage: node script/fetch-url.mjs --url URL --reason TEXT [options]
-       node script/fetch-url.mjs --login | --logout
+const help = `Usage: node script/fetch-url/fetch-url.mjs --url URL --reason TEXT [options]
+       node script/fetch-url/fetch-url.mjs --login | --logout
 
 Call Thermus getURLAsMarkdown and print the exact Markdown to stdout.
 
@@ -151,7 +151,7 @@ async function run(options, runtime, signal) {
   if (options.explicit) return process.stdout.write(await fetchWithDeadline(options, signal));
   const profile = runtime.profile ?? { endpoint: hostedEndpoint, issuer: 'https://spontaneous-mountain-26.authkit.app', clientId: 'client_01M561NFVWJDE1SQ4EFMKS38C6' };
   if (options.endpoint.href !== profile.endpoint) throw new FetchUrlError('This endpoint needs an explicit Bearer credential. OAuth is only available for hosted Thermus.');
-  const { prepareOAuth } = await import('./fetch-url/oauth.mjs');
+  const { prepareOAuth } = await import('./helper/oauth.mjs');
   const credential = await prepareOAuth({ ...runtime, profile, operation: options.operation, interactive: !options.nonInteractive && (runtime.interactive ?? Boolean(process.stdin.isTTY && process.stderr.isTTY)) }, signal);
   if (options.operation === 'logout') return process.stderr.write('Local grant deleted. Remote authorization, browser sessions, and running requests remain unchanged.\n');
   if (options.operation === 'login') return process.stderr.write('Hosted login saved.\n');

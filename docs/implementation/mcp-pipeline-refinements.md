@@ -183,9 +183,9 @@ The manager retains these findings:
 Habit-hooks exited 1 with 15 findings (`habit-hooks.log`). The manager retains:
 
 - Four test-only export findings: `readyToken` and
-  `discoverHostedAuthorization` in unchanged `script/fetch-url/oauth.mjs`, and
+  `discoverHostedAuthorization` in unchanged `script/fetch-url/helper/oauth.mjs`, and
   `callbackResult` and `launchBrowser` in unchanged
-  `script/fetch-url/browser.mjs`. The functions are used internally; only their
+  `script/fetch-url/helper/browser.mjs`. The functions are used internally; only their
   exports are accessed solely by tests. They concern existing CLI test access. A CLI
   entry-point or module redesign is separate work and is not hidden by a snooze.
 - Nine comment findings. Three context-field comments define the distinct
