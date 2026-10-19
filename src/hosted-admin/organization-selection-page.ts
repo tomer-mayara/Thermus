@@ -3,7 +3,7 @@ import type { AuthorizedOrganization } from '../organizations/organization-admin
 import { FORM_HEADERS, hiddenField, postForm } from './page-html.ts';
 import { ORGANIZATION_SELECTION_STYLE } from './organization-selection-style.ts';
 
-export interface OrganizationSelectionForm {
+interface OrganizationSelectionForm {
   readonly action: string;
   readonly csrfToken: string;
   readonly returnTo: string;

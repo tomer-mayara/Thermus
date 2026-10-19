@@ -1,5 +1,5 @@
 export const ORGANIZATION_SELECTION_STYLE = `
-@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}
+@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}
 @font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/assets/plex-mono-400-latin.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
 *{box-sizing:border-box}

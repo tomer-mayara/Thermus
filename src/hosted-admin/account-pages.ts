@@ -1,7 +1,7 @@
 import { escapeHtml } from '../html/html-escape.ts';
 import { htmlDocument, NOTICE_HEADERS } from './page-html.ts';
 
-export { organizationSelectionPage, type OrganizationSelectionForm } from './organization-selection-page.ts';
+export { organizationSelectionPage } from './organization-selection-page.ts';
 
 interface Notice {
   readonly status: number;
