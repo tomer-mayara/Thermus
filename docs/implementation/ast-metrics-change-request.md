@@ -40,8 +40,10 @@ Delivery status:
   verify capture provenance, make trend writes explicit and safe, and label
   historical estimates under approved D3.
 - PR #173 already converted and organized the fetch-url scripts as
-  TypeScript. CR-19's removal of the four exported test seams remains;
-  that PR retained them to preserve its characterization tests.
+  TypeScript. PR #189 implements CR-19's remaining cleanup: the four
+  helper exports are private, and all 31 characterization cases use existing
+  public entry points. Its selected checks and quality process pass; the PR
+  awaits merge.
 - PR #179 merged delivery group 6, CR-05: file status, source evidence,
   and conservative function correspondence.
 - PR #180 merged delivery group 7, CR-06: live invariants and separate
@@ -58,8 +60,8 @@ Delivery status:
   community edge changes, and show stable source-folder components.
 - PR #186 merged CR-14: global trend charts, commit titles and PR
   numbers, and a stable component trend matrix.
-- PR #188 implements CR-10 option A, selected-suite coverage under
-  CR-11, and manual CR-12 backfill and gap reporting. It is not merged.
+- PR #188 merged at `efed6618`: CR-10 option A, selected-suite coverage
+  under CR-11, and manual CR-12 backfill and gap reporting.
   The owner approved D6's cleaner → MCP and website-fetcher → auth path
   rules through the review wrapper, D7's file cap of 40 paths with LOC 150
   unchanged and a strict new-function warning above 10 paths, and CR-11's
@@ -67,7 +69,7 @@ Delivery status:
   selected tests, typechecking, and all 13 affected live cases pass. The verified
   combined capture proof is recorded under CR-11.
   The rule refresh changed 209 intermediate entries to 169 after the approved
-  D6/D7 changes; `origin/main` has 175 entries. Final verification stayed at
+  D6/D7 changes; the base before PR #188 had 175 entries. Final verification stayed at
   169 and left the baseline byte-identical. The refresh uses the existing
   retained-high exception. The pull request description records
   individual retained-high reasons; a refresh does not silence high file-maintainability regressions.
@@ -232,7 +234,7 @@ rules set class maintainability 85, efferent coupling 10, file LOC 150,
 function LOC 30, function logical LOC 20, and file cyclomatic complexity
 40 after the approved D7 change. The earlier file cap was 20. The separate delta command enforces the file maintainability goal.
 The rule refresh changed 209 intermediate entries to 169 after the approved
-D6/D7 changes; `origin/main` has 175 entries. The refresh uses
+D6/D7 changes; the base before PR #188 had 175 entries. The refresh uses
 AGENTS.md's existing exception for retained high findings and adds no baseline
 exception. Final verification stayed at 169 and left the baseline byte-identical.
 Final review reports 10 high maintainability findings, two medium findings,
@@ -331,7 +333,8 @@ test group. Do not run the full inventory merely because it is listed.
 ### 3.1 Rules for every implementation
 
 1. Use TypeScript and erasable syntax under `script/`, with `import type`
-   and `.ts` imports. CR-19 covers the existing fetch-url exception.
+   and `.ts` imports. PR #173 converted fetch-url to this layout; PR #189
+   implements CR-19's remaining helper export cleanup.
 2. Apply the owner-approved CR-18 file cap of 40 paths and keep LOC 150.
    Verify the strict new-function warning above 10 paths. Explain retained findings
    under the review process. Do not split only to hit a count. Follow the
@@ -1166,7 +1169,7 @@ wrapper with high findings. The candidate implements these rules, and focused
 policy tests pass. Selected tests, typechecking, and all 13 affected live cases pass.
 Native symbol matching is not evidence that the approved path rules work.
 Do not enable `no_cross_community_dependencies`; clusters can drift.
-The rule refresh changed 209 intermediate entries to 169; `origin/main` has
+The rule refresh changed 209 intermediate entries to 169; the base before PR #188 had
 175 entries. Final verification stayed at 169 and left the baseline
 byte-identical. Retained findings still need individual reasons.
 
@@ -1296,6 +1299,25 @@ README, and inventory. Do not add a feature during conversion.
 affected existing fetch-url tests and groups selected by actual test edits.
 The script conversion alone selects no product integration, interface, or
 hosted gate. Habit-hooks no longer reports the removed unused exports.
+
+**Delivery.** PR #173 completed the TypeScript conversion and path updates.
+PR #189 implements the remaining export cleanup without changing production
+logic: `readyToken`, `discoverHostedAuthorization`, `callbackResult`, and
+`launchBrowser` stay private. No replacement export or test seam is added.
+All 31 existing unit and interface case names and inputs remain. The focused
+cases passed before and after the refactor. Token tests now observe saved
+credentials and local failures through `prepareOAuth()`; callback tests observe
+HTTP responses and manual fallback through `browserAuthorization()`. The SDK
+can reject malformed token data before the private parser; those tests assert
+the existing sanitized public failure and no saved credentials. Metadata tests
+use the existing refresh path and preserve discovery request counts.
+The changed test paths select the complete unit and interface groups before
+Ready. The unit group passes 3,544 emitted tests and 19 portal tests; the final
+verified unit capture repeats this selection and passes. The interface group
+passes 138 tests. The focused command acceptance tests pass 43 cases, and the
+inventory contract passes 18. Typechecking and habit-hooks pass. The final
+quality process passes with no regressions and no baseline change. Its report
+includes both architecture drawings and the verified unit coverage origin.
 
 ### CR-20. Split the MCP request-isolation acceptance file
 
@@ -1578,7 +1600,8 @@ or option updates its own README and contract in the same PR.
 | 15, PR #188 | CR-10 option A, CR-11, CR-12 | Test-change notice, independently selected suite capture, and manual structural backfill; no merge workflow. |
 | Implemented in PR #188 | CR-15, CR-18, CR-11 pre-crash protocol | Approved on 2026-10-19. Focused policy, boundary, and crash-protocol tests pass. Complete acceptance and unit capture passes. Selected tests, typechecking, and all 13 affected live cases pass. |
 | Pending owner | CR-10 option B and merge workflow | D4 option B and D5 remain open, as do D8 and D9. |
-| Independent | CR-19 and CR-20 | Separate cleanup and its selected checks. |
+| Implemented in PR #189 | CR-19 | TypeScript conversion merged in PR #173; private helper cleanup preserves all 31 focused cases. Selected unit and interface groups, focused command and inventory cases, typechecking, habit-hooks, and the quality process pass. |
+| Independent | CR-20 | Separate cleanup and its selected checks. |
 | Last | CR-21 | Archive only when dependent work is complete or explicitly disposed of in a living specification. |
 
 CR-04 depends on CR-03. CR-05 uses CR-03 identity. CR-22 depends on

@@ -9,7 +9,7 @@ type CallbackExpected = { state: string; metadata: { issuer: string; authorizati
 export type CallbackResult = { denied: true; code?: never; iss?: never } | { denied?: never; code: string; iss: string | undefined };
 type PendingAuthorization = CallbackExpected & { redirectUrl: string; authorizationUrl: URL; openBrowser?: BrowserOpener };
 
-export function callbackResult(parameters: URLSearchParams, expected: CallbackExpected): CallbackResult {
+function callbackResult(parameters: URLSearchParams, expected: CallbackExpected): CallbackResult {
   const single = ['state', 'code', 'error', 'iss', 'error_description', 'error_uri'];
   if (single.some((key) => parameters.getAll(key).length > 1)) throw new FetchUrlError('Invalid OAuth callback.');
   const state = parameters.get('state') ?? '';
@@ -32,7 +32,7 @@ function requireCallbackChoice(parameters: URLSearchParams, code: string | null,
   return code ? { code } : { denied: true };
 }
 
-export function launchBrowser(url: URL, signal: AbortSignal): Promise<void> {
+function launchBrowser(url: URL, signal: AbortSignal): Promise<void> {
   signal.throwIfAborted();
   const command = process.platform === 'darwin' ? 'open' : 'xdg-open';
   return new Promise<void>((resolve, reject) => {

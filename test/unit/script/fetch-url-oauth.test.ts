@@ -1,19 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { pathToFileURL } from 'node:url';
-import { fetchUrlScript } from '../../support/processes/module-paths.ts';
+import { prepareResponse, savedCredentials } from './fixtures/oauth-login-harness.ts';
 
-const { readyToken } = await import(new URL('helper/oauth.ts', pathToFileURL(fetchUrlScript)).href);
 const valid = { access_token: 'opaque-access', refresh_token: 'opaque-refresh', token_type: 'bEaReR', expires_in: 300, scope: 'openid offline_access' };
 
-test('Given an OAuth response, when it becomes ready credentials, then expiry uses request start and unused identity data is discarded', () => {
-  assert.deepEqual(readyToken({ ...valid, id_token: 'private-unused-identity' }, 1_000), {
-    accessToken: 'opaque-access', refreshToken: 'opaque-refresh', scope: 'openid offline_access', expiresAt: 301_000,
+test('Given an OAuth response, when it becomes ready credentials, then expiry uses request start and unused identity data is discarded', async (t) => {
+  assert.equal(await prepareResponse(t, { ...valid, id_token: 'private-unused-identity' }), 'opaque-access');
+  assert.deepEqual(await savedCredentials(), {
+    status: 'ready', accessToken: 'opaque-access', refreshToken: 'opaque-refresh', scope: 'openid offline_access', expiresAt: 301_000,
   });
 });
 
-test('Given no refresh token, when access is usable, then ready credentials do not invent offline support', () => {
-  assert.deepEqual(readyToken({ access_token: 'opaque-access', token_type: 'Bearer', expires_in: 300 }, 1_000), { accessToken: 'opaque-access', expiresAt: 301_000 });
+test('Given no refresh token, when access is usable, then ready credentials do not invent offline support', async (t) => {
+  assert.equal(await prepareResponse(t, { access_token: 'opaque-access', token_type: 'Bearer', expires_in: 300 }), 'opaque-access');
+  assert.deepEqual(await savedCredentials(), { status: 'ready', accessToken: 'opaque-access', expiresAt: 301_000 });
 });
 
 for (const response of [
@@ -22,12 +22,13 @@ for (const response of [
   { ...valid, access_token: 'private-secret\nHeader: unsafe' }, { ...valid, refresh_token: '' },
   { ...valid, access_token: 'x'.repeat(65_537) },
 ]) {
-  test(`Given invalid token response field ${JSON.stringify(Object.keys(response))}, when credentials are prepared, then only a local failure is exposed`, () => {
-    assert.throws(() => readyToken(response, 1_000), (error: unknown) => {
+  test(`Given invalid token response field ${JSON.stringify(Object.keys(response))}, when credentials are prepared, then only a local failure is exposed`, async (t) => {
+    await assert.rejects(() => prepareResponse(t, response), (error: unknown) => {
       assert.ok(error instanceof Error);
-      assert.match(error.message, /token response/i);
+      assert.match(error.message, /token response|OAuth preparation failed/i);
       assert.doesNotMatch(error.message, /private-secret|opaque-/);
       return true;
     });
+    assert.equal(await savedCredentials(), null);
   });
 }

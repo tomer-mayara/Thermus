@@ -25,7 +25,11 @@ build is needed to run the script.
 live in `fetch-url/helper/`: [`oauth.ts`](fetch-url/helper/oauth.ts) coordinates OAuth,
 [`browser.ts`](fetch-url/helper/browser.ts) handles browser sign-in,
 [`credential-store.ts`](fetch-url/helper/credential-store.ts) stores credentials, and
-[`errors.ts`](fetch-url/helper/errors.ts) defines command errors.
+[`errors.ts`](fetch-url/helper/errors.ts) defines command errors. Internal token parsing,
+metadata discovery, callback parsing, and OS browser launch stay private.
+The tests use the same `prepareOAuth()` and `browserAuthorization()` entry
+points as the command. They check saved credentials, HTTP callback responses,
+and the manual browser fallback.
 
 ## Sign in and fetch
 

@@ -25,8 +25,8 @@ CRAP before commands, puts commands in process order, and links their focused
 tests. Its help contracts and both test inventories remain checked by the
 existing documentation contract.
 The CRAP delta was already calculated once before CR-17. D9 remains open.
-PR #188 implements CR-10 option A, selected-suite coverage under CR-11,
-and manual backfill and gap reporting under CR-12. This candidate is not merged.
+PR #188 merged CR-10 option A, selected-suite coverage under CR-11,
+and manual backfill and gap reporting under CR-12 at `efed6618`.
 The owner approved D6's cleaner → MCP and website-fetcher → auth path rules
 through the review wrapper, D7's file cap 40 with LOC 150 unchanged and a strict
 new-function warning above 10 paths, and CR-11's verified pre-crash
@@ -34,7 +34,7 @@ flush/stop/seal protocol on 2026-10-19. These approved changes are implemented;
 selected tests, typechecking, and all 13 affected live cases pass. D4 option B,
 D5, D8, and D9 remain open.
 The rule refresh changed 209 intermediate entries to 169 after the approved
-D6/D7 changes; `origin/main` has 175 entries. Final verification stayed at
+D6/D7 changes; the base before PR #188 had 175 entries. Final verification stayed at
 169 and left the baseline byte-identical.
 The refresh uses the existing AGENTS.md exception for retained high findings.
 A refresh does not silence high file-maintainability regressions; the pull
