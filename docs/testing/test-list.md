@@ -31,7 +31,9 @@ checks the actual OS opener failure and successful manual callback.
 checks the saved credentials. Its clock changes when the token response arrives,
 so the expiry must still use the request start. The private
 `test/unit/script/fixtures/browser-callback-harness.ts` reserves callback ports
-and observes callback responses for these two unit files.
+and observes callback responses for these two unit files. The private
+`test/unit/script/fixtures/oauth-login-harness.ts` sets up login with a token
+response and reads the saved credentials for the 11 OAuth unit scenarios.
 `test/support/processes/oauth-store-process.ts` keeps the intentional crash at
 the marker, ready, and temporary-write boundaries. Under coverage it prepares
 `THERMUS_COVERAGE_SEAL_NONCE` and seals synchronously before blocking without
