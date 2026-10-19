@@ -35,15 +35,17 @@ class ConnectionGuide {
     this.guide = guideElement(this.element, '.connection-guide');
     this.status = guideElement(this.element, '[role="status"]');
     const guides = agentGuides(endpoint);
-    this.element.prepend(renderGuideSelector(document, guides, (agent) => {
-      this.showGuide(agent);
-      this.status.textContent = `${agent.name} guide selected.`;
-    }));
+    this.element.prepend(renderGuideSelector(document, guides, this.selectGuide.bind(this)));
     const firstGuide = guides[0];
     if (firstGuide) this.showGuide(firstGuide);
     const endpointRow = guideElement(this.element, '.endpoint-row');
     guideElement(endpointRow, 'p').textContent = `MCP endpoint: ${endpoint}`;
     endpointRow.append(this.copyButton(endpoint, 'endpoint'));
+  }
+
+  private selectGuide(agent: AgentGuide): void {
+    this.showGuide(agent);
+    this.status.textContent = `${agent.name} guide selected.`;
   }
 
   private copyButton(text: string, kind: CopyKind): HTMLButtonElement {
