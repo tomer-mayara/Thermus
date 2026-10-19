@@ -384,6 +384,14 @@ collection also requires that complete package suite to be in the selected
 scope. These options grant no scope exception. Reuse compatible data when
 possible; otherwise keep the unavailable assessment and graph without bands.
 
+Run comparison and coverage collection sequentially in the same checkout.
+Native ast-metrics 0.43.1 `analyze --compare-with` checks out the comparison
+ref (`origin/main` by default), then returns to the candidate branch. It can
+refuse a dirty tree. Do not change
+the checkout or run delta or process comparisons while collection is active.
+A temporary checkout change can remove the collector preload and invalidate
+the capture.
+
 The default remains `unit`. Repeat `--suite unit|integration|acceptance` to
 select suites, with duplicates removed in first-requested order. The command
 checks each package `test:<suite>` script before it launches anything. It

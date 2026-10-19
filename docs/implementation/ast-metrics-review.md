@@ -334,6 +334,14 @@ builds or launches children. It never expands selection to obtain coverage.
 `--from DIR` imports one archived capture without execution and cannot combine
 with `--suite`.
 
+Run comparison and coverage collection sequentially in the same checkout.
+Native ast-metrics 0.43.1 `analyze --compare-with` checks out the comparison
+ref (`origin/main` by default), then returns to the candidate branch. It can
+refuse a dirty tree. Do not change
+the checkout or run delta or process comparisons while collection is active.
+A temporary checkout change can remove the collector preload and invalidate
+the capture.
+
 Compatible own-character execution is unioned across requested suites.
 Source TypeScript and emitted JavaScript for one logical file still conflict.
 The collector propagates its lifecycle preload into same-capture Node children
