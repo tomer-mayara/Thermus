@@ -1,13 +1,19 @@
 # Test gate policy
 
-This policy gives the test commands and gates for a Thermus pull request.
+This policy selects the test commands and gates for a Thermus pull request.
 [AGENTS.md](../../AGENTS.md) gives the rules, and this policy gives the details.
 If the two disagree, follow AGENTS.md and correct this policy.
 
 ## Suite commands
 
 Run each command from the repository root. `pnpm <script>` runs the same
-package script. Each command that runs `dist/` output makes a clean build first.
+package script. Each package command that runs `dist/` output makes a clean
+build first. A direct focused command must build first too. A build prepares
+outputs; it does not select more test groups.
+
+The table is an inventory of commands. The [required runs](#required-runs)
+select which commands apply to a pull request. A command in this table is
+not a requirement for every change.
 
 Install dependencies with `pnpm install --frozen-lockfile` before the checks.
 The manifest and lockfile pin Node 24.20.0 for pnpm scripts, including non-login
@@ -76,24 +82,29 @@ Local-command tests that execute `loadDeploymentConfig()` belong to the
 integration suite, also when they use an administration role double. Config and
 local commands are separate logical packages. See the
 [auth refactoring package map](../archive/auth-refactoring-plan.md#logical-packages-and-dependency-rules).
-`npm run check` does not select these tests; run their focused commands and the
-integration suite as required below.
+`npm run check` does not select these tests. Use their focused commands;
+run the integration group only when the path rules below select it.
 
 Provider tests that execute shared context creation or the canonical auth
 rejection class run in `test/integration/auth/`. MCP rejection and access tests
 run in `test/integration/mcp/` for the same reason. The direct auth import guards
 run through the existing ESLint configuration in `habit-hooks`. Their fixture
-specification, `test/acceptance/architecture/auth-boundaries.test.ts`, also needs
-a focused run and the acceptance suite. The rules D1 to D7 of the
+specification is `test/acceptance/architecture/auth-boundaries.test.ts`.
+Select its focused run and test group by the [required runs](#required-runs).
+The rules D1 to D7 of the
 [test code layout](../testing/test-code-layout.md#dependency-rules) run through
 the same ESLint configuration. Two specifications prove them:
 `test/acceptance/architecture/test-type-boundaries.test.ts` for D2 and D3, and
 `test/acceptance/architecture/test-support-boundaries.test.ts` for D1 and D4 to
-D7. Each also needs a focused run and the acceptance suite.
+D7. A change only to those ESLint rules needs the relevant focused
+specifications, not the complete acceptance suite. A change to the
+specifications themselves also selects the acceptance group.
 
 ## Focused commands
 
-Run a new or changed test file:
+Run a selected new or changed ordinary test file. Dedicated runtime, live,
+and container files use their group command, with the
+[nested-run limit](#keep-the-selection-through-nested-commands).
 
 ```sh
 npm run build && node --test dist/test/<suite>/<path>.test.js
@@ -121,79 +132,166 @@ node --test --test-name-pattern="<test name>" test/unit/build-output.test.ts
 
 ## Required runs
 
-Before each commit, run each new or changed test with a focused command. This
-includes a test that `npm run check` does not run.
+Before each commit, run each selected new or changed test with its focused
+command. Apply the nested-run limit below; record a changed test that needs
+a broader nested suite as deferred, not passed. For a deleted test, run the
+remaining tests of its affected group. Before Ready, apply the selection
+below to the complete candidate: every change of the pull request against
+its merge base with `origin/main`, including committed, staged, unstaged,
+and new files. Include deleted paths and both
+the old and new paths of a rename or move.
 
-Before Ready, do these runs on the complete candidate. The complete candidate
-contains every change of the pull request.
+### Select by changed path
 
-1. Run `npm run check`.
-2. Run `habit-hooks` from the repository root. Correct each enforced smell, or
-   give the reason that you keep it. Keep `.habit-hooks/snooze.json` as `[]`.
-3. Run each new or changed test with a focused command.
-4. Run the applicable suites:
-   - `npm run test:integration` and `npm run test:acceptance` for a change that
-     affects the MCP server, authentication, the access context, the hosted
-     account routes, organization administration, or billing.
-   - `npm run test:integration` for a change in `test/integration/`.
-   - `npm run test:acceptance` for a change in `test/acceptance/`.
-   - The interface tests that cover a changed renderer runtime, network policy,
-     or patched dependency.
-   - `npm run test:mcp:renderer` for a change to the fetch tool composition
-     (`src/fetch-tool.ts`), the renderer runtime (`src/website-fetcher/`), the
-     cleaning pipeline (`src/html-cleaner-pipeline/`), or the rules loading
-     (`src/config/ad-rules-file.ts`).
-   - The Better Auth interface proofs, `test/interface/auth/better-auth.test.ts`,
-     for a change to the Better Auth packages, their settings, or the local
-     authentication flow. They run offline with a focused command.
-   - `npm run test:container` for a change to `Dockerfile`, `.dockerignore`,
-     `compose.yaml`, a build input of the image (`docker/`, `package.json`,
-     `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `.npmrc`,
-     `.habit-hooks/package.json`, `patches/`, `tsconfig.json`, or
-     `tsconfig.build.json`), `migrations/`, the code of the self-hosted server
-     and its commands (`src/index.ts`, `src/application.ts`, `src/fetch-tool.ts`,
-     `src/auth/`, `src/config/`,
-     `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
-     `src/organizations/`, or `src/terminal/`), or the container tests and
-     their support files. A pure move of a support file needs no container
-     gate run: only its import specifiers change, it is no container script,
-     and it computes no run-time path. The acceptance suite loads the moved
-     module, and the test-support path test
-     (`test/unit/test-support-paths.test.ts`, from Step 1 of the
-     [test code refactoring plan](test-code-refactoring-plan.md)) proves each
-     run-time path; until that test exists, the module load alone covers the
-     move. The owner decided this on 2026-10-14. The image holds all of
-     `dist/src`, so other changes
-     in `src/` change the image too; the [self-hosted release](#self-hosted-release)
-     checks run the container gate for each release.
-   - `npm run build:hosted` and `npm run test:container:hosted` for a change to
-     `Dockerfile.hosted`, `Dockerfile.hosted.dockerignore`, either command,
-     `docker/verify-hosted-runtime.mjs`, the shipped hosted rules, or a hosted
-     build input or an input of its offline checks. This includes shared
-     dependency pins, migrations, backend or portal source, their build
-     configuration, `script/`, and the test sources, support code, and fixtures
-     that the hosted build uses. Run the hosted image gate for changes to its
-     test or support files too. A final Linux
-     AMD64 image pass is required; a host-only or ARM64 run does not replace it.
-   - The WorkOS interface proofs, `test/interface/auth/workos.test.ts`, for a
-     change to the WorkOS SDK or jose packages or to the hosted authentication
-     flow. They run offline with a focused command.
-   - The offline signup retry proof, `test/interface/auth/workos-signup.test.ts`,
-     and the Staging signup provider contract, `npm run test:interface:workos-signup`,
-     for changes to signup creation, its acceptance record, or its SDK retry
-     configuration. The [FS-01 record](fs-01.md) gives the scope and limits.
-   - The hosted live gate, `npm run test:hosted-live`, for a change to the
-     hosted authentication flow, to the WorkOS organization reads or changes,
-     or to the steps of the [operator runbook](hosted-organization-setup.md),
-     when the WorkOS staging settings are available. If they are not
-     available, record that the gate did not run.
+Apply these rules in order:
 
-If you are not sure that a suite applies, run it.
+1. **A path under the repository's `src/` changed:** run `npm test`,
+   `npm run typecheck`, `npm run test:build`, and
+   `npm run build:user-portal`. Then run the applicable
+   [production gates](#production-gates-for-source-changes) below. The
+   prefix is exactly `src/`; a folder named `src` elsewhere does not count.
+2. **No `src/` path changed, but a repository `test/` path changed:** run
+   only the affected test groups. Combine the groups when changes affect
+   more than one. For each other changed path, add its existing focused
+   tests. Do not replace this selection with `npm test` or `npm run check`.
+3. **Neither `src/` nor `test/` changed:** run only existing focused tests
+   for the changed paths. Do not run a full suite or a whole test group.
+   A documentation-only change outside those folders can have no applicable
+   executable test; record that result instead of adding an unrelated run.
 
-Record each command and its result in the commit message or the pull request
-notes. Give the exit status and the counts that Node reports for tests, passes,
-failures, skipped tests, and todo tests. If you cannot do a required run, record
-the reason. Do not record that run as a pass.
+The full ordinary suite means the existing `npm test` command. It includes
+ordinary unit, integration, acceptance, interface, and portal tests. It
+does not include every dedicated runtime, live, container, or build gate.
+The source validation in rule 1 also covers the stages of `npm run check`
+without repeating its unit and portal test runs. `npm run check` remains an
+aggregate command, not an additional required run.
+
+| Changed path or test kind | Selection when no `src/` path changed | Command or example |
+| --- | --- | --- |
+| `test/unit/`, except the separate build test | Unit group | `npm run test:unit` |
+| `test/unit/build-output.test.ts` | Build test group | `npm run test:build` |
+| `test/integration/` | Integration group | `npm run test:integration` |
+| Ordinary tests in `test/acceptance/` | Acceptance group | `npm run test:acceptance` |
+| Ordinary tests in `test/interface/` | Interface group | `npm run test:interface` |
+| Portal unit or acceptance tests | The corresponding unit or acceptance group | `npm run test:unit` or `npm run test:acceptance`; do not add the other group through `test:user-portal`. |
+| Dedicated runtime, live, container, or manual work-slice files | Their own group, before the ordinary folder rule | Use their dedicated command from the suite table or the test's guide, subject to the nested-run limit below. |
+| `test/support/` or shared test fixture files | The union of their real consuming groups | Trace imports and run-time uses, including child processes and container mounts; then use the selected group commands. |
+| `script/`, build configuration, dependencies, migrations, Docker inputs, or other non-test paths | Existing focused tests for the changed files | For example, `npm run test:build` for build behavior, or `npm run build && node --test dist/test/unit/script/ast-metrics-coverage.test.js` for that command's behavior. |
+| Documents outside `src/` and `test/` | Relevant existing focused tests, if any | Check the changed instructions and links; a reference to a command does not select it. |
+
+A shared support change does not select every suite because the file is
+under `test/support/`. Find its actual consumers and record the selected
+groups. A private fixture follows its consuming group too. A component name
+such as authentication, hosted, or renderer does not select another whole
+group. For a new support file, use the consumers that this candidate adds;
+for a deleted or moved file, also inspect its former consumers.
+
+Examples:
+
+- A change to `src/auth/` plus a unit test selects the source validation
+  in rule 1 and applicable production gates.
+- A change only to a unit test selects the unit group. A change to unit and
+  integration tests selects those two groups.
+- A change to a support module used by integration and acceptance tests
+  selects those two groups, including a use through another support module.
+- A script helper change with a new unit test selects the unit group and
+  the relevant existing focused script tests. Its hosted use does not add
+  an integration suite or an image build.
+- A change only to `.habit-hooks/` boundary rules selects the relevant
+  focused architecture specifications. If those acceptance specifications
+  also change, add the acceptance group.
+- A move out of `src/` still selects rule 1 because its old path changed.
+  A move between two test groups selects both groups.
+
+### Keep the selection through nested commands
+
+Check what each selected command runs, including child processes and image
+builds. Without a `src/` change, a command must not add test groups outside
+the selected union or turn focused tests into a complete suite. In
+particular, do not add `npm run check`, `npm run build:hosted`, or default
+ast-metrics coverage collection only because a changed file is one of
+their inputs. The coverage command runs the complete emitted unit suite;
+use it only when that complete suite is already selected or rule 1 applies.
+A focused unit file or package does not select the complete emitted unit
+suite. The same limit applies to a live metrics test that starts coverage
+collection. Use an existing coverage file only when it is valid for the
+source, unit-test, and build inputs, or report metrics without coverage
+as the review guide permits.
+
+Dedicated tests keep their own commands: for example,
+`npm run test:mcp:renderer`, `npm run test:hosted-live`,
+`npm run test:interface:workos-signup`, and `npm run test:container`.
+Their prerequisites and evidence rules still apply. Do not use
+`npm run build:hosted` to prepare a test-only renderer or hosted-live run;
+use the backend and portal builds that its dedicated command requires.
+
+The hosted image acceptance command, `npm run test:container:hosted`, builds
+`Dockerfile.hosted`. That build necessarily runs `npm run build:hosted`
+and its checks from several groups. It cannot currently isolate the hosted
+image group from those checks. For a test-only or other non-source change,
+use the relevant existing focused tests that fit the selected scope and
+record that the complete image gate did not run because its nested build
+exceeds that scope. Do the same for any container command with an unavoidable
+nested full-suite run. An omitted gate is not a pass. Do not change an image,
+a package script, an assertion, a deadline, or an environment gate to bypass
+its checks. The real image and release checks remain unchanged.
+
+### Production gates for source changes
+
+This subsection applies only when rule 1 selects a `src/` change. It does
+not make a dependency, script, Docker input, test, support file, or document
+change select a production gate on its own. A changed dedicated test can
+select its own group under rule 2, with the nested-run limit above.
+
+In addition to the source validation in rule 1, run these gates when the
+changed source affects their behavior:
+
+- `npm run test:mcp:renderer` for the fetch tool composition
+  (`src/fetch-tool.ts`), renderer runtime (`src/website-fetcher/`), cleaning
+  pipeline (`src/html-cleaner-pipeline/`), or rules loading
+  (`src/config/ad-rules-file.ts`).
+- `npm run test:container` for the self-hosted server and commands, including
+  `src/index.ts`, `src/application.ts`, `src/fetch-tool.ts`, `src/auth/`,
+  `src/config/`, `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
+  `src/organizations/`, and `src/terminal/`.
+- `npm run build:hosted` and `npm run test:container:hosted` for source that
+  affects the hosted application, its portal, or its offline checks. The
+  image gate must pass on Linux AMD64; a host-only or ARM64 run is not a
+  replacement.
+- The offline signup retry proof,
+  `test/interface/auth/workos-signup.test.ts`, and the Staging provider
+  contract, `npm run test:interface:workos-signup`, for source that affects
+  signup creation, its acceptance record, or its SDK retry configuration.
+  The [FS-01 record](fs-01.md) gives the scope and limits.
+- `npm run test:hosted-live` for source that affects hosted authentication
+  or WorkOS organization reads and changes, when the staging settings are
+  available. If they are unavailable, record that the gate did not run.
+
+The ordinary full suite includes the offline Better Auth and WorkOS
+interface proofs. Select a focused run of those proofs when needed to
+verify the changed source; no separate whole interface run is needed after
+`npm test` passes.
+
+### Common checks and evidence
+
+Run `habit-hooks` on every complete candidate. Correct each enforced smell,
+or give the reason that you keep it. Keep `.habit-hooks/snooze.json` as `[]`.
+Use the code quality review process of AGENTS.md with this same test scope;
+it must not add an unrelated suite through coverage collection.
+
+If a test's group or a helper's consumers are unclear, inspect its command,
+imports, and run-time paths and record the scope you can establish. Do not
+resolve uncertainty by running all suites. Record any unresolved coverage
+limit and any required run that could not be completed.
+
+Record each command and its result in the commit message or pull request
+notes. Give the exit status and the counts that Node reports for tests,
+passes, failures, skipped tests, and todo tests. Record the reason for an
+omitted run and do not call it a pass. For a non-source pull request, list
+the selected groups and focused tests, and state why broader gates did not
+apply. An explicit release request uses the separate release rules below,
+regardless of this pull request selection. Editing or referring to release
+instructions alone is not a release request.
 
 ## Evidence rules
 
@@ -301,7 +399,10 @@ docker image rm --force $(docker image ls --quiet --filter label=thermus.contain
 
 ## Hosted offline build checks
 
-`npm run build:hosted` starts with `npm run check`. That command builds the
+The aggregate `npm run build:hosted` is selected only for an applicable
+source change or an explicit release request. A test-only change uses its
+selected groups and focused files instead; this section does not add groups.
+The command starts with `npm run check`. That command builds the
 backend during the unit suite and builds the portal last. The hosted command
 then runs these emitted files directly, without another build:
 
@@ -328,7 +429,7 @@ excludes the Axiom tests, public-site renderer smoke test, live WorkOS gate,
 and Docker gates. The command needs the pinned Node and dependencies, OpenSSL
 in `PATH`, a free local port 46443, local loopback connections, and the
 absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no live credential or
-public network access. A local command is:
+public network access. When that aggregate gate is selected, a local command is:
 
 ```sh
 LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" npm run build:hosted
@@ -340,7 +441,9 @@ from that checked stage, so BuildKit cannot skip its checks. The final stage
 then checks the assembled outputs with the production dependencies, as the
 non-root runtime user, without network access. It does not rebuild them.
 A failed check must prevent a final runtime image. No Docker daemon runs
-inside the build. These checks supplement the required pull request runs.
+inside the build. These checks supplement the pull request runs only when
+the hosted build gate is selected. Every real hosted image build still runs
+the complete checks; the path selection does not weaken the image.
 
 The check stage of `Dockerfile.hosted` has no git executable, no `.git`
 folder (`Dockerfile.hosted.dockerignore` excludes it), and no ast-metrics.
@@ -379,7 +482,9 @@ failed build is the initial regression evidence; it is not a gate pass.
 `npm run test:container:hosted` makes a clean backend build and runs only
 `test/acceptance/auth/hosted-image.test.ts` as emitted JavaScript. The ordinary
 `test` and `test:acceptance` command globs explicitly exclude this basename.
-The command is also the focused command for that file:
+When selected, the command is the entry point for that file. Its nested
+build has the [scope limitation](#keep-the-selection-through-nested-commands)
+for a change without `src/`:
 
 ```sh
 npm run test:container:hosted
@@ -511,7 +616,7 @@ They are in the existing suites:
   `test/unit/mcp/protected-resource-endpoint.test.ts`,
   `test/unit/config/deployment-config.test.ts`,
   `test/unit/application.test.ts`, and
-  `test/unit/application-operator-log.test.ts`, in `npm run check`;
+  `test/unit/application-operator-log.test.ts`, in `npm run test:unit`;
 - integration: `test/integration/auth/hosted-account.test.ts`,
   `test/integration/auth/hosted-organizations.test.ts`,
   `test/integration/auth/hosted-administration.test.ts`,
@@ -539,27 +644,36 @@ They are in the existing suites:
   `DEPLOYMENT=hosted` with placeholder WorkOS settings fails before listening,
   because that image has no built portal.
 
-This focused command runs the hosted integration and
-acceptance files. Its glob `workos-*.test.js` selects each WorkOS integration
-file, also `workos-provider-organizations.test.js` and
-`workos-provider-administration.test.js`:
+Select only the groups and focused files required by the changed paths.
+The lists above are an inventory, not a requirement to run all hosted tests.
+For example, after a clean backend build, these are separate focused runs:
 
 ```sh
-npm run build && node --test dist/test/integration/auth/hosted-account.test.js dist/test/integration/auth/hosted-organizations.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/integration/auth/portal-access.test.js dist/test/integration/auth/workos-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-workos.test.js dist/test/acceptance/auth/hosted-workos-organizations.test.js dist/test/acceptance/auth/hosted-workos-administration.test.js dist/test/acceptance/auth/hosted-organizations.test.js dist/test/acceptance/auth/hosted-organization-requests.test.js dist/test/acceptance/auth/hosted-grants.test.js dist/test/acceptance/auth/hosted-grant-refusals.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-seats.test.js
+npm run build
+node --test dist/test/integration/auth/hosted-account.test.js
+node --test dist/test/acceptance/auth/hosted-startup.test.js
 ```
 
-A pass shows the application side of the hosted edition: the WorkOS provider
-and its organization reads and changes with the pinned SDK against a fake,
-and the application policy of the hosted routes and of
-`OrganizationAdministration` with doubles. It is never a pass of the
-[hosted live gate](#hosted-live-gate-auth-06) and never proof of WorkOS
+Run each example only when it covers a changed path. Do not combine hosted
+integration and acceptance tests merely because both concern the hosted
+edition. A group command is required only when the path rules select that
+group, or when a source change selects the full suite.
+
+Each pass gives evidence only for the behavior of its selected tests. The
+complete selection above covers the application side of the hosted edition:
+the WorkOS provider and its organization reads and changes with the pinned
+SDK against a fake, and the application policy of the hosted routes and of
+`OrganizationAdministration` with doubles. These offline tests never give a
+pass of the [hosted live gate](#hosted-live-gate-auth-06) or proof of WorkOS
 behavior, such as the claims of real tokens, safe grant changes, or invitation
 acceptance in WorkOS. Do not report it as either.
 
 ## Self-hosted release
 
-A release of the self-hosted evaluation image needs a pass of each command below
-on a clean checkout of the release commit: `git status --porcelain` shows
+These rules apply to an explicit request to release the self-hosted
+evaluation image. Editing or referencing release documents does not invoke
+them. A release needs a pass of each command below on a clean checkout of
+the release commit: `git status --porcelain` shows
 nothing, because the image build and the container gate read the working tree.
 Each command must exit with status 0 and show each required test as passed:
 

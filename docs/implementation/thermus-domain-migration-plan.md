@@ -241,13 +241,15 @@ activation check. Explicit agreement must create the intended personal workspace
 and access. An account that already has access must continue without another
 activation or agreement.
 
-This repository change contains documentation only. Run document/link checks,
-`npm run check`, and `habit-hooks` on the complete pull request candidate. The
-production checks and their limits are recorded above. Repository checks do not
+This repository change contains documentation only. Run existing relevant
+document/link checks, any existing focused tests selected by the changed paths
+under the [test gate policy](test-gate-policy.md#required-runs), and
+`habit-hooks` on the complete pull request candidate. The production checks
+and their limits are recorded above. Repository checks do not
 prove production DNS, provider settings, or authentication. If source behavior
 becomes necessary, first write the failing acceptance case, use TDD, and follow
-the [test gate policy](test-gate-policy.md), including focused tests and
-applicable suites. Record unavailable live checks explicitly.
+the [test gate policy](test-gate-policy.md#required-runs), including focused
+tests and applicable suites. Record unavailable live checks explicitly.
 
 If a required flow fails, restore the saved canonical Render URL pair and
 WorkOS defaults/initiate-login settings, enable the old Render hostname, and
