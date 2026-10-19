@@ -10,11 +10,13 @@ export function renderGuideSelector(document: Document, guides: readonly AgentGu
         <label><input type="radio" name="connection-method" value="desktop" aria-controls="ai-agent agent-instructions"><span>Desktop Apps</span></label>
       </div>
     </fieldset>
-    <label for="ai-agent">Your AI agent</label>
-    <select id="ai-agent" aria-controls="agent-instructions"></select>
   `;
-  const select = element.querySelector('select')!;
-  const label = element.querySelector('label[for="ai-agent"]')!;
+  const select = document.createElement('select');
+  select.id = 'ai-agent';
+  select.setAttribute('aria-controls', 'agent-instructions');
+  const label = document.createElement('label');
+  label.setAttribute('for', select.id);
+  element.append(label, select);
   const selections: Record<GuideCategory, string> = { cli: 'claude-code', desktop: 'claude' };
   let category: GuideCategory = 'cli';
 
