@@ -41,10 +41,7 @@ export interface OAuthStore {
 type StoredRecord = OAuthRecord & { version: 1; binding: OAuthProfile };
 
 export class OAuthStoreError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'OAuthStoreError';
-  }
+  override name = 'OAuthStoreError';
 }
 
 export async function withOAuthStore<T>(
