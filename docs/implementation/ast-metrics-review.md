@@ -6,8 +6,8 @@ guide gives the commands, what they report, the configuration, and the limits
 of the tool. If the two disagree, follow AGENTS.md and correct this guide.
 
 The facts in this guide were verified on 2026-10-17 through 2026-10-19 with
-ast-metrics 0.43.1 on this repository. PR #188 implements CR-10 option A,
-CR-11, and manual CR-12 in the current draft candidate; it is not merged.
+ast-metrics 0.43.1 on this repository. PR #188 merged CR-10 option A,
+CR-11, and manual CR-12 at `efed6618`.
 A later version can behave differently; verify the limits again before you
 change the process.
 
@@ -1247,7 +1247,7 @@ approved strict boundary above 10. Configuration now uses file cap 40 and
 LOC 150. Focused policy and pinned-tool boundary tests pass.
 
 The rule refresh changed 209 intermediate entries to 169 after the approved
-D6/D7 changes; `origin/main` has 175 entries.
+D6/D7 changes; the base before PR #188 had 175 entries.
 Final verification stayed at 169 entries and left the baseline byte-identical.
 The refresh uses the existing AGENTS.md exception for retained high findings.
 Final review reports 10 high maintainability findings, two medium findings,

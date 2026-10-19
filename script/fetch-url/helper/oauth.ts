@@ -9,7 +9,7 @@ type ReadyToken = Omit<ReadyCredentials, 'status'>;
 type AuthorizationMetadata = NonNullable<Awaited<ReturnType<typeof discoverAuthorizationServerMetadata>>>;
 export type OAuthOptions = { profile: OAuthProfile; operation: 'fetch' | 'login' | 'logout'; interactive: boolean; authTimeoutMs?: number; redirectUrl?: string; openBrowser?: BrowserOpener; fetch?: typeof fetch };
 
-export function readyToken(response: { token_type?: unknown; access_token?: unknown; refresh_token?: unknown; scope?: unknown; expires_in?: unknown }, startedAt: number): ReadyToken {
+function readyToken(response: { token_type?: unknown; access_token?: unknown; refresh_token?: unknown; scope?: unknown; expires_in?: unknown }, startedAt: number): ReadyToken {
   if (typeof response.token_type !== 'string' || response.token_type.toLowerCase() !== 'bearer') throw tokenError();
   const ready: ReadyToken = { accessToken: requiredCredential(response.access_token), expiresAt: tokenExpiry(response.expires_in, startedAt) };
   if (response.refresh_token !== undefined) ready.refreshToken = requiredCredential(response.refresh_token);
@@ -56,7 +56,7 @@ function oauthFetch(allowed: readonly string[], signal: AbortSignal, fetchImpl: 
   };
 }
 
-export async function discoverHostedAuthorization(profile: OAuthProfile, signal: AbortSignal, fetchImpl?: typeof fetch) {
+async function discoverHostedAuthorization(profile: OAuthProfile, signal: AbortSignal, fetchImpl?: typeof fetch) {
   const endpoint = new URL(profile.endpoint);
   const resourceMetadataUrl = new URL(`/.well-known/oauth-protected-resource${endpoint.pathname.replace(/\/$/, '')}`, endpoint.origin).href;
   const metadataFetch = oauthFetch([resourceMetadataUrl, issuerMetadataUrl(profile.issuer)], signal, fetchImpl);

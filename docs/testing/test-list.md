@@ -23,8 +23,15 @@ TLS OAuth site and private credential directories. It checks browser sign-in,
 cached reuse, refresh, recovery markers, fresh login, logout, and refusal of
 bad metadata. `fetch-url-oauth-failures.test.ts` checks durable write order,
 uncertain refresh outcomes, and explicit-credential isolation. The script unit
-files cover callback validation, token response
-validation, private file storage, durable replacement, and process locks.
+files cover callback validation, token response validation, private file storage,
+durable replacement, and process locks. `fetch-url-browser.test.ts` reaches
+callback validation through `browserAuthorization()` and HTTP requests. It also
+checks the actual OS opener failure and successful manual callback.
+`fetch-url-oauth.test.ts` reaches token validation through `prepareOAuth()` and
+checks the saved credentials. Its clock changes when the token response arrives,
+so the expiry must still use the request start. The private
+`test/unit/script/fixtures/browser-callback-harness.ts` reserves callback ports
+and observes callback responses for these two unit files.
 `test/support/processes/oauth-store-process.ts` keeps the intentional crash at
 the marker, ready, and temporary-write boundaries. Under coverage it prepares
 `THERMUS_COVERAGE_SEAL_NONCE` and seals synchronously before blocking without
@@ -34,7 +41,9 @@ rename; capture marker renames pass through. The credential-state and
 forced-exit assertions remain intact. This is not limited to an event-loop IPC
 seal and does not by itself prove full-suite capture.
 `test/interface/script/fetch-url-oauth.test.ts` checks the pinned SDK's metadata
-boundary with strict resource, issuer, endpoint, and PKCE requirements.
+boundary through `prepareOAuth()` with expired saved credentials and a fetch
+spy. It preserves the strict resource, issuer, endpoint, and PKCE requirements
+and checks that failed discovery makes no token request.
 
 ```sh
 npm run build && node --test "dist/test/unit/script/*.test.js" "dist/test/interface/script/*.test.js" "dist/test/acceptance/script/*.test.js"
