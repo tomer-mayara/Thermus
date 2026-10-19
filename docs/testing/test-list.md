@@ -362,6 +362,8 @@ time zones, with the file name for two records of the same time.
 `test/unit/script/ast-metrics-architecture-trend-provenance.test.ts` checks
 measured, estimated, legacy unknown, and unavailable count cells, the
 first-recording estimate note, and valid and invalid count provenance.
+It also checks that reading table numbers preserves a present tool version
+and leaves the optional field absent in legacy records.
 
 `test/unit/script/ast-metrics-architecture-trend-publication.test.ts` checks
 full-SHA identity across dates, prefix collisions, record-shaped directories
@@ -369,9 +371,7 @@ and symlinks, malformed global and community fields, bounded lock failure
 with manual recovery guidance, and concurrent publication without overwrite.
 `test/unit/script/ast-metrics-architecture-trend-file.test.ts` checks that
 malformed required fields and malformed optional tool versions fail before
-publication and name the bad file. It also checks that reading table numbers
-preserves a present tool version and leaves the optional field absent in legacy
-records.
+publication and name the bad file.
 
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from

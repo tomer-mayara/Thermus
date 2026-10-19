@@ -613,7 +613,7 @@ they do not select all live files.
 
 `ast-metrics-tool-version.test.ts` checks that a later read-only architecture
 run preserves a stored record's tool version and leaves the file unchanged.
-The unit `ast-metrics-architecture-trend-file.test.ts` checks that table-number
+The unit `ast-metrics-architecture-trend-provenance.test.ts` checks that table-number
 reads preserve a present version and keep it absent for legacy records.
 
 Architecture acceptance cases share complete base, banded, and repository
