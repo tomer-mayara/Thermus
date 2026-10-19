@@ -25,7 +25,7 @@ test('Given source inputs that change during analysis, when a snapshot finishes,
   repository.commit('Add files', repositoryFiles);
   const doubles = snapshotDoublesOnPath(t, { cli: { json: '{"concernedFiles":[]}', delayMs: 500 } });
   const timer = setInterval(() => {
-    if (doubles.cli.calls().length > 0) writeFileSync(join(repository.root, 'src/auth/session.ts'), 'export const changed = true;\n');
+    if (doubles.cli.calls().some(({ argv }) => argv[0] === 'analyze')) writeFileSync(join(repository.root, 'src/auth/session.ts'), 'export const changed = true;\n');
   }, 10);
   t.after(() => clearInterval(timer));
   const result = await runScript(t, astMetricsSnapshotScript, { cwd: repository.root, env: doubles.env });

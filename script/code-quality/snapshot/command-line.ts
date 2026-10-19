@@ -6,10 +6,10 @@ import { CommandError } from '../shared/repository.ts';
 // goes to the default file in the repository root.
 export type SnapshotCommand =
   | { readonly kind: 'help' }
-  | { readonly kind: 'snapshot'; readonly base: string | undefined; readonly out: string | undefined; readonly timeoutMs: number };
+  | { readonly kind: 'snapshot'; readonly allowToolVersion: boolean; readonly base: string | undefined; readonly out: string | undefined; readonly timeoutMs: number };
 
 const optionShape = {
-  base: { type: 'string' }, out: { type: 'string' }, 'timeout-ms': { type: 'string', default: '60000' }, help: { type: 'boolean', short: 'h' },
+  'allow-tool-version': { type: 'boolean' }, base: { type: 'string' }, out: { type: 'string' }, 'timeout-ms': { type: 'string', default: '60000' }, help: { type: 'boolean', short: 'h' },
 } as const;
 
 // The command line is checked before the command looks for the root, so that a wrong command line runs nothing.
@@ -19,7 +19,7 @@ export function commandOf(args: readonly string[]): SnapshotCommand {
   if (values.out === '') throw new CommandError('The --out value must name a file.');
   // git would take a ref that starts with a dash as an option.
   if (values.base === '' || values.base?.startsWith('-')) throw new CommandError('The --base value must name a git ref.');
-  return { kind: 'snapshot', base: values.base, out: values.out, timeoutMs: timeoutOf(values['timeout-ms']) };
+  return { kind: 'snapshot', allowToolVersion: values['allow-tool-version'] === true, base: values.base, out: values.out, timeoutMs: timeoutOf(values['timeout-ms']) };
 }
 
 function parsedValues(args: readonly string[]) {

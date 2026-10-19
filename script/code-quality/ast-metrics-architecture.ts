@@ -8,7 +8,7 @@ import { architectureReportOf } from './architecture/report.ts';
 import { trendLinesOf } from './architecture/trend.ts';
 import { CommandError } from './shared/repository.ts';
 
-const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
+const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--allow-tool-version] [--help]
 
 Print the architecture delta of src/ as Markdown, for the body of a pull
 request: a summary line with the modularity, the cross share, the cycles, and
@@ -99,6 +99,7 @@ Options:
   --timeout-ms MS       Deadline of each MCP session (100..300000; default: 60000)
   --out FILE            Also write the Markdown to FILE, relative to the current
                         folder
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h            Show this help
 
 Exit status 0: the Markdown is printed; the command is a report, not a gate.

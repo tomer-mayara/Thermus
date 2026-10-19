@@ -11,7 +11,7 @@ test('Given --help, when the delta check runs, then it explains the options, the
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-delta\.ts \[--base REF\] \[--min SCORE\] \[--no-compare\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-delta\.ts \[--base REF\] \[--min SCORE\] \[--no-compare\] \[--allow-tool-version\] \[--help\]\n/);
   for (const text of ['origin/main', 'default: 85', 'production files', 'src/', '"no goal"', '--no-compare', 'ast-report/', '"not measured"']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }

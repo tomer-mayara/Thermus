@@ -22,6 +22,7 @@ const architecture = [
   '',
   bandsNeedTheCoverage,
   '',
+  'Tool versions: base ast-metrics unknown; head ast-metrics unknown.', '',
   'The map did not change.',
   '',
   ...baseGraph,

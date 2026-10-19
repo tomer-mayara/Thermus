@@ -49,7 +49,7 @@ test('Given a branch that changes only a document, no coverage, and both doubles
   assert.equal(result.code, 0);
   assert.equal(repository.git('diff', '--name-only', 'main', 'HEAD'), 'README.md\n');
   assert.equal(existsSync(join(repository.root, 'suite-called')), false);
-  assert.deepEqual(doubles.cli.calls().map(({ argv }) => argv[0]), ['analyze', 'mcp', 'analyze', 'mcp']);
+  assert.deepEqual(doubles.cli.calls().map(({ argv }) => argv[0]), ['version', 'analyze', 'mcp', 'analyze', 'mcp']);
   assert.deepEqual(worktreesOf(repository), [repository.root]);
   assert.deepEqual(foldersLeftIn(doubles), []);
   assert.deepEqual(await doubles.server.stillRunning(), []);

@@ -43,8 +43,10 @@ Delivery status:
   that PR retained them to preserve its characterization tests.
 - PR #179 merged delivery group 6, CR-05: file status, source evidence,
   and conservative function correspondence.
-- PR #180 implements delivery group 7, CR-06: live invariants and separate
-  structural and coverage-collecting architecture files. Owner review is pending.
+- PR #180 merged delivery group 7, CR-06: live invariants and separate
+  structural and coverage-collecting architecture files.
+- PR #181 implements delivery group 8, CR-07 and CR-08: incomplete risk
+  assessments and the tool version pin. Owner review is pending.
 - The other CRs have not been implemented.
 
 Contents:
@@ -173,7 +175,8 @@ documents used by every CR are:
 
 ### 2.3 Current algorithms
 
-The supported tool is ast-metrics 0.43.1, not yet enforced by the commands.
+The supported tool is ast-metrics 0.43.1; PR #181 adds the version check
+and explicit `--allow-tool-version` override.
 The installed CLI reports it with `ast-metrics version`; `--version` is
 not supported. The tool's maintainability index goes from 0 to 128. Current
 rules set class maintainability 85, efferent coupling 10, file LOC 150,
@@ -212,11 +215,13 @@ disagree on lookup location; the controlled check remains part of CR-16.
   `module\Class.method` becomes `method`, and a constructor becomes the
   class name. Anonymous and duplicate names are unmeasured. An absent
   file is treated as uncovered.
-- Base functions use the head share at the same file and name. Missing
-  head functions get zero. This is an estimate, not a base coverage run.
+- Base functions use the share of a proven head partner. Unpaired base
+  functions have no exact estimated CRAP; their path count can still prove
+  a violation. This is an estimate, not a base coverage run.
 - Bands are good when no counted function reaches 30, warning when some
   do but none is added or worse, and critical when one is added or worse.
-  Unknown functions currently do not prevent a good band.
+  PR #181 withholds good when assessment is incomplete and counts known
+  lower-bound violations from unmatched functions with at least 30 paths.
 - Architecture writes only with `--record`, after verifying the full base
   commit, source content, and ancestry on `origin/main`. Full SHAs identify
   records; short filename collisions fail. Atomic publication never
@@ -638,8 +643,8 @@ base counts.
 identity limits, snapshot/change formats, and inventory.
 
 **Delivery.** PR #179 merged CR-05 after PR #178: file-status evidence and
-conservative function correspondence. CR-07's incomplete-coverage bands
-remain follow-up work.
+conservative function correspondence. PR #181 adds CR-07's incomplete
+coverage assessments; owner review is pending.
 
 ### CR-06. Keep live tests valid and within scope
 
@@ -678,8 +683,8 @@ proofs pass when eligible; absent tools and deferred runs are not passes.
 **Documents.** Policy examples, README live descriptions, guide, inventory.
 Preserve the nested-run limit when documenting the selected live checks.
 
-**Delivery.** PR #180 implements CR-06 after PR #179 merged. Owner review is
-pending. The slice updates the four existing live contracts and splits the
+**Delivery.** PR #180 merged CR-06 after PR #179. The slice updates the four
+existing live contracts and splits the
 architecture collector into its own live file. Snapshot checks dynamic
 structure, valid references, positive counts, HEAD, deadlines, and cleanup.
 MCP drops an incidental function name; coverage retains the explicit
@@ -712,6 +717,8 @@ and CR-02's excluded zero-own functions with units and goldens.
 
 **Documents.** Guide, README, plan bands and limits, inventory.
 
+**Delivery.** PR #181 implements CR-07. Owner review is pending.
+
 ### CR-08. Pin the tool version
 
 P2 · S–M · limit. No prerequisite.
@@ -736,6 +743,9 @@ and performs no version check. Coverage-only work works without ast-metrics.
 
 **Documents.** Guide installation and upgrade rules, README options,
 snapshot/record formats, doubles, and inventory.
+
+**Delivery.** PR #181 implements CR-08 with the 0.43.1 pin. Owner review is
+pending.
 
 ### CR-09. Run the process with one command
 
@@ -1537,6 +1547,7 @@ Current abbreviated shape; this is not an internally complete fixture:
 ```json
 {
   "version": 1,
+  "tool": "0.43.1",
   "commit": "<40 hex>",
   "date": "2026-10-18T14:05:31-06:00",
   "global": {
@@ -1603,12 +1614,16 @@ identity. Source parse errors withhold identity and set `complete: false`. `comp
 function to be supported and every metric to have one declaration.
 Optional metadata is strictly validated without reading checkout source.
 
-Proposed extensions remain actual `tool` (CR-08), dependencies with unresolved
-diagnostics (CR-13), and optional commit `title` (CR-14), for example:
+CR-08 in PR #181 adds optional `tool`, the actual checked version. New
+captures write it, including an explicitly permitted version. Legacy absent
+values mean unknown. Offline rendering needs no installed tool and reports
+different or missing base/head versions.
+
+Proposed extensions remain dependencies with unresolved diagnostics (CR-13)
+and optional commit `title` (CR-14), for example:
 
 ```json
 {
-  "tool": "0.43.1",
   "dependencies": {
     "version": 1, "complete": true,
     "pairs": [{ "from": "src/application.ts", "to": "src/fetch-tool.ts", "kind": "dynamic-literal" }],
@@ -1629,6 +1644,7 @@ Current abbreviated shape:
 ```json
 {
   "version": 1,
+  "tool": "0.43.1",
   "commit": "<40 hex>",
   "date": "2026-10-18T14:05:31-06:00",
   "modularity": 0.55, "crossShare": 0.25, "cycles": 2,
@@ -1662,8 +1678,10 @@ recorded base source, and D3's `crap` basis:
 }
 ```
 
-The basis applies to global and community counts. Unknown functions are
-excluded and counted in `unknownFunctions`. Stored base records use
+The basis applies to global and community counts. Functions without a share
+are counted in `unknownFunctions`. CR-07 still includes their known
+lower-bound violations at 30 or more paths in the risk count; it does not
+treat those bounds as exact estimated CRAP. Stored base records use
 `head-derived-estimate`; the current head row uses `measured`. Table cells
 are labeled `17 (estimate)`, `17 (measured)`, `22 (legacy unknown)`, or `–`
 when absent. Counts without compatible evidence are absent, not zero.
@@ -1677,8 +1695,10 @@ The store validates full SHA identity, filename dates and prefixes, and
 required global and community fields before atomic publication without
 overwrite. Record-shaped directories and symlinks fail. A busy lock has a
 five-second limit; recovery requires confirming that no writer is active. An existing record stays unchanged, including
-one without counts. Keep the file from `main` in a merge conflict. CR-08's
-tool, CR-13's components, and CR-14's title remain proposed fields. D3
+one without counts. Keep the file from `main` in a merge conflict. CR-08 adds
+optional `tool` from the base snapshot to new records; a legacy absent value
+is unknown. Existing records are not rewritten. CR-13's components and
+CR-14's title remain proposed fields. D3
 authorizes neither base-coverage storage nor a merge workflow; D4 and D5
 remain open.
 

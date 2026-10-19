@@ -1,5 +1,6 @@
 // A module, not a part of script/code-quality/ast-metrics-snapshot.ts, because the later commands of
 // docs/implementation/architecture-evolution-plan.md compare the snapshot of the merge base with the snapshot of the head.
+import { cliToolVersion, type CheckedToolVersion } from '../shared/tool-version.ts';
 import type { Notice } from './sweep.ts';
 import { snapshotOfTree } from './tree.ts';
 import type { Snapshot } from './types.ts';
@@ -7,6 +8,8 @@ import { addTemporaryWorktree } from './worktree.ts';
 import { git, verifyBase } from '../shared/repository.ts';
 
 export interface BaseRun {
+  readonly toolVersion?: CheckedToolVersion;
+  readonly allowToolVersion?: boolean;
   readonly root: string;
   readonly ref: string;
   // The deadline of the MCP session.
@@ -21,10 +24,11 @@ export interface BaseRun {
 export async function snapshotOfBase(run: BaseRun): Promise<Snapshot> {
   verifyBase(run.root, run.ref);
   const commit = git(run.root, ['merge-base', run.ref, 'HEAD'], `The base ref "${run.ref}" and HEAD have no merge base.`).trim();
+  const checked = run.toolVersion ?? cliToolVersion(run.root, run.allowToolVersion);
   const worktree = addTemporaryWorktree(run.root, commit, run.notice);
   let failure: unknown;
   try {
-    return await snapshotOfTree(worktree.folder, run.timeoutMs);
+    return await snapshotOfTree(worktree.folder, run.timeoutMs, checked);
   } catch (error) {
     failure = error;
     throw error;

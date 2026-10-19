@@ -19,7 +19,7 @@ const structure = 'Modularity 0.52 → 0.52 · cross share 0.26 → 0.26 · cycl
 
 // The node lines of the banded base, as the graph shows them when no function changed.
 const bandedNodes = {
-  auth: '  c_auth["auth<br/>4 files · MI 58.6 · paths 110<br/>▲ warning: 1 fn ≥ 30"]',
+  auth: '  c_auth["auth<br/>4 files · MI 58.6 · paths 110<br/>▲ warning: 2 fn ≥ 30; assessment incomplete: 2 unknown"]',
   hostedAdmin: '  c_hosted_admin["hosted-admin<br/>2 files · MI 66.6 · paths 75<br/>▲ warning: 2 fn ≥ 30"]',
   kernel: '  c_shared_kernel["shared kernel<br/>1 file · MI 77.0 · paths 18<br/>● good: 0 fn ≥ 30"]',
   src: '  c_src["src<br/>2 files · MI 56.0 · paths 40<br/>▲ warning: 1 fn ≥ 30"]',
@@ -40,7 +40,7 @@ function graph(nodes: readonly string[], bandDefs: readonly string[], classes: r
 interface RiskCounts { readonly functions: string; readonly unknownIdentity: number }
 
 function markdown(counts: RiskCounts, picture: readonly string[], complexity: readonly string[]): string {
-  return [header, '', `${structure} · functions ≥ 30: ${counts.functions}`, '', ...picture, '', ...complexity, '', `Unknown function identity: ${counts.unknownIdentity} (no proven declaration or unique unchanged body/signature correspondence).`, '', 'Base functions without an estimated covered share: 2.', '', coverageNote, '', ...noTrend, ''].join('\n');
+  return [header, '', `${structure} · functions ≥ 30: ${counts.functions}`, '', 'Tool versions: base ast-metrics unknown; head ast-metrics unknown.', '', ...picture, '', ...complexity, '', `Unknown function identity: ${counts.unknownIdentity} (no proven declaration or unique unchanged body/signature correspondence).`, '', 'Base functions without an estimated covered share: 2.', '', coverageNote, '', ...noTrend, ''].join('\n');
 }
 
 function bandedTable(rows: readonly string[], listed: readonly string[], unmatched = 0): string[] {
@@ -58,7 +58,7 @@ test('Given equal covered snapshots, when the command runs, then it prints the u
   const result = await runScript(t, astMetricsArchitectureScript, { args, env: noTools });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, ['The map did not change.', '', ...bandedBaseGraph], noProductionFile));
+  assert.equal(result.stdout, markdown({ functions: '5 → 5', unknownIdentity: 1 }, ['The map did not change.', '', ...bandedBaseGraph], noProductionFile));
   assert.equal(result.code, 0);
 });
 
@@ -66,7 +66,7 @@ test('Given a touched community with no function at CRAP 30 or more, when the co
   const result = await runWith(t, {}, 'src/kernel/ids.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
+  assert.equal(result.stdout, markdown({ functions: '5 → 5', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
     '  class c_shared_kernel touched',
     '  class c_shared_kernel good',
     '  class c_auth,c_hosted_admin,c_src warning',
@@ -78,7 +78,7 @@ test('Given a touched community with two functions at CRAP 30 or more in the bas
   const result = await runWith(t, {}, 'src/hosted-admin/routes.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
+  assert.equal(result.stdout, markdown({ functions: '5 → 5', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
     '  class c_hosted_admin touched',
     '  class c_shared_kernel good',
     '  class c_auth,c_hosted_admin,c_src warning',
@@ -96,7 +96,7 @@ test('Given a pull request that adds a function at CRAP 30 or more to a communit
   const result = await runWith(t, addedFunction, 'src/hosted-admin/accounts.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown({ functions: '4 → 5', unknownIdentity: 2 }, graph([
+  assert.equal(result.stdout, markdown({ functions: '5 → 6', unknownIdentity: 2 }, graph([
     bandedNodes.auth,
     '  c_hosted_admin["hosted-admin<br/>2 files · MI 66.6 · paths 83 ↑8<br/>▲ warning: 3 fn ≥ 30 (+1)"]',
     bandedNodes.kernel,
@@ -120,8 +120,8 @@ test('Given a pull request that raises the decision paths of a function so that 
   const result = await runWith(t, worseFunction, 'src/auth/tokens.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown({ functions: '4 → 5', unknownIdentity: 1 }, graph([
-    '  c_auth["auth<br/>4 files · MI 58.6 · paths 117 ↑7<br/>■ critical: 2 fn ≥ 30 (+1)"]',
+  assert.equal(result.stdout, markdown({ functions: '5 → 6', unknownIdentity: 1 }, graph([
+    '  c_auth["auth<br/>4 files · MI 58.6 · paths 117 ↑7<br/>■ critical: 3 fn ≥ 30 (+1); assessment incomplete: 2 unknown"]',
     bandedNodes.hostedAdmin,
     bandedNodes.kernel,
     bandedNodes.src,
@@ -137,15 +137,15 @@ test('Given a pull request that raises the decision paths of a function so that 
 });
 
 // refresh has 30 decision paths, so any covered share would give it a CRAP of 30 or more.
-test('Given a changed file with an anonymous function and a function whose name the coverage report has twice, when the command runs, then neither function gets a CRAP, the row counts 0 → 0, and the unmatched count is 2', { timeout }, async (t) => {
+test('Given a changed file with an anonymous function and a function whose name the coverage report has twice, when the command runs, then each has a lower bound, the row counts 1 → 1, and the unmatched count is 2', { timeout }, async (t) => {
   const result = await runWith(t, {}, 'src/auth/session.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown({ functions: '4 → 4', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
+  assert.equal(result.stdout, markdown({ functions: '5 → 5', unknownIdentity: 1 }, graph(Object.values(bandedNodes), [classDefs.good, classDefs.warning], [
     '  class c_auth touched',
     '  class c_shared_kernel good',
     '  class c_auth,c_hosted_admin,c_src warning',
-  ]), bandedTable(['| src/auth/session.ts | 50.0 → 50.0 | 40 → 40 | 0 → 0 | 2 |'], [], 2)));
+  ]), [...bandedTable(['| src/auth/session.ts | 50.0 → 50.0 | 40 → 40 | 1 → 1 | 2 |'], [], 2), '- `src/auth/session.ts` `refresh`: paths 30, covered unknown, CRAP ≥ 30']));
   assert.equal(result.code, 0);
 });
 
@@ -160,7 +160,7 @@ test('Given a changed file that the coverage report does not have, when the comm
   const result = await runWith(t, addedUncovered, 'src/application.ts');
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown({ functions: '4 → 5', unknownIdentity: 2 }, graph([
+  assert.equal(result.stdout, markdown({ functions: '5 → 6', unknownIdentity: 2 }, graph([
     bandedNodes.auth,
     bandedNodes.hostedAdmin,
     bandedNodes.kernel,
@@ -179,7 +179,7 @@ test('Given snapshot files without --coverage, when the command runs, then the l
   const result = await runScript(t, astMetricsArchitectureScript, { args, env: noTools });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, [header, '', structure, '', bandsNeedTheCoverage, '', '```mermaid', 'flowchart LR',
+  assert.equal(result.stdout, [header, '', structure, '', bandsNeedTheCoverage, '', 'Tool versions: base ast-metrics unknown; head ast-metrics unknown.', '', '```mermaid', 'flowchart LR',
     ...Object.values(baseNodes),
     ...baseEdges,
     ...graphDefinitions,

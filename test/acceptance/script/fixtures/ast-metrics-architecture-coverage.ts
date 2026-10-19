@@ -81,7 +81,7 @@ export function coverageArguments(t: TestContext, report: object = unitCoverage)
 }
 
 // The legend under a graph with bands: the legend without bands, with the borders of the bands before the numbers.
-export const bandedLegend = legend.replace('numbers =', 'border color = the CRAP band of the community (● good: no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers =');
+export const bandedLegend = legend.replace('numbers =', 'border color = the CRAP band of the community (● good: complete assessment, no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers =');
 
 export const bandedTableHead = ['| File | Maintainability | Decision paths | CRAP ≥ 30 | Risk rank |', '| --- | --- | --- | --- | --- |'];
 

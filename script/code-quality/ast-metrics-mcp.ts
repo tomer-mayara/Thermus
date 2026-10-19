@@ -24,6 +24,7 @@ Options:
   --limit N           complex, risky: the maximum number of results (default: delegated to ast-metrics)
   --max-cyclomatic N  complex: show the items above this complexity (default: delegated to ast-metrics)
   --timeout-ms MS     Deadline of the MCP call (100..300000; default: 60000)
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h          Show this help
 
 The score is the maintainability index (0 to 128; more is better). The paths are the
@@ -35,7 +36,7 @@ async function main(): Promise<string> {
   const command = commandOf(process.argv.slice(2));
   if (command.kind === 'help') return help;
   const root = repositoryRoot();
-  return withAstMetricsServer(root, command.timeoutMs, workOf(command, root));
+  return withAstMetricsServer({ root, allowToolVersion: command.allowToolVersion }, command.timeoutMs, workOf(command, root));
 }
 
 try {

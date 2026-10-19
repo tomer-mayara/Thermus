@@ -19,14 +19,7 @@ interface Sources {
   readonly coverage?: { readonly files: readonly { readonly path: string; readonly functions: readonly { readonly name: string; readonly coveredShare: number }[] }[] };
 }
 
-interface JudgedFunction {
-  readonly name: string;
-  readonly paths: number;
-  readonly share: number;
-  readonly crap: number;
-  readonly base: number | 'new' | undefined;
-  readonly addedOrWorse: boolean;
-}
+type JudgedFunction = import('../../../script/code-quality/architecture/crap-delta.ts').JudgedFunction;
 
 interface CrapDelta {
   readonly head: ReadonlyMap<string, { readonly functions: readonly JudgedFunction[]; readonly unmatched: number }>;
@@ -76,13 +69,13 @@ test('Given CRAP values with more decimals, when the CRAP is computed, then it k
   assert.deepEqual(crapOf(sources, 'src/a.ts'), { quarter: 72.8, half: 13.1, tenth: 68 });
 });
 
-test('Given an anonymous function, a method without a name, a name that the file has twice, a name that the report has twice, and a name that the report does not have, when the CRAP is computed, then none of them gets a CRAP and the file counts them as unmatched', () => {
+test('Given an anonymous function, a method without a name, a name that the file has twice, a name that the report has twice, and a name that the report does not have, when the CRAP is computed, then each has an unknown covered share and its paths as a lower bound', () => {
   const functions = [['(anonymous)', 4], ['a\\Store.', 4], ['twice', 2], ['twice', 3], ['echo', 5], ['missing', 6], ['kept', 2]] as const;
   const sources = sourcesOf({ 'src/a.ts': functions }, { 'src/a.ts': [['(anonymous)', 1], ['twice', 1], ['echo', 0.5], ['echo', 0.2], ['kept', 1]] });
 
   const file = headOf(sources, 'src/a.ts');
 
-  assert.deepEqual(file.functions.map((entry) => entry.name), ['kept']);
+  assert.deepEqual(file.functions.filter(({ share }) => share === undefined).map(({ name, crap }) => [name, crap]), functions.slice(0, -1));
   assert.equal(file.unmatched, 6);
 });
 
@@ -96,15 +89,17 @@ test('Given methods and a constructor in the names of ast-metrics, when the CRAP
 test('Given a method and a function with the same name as V8 gives it, when the CRAP is computed, then the key is the same twice, and neither gets a CRAP', () => {
   const sources = sourcesOf({ 'src/store.ts': [['store\\Store.close', 2], ['close', 3]] }, { 'src/store.ts': [['close', 1]] });
 
-  assert.deepEqual(headOf(sources, 'src/store.ts'), { functions: [], unmatched: 2 });
+  const file = headOf(sources, 'src/store.ts');
+  assert.equal(file.unmatched, 2);
+  assert.deepEqual(file.functions.map(({ share, crap }) => ({ share, crap })), [{ share: undefined, crap: 2 }, { share: undefined, crap: 3 }]);
 });
 
-test('Given a file that the report does not have, when the CRAP is computed, then each of its named functions counts as uncovered with CRAP = paths² + paths, and an anonymous function still gets none', () => {
+test('Given a file that the report does not have, when the CRAP is computed, then each of its named functions counts as uncovered with CRAP = paths² + paths, and an anonymous function keeps its unknown share', () => {
   const sources = sourcesOf({ 'src/loose.ts': [['start', 5], ['(anonymous)', 2], ['stop', 3]] }, {});
 
   const file = headOf(sources, 'src/loose.ts');
 
-  assert.deepEqual(file.functions.map(({ name, share, crap }) => ({ name, share, crap })), [{ name: 'start', share: 0, crap: 30 }, { name: 'stop', share: 0, crap: 12 }]);
+  assert.deepEqual(file.functions.map(({ name, share, crap }) => ({ name, share, crap })), [{ name: 'start', share: 0, crap: 30 }, { name: '(anonymous)', share: undefined, crap: 2 }, { name: 'stop', share: 0, crap: 12 }]);
   assert.equal(file.unmatched, 1);
 });
 
@@ -123,8 +118,8 @@ test('Given a function that the pull request removed, a removed file, and a func
 
   const delta = crapDeltaOf(sourcesOf(head, { 'src/a.ts': [['kept', 1], ['twice', 1]] }, base));
 
-  assert.deepEqual(delta?.base.get('src/a.ts'), { functions: [{ name: 'kept', paths: 2, share: 1, crap: 2 }], unmatched: 2 });
-  assert.deepEqual(delta?.base.get('src/gone.ts'), { functions: [], unmatched: 1 });
+  assert.deepEqual(delta?.base.get('src/a.ts'), { functions: [{ name: 'kept', paths: 2, share: 1, crap: 2 }, { name: 'removed', paths: 6, share: undefined, crap: 6 }, { name: 'twice', paths: 3, share: undefined, crap: 3 }], unmatched: 2 });
+  assert.deepEqual(delta?.base.get('src/gone.ts'), { functions: [{ name: 'old', paths: 5, share: undefined, crap: 5 }], unmatched: 1 });
 });
 
 test('Given the same tree on both sides, when the delta is made, then each function of the base has the CRAP of the head and none is added or worse', () => {
@@ -135,6 +130,7 @@ test('Given the same tree on both sides, when the delta is made, then each funct
   assert.deepEqual(delta?.head.get('src/a.ts')?.functions.map(({ name, crap, base, addedOrWorse }) => ({ name, crap, base, addedOrWorse })), [
     { name: 'big', crap: 68, base: 68, addedOrWorse: false },
     { name: 'small', crap: 2.5, base: 2.5, addedOrWorse: false },
+    { name: '(anonymous)', crap: 4, base: undefined, addedOrWorse: false },
   ]);
   assert.deepEqual(delta?.head.get('src/b.ts')?.functions.map(({ crap, base, addedOrWorse }) => ({ crap, base, addedOrWorse })), [{ crap: 42, base: 42, addedOrWorse: false }]);
 });
@@ -168,4 +164,20 @@ test('Given a function at 30 or more whose name the base file has twice, when th
   const file = headOf(sourcesOf({ 'src/a.ts': [['f', 10]] }, { 'src/a.ts': [['f', 0]] }, { 'src/a.ts': [['f', 1], ['f', 2]] }), 'src/a.ts');
 
   assert.deepEqual(file.functions.map(({ crap, base, addedOrWorse }) => ({ crap, base, addedOrWorse })), [{ crap: 110, base: undefined, addedOrWorse: false }]);
+});
+
+test('Given unmatched functions at and below 30 paths, when risk is judged, then paths remain a lower bound and a larger bound does not prove worsening', () => {
+  const sources = sourcesOf({ 'src/a.ts': [['refresh', 40], ['(anonymous)', 5]] }, { 'src/a.ts': [] }, { 'src/a.ts': [['refresh', 30], ['(anonymous)', 5]] });
+  const file = headOf(sources, 'src/a.ts');
+
+  assert.deepEqual(file.functions.map(({ name, share, crap, base, addedOrWorse }) => ({ name, share, crap, base, addedOrWorse })), [
+    { name: 'refresh', share: undefined, crap: 40, base: undefined, addedOrWorse: false },
+    { name: '(anonymous)', share: undefined, crap: 5, base: undefined, addedOrWorse: false },
+  ]);
+});
+
+test('Given a proven new function without coverage and at least 30 paths, when risk is judged, then it is added known risk', () => {
+  const file = headOf(sourcesOf({ 'src/new.ts': [['fresh', 30]] }, { 'src/new.ts': [] }, {}), 'src/new.ts');
+
+  assert.deepEqual(file.functions.map(({ share, crap, base, addedOrWorse }) => ({ share, crap, base, addedOrWorse })), [{ share: undefined, crap: 30, base: 'new', addedOrWorse: true }]);
 });

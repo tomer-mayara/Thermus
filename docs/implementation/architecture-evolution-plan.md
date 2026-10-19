@@ -9,9 +9,10 @@ group 3, CR-01 and CR-02: include portal unit coverage and measure each
 function's own characters. PR #178 merged CR-03 and CR-04: verified capture
 provenance, explicit safe recording, and labeled historical estimates under
 approved D3. PR #179 merged CR-05: file status, source evidence, and
-conservative function correspondence. PR #180 implements CR-06: live
+conservative function correspondence. PR #180 merged CR-06: live
 invariants and separate structural and coverage-collecting architecture
-files. It awaits owner review.
+files. PR #181 implements CR-07 and CR-08: incomplete risk assessments and
+the tool version pin. It awaits owner review.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
@@ -114,7 +115,9 @@ The snapshot of one tree, `snapshot.json`, holds the global numbers
 (modularity, cross share, cycles, LOC-weighted maintainability of `src/`,
 file and function counts), the `src/` communities with their members and
 references, the per-file metrics, and the per-function decision paths. It
-holds no coverage or CRAP. One module makes it from one JSON report and one
+holds no coverage or CRAP. `tool` names the actual checked ast-metrics
+version. A legacy snapshot without `tool` has an unknown version. One
+module makes it from one JSON report and one
 MCP session, both of `src/` alone (`ast-metrics analyze src`, `ast-metrics
 mcp src`), so that growth of `script/` or `test/` cannot regroup the
 communities. The architecture command joins a separate coverage report when
@@ -140,7 +143,13 @@ controlled 0.43.1 configuration lookup check.
 A pull request has two snapshots: the head (the working tree) and the base
 (the merge base with `origin/main`, analyzed in a temporary `git worktree`
 that the command removes again). The base never comes from the trend store,
-so a pull request depends on nothing but the repository.
+so a pull request depends on nothing but the repository. Delta, review,
+MCP, snapshot, and online architecture pin 0.43.1. CLI checks use
+`ast-metrics version`; MCP checks initialization. A composite run checks
+the CLI once and requires each MCP session to agree with it. An explicit
+`--allow-tool-version` permits another actual version throughout that run.
+Help, coverage collection, and offline rendering need no installed tool.
+A pin change needs applicable live contracts and fixture review.
 
 ### The views
 
@@ -172,7 +181,10 @@ All three appear in the pull request body through step 5 of the process:
    ancestry on `origin/main` are verified. Exploratory runs are read-only.
    Records are immutable; keep the file from `main` in a merge conflict.
    Counts from head coverage are labeled estimates with their origin and
-   unknown-function count. The trend lags one pull request behind `main`.
+   unknown-function count. New records retain the actual snapshot `tool`
+   version when known. Mixed versions in the history and head get an explicit
+   notice; absent legacy versions are unknown. The trend lags one pull
+   request behind `main`.
 
 ### Community identity
 
@@ -226,11 +238,15 @@ the name that V8 gives: ast-metrics names a method `module\Class.method`,
 V8 names it `method`, and V8 names a constructor `Class`. An anonymous
 function, a duplicate name in a snapshot or coverage file, a name absent
 from coverage, a compiler helper (`__` prefix, with its descendants), or a
-function with no own characters stays unmatched and gets no CRAP. An
+function with no own characters stays unmatched and gets no exact CRAP. An
 unmeasured entry also blocks a measured same-name entry from supplying a
 share. The list under the table gives how many functions of the changed files
-stayed unmatched. A `src/` file absent from the report currently counts as
-uncovered. Only a complete verified report can establish that an absent
+stayed unmatched. Directly below it, the report lists unmeasured functions
+in changed files with at least five paths, sorted by path and name.
+Their CRAP is at least their paths. A function with 30 or more paths counts
+as a known violation and displays `≥ <paths>`. A lower bound alone cannot
+prove worsening against an unknown base value. A `src/` file absent from
+the report currently counts as uncovered. Only a complete verified report can establish that an absent
 file was not loaded by the selected unit suite. Coverage is compatible
 only when its verified provenance matches the supplied head snapshot's
 source and input fingerprints, runtime, compiler, suite, and measurement
@@ -240,7 +256,8 @@ only unrelated prose can reuse a capture when these inputs match.
 The base tree gets no coverage run, so its CRAP is a head-derived estimate.
 Only a proven base/head function pair can use the head covered share with
 base decision paths. Removed functions and other base functions without a
-partner get no estimated CRAP, and their unknown count stays visible.
+partner get no exact estimated CRAP, and their unknown count stays visible.
+At 30 or more paths, they still count as known lower-bound violations.
 Within the same file or a proven file rename, a unique declaration
 kind/owner/name pair establishes continuity. Body or signature changes make
 that pair changed. Elsewhere, one unique unchanged body/signature pair can
@@ -261,17 +278,25 @@ already selected under the test gate policy. Otherwise report without bands.
 
 The band of a community or a file follows the change, as rule 1 says:
 
-- **good**: no function with CRAP at 30 or more;
+- **good**: every function is assessed and none has CRAP at 30 or more;
 - **warning**: some, and the pull request added none and made none worse;
 - **critical**: the pull request added at least one or made one worse.
 
 A function with CRAP at 30 or more is added only when source evidence
-proves that it is new. A proven pair is worse when its base CRAP was below
-30 or its head CRAP is higher. Unknown identity gives neither claim.
-CR-07's incomplete-coverage bands remain follow-up work. The count in the
-node text is the count of the functions
-at 30 or more in the head. A gone community has the count and the band of
-its base, good or warning, because the base has no change to follow.
+proves that it is new, including a known lower-bound violation. A proven
+pair is worse when its exact base CRAP was below 30 or its exact head CRAP
+is higher. A larger lower bound alone does not prove worsening. Unknown
+identity gives neither claim. Unknown assessment withholds good. The
+unknown count includes known lower-bound violations and zero-own exclusions.
+A known violation can still support warning or critical with an
+`assessment incomplete: N unknown` note. Without a justified band, the node
+shows the unknown count and has no band color. Missing function metrics
+count separately as unmeasured files, without a guessed function count.
+There is no fourth band.
+The count in the node text is the count of the functions
+at 30 or more in the head. A gone community uses its base assessment: good
+or warning when justified, or no band when assessment is incomplete. It
+cannot be critical because the base has no change to follow.
 
 ## Encoding of the architecture delta
 
@@ -306,8 +331,8 @@ or touched borders.
 Compatible coverage adds bands; without it, the graph and legend still
 appear with the specific coverage-withholding notice. Reuse valid coverage or
 collect only within the current test gate policy. CR-03 coverage validity
-checks are implemented in PR #178; CR-07 incomplete assessments remain
-follow-up work.
+checks are implemented in PR #178; PR #181 adds CR-07 incomplete
+assessments, pending owner review.
 
 The shape of the output, with made-up numbers:
 
@@ -403,9 +428,9 @@ their fenced block and legend unchanged in every pull request body. The original
   not select all live files or a broader nested suite.
 - The 2026-10-18 study observed a reported seven-point maintainability drop
   and an unreported 1.3-point drop. It established no exact drop threshold.
-- The base gets the coverage of the head (see "CRAP per function"), so a
-  pull request that only removes unit tests makes no function worse, and a
-  function that the pull request removed counts as uncovered in the base.
+- The base uses the covered share of each proven head partner (see "CRAP per
+  function"). Removed functions stay unknown. Head-derived estimates do not
+  measure the effect of removing unit tests from the base.
 - ast-metrics measures TypeScript only; a change to `.mjs` files or to
   configuration does not appear.
 - The trend lags one pull request behind `main`, and a `main` commit that no
@@ -667,7 +692,9 @@ Source: step A2, "Bands", and "Encoding". Depends on T4 and T5. Done in PR
 run, so a function of the base has its own decision paths and the covered
 share of the head function with the same name (0 when the head file does
 not have the name). This was the original T6 rule; CR-05 replaces it with
-source evidence and leaves unpaired base functions unknown. Findings:
+source evidence and leaves unpaired base functions unknown. CR-07 adds
+lower-bound risk and incomplete assessments described above; its unknown
+functions get no exact CRAP. Findings:
 ast-metrics names a method
 `module\Class.method` and V8 names it `method`, so the join uses the names
 of V8; on this repository on 2026-10-18, 721 of the 1022 functions of `src/`

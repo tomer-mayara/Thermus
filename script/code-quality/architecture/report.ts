@@ -1,16 +1,17 @@
 // The Markdown of the architecture delta and of the complexity table, for the body of a pull request. The report is pure,
 // so that its rules have unit tests without git and ast-metrics.
-import { totalCountOf } from './bands.ts';
+import { totalCountOf } from './risk-counts.ts';
 import type { CrapDelta } from './crap-delta.ts';
 import { identityNoticeOf } from './identity-notice.ts';
 import { architectureMapOf } from './map.ts';
 import { mermaidOf } from './mermaid.ts';
 import { complexityTableOf } from './table.ts';
+import { toolNoticeOf } from './tool-notice.ts';
 import type { MapNode, MapSources } from './types.ts';
 
 const legendParts = {
   start: 'Legend: thick border = a community this pull request touched; `· new` and `· gone` = a community or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency;',
-  bands: 'border color = the CRAP band of the community (● good: no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse);',
+  bands: 'border color = the CRAP band of the community (● good: complete assessment, no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse);',
   end: 'numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base.',
 };
 
@@ -24,7 +25,7 @@ export function architectureReportOf(sources: MapSources, delta: CrapDelta | und
   const picture = [...(map.changed ? [] : ['The map did not change.', '']), ...mermaidOf(map), '', legend];
   const coverageNote = delta === undefined ? ['', sources.coverageNotice ?? bandsNeedTheCoverage] : [];
   const assessed = delta === undefined ? [] : ['', `Coverage: unit suite at ${sources.coverage?.commit?.slice(0, 8) ?? 'unknown'}.`];
-  return `${[headerOf(sources), '', summaryOf(sources, map.nodes, delta), ...coverageNote, '', ...picture, '', ...complexityTableOf(sources, delta), ...identityNoticeOf(sources, delta).flatMap((line) => ['', line]), ...assessed].join('\n')}\n`;
+  return `${[headerOf(sources), '', summaryOf(sources, map.nodes, delta), ...coverageNote, '', ...toolNoticeOf(sources.base, sources.head), ...picture, '', ...complexityTableOf(sources, delta), ...identityNoticeOf(sources, delta).flatMap((line) => ['', line]), ...assessed].join('\n')}\n`;
 }
 
 // The snapshot of the head can hold changes that are not committed, so the header names the base commit only.

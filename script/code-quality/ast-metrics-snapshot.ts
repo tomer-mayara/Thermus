@@ -1,13 +1,14 @@
 #!/usr/bin/env node
+import { cliToolVersion } from './shared/tool-version.ts';
 import * as fs from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { snapshotOfBase } from './snapshot/base.ts';
 import { commandOf } from './snapshot/command-line.ts';
 import { snapshotOfTree } from './snapshot/tree.ts';
 import type { Snapshot } from './snapshot/types.ts';
-import { CommandError, repositoryRoot } from './shared/repository.ts';
+import * as repository from './shared/repository.ts';
 
-const help = `Usage: node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS] [--help]
+const help = `Usage: node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS] [--allow-tool-version] [--help]
 
 Write the snapshot of the working tree: the numbers of ast-metrics for the files
 under src/ and for their communities, in one JSON file. In the repository root,
@@ -33,6 +34,7 @@ Options:
                    ast-report/snapshot.json in the repository root, or
                    ast-report/snapshot-base.json with --base)
   --timeout-ms MS  Deadline of the MCP session (100..300000; default: 60000)
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h       Show this help
 
 Exit status 0: the snapshot is written. Exit status 1: the command failed. It
@@ -52,9 +54,10 @@ const defaultFiles = { tree: 'ast-report/snapshot.json', base: 'ast-report/snaps
 async function main(): Promise<string> {
   const command = commandOf(process.argv.slice(2));
   if (command.kind === 'help') return help;
-  const root = repositoryRoot();
+  const root = repository.repositoryRoot();
   const { base, timeoutMs } = command;
-  const snapshot = base === undefined ? await snapshotOfTree(root, timeoutMs) : await snapshotOfBase({ root, ref: base, timeoutMs, notice });
+  if (base !== undefined) repository.verifyBase(root, base);
+  const snapshot = base === undefined ? await snapshotOfTree(root, timeoutMs, cliToolVersion(root, command.allowToolVersion)) : await snapshotOfBase({ root, ref: base, timeoutMs, notice, allowToolVersion: command.allowToolVersion });
   const defaultFile = base === undefined ? defaultFiles.tree : defaultFiles.base;
   const target = command.out === undefined ? resolve(root, defaultFile) : resolve(command.out);
   writeSnapshotFile(target, snapshot);
@@ -86,7 +89,7 @@ function plural(count: number, one: string, many: string): string {
 try {
   process.stdout.write(await main());
 } catch (error) {
-  const message = error instanceof CommandError ? error.message : `Unexpected failure: ${error instanceof Error ? error.message : String(error)}`;
+  const message = error instanceof repository.CommandError ? error.message : `Unexpected failure: ${error instanceof Error ? error.message : String(error)}`;
   // A diagnostic is one line, also when ast-metrics or the server wrote several lines.
   process.stderr.write(`ast-metrics-snapshot: ${message.replace(/\s+/g, ' ').trim()}\n`);
   process.exitCode = 1;

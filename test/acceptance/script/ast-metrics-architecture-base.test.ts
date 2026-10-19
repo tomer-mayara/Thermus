@@ -35,7 +35,7 @@ test('Given a branch whose working tree changes one src/ file and both doubles o
   ])));
   assert.equal(result.code, 0);
   assert.ok(!readdirSync(repository.root).includes('docs'));
-  const calls = doubles.cli.calls().map(({ argv, cwd }) => [argv[0], dirname(cwd) === doubles.temporaryFolder ? 'temporary worktree' : cwd]);
+  const calls = doubles.cli.calls().filter(({ argv }) => argv[0] !== 'version').map(({ argv, cwd }) => [argv[0], dirname(cwd) === doubles.temporaryFolder ? 'temporary worktree' : cwd]);
   assert.deepEqual(calls, [['analyze', 'temporary worktree'], ['mcp', 'temporary worktree'], ['analyze', repository.root], ['mcp', repository.root]]);
   assert.deepEqual(worktreesOf(repository), [repository.root]);
   assert.deepEqual(foldersLeftIn(doubles), []);
@@ -87,7 +87,7 @@ test('Given an analysis of the merge base that exits 2 with an error text, when 
   assert.equal(result.stderr, 'ast-metrics-architecture: ast-metrics analyze failed with exit status 2. Its stderr: The analysis stopped. No report.\n');
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
-  const [analysis, ...otherCalls] = doubles.cli.calls();
+  const [, analysis, ...otherCalls] = doubles.cli.calls();
   assert.deepEqual([dirname(analysis.cwd), otherCalls], [doubles.temporaryFolder, []]);
   assert.deepEqual(worktreesOf(repository), [repository.root]);
   assert.deepEqual(foldersLeftIn(doubles), []);

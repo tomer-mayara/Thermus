@@ -72,7 +72,7 @@ const coveredGraph = [
     '```mermaid',
     'flowchart LR',
     '  c_admin["admin<br/>1 file · MI 70.1 · paths 4<br/>● good: 0 fn ≥ 30"]',
-    '  c_auth["auth<br/>2 files · MI 70.4 · paths 9<br/>▲ warning: 1 fn ≥ 30 (+1)"]',
+    '  c_auth["auth<br/>2 files · MI 70.4 · paths 9<br/>▲ warning: 1 fn ≥ 30 (+1); assessment incomplete: 1 unknown"]',
     '  c_shared_kernel["shared kernel<br/>1 file · paths 0<br/>● good: 0 fn ≥ 30"]',
     '  c_admin -. "1 · cycle" .-> c_auth',
     '  c_admin -- "1" --> c_shared_kernel',

@@ -1,11 +1,12 @@
 #!/usr/bin/env node
+import { cliToolVersion } from './shared/tool-version.ts';
 import { parseArgs } from 'node:util';
 import { analyzeDelta, reportFolder } from './delta/analysis.ts';
 import { deltaFiles } from './delta/files.ts';
 import { deltaReportOf } from './delta/report.ts';
 import { CommandError, repositoryRoot, verifyBase } from './shared/repository.ts';
 
-const help = `Usage: node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--help]
+const help = `Usage: node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--allow-tool-version] [--help]
 
 Check the maintainability score of each TypeScript file that is added or changed
 against REF. The delta holds the changes from the merge base of REF and HEAD to
@@ -23,6 +24,7 @@ Options:
   --base REF      Git ref to compare with (default: origin/main)
   --min SCORE     Goal for each production file (integer 0..128; default: 85)
   --no-compare    Do not add the comparison with REF to the HTML report
+  --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h      Show this help
 
 Exit status 0: each measured production file is at the goal or more. Exit
@@ -32,10 +34,10 @@ with "no goal" or "not measured" never fails the check.
 
 const optionShape = {
   base: { type: 'string', default: 'origin/main' }, min: { type: 'string', default: '85' },
-  'no-compare': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
+  'allow-tool-version': { type: 'boolean' }, 'no-compare': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
 } as const;
 
-type DeltaOptions = { readonly base: string; readonly min: number; readonly compare: boolean };
+type DeltaOptions = { readonly base: string; readonly min: number; readonly compare: boolean; readonly allowToolVersion: boolean };
 
 function parsedValues(args: readonly string[]) {
   try {
@@ -51,7 +53,7 @@ function optionsOf(args: readonly string[]): DeltaOptions | { readonly help: tru
   if (!/^\d+$/.test(values.min) || Number(values.min) > 128) throw new CommandError('The --min value must be an integer from 0 to 128.');
   // git and ast-metrics would take a ref that starts with a dash as an option.
   if (values.base === '' || values.base.startsWith('-')) throw new CommandError('The --base value must name a git ref.');
-  return { base: values.base, min: Number(values.min), compare: values['no-compare'] !== true };
+  return { allowToolVersion: values['allow-tool-version'] === true, base: values.base, min: Number(values.min), compare: values['no-compare'] !== true };
 }
 
 function main(args: readonly string[]): number {
@@ -67,6 +69,7 @@ function main(args: readonly string[]): number {
     process.stdout.write(`No TypeScript file is added or changed against ${options.base}.\n`);
     return 0;
   }
+  cliToolVersion(root, options.allowToolVersion);
   const report = deltaReportOf(analyzeDelta(root, files, options), options.min);
   process.stdout.write(report.text);
   if (options.compare) process.stdout.write(`Comparison with ${options.base}: ${reportFolder}/compare.html\n`);

@@ -30,7 +30,7 @@ test('Given a branch with a baseline, when the review runs against main, then as
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, noFinding);
   assert.equal(result.code, 0);
-  assert.deepEqual(fake.calls(), [{ argv: reviewArgs('main', 50), cwd: repository.root }]);
+  assert.deepEqual(fake.calls(), [{ argv: ['version'], cwd: repository.root }, { argv: reviewArgs('main', 50), cwd: repository.root }]);
 });
 
 test('Given a review that finds a high finding and exits 1, when the review runs, then the Markdown and the error text reach the caller and the review fails', { timeout }, async (t) => {
@@ -53,7 +53,7 @@ test('Given no baseline file at the root, when the review runs, then it warns th
   assert.equal(result.stderr, noBaseline);
   assert.equal(result.stdout, noFinding);
   assert.equal(result.code, 0);
-  assert.equal(fake.calls().length, 1);
+  assert.equal(fake.calls().length, 2);
 });
 
 test('Given --max-findings 7, when the review runs, then ast-metrics review gets 7', { timeout }, async (t) => {
@@ -64,7 +64,7 @@ test('Given --max-findings 7, when the review runs, then ast-metrics review gets
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.deepEqual(fake.calls().map((call) => call.argv), [reviewArgs('main', 7)]);
+  assert.deepEqual(fake.calls().map((call) => call.argv), [['version'], reviewArgs('main', 7)]);
 });
 
 test('Given origin/main and no --base, when the review runs, then it compares with origin/main', { timeout }, async (t) => {
@@ -76,7 +76,7 @@ test('Given origin/main and no --base, when the review runs, then it compares wi
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.deepEqual(fake.calls().map((call) => call.argv), [reviewArgs('origin/main', 50)]);
+  assert.deepEqual(fake.calls().map((call) => call.argv), [['version'], reviewArgs('origin/main', 50)]);
 });
 
 test('Given a PATH without ast-metrics, when the review runs, then it fails with a diagnostic that names ast-metrics', { timeout }, async (t) => {

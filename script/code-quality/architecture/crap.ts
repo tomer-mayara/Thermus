@@ -2,9 +2,8 @@
 // docs/implementation/architecture-evolution-plan.md ("CRAP per function") gives it: paths² × (1 − share)³ + paths,
 // with the covered share of the function's own code in the unit suite. The base uses the share of the head,
 // because the command runs the unit suite only for the head.
-import { correspondenceOf, type Correspondence } from './correspondence.ts';
 import type { CoverageFunction } from './coverage.ts';
-import type { MapSources, TableFile } from './types.ts';
+import type { TableFile } from './types.ts';
 import { rounded } from '../shared/numbers.ts';
 
 // A function at this CRAP or above is over the limit.
@@ -13,34 +12,35 @@ export const crapLimit = 30;
 export interface FunctionCrap {
   readonly name: string;
   readonly paths: number;
-  readonly share: number;
-  // With one decimal, as the output gives it, so that the limit applies to the value that a reader sees.
+  readonly share: number | undefined;
+  // Exact CRAP has one decimal. Without a share, paths gives its lower bound.
   readonly crap: number;
 }
 
-// The functions of a file that have a CRAP, and the count of the functions that have none.
+// Each function has exact CRAP or a lower bound. Unmatched counts unknown covered shares.
 export interface FileCrap {
   readonly functions: readonly FunctionCrap[];
   readonly unmatched: number;
+  readonly incomplete?: true;
 }
 
-// Gives the share of a function from its name and its key, or undefined when the function has no CRAP.
+// Gives the covered share, or undefined when it cannot be measured.
 type ShareRule = (name: string, key: string) => number | undefined;
 
 export function isOver({ crap }: FunctionCrap): boolean {
   return crap >= crapLimit;
 }
 
-// A key that the file has twice names no single function, so neither function gets a CRAP.
-function fileCrapOf(file: TableFile, shareOf: ShareRule): FileCrap {
+// A duplicate key gives no unique covered share. Keep each function and its lower bound.
+export function fileCrapOf(file: TableFile, shareOf: ShareRule): FileCrap {
   const functions = file.functions ?? [];
   const keys = functions.map(({ name }) => keyOf(name));
-  const crap = functions.flatMap(({ name, paths }, index): FunctionCrap[] => {
+  const crap = functions.map(({ name, paths }, index): FunctionCrap => {
     const key = keys[index];
     const share = key !== undefined && keys.indexOf(key) === keys.lastIndexOf(key) ? shareOf(name, key) : undefined;
-    return share === undefined ? [] : [{ name, paths, share, crap: rounded(paths ** 2 * (1 - share) ** 3 + paths, 1) }];
+    return { name, paths, share, crap: share === undefined ? paths : rounded(paths ** 2 * (1 - share) ** 3 + paths, 1) };
   });
-  return { functions: crap, unmatched: functions.length - crap.length };
+  return { functions: crap, unmatched: crap.filter(({ share }) => share === undefined).length, ...(file.functions === undefined ? { incomplete: true as const } : {}) };
 }
 
 // The key is the name that V8 gives the function. ast-metrics names a method module\Class.method, and V8 names it method,
@@ -54,33 +54,9 @@ function keyOf(name: string): string | undefined {
   return member === '' ? undefined : member;
 }
 
-// Each file of the head and of the base, by path.
-interface SnapshotCrap {
-  readonly head: ReadonlyMap<string, FileCrap>;
-  readonly base: ReadonlyMap<string, FileCrap>;
-  readonly correspondence: Correspondence;
-}
-
-export function snapshotCrapOf(sources: MapSources): SnapshotCrap | undefined {
-  const { base, head, coverage } = sources;
-  if (coverage === undefined) return undefined;
-  const correspondence = correspondenceOf(sources);
-  const covered = new Map(coverage.files.map((file) => [file.path, file.functions]));
-  const headCrap = new Map(head.files.map((file) => [file.path, fileCrapOf(file, coverageShareOf(covered.get(file.path)))]));
-  const baseCrap = base.files.map((file): [string, FileCrap] => {
-    const shares = new Map((file.functions ?? []).map((fn) => {
-      const partner = correspondence.base.get(fn);
-      const share = partner && headCrap.get(partner.file.path)?.functions.find((entry) => entry.name === partner.fn.name)?.share;
-      return [fn.name, share];
-    }));
-    return [file.path, fileCrapOf(file, (name) => shares.get(name))];
-  });
-  return { head: headCrap, base: new Map(baseCrap), correspondence };
-}
-
 // A file that the report does not have is uncovered: no unit test loaded it. A key that the report has twice or not at
 // all names no single function of the report.
-function coverageShareOf(covered: readonly CoverageFunction[] | undefined): ShareRule {
+export function coverageShareOf(covered: readonly CoverageFunction[] | undefined): ShareRule {
   return (_name, key) => {
     if (covered === undefined) return 0;
     const partners = covered.filter((entry) => entry.name === key);

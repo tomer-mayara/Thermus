@@ -39,7 +39,7 @@ test('Given an analysis that exits 2 with an error text, when the snapshot runs,
   assert.equal(result.stderr, 'ast-metrics-snapshot: ast-metrics analyze failed with exit status 2. Its stderr: The analysis stopped. No report.\n');
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
-  assert.deepEqual(doubles.cli.calls().map(({ argv }) => argv[0]), ['analyze']);
+  assert.deepEqual(doubles.cli.calls().map(({ argv }) => argv[0]), ['version', 'analyze']);
   assert.deepEqual(doubles.server.requests(), []);
   assert.equal(existsSync(join(repository.root, 'ast-report')), false);
 });

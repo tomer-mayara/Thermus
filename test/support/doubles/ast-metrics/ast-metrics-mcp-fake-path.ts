@@ -19,6 +19,7 @@ export interface AstMetricsMcpAnswers {
 // hang: the fake never answers a tools/call. exit-early: it exits with status 3 after its answer to initialize.
 // text: each tool other than get_file_metrics answers this plain text instead of JSON.
 export interface AstMetricsMcpFakeSettings {
+  readonly version?: string;
   readonly mode?: 'hang' | 'exit-early';
   readonly text?: string;
   readonly answers?: AstMetricsMcpAnswers;
@@ -54,6 +55,7 @@ export function astMetricsMcpFakeOnPath(t: TestContext, settings: AstMetricsMcpF
   mkdirSync(bin);
   writeFileSync(join(bin, 'ast-metrics'), `#!/bin/sh\nexec "${process.execPath}" "${astMetricsMcpFake}" "$@"\n`, { mode: 0o755 });
   const env: Record<string, string> = { PATH: `${bin}${delimiter}${process.env.PATH ?? ''}`, AST_METRICS_FAKE_REQUEST_LOG: log };
+  if (settings.version !== undefined) env.AST_METRICS_FAKE_MCP_VERSION = settings.version;
   if (settings.mode === 'hang') env.AST_METRICS_FAKE_HANG = '1';
   if (settings.mode === 'exit-early') env.AST_METRICS_FAKE_EXIT_EARLY = '1';
   if (settings.text !== undefined) env.AST_METRICS_FAKE_TEXT = settings.text;

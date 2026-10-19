@@ -22,7 +22,7 @@ const header = '## Architecture of src/: base a1b2c3d4 → head';
 const equalSummary = 'Modularity 0.52 → 0.52 · cross share 0.26 → 0.26 · cycles 0 → 0 · communities 4 → 4';
 
 function markdown(summary: string, picture: readonly string[], complexity: readonly string[] = noProductionFile): string {
-  return [header, '', summary, '', bandsNeedTheCoverage, '', ...picture, '', ...complexity, '', ...noTrend, ''].join('\n');
+  return [header, '', summary, '', bandsNeedTheCoverage, '', 'Tool versions: base ast-metrics unknown; head ast-metrics unknown.', '', ...picture, '', ...complexity, '', ...noTrend, ''].join('\n');
 }
 
 // The lines of the graph between the edges and the end of the block.

@@ -1,7 +1,8 @@
 // The change of the CRAP of each function of the head against the base, which the bands of
 // docs/implementation/architecture-evolution-plan.md ("Bands") follow: they judge the change, not the total.
-import { crapLimit, isOver, snapshotCrapOf, type FileCrap, type FunctionCrap } from './crap.ts';
+import { crapLimit, isOver, type FileCrap, type FunctionCrap } from './crap.ts';
 import type { FunctionCorrespondence } from './correspondence.ts';
+import { snapshotCrapOf } from './crap-snapshots.ts';
 import type { MapSources } from './types.ts';
 
 // Base risk requires a proven predecessor and a head covered share. New requires proven absence; unknown identity
@@ -15,6 +16,7 @@ export interface JudgedFunction extends FunctionCrap {
 interface JudgedFile {
   readonly functions: readonly JudgedFunction[];
   readonly unmatched: number;
+  readonly incomplete?: true;
 }
 
 // Each file of the head with its judged functions, and each file of the base, by path.
@@ -30,21 +32,28 @@ export function crapDeltaOf(sources: MapSources): CrapDelta | undefined {
   if (crap === undefined) return undefined;
   const sourceFiles = new Map(sources.head.files.map((file) => [file.path, file]));
   const head = [...crap.head].map(([path, file]): [string, JudgedFile] => {
-    const functions = file.functions.map((entry) => {
-      const fn = sourceFiles.get(path)?.functions?.find((fn) => fn.name === entry.name);
+    const functions = file.functions.map((entry, index) => {
+      const fn = sourceFiles.get(path)?.functions?.[index];
       const identity = fn && crap.correspondence.head.get(fn);
       return judged(entry, identity, crap.base);
     });
-    return [path, { functions, unmatched: file.unmatched }];
+    return [path, { ...file, functions }];
   });
   const unknownIdentity = [...crap.correspondence.head.values()].filter(({ classification }) => classification === 'unknown').length;
   return { head: new Map(head), base: crap.base, unknownIdentity };
 }
 
 function baseValueOf(identity: FunctionCorrespondence | undefined, files: ReadonlyMap<string, FileCrap>): JudgedFunction['base'] {
-  if (identity?.classification === 'new') return 'new';
-  const partner = identity?.base;
-  return partner && files.get(partner.file.path)?.functions.find((entry) => entry.name === partner.fn.name)?.crap;
+  if (identity === undefined) return undefined;
+  if (identity.classification === 'new') return 'new';
+  const entry = baseEntryOf(identity.base, files);
+  return entry?.share === undefined ? undefined : entry.crap;
+}
+
+function baseEntryOf(partner: FunctionCorrespondence['base'], files: ReadonlyMap<string, FileCrap>): FunctionCrap | undefined {
+  if (partner === undefined) return undefined;
+  const functions = partner.file.functions ?? [];
+  return files.get(partner.file.path)?.functions[functions.indexOf(partner.fn)];
 }
 
 // A function is worse when it is at the limit or above in the head and below it in the base, or at the limit or above

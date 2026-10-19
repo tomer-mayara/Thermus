@@ -137,7 +137,7 @@ function callTool(id: unknown, params: JsonObject): void {
 }
 
 function initialize(id: unknown, input: Interface): void {
-  send({ id, result: { protocolVersion: '2024-11-05', capabilities: { tools: { listChanged: true } }, serverInfo: { name: 'ast-metrics', version: '0.43.1' } } });
+  send({ id, result: { protocolVersion: '2024-11-05', capabilities: { tools: { listChanged: true } }, serverInfo: { name: 'ast-metrics', version: process.env.AST_METRICS_FAKE_MCP_VERSION ?? process.env.AST_METRICS_FAKE_VERSION ?? '0.43.1' } } });
   if (!settings.exitEarly) return;
   // Stop reading, and let Node exit after it writes the pending output. process.exit() can lose that output.
   process.stderr.write('ast-metrics fake: exit before the answer\n');
