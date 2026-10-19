@@ -1,5 +1,7 @@
+import { fileMappingOf } from './file-correspondence.ts';
 // ast-metrics renumbers and renames its communities when code grows elsewhere, so a head community is the base
 // community that has most of the same files (docs/implementation/architecture-evolution-plan.md, "Community identity").
+import type { FileChange } from '../delta/changes.ts';
 import { textOrder } from './order.ts';
 import type { MapCommunity } from './types.ts';
 
@@ -19,10 +21,11 @@ interface Candidate {
 
 // Greedy: the pairs with the largest overlap match first, and a community that has a partner takes no other one. So each
 // base community matches one head community at most.
-export function matchingOf(base: readonly MapCommunity[], head: readonly MapCommunity[]): Matching {
+export function matchingOf(base: readonly MapCommunity[], head: readonly MapCommunity[], changes: readonly FileChange[] = []): Matching {
   const baseOf = new Map<string, MapCommunity>();
   const headOf = new Map<string, MapCommunity>();
-  for (const candidate of candidatesOf(base, head)) {
+  const paths = fileMappingOf(changes).after;
+  for (const candidate of candidatesOf(base, head, paths)) {
     if (baseOf.has(candidate.head.id) || headOf.has(candidate.base.id)) continue;
     baseOf.set(candidate.head.id, candidate.base);
     headOf.set(candidate.base.id, candidate.head);
@@ -30,8 +33,8 @@ export function matchingOf(base: readonly MapCommunity[], head: readonly MapComm
   return { baseOf, headOf };
 }
 
-function candidatesOf(base: readonly MapCommunity[], head: readonly MapCommunity[]): Candidate[] {
-  const pairs = head.flatMap((after) => base.map((before) => ({ head: after, base: before, overlap: overlapOf(after.members, before.members) })));
+function candidatesOf(base: readonly MapCommunity[], head: readonly MapCommunity[], paths: ReadonlyMap<string, string>): Candidate[] {
+  const pairs = head.flatMap((after) => base.map((before) => ({ head: after, base: before, overlap: overlapOf(after.members, before.members.map((path) => paths.get(path) ?? path)) })));
   return pairs.filter(({ overlap }) => overlap >= minimumOverlap).sort(byOverlapThenLabels);
 }
 

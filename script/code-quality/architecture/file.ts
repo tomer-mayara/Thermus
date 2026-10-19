@@ -3,6 +3,8 @@
 // fails it.
 import { readFileSync } from 'node:fs';
 import { inputIdentityIn } from '../provenance/read.ts';
+import { identityForMetric } from '../identity/metric.ts';
+import { fileEvidenceIn } from '../identity/file.ts';
 import * as json from '../shared/json.ts';
 import type { MapSnapshot } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
@@ -71,9 +73,12 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
 // a file of types, has none to join with the coverage.
 function fileOf(fields: Fields, check: Check): TableFile {
   const functions = json.arrayOf(fields.functions).map((entry) => functionOf(json.objectOf(entry), check));
-  return { path: check(json.textOf(fields.path)), maintainability: json.numberOf(fields.maintainability), paths: json.numberOf(fields.paths), risk: json.numberOf(fields.risk), functions };
+  const sourceEvidence = fileEvidenceIn(fields.sourceEvidence, Array.isArray(fields.functions) ? functions : undefined);
+  return { sourceEvidence, path: check(json.textOf(fields.path)), maintainability: json.numberOf(fields.maintainability), paths: json.numberOf(fields.paths), risk: json.numberOf(fields.risk), functions };
 }
 
 function functionOf(fields: Fields, check: Check): MapFunction {
-  return { name: check(json.textOf(fields.name)), paths: check(json.numberOf(fields.paths)) };
+  const name = check(json.textOf(fields.name));
+  const identity = identityForMetric(name, fields.identity);
+  return { name, paths: check(json.numberOf(fields.paths)), identity };
 }

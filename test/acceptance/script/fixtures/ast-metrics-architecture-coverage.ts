@@ -1,3 +1,5 @@
+import type { SnapshotFunction } from '../../../../script/code-quality/snapshot/types.ts';
+import { completeSourceEvidence, functionIdentityOf } from '../../../support/fixtures/ast-metrics-function-identity.ts';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
@@ -11,15 +13,8 @@ import { baseSnapshot, edited, legend, type SnapshotShape } from './ast-metrics-
 // src/auth/session.ts, refresh has two entries in the report and the third function is anonymous, so neither gets a
 // CRAP. The shared kernel has no function at 30 or more. A case edits a copy of the banded base for its head.
 
-interface FunctionShape {
-  readonly name: string;
-  readonly paths: number;
-  readonly maintainability: number;
-  readonly loc: number;
-}
-
-export function fn(name: string, paths: number): FunctionShape {
-  return { name, paths, maintainability: 70, loc: 10 };
+export function fn(name: string, paths: number): SnapshotFunction {
+  return { name, paths, identity: functionIdentityOf(name, paths), maintainability: 70, loc: 10 };
 }
 
 export const coverageIdentity = { sourceFingerprint: 'a'.repeat(64), inputsFingerprint: 'b'.repeat(64), runtime: 'node:test', compiler: 'typescript:test', measurementVersion: 'own-characters-1', suite: 'unit' } as const;
@@ -28,16 +23,16 @@ export const coverageNote = `Coverage: unit suite at ${coverageCommit.slice(0, 8
 
 export const bandedBase: SnapshotShape = edited({ ...baseSnapshot, provenance: coverageIdentity }, {
   files: {
-    'src/application.ts': { functions: [fn('createApplication', 6)] },
-    'src/auth/access-context.ts': { functions: [fn('createContext', 2)] },
-    'src/auth/roles.ts': { functions: [fn('grantRole', 4)] },
-    'src/auth/session.ts': { functions: [fn('openSession', 4), fn('(anonymous)', 3), fn('refresh', 30)] },
-    'src/auth/tokens.ts': { functions: [fn('issueToken', 8), fn('verifyToken', 7)] },
-    'src/auth/users.ts': { functions: [fn('findUser', 3)] },
-    'src/hosted-admin/accounts.ts': { functions: [fn('listAccounts', 12), fn('renderAccount', 3)] },
-    'src/hosted-admin/routes.ts': { functions: [fn('route', 9)] },
-    'src/index.ts': { functions: [fn('main', 2)] },
-    'src/kernel/ids.ts': { functions: [fn('newId', 1)] },
+    'src/application.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('createApplication', 6)] },
+    'src/auth/access-context.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('createContext', 2)] },
+    'src/auth/roles.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('grantRole', 4)] },
+    'src/auth/session.ts': { sourceEvidence: { ...completeSourceEvidence, complete: false }, functions: [fn('openSession', 4), fn('(anonymous)', 3), fn('refresh', 30)] },
+    'src/auth/tokens.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('issueToken', 8), fn('verifyToken', 7)] },
+    'src/auth/users.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('findUser', 3)] },
+    'src/hosted-admin/accounts.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('listAccounts', 12), fn('renderAccount', 3)] },
+    'src/hosted-admin/routes.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('route', 9)] },
+    'src/index.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('main', 2)] },
+    'src/kernel/ids.ts': { sourceEvidence: completeSourceEvidence, functions: [fn('newId', 1)] },
   },
 });
 

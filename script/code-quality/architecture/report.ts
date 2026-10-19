@@ -2,6 +2,7 @@
 // so that its rules have unit tests without git and ast-metrics.
 import { totalCountOf } from './bands.ts';
 import type { CrapDelta } from './crap-delta.ts';
+import { identityNoticeOf } from './identity-notice.ts';
 import { architectureMapOf } from './map.ts';
 import { mermaidOf } from './mermaid.ts';
 import { complexityTableOf } from './table.ts';
@@ -23,7 +24,7 @@ export function architectureReportOf(sources: MapSources, delta: CrapDelta | und
   const picture = [...(map.changed ? [] : ['The map did not change.', '']), ...mermaidOf(map), '', legend];
   const coverageNote = delta === undefined ? ['', sources.coverageNotice ?? bandsNeedTheCoverage] : [];
   const assessed = delta === undefined ? [] : ['', `Coverage: unit suite at ${sources.coverage?.commit?.slice(0, 8) ?? 'unknown'}.`];
-  return `${[headerOf(sources), '', summaryOf(sources, map.nodes, delta), ...coverageNote, '', ...picture, '', ...complexityTableOf(sources, delta), ...assessed].join('\n')}\n`;
+  return `${[headerOf(sources), '', summaryOf(sources, map.nodes, delta), ...coverageNote, '', ...picture, '', ...complexityTableOf(sources, delta), ...identityNoticeOf(sources, delta).flatMap((line) => ['', line]), ...assessed].join('\n')}\n`;
 }
 
 // The snapshot of the head can hold changes that are not committed, so the header names the base commit only.

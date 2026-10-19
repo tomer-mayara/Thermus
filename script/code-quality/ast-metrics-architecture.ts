@@ -8,7 +8,7 @@ import { architectureReportOf } from './architecture/report.ts';
 import { trendLinesOf } from './architecture/trend.ts';
 import { CommandError } from './shared/repository.ts';
 
-const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
+const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
 
 Print the architecture delta of src/ as Markdown, for the body of a pull
 request: a summary line with the modularity, the cross share, the cycles, and
@@ -17,7 +17,9 @@ communities of the head with the changes against the base. Every report includes
 the graph and its legend. An unchanged map keeps its note above the graph.
 Then print the complexity table of the changed src/ files: the maintainability
 and the decision paths of each file, from the base to the head, and its rank
-among the ten riskiest files of the head. A file that the base does not have is
+among the ten riskiest files of the head. A proven rename compares its old path
+with its new path in one row. Deletions touch the base community and have gone
+head cells. A file that the base does not have is
 new, a file that the head does not have is gone, and a file without a
 maintainability index in the head is not measured. Without a changed src/ file,
 the section says that no production file changed.
@@ -28,8 +30,12 @@ coverage has the same name in the same file, as V8 names it: a method by its
 own name, a constructor by its class. A function without a name, a name that
 the file or the report has twice, and a name that the report does not have get
 no CRAP. A file that the report does not have counts as uncovered. The base
-tree gets no coverage run: a function of the base has the covered share of the
-head. A community is
+tree gets no coverage run. Source evidence proves declaration continuity in
+the same or a mapped file, or a unique unchanged body/signature proves a move.
+Only a proven partner supplies the head covered share to a base estimate.
+Different same-name bodies do not prove identity. Duplicate, anonymous, and
+legacy identities can remain unknown. The report counts unknown identities
+and base functions without an estimated covered share. A community is
 good when no function has CRAP 30 or more, warning when some have but this
 pull request added or made worse none of them, and critical when it added or
 made worse one. The node text gives the band and the count, the border has the
@@ -61,7 +67,13 @@ does: the base is the merge base of REF and HEAD, in a temporary worktree, and
 the head is the working tree. The changed files are the src/ files that differ
 between the merge base and the working tree, untracked files included. With
 --head and --base-snapshot, the command reads two snapshot files instead and
-runs neither git nor ast-metrics; the changed files then come from --touched.
+runs neither git nor ast-metrics. Optional --changes metadata names additions,
+modifications, deletions, and old/new rename paths. It must identify both
+snapshot commits and source fingerprints. Legacy snapshots without provenance
+cannot validate it. Repository mode uses Git status and rejects --changes.
+Without metadata, offline changed files come from --touched alone. With
+metadata, they include both rename paths. --touched overrides this path
+selection only; it gives no rename proof and cannot name a path with a comma.
 
 A head community matches the base community with the largest Jaccard overlap of
 their files, when that overlap is 0.5 or more; each base community matches one
@@ -75,8 +87,9 @@ Options:
   --base REF            The base of the pull request (default: origin/main)
   --head FILE           Read the head snapshot from FILE
   --base-snapshot FILE  Read the base snapshot from FILE
+  --changes FILE        Read version 1 status metadata for the two offline snapshots
   --touched FILES       The changed files, as paths from the root separated by
-                        commas, in place of the changed files of git
+                        commas, in place of the default selection; no rename proof
   --coverage FILE       Read the coverage report from FILE (default in a
                         repository: ast-report/coverage.json when it exists)
   --no-coverage         Ignore default coverage and print structure without bands

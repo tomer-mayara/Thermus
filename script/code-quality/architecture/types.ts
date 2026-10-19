@@ -1,5 +1,6 @@
 // The data of the architecture delta of docs/implementation/architecture-evolution-plan.md ("The views"): two snapshots
 // of src/, the map that compares them, and the files of the complexity table.
+import type { FileChange } from '../delta/changes.ts';
 import type { InputIdentity } from '../provenance/types.ts';
 import type { CoverageReport } from './coverage.ts';
 import type { Snapshot, SnapshotCommunity, SnapshotFile, SnapshotFunction } from '../snapshot/types.ts';
@@ -20,17 +21,18 @@ export type MapCommunity = Pick<SnapshotCommunity, 'id' | 'label' | 'members' | 
 
 // A snapshot of script/code-quality/ast-metrics-snapshot.ts gives each file its decision paths and its functions, but a snapshot file
 // can leave them out: the table then says that they are not measured.
-export type TableFile = Pick<SnapshotFile, 'path' | 'maintainability' | 'risk'> & Partial<Pick<SnapshotFile, 'paths'>> & {
+export type TableFile = Pick<SnapshotFile, 'path' | 'maintainability' | 'risk' | 'sourceEvidence'> & Partial<Pick<SnapshotFile, 'paths'>> & {
   readonly functions?: readonly MapFunction[];
 };
 
-type MapFunction = Pick<SnapshotFunction, 'name' | 'paths'>;
+export type MapFunction = Pick<SnapshotFunction, 'name' | 'paths' | 'identity'>;
 
 export interface MapSources {
   readonly base: MapSnapshot;
   readonly head: MapSnapshot;
   // The changed files of the pull request, as paths from the root, such as src/auth/session.ts.
   readonly touched: readonly string[];
+  readonly changes?: readonly FileChange[];
   // The coverage of the unit suite in the head. Without it, the report has no bands.
   readonly coverage?: CoverageReport;
   readonly coverageNotice?: string;

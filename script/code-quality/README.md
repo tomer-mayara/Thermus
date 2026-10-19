@@ -236,14 +236,15 @@ listed scope.
 ## Show the architecture delta
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
 
 Options:
   --base REF            The base of the pull request (default: origin/main)
   --head FILE           Read the head snapshot from FILE
   --base-snapshot FILE  Read the base snapshot from FILE
+  --changes FILE        Read version 1 status metadata for the two offline snapshots
   --touched FILES       The changed files, as paths from the root separated by
-                        commas, in place of the changed files of git
+                        commas, in place of the default selection; no rename proof
   --coverage FILE       Read the coverage report from FILE (default in a
                         repository: ast-report/coverage.json when it exists)
   --no-coverage         Ignore default coverage and print structure without bands
@@ -267,9 +268,17 @@ decision paths of each file, base → head (`new`, `gone`, or `not measured`
 when a side has no value), and its rank among the ten riskiest files of the
 head, or `No production file changed.` By default it snapshots the merge base of
 `--base` (default `origin/main`) in a temporary worktree and the working
-tree, and the changed files follow the rule of the delta command; with
-`--head` and `--base-snapshot` it reads two snapshot files and runs no tool
-(`--touched` then names the changed files). With a verified compatible report of the coverage
+tree. File status includes additions, modifications, renames, and deletions.
+A rename has one row labeled `newpath (renamed from oldpath)` with the old
+base path's values. A deletion has gone head cells and touches its base community. Delta omits
+deleted files; architecture retains them. With `--head` and `--base-snapshot`,
+it reads two snapshot files and runs no tool. `--changes FILE` gives status
+and rename proof tied to both snapshots' commits and source fingerprints.
+`--touched` selects root-relative paths, separated by commas, without rename
+proof. If both are present, `--touched` selects rows and `--changes` supplies
+independent correspondence evidence. Without either option, no changed-file
+rows are selected. Repository mode rejects `--changes`; Git owns its status
+evidence. See the [offline change format](../../docs/implementation/ast-metrics-change-request.md#a4-offline-change-metadata). With a verified compatible report of the coverage
 command (`--coverage`, or `ast-report/coverage.json` of the repository),
 each community gets a CRAP band (good, warning, or critical) from its
 functions at CRAP 30 or more and their change against the base, the table
@@ -307,6 +316,24 @@ A missing or stale report does not authorize a broader suite. Use
 block and legend unchanged into every pull request body, including one
 that changes only documents or has no valid coverage.
 
+Source evidence supplies function correspondence. Within the same file or
+a proven file rename, a unique declaration kind/owner/name pair keeps its
+identity through body or signature edits. Otherwise, a unique unchanged
+body/signature pair can prove a move or rename, including a move to an
+untracked file. A new function requires complete evidence for its head file
+and all base files, proven partners for all base declarations, and no matching
+base body or unresolved move candidate. Name equality alone, copies, duplicate bodies, anonymous functions,
+and changed extractions cannot prove correspondence. Legacy snapshots stay
+readable, but missing evidence remains identity unknown; offline rendering
+never reads the caller's checkout for proof. Unknown identity is not called
+added or worse. A base function without a proven head partner has no CRAP
+estimate, including a removed function. The report counts these unknowns
+separately. `Unknown function identity: N (no proven declaration or unique
+unchanged body/signature correspondence).` appears when identity unknowns
+exist, even without coverage. Compatible coverage always adds
+`Base functions without an estimated covered share: N.` after complexity.
+CR-07's incomplete-coverage bands remain follow-up work.
+
 Stored head-derived counts are labeled `estimate`, the head row is
 `measured`, old counts without provenance are `legacy unknown`, and absent
 counts show `–`. Estimate provenance records the original coverage commit,
@@ -343,8 +370,17 @@ src` run and one session of `ast-metrics mcp src`, so that only a change of
 `src/` changes the communities. The file is written only after all calls
 succeeded and its input identity is unchanged. The optional `provenance`
 field holds source and expected coverage-input fingerprints, runtime,
-compiler, suite, and measurement version. Legacy snapshots remain readable
-for structure. Exit status 0 means the snapshot was written. `--timeout-ms`
+compiler, suite, and measurement version. Each file can hold optional
+`sourceEvidence` (`version: "typescript-tokens-v1"`, `coordinates: "utf16"`,
+`complete`) and each supported function can hold optional `identity`
+(version, declaration kind, lexical owner, name, source start/end, and SHA-256
+body/signature hashes). Ranges use zero-based UTF-16 units and exclude the
+end. Token normalization ignores whitespace and comments but preserves
+executable syntax and literal spelling. The signature omits the declaration
+binding name; recursive body references remain. Anonymous functions,
+duplicate names, and unsupported owners stay unknown. Source parse errors withhold identity and set `complete: false`. Completeness requires every executable function to be supported and
+every metric to have one declaration. Legacy snapshots remain readable
+for structure. See the [snapshot format](../../docs/implementation/ast-metrics-change-request.md#a2-snapshot). Exit status 0 means the snapshot was written. `--timeout-ms`
 sets the deadline of the session (default 60000
 ms). Exit status 1, with one diagnostic line on stderr, for a missing
 executable, a failed analysis, or a failed call. With `--base REF`, the
@@ -405,7 +441,10 @@ the complete graph without bands and proves that no test suite runs.
 | --- | --- | --- |
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
@@ -420,6 +459,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
@@ -429,13 +469,16 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-provenance.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
@@ -451,9 +494,12 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
 <!-- code-quality-tests:end -->

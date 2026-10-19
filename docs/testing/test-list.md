@@ -222,14 +222,45 @@ notices, complete structural output, and no CRAP assessment when withheld.
 prose-only commit reuses compatible default coverage and that explicit skip
 ignores a malformed default report.
 
-`ast-metrics-architecture-crap.test.ts` checks the pure CRAP of each
-function: the formula (10 decision paths give 110 and 10) and its rounding,
-the join by file and by the name that V8 gives (a method by its own name, a
-constructor by its class), the functions without a CRAP (anonymous, a name
-twice in the file or in the report, a name that the report does not have),
-the file that the report does not have, the base with the share of the head,
-a removed function and file, two equal trees, and the rules for added and
-worse.
+`test/unit/script/ast-metrics-file-changes.test.ts` checks NUL-separated
+Git status records, similarity scores, exact unusual paths, malformed records,
+conflicting mappings, and moves across the source boundary.
+`test/acceptance/script/ast-metrics-file-changes.test.ts` checks real Git
+changes across committed and working-tree edits, deletions, renames,
+untracked files, unusual paths, and extension changes. Delta scores only
+current supported TypeScript paths.
+`test/unit/script/ast-metrics-architecture-changes.test.ts` checks the offline
+version-1 metadata format, both snapshot commits and source fingerprints,
+source paths and supported extensions, unique predecessors and destinations,
+status consistency, legacy snapshots, and refused repository-mode metadata.
+`test/acceptance/script/ast-metrics-architecture-changes.test.ts` checks
+repository-free rename rendering with old base values at one new-path row.
+
+`test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts`
+checks a pure Git rename, a deletion-only comparison, and an unchanged
+function moved to an untracked file. It checks equal rename values, touched
+communities, gone cells, and missing base shares through the command.
+
+`test/unit/script/ast-metrics-source-evidence.test.ts` and
+`test/acceptance/script/ast-metrics-snapshot-source.test.ts` check TypeScript
+source ranges, declaration owners, normalized body and signature evidence,
+ordinary edits, trivia, and unsupported or ambiguous declarations.
+`test/unit/script/ast-metrics-source-evidence-read.test.ts` checks the optional
+source metadata boundary without reading the checkout. It rejects a metric
+with an unrelated declaration name and repeated source ranges, including
+when evidence is incomplete.
+`ast-metrics-architecture-identity.test.ts` in the unit and acceptance script
+groups checks same-file declaration continuity, changed bodies and signatures,
+unique unchanged moves and renames, new declarations, copies and ambiguity,
+legacy snapshots, and visible identity unknowns. Unpaired base functions,
+including removed functions, receive no estimated covered share.
+
+`ast-metrics-architecture-crap.test.ts` checks the pure CRAP formula, rounding,
+and coverage join by file and V8 name. Anonymous, duplicate, missing, and
+unmeasured function entries get no CRAP. A complete verified report can treat
+an absent head file as uncovered. Source correspondence separately controls
+which base functions can use a head share and which functions are new or
+worse. Tests check equal supported trees and unknown base estimates.
 `ast-metrics-architecture-bands.test.ts` checks the bands in the pure
 report: good, warning, and critical with their counts and the sign of a
 change, a gone and a new community, the band classes and their order, the
@@ -363,7 +394,10 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | --- | --- | --- |
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
@@ -378,6 +412,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
@@ -387,13 +422,16 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-provenance.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
@@ -409,11 +447,14 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
 <!-- code-quality-tests:end -->
 
 See [the script guide](../../script/README.md) and

@@ -35,12 +35,14 @@ Delivery status:
   drawing and require its fenced block and legend in the pull request body.
 - PR #177 merged delivery group 3, CR-01 and CR-02: collect portal unit
   coverage and measure each function's own characters.
-- PR #178 implements CR-03 and CR-04 together and awaits owner review:
+- PR #178 merged CR-03 and CR-04 together:
   verify capture provenance, make trend writes explicit and safe, and label
   historical estimates under approved D3.
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
+- PR #179 implements delivery group 6, CR-05: file status, source evidence,
+  and conservative function correspondence. Owner review is pending.
 - The other CRs have not been implemented.
 
 Contents:
@@ -506,7 +508,7 @@ A report matching the caller's tree but not the supplied head is withheld.
 AGENTS.md reuse wording when the mechanism lands. Hashing only TypeScript,
 as revision 3 proposed, is insufficient.
 
-**Delivery.** Implemented in PR #178 with CR-04; owner review is pending.
+**Delivery.** Merged in PR #178 with CR-04.
 Legacy coverage schema version 1 remains readable. New reports use version
 2 so unverified inspection can use a null commit without changing a required
 version-1 field type. Measurement semantics stay `own-characters-1`. New captures retain raw files and a
@@ -562,7 +564,7 @@ and legacy counts under approved D3. No count uses stale data.
 **Documents.** AGENTS.md recording/conflict rules, guide trend section,
 README, plan T7 note, formats, and inventory.
 
-**Delivery.** Implemented in PR #178 with CR-03; owner review is pending.
+**Delivery.** Merged in PR #178 with CR-03.
 `--record` is explicit. Full-commit, ancestry, and content checks precede
 atomic publication without overwrite. New historical counts carry a
 `head-derived-estimate` basis; the current head row is `measured`, old
@@ -629,6 +631,10 @@ base counts.
 
 **Documents.** Guide delta and comparison rules, README options, plan
 identity limits, snapshot/change formats, and inventory.
+
+**Delivery.** PR #179 implements CR-05 after PR #178 merged. Owner review is
+pending. The slice adds file-status evidence and conservative function
+correspondence. CR-07's incomplete-coverage bands remain follow-up work.
 
 ### CR-06. Keep live tests valid and within scope
 
@@ -1540,10 +1546,44 @@ The snapshot verifies them before and after capture. Offline coverage
 compatibility uses only the supplied head's identity. A legacy snapshot
 without it can show structure but cannot establish compatibility.
 
-Proposed extensions remain source function identity evidence and
-normalization version (CR-05), actual `tool` (CR-08), dependencies with
-unresolved diagnostics
-(CR-13), and optional commit `title` (CR-14), for example:
+CR-05 in PR #179 adds optional per-file source evidence and per-function
+identity. The snapshot schema stays version 1. This abbreviated file shows
+the new fields:
+
+```json
+{
+  "path": "src/example.ts",
+  "sourceEvidence": {
+    "version": "typescript-tokens-v1", "coordinates": "utf16", "complete": true
+  },
+  "functions": [{
+    "name": "run", "paths": 1,
+    "identity": {
+      "version": "typescript-tokens-v1", "kind": "FunctionDeclaration",
+      "owner": "", "name": "run", "start": 0, "end": 42,
+      "body": "<sha256>", "signature": "<sha256>"
+    }
+  }]
+}
+```
+
+`start` is inclusive and `end` is exclusive, in zero-based UTF-16 source
+units. `kind` is the TypeScript syntax kind. `owner` identifies the lexical
+owner, such as an empty module owner, `ClassDeclaration:Store`, or
+`FunctionDeclaration:outer`. Hashes use TypeScript syntax and token text,
+normalized as JSON and hashed with SHA-256. Trivia is ignored; literal token
+spelling and automatic-semicolon-insertion syntax are preserved. The
+signature omits the declaration's binding name; recursive body references
+are retained. Named declarations, identifier-bound arrows and function
+expressions, and named class methods, accessors, and constructors can have
+identity. The metric name must be unique among metrics and declarations.
+Anonymous functions, duplicate names, and unsupported owners cannot provide
+identity. Source parse errors withhold identity and set `complete: false`. `complete` requires every executable
+function to be supported and every metric to have one declaration.
+Optional metadata is strictly validated without reading checkout source.
+
+Proposed extensions remain actual `tool` (CR-08), dependencies with unresolved
+diagnostics (CR-13), and optional commit `title` (CR-14), for example:
 
 ```json
 {
@@ -1623,11 +1663,36 @@ remain open.
 
 ### A.4 Offline change metadata
 
-CR-05's `--changes` file identifies both snapshot fingerprints and lists
-status with old/new paths. Renames have both; deletions have old; additions
-have new. Validate uniqueness, source boundaries, and snapshot consistency.
-Two destinations cannot claim one unique predecessor. File mapping is not
-proof of arbitrary function identity.
+CR-05 in PR #179 adds `--changes FILE` for offline architecture rendering
+with `--head` and `--base-snapshot`. Git supplies statuses in repository
+mode, which rejects this option. The file has this shape:
+
+```json
+{
+  "version": 1,
+  "base": { "commit": "<40 hex>", "sourceFingerprint": "<sha256>" },
+  "head": { "commit": "<40 hex>", "sourceFingerprint": "<sha256>" },
+  "files": [
+    { "status": "A", "path": "src/added.ts" },
+    { "status": "M", "path": "src/edited.ts" },
+    { "status": "D", "path": "src/deleted.ts" },
+    { "status": "R", "oldPath": "src/old.ts", "path": "src/new.ts" }
+  ]
+}
+```
+
+Both commit labels and source fingerprints must match the supplied snapshot
+and its `provenance.sourceFingerprint`. Legacy snapshots without provenance
+cannot validate this file. Paths are root-relative under `src/`, with a
+supported TypeScript extension (`.ts`, `.tsx`, `.mts`, or `.cts`). `D` names
+the old path. Only `R` has `oldPath`, and its `path` is the new path.
+Validation rejects traversal, duplicate predecessors or destinations,
+unsupported statuses, and inconsistent snapshot sides. A rename requires
+the old path only in the base and the new path only in the head. A file
+mapping does not prove arbitrary function identity. `--touched` remains
+path-only and conveys no rename proof. It can select rows while `--changes`
+independently supplies correspondence evidence. Without an explicit touched
+selection, changes touch all paths, including both rename endpoints.
 
 ## 9. Appendix B: glossary
 

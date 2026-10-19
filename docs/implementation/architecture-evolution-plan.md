@@ -6,9 +6,10 @@ PR #175 completed CR-16 and the CR-23 contract-test foundation. PR #176
 merged CR-24: always print the architecture drawing and require the
 fenced graph and legend in every pull request body. PR #177 merged delivery
 group 3, CR-01 and CR-02: include portal unit coverage and measure each
-function's own characters. PR #178 implements
-CR-03 and CR-04: verified capture provenance, explicit safe recording, and
-labeled historical estimates under approved D3. It awaits owner review.
+function's own characters. PR #178 merged CR-03 and CR-04: verified capture
+provenance, explicit safe recording, and labeled historical estimates under approved D3. PR #179
+implements CR-05: file status, source evidence, and conservative function
+correspondence. It awaits owner review.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
@@ -120,7 +121,16 @@ source and expected coverage-input fingerprints, runtime, compiler, suite,
 and measurement version. Capture checks these inputs before and after
 analysis. Offline rendering matches coverage to this identity; it needs no
 Git repository. Legacy snapshots can show structure but cannot establish
-coverage compatibility. The wrappers run from the repository root;
+coverage compatibility. CR-05 adds optional per-file `sourceEvidence` and
+per-function `identity`.
+Version `typescript-tokens-v1` identifies the token normalization. Source
+ranges use zero-based UTF-16 offsets with an exclusive end. Declaration
+kind, lexical owner, and name support continuity; body and signature hashes
+support change classification and unique unchanged moves. Whitespace and
+comments are ignored, while executable syntax and literal spelling remain.
+Anonymous functions, duplicate names, and unsupported owners stay unknown.
+Legacy snapshots provide no source proof; offline readers do not inspect the
+caller's checkout. The wrappers run from the repository root;
 keep its configuration authoritative by adding no config under `src/`.
 The [review guide](ast-metrics-review.md#the-configuration) records the
 controlled 0.43.1 configuration lookup check.
@@ -225,13 +235,25 @@ source and input fingerprints, runtime, compiler, suite, and measurement
 version. The original capture commit stays visible. A commit that changes
 only unrelated prose can reuse a capture when these inputs match.
 
-The base tree gets no coverage run, so the CRAP of the base is an
-approximation: a function of the base has its own decision paths and the
-covered share of the head function with the same name in the same file, and
-the share 0 when the head file does not have the name, such as a removed
-function. Reuse current valid coverage when available. Collect it only when
-`src/` changed or both complete parts of the unit suite were already selected
-under the test gate policy. Otherwise report without bands.
+The base tree gets no coverage run, so its CRAP is a head-derived estimate.
+Only a proven base/head function pair can use the head covered share with
+base decision paths. Removed functions and other base functions without a
+partner get no estimated CRAP, and their unknown count stays visible.
+Within the same file or a proven file rename, a unique declaration
+kind/owner/name pair establishes continuity. Body or signature changes make
+that pair changed. Elsewhere, one unique unchanged body/signature pair can
+prove a move or rename. A name alone cannot prove a move. Copies, duplicate
+bodies, changed extractions, and unresolved move candidates remain unknown.
+Complete source evidence must prove absence before a function is called new.
+
+File status retains old and new rename paths. The complexity table has one
+rename row at the new path with the old path's base values. Deleted files
+have gone head cells and touch their base community. Delta scores only
+surviving TypeScript files. Offline `--changes FILE` binds statuses to both
+snapshot commits and source fingerprints; `--touched` gives paths only and
+cannot prove a rename. Reuse current valid coverage when available. Collect
+it only when `src/` changed or both complete parts of the unit suite were
+already selected under the test gate policy. Otherwise report without bands.
 
 ### Bands
 
@@ -241,9 +263,11 @@ The band of a community or a file follows the change, as rule 1 says:
 - **warning**: some, and the pull request added none and made none worse;
 - **critical**: the pull request added at least one or made one worse.
 
-A function with CRAP at 30 or more is added when the base file does not
-have its name, and worse when its CRAP was below 30 in the base or is higher
-than in the base. The count in the node text is the count of the functions
+A function with CRAP at 30 or more is added only when source evidence
+proves that it is new. A proven pair is worse when its base CRAP was below
+30 or its head CRAP is higher. Unknown identity gives neither claim.
+CR-07's incomplete-coverage bands remain follow-up work. The count in the
+node text is the count of the functions
 at 30 or more in the head. A gone community has the count and the band of
 its base, good or warning, because the base has no change to follow.
 
@@ -625,7 +649,9 @@ Source: step A2, "Bands", and "Encoding". Depends on T4 and T5. Done in PR
 #167, with the approximation of the base: the base tree gets no coverage
 run, so a function of the base has its own decision paths and the covered
 share of the head function with the same name (0 when the head file does
-not have the name). Findings: ast-metrics names a method
+not have the name). This was the original T6 rule; CR-05 replaces it with
+source evidence and leaves unpaired base functions unknown. Findings:
+ast-metrics names a method
 `module\Class.method` and V8 names it `method`, so the join uses the names
 of V8; on this repository on 2026-10-18, 721 of the 1022 functions of `src/`
 matched, against 402 with the names of ast-metrics as they are. The

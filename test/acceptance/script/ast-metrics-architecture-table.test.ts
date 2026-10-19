@@ -53,7 +53,7 @@ test('Given a changed file whose maintainability fell from 72.0 to 60.0 and whos
 
 const newFile = { addedFiles: [file('src/mcp/new-file.ts', null, { maintainability: 70.2, paths: 8 })] };
 
-test('Given a new file without a risk score, when the command runs, then its row says new before each value of the head and has no rank', { timeout }, async (t) => {
+test('Given a new file without a risk score, when the command runs, then its row says new before each value of the head and its rank cell says gone', { timeout }, async (t) => {
   const result = await runWith(t, newFile, ['src/mcp/new-file.ts']);
 
   assert.equal(result.stderr, '');
@@ -63,11 +63,11 @@ test('Given a new file without a risk score, when the command runs, then its row
 
 const goneFile = { files: { 'src/old/gone.ts': null } };
 
-test('Given a changed file that the head does not have, when the command runs, then its row says gone after each value of the base and has no rank', { timeout }, async (t) => {
+test('Given a changed file that the head does not have, when the command runs, then its row says gone after each value of the base and its rank cell says gone', { timeout }, async (t) => {
   const result = await runWith(t, goneFile, ['src/old/gone.ts']);
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(table(['| src/old/gone.ts | 55.0 → gone | 20 → gone | |'])));
+  assert.equal(result.stdout, markdown(table(['| src/old/gone.ts | 55.0 → gone | 20 → gone | gone |'])));
   assert.equal(result.code, 0);
 });
 
@@ -88,7 +88,7 @@ test('Given changed files of each kind, when the command runs, then the table ha
   assert.equal(result.stdout, markdown(table([
     '| src/auth/access-context.ts | 72.0 → 60.0 ↓12.0 | 12 → 15 ↑3 | 3 |',
     '| src/mcp/new-file.ts | new → 70.2 | new → 8 | |',
-    '| src/old/gone.ts | 55.0 → gone | 20 → gone | |',
+    '| src/old/gone.ts | 55.0 → gone | 20 → gone | gone |',
     '| src/user-portal/env.d.ts | not measured | not measured | |',
   ])));
   assert.equal(result.code, 0);

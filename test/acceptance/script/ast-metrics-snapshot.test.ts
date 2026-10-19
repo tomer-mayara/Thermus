@@ -51,13 +51,13 @@ const expectedSnapshot = {
     },
   ],
   files: [
-    { path: 'src/admin/pages/account.ts', community: '1', maintainability: 70.1, paths: 4, loc: 50, risk: 0.1, functions: [{ name: 'renderAccount', paths: 4, maintainability: 59, loc: 25 }] },
+    { sourceEvidence: { version: 'typescript-tokens-v1', coordinates: 'utf16', complete: false }, path: 'src/admin/pages/account.ts', community: '1', maintainability: 70.1, paths: 4, loc: 50, risk: 0.1, functions: [{ name: 'renderAccount', paths: 4, maintainability: 59, loc: 25 }] },
     {
-      path: 'src/auth/session.ts', community: '0', maintainability: 61.2, paths: 6, loc: 100, risk: 0.26,
+      sourceEvidence: { version: 'typescript-tokens-v1', coordinates: 'utf16', complete: false }, path: 'src/auth/session.ts', community: '0', maintainability: 61.2, paths: 6, loc: 100, risk: 0.26,
       functions: [{ name: 'openSession', paths: 4, maintainability: 65.4, loc: 20 }, { name: '(anonymous)', paths: 1, maintainability: 88.9, loc: 3 }, { name: 'closeSession', paths: 1, loc: 2 }],
     },
-    { path: 'src/auth/tokens.ts', community: '0', maintainability: 88.8, paths: 3, loc: 50, functions: [{ name: 'issueToken', paths: 3, maintainability: 72.1, loc: 12 }] },
-    { path: 'src/kernel/ids.ts', community: 'shared', paths: 0, loc: 10, functions: [] },
+    { sourceEvidence: { version: 'typescript-tokens-v1', coordinates: 'utf16', complete: false }, path: 'src/auth/tokens.ts', community: '0', maintainability: 88.8, paths: 3, loc: 50, functions: [{ name: 'issueToken', paths: 3, maintainability: 72.1, loc: 12 }] },
+    { sourceEvidence: { version: 'typescript-tokens-v1', coordinates: 'utf16', complete: true }, path: 'src/kernel/ids.ts', community: 'shared', paths: 0, loc: 10, functions: [] },
   ],
 };
 

@@ -5,6 +5,7 @@ import type { AstMetricsServer } from '../mcp/server.ts';
 import { analysisReportOf } from './analysis.ts';
 import { snapshotOf } from './build.ts';
 import { sourceFilesOf } from './input.ts';
+import { sourceTextsOf } from './source.ts';
 import type { Snapshot } from './types.ts';
 import { CommandError, git } from '../shared/repository.ts';
 import { inputIdentityOf } from '../provenance/inputs.ts';
@@ -22,10 +23,11 @@ export async function snapshotOfTree(root: string, timeoutMs: number): Promise<S
   const files = sourceFilesOf(analysisReportOf(root, analyzedFolder), root);
   const paths = files.map((file) => file.path);
   const answers = await withAstMetricsServer({ root, folder: analyzedFolder }, timeoutMs, (server) => serverAnswersOf(server, paths));
+  const snapshot = snapshotOf({ commit, date, files, ...answers, sourceTexts: sourceTextsOf(root, paths) });
   if (JSON.stringify(provenance) !== JSON.stringify(inputIdentityOf(root))) {
     throw new CommandError('The inputs changed during the snapshot. No snapshot was published.');
   }
-  return { ...snapshotOf({ commit, date, files, ...answers }), provenance };
+  return { ...snapshot, provenance };
 }
 
 // All calls go to one server, because the calls of one session share one analysis. One server for each file would

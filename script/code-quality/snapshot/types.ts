@@ -1,4 +1,5 @@
 import type { InputIdentity } from '../provenance/types.ts';
+import type { FunctionIdentity, SourceEvidence } from '../identity/types.ts';
 
 // The snapshot of one tree, as script/code-quality/ast-metrics-snapshot.ts writes it to snapshot.json: the numbers of ast-metrics for
 // the files under src/ and their communities. docs/implementation/architecture-evolution-plan.md ("The snapshot") gives
@@ -63,6 +64,7 @@ export interface SnapshotEdge {
 }
 
 export interface SnapshotFile {
+  readonly sourceEvidence?: SourceEvidence;
   readonly path: string;
   // null for a file that is in no community, such as an entry point that no file imports.
   readonly community: string | null;
@@ -76,6 +78,7 @@ export interface SnapshotFile {
 // A function in the order of get_file_metrics. ast-metrics gives no line numbers, and an anonymous function, such as a
 // callback, has the name (anonymous).
 export interface SnapshotFunction {
+  readonly identity?: FunctionIdentity;
   readonly name: string;
   readonly paths: number;
   readonly maintainability?: number;

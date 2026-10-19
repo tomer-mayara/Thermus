@@ -14,8 +14,8 @@ interface ListedFunction {
 }
 
 // A side without a function that has a CRAP, such as a file of types, is not measured.
-export function crapCellOf(delta: CrapDelta, path: string): string {
-  return cellOf(sideOf(delta.base.get(path), 'new'), sideOf(delta.head.get(path), 'gone'), 0);
+export function crapCellOf(delta: CrapDelta, path: string, oldPath = path): string {
+  return cellOf(sideOf(delta.base.get(oldPath), 'new'), sideOf(delta.head.get(path), 'gone'), 0);
 }
 
 function sideOf(file: FileCrap | undefined, absent: 'new' | 'gone'): Side {

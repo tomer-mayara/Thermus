@@ -1,3 +1,4 @@
+import { completeSourceEvidence, functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -41,8 +42,8 @@ type Shares = Readonly<Record<string, readonly (readonly [string, number])[]>>;
 // One file for each entry, with the functions as name and decision paths, and a coverage report with the shares of the
 // functions of each file that it has.
 function sourcesOf(head: Readonly<Record<string, readonly (readonly [string, number])[]>>, shares: Shares, base = head): Sources {
-  const filesOf = (files: typeof head) => Object.entries(files).map(([path, functions]) => ({ path, functions: functions.map(([name, paths]) => ({ name, paths })) }));
-  const coverage = { files: Object.entries(shares).map(([path, functions]) => ({ path, functions: functions.map(([name, coveredShare]) => ({ name, coveredShare })) })) };
+  const filesOf = (files: typeof head) => Object.entries(files).map(([path, functions]) => ({ path, sourceEvidence: completeSourceEvidence, functions: functions.map(([name, paths]) => ({ name, paths, identity: functionIdentityOf(name, paths) })) }));
+  const coverage = { files: Object.entries(shares).map(([path, functions]) => ({ path, sourceEvidence: completeSourceEvidence, functions: functions.map(([name, coveredShare]) => ({ name, coveredShare })) })) };
   return { base: { files: filesOf(base) }, head: { files: filesOf(head) }, coverage };
 }
 
@@ -116,14 +117,14 @@ test('Given a function whose decision paths changed, when the delta is made, the
   assert.deepEqual(delta?.head.get('src/a.ts')?.functions.map(({ crap, base }) => ({ crap, base })), [{ crap: 38.5, base: 13.1 }]);
 });
 
-test('Given a function that the pull request removed, a removed file, and a function that the head has without a CRAP, when the delta is made, then the first two count as uncovered in the base, and the third gets no CRAP in the base either', () => {
+test('Given a function that the pull request removed, a removed file, and a function that the head has without a CRAP, when the delta is made, then removed functions and the ambiguous head function get no estimated base CRAP', () => {
   const head = { 'src/a.ts': [['kept', 2], ['twice', 3], ['twice', 4]] } as const;
   const base = { 'src/a.ts': [['kept', 2], ['removed', 6], ['twice', 3]], 'src/gone.ts': [['old', 5]] } as const;
 
   const delta = crapDeltaOf(sourcesOf(head, { 'src/a.ts': [['kept', 1], ['twice', 1]] }, base));
 
-  assert.deepEqual(delta?.base.get('src/a.ts'), { functions: [{ name: 'kept', paths: 2, share: 1, crap: 2 }, { name: 'removed', paths: 6, share: 0, crap: 42 }], unmatched: 1 });
-  assert.deepEqual(delta?.base.get('src/gone.ts'), { functions: [{ name: 'old', paths: 5, share: 0, crap: 30 }], unmatched: 0 });
+  assert.deepEqual(delta?.base.get('src/a.ts'), { functions: [{ name: 'kept', paths: 2, share: 1, crap: 2 }], unmatched: 2 });
+  assert.deepEqual(delta?.base.get('src/gone.ts'), { functions: [], unmatched: 1 });
 });
 
 test('Given the same tree on both sides, when the delta is made, then each function of the base has the CRAP of the head and none is added or worse', () => {
@@ -148,8 +149,8 @@ for (const [name, basePaths, headPaths, share, expected] of [
   ['a function that went from 30 or more to below 30', 14, 7, 0.5, { base: 38.5, addedOrWorse: false }],
 ] as const) {
   test(`Given ${name}, when the delta is made, then its base and whether it is added or worse follow the rules of the bands`, () => {
-    const baseFunction: readonly [string, number] = basePaths === undefined ? ['other', 1] : ['f', basePaths];
-    const base = { 'src/a.ts': [baseFunction] };
+    const baseFunction: readonly [string, number] | undefined = basePaths === undefined ? undefined : ['f', basePaths];
+    const base = { 'src/a.ts': baseFunction === undefined ? [] : [baseFunction] };
 
     const file = headOf(sourcesOf({ 'src/a.ts': [['f', headPaths]] }, { 'src/a.ts': [['f', share]] }, base), 'src/a.ts');
 
