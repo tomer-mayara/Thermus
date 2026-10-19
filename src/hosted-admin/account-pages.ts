@@ -1,20 +1,13 @@
 import { escapeHtml } from '../html/html-escape.ts';
-import type { AuthorizedOrganization } from '../organizations/organization-administration.ts';
-import { FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from './page-html.ts';
+import { htmlDocument, NOTICE_HEADERS } from './page-html.ts';
+
+export { organizationSelectionPage } from './organization-selection-page.ts';
 
 interface Notice {
   readonly status: number;
   readonly title: string;
   readonly paragraphs: readonly string[];
 }
-
-export interface OrganizationSelectionForm {
-  readonly action: string;
-  readonly csrfToken: string;
-  readonly returnTo: string;
-  readonly organizations: readonly AuthorizedOrganization[];
-}
-
 
 // Each notice shows only this fixed text, so no request value reaches it and it needs no escaping.
 const NOTICES = {
@@ -98,21 +91,6 @@ export function noOrganizationPage(signupUrl?: string): Response {
 export function accessDeniedPage(organizationPage: string): Response {
   const link = `<a href="${escapeHtml(organizationPage)}">organization page</a>`;
   return noticeResponse(NOTICES.denied, [`<p>To select another organization, or to see how to get access, open the ${link}.</p>`]);
-}
-
-// The provider gives the organization names and IDs, so the page escapes them.
-export function organizationSelectionPage(form: OrganizationSelectionForm): Response {
-  const items = form.organizations.flatMap((organization) => [
-    '<li>',
-    ...postForm(form.action, [
-      hiddenField('csrf_token', form.csrfToken),
-      hiddenField('organization_id', organization.organizationId),
-      hiddenField('return_to', form.returnTo),
-    ], `${organization.organizationName}${organization.selected ? ' (selected)' : ''}`),
-    '</li>',
-  ]);
-  const page = htmlDocument('Select an organization', ['<p>Select the organization to use in this browser.</p>', '<ul>', ...items, '</ul>']);
-  return new Response(page, { status: 200, headers: FORM_HEADERS });
 }
 
 export function seeOther(location: string): Response {

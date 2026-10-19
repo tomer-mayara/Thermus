@@ -699,6 +699,13 @@ the paths alone make the applicable goal impossible. Unknown identity states
 which goal cannot be classified; neither unknown identity nor unknown coverage
 passes a required goal.
 
+The pinned tool omits `functions` for constant modules. CRAP accepts this as
+an empty list only when source evidence finds no function declarations, the
+answer names the selected file through an absolute path or a path relative to
+the explicit repository root, complexity and risk are explicitly zero, and
+the line counts are valid nonnegative integers. Missing or malformed function
+data in other answers remains an operational error.
+
 Rows sort by exact score or numeric lower bound, descending, then file,
 function, and stable source identity. Bounds do not give an exact ranking of
 unknown risks. The summary separates known limit violations, measured target

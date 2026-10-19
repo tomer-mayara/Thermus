@@ -21,7 +21,7 @@ export async function goalRowsOf(command: { readonly coverage?: string; readonly
     const answers = new Map();
     for (const path of paths) {
       const declarations = files.head.find((file) => file.path === path)?.functions?.length ?? 0;
-      answers.set(path, sourceTree.measuredSourceFile(root, path, measuredFunctionsOf(path, await server.tool('get_file_metrics', { path }), declarations)));
+      answers.set(path, sourceTree.measuredSourceFile(root, path, measuredFunctionsOf(path, await server.tool('get_file_metrics', { path }), declarations, root)));
     }
     return answers;
   });

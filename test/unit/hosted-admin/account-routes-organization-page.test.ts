@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { describe, test } from 'node:test';
+import { parseHTML } from 'linkedom';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { accountRequest, ann, assertPage, ben, organization, publicOrigin, serve, signedIn } from './fixtures/account-routes-fixtures.ts';
 import { annToken, serveAnn, sessionCookies } from './fixtures/organization-routes-fixtures.ts';
@@ -7,7 +9,6 @@ import { annToken, serveAnn, sessionCookies } from './fixtures/organization-rout
 const pageHeaders = {
   'content-type': 'text/html; charset=utf-8',
   'cache-control': 'no-store',
-  'content-security-policy': "default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
   'x-content-type-options': 'nosniff',
   'x-frame-options': 'DENY',
 };
@@ -25,13 +26,19 @@ describe('HostedAccountRoutes organization page', () => {
       const body = await response.text();
 
       assert.equal(response.status, 200);
-      assert.deepEqual(headersWithoutCookies(response), pageHeaders);
+      const { 'content-security-policy': policy, ...headers } = headersWithoutCookies(response);
+      assert.deepEqual(headers, pageHeaders);
+      const document = parseHTML(body).document;
+      const css = document.querySelector('style')?.textContent;
+      assert.ok(css);
+      const hash = createHash('sha256').update(css).digest('base64');
+      assert.equal(policy, `default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; style-src 'sha256-${hash}'; img-src 'self'; font-src 'self'`);
       assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
       assert.deepEqual(formsIn(body), [
         { action: '/organizations/select', fields: { csrf_token: annToken, organization_id: 'org-a', return_to: '/administration/users' }, label: 'Acme (selected)' },
         { action: '/organizations/select', fields: { csrf_token: annToken, organization_id: 'org-b', return_to: '/administration/users' }, label: 'Globex' },
       ]);
-      assert.doesNotMatch(body, /<script|<link|<img|<style/i);
+      assert.equal(document.querySelectorAll('script, iframe, object, [style]').length, 0);
       assert.deepEqual(organizations.lists, [ann]);
       assert.deepEqual([resolver.calls, operations.calls], [[], []]);
     });

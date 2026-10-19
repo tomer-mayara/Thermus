@@ -61,6 +61,22 @@ opening text and the full document available in normal page flow. Do not
 require reading or scrolling before activation. Keep the agreement outside
 the disclosures. Give closed and failure states usable recovery actions.
 
+## Organization selection
+
+After signup, the organization selector uses the Thermus logo, local IBM Plex
+fonts, and the same Ink, Card, Cream, Gray, and Orange colors as the portal.
+Show the available workspaces in a clear card with controls at least 48px high.
+Keep long names readable, mark the selected workspace, and show keyboard focus.
+The page must fit narrow screens without horizontal scrolling.
+
+Keep organization selection as an HTML form that works without JavaScript.
+Preserve the existing POST route, CSRF protection, return destination, access
+checks, escaped organization names, and non-cacheable responses.
+
+The implemented [desktop](portal-screenshots/organizations-desktop.png) and
+[mobile](portal-screenshots/organizations-mobile.png) previews use the built
+portal assets and a sample personal workspace.
+
 ## AI agent quick guide
 
 For a user with product access, show a native radio group labelled Connect
