@@ -179,6 +179,13 @@ aggregate command, not an additional required run.
 | `script/`, build configuration, dependencies, migrations, Docker inputs, or other non-test paths | Existing focused tests for the changed files | For example, `npm run test:build` for build behavior, or `npm run build && node --test dist/test/unit/script/ast-metrics-coverage.test.js` for that command's behavior. |
 | Documents outside `src/` and `test/` | Relevant existing focused tests, if any | Check the changed instructions and links; a reference to a command does not select it. |
 
+The [code-quality README](../../script/code-quality/README.md#available-tests)
+lists the complete available ordinary and live script tests, including the
+coverage collectors. Its focused documentation contract is
+`npm run build && node --test dist/test/acceptance/script/script-readme.test.js`.
+It reads command help and the two document inventories without running their
+listed commands. Use the path rules above to select it and other affected tests.
+
 A shared support change does not select every suite because the file is
 under `test/support/`. Find its actual consumers and record the selected
 groups. A private fixture follows its consuming group too. A component name

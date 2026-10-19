@@ -129,7 +129,7 @@ test('Given a --trend-store path that is a file, so that the store cannot be wri
   assert.equal(readFileSync(store, 'utf8'), 'Not a folder.\n');
 });
 
-test('Given two snapshot files without --trend-store, when the command runs in the root of a repository, then the trend section says that main has no snapshot yet, and the command writes nothing in the repository', { timeout }, async (t) => {
+test('Given two snapshot files without --trend-store, when the command runs in the root of a repository, then the trend section says No trend store, and the command writes nothing in the repository', { timeout }, async (t) => {
   const repository = GitRepository.create(t);
 
   const result = await runScript(t, astMetricsArchitectureScript, { args: snapshotArguments(t, baseSnapshot, baseSnapshot), cwd: repository.root, env: noTools });

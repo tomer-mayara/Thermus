@@ -136,6 +136,6 @@ test('Given a stored record and a head without maintainability and without the c
   ]);
 });
 
-test('Given no stored record, when the trend section is made, then it has the heading and one line that says that main has no snapshot yet, and no table and no row of the head', () => {
-  assert.deepEqual(trendSectionOf([], head), ['## Trend of src/ on main', '', 'No snapshot of main in docs/metrics yet.']);
+test('Given an empty trend store, when the trend section is made, then it names the empty store and has no table or row of the head', () => {
+  assert.deepEqual(trendSectionOf([], head), ['## Trend of src/ on main', '', 'No snapshot of main in the trend store yet.']);
 });

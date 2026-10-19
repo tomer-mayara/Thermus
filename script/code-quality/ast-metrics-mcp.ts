@@ -21,13 +21,14 @@ Subcommands:
 
 Options:
   --json              file: print the answer of the server as JSON
-  --limit N           complex, risky: the maximum number of results
-  --max-cyclomatic N  complex: show the items above this complexity
+  --limit N           complex, risky: the maximum number of results (default: delegated to ast-metrics)
+  --max-cyclomatic N  complex: show the items above this complexity (default: delegated to ast-metrics)
   --timeout-ms MS     Deadline of the MCP call (100..300000; default: 60000)
   --help, -h          Show this help
 
-The score is the maintainability index (0 to 100; more is better). The paths are the
-decision paths (cyclomatic complexity), and the lines are lines of code.
+The score is the maintainability index (0 to 128; more is better). The paths are the
+decision paths (cyclomatic complexity). The lines column is a count of lines of
+code (LOC), not a source position.
 `;
 
 async function main(): Promise<string> {

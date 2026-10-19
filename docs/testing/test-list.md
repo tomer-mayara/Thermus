@@ -58,6 +58,23 @@ for configuration and validation results.
 
 ## ast-metrics commands
 
+`test/acceptance/script/script-readme.test.ts` checks the actual help of every
+code-quality entry point in knip. With an empty PATH and a preload that refuses
+all child-process APIs, help starts no tool, Git command, build, or suite.
+The contracts normalize `node` and `pnpm exec node`, whitespace, wrapped options,
+and multiple synopses. They compare each option and its declared default,
+including defaults delegated to ast-metrics. Fixture documents check missing
+and extra synopses and options, changed option and argument defaults, missing delegation, a future
+command without Usage or Options, missing ordinary and live tests, stale extra
+tests, incorrect collector labels or test kinds, and duplicate tests. Every
+failure names the command, option, synopsis, or test. Both document inventories
+must match the discovered ordinary/live set and its coverage collector labels.
+The test reads listed commands and never executes them.
+
+`test/acceptance/script/ast-metrics-mcp-help.test.ts` checks that MCP help gives
+0 to 128 as the maintainability range, identifies the lines column as LOC rather
+than source positions, and declares delegated defaults for the two tool options.
+
 The six commands run from source in `script/code-quality/`. See the
 [code quality script guide](../../script/code-quality/README.md) for their
 entry points and helper folders.
@@ -177,7 +194,8 @@ each community, the communities sorted by label, nothing for each file, a
 record without coverage and without maintainability, the rows with the first
 eight characters of the commit and the day of its date, the decimals, the
 head as `this pull request` without a date, the en dash for a value that a row
-does not have, and the line of an empty store.
+does not have, and the distinct line of a configured empty store
+(`No snapshot of main in the trend store yet.`).
 `ast-metrics-architecture-trend-store.test.ts` checks the store in a folder of
 the test: the file name in the time zone of the commit, the text of a new file
 in a new folder, the file of the same commit under another date that stays
@@ -192,7 +210,7 @@ complete Markdown for snapshot files from
 dependency, a cycle, a split, `--touched` with a fall of 2.0 and the table
 row of the file, numbers alone, a quote and a backtick, and `--out`. Without
 `--trend-store`, the Markdown of two snapshot files ends with the trend
-section that says that main has no snapshot yet.
+section that says `No trend store.`
 `ast-metrics-architecture-table.test.ts` compares the complete Markdown of
 the complexity table: a file whose maintainability fell from 72.0 to 60.0,
 with its risk rank, a new file, a gone file, a file of types without a
@@ -224,7 +242,7 @@ other numbers (unchanged, no file added, its numbers and `–` in the table),
 twelve files (the last ten by date, two of one day by their time, and the
 head), a `--trend-store` path that is a file (exit 1, one diagnostic line,
 no Markdown), two snapshot files without `--trend-store` in a repository
-(the line that main has no snapshot yet, nothing written), and a repository
+(`No trend store.`, nothing written), and a repository
 with both doubles run twice: the first run writes
 `docs/metrics/<date>-<commit8>.json` with the numbers of the merge base, and
 the second run, with a coverage report, leaves that file unchanged.
@@ -238,13 +256,57 @@ without a change on each node, an equal CRAP cell on each row, and an empty
 list. It removes `ast-report/coverage.json` afterwards. Neither case writes to
 `docs/metrics/` of the repository. The default suites skip it.
 
+The following is the same complete inventory as the script README. The
+contract discovers available files in lexical order. These rows do not select
+all tests. Build first, then run only the files selected by the test gate policy;
+use the emitted `dist/test/` path and `.js` suffix.
+
 ```sh
-npm run build && node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-coverage.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/unit/script/ast-metrics-architecture-functions.test.js dist/test/unit/script/ast-metrics-architecture-crap.test.js dist/test/unit/script/ast-metrics-architecture-bands.test.js dist/test/unit/script/ast-metrics-architecture-trend.test.js dist/test/unit/script/ast-metrics-architecture-trend-store.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/acceptance/script/ast-metrics-architecture-trend.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
-node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
-node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
-node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
-node --test dist/test/acceptance/script/ast-metrics-architecture.live.js
+npm run build
+node --test dist/test/acceptance/script/script-readme.test.js
 ```
+
+<!-- code-quality-tests:start -->
+| Kind | Test file | Collects full unit coverage |
+| --- | --- | --- |
+| ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
+| live | test/acceptance/script/ast-metrics-architecture.live.ts | yes |
+| ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
+| live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
+| ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
+| live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
+| live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
+| ordinary | test/acceptance/script/script-readme.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-review.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
+<!-- code-quality-tests:end -->
 
 See [the script guide](../../script/README.md) and
 [the ast-metrics review guide](../implementation/ast-metrics-review.md).

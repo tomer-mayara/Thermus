@@ -152,4 +152,10 @@ pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/scr
 
 The six ast-metrics commands and their helpers are in
 [`code-quality/`](code-quality/README.md). That guide gives the commands,
-source layout, and focused tests.
+source layout, Usage/Options contracts, and the complete ordinary/live test
+inventory. Select affected tests from that inventory; the full list does not
+require a run of every file. The documentation contract runs each command's
+help without child processes and checks the same test set in both guides.
+The architecture and coverage live files collect the complete emitted Node
+unit suite; their scope follows the test gate policy. Direct
+`ast-metrics baseline` remains the documented exception until its wrapper exists.

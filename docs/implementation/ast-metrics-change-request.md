@@ -5,7 +5,7 @@
 | Repository | `tomer-mayara/Thermus` |
 | Baseline | `main` at `7c302fa5`, after the reorganization in PR #170 (`94adf2d2`) and scoped test gates in PR #172 |
 | Owner | Tomer Mayara; decides the open items and merges implementation pull requests |
-| Status | Proposed, revision 4, 2026-10-18. This document implements no CR and changes no command, test, policy, or metric record. |
+| Status | Revision 4, 2026-10-18. Staged implementation is approved; the delivery status below records progress. Open decisions remain proposals. |
 | Audience | An engineering team that has not worked in this repository |
 
 This proposal is standalone. Read sections 1 to 3 and Appendix D before
@@ -21,6 +21,15 @@ changed paths. This revision preserves both changes and all 24 CR identifiers.
 The owner approved staged implementation after merging revision 4 in
 PR #174. Delivery group 1 covers CR-16 and the CR-23 contract-test foundation.
 The decisions in section 3.2 remain open until the owner answers them.
+
+Delivery status:
+
+- PR #175 implements CR-16 and the CR-23 contract-test foundation. It awaits
+  owner review. CR-23's later content consolidation remains.
+- PR #173 already converted and organized the fetch-url scripts as
+  TypeScript. CR-19's removal of the four exported test seams remains;
+  that PR retained them to preserve its characterization tests.
+- The other CRs have not been implemented.
 
 Contents:
 
