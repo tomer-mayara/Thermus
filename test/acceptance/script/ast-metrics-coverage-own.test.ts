@@ -22,11 +22,11 @@ test('Given called factories with uncalled and partly called nested functions, w
     ['empty', [200, 300, 1]], ['left', [200, 250, 0]], ['right', [250, 300, 1]],
   ] }]);
 
-  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8'], cwd: repository.root });
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', 'v8'], cwd: repository.root });
 
   assert.equal(result.code, 0, result.stderr);
   const report = JSON.parse(readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8'));
-  assert.equal(report.version, 1);
+  assert.equal(report.version, 2);
   assert.equal(report.measurementVersion, 'own-characters-1');
   assert.deepEqual(report.files[0].functions.map(({ name, coveredShare }: { name: string; coveredShare: number }) => [name, coveredShare]), [
     ['A', 1], ['B', 0], ['C', 1], ['D', 0.8], ['left', 0], ['right', 1],
@@ -46,7 +46,7 @@ const typedSource = [
 test('Given emitted and typed portal unit tests with non-ASCII text, when coverage runs, then both suites run and typed offsets and shares match UTF-16 source text', async (t) => {
   const repository = GitRepository.create(t);
   repository.commit('Start', {
-    'package.json': '{"type":"module"}\n',
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
     'dist/src/emitted.js': 'export function emitted() { return 1; }\n',
     'dist/test/unit/emitted.test.js': "import { emitted } from '../../src/emitted.js'; emitted();\n",
     'src/user-portal/typed.ts': typedSource,
@@ -83,7 +83,7 @@ for (const [label, ranges] of [
     repository.commit('Start', { 'dist/src/sample.js': ' '.repeat(100), 'ast-report/coverage.json': 'earlier\n' });
     const [whole, ...blocks] = ranges;
     writeV8Coverage(join(repository.root, 'v8'), repository.root, [{ 'dist/src/sample.js': [['run', whole, ...blocks]] }]);
-    const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8'], cwd: repository.root });
+    const result = await runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', 'v8'], cwd: repository.root });
     assert.equal(result.code, 1);
     assert.match(result.stderr, /range|count|integer|offset/i);
     assert.equal(readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8'), 'earlier\n');
@@ -96,7 +96,7 @@ test('Given emitted and source coordinates for the same logical file, when the c
   writeV8Coverage(join(repository.root, 'v8'), repository.root, [
     { 'dist/src/sample.js': [['run', [0, 100, 1]]] }, { 'src/sample.ts': [['run', [0, 100, 1]]] },
   ]);
-  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8'], cwd: repository.root });
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', 'v8'], cwd: repository.root });
   assert.equal(result.code, 1);
   assert.match(result.stderr, /representation|incompatible/i);
 });
@@ -107,7 +107,7 @@ test('Given summed calls that exceed a safe integer, when the command reads them
   writeV8Coverage(join(repository.root, 'v8'), repository.root, [
     { 'dist/src/sample.js': [['run', [0, 100, Number.MAX_SAFE_INTEGER]]] }, { 'dist/src/sample.js': [['run', [0, 100, 1]]] },
   ]);
-  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8'], cwd: repository.root });
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', 'v8'], cwd: repository.root });
   assert.equal(result.code, 1);
   assert.match(result.stderr, /safe|overflow/i);
   assert.equal(readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8'), 'earlier\n');
@@ -121,7 +121,7 @@ test('Given two processes with crossing function ranges, when the command reads 
     { 'dist/src/sample.js': [['', [0, 400, 1]], ['other', [200, 350, 1]]] },
   ]);
 
-  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8-coverage'], cwd: repository.root });
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', 'v8-coverage'], cwd: repository.root });
 
   assert.match(result.stderr, /ast-metrics-coverage: .*cross.*src\/sample\.ts/i);
   assert.equal(result.stdout, '');
@@ -133,7 +133,7 @@ test('Given emitted tests that pass and portal tests that fail, when collection 
   const repository = GitRepository.create(t);
   repository.commit('Start', {
     'ast-report/coverage.json': earlierReport,
-    'package.json': '{"type":"module"}\n',
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
     'dist/src/sample.js': 'export const value = 1;\n',
     'dist/test/unit/sample.test.js': "import '../../src/sample.js';\n",
     'test/unit/user-portal/sample.test.ts': "import { test } from 'node:test'; test('portal failure', () => { throw Error('defect'); });\n",
@@ -144,5 +144,5 @@ test('Given emitted tests that pass and portal tests that fail, when collection 
   assert.equal(result.code, 1);
   assert.match(result.stderr, /portal failure/);
   assert.equal(readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8'), earlierReport);
-  assert.deepEqual(readdirSync(temporary), []);
+  assert.deepEqual(readdirSync(temporary).filter((name) => name.startsWith('thermus-coverage-')), []);
 });

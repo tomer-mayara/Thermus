@@ -46,7 +46,7 @@ const valid = { version: 1, suite: 'unit', files: [{ path: 'src/a/0.ts', functio
 for (const [name, text] of [
   ['text that is not JSON', 'Coverage'],
   ['a JSON array', '[]'],
-  ['a report of version 2', JSON.stringify({ ...valid, version: 2 })],
+  ['a report of version 3', JSON.stringify({ ...valid, version: 3 })],
   ['a snapshot', snapshot],
   ['a report without files', JSON.stringify({ ...valid, files: undefined })],
   ['a file without a path', JSON.stringify({ ...valid, files: [{ functions: [] }] })],
@@ -60,19 +60,19 @@ for (const [name, text] of [
 
     const result = await runScript(t, astMetricsArchitectureScript, { args: argumentsWith(t, coverage), ...noTools });
 
-    assert.equal(result.stderr, `ast-metrics-architecture: The file ${coverage} is not a valid coverage report of version 1.\n`);
+    assert.equal(result.stderr, `ast-metrics-architecture: The file ${coverage} is not a valid coverage report of version 1 or 2.\n`);
     assert.equal(result.stdout, '');
     assert.equal(result.code, 1);
   });
 }
 
-test('Given a valid --coverage file, when the architecture command runs, then it prints the report with the bands and exits 0', async (t) => {
+test('Given a legacy --coverage file, when the architecture command runs, then it prints structure without bands and exits 0', async (t) => {
   const coverage = join(dataDirectory(t), 'coverage.json');
   writeFileSync(coverage, JSON.stringify(valid));
 
   const result = await runScript(t, astMetricsArchitectureScript, { args: argumentsWith(t, coverage), ...noTools });
 
-  assert.equal(result.stderr, '');
-  assert.match(result.stdout, / · functions ≥ 30: 0 → 0\n/);
+  assert.equal(result.stderr, 'ast-metrics-architecture: The coverage report has no verified provenance: the bands are withheld.\n');
+  assert.ok(!result.stdout.includes('functions ≥ 30:'));
   assert.equal(result.code, 0);
 });

@@ -48,13 +48,13 @@ interface TrendNumbers {
 type FilesCrap = object;
 
 const scriptFolder = pathToFileURL(astMetricsArchitectureScript);
-const { trendRecordOf } = await import(new URL('architecture/trend-record.ts', scriptFolder).href) as {
-  trendRecordOf(snapshot: Snapshot, crap: FilesCrap | undefined): TrendNumbers;
+const { trendRecordsOf } = await import(new URL('architecture/trend-record.ts', scriptFolder).href) as {
+  trendRecordsOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[]; readonly coverage?: Coverage & { readonly provenance: object } }, delta: { readonly base: FilesCrap; readonly head: FilesCrap } | undefined): { readonly base: TrendNumbers };
 };
 const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as {
   crapDeltaOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[]; readonly coverage: Coverage }): { readonly base: FilesCrap };
 };
-const { trendSectionOf } = await import(new URL('architecture/report.ts', scriptFolder).href) as {
+const { trendSectionOf } = await import(new URL('architecture/trend-table.ts', scriptFolder).href) as {
   trendSectionOf(stored: readonly TrendNumbers[], head: TrendNumbers): string[];
 };
 
@@ -83,8 +83,12 @@ function crapOf(tree: Snapshot): FilesCrap {
   return crapDeltaOf({ base: tree, head: tree, touched: [], coverage }).base;
 }
 
+const provenance = { status: 'verified', capturedCommit: 'a'.repeat(40), sourceFingerprint: 'b'.repeat(64), inputsFingerprint: 'c'.repeat(64), buildFingerprint: 'd'.repeat(64), measurementVersion: 'own-characters-1' };
+const crapBasis = { kind: 'head-derived-estimate', coverageCommit: provenance.capturedCommit, sourceFingerprint: provenance.sourceFingerprint, inputsFingerprint: provenance.inputsFingerprint, buildFingerprint: provenance.buildFingerprint, measurementVersion: provenance.measurementVersion, unknownFunctions: 0 };
+
 test('Given a snapshot and the CRAP of its files, when the record is made, then it holds, in this order, the version, the commit, the date, the global numbers with the count of the cycles and the count of the functions at CRAP 30 or more, and each community sorted by label with its numbers and its count, and nothing for each file', () => {
-  const record = trendRecordOf(snapshot, crapOf(snapshot));
+  const crap = crapOf(snapshot);
+  const record = trendRecordsOf({ base: snapshot, head: snapshot, touched: [], coverage: { ...coverage, provenance } }, { base: crap, head: crap }).base;
 
   assert.equal(JSON.stringify(record), JSON.stringify({
     version: 1, commit: 'c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00', date: '2026-10-18T09:00:00+02:00',
@@ -93,13 +97,14 @@ test('Given a snapshot and the CRAP of its files, when the record is made, then 
       { label: 'alpha', files: 1, loc: 40, maintainability: 58.1, paths: 12, functionsOver30: 1 },
       { label: 'zulu', files: 1, loc: 40, maintainability: 70.5, paths: 12, functionsOver30: 1 },
     ],
+    crap: crapBasis,
   }));
 });
 
 test('Given no CRAP, and a snapshot and a community without maintainability, when the record is made, then the record and its communities have no count of the functions at CRAP 30 or more, and neither has a maintainability', () => {
   const plain: Snapshot = { ...snapshot, global: { ...snapshot.global, maintainability: undefined }, communities: [community('types', ['src/types.d.ts'])] };
 
-  const record = trendRecordOf(plain, undefined);
+  const record = trendRecordsOf({ base: plain, head: plain, touched: [] }, undefined).base;
 
   assert.equal(JSON.stringify(record), JSON.stringify({
     version: 1, commit: 'c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00', date: '2026-10-18T09:00:00+02:00',
@@ -121,9 +126,9 @@ test('Given two stored records and the head, when the trend section is made, the
     '',
     '| Commit | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',
     '| --- | --- | --- | --- | --- | --- | --- |',
-    '| 1a2b3c4d | 2026-10-12 | 0.52 | 0.26 | 1 | 57.4 | 20 |',
-    '| 8437236c | 2026-10-18 | 0.55 | 0.25 | 2 | 56.9 | 22 |',
-    '| this pull request | | 0.50 | 0.25 | 3 | 57.0 | 22 |',
+    '| 1a2b3c4d | 2026-10-12 | 0.52 | 0.26 | 1 | 57.4 | 20 (legacy unknown) |',
+    '| 8437236c | 2026-10-18 | 0.55 | 0.25 | 2 | 56.9 | 22 (legacy unknown) |',
+    '| this pull request | | 0.50 | 0.25 | 3 | 57.0 | 22 (legacy unknown) |',
   ]);
 });
 

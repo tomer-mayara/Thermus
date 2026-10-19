@@ -12,12 +12,12 @@ export type ArchitectureCommand =
   | { readonly kind: 'help' }
   | {
     readonly kind: 'report'; readonly source: SnapshotSource; readonly touched: readonly string[] | undefined;
-    readonly coverage: string | undefined; readonly trendStore: string | undefined; readonly out: string | undefined;
+    readonly noCoverage: boolean; readonly record: boolean; readonly coverage: string | undefined; readonly trendStore: string | undefined; readonly out: string | undefined;
   };
 
 const optionShape = {
   base: { type: 'string', default: 'origin/main' }, head: { type: 'string' }, 'base-snapshot': { type: 'string' }, touched: { type: 'string' },
-  coverage: { type: 'string' }, 'trend-store': { type: 'string' }, 'timeout-ms': { type: 'string', default: '60000' }, out: { type: 'string' },
+  coverage: { type: 'string' }, 'no-coverage': { type: 'boolean' }, record: { type: 'boolean' }, 'trend-store': { type: 'string' }, 'timeout-ms': { type: 'string', default: '60000' }, out: { type: 'string' },
   help: { type: 'boolean', short: 'h' },
 } as const;
 
@@ -28,12 +28,13 @@ export function commandOf(args: readonly string[]): ArchitectureCommand {
   const values = parsedValues(args);
   if (values.help) return { kind: 'help' };
   if (values.out === '') throw new CommandError('The --out value must name a file.');
+  if (values['no-coverage'] && values.coverage !== undefined) throw new CommandError('Give --coverage or --no-coverage, not both.');
   if (values.coverage === '') throw new CommandError('The --coverage value must name a file.');
   if (values['trend-store'] === '') throw new CommandError('The --trend-store value must name a folder.');
   // git would take a ref that starts with a dash as an option.
-  if (values.base === '' || values.base.startsWith('-')) throw new CommandError('The --base value must name a git ref.');
+  if (!/^[^-]/u.test(values.base)) throw new CommandError('The --base value must name a git ref.');
   const touched = values.touched?.split(',').filter((path) => path !== '');
-  const files = { coverage: values.coverage, trendStore: values['trend-store'], out: values.out };
+  const files = { noCoverage: values['no-coverage'] === true, record: values.record === true, coverage: values.coverage, trendStore: values['trend-store'], out: values.out };
   return { kind: 'report', source: sourceOf(values, timeoutOf(values['timeout-ms'])), touched, ...files };
 }
 

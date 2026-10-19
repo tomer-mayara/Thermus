@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
-import { bandedBase, bandedLegend, bandedTableHead, coverageArguments, fn, functionsSection } from './fixtures/ast-metrics-architecture-coverage.ts';
+import { bandedBase, bandedLegend, bandedTableHead, coverageArguments, coverageNote, fn, functionsSection } from './fixtures/ast-metrics-architecture-coverage.ts';
 import { bandedBaseGraph, baseEdges, baseNodes, graphDefinitions } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, complexityHeading, edited, legend, noProductionFile, noTrend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
@@ -38,7 +38,7 @@ function graph(nodes: readonly string[], bandDefs: readonly string[], classes: r
 }
 
 function markdown(functions: string, picture: readonly string[], complexity: readonly string[]): string {
-  return [header, '', `${structure} · functions ≥ 30: ${functions}`, '', ...picture, '', ...complexity, '', ...noTrend, ''].join('\n');
+  return [header, '', `${structure} · functions ≥ 30: ${functions}`, '', ...picture, '', ...complexity, '', coverageNote, '', ...noTrend, ''].join('\n');
 }
 
 function bandedTable(rows: readonly string[], listed: readonly string[], unmatched = 0): string[] {

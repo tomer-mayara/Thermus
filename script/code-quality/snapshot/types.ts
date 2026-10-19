@@ -1,3 +1,5 @@
+import type { InputIdentity } from '../provenance/types.ts';
+
 // The snapshot of one tree, as script/code-quality/ast-metrics-snapshot.ts writes it to snapshot.json: the numbers of ast-metrics for
 // the files under src/ and their communities. docs/implementation/architecture-evolution-plan.md ("The snapshot") gives
 // its purpose; the later commands of the plan read it.
@@ -12,6 +14,7 @@ export interface Snapshot {
   // the working tree can hold changes that are not committed.
   readonly commit: string;
   readonly date: string;
+  readonly provenance?: InputIdentity;
   readonly global: GlobalNumbers;
   readonly communities: readonly SnapshotCommunity[];
   readonly files: readonly SnapshotFile[];

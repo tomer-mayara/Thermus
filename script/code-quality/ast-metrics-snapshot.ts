@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, renameSync, rmSync, writeFileSync, writeSync } from 'node:fs';
+import * as fs from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { snapshotOfBase } from './snapshot/base.ts';
 import { commandOf } from './snapshot/command-line.ts';
@@ -15,7 +15,10 @@ the command runs ast-metrics analyze src for the JSON report, then one session
 of the MCP server (ast-metrics mcp src) with get_communities and
 get_file_metrics for each src/ file. Both analyze src/ alone, so that code
 outside src/ cannot regroup its communities. The snapshot names the commit and
-the date of HEAD; the files can hold changes that are not committed.
+the date of HEAD; the files can hold changes that are not committed. It also
+records the source and expected coverage input fingerprints, suite, measurement
+version, runtime, and compiler. Inputs must stay the same during capture; a
+change stops publication.
 
 With --base, the snapshot is of the merge base of REF and HEAD: the command adds
 a temporary worktree of that commit in the system temporary folder, with no hook
@@ -40,7 +43,7 @@ of its worktree.
 
 // The line goes out at once, because a signal ends the process right after it.
 function notice(line: string): void {
-  writeSync(process.stderr.fd, `ast-metrics-snapshot: ${line}\n`);
+  fs.writeSync(process.stderr.fd, `ast-metrics-snapshot: ${line}\n`);
 }
 
 // The snapshot of the merge base has a file of its own, so that it does not replace the snapshot of the working tree.
@@ -66,13 +69,13 @@ async function main(): Promise<string> {
 // The file is complete or absent: the text goes to a temporary file next to it, and a rename replaces the file in one
 // step.
 function writeSnapshotFile(path: string, snapshot: Snapshot): void {
-  mkdirSync(dirname(path), { recursive: true });
+  fs.mkdirSync(dirname(path), { recursive: true });
   const temporary = `${path}.${process.pid}.tmp`;
   try {
-    writeFileSync(temporary, `${JSON.stringify(snapshot, null, 2)}\n`);
-    renameSync(temporary, path);
+    fs.writeFileSync(temporary, `${JSON.stringify(snapshot, null, 2)}\n`);
+    fs.renameSync(temporary, path);
   } finally {
-    rmSync(temporary, { force: true });
+    fs.rmSync(temporary, { force: true });
   }
 }
 

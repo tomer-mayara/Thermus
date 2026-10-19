@@ -8,7 +8,7 @@ import { architectureReportOf } from './architecture/report.ts';
 import { trendLinesOf } from './architecture/trend.ts';
 import { CommandError } from './shared/repository.ts';
 
-const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--trend-store DIR] [--timeout-ms MS] [--out FILE] [--help]
+const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
 
 Print the architecture delta of src/ as Markdown, for the body of a pull
 request: a summary line with the modularity, the cross share, the cycles, and
@@ -35,7 +35,12 @@ pull request added or made worse none of them, and critical when it added or
 made worse one. The node text gives the band and the count, the border has the
 color of the band, the table gives the count of each changed file, and a list
 names each function that the pull request added or made worse. Without the
-report, the output says that the bands need it.
+report, the output says that coverage is missing. Coverage must have verified
+provenance that matches the source and coverage inputs of the head snapshot,
+with the same unit suite, measurement version, runtime, and compiler. An older
+capture commit is allowed when those identities match. Legacy data still shows
+structure, but cannot establish coverage compatibility. With --no-coverage, the
+command ignores the default report explicitly.
 
 Last, the command prints the trend of src/ on main: the modularity, the cross
 share, the cycles, the maintainability, and the count of the functions at CRAP
@@ -44,11 +49,12 @@ and of the head as the last row, this pull request. The trend store of a
 repository is docs/metrics/ of its root: one JSON file for each commit of main
 that a pull request used as its base, named <date>-<commit8>.json, with the
 global numbers of the snapshot of that commit and the numbers of each
-community, and nothing for each file. Before the output, the command writes the
+community, and nothing for each file. With --record, the command writes the
 file of the merge base when the store has no file of that commit; a file that
 exists stays as it is. Commit the new file with the pull request. With --head
-and --base-snapshot, the command writes and reads no store unless --trend-store
-names one. Without a store, the trend section says No trend store.
+and --base-snapshot, the command reads no store unless --trend-store names one.
+Offline --record also requires a repository that verifies the full base commit
+and its source content. Recording requires that the base is on origin/main. Without a store, the trend section says No trend store.
 
 By default, the command takes two snapshots, as script/code-quality/ast-metrics-snapshot.ts
 does: the base is the merge base of REF and HEAD, in a temporary worktree, and
@@ -73,6 +79,8 @@ Options:
                         commas, in place of the changed files of git
   --coverage FILE       Read the coverage report from FILE (default in a
                         repository: ast-report/coverage.json when it exists)
+  --no-coverage         Ignore default coverage and print structure without bands
+  --record              Record a verified base on origin/main in the trend store
   --trend-store DIR     Use DIR as the trend store, relative to the current
                         folder (default in a repository: docs/metrics of the root)
   --timeout-ms MS       Deadline of each MCP session (100..300000; default: 60000)

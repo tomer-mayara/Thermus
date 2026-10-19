@@ -4,10 +4,12 @@ Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
 "Review record"). Historical tickets T1 to T7 are done (see the appendix).
 PR #175 completed CR-16 and the CR-23 contract-test foundation. PR #176
 merged CR-24: always print the architecture drawing and require the
-fenced graph and legend in every pull request body. Delivery group 3 in
-PR #177 implements CR-01 and CR-02 and awaits owner review: include portal
-unit coverage and measure each function's own characters. The other changes
-in the [change request](ast-metrics-change-request.md) remain follow-up work;
+fenced graph and legend in every pull request body. PR #177 merged delivery
+group 3, CR-01 and CR-02: include portal unit coverage and measure each
+function's own characters. PR #178 implements
+CR-03 and CR-04: verified capture provenance, explicit safe recording, and
+labeled historical estimates under approved D3. It awaits owner review.
+The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
 ast-metrics" in [AGENTS.md](../../AGENTS.md) and
@@ -113,7 +115,12 @@ holds no coverage or CRAP. One module makes it from one JSON report and one
 MCP session, both of `src/` alone (`ast-metrics analyze src`, `ast-metrics
 mcp src`), so that growth of `script/` or `test/` cannot regroup the
 communities. The architecture command joins a separate coverage report when
-it computes CRAP and bands. The wrappers run from the repository root;
+it computes CRAP and bands. Each new snapshot also holds `provenance`: the
+source and expected coverage-input fingerprints, runtime, compiler, suite,
+and measurement version. Capture checks these inputs before and after
+analysis. Offline rendering matches coverage to this identity; it needs no
+Git repository. Legacy snapshots can show structure but cannot establish
+coverage compatibility. The wrappers run from the repository root;
 keep its configuration authoritative by adding no config under `src/`.
 The [review guide](ast-metrics-review.md#the-configuration) records the
 controlled 0.43.1 configuration lookup check.
@@ -148,10 +155,12 @@ All three appear in the pull request body through step 5 of the process:
    share, cycles, LOC-weighted maintainability, functions with CRAP at 30 or
    more. The store is `docs/metrics/<date>-<commit>.json`, one file per
    `main` commit, holding the global numbers and the numbers per community
-   only. Nobody runs anything at merge time, so the pull request writes the
-   file of its own base commit when that file does not exist yet: the base
-   snapshot is a by-product of the delta, and the trend lags one pull request
-   behind `main`, which is fine.
+   only. Nobody runs anything at merge time. The complete-candidate review uses
+   `--record` to write a missing base record after the full commit and its
+   ancestry on `origin/main` are verified. Exploratory runs are read-only.
+   Records are immutable; keep the file from `main` in a merge conflict.
+   Counts from head coverage are labeled estimates with their origin and
+   unknown-function count. The trend lags one pull request behind `main`.
 
 ### Community identity
 
@@ -165,8 +174,14 @@ A community that splits or merges can show as gone and new.
 
 ### CRAP per function
 
-The coverage run first runs the complete emitted Node unit tests, then the
-complete source portal unit tests, with one `NODE_V8_COVERAGE` folder. It
+The coverage run builds first, verifies the emitted output, then runs the
+complete emitted Node unit tests and the complete source portal unit tests
+with one `NODE_V8_COVERAGE` folder. It verifies inputs and output throughout
+capture and publishes only after both runs succeed. `--no-build` requires
+a matching content manifest. Retained raw captures have a manifest;
+`--from` validates that original capture and preserves its commit. Explicit
+`--allow-unverified` imports are for inspection and cannot enable bands or
+historical counts. It
 adds no integration or acceptance suite; CR-11 proposes that extension.
 For each function, the share measures its own characters: the whole range
 minus the union of strictly contained function ranges from all compatible
@@ -189,8 +204,10 @@ and counts before merging and rejects crossing ranges, conflicting identities,
 and unsafe call sums. Helpers and their descendants are subtracted before
 they are excluded. Functions with no own characters are recorded as
 unmeasured with reason `no-own-characters`; they have no measured share.
-The JSON schema remains version 1; the measurement version is
-`own-characters-1`.
+New coverage reports use JSON schema version 2; legacy version 1 remains
+readable; absent provenance cannot establish assessment. The measurement version stays
+`own-characters-1`. Snapshot, build-manifest, capture-manifest, and trend
+record schemas remain version 1.
 
 Functions match ast-metrics by file (`dist/src/x.js` is `src/x.ts`) and by
 the name that V8 gives: ast-metrics names a method `module\Class.method`,
@@ -202,10 +219,11 @@ unmeasured entry also blocks a measured same-name entry from supplying a
 share. The list under the table gives how many functions of the changed files
 stayed unmatched. A `src/` file absent from the report currently counts as
 uncovered. Only a complete verified report can establish that an absent
-file was not loaded by the selected unit suite. `--from` still cannot prove
-original capture content, complete suite execution, or input freshness;
-CR-03 will add capture provenance. Current-file identity is not proof of
-original capture identity.
+file was not loaded by the selected unit suite. Coverage is compatible
+only when its verified provenance matches the supplied head snapshot's
+source and input fingerprints, runtime, compiler, suite, and measurement
+version. The original capture commit stays visible. A commit that changes
+only unrelated prose can reuse a capture when these inputs match.
 
 The base tree gets no coverage run, so the CRAP of the base is an
 approximation: a function of the base has its own decision paths and the
@@ -260,9 +278,10 @@ CR-24 keeps the graph visible when the map did not change. Equal snapshots
 with no touched files have every node and dependency without change arrows
 or touched borders.
 Compatible coverage adds bands; without it, the graph and legend still
-appear with the existing missing-coverage message. Reuse valid coverage or
+appear with the specific coverage-withholding notice. Reuse valid coverage or
 collect only within the current test gate policy. CR-03 coverage validity
-checks and CR-07 incomplete assessments remain follow-up work.
+checks are implemented in PR #178; CR-07 incomplete assessments remain
+follow-up work.
 
 The shape of the output, with made-up numbers:
 
@@ -338,14 +357,14 @@ their fenced block and legend unchanged in every pull request body. The original
 
 - Coverage comes only from the unit suite: emitted Node tests and source
   portal tests. PR #177 implements the portal part under CR-01. CR-11
-  proposes other suites. The coverage JSON names the unit suite; the
-  architecture Markdown does not yet name it (CR-03). Functions tested only
+  proposes other suites. Compatible architecture output names the unit
+  suite and the original capture commit. Functions tested only
   by integration or acceptance tests can count as uncovered.
 - `ast-metrics-architecture.live.ts` has a case that collects the complete
   unit suite, including portal tests. It uses the same selection restriction
-  as the coverage command. Its structural case does not collect coverage. The coverage live test uses a temporary output report. Architecture's
-  coverage live case still writes and removes the default report; CR-06
-  will isolate it. `ast-metrics-coverage.live.ts` needs no ast-metrics.
+  as the coverage command. Its structural case does not collect coverage. Both coverage-collecting live cases use temporary output reports and
+  preserve the default report. Structural architecture uses `--no-coverage`
+  and starts no suite. `ast-metrics-coverage.live.ts` needs no ast-metrics.
 - The 2026-10-18 study observed a reported seven-point maintainability drop
   and an unreported 1.3-point drop. It established no exact drop threshold.
 - The base gets the coverage of the head (see "CRAP per function"), so a
@@ -354,7 +373,10 @@ their fenced block and legend unchanged in every pull request body. The original
 - ast-metrics measures TypeScript only; a change to `.mjs` files or to
   configuration does not appear.
 - The trend lags one pull request behind `main`, and a `main` commit that no
-  pull request used as a base gets no snapshot.
+  pull request records as a base gets no snapshot. Stored counts belong to
+  the first recording pull request. They are head-derived estimates, not
+  measurements of the base. Missing evidence stays absent; old counts
+  without provenance are labeled legacy unknown.
 
 ## Review record
 
@@ -646,6 +668,15 @@ values of the plan; no other color. Update AGENTS.md step 5 with the
 coverage run and the review guide with the band rules.
 
 ### T7. Trend
+
+Historical ticket. CR-04 in PR #178 supersedes its automatic-write rule:
+only `--record` writes, after full-commit and `origin/main` ancestry checks.
+Offline recording also verifies the snapshot content in a repository.
+Full SHAs identify records; prefix collisions and malformed stores fail.
+Atomic publication does not overwrite an existing record, including during
+concurrent runs. Missing counts stay missing. Approved D3 labels counts
+from compatible head coverage as estimates and records their origin and
+unknowns. Keep the record on `main` in a merge conflict.
 
 Source: step A3 and "The views". Depends on T6. Done in PR #168. The name of a
 file has the day of the committer date in the time zone of the commit and the

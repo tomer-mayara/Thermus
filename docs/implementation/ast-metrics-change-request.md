@@ -33,9 +33,11 @@ Delivery status:
   content consolidation remains.
 - PR #176 merged delivery group 2, CR-24: always print the architecture
   drawing and require its fenced block and legend in the pull request body.
-- PR #177 implements delivery group 3, CR-01 and CR-02, and awaits owner
-  review: collect portal unit coverage and measure each function's own
-  characters. CR-03 capture provenance remains pending.
+- PR #177 merged delivery group 3, CR-01 and CR-02: collect portal unit
+  coverage and measure each function's own characters.
+- PR #178 implements CR-03 and CR-04 together and awaits owner review:
+  verify capture provenance, make trend writes explicit and safe, and label
+  historical estimates under approved D3.
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
@@ -67,11 +69,11 @@ The review found these problems:
 
 1. At the proposal baseline, coverage omitted portal unit tests and counted
    nested function text as part of its parent. PR #177 implements CR-01 and
-   CR-02 to correct collection and measurement. Reliable original capture
-   provenance and input-freshness validation remain CR-03 work.
+   CR-02 to correct collection and measurement. PR #178 implements CR-03
+   original capture provenance and input-freshness checks.
 2. Historical CRAP counts use head coverage to estimate the base. Valid
-   head coverage does not make that a base measurement. CR-04 makes writes
-   explicit and implements approved D3: clearly label head-derived counts
+   head coverage does not make that a base measurement. CR-04 in PR #178
+   makes writes explicit and implements approved D3: label head-derived counts
    as estimates and record their provenance.
 3. Moves and deletions distort comparisons. CR-05 adds file status and
    source evidence for function identity. A matching name alone is not
@@ -110,14 +112,16 @@ explained and baselined under the current rules.
 
 The process reuses valid unit coverage. It collects coverage only when the
 selected scope permits the complete nested suite. It then reports the
-architecture and commits any new base record. Existing records are
-immutable. Baseline changes have two permitted reasons: a retained high
+architecture with `--record` and commits any new verified base record.
+Exploratory runs omit that flag. Existing records are immutable; keep the
+record from `main` in a merge conflict. Baseline changes have two permitted reasons: a retained high
 finding or a rule change.
 
 A document-only commit does not invalidate coverage when its measurement
 inputs are unchanged. Without valid coverage, the current policy permits
-architecture output without bands. The commands do not yet enforce that
-validity; CR-03 supplies the mechanism.
+architecture output with `--no-coverage`, without bands. CR-03 in PR #178
+enforces compatibility against the analyzed head snapshot's source and
+input identity, runtime, compiler, suite, and measurement version.
 
 CR-24 in PR #176 adds the graph and legend to every architecture report.
 Current step 5 requires their fenced `mermaid` block and legend unchanged
@@ -144,6 +148,7 @@ in `.ts`; the main build excludes `script/`.
 | `ast-metrics-architecture.ts` | Compare snapshots and print the map, complexity table, and trend. | `architecture/` |
 
 `shared/` contains repository operations, JSON readers, and numeric helpers.
+`provenance/` owns deterministic input identity and its readers.
 The architecture entry point already calculates `crapDeltaOf(sources)`
 once and passes it to the report and trend. CR-17 excludes that completed
 work.
@@ -208,10 +213,12 @@ disagree on lookup location; the controlled check remains part of CR-16.
 - Bands are good when no counted function reaches 30, warning when some
   do but none is added or worse, and critical when one is added or worse.
   Unknown functions currently do not prevent a good band.
-- A repository architecture run writes a record the first time it sees
-  a base. CRAP counts depend on head coverage. Filenames and current
-  duplicate lookup use the eight-character commit prefix. Existing
-  records are kept. CR-04 strengthens identity and write safety.
+- Architecture writes only with `--record`, after verifying the full base
+  commit, source content, and ancestry on `origin/main`. Full SHAs identify
+  records; short filename collisions fail. Atomic publication never
+  overwrites an existing record. Counts from verified compatible head
+  coverage are labeled estimates with their provenance and unknown count.
+  Missing counts stay absent; legacy counts remain legacy unknown.
 
 ### 2.4 Historical evidence and tests
 
@@ -230,9 +237,10 @@ general threshold. Remove the assertion that a drop of about ten counts.
 PR #170 corrected the snapshot live test's fixed counts from seven to
 eight non-shared communities and from one to two cycles. It still fixes
 those counts. The architecture live file still has a complete unit coverage
-case. The coverage live test uses a temporary output report. Architecture's
-coverage live case still writes and removes the repository's default report;
-CR-06 will isolate it. The current README identifies both live collectors and their scope limits.
+case. Both coverage-collecting live cases use temporary output reports and
+preserve the default report. The structural architecture case uses
+`--no-coverage` and starts no suite. The remaining CR-06 invariant work stays
+pending. The current README identifies both live collectors and their scope limits.
 
 Ordinary acceptance tests run commands through
 `test/support/processes/script-command.ts` and compare complete Markdown
@@ -436,7 +444,7 @@ and inventory. State the UTF-16 unit and character-coverage approximation.
 
 P1 · M · mistake. Coordinate with CR-01 and CR-02.
 
-**Evidence.** Coverage checks only that `dist/` exists and records HEAD
+**Evidence at the proposal baseline.** Coverage checks only that `dist/` exists and records HEAD
 when writing. Architecture checks neither commit nor suite nor input
 identity. Old reports and builds can survive edits and checkouts.
 
@@ -498,12 +506,21 @@ A report matching the caller's tree but not the supplied head is withheld.
 AGENTS.md reuse wording when the mechanism lands. Hashing only TypeScript,
 as revision 3 proposed, is insufficient.
 
+**Delivery.** Implemented in PR #178 with CR-04; owner review is pending.
+Legacy coverage schema version 1 remains readable. New reports use version
+2 so unverified inspection can use a null commit without changing a required
+version-1 field type. Measurement semantics stay `own-characters-1`. New captures retain raw files and a
+manifest; new snapshots bind coverage to their input identity. Verified
+raw imports require the original checkout path because V8 URLs are absolute.
+Completed reports and snapshots render offline without Git. No broader
+suite or future process command is added.
+
 ### CR-04. Make trend writes deliberate and identify historical estimates
 
 P1 · M · limit. Implements approved D3. Depends on CR-03; coordinate CR-05
 identity.
 
-**Evidence.** Exploratory architecture runs write permanent base records.
+**Evidence at the proposal baseline.** Exploratory architecture runs write permanent base records.
 Two heads can produce different counts for one base, and first write wins.
 Current lookup uses the short commit prefix. Valid head coverage still
 does not establish base coverage.
@@ -544,6 +561,13 @@ and legacy counts under approved D3. No count uses stale data.
 
 **Documents.** AGENTS.md recording/conflict rules, guide trend section,
 README, plan T7 note, formats, and inventory.
+
+**Delivery.** Implemented in PR #178 with CR-03; owner review is pending.
+`--record` is explicit. Full-commit, ancestry, and content checks precede
+atomic publication without overwrite. New historical counts carry a
+`head-derived-estimate` basis; the current head row is `measured`, old
+unattributed counts are `legacy unknown`, and missing counts are absent.
+This implements D3 without approving D4, D5, or CR-05 identity changes.
 
 ### CR-05. Handle file renames, function moves, and deletions
 
@@ -1272,9 +1296,9 @@ inventory. Scope remains unchanged before and after this CR.
 pending. This delivery
 changes graph output and the current step 5 drawing requirement. It does
 not implement CR-03 coverage validation, CR-07 incomplete assessments,
-the CR-09 process wrapper, or the CR-13 component view. Invalid coverage
-that the current parser rejects still stops the command; callers must move
-aside stale default coverage under the current policy.
+the CR-09 process wrapper, or the CR-13 component view. Invalid report envelopes
+still stop the command. CR-03 in PR #178 adds provenance gating and
+`--no-coverage` so callers need not move a stale default report.
 
 ## 5. Delivery order
 
@@ -1357,7 +1381,8 @@ the full coverage project.
 
 ## 8. Appendix A: data contracts
 
-Examples distinguish existing version-1 envelopes from proposed fields.
+Examples distinguish implemented envelopes from proposed fields. Coverage
+uses version 2; snapshots and trend records retain version 1.
 Adding an optional field can preserve compatibility; removing a required
 field or changing its type is not silently additive. Measurement semantic
 version and JSON schema version have different purposes. Keep legacy
@@ -1365,13 +1390,15 @@ fixtures and checked readers for each implemented extension.
 
 ### A.1 Coverage
 
-The implemented CR-01/CR-02 shape in PR #177 is abbreviated below. Counts
-are illustrative. JSON schema version 1 stays; `measurementVersion` names
-the changed measurement semantics.
+The current shape after CR-01/CR-02 in PR #177 and CR-03 in PR #178 is
+abbreviated below. Counts are illustrative. New reports use JSON schema
+version 2. Legacy version 1 remains readable; absent provenance cannot
+establish assessment.
+`measurementVersion` names the unchanged own-character semantics.
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "suite": "unit",
   "measurementVersion": "own-characters-1",
   "commit": "<40 hex>",
@@ -1419,35 +1446,62 @@ function whose own range becomes empty after subtraction receives
 
 The collector rejects conflicting content identities and incompatible
 representations for one logical file. Equal lengths do not permit a union
-of emitted JavaScript and source TypeScript. `--from` reads the script
-available at import time; this identity cannot prove the original capture
-content, full suite execution, or fresh inputs. These remain CR-03 work.
+of emitted JavaScript and source TypeScript.
 
-CR-03 adds original capture provenance, for example:
+CR-03 in PR #178 adds verified original capture provenance:
 
 ```json
 {
   "provenance": {
     "status": "verified",
-    "measurementVersion": "own-characters-1",
     "sourceFingerprint": "<sha256>",
     "inputsFingerprint": "<sha256>",
-    "buildFingerprint": "<sha256>",
     "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit",
     "capturedCommit": "<40 hex>",
+    "buildFingerprint": "<sha256>",
     "captureManifestFingerprint": "<sha256>"
   }
 }
 ```
 
-The CR-01/CR-02 field names above are implemented; the CR-03 provenance
-fields remain proposed and need checked format fixtures. Required invariants
-for CR-03 are original identity, stable inputs/output through capture,
-representation identity, semantic version, and explicit unverified status.
-Under CR-03, legacy data cannot enable bands; current readers do not yet
-enforce that provenance rule. Revision 3 called the input hash `tree`; explicit
-fingerprint names prevent confusion with a Git tree. CR-11 adds a suite
-array with readers for the old string; test that type-contract extension.
+The six identity fields from `sourceFingerprint` through `suite` form the
+shared `InputIdentity`. The input hash covers sources, tests, helpers,
+fixtures, scripts, config, manifests, lockfiles, patches, migrations, Docker
+inputs, and the document that tests read. It excludes generated output and
+unrelated prose. Markdown in the other selected roots is excluded;
+Markdown fixtures under `src/` and `test/` remain inputs. Paths are normalized and ordered; length-framed path,
+content, and executable-mode entries make hashing deterministic. Symlinks
+contribute link text and traversed target content and modes; dangling links
+and cycles fail. Additions, deletions, and untracked inputs count. Runtime,
+compiler, suite, and measurement version are part of the hash.
+
+`dist/.coverage-build.json` holds `version: 1`, `identity: InputIdentity`,
+and `buildFingerprint`, which hashes all emitted output except this
+manifest. `--no-build` requires both identities to match. Successful raw
+captures stay under `ast-report/coverage-captures/capture-<unique>/`.
+Their `capture-manifest.json` holds `version: 1`, `identity`,
+`capturedCommit`, `buildFingerprint`, `rawFingerprint`, and `scripts`
+(the identified source representations and content identities). The report's
+`captureManifestFingerprint` hashes the exact manifest text. Capture checks
+inputs and output before and after build and suite execution and publishes
+only after success. `--from` validates the original evidence and preserves
+the original commit. Raw V8 URLs require the original checkout path and
+matching current inputs/build.
+
+Unlike a verified report, unverified inspection can have no original commit;
+this required field type change is why new coverage uses version 2.
+Explicit `--allow-unverified --from DIR` writes
+`provenance: {status: "unverified", reason, original?}` for inspection when
+capture evidence cannot be verified. `original` preserves a readable
+original manifest. The report commit is `null` when an original commit is
+unavailable. Unverified data and legacy reports without verified provenance
+cannot enable bands or historical counts. Completed reports and snapshots can render offline without Git.
+A document-only commit can reuse an older capture when the full input
+identity matches. Schema, measurement semantics, and tool versions are
+separate. CR-11's proposed suite array remains future work.
 
 ### A.2 Snapshot
 
@@ -1480,18 +1534,20 @@ Current abbreviated shape; this is not an internally complete fixture:
 
 Real snapshots include all referenced communities/files. IDs are unstable;
 labels follow section 2.3. A file's community can be null. HEAD's commit
-does not identify uncommitted captured content.
+does not identify uncommitted captured content. CR-03 in PR #178 adds
+optional `provenance: InputIdentity`, with the six identity fields in A.1.
+The snapshot verifies them before and after capture. Offline coverage
+compatibility uses only the supplied head's identity. A legacy snapshot
+without it can show structure but cannot establish compatibility.
 
-Proposed extensions are source and expected coverage-input fingerprints
-(CR-03), source function identity evidence and normalization version
-(CR-05), actual `tool` (CR-08), dependencies with unresolved diagnostics
+Proposed extensions remain source function identity evidence and
+normalization version (CR-05), actual `tool` (CR-08), dependencies with
+unresolved diagnostics
 (CR-13), and optional commit `title` (CR-14), for example:
 
 ```json
 {
   "tool": "0.43.1",
-  "sourceFingerprint": "<sha256>",
-  "coverageInputsFingerprint": "<sha256>",
   "dependencies": {
     "version": 1, "complete": true,
     "pairs": [{ "from": "src/application.ts", "to": "src/fetch-tool.ts", "kind": "dynamic-literal" }],
@@ -1527,28 +1583,43 @@ Current abbreviated shape:
 Use two-space JSON and a final newline, communities sorted by label.
 Filename `<date>-<commit8>.json` stays readable; embedded full SHA is
 authoritative. Old files, including those without provenance, stay immutable.
-CR-04 adds D3's provenance; CR-08 adds tool; CR-13 adds components sorted
-by name; CR-14 adds optional title. Counts without compatible evidence
-are absent, not zero. The proposed fields below implement the approved D3
-head-estimate policy:
+CR-04 in PR #178 adds top-level `sourceFingerprint`, which identifies the
+recorded base source, and D3's `crap` basis:
 
 ```json
 {
-  "crapBasis": {
-    "kind": "head-estimate",
-    "coverageCommit": "<capture commit>",
-    "inputsFingerprint": "<sha256>",
+  "sourceFingerprint": "<recorded base source sha256>",
+  "crap": {
+    "kind": "head-derived-estimate",
+    "coverageCommit": "<original capture commit>",
+    "sourceFingerprint": "<head coverage source sha256>",
+    "inputsFingerprint": "<head coverage inputs sha256>",
+    "buildFingerprint": "<head emitted output sha256>",
     "measurementVersion": "own-characters-1",
-    "unmeasuredFunctions": 12
+    "unknownFunctions": 12
   }
 }
 ```
 
-D3 is approved; this example specifies future fields, not an implemented
-format. Apply the same head-estimate basis to global and component/community
-counts and clearly label it in output. Readers label legacy missing
-provenance; they never fill it retrospectively. D3 authorizes no storage or
-capture of base coverage and no merge workflow; D4 and D5 remain open.
+The basis applies to global and community counts. Unknown functions are
+excluded and counted in `unknownFunctions`. Stored base records use
+`head-derived-estimate`; the current head row uses `measured`. Table cells
+are labeled `17 (estimate)`, `17 (measured)`, `22 (legacy unknown)`, or `–`
+when absent. Counts without compatible evidence are absent, not zero.
+Legacy files remain unchanged. A later head can give a different estimate
+for a base; the stored value belongs to the first recording pull request.
+
+Writing requires `--record`, a verified full base commit on `origin/main`,
+and source-content and committer-date verification in a repository,
+including offline mode.
+The store validates full SHA identity, filename dates and prefixes, and
+required global and community fields before atomic publication without
+overwrite. Record-shaped directories and symlinks fail. A busy lock has a
+five-second limit; recovery requires confirming that no writer is active. An existing record stays unchanged, including
+one without counts. Keep the file from `main` in a merge conflict. CR-08's
+tool, CR-13's components, and CR-14's title remain proposed fields. D3
+authorizes neither base-coverage storage nor a merge workflow; D4 and D5
+remain open.
 
 ### A.4 Offline change metadata
 
@@ -1630,7 +1701,7 @@ No production file changed.
 
 Implementation goldens fix the exact legend/table text. The provenance
 column illustrates CR-04's distinction under approved D3. Head-derived
-values must say `head-estimate`; missing evidence stays unavailable. This
+values must say `head-derived-estimate`; missing evidence stays unavailable. This
 example does not require a record write during an exploratory run.
 
 ## 11. Appendix D: proposed process text

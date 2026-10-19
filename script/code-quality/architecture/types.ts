@@ -1,5 +1,6 @@
 // The data of the architecture delta of docs/implementation/architecture-evolution-plan.md ("The views"): two snapshots
 // of src/, the map that compares them, and the files of the complexity table.
+import type { InputIdentity } from '../provenance/types.ts';
 import type { CoverageReport } from './coverage.ts';
 import type { Snapshot, SnapshotCommunity, SnapshotFile, SnapshotFunction } from '../snapshot/types.ts';
 
@@ -9,6 +10,7 @@ import type { Snapshot, SnapshotCommunity, SnapshotFile, SnapshotFunction } from
 export interface MapSnapshot {
   readonly commit: string;
   readonly date: string;
+  readonly provenance?: InputIdentity;
   readonly global: Snapshot['global'];
   readonly communities: readonly MapCommunity[];
   readonly files: readonly TableFile[];
@@ -31,6 +33,7 @@ export interface MapSources {
   readonly touched: readonly string[];
   // The coverage of the unit suite in the head. Without it, the report has no bands.
   readonly coverage?: CoverageReport;
+  readonly coverageNotice?: string;
 }
 
 // The band of docs/implementation/architecture-evolution-plan.md ("Bands"). A function at CRAP 30 or more is over.

@@ -22,7 +22,7 @@ function script(functions: readonly V8Function[]): SourceScript {
 function reportOf(t: TestContext, processes: readonly (readonly SourceScript[])[]) {
   const folder = mkdtempSync(join(tmpdir(), 'thermus-own-coverage-'));
   t.after(() => rmSync(folder, { recursive: true, force: true }));
-  writeCoverageReport(join(folder, 'report.json'), 'a'.repeat(40), mergedCoverage(processes));
+  writeCoverageReport(join(folder, 'report.json'), { commit: null, provenance: { status: 'unverified', reason: 'Synthetic unit data.' } }, mergedCoverage(processes));
   return JSON.parse(readFileSync(join(folder, 'report.json'), 'utf8'));
 }
 

@@ -22,7 +22,11 @@ export function fn(name: string, paths: number): FunctionShape {
   return { name, paths, maintainability: 70, loc: 10 };
 }
 
-export const bandedBase: SnapshotShape = edited(baseSnapshot, {
+export const coverageIdentity = { sourceFingerprint: 'a'.repeat(64), inputsFingerprint: 'b'.repeat(64), runtime: 'node:test', compiler: 'typescript:test', measurementVersion: 'own-characters-1', suite: 'unit' } as const;
+export const coverageCommit = 'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1';
+export const coverageNote = `Coverage: unit suite at ${coverageCommit.slice(0, 8)}.`;
+
+export const bandedBase: SnapshotShape = edited({ ...baseSnapshot, provenance: coverageIdentity }, {
   files: {
     'src/application.ts': { functions: [fn('createApplication', 6)] },
     'src/auth/access-context.ts': { functions: [fn('createContext', 2)] },
@@ -54,8 +58,10 @@ function coverageFileOf(path: string, shares: readonly (readonly [string, number
 // exportAccounts is in the report for the head that adds it. src/application.ts is not in the report: no unit test
 // loaded it.
 export const unitCoverage = {
-  version: 1,
+  version: 2,
   suite: 'unit',
+  measurementVersion: 'own-characters-1',
+  provenance: { ...coverageIdentity, status: 'verified', capturedCommit: coverageCommit, buildFingerprint: 'c'.repeat(64), captureManifestFingerprint: 'd'.repeat(64) },
   commit: 'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1',
   processes: 3,
   scripts: 9,
