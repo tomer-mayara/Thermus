@@ -9,8 +9,9 @@ import { CommandError } from '../shared/repository.ts';
 export function trendNumbersInFile(path: string): TrendNumbers {
   const fields = objectOf(jsonOf(fileText(path)));
   if (!validTrendRecord(fields)) throw new CommandError(`The file ${path} is not a valid trend file of version 1.`);
-  const { commit, date, modularity, crossShare, cycles, maintainability, functionsOver30 } = fields;
+  const { tool, commit, date, modularity, crossShare, cycles, maintainability, functionsOver30 } = fields;
   return { commit, date, modularity, crossShare, cycles, maintainability, functionsOver30,
+    ...(tool === undefined ? {} : { tool }),
     ...(fields.crap === undefined ? {} : { crap: fields.crap }),
   };
 }

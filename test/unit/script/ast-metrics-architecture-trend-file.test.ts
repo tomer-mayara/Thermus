@@ -7,6 +7,7 @@ import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
 const { trendOfStore } = await import(new URL('architecture/trend-store.ts', pathToFileURL(astMetricsArchitectureScript)).href) as typeof import('../../../script/code-quality/architecture/trend-store.ts');
+const { trendNumbersInFile } = await import(new URL('architecture/trend-file.ts', pathToFileURL(astMetricsArchitectureScript)).href) as typeof import('../../../script/code-quality/architecture/trend-file.ts');
 const record = { version: 1 as const, commit: 'c'.repeat(40), date: '2026-10-18T09:00:00+02:00', modularity: 0.5, crossShare: 0.2, cycles: 0, paths: 2, files: 1, functions: 1, communities: [] };
 
 const valid = { version: 1, commit: 'deadbeefdeadbeef'.padEnd(40, '0'), date: '2026-10-17T12:00:00+02:00', modularity: 0.5, crossShare: 0.25, cycles: 0, paths: 30, files: 2, functions: 3, communities: [] };
@@ -22,6 +23,8 @@ for (const [name, text] of [
   ['a modularity that is text', JSON.stringify({ ...valid, modularity: '0.5' })],
   ['a record without a cross share', JSON.stringify({ ...valid, crossShare: undefined })],
   ['a record without the count of the cycles', JSON.stringify({ ...valid, cycles: undefined })],
+  ['a numeric tool version', JSON.stringify({ ...valid, tool: 43 })],
+  ['an empty tool version', JSON.stringify({ ...valid, tool: '' })],
 ] as const) {
   test(`Given a record file with ${name}, when the record goes to the store, then the store fails with a diagnostic that names the file and writes no file`, (t) => {
     const folder = dataDirectory(t);
@@ -29,5 +32,15 @@ for (const [name, text] of [
 
     assert.throws(() => trendOfStore(folder, record), { message: `The file ${join(folder, '2026-10-17-deadbeef.json')} is not a valid trend file of version 1.` });
     assert.deepEqual(readdirSync(folder), ['2026-10-17-deadbeef.json']);
+  });
+}
+
+for (const tool of ['9.8.7', undefined]) {
+  test(`Given a trend record with ${tool === undefined ? 'no tool version' : `tool version ${tool}`}, when its table numbers are read, then the optional version is preserved`, (t) => {
+    const path = join(dataDirectory(t), 'record.json');
+    writeFileSync(path, JSON.stringify({ ...valid, tool }));
+    const numbers = trendNumbersInFile(path);
+    assert.equal(numbers.tool, tool);
+    assert.equal('tool' in numbers, tool !== undefined);
   });
 }

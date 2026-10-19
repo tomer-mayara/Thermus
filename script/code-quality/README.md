@@ -611,6 +611,11 @@ emitted tests. Command and double changes select the affected focused and live
 contracts, as mapped in the [policy](../../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts);
 they do not select all live files.
 
+`ast-metrics-tool-version.test.ts` checks that a later read-only architecture
+run preserves a stored record's tool version and leaves the file unchanged.
+The unit `ast-metrics-architecture-trend-file.test.ts` checks that table-number
+reads preserve a present version and keep it absent for legacy records.
+
 Architecture acceptance cases share complete base, banded, and repository
 drawings in `test/acceptance/script/fixtures/ast-metrics-architecture-goldens.ts`.
 The document-only case in `ast-metrics-architecture-unchanged.test.ts` checks

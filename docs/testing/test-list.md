@@ -82,7 +82,9 @@ different or missing snapshot versions.
 `test/acceptance/script/ast-metrics-tool-version.test.ts` checks refusal
 before analysis or record writes and explicit override for delta, review,
 snapshot, online architecture, and MCP. New snapshots and records retain
-the actual version. An overridden snapshot refuses disagreement between
+the actual version. A later read-only architecture run preserves a stored
+record's version and leaves the record unchanged. An overridden snapshot
+refuses disagreement between
 the CLI and MCP before any MCP tool call or snapshot publication. Offline
 rendering with an empty PATH identifies different versions and rejects
 malformed snapshot tool metadata. Help starts no tool; coverage imports work
@@ -366,8 +368,10 @@ full-SHA identity across dates, prefix collisions, record-shaped directories
 and symlinks, malformed global and community fields, bounded lock failure
 with manual recovery guidance, and concurrent publication without overwrite.
 `test/unit/script/ast-metrics-architecture-trend-file.test.ts` checks that
-malformed required record fields fail before publication and name the bad
-file.
+malformed required fields and malformed optional tool versions fail before
+publication and name the bad file. It also checks that reading table numbers
+preserves a present tool version and leaves the optional field absent in legacy
+records.
 
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from

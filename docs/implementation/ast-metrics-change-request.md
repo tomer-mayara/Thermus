@@ -1260,7 +1260,10 @@ or run only when collection is eligible.
 inventory, knip, module paths, and paths test.
 
 **Delivery.** PR #182 implements this CR and approved D1/D2. It activates
-these goals with the individual commands in AGENTS.md. The process and
+these goals with the individual commands in AGENTS.md. A report rerun also
+exposed a CR-08 reader defect: stored trend versions were omitted on read.
+The correction preserves the optional version on later reads and leaves
+legacy absent versions unknown, without rewriting records. The process and
 baseline wrappers in Appendix D remain CR-09 work. No new coverage source,
 baseline exception, future option, or blanket live gate is approved here.
 
