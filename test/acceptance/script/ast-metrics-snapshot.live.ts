@@ -4,6 +4,7 @@ import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import type { Snapshot } from '../../../script/code-quality/snapshot/types.ts';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsSnapshotScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
@@ -15,37 +16,33 @@ const installed = (process.env.PATH ?? '').split(delimiter).some((folder) => fol
 const live = { timeout: 60_000, skip: installed ? false : 'ast-metrics is not on PATH' };
 const root = fileURLToPath(repositoryRoot);
 
-interface LiveSnapshot {
-  readonly commit: string;
-  readonly global: { readonly cycles: readonly (readonly string[])[]; readonly files: number };
-  readonly communities: readonly { readonly id: string; readonly label: string; readonly members: readonly string[] }[];
-  readonly files: readonly { readonly path: string; readonly community: string | null }[];
-}
-
 function git(...args: string[]): string {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8' });
 }
 
-function snapshotIn(path: string): LiveSnapshot {
-  return JSON.parse(readFileSync(path, 'utf8')) as LiveSnapshot;
+function snapshotIn(path: string): Snapshot {
+  return JSON.parse(readFileSync(path, 'utf8')) as Snapshot;
 }
 
-// The counts are those of src/ on 2026-10-18. The snapshot analyzes src/ alone, so only a change of src/ can change them;
-// then this check names the new counts.
-function assertSnapshotOfHead(snapshot: LiveSnapshot): void {
+function assertSnapshotOfHead(snapshot: Snapshot): void {
   const labels = snapshot.communities.map(({ label }) => label);
-  assert.equal(snapshot.communities.filter(({ id }) => id !== 'shared').length, 8, labels.join(', '));
   assert.ok(labels.includes('shared kernel'), labels.join(', '));
   assert.equal(new Set(labels).size, labels.length, labels.join(', '));
-  assert.equal(snapshot.global.cycles.length, 2, JSON.stringify(snapshot.global.cycles));
-  assert.ok(snapshot.global.files > 90, `${snapshot.global.files} files`);
+  assert.ok(snapshot.global.files > 0, `${snapshot.global.files} files`);
+  assert.ok(snapshot.global.functions > 0, `${snapshot.global.functions} functions`);
+  assert.ok(Array.isArray(snapshot.global.cycles));
+  for (const cycle of snapshot.global.cycles) {
+    assert.ok(Array.isArray(cycle), JSON.stringify(cycle));
+    assert.deepEqual(cycle.filter((label) => !labels.includes(label)), [], JSON.stringify(cycle));
+  }
   assert.deepEqual(snapshot.communities.flatMap(({ members }) => members).filter((member) => !member.startsWith('src/')), []);
+  assert.deepEqual(snapshot.files.filter(({ path }) => !path.startsWith('src/')), []);
   const ids = new Set(snapshot.communities.map(({ id }) => id));
   assert.deepEqual(snapshot.files.filter(({ community }) => community !== null && !ids.has(community)), []);
   assert.equal(snapshot.commit, git('rev-parse', 'HEAD').trim());
 }
 
-test('Given the real ast-metrics, when the snapshot runs in the repository root, then it has 8 communities and the shared kernel, two cycles, and more than 90 files within 60 seconds', live, async (t) => {
+test('Given the real ast-metrics, when the snapshot runs in the repository root, then it names HEAD and has valid source communities, cycles, and positive file and function counts within 60 seconds', live, async (t) => {
   const out = join(dataDirectory(t), 'snapshot.json');
 
   const result = await runScript(t, astMetricsSnapshotScript, { args: ['--out', out], cwd: root });
@@ -56,7 +53,7 @@ test('Given the real ast-metrics, when the snapshot runs in the repository root,
 
 // HEAD is the merge base of HEAD and HEAD, so the temporary worktree holds the commit of HEAD. TMPDIR names a folder of
 // the test, so that the check sees each folder that the command leaves there.
-test('Given the real ast-metrics, when the snapshot runs with --base HEAD, then the snapshot from the temporary worktree has 8 communities and the shared kernel and names HEAD within 30 seconds, and no worktree stays', { ...live, timeout: 30_000 }, async (t) => {
+test('Given the real ast-metrics, when the snapshot runs with --base HEAD, then it has valid source communities and counts and names HEAD within 30 seconds, and no worktree stays', { ...live, timeout: 30_000 }, async (t) => {
   const folder = dataDirectory(t);
   const out = join(folder, 'snapshot-base.json');
 

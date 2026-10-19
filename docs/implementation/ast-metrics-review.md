@@ -41,12 +41,32 @@ script change alone does not select both complete parts. Reuse a current
 valid report when available; otherwise, a review outside that scope uses
 the architecture report with `--no-coverage`. The missing or stale report
 does not expand the test selection.
-The coverage-collecting case in `ast-metrics-architecture.live.ts` has the same
-restriction. Its structural case does not collect coverage. The MCP, snapshot,
-and architecture live checks need ast-metrics on PATH and skip when it is absent;
-`ast-metrics-coverage.live.ts` needs no ast-metrics. Both coverage-collecting live cases use a temporary output report and
-preserve the default report. The structural architecture case uses
-`--no-coverage` and starts no suite.
+The separate `ast-metrics-architecture-coverage.live.ts` has the same
+restriction. It collects both complete unit parts and passes its private
+report with `--coverage`. `ast-metrics-architecture.live.ts` is structural
+only: it uses `--no-coverage` and starts no suite. Both collectors assert
+that the default coverage report stays unchanged. Both architecture files
+use private trend stores. Structural architecture checks worktree cleanup.
+
+Live contracts use repository invariants rather than fixed community, cycle,
+or file counts. Snapshot checks the shared kernel, unique labels, source
+members, valid community and cycle references, positive file and function
+counts, HEAD, deadlines, and cleanup. Structural architecture checks equal
+metrics, every reported community, and the complete graph and legend. MCP
+checks the function table without requiring an incidental function name.
+Coverage retains the explicit proof that portal unit tests call
+`initializePortal`.
+
+MCP, snapshot, and both architecture live files need ast-metrics on PATH and
+skip when it is absent. The coverage live file needs no ast-metrics. A skip
+or a deferred collector is not a pass. Command and double changes select
+only affected focused and live contracts. The
+[policy mapping and safe commands](test-gate-policy.md#ast-metrics-focused-and-live-contracts)
+show the module areas and the structural and collecting runs. A slice that
+changes only dedicated live files and documents can run MCP, snapshot,
+structural architecture, and
+the existing focused README contract after a build. It defers both collectors
+and adds no complete suite. A build only prepares emitted test files.
 
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 

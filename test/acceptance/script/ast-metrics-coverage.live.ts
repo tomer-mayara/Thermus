@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import type { writeCoverageReport } from '../../../script/code-quality/coverage/report.ts';
 import { astMetricsCoverageScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
 
@@ -12,18 +13,15 @@ import { runScript } from '../../support/processes/script-command.ts';
 // uses its own temporary report and preserves the default report.
 const root = fileURLToPath(repositoryRoot);
 
-type CoverageReport = {
-  readonly suite: string;
-  readonly commit: string;
-  readonly measurementVersion: string;
-  readonly provenance: { readonly status: string; readonly capturedCommit: string; readonly captureManifestFingerprint: string; readonly buildFingerprint: string; readonly inputsFingerprint: string };
-  readonly files: readonly { readonly path: string; readonly functions: readonly { readonly name: string; readonly called: number }[] }[];
-};
+type CoverageReport = ReturnType<typeof writeCoverageReport>;
 
-test('Given this repository, when the command builds and runs the unit suite, then coverage.json names the unit suite, holds createApplication, shows calls of other application functions, and shows initializePortal called by portal unit tests, within 5 minutes', { timeout: 300_000 }, async (t) => {
+test('Given this repository, when the command builds and runs the unit suite, then its private report names the suite and application functions, shows portal unit calls, and preserves the default report within 5 minutes', { timeout: 300_000 }, async (t) => {
   const folder = mkdtempSync(join(tmpdir(), 'thermus-coverage-live-'));
   const reportFile = join(folder, 'coverage.json');
   t.after(() => rmSync(folder, { recursive: true, force: true }));
+  const defaultReport = join(root, 'ast-report', 'coverage.json');
+  const defaultCoverage = existsSync(defaultReport) ? readFileSync(defaultReport) : undefined;
+  t.after(() => assert.deepEqual(existsSync(defaultReport) ? readFileSync(defaultReport) : undefined, defaultCoverage, 'The default coverage report changed.'));
 
   const result = await runScript(t, astMetricsCoverageScript, { args: ['--out', reportFile], cwd: root });
 
@@ -33,7 +31,7 @@ test('Given this repository, when the command builds and runs the unit suite, th
   const report = JSON.parse(readFileSync(reportFile, 'utf8')) as CoverageReport;
   assert.equal(report.suite, 'unit');
   assert.equal(report.measurementVersion, 'own-characters-1');
-  assert.equal(report.provenance.status, 'verified');
+  assert.ok(report.provenance.status === 'verified');
   assert.equal(report.commit, report.provenance.capturedCommit);
   for (const hash of [report.provenance.captureManifestFingerprint, report.provenance.buildFingerprint, report.provenance.inputsFingerprint]) assert.match(hash, /^[a-f0-9]{64}$/);
   const portal = report.files.find((file) => file.path === 'src/user-portal/portal.ts');
