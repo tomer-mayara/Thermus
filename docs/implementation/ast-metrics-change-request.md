@@ -35,7 +35,7 @@ Delivery status:
   drawing and require its fenced block and legend in the pull request body.
 - PR #177 merged delivery group 3, CR-01 and CR-02: collect portal unit
   coverage and measure each function's own characters.
-- PR #178 implements CR-03 and CR-04 together and awaits owner review:
+- PR #178 merged CR-03 and CR-04 together:
   verify capture provenance, make trend writes explicit and safe, and label
   historical estimates under approved D3.
 - PR #173 already converted and organized the fetch-url scripts as
@@ -506,7 +506,7 @@ A report matching the caller's tree but not the supplied head is withheld.
 AGENTS.md reuse wording when the mechanism lands. Hashing only TypeScript,
 as revision 3 proposed, is insufficient.
 
-**Delivery.** Implemented in PR #178 with CR-04; owner review is pending.
+**Delivery.** Merged in PR #178 with CR-04.
 Legacy coverage schema version 1 remains readable. New reports use version
 2 so unverified inspection can use a null commit without changing a required
 version-1 field type. Measurement semantics stay `own-characters-1`. New captures retain raw files and a
@@ -562,7 +562,7 @@ and legacy counts under approved D3. No count uses stale data.
 **Documents.** AGENTS.md recording/conflict rules, guide trend section,
 README, plan T7 note, formats, and inventory.
 
-**Delivery.** Implemented in PR #178 with CR-03; owner review is pending.
+**Delivery.** Merged in PR #178 with CR-03.
 `--record` is explicit. Full-commit, ancestry, and content checks precede
 atomic publication without overwrite. New historical counts carry a
 `head-derived-estimate` basis; the current head row is `measured`, old
@@ -629,6 +629,10 @@ base counts.
 
 **Documents.** Guide delta and comparison rules, README options, plan
 identity limits, snapshot/change formats, and inventory.
+
+**Delivery.** CR-05 is in progress after PR #178 merged. This slice adds
+file-status evidence and conservative function correspondence. It does not
+implement CR-07's incomplete-coverage bands.
 
 ### CR-06. Keep live tests valid and within scope
 
