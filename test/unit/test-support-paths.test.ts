@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import {
   astMetricsArchitectureScript,
+  astMetricsBaselineScript,
   astMetricsCliFake,
   astMetricsCoverageScript,
   astMetricsCrapScript,
   astMetricsDeltaScript,
   astMetricsMcpFake,
   astMetricsMcpScript,
+  astMetricsProcessScript,
   astMetricsReviewScript,
   astMetricsSnapshotScript,
   containerEdgeScript,
@@ -57,6 +59,8 @@ const files = {
   astMetricsArchitectureScript,
   astMetricsCoverageScript,
   astMetricsCrapScript,
+  astMetricsBaselineScript,
+  astMetricsProcessScript,
   programEntry,
   hostedPortalPreload: fileURLToPath(hostedPortalPreload),
   hostedPortalIndex: fileURLToPath(new URL('index.html', hostedPortalFixture)),

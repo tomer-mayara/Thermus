@@ -227,6 +227,7 @@ lists the available focused tests and identifies both coverage collectors.
 | Architecture coverage compatibility, correspondence, CRAP, bands, or coverage rendering | `ast-metrics-architecture-coverage.live.ts`, subject to the collector limit; select affected focused tests with doubles even when collection is deferred. |
 | `ast-metrics-crap.ts`, `crap/`, or its source classification, coverage join, goal advice, or threshold comparisons | `ast-metrics-crap.live.ts` with an existing compatible report; select the affected focused tests too. This live file starts no build or collector. |
 | Shared repository, identity, provenance, process, or double helpers | Only the focused and live contracts that consume the changed behavior. Apply the collector limit to each collecting consumer. |
+| `ast-metrics-process.ts`, `process/`, `ast-metrics-baseline.ts`, `baseline/`, or structured review outcomes | Affected ordinary process, baseline, and stage-outcome contracts. Add a live contract only when a stage's real behavior or a shared dependency is affected. Process tests grant no collection eligibility. |
 | README command help or either test inventory | The existing focused `script-readme.test.ts` contract. Reading a listed command does not select that command. |
 
 `ast-metrics-architecture.live.ts` contains only the structural case and
@@ -235,7 +236,11 @@ and `ast-metrics-coverage.live.ts` each build and run both complete unit
 parts. Run either collector only when a `src/` path changed or both complete
 parts were independently selected by the path rules: emitted Node tests and
 source portal tests. A dedicated live-file change, a focused unit test, or a
-script/document change does not select those complete parts. Keep an affected
+script/document change does not select those complete parts. The process
+command follows the same rule: `--collect-coverage` is an explicit request,
+not permission to expand the independently selected tests. Missing or stale
+coverage never starts collection automatically; `--skip-coverage` cannot
+make an unassessed required goal pass. Keep an affected
 collector deferred outside that scope. Deferred is not passed.
 
 For a slice that changes only these dedicated live files and their documents,

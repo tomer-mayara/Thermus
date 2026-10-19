@@ -7,6 +7,10 @@
 //                                  relative path names a file in the working directory, so that each tree of a test
 //                                  repository can give its own report
 //   AST_METRICS_FAKE_REVIEW        the Markdown that review prints and writes
+//   AST_METRICS_FAKE_REVIEW_JSON   override the complete structured review report
+//   AST_METRICS_FAKE_REVIEW_SKIP_JSON  omit the structured review report
+//   AST_METRICS_FAKE_BASELINE      YAML that a successful baseline call writes
+// Review and baseline accept command-specific EXIT and STDERR overrides.
 //   AST_METRICS_FAKE_STDERR        the text for stderr
 //   AST_METRICS_FAKE_EXIT          the exit status (default 0)
 //   AST_METRICS_FAKE_DELAY_MS      analyze and review wait this long, after the call log, before they answer (default 0)
@@ -64,13 +68,24 @@ function review(): void {
   const markdown = settings.AST_METRICS_FAKE_REVIEW ?? '';
   process.stdout.write(markdown);
   writeFileSync(reportPath('--report-markdown'), markdown);
+  const status = Number(settings.AST_METRICS_FAKE_REVIEW_EXIT ?? settings.AST_METRICS_FAKE_EXIT ?? 0);
+  const finding = { kind: 'regression', severity: 'high', rule: 'complexity-regression', file: 'src/a.ts', message: 'Too many paths' };
+  const outcome = [{ regressions: [], gate: 'passed' }, { regressions: [finding], gate: 'failed' }][Number(status === 1)];
+  const report = { methodologyVersion: '1.1', baseRef: optionValue('--base'), baseSha: 'a'.repeat(40), headSha: 'b'.repeat(40), summary: { filesChanged: 1, filesAdded: 0, filesDeleted: 0, high: outcome.regressions.length, medium: 0, low: 0, improvements: 0 }, improvements: [], ...outcome };
+  const path = optionValue('--report-json');
+  if (path !== undefined && settings.AST_METRICS_FAKE_REVIEW_SKIP_JSON !== '1') writeFileSync(path, settings.AST_METRICS_FAKE_REVIEW_JSON ?? JSON.stringify(report));
+}
+
+function baseline(): void {
+  const status = Number(settings.AST_METRICS_FAKE_BASELINE_EXIT ?? settings.AST_METRICS_FAKE_EXIT ?? 0);
+  if (status === 0) writeFileSync('.ast-metrics-baseline.yaml', settings.AST_METRICS_FAKE_BASELINE ?? 'ignored: []\n');
 }
 
 if (settings.AST_METRICS_FAKE_LOG) {
   appendFileSync(settings.AST_METRICS_FAKE_LOG, `${JSON.stringify({ argv: args, cwd: process.cwd() })}\n`);
 }
 const commandName = String(args[0]);
-const command = new Map([['analyze', analyze], ['review', review]]).get(commandName);
+const command = new Map([['analyze', analyze], ['review', review], ['baseline', baseline]]).get(commandName);
 if (commandName === 'version') {
   process.stdout.write(`◉ AST Metrics > Version\n\n  Current version      ${settings.AST_METRICS_FAKE_VERSION ?? '0.43.1'}\n  OS                   linux\n  Architecture         amd64\n`);
 } else if (commandName === 'mcp') {
@@ -79,8 +94,10 @@ if (commandName === 'version') {
 } else if (command) {
   await delay(Number(settings.AST_METRICS_FAKE_DELAY_MS ?? 0));
   command();
-  if (settings.AST_METRICS_FAKE_STDERR) process.stderr.write(settings.AST_METRICS_FAKE_STDERR);
-  process.exitCode = Number(settings.AST_METRICS_FAKE_EXIT ?? 0);
+  const prefix = commandName.toUpperCase();
+  const diagnostic = settings[`AST_METRICS_FAKE_${prefix}_STDERR`] ?? settings.AST_METRICS_FAKE_STDERR;
+  if (diagnostic) process.stderr.write(diagnostic);
+  process.exitCode = Number(settings[`AST_METRICS_FAKE_${prefix}_EXIT`] ?? settings.AST_METRICS_FAKE_EXIT ?? 0);
 } else {
   process.stderr.write(`ast-metrics-cli-fake: the fake has no answer for the command ${commandName}.\n`);
   process.exitCode = 2;

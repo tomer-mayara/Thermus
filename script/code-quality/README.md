@@ -2,13 +2,13 @@
 
 The commands below wrap the ast-metrics CLI for the process "Code quality review
 with ast-metrics" in [AGENTS.md](../../AGENTS.md). They carry the correct syntax
-of the tool. The current direct-call exception is `ast-metrics baseline`:
-use it only for a retained high-severity review finding with a written reason,
+of the tool. Use the baseline wrapper only for a retained high-severity
+review finding with a written reason,
 or when `.ast-metrics.yaml` rules change. Commit the resulting baseline. A
 violation already on `main` is not a third exception. Run the commands from
 the repository root; the static commands need no build. A coverage run builds
 compiled Node unit tests before it runs both complete unit parts. Delta, review, MCP,
-snapshot, CRAP, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
+snapshot, CRAP, process, baseline, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
 on macOS). The wrappers pin 0.43.1. They check CLI results with
 `ast-metrics version` and MCP results with the initialization response.
 `--allow-tool-version` permits another actual version for that run and its
@@ -22,7 +22,7 @@ tool.
 
 ## Source layout
 
-The seven command entry points stay in this folder:
+The nine command entry points stay in this folder:
 
 | Entry point | Purpose |
 |---|---|
@@ -33,20 +33,22 @@ The seven command entry points stay in this folder:
 | `ast-metrics-crap.ts` | Assess per-function CRAP goals and give coverage or split advice. |
 | `ast-metrics-architecture.ts` | Compare architecture snapshots and show the trend. |
 | `ast-metrics-snapshot.ts` | Capture the metrics of one source tree. |
+| `ast-metrics-process.ts` | Run the complete review and save its four sections. |
+| `ast-metrics-baseline.ts` | Refresh an allowed baseline and report ignored entry counts. |
 
 Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
-`coverage/`, `crap/`, `architecture/`, and `provenance/`. The last folder owns input
-identity and its checked readers. The `shared/` folder holds JSON readers,
+`review/`, `coverage/`, `crap/`, `architecture/`, `process/`, `baseline/`,
+and `provenance/`. The last folder owns input identity and its checked readers. The `shared/` folder holds JSON readers,
 number calculations, and repository commands that more than one task uses.
 
 Select tests with the [test gate policy](../../docs/implementation/test-gate-policy.md).
 Only a change under `src/` requires the full ordinary suite (`npm test`) and
 the remaining static and build checks in that policy. Do not add
 `npm run check`, which would repeat unit and portal tests. For other changes,
-run only affected test groups and existing focused tests. Keep the static
-delta, review, CRAP, and architecture steps for each pull request. This scope also
-applies to tests and commands that start other
-tests: a focused caller must not expand it indirectly.
+run only affected test groups and existing focused tests. Keep the
+delta, review, CRAP, and architecture steps for each pull request, through
+the process command. This scope also applies to tests and commands that
+start other tests: a focused caller must not expand it indirectly.
 
 ## CRAP scores and goals
 
@@ -183,7 +185,8 @@ Options:
 Prints the Markdown review of `ast-metrics review` against `--base` (default
 `origin/main`) and writes it to `ast-report/review.md`: files whose score
 dropped, new functions with more than 10 decision paths, new rule
-violations, and the summary of the change. Exit status 1 when a finding of
+violations, and the summary of the change. It also writes the current structured
+review to `ast-report/review.json`; stale files cannot supply a later result. Exit status 1 when a finding of
 severity high exists, else 0. Update the branch from the base first.
 
 Focused tests: select the `ast-metrics-review*.test.ts` rows in the
@@ -247,8 +250,10 @@ exceptions do not change the command result or excuse tool failures.
 
 Reuse compatible coverage. If collection is outside the selected scope,
 record the unavailable assessment as deferred and keep the architecture
-graph without bands. The CR-09 process and baseline wrappers remain future
-work. Focused tests: select the `ast-metrics-crap*.test.ts` rows in the
+graph without bands. The process command composes these assessments; the
+baseline wrapper refreshes only an allowed baseline.
+
+Focused tests: select the `ast-metrics-crap*.test.ts` rows in the
 [available inventory](#available-tests). Select the live contract only when
 its behavior or a shared dependency changes. It reuses a compatible report
 and starts no collector:
@@ -567,6 +572,85 @@ Focused tests: select the `ast-metrics-snapshot*.test.ts` rows in the
 [available test inventory](#available-tests). Run a live row only within its
 listed scope.
 
+## Run the complete review process
+
+```text
+Usage: pnpm exec node script/code-quality/ast-metrics-process.ts [--base REF] [--coverage FILE] [--collect-coverage | --skip-coverage] [--out FILE] [--allow-tool-version] [--help]
+
+Options:
+  --base REF            Comparison ref (default: origin/main)
+  --coverage FILE       Reuse this report (default: ast-report/coverage.json at root)
+  --collect-coverage    Explicitly build and collect the complete unit suite once
+  --skip-coverage       Ignore all coverage and render structure without bands
+  --out FILE            Save Markdown (default: ast-report/process.md at root)
+  --allow-tool-version  Allow an installed version other than the pinned version
+  --help, -h            Show this help
+```
+
+Run this on the complete candidate after updating from `origin/main` and
+selecting tests. It runs delta, review, coverage resolution, CRAP, and
+architecture in order. It prints and saves four sections: delta, review,
+CRAP, and architecture. The report retains the stage Markdown, including
+all tables, drawings, and legends. `--base` reaches every comparison;
+`--allow-tool-version` reaches each tool operation. Explicit file paths
+resolve from the current folder; default paths use the repository root.
+
+Coverage reuse is the default. `--coverage FILE` selects another report.
+Reuse requires verified capture provenance compatible with the candidate's
+source, unit-test, and build inputs. Missing or stale data never starts a
+suite. `--collect-coverage` builds and collects both complete unit parts
+once. Use it only when `src/` changed or both parts were independently
+selected: emitted Node tests and source portal tests. Record that selection
+in the pull request evidence. `--skip-coverage` ignores all reports and
+renders structure without bands. Give only one coverage option; conflicting
+reuse, collection, and skip options fail.
+
+An empty default production-file selection has no required CRAP goals. It
+prints `No production files to assess.` without coverage or MCP for that
+stage. A document-only run can finish and record structure without coverage
+counts. A nonempty required selection without sufficient data stays
+unresolved and exits 1, even with explicit skip.
+
+Completed goal misses continue to give all evidence and exit 1. Operational
+failures leave clear partial results and dependent sections unavailable;
+they also exit 1. No failed analysis or unavailable required assessment
+writes history. After all required analyses complete, the process requests
+architecture recording under the verified-base rules, including when a
+completed assessment misses a goal. Existing records stay unchanged. Exit
+0 requires completed passing assessments. Invalid options and recording
+failures exit 1. Approved goal exceptions do not excuse tool failures or
+change these exit results. Exploratory standalone architecture stays
+read-only without `--record`.
+
+Focused tests: select the process and stage-outcome rows in the
+[available test inventory](#available-tests). Process doubles never start
+application coverage implicitly. A new process test does not select both
+complete unit parts or every live contract.
+
+## Refresh an allowed baseline
+
+```text
+Usage: pnpm exec node script/code-quality/ast-metrics-baseline.ts [--allow-tool-version] [--help]
+
+Options:
+  --allow-tool-version  Allow an installed version other than the pinned version
+  --help, -h            Show this help before Git or tool access
+```
+
+Runs `ast-metrics baseline` from the repository root, with the pinned tool
+check or an explicit version override. It reports the number of YAML ignored
+entries before and after the refresh. A missing baseline starts at zero.
+Exit 0 means the refresh succeeded and both counts are valid; failures exit
+1. Help needs no Git or tool access.
+
+This wrapper adds no permission to change `.ast-metrics-baseline.yaml`. Use
+it only for a retained high finding with a written reason or a change to
+`.ast-metrics.yaml` rules. Commit the resulting baseline in the same pull
+request. A violation already on `main` is not a third exception.
+
+Focused tests: select the `ast-metrics-baseline.test.ts` rows in the
+[available test inventory](#available-tests).
+
 ## Available tests
 
 This is the complete available inventory, not a requirement to run every file.
@@ -639,6 +723,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-baseline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
@@ -657,6 +742,10 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
@@ -666,6 +755,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-stage-outcomes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-tool-version.test.ts | no |
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
@@ -684,6 +774,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-baseline.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
@@ -695,8 +786,10 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |

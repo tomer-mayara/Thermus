@@ -11,8 +11,8 @@ again before you change the process.
 
 ## Installation
 
-Delta, review, MCP, snapshot, CRAP, and online architecture need the `ast-metrics`
-executable on PATH. On macOS, install it
+Delta, review, MCP, snapshot, CRAP, process, baseline, and online architecture
+need the `ast-metrics` executable on PATH. On macOS, install it
 from its Homebrew tap: `brew install ast-metrics/tap/ast-metrics`. Other
 systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
 `ast-metrics version`: the wrappers pin 0.43.1. CLI calls check that
@@ -33,10 +33,10 @@ them from the repository root with `pnpm exec node`.
 
 ## The commands
 
-The seven entry points and their helper folders are in
+The nine entry points and their helper folders are in
 [`script/code-quality/`](../../script/code-quality/README.md). Use these wrappers
-for the review process. `ast-metrics baseline` remains a direct-call exception
-until CR-09 of the [change request](ast-metrics-change-request.md) adds its wrapper.
+for the review process. The process wrapper composes the complete review.
+The baseline wrapper reports counts for an allowed refresh.
 
 Select tests under the [test gate policy](test-gate-policy.md) before these
 commands. Only a change under `src/` requires the full ordinary suite
@@ -44,8 +44,8 @@ commands. Only a change under `src/` requires the full ordinary suite
 Do not add `npm run check`, which would repeat unit and portal tests.
 For other changes, run only affected test groups and existing focused tests.
 The delta, review, snapshot, and architecture commands do not run tests.
-Keep the required delta, review, CRAP, and architecture
-steps for every pull request.
+Run the process command for every pull request; the individual commands
+remain available for inspection and improvement passes.
 
 The coverage command runs both parts of the unit suite: emitted Node tests
 and source portal tests. Run it, or its live test, only when `src/` changed
@@ -80,6 +80,65 @@ changes only dedicated live files and documents can run MCP, snapshot,
 structural architecture, and
 the existing focused README contract after a build. It defers both collectors
 and adds no complete suite. A build only prepares emitted test files.
+
+### Run the complete process: `script/code-quality/ast-metrics-process.ts`
+
+```sh
+pnpm exec node script/code-quality/ast-metrics-process.ts [--base REF] [--coverage FILE] [--collect-coverage | --skip-coverage] [--out FILE] [--allow-tool-version]
+```
+
+The defaults are base `origin/main`, reuse of `ast-report/coverage.json`,
+and output `ast-report/process.md`, all default report paths at the
+repository root. Explicit file paths resolve from the current folder.
+`--base` applies to each comparison, and `--allow-tool-version` applies to
+each tool operation. Both wrappers give `--help` before Git or tool access.
+
+The process runs delta, review, coverage resolution, CRAP, and architecture
+in order. It prints and saves four Markdown sections, keeping the stage
+reports and architecture tables, fenced drawings, and legends unchanged.
+The report uses typed outcomes to distinguish completed goal misses from
+failed operations. Completed goal misses continue and exit 1. A failed
+prerequisite leaves dependent stages unavailable, saves partial evidence,
+and exits 1. Required assessments without sufficient data do not pass.
+Exit 0 means all required assessments completed and passed. Invalid options
+or a recording failure also exit 1.
+
+Reuse is the default; `--coverage FILE` selects another report. Missing or
+stale coverage never starts a suite. `--collect-coverage` explicitly builds
+and runs both complete unit parts once. Use it only when `src/` changed or
+both complete parts were independently selected, and record that selection
+in the pull request evidence. `--skip-coverage` ignores all reports and
+uses architecture without coverage. Reuse, collection, and skip options
+conflict with one another. A missing band is no reason to expand the tests.
+
+An empty default production-file selection prints
+`No production files to assess.` without reading coverage or using MCP
+for CRAP. A document-only run can therefore finish without coverage and
+record structure without coverage-derived counts. A required nonempty
+selection without compatible data remains unassessed and prevents recording.
+
+After all required analyses complete, the process requests architecture's
+verified recording operation. A completed goal miss can still record;
+a failed operation or an unavailable required assessment cannot. Existing
+records remain immutable. Commit a new verified record with the candidate.
+Standalone architecture is read-only without `--record`. Use the same base
+and reuse compatible coverage after fixes; a final report does not require
+another collection. The approved exceptions after at most three improvement
+cycles change neither exit results nor tool failure requirements.
+
+### Refresh a permitted baseline: `script/code-quality/ast-metrics-baseline.ts`
+
+```sh
+pnpm exec node script/code-quality/ast-metrics-baseline.ts [--allow-tool-version]
+```
+
+The wrapper runs `ast-metrics baseline` from the repository root and counts
+YAML ignored entries before and after. A missing initial baseline counts as
+zero. Exit 0 means the refresh succeeded and counts are valid; failures exit
+1. The same version pin and explicit override apply. This command adds no
+permission: refresh only for a retained high review finding with a written
+reason or a change to `.ast-metrics.yaml` rules. Commit the baseline in the
+same pull request. A violation already on `main` is not a third exception.
 
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
@@ -129,7 +188,9 @@ pnpm exec node script/code-quality/ast-metrics-review.ts [--base REF] [--max-fin
 
 The command runs `ast-metrics review` against `--base` (default
 `origin/main`), prints its Markdown report, and writes the same text to
-`ast-report/review.md`. The report lists:
+`ast-report/review.md`. It also produces a fresh structured report at
+`ast-report/review.json`; stale output cannot supply a later assessment.
+The report lists:
 
 - A file whose maintainability score dropped, with the scores before and
   after (severity high).
@@ -334,7 +395,7 @@ parts of the unit suite are within scope.
 
 ### The CRAP goal
 
-Run the available command; CR-09 has not added a process wrapper:
+The process includes this assessment. For a focused improvement pass, run:
 
 ```sh
 pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...]
@@ -516,7 +577,7 @@ pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--h
 
 The command prints the architecture delta of `src/`, the complexity table of
 the changed files, and the trend of `src/` on `main` as Markdown, and also
-writes it to `--out` (relative to the current folder). Step 5 of the process puts this output in the pull
+writes it to `--out` (relative to the current folder). Step 6 of the process puts this output in the pull
 request description. By default it takes the snapshot of the merge base of
 `--base` (default `origin/main`) in a temporary worktree, as `--base` of the
 snapshot command does, and the snapshot of the working tree; this takes about
@@ -747,7 +808,7 @@ CRAP 30 or more in all of `src/`, as the summary line counts it. A value that a
 record does not have, such as the count of a run without coverage, is `–`.
 
 The trend store of a repository is `docs/metrics/` of its root, and the pull
-requests commit its files (step 7 of the process). It holds one JSON file for
+requests commit its files (step 8 of the process). It holds one JSON file for
 each commit of `main` that a pull request used as its base, named
 `<date>-<commit8>.json`: the day of the committer date of the commit in the
 time zone of the commit, and the first eight characters of the commit. A file
@@ -857,8 +918,8 @@ for two reasons only: the pull request changes `.ast-metrics.yaml` rules, or
 it keeps a finding of severity high with a reason under step 4. Refresh and
 commit the baseline in that same pull request. A third exception for violations
 already on `main` remains owner decision D8 of the change request; historical
-refreshes do not grant permission. `ast-metrics baseline` is the current
-direct-call exception until CR-09 provides a wrapper.
+refreshes do not grant permission. Use
+`pnpm exec node script/code-quality/ast-metrics-baseline.ts` for the refresh.
 
 ## How ast-metrics counts
 
@@ -913,6 +974,7 @@ After a run of the delta command, `ast-report/` holds the full report:
 `index.html` (overview), `compare.html` (before and after against the base),
 `explorer.html` (one file with its functions and neighbors), `risks.html`
 (architecture observations), and `testquality.html` (test files, the
-structures they reach, and the tests that touch too much). `review.md` holds
-the last review. The folder is not committed; a reviewer runs the delta
+structures they reach, and the tests that touch too much). `review.md` and
+`review.json` hold the last review. `process.md` holds the four report sections for the complete
+review process. The folder is not committed; a reviewer runs the delta
 command on the branch to get it.

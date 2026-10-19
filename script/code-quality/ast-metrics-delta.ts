@@ -1,10 +1,7 @@
 #!/usr/bin/env node
-import { cliToolVersion } from './shared/tool-version.ts';
 import { parseArgs } from 'node:util';
-import { analyzeDelta, reportFolder } from './delta/analysis.ts';
-import { deltaFiles } from './delta/files.ts';
-import { deltaReportOf } from './delta/report.ts';
-import { CommandError, repositoryRoot, verifyBase } from './shared/repository.ts';
+import { runDelta, type DeltaOptions } from './delta/run.ts';
+import { CommandError, repositoryRoot } from './shared/repository.ts';
 
 const help = `Usage: node script/code-quality/ast-metrics-delta.ts [--base REF] [--min SCORE] [--no-compare] [--allow-tool-version] [--help]
 
@@ -37,8 +34,6 @@ const optionShape = {
   'allow-tool-version': { type: 'boolean' }, 'no-compare': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
 } as const;
 
-type DeltaOptions = { readonly base: string; readonly min: number; readonly compare: boolean; readonly allowToolVersion: boolean };
-
 function parsedValues(args: readonly string[]) {
   try {
     return parseArgs({ args, options: optionShape }).values;
@@ -62,17 +57,8 @@ function main(args: readonly string[]): number {
     process.stdout.write(help);
     return 0;
   }
-  const root = repositoryRoot();
-  verifyBase(root, options.base);
-  const files = deltaFiles(root, options.base);
-  if (files.length === 0) {
-    process.stdout.write(`No TypeScript file is added or changed against ${options.base}.\n`);
-    return 0;
-  }
-  cliToolVersion(root, options.allowToolVersion);
-  const report = deltaReportOf(analyzeDelta(root, files, options), options.min);
+  const report = runDelta(repositoryRoot(), options);
   process.stdout.write(report.text);
-  if (options.compare) process.stdout.write(`Comparison with ${options.base}: ${reportFolder}/compare.html\n`);
   return report.passed ? 0 : 1;
 }
 

@@ -10,7 +10,9 @@
         "script/code-quality/ast-metrics-snapshot.ts",
         "script/code-quality/ast-metrics-architecture.ts",
         "script/code-quality/ast-metrics-coverage.ts",
-        "script/code-quality/ast-metrics-crap.ts"
+        "script/code-quality/ast-metrics-crap.ts",
+        "script/code-quality/ast-metrics-process.ts",
+        "script/code-quality/ast-metrics-baseline.ts"
       ]
     },
     ".habit-hooks": {

@@ -150,7 +150,7 @@ pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/scr
 
 # Measure and review code quality
 
-The six ast-metrics commands and their helpers are in
+The nine ast-metrics commands and their helpers are in
 [`code-quality/`](code-quality/README.md). That guide gives the commands,
 source layout, Usage/Options contracts, and the complete ordinary/live test
 inventory. Select affected tests from that inventory; the full list does not
@@ -161,5 +161,9 @@ unit suite: emitted Node tests and source portal tests. Its live file and
 the coverage case of the architecture live file have the same scope under
 the test gate policy. Both use private output reports. Structural
 architecture uses `--no-coverage`. Exploratory architecture is read-only;
-`--record` verifies and records a missing base on `origin/main`. Direct
-`ast-metrics baseline` remains the documented exception until its wrapper exists.
+`--record` verifies and records a missing base on `origin/main`. Use
+`ast-metrics-process.ts` for the complete review; it reuses compatible
+coverage and collects only with an explicit eligible request. It prints and
+saves the four report sections to `ast-report/process.md`. The baseline
+wrapper reports ignored entry counts before and after a permitted refresh;
+it adds no baseline exception.

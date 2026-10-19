@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 import { commandOf } from './crap/command-line.ts';
-import { goalRowsOf } from './crap/input.ts';
-import { crapReportOf } from './crap/report.ts';
-import { selectionOf } from './crap/selection.ts';
+import { runCrap } from './crap/run.ts';
 import { CommandError } from './shared/repository.ts';
 
 const help = `Usage: node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...] [--help]
@@ -48,11 +46,9 @@ after at most three improvement cycles does not change the command result.
 async function main(): Promise<string> {
   const command = commandOf(process.argv.slice(2));
   if (command.kind === 'help') return help;
-  const selection = selectionOf(command);
-  if (selection.paths.length === 0) return 'No production files to assess.\n';
-  const report = crapReportOf(await goalRowsOf(command, selection), command);
+  const report = await runCrap(command);
   if (!report.passed) process.exitCode = 1;
-  return `${report.text}\n`;
+  return report.text;
 }
 
 try {
