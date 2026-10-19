@@ -28,4 +28,3 @@ export function compareCrap(entry: FunctionCrap, other: FunctionCrap | number): 
   const difference = first[0] * second[1] - second[0] * first[1];
   return Number(difference > 0n) - Number(difference < 0n);
 }
-
