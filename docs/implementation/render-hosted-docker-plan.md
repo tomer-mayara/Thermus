@@ -143,6 +143,8 @@ root as context. Preserve the self-hosted image contract. Reuse pinned Node
 `adblock-rs` needs Rust to compile its native module for compatible Linux.
 Keep build tools out of runtime; include the checked renderer, CA bundle,
 production dependencies, and trusted rules. Run as non-root with telemetry off.
+Install Git only in the check stage before its offline gate. Script tests use
+Git to create temporary repositories; they do not need checkout Git metadata.
 
 The context must support the actual checks, not just TypeScript compilation.
 Include portal config, `.habit-hooks` workspace/config inputs, needed documents
