@@ -4,7 +4,7 @@
 // because the command runs the unit suite only for the head.
 import type { CoverageFunction } from './coverage.ts';
 import type { TableFile } from './types.ts';
-import { rounded } from '../shared/numbers.ts';
+import { compareCrap, crapValueOf } from './crap-score.ts';
 
 // A function at this CRAP or above is over the limit.
 export const crapLimit = 30;
@@ -13,7 +13,7 @@ export interface FunctionCrap {
   readonly name: string;
   readonly paths: number;
   readonly share: number | undefined;
-  // Exact CRAP has one decimal. Without a share, paths gives its lower bound.
+  // CRAP retains its precision. Without a share, paths gives its lower bound.
   readonly crap: number;
 }
 
@@ -27,8 +27,8 @@ export interface FileCrap {
 // Gives the covered share, or undefined when it cannot be measured.
 type ShareRule = (name: string, key: string) => number | undefined;
 
-export function isOver({ crap }: FunctionCrap): boolean {
-  return crap >= crapLimit;
+export function isOver(entry: FunctionCrap): boolean {
+  return compareCrap(entry, crapLimit) >= 0;
 }
 
 // A duplicate key gives no unique covered share. Keep each function and its lower bound.
@@ -38,7 +38,7 @@ export function fileCrapOf(file: TableFile, shareOf: ShareRule): FileCrap {
   const crap = functions.map(({ name, paths }, index): FunctionCrap => {
     const key = keys[index];
     const share = key !== undefined && keys.indexOf(key) === keys.lastIndexOf(key) ? shareOf(name, key) : undefined;
-    return { name, paths, share, crap: share === undefined ? paths : rounded(paths ** 2 * (1 - share) ** 3 + paths, 1) };
+    return { name, paths, share, crap: share === undefined ? paths : crapValueOf(paths, share) };
   });
   return { functions: crap, unmatched: crap.filter(({ share }) => share === undefined).length, ...(file.functions === undefined ? { incomplete: true as const } : {}) };
 }

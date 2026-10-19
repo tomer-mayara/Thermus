@@ -105,71 +105,77 @@ documents are updated and before Ready. Use the commands under `script/code-qual
 they carry the correct syntax of ast-metrics. The details and the limits are
 in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
 
-1. Update the branch from `origin/main` first. The commands compare with it.
-2. Measure the delta: `pnpm exec node script/code-quality/ast-metrics-delta.ts`. It
-   lists each TypeScript file that the pull request adds or changes with
-   its maintainability score, lowest first. The goal is 85 or more for each
-   production file, under `src/`. A test file or a support file is listed
-   with its score and has no goal; step 5 fails the pull request when its
-   score dropped. The command exits 1 when a production file is below 85.
-3. For each production file below 85, find what to change before you edit:
-   `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>` gives the score,
-   the decision paths, and the lines of each function in the file. Start
-   with the functions that have the lowest score or the most decision
-   paths: split them, remove duplicated logic, and simplify the control
-   flow. Keep the tests green after each change.
-4. Measure again (step 2). Do no more than 3 passes of steps 2 and 3. If a
-   production file is still below 85 after 3 passes, write its score and
-   the reason in the pull request description and continue.
-5. Review the delta: `pnpm exec node script/code-quality/ast-metrics-review.ts`. It
-   reports only what the pull request made worse or added: a file whose
-   score dropped, a new function with more than 10 decision paths (with
-   file and line), and a new rule violation. Correct each finding of
-   severity high, or give the reason in the pull request description. If
-   you keep a finding of severity high with a reason, also add it to the
-   baseline in the same pull request: run `ast-metrics baseline` and
-   commit the new `.ast-metrics-baseline.yaml`. Then the next pull request
-   does not get the finding again. Put the Markdown output in the pull
-   request description. Reuse current valid unit coverage when available.
-   If none is available, run
-   `pnpm exec node script/code-quality/ast-metrics-coverage.ts` (about 90 seconds)
-   only when `src/` changed or both complete parts of the unit suite were
-   already selected by the test gate policy: emitted Node tests and source
-   portal tests. The command builds first and runs both complete parts; its
-   live test has the same restriction. Reuse requires verified capture provenance that
-   matches the candidate snapshot's source, unit-test, and build inputs,
-   including helpers and fixtures. A document-only commit can reuse an older
-   capture when these inputs match. For any other selection without valid
-   coverage, run architecture with `--no-coverage`; keep its output without
-   bands. A missing or stale report does not require a broader test run.
-   Then run
-   `pnpm exec node script/code-quality/ast-metrics-architecture.ts --record`
-   (add `--no-coverage` when needed) and put its output
-   in the pull request description too: the architecture delta of `src/`,
-   the complexity table of the changed files, and the trend table of `src/`
-   on `main`. Paste the fenced `mermaid` graph and its legend unchanged on
-   every pull request, including one that changes only documents or has no
-   current valid coverage. The graph always appears; bands appear only when
-   compatible coverage is available. An unchanged map gets
-   `The map did not change.` above the graph. A pull request that changes only
-   documents also gets `No production file changed.`; include these lines too.
-6. Do not change `.ast-metrics-baseline.yaml` in a pull request, except
-   for a kept finding of step 5, or when the pull request changes the
-   rules in `.ast-metrics.yaml`. Then run `ast-metrics baseline` and commit
-   the new file.
-7. The architecture command writes a new base record only with `--record`.
-   It verifies the full base commit and its ancestry on `origin/main` before
-   writing. Commit a new record under `docs/metrics/` with the pull request.
-   Existing records are immutable, including records without a coverage
-   count. If a merge conflicts on a record, keep the file from `main` and
-   drop the candidate's conflicting file. Exploratory runs omit `--record`.
-   Nothing runs when a pull request merges, so these files are the only
-   history of `main`.
+1. Update the branch from `origin/main` first. Use the same base for every
+   comparison. Select tests from the complete candidate before running
+   these commands. No quality command or live test may add a broader suite
+   through nested coverage collection.
+2. Measure the delta: `pnpm exec node script/code-quality/ast-metrics-delta.ts`.
+   The goal is 85 or more for each changed production file under `src/`.
+   Test and support files have no goal; step 4 reports a score drop.
+   The command exits 1 when a production file is below 85.
+3. Inspect each low production file with
+   `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.
+   Simplify functions with low scores or many decision paths. Keep selected
+   tests green. Remeasure with delta for at most three passes. Record each
+   remaining low score and its reason in the pull request description.
+4. Review the delta: `pnpm exec node script/code-quality/ast-metrics-review.ts`.
+   Correct each finding of severity high or record its reason. For a retained
+   high finding, run `ast-metrics baseline` and commit
+   `.ast-metrics-baseline.yaml` in the same pull request. Include the review
+   Markdown in the description. The process and baseline wrappers remain
+   future CR-09 work; use the available individual commands.
+5. Reuse current valid unit coverage when available. Reuse requires verified
+   capture provenance that matches the candidate's source, unit-test, and
+   build inputs, including helpers and fixtures. A document-only commit can
+   reuse an older capture when these inputs match. If no valid coverage is
+   available, run
+   `pnpm exec node script/code-quality/ast-metrics-coverage.ts` only when
+   `src/` changed or both complete unit parts were already selected: emitted
+   Node tests and source portal tests. The collector builds first; its live
+   test has the same restriction. Otherwise record the unavailable CRAP
+   assessment as deferred and use architecture with `--no-coverage`.
+   Missing or stale coverage never requires a broader suite.
+6. Assess CRAP: `pnpm exec node script/code-quality/ast-metrics-crap.ts`.
+   Added or changed functions have the strict goal CRAP < 30. Added functions
+   also have the inclusive target CRAP ≤ 15. The table includes unchanged
+   and identity-unknown functions and states their scope. An empty default
+   production-file selection prints `No production files to assess.` and
+   succeeds without coverage or MCP. A nonempty required selection without
+   sufficient data is unresolved, not passing.
+   Improve missed required goals with selected unit tests or fewer paths.
+   Remeasure with compatible coverage and the same base for at most three
+   cycles. Record score or bound, paths, coverage, classification, and reason
+   for every unresolved required goal, including new functions above 15 but
+   below 30 and unknown assessments. An unchanged high function can retain
+   the reason `unchanged by this PR`. Ready may proceed with these documented
+   exceptions after at most three cycles; the command still exits 1 for
+   required goal misses or unknowns. Tool failures remain errors. Re-select
+   tests from the actual candidate when test changes affect collection scope.
+7. Run `pnpm exec node script/code-quality/ast-metrics-architecture.ts --record`
+   (add `--no-coverage` when needed). Include its architecture delta,
+   complexity table, and trend table, plus the CRAP table or the reason that
+   its assessment is unavailable. Paste the fenced `mermaid` graph and its
+   legend unchanged on every pull request, including document-only changes
+   and reports without coverage. Include `The map did not change.` and
+   `No production file changed.` when present. Reuse still-valid coverage
+   after fixes; a final report does not require another collection.
+   Historical counts from head coverage are estimates. Preserve their
+   coverage origin, fingerprints, measurement version, and unknown count.
+8. Change `.ast-metrics-baseline.yaml` only for a retained high finding in
+   step 4 or changes to `.ast-metrics.yaml` rules. Run `ast-metrics baseline`
+   and commit it. A violation already on `main` is not a third exception.
+9. Only architecture with `--record` writes a missing base record. It checks
+   the full base commit and its ancestry on `origin/main`. Commit the new
+   record under `docs/metrics/`. Existing records are immutable, including
+   records without coverage counts. In a metrics conflict, keep the file
+   from `main` and drop the candidate's conflicting file. Exploratory runs
+   omit `--record`. Missing historical values remain absent. Nothing runs
+   at merge time.
 
-The MCP server of ast-metrics runs only for the time of one call: the
-command starts it, makes the call, prints the answer, and stops it. Do not
-start `ast-metrics mcp` yourself, and do not register it as a server of
-the session.
+Commands that use MCP start and stop the server within a bounded operation,
+on success or failure. The MCP entry point makes one tool call; snapshot
+and CRAP can make several requests in one session. Do not start `ast-metrics mcp` yourself or register
+it as a session server.
 
 ## Work from a Delamain board
 

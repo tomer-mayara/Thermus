@@ -11,8 +11,9 @@ provenance, explicit safe recording, and labeled historical estimates under
 approved D3. PR #179 merged CR-05: file status, source evidence, and
 conservative function correspondence. PR #180 merged CR-06: live
 invariants and separate structural and coverage-collecting architecture
-files. PR #181 implements CR-07 and CR-08: incomplete risk assessments and
-the tool version pin. It awaits owner review.
+files. PR #181 merged CR-07 and CR-08: incomplete risk assessments and
+the tool version pin. PR #182 implements CR-22: per-function CRAP goals,
+actionable coverage advice, and the approved D1/D2 process. It awaits owner review.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
@@ -55,8 +56,10 @@ The published practice, condensed to what applies here:
    fitness function exists.
 5. **CRAP** (Change Risk Anti-Patterns, Savoia and Evans 2007):
    `CRAP = CC² × (1 − coverage)³ + CC` per function, with the coverage of the
-   function's own code as a fraction, and 30 as the limit. With full coverage
-   it falls to `CC`; above `CC ≈ 30` no coverage saves it
+   function's own code as a fraction. This project uses the strict goal below
+   30 and the approved inclusive target of 15 or less for added functions.
+   With full coverage it falls to `CC`; at 30 paths no coverage can meet
+   the strict goal
    ([crap4py](https://pypi.org/project/crap4py/),
    [cargo-crap](https://docs.rs/cargo-crap/0.4.2/cargo_crap/)). It is a
    safety-net metric: it says how dangerous a change is, not how readable the
@@ -144,7 +147,7 @@ A pull request has two snapshots: the head (the working tree) and the base
 (the merge base with `origin/main`, analyzed in a temporary `git worktree`
 that the command removes again). The base never comes from the trend store,
 so a pull request depends on nothing but the repository. Delta, review,
-MCP, snapshot, and online architecture pin 0.43.1. CLI checks use
+MCP, snapshot, CRAP, and online architecture pin 0.43.1. CLI checks use
 `ast-metrics version`; MCP checks initialization. A composite run checks
 the CLI once and requires each MCP session to agree with it. An explicit
 `--allow-tool-version` permits another actual version throughout that run.
@@ -153,7 +156,7 @@ A pin change needs applicable live contracts and fixture review.
 
 ### The views
 
-All three appear in the pull request body through step 5 of the process:
+All three appear in the pull request body through the AGENTS.md process:
 
 1. **Architecture delta.** One Mermaid graph of the `src/` communities at the
    head with the base in the labels (encoding below), and one summary line:
@@ -273,6 +276,34 @@ snapshot commits and source fingerprints; `--touched` gives paths only and
 cannot prove a rename. Reuse current valid coverage when available. Collect
 it only when `src/` changed or both complete parts of the unit suite were
 already selected under the test gate policy. Otherwise report without bands.
+
+### Required CRAP goals
+
+CR-22 adds `ast-metrics-crap.ts`. It selects changed production files by
+default, resolves an empty selection without coverage or MCP, and shows all
+functions of each selected file with its change classification, paths,
+coverage, score or bound, and action. Explicit inspection paths do not make
+functions new. Source evidence must prove new or changed classification;
+unknown identity remains unresolved for the applicable goals.
+
+Added or changed functions aim at CRAP < 30; added functions also aim at
+CRAP ≤ 15 under approved D1. Comparisons use unrounded scores. The
+[guide's threshold table](ast-metrics-review.md#the-crap-goal) gives the
+smallest whole coverage percent for each goal: five paths at zero and 25
+paths at 80% equal 30 and fail; 15 paths at full coverage meet target 15.
+`split` means no coverage percentage can meet the applicable inequality.
+Unknown coverage gives a lower bound, never an invented exact score.
+
+Under approved D2, improve required misses with selected tests or fewer paths
+for at most three cycles. Record score or bound, paths, coverage,
+classification, and reason for every remaining required miss, including new
+functions between 15 and 30 and unknown assessments. Ready can proceed with
+these recorded exceptions, while the command still exits 1. Unchanged high
+functions remain visible and can retain `unchanged by this PR`. Tool failures
+remain errors. Reuse compatible coverage or collect only within the selected
+scope; otherwise record the assessment as unavailable and deferred. Keep the
+full architecture graph and legend even without bands. CR-09 process and
+baseline wrappers are not available yet.
 
 ### Bands
 

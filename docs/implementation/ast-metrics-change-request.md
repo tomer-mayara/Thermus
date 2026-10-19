@@ -24,8 +24,9 @@ On 2026-10-18, the owner approved the recommendations for D1, D2, and D3
 with “Use those recommendations”: CRAP ≤ 15 for new functions, goals with
 documented exceptions after at most three improvement cycles, and clearly
 labeled head-derived trend estimates. Section 3.2 records these decisions.
-D4 to D9 remain open. This approval changes no runtime behavior or current
-AGENTS.md rule and authorizes no base-coverage storage or merge workflow.
+D4 to D9 remain open. The approval itself changed no runtime behavior;
+PR #182 implements D1/D2 in CR-22 and the current individual-command process.
+It authorizes no base-coverage storage or merge workflow.
 
 Delivery status:
 
@@ -45,8 +46,11 @@ Delivery status:
   and conservative function correspondence.
 - PR #180 merged delivery group 7, CR-06: live invariants and separate
   structural and coverage-collecting architecture files.
-- PR #181 implements delivery group 8, CR-07 and CR-08: incomplete risk
-  assessments and the tool version pin. Owner review is pending.
+- PR #181 merged delivery group 8, CR-07 and CR-08: incomplete risk
+  assessments and the tool version pin.
+- PR #182 implements delivery group 9, CR-22: actionable per-function CRAP
+  goals and approved D1/D2 exceptions. Owner review is pending. It updates
+  the current process with individual commands; CR-09 wrappers remain future work.
 - The other CRs have not been implemented.
 
 Contents:
@@ -66,7 +70,7 @@ Contents:
 
 ## 1. Summary
 
-Every pull request runs the code quality review in AGENTS.md. Six TypeScript
+Every pull request runs the code quality review in AGENTS.md. Seven TypeScript
 commands wrap ast-metrics. They report changed files, review findings, and
 three architecture views: the dependency communities of `src/`, the
 complexity of changed files, and a trend from `docs/metrics/` records.
@@ -86,12 +90,12 @@ The review found these problems:
    proof of a function move.
 4. Live tests fix incidental architecture counts and can start broader
    suites. CR-06 uses invariants and preserves the selected test scope.
-5. The process has no per-function CRAP goal. CR-22 will add a strict
-   goal below 30 and the approved inclusive target of 15 or less for new
-   functions. Under D2, use at most three improvement cycles and document
-   exceptions for unresolved goals before Ready. Commands still report goal
-   misses with exit 1; the approval does not implement the goals in current
-   commands or activate the future AGENTS.md process.
+5. At the proposal baseline, the process had no per-function CRAP goal.
+   CR-22 in PR #182 adds the strict goal below 30 and the approved inclusive
+   target of 15 or less for new functions. Under D2, use at most three
+   improvement cycles and document exceptions for all unresolved required
+   goals before Ready. The command still reports misses or unknown required
+   assessments with exit 1. CR-09 process and baseline wrappers remain future work.
 6. The graph shows clusters, not designed components. CR-13 adds the
    component view. CR-14 adds charts and component trends.
 7. At the proposal baseline, an unchanged map had no drawing. CR-24 in
@@ -99,11 +103,11 @@ The review found these problems:
    Missing bands do not authorize a broader test run.
 
 Other CRs align documentation, check command contracts, pin the tool,
-reduce repetition, and address separate cleanup. Four proposed commands
-would increase the inventory from six to ten: `crap`, `process`, `baseline`,
-and `backfill`. The earlier instruction to keep six commands applied to
-the completed reorganization. It did not approve these additions; their
-CRs remain proposals.
+reduce repetition, and address separate cleanup. CR-22 adds `crap` as the
+seventh command. The proposed `process`,
+`baseline`, and `backfill` commands would bring the inventory to ten. The
+earlier instruction to keep six commands applied to the completed
+reorganization; it does not prevent additions delivered by their approved CRs.
 
 ## 2. Background and verified state
 
@@ -130,7 +134,7 @@ enforces compatibility against the analyzed head snapshot's source and
 input identity, runtime, compiler, suite, and measurement version.
 
 CR-24 in PR #176 adds the graph and legend to every architecture report.
-Current step 5 requires their fenced `mermaid` block and legend unchanged
+The current process requires their fenced `mermaid` block and legend unchanged
 in every pull request body, including unchanged maps and document-only
 changes. `The map did not change.` stays above the graph. Bands require
 compatible coverage; this requirement does not expand the selected test scope.
@@ -329,7 +333,7 @@ current command or AGENTS.md rule.
 | ID | CR | Approved decision | Consequence |
 | --- | --- | --- | --- |
 | D1 | CR-22 | New functions have an inclusive CRAP target of 15 or less. | This is a repository target, not a universal standard. |
-| D2 | CR-22 | Use goals with documented exceptions after at most three improvement cycles, as for maintainability. | Commands still exit 1 for unresolved or unknown required goals. Once the future process is implemented, Ready may proceed after at most three cycles with recorded scores, paths, coverage, classification, and reasons. The exception does not change the command result or excuse tool failures. |
+| D2 | CR-22 | Use goals with documented exceptions after at most three improvement cycles, as for maintainability. | Commands still exit 1 for unresolved or unknown required goals. CR-22 activates the individual-command process: Ready may proceed after at most three cycles with recorded scores, paths, coverage, classification, and reasons. The exception does not change the command result or excuse tool failures. |
 | D3 | CR-04 | Preserve clearly labeled head-derived historical estimates. | Record coverage origin, fingerprints, measurement version, and unknown-function count. Missing or incompatible evidence remains absent, not zero. This approves no base-coverage store or merge workflow. |
 
 D4 to D9 remain open. Their recommendations are proposals, not approval.
@@ -1179,7 +1183,7 @@ Say `split` only when no percentage can satisfy that inequality. Five
 paths with zero coverage and 25 paths with 80% both equal 30; fifteen paths
 with full coverage equal 15.
 
-**Proposed command.**
+**Command.**
 
 ```sh
 pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...]
@@ -1187,8 +1191,9 @@ pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage 
 
 Defaults are `origin/main`, `ast-report/coverage.json`, 30, 15, and changed
 source files. Validate finite positive thresholds, `target < limit`, and
-source paths. State accepted numeric precision in help. Defaults become
-the approved D1/D2 process goals when CR-22 is implemented. Explicit paths
+source paths. Help accepts at most six fractional decimal digits and a
+safe integer after removing the point. Defaults are the approved D1/D2
+process goals in CR-22. Explicit paths
 select inspection files; they do not classify every function as newly added.
 
 **Required behavior.**
@@ -1251,8 +1256,13 @@ fails as unresolved.
 Use MCP doubles and goldens. Real-file checks reuse compatible coverage
 or run only when collection is eligible.
 
-**Documents.** AGENTS.md when CR-22 is implemented, guide “The CRAP goal”,
-README, plan bands/limits, inventory, knip, module paths, and paths test.
+**Documents.** AGENTS.md, guide “The CRAP goal”, README, plan bands/limits,
+inventory, knip, module paths, and paths test.
+
+**Delivery.** PR #182 implements this CR and approved D1/D2. It activates
+these goals with the individual commands in AGENTS.md. The process and
+baseline wrappers in Appendix D remain CR-09 work. No new coverage source,
+baseline exception, future option, or blanket live gate is approved here.
 
 ### CR-23. Keep the detailed README complete and checked
 
@@ -1275,7 +1285,7 @@ from knip entries under `script/code-quality/ast-metrics-*.ts`. Run real
 `--help` without a tool, Git, build, or suite call. Compare normalized
 synopses, including `pnpm exec node` versus `node` and multi-synopsis
 commands. Check every option/default against a defined help contract.
-All six current commands have `Usage:` and `Options:` blocks. Treat missing
+All seven current commands have `Usage:` and `Options:` blocks. Treat missing
 blocks in a future command as a clear contract failure. Compare defaults
 declared in help; where a default is delegated to ast-metrics, require that
 delegation to be identified rather than inventing a wrapper-owned default.
@@ -1392,8 +1402,8 @@ the full coverage project.
    unresolved applicable CRAP goals after at most three cycles, under D2.
    Record unknown assessments. Ready may proceed with these documented
    exceptions even when the command still reports exit 1 for required goal
-   misses or unknowns. Tool failures remain errors. These rules take effect
-   only when the prerequisite CRs implement the future process. Baseline
+   misses or unknowns. Tool failures remain errors. CR-22 activates these goal rules with
+   individual commands; CR-09 will compose them. Baseline
    retained high findings only under current approved exceptions.
 7. Commit a new verified record when the approved process requires it.
    Preserve existing records; keep the main version in a conflict. Missing
@@ -1751,7 +1761,7 @@ selection, changes touch all paths, including both rename endpoints.
 - **Limit / target:** strict <30 for added or changed functions and the
   approved D1 inclusive target ≤15 for new functions. Approved D2 uses goals
   with documented exceptions after at most three cycles; commands still
-  report misses. Implementation remains CR-22 work.
+  report misses. PR #182 implements CR-22 with individual commands.
 - **Lower bound:** unmatched CRAP cannot be below paths. A bound below a
   threshold does not prove compliance.
 - **Band:** good, warning, or critical based on known risk and its change;
@@ -1812,13 +1822,15 @@ example does not require a record write during an exploratory run.
 
 ## 11. Appendix D: proposed process text
 
-This replaces only the process section after CR-03, CR-04, CR-09, CR-22,
-and CR-24 land. It reflects D1 to D3, approved on 2026-10-18: an inclusive
+This is the composed process text for CR-09 after its prerequisites land.
+PR #182 activates the CR-22 goals in current AGENTS.md with individual
+commands; it does not add either wrapper shown below. It reflects D1 to D3, approved on 2026-10-18: an inclusive
 new-function target of 15, goals with documented exceptions after at most
 three cycles, and clearly labeled head-derived historical estimates.
 D4 to D9 remain open; this text grants no approval for their proposals.
-Current AGENTS.md remains authoritative. CR-24 adds the drawing requirement
-to current step 5; that change does not activate the other proposed steps.
+Current AGENTS.md remains authoritative. CR-24 added the drawing
+requirement; CR-22 adds the approved goals without
+a process or baseline wrapper.
 Until CR-09 exists, run individual available commands with the same scope;
 do not prescribe an unavailable wrapper.
 
@@ -1880,7 +1892,7 @@ do not prescribe an unavailable wrapper.
 >    and commit it. A third exception for a violation already on main
 >    requires a separate owner decision and policy update.
 >
-> Each command owns a bounded MCP session for its required requests and
+> Each command that uses MCP owns a bounded session for its requests and
 > stops it on success or failure. The MCP entry point makes one tool call;
 > snapshot and CRAP commands can make several requests in one session.
 > Do not start or register a persistent server yourself.

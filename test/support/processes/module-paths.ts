@@ -69,5 +69,6 @@ export const gitCliStub = fileURLToPath(new URL('test/support/doubles/ast-metric
 // The commands of the architecture evolution plan (docs/implementation/architecture-evolution-plan.md).
 export const astMetricsSnapshotScript = fileURLToPath(new URL('script/code-quality/ast-metrics-snapshot.ts', repositoryRoot));
 export const astMetricsArchitectureScript = fileURLToPath(new URL('script/code-quality/ast-metrics-architecture.ts', repositoryRoot));
+export const astMetricsCrapScript = fileURLToPath(new URL('script/code-quality/ast-metrics-crap.ts', repositoryRoot));
 export const astMetricsCoverageScript = fileURLToPath(new URL('script/code-quality/ast-metrics-coverage.ts', repositoryRoot));
 export const astMetricsCoverageSourceFolder = fileURLToPath(new URL('script/code-quality/coverage', repositoryRoot));

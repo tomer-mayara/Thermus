@@ -8,7 +8,7 @@ or when `.ast-metrics.yaml` rules change. Commit the resulting baseline. A
 violation already on `main` is not a third exception. Run the commands from
 the repository root; the static commands need no build. A coverage run builds
 compiled Node unit tests before it runs both complete unit parts. Delta, review, MCP,
-snapshot, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
+snapshot, CRAP, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
 on macOS). The wrappers pin 0.43.1. They check CLI results with
 `ast-metrics version` and MCP results with the initialization response.
 `--allow-tool-version` permits another actual version for that run and its
@@ -22,7 +22,7 @@ tool.
 
 ## Source layout
 
-The six command entry points stay in this folder:
+The seven command entry points stay in this folder:
 
 | Entry point | Purpose |
 |---|---|
@@ -30,11 +30,12 @@ The six command entry points stay in this folder:
 | `ast-metrics-mcp.ts` | Make one call to the ast-metrics MCP server. |
 | `ast-metrics-review.ts` | Report changes in code quality. |
 | `ast-metrics-coverage.ts` | Collect unit test coverage per function. |
+| `ast-metrics-crap.ts` | Assess per-function CRAP goals and give coverage or split advice. |
 | `ast-metrics-architecture.ts` | Compare architecture snapshots and show the trend. |
 | `ast-metrics-snapshot.ts` | Capture the metrics of one source tree. |
 
 Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
-`coverage/`, `architecture/`, and `provenance/`. The last folder owns input
+`coverage/`, `crap/`, `architecture/`, and `provenance/`. The last folder owns input
 identity and its checked readers. The `shared/` folder holds JSON readers,
 number calculations, and repository commands that more than one task uses.
 
@@ -43,9 +44,60 @@ Only a change under `src/` requires the full ordinary suite (`npm test`) and
 the remaining static and build checks in that policy. Do not add
 `npm run check`, which would repeat unit and portal tests. For other changes,
 run only affected test groups and existing focused tests. Keep the static
-delta, review, and architecture steps for each pull request. This scope also
+delta, review, CRAP, and architecture steps for each pull request. This scope also
 applies to tests and commands that start other
 tests: a focused caller must not expand it indirectly.
+
+## CRAP scores and goals
+
+For decision paths `p` and covered share `c`, `CRAP = p² × (1 − c)³ + p`.
+This repository measures V8 coverage of each function's own characters;
+it approximates the original basis-path coverage measure. The approved
+project goal is CRAP < 30 for added or changed functions, with the inclusive
+target CRAP ≤ 15 for added functions. Bands and risk counts keep CRAP ≥ 30
+as their boundary. Target 15 is a project decision, not a universal grade.
+
+| Paths | Minimum whole percent for CRAP < 30 | Minimum whole percent for CRAP ≤ 15 |
+| --- | --- | --- |
+| 0 | 0% | 0% |
+| 4 | 0% | 12% |
+| 5 | 1% | 27% |
+| 10 | 42% | 64% |
+| 15 | 60% | 100% |
+| 20 | 71% | split |
+| 25 | 81% | split |
+| 30 | split | split |
+| 35 | split | split |
+
+The recommendation is the smallest whole percentage that meets the actual
+inequality. `split` means no coverage percentage can meet it. At a positive
+crossing `c = 1 − ((L − p) / p²)^(1/3)`, strict comparison uses
+`floor(100c) + 1`, inclusive comparison uses `ceil(100c)`, and both check
+the candidate. Zero paths and already-passing zero coverage need no division.
+At 30 paths full coverage cannot get below 30. At 15 paths full coverage
+meets target 15. Five paths at zero coverage and 25 paths at 80% equal 30
+and fail the strict limit. Decisions use unrounded values across commands;
+display precision or explicit inequalities preserve the boundaries at
+29.96 and 15.04.
+
+Coverage must have verified provenance compatible with the candidate's
+source, unit-test, and build inputs, including helpers and fixtures. A
+prose-only commit can reuse an older compatible report. Matching uses each
+file and its unique supported V8 function name. Anonymous and duplicate
+names, compiler helpers, missing matches, and zero-own exclusions have no
+exact score. Source evidence separately proves new, changed, or unchanged
+identity; name equality alone cannot prove copies, changed extractions, or
+unresolved moves. Unknown data stays unknown. A path count is a lower bound
+on CRAP and can prove a violation at 30 or more.
+
+Architecture joins compatible head coverage with proven base/head pairs to
+estimate base risk. Stored head-derived estimates retain their origin and
+unknown count; they are not measurements of base coverage. Missing historical
+values stay absent. The architecture report has the complete graph and
+legend with or without coverage, bands when justified, the complexity table,
+added or worsened risk list, and trend. See the
+[guide](../../docs/implementation/ast-metrics-review.md#the-crap-goal) for
+identity limits, goal exceptions, and exact boundary rules.
 
 ## Measure the delta
 
@@ -137,6 +189,78 @@ severity high exists, else 0. Update the branch from the base first.
 Focused tests: select the `ast-metrics-review*.test.ts` rows in the
 [available test inventory](#available-tests). Run a live row only within its
 listed scope.
+
+## Assess per-function CRAP goals
+
+```text
+Usage: pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...] [--help]
+
+Options:
+  --base REF            Compare against the merge base of REF and HEAD
+                        (default: origin/main)
+  --coverage FILE       Read verified unit coverage from FILE
+                        (default: ast-report/coverage.json in the repository)
+  --limit N             Require CRAP strictly below N (default: 30)
+  --target N            Require new functions at or below N (default: 15)
+  --allow-tool-version  Allow an installed version other than the pinned version
+  --help, -h            Show this help
+```
+
+`N` is a finite positive decimal with at most six fractional digits. Its
+decimal digits must form a safe integer after the point is removed (at most
+9007199254740991). The target must be less than the limit. Each `PATH` is an
+existing TypeScript file under `src/`, relative to the current folder or
+absolute. The default selection includes changed and untracked production
+files and excludes deletions. Explicit inspection paths keep the proven
+classification against the merge base; they do not make every function new.
+
+An empty default selection prints `No production files to assess.` and exits
+0 without coverage or MCP. Other runs require compatible verified unit
+coverage before measurement. Missing, stale, or unverified coverage gives a
+specific error and no measured table. The command uses one bounded MCP
+session across selected files and no full architecture snapshot. It starts
+no build or test suite.
+
+The table gives `File`, `Function`, `Change`, `Paths`, `Coverage`, `CRAP`,
+and `To do` for all functions of selected files, including unchanged and
+identity-unknown functions. Under the limit, advice says `ok`, with
+`for 15: cover ≥ k%` or `for 15: split` when the inclusive target is missed.
+At or above the limit, advice gives strict-limit coverage or `split`.
+Unknown coverage gives a marked lower bound and `no coverage data`, or a
+split when paths alone prove the goal impossible. Unknown identity states
+which goal cannot be classified. Rows sort by exact score or numeric lower
+bound descending, then file, function, and stable source identity. Bounds
+do not establish an exact ranking of unknown risks. The summary separates
+known limit violations, measured target misses, unmeasured functions, and
+unresolved required assessments or identities.
+
+Exit 0 means all applicable assessments passed, or the default production
+selection was empty. Exit 1 means a known inspected limit violation, a
+required new-target miss, an unknown required goal, invalid input, or a tool
+failure. Unchanged high functions can retain `unchanged by this PR` in the
+review; the command still reports their violations. Under approved D2,
+improve required misses for at most three cycles with selected unit tests
+or fewer paths. Record score or bound, paths, coverage, classification, and
+reason for all unresolved required goals, including new functions above
+15 but below 30 and unknown data. Ready may proceed with recorded reasons;
+exceptions do not change the command result or excuse tool failures.
+
+Reuse compatible coverage. If collection is outside the selected scope,
+record the unavailable assessment as deferred and keep the architecture
+graph without bands. The CR-09 process and baseline wrappers remain future
+work. Focused tests: select the `ast-metrics-crap*.test.ts` rows in the
+[available inventory](#available-tests). Select the live contract only when
+its behavior or a shared dependency changes. It reuses a compatible report
+and starts no collector:
+
+```sh
+AST_METRICS_CRAP_COVERAGE=/absolute/path/coverage.json node --test dist/test/acceptance/script/ast-metrics-crap.live.js
+```
+
+Without the variable it reads `ast-report/coverage.json`. Missing tool or
+report gives an explicit skip, which is not a pass; record the assessment as
+deferred. A present stale report fails. Collect only when the independent
+test selection permits both complete unit parts.
 
 ## Measure the coverage per function
 
@@ -515,6 +639,12 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-paths.test.ts | no |
+| live | test/acceptance/script/ast-metrics-crap.live.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
@@ -554,6 +684,9 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
