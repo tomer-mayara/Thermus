@@ -36,7 +36,8 @@ export function coverageInFile(path: string): CoverageReport {
   const fields = objectOf(jsonOf(fileText(path)));
   if (fields.version !== 1 || !Array.isArray(fields.files)) invalid(path);
   const check: Check = (value) => value ?? invalid(path);
-  return { files: arrayOf(fields.files).map((entry) => fileOf(objectOf(entry), check)) };
+  const unmeasured = unmeasuredNames(fields.unmeasuredFunctions, check);
+  return { files: arrayOf(fields.files).map((entry) => fileOf(objectOf(entry), check, unmeasured)) };
 }
 
 function fileText(path: string): string {
@@ -51,11 +52,23 @@ function invalid(path: string): never {
   throw new CommandError(`The file ${path} is not a valid coverage report of version 1.`);
 }
 
-function fileOf(fields: Fields, check: Check): CoverageReport['files'][number] {
+function fileOf(fields: Fields, check: Check, unmeasured: ReadonlySet<string>): CoverageReport['files'][number] {
   const functions = check(Array.isArray(fields.functions) ? arrayOf(fields.functions) : undefined);
-  return { path: check(textOf(fields.path)), functions: functions.map((entry) => functionOf(objectOf(entry), check)) };
+  const path = check(textOf(fields.path));
+  const measured = functions.map((entry) => functionOf(objectOf(entry), check)).filter(({ name }) => !unmeasured.has(JSON.stringify([path, name])));
+  return { path, functions: measured };
 }
 
 function functionOf(fields: Fields, check: Check): CoverageFunction {
   return { name: check(textOf(fields.name)), coveredShare: check(numberOf(fields.coveredShare)) };
+}
+
+// The name join cannot distinguish a measured function from an unmeasured namesake.
+function unmeasuredNames(value: unknown = [], check: Check): ReadonlySet<string> {
+  const entries = check(Array.isArray(value) ? value : undefined);
+  return new Set(entries.map((entry) => {
+    const fields = objectOf(entry);
+    check(fields.reason === 'no-own-characters' ? fields.reason : undefined);
+    return JSON.stringify([check(textOf(fields.path)), check(textOf(fields.name))]);
+  }));
 }

@@ -83,12 +83,13 @@ test('Given a caller filename with parentheses, when INFO is logged, then the fu
 
 test('Given a caller beside the logging directory, when INFO is logged, then its location is emitted', () => {
   const { logger, written } = capture();
-  const filename = fileURLToPath(new URL('../../../src/logging-caller.js', import.meta.url));
+  // The VM caller checks the directory prefix; it is not a built production script.
+  const filename = fileURLToPath(new URL('../../../src/logging-caller.fixture', import.meta.url));
 
   runInNewContext('logger.info("the call site")', { logger }, { filename });
 
   assert.equal(written.length, 1);
-  assert.ok(written[0].includes('[logging-caller.js:1]: the call site\n'));
+  assert.ok(written[0].includes('[logging-caller.fixture:1]: the call site\n'));
 });
 
 test('Given DEBUG threshold, when each method is called, then each level has its label and color', () => {

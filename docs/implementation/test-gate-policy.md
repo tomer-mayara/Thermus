@@ -217,11 +217,11 @@ builds. Without a `src/` change, a command must not add test groups outside
 the selected union or turn focused tests into a complete suite. In
 particular, do not add `npm run check`, `npm run build:hosted`, or default
 ast-metrics coverage collection only because a changed file is one of
-their inputs. The coverage command runs the complete emitted unit suite;
-use it only when that complete suite is already selected or rule 1 applies.
-A focused unit file or package does not select the complete emitted unit
-suite. The same limit applies to a live metrics test that starts coverage
-collection. Use an existing coverage file only when it is valid for the
+their inputs. The coverage command runs both complete parts of the unit
+suite: emitted Node tests and source portal tests. Use it only when both
+complete parts are already selected or rule 1 applies. A focused unit file
+or package does not select both complete parts. The same limit applies to
+a live metrics test that starts coverage collection. Use an existing coverage file only when it is valid for the
 source, unit-test, and build inputs, or report metrics without coverage
 as the review guide permits.
 

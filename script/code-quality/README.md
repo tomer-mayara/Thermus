@@ -7,8 +7,8 @@ use it only for a retained high-severity review finding with a written reason,
 or when `.ast-metrics.yaml` rules change. Commit the resulting baseline. A
 violation already on `main` is not a third exception. Run the commands from
 the repository root; the static commands need no build. A coverage run needs
-compiled unit tests. Delta, review, MCP, snapshot, and online architecture
-runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
+compiled Node unit tests and source portal unit tests. Delta, review, MCP,
+snapshot, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
 on macOS; the process is
 verified with 0.43.1). The
 [ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
@@ -132,9 +132,9 @@ listed scope.
 ## Measure the coverage per function
 
 Build first with `pnpm run build`. Run this command, or its live test, only
-when `src/` changed or the complete
-emitted Node unit suite was already selected. A focused unit package does
-not select that whole suite. Reuse current valid coverage when available;
+when `src/` changed or both complete parts of the unit suite were already
+selected: emitted Node tests and source portal tests. A focused unit package
+does not select both complete parts. Reuse current valid coverage when available;
 otherwise, use the architecture report without bands, with its graph and
 legend, outside that scope. Current coverage must describe the candidate's
 source, unit-test, and build inputs, including test helpers and fixtures.
@@ -151,19 +151,55 @@ Options:
   --help, -h    Show this help
 ```
 
-Runs `node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"` with
-`NODE_V8_COVERAGE` set to a temporary
-folder (the suite output goes to stderr) and writes `ast-report/coverage.json`:
-for each function of `src/` that the suite loaded, its name, its range in the
-build, its calls, and its covered share. `--from DIR` reads the coverage
-files of an earlier run. This collector covers only the emitted Node unit
-suite. It currently omits the portal unit tests that `npm run test:unit` also
-runs; that omission remains a bug until CR-01. The command and its live test
-need no ast-metrics. Exit status 0 means the report was written. Exit status 1 when
-`dist/` is missing, the suite fails, or the coverage files do not come from
-one build; then no report is written. The
+Runs `node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"`, then
+`node --test "test/unit/user-portal/**/*.test.ts"`, with one temporary
+`NODE_V8_COVERAGE` folder. Suite output goes to stderr. Writes
+`ast-report/coverage.json` only after both runs succeed. The report keeps
+`suite: "unit"` and schema `version: 1`; `measurementVersion` is
+`own-characters-1`.
+
+Each source file records `representation` (`emitted-javascript` or
+`source-typescript`) and `contentIdentity` (SHA-256 of the original file's
+UTF-8 text). `dist/src/x.js` maps to `src/x.ts`; source `.ts` URLs under `src/`
+are accepted directly. Test scripts and outside paths are ignored. Offsets
+use UTF-16 code units in that representation. Different representations
+for one logical file cannot be unioned without source-map conversion.
+
+For source TypeScript on Node 24.20.0, named function offsets stay aligned
+with the original UTF-16 source. The anonymous module range also includes
+the exact appended `\n\n//# sourceURL=<file URL>` trailer. Its identified
+length includes that trailer; the content hash excludes it. Whole V8 ranges
+are preserved and validated against that exact length, without clamping.
+Thus named functions measure source characters, while the anonymous module
+can include generated sourceURL characters.
+
+Each measured function preserves its name, whole range, summed calls, and
+numeric covered share. Its own characters exclude the union of strictly
+contained functions from all compatible processes. Equal ranges do not
+establish parenthood; grandchildren are subtracted once. Helpers and their
+descendants are subtracted before exclusion. Each process clears zero-count
+blocks; a positive overlapping block does not restore them. Execution is
+unioned over own characters across processes. A zero-own function appears instead in
+`unmeasuredFunctions` with `path`, `name`, `start`, `end`, and
+`reason: "no-own-characters"`. It has no measured share or CRAP. This is a
+character-coverage approximation, not basis-path coverage.
+
+The collector rejects invalid raw offsets or counts, empty or inverted
+ranges, blocks outside their whole range, script bounds violations,
+crossing ranges, conflicting content identities, and unsafe summed calls.
+Every offset and count must be a finite nonnegative safe integer. Valid
+nonempty functions with no own characters are unmeasured, not invalid.
+
+`--from DIR` reads earlier coverage files and runs no tests. Until CR-03,
+it cannot prove original capture content, complete suite execution, or input
+freshness. The recorded content identity describes the script available
+when the files are read. Only a complete verified report can establish
+that an absent file was not loaded by the selected suite. The command and
+its live test need no ast-metrics. Exit status 0 means the report was
+written. Exit status 1 follows a missing `dist/`, a failed suite, or invalid
+coverage; then no report is written. The
 [ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
-gives the details of the share.
+gives the share and capture limits.
 
 Focused tests: select the `ast-metrics-coverage*.test.ts` rows in the
 [available test inventory](#available-tests). Run a live row only within its
@@ -297,10 +333,10 @@ It reads listed test commands; it does not execute them. Prose changes alone do
 not select a broader suite through a command reference.
 
 Live MCP and snapshot tests need ast-metrics on PATH. The architecture live file
-also needs ast-metrics, and its coverage case runs the complete emitted Node unit
-suite. The coverage live file runs that suite without ast-metrics. Both collector
-files are eligible only when `src/` changed or that complete unit suite was already
-selected. Keep them deferred outside that scope. Each architecture live case
+also needs ast-metrics, and its coverage case runs both complete parts of the
+unit suite. The coverage live file runs both parts without ast-metrics. Both
+collector files are eligible only when `src/` changed or both complete parts
+were already selected. Keep them deferred outside that scope. Each architecture live case
 uses a temporary trend store; neither changes repository `docs/metrics/`.
 
 Architecture acceptance cases share complete base, banded, and repository
@@ -319,6 +355,7 @@ the complete graph without bands and proves that no test suite runs.
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
@@ -344,6 +381,9 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |

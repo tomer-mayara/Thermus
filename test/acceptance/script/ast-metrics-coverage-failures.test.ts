@@ -23,16 +23,16 @@ function reportIn(repository: GitRepository): string {
   return readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8');
 }
 
-test('Given two processes that give one script two lengths, as the coverage files of two builds do, when the command reads them, then it fails with a diagnostic and keeps the earlier report', { timeout }, async (t) => {
+test('Given two processes with crossing function ranges, when the command reads them, then it fails with a diagnostic and keeps the earlier report', { timeout }, async (t) => {
   const repository = repositoryWithReport(t);
   writeV8Coverage(join(repository.root, 'v8-coverage'), repository.root, [
     { 'dist/src/sample.js': [['', [0, 400, 1]], ['outer', [100, 300, 1]]] },
-    { 'dist/src/sample.js': [['', [0, 420, 1]], ['outer', [100, 320, 1]]] },
+    { 'dist/src/sample.js': [['', [0, 400, 1]], ['other', [200, 350, 1]]] },
   ]);
 
   const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8-coverage'], cwd: repository.root });
 
-  assert.equal(result.stderr, 'ast-metrics-coverage: The coverage files disagree on the length of the build of src/sample.ts: 400 and 420 characters. They come from two builds; use the files of one run.\n');
+  assert.match(result.stderr, /ast-metrics-coverage: .*cross.*src\/sample\.ts/i);
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
   assert.equal(reportIn(repository), earlierReport);
@@ -77,4 +77,33 @@ test('Given a repository without a commit, when the command runs, then it fails 
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
   assert.equal(existsSync(join(repository.root, 'ast-report')), false);
+});
+
+
+test('Given coverage from two builds whose whole ranges have different lengths, when the current script is shorter, then it rejects the out-of-bounds build and keeps the report', { timeout }, async (t) => {
+  const repository = repositoryWithReport(t, { 'dist/src/sample.js': ' '.repeat(400) });
+  writeV8Coverage(join(repository.root, 'v8-coverage'), repository.root, [
+    { 'dist/src/sample.js': [['', [0, 400, 1]], ['outer', [100, 300, 1]]] },
+    { 'dist/src/sample.js': [['', [0, 420, 1]], ['outer', [100, 320, 1]]] },
+  ]);
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8-coverage'], cwd: repository.root });
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /Invalid coverage range.*sample.*length 400/);
+  assert.equal(reportIn(repository), earlierReport);
+});
+
+test('Given emitted tests that pass and portal tests that fail, when collection runs, then it keeps the earlier report and removes the capture folder', { timeout }, async (t) => {
+  const repository = repositoryWithReport(t, {
+    'package.json': '{"type":"module"}\n',
+    'dist/src/sample.js': 'export const value = 1;\n',
+    'dist/test/unit/sample.test.js': "import '../../src/sample.js';\n",
+    'test/unit/user-portal/sample.test.ts': "import { test } from 'node:test'; test('portal failure', () => { throw Error('defect'); });\n",
+  });
+  const temporary = mkdtempSync(join(tmpdir(), 'thermus-coverage-test-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, env: { TMPDIR: temporary } });
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portal failure/);
+  assert.equal(reportIn(repository), earlierReport);
+  assert.deepEqual(readdirSync(temporary), []);
 });

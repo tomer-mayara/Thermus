@@ -34,16 +34,18 @@ The delta, review, snapshot, and architecture commands do not run tests.
 Keep the required delta, review, and architecture
 steps for every pull request.
 
-The coverage command runs the complete emitted Node unit suite. Run it, or
-its live test, only when `src/` changed or that whole unit suite was already
-selected. A focused unit package or a script change alone does not select
-the whole unit suite. Reuse a current valid report when available; otherwise,
-a review outside that scope can use the architecture report without coverage.
+The coverage command runs both parts of the unit suite: emitted Node tests
+and source portal tests. Run it, or its live test, only when `src/` changed
+or both complete parts were already selected. A focused unit package or a
+script change alone does not select both complete parts. Reuse a current
+valid report when available; otherwise, a review outside that scope can use
+the architecture report without coverage.
 The coverage-collecting case in `ast-metrics-architecture.live.ts` has the same
 restriction. Its structural case does not collect coverage. The MCP, snapshot,
 and architecture live checks need ast-metrics on PATH and skip when it is absent;
-`ast-metrics-coverage.live.ts` needs no ast-metrics. Both current coverage live
-paths write and remove the default report; CR-06 will isolate their output.
+`ast-metrics-coverage.live.ts` needs no ast-metrics. The coverage live test
+uses a temporary output report. Architecture's coverage live case still
+writes and removes the default report; CR-06 will isolate that output.
 
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
@@ -148,8 +150,8 @@ the repository.
 
 ### Measure the coverage per function: `script/code-quality/ast-metrics-coverage.ts`
 
-Use the following run only when the test selection permits the complete
-emitted Node unit suite, as stated above. A current valid report covers the
+Use the following run only when the test selection permits both complete parts
+of the unit suite, as stated above. A current valid report covers the
 candidate's source, unit-test, and build inputs, including test helpers and
 fixtures. A commit that changes only documents does not invalidate coverage
 when those inputs are unchanged. The report's commit label alone does not
@@ -161,45 +163,89 @@ npm run build
 pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE]
 ```
 
-The command runs only the emitted Node unit tests (`node --test
---test-concurrency=1 "dist/test/unit/**/*.test.js"`) with `NODE_V8_COVERAGE`
-set to a temporary folder, and writes
-`ast-report/coverage.json`. The output of the suite goes to stderr. Without
-`dist/`, it says "Run npm run build first." With `--from DIR`, it reads the
-coverage files of an earlier run and does not run the suite. On this Mac the
-run takes about 85 seconds (274 processes, 95 files of `src/`, 1138
-functions). The command needs no ast-metrics. Unlike `npm run test:unit`, it
-omits the source portal unit tests. This is the CR-01 collection bug, separate
-from the unit-only suite limit that remains until CR-11 adds other suites.
+The command first runs the emitted Node unit tests (`node --test
+--test-concurrency=1 "dist/test/unit/**/*.test.js"`), then the source portal
+unit tests (`node --test "test/unit/user-portal/**/*.test.ts"`). Both runs
+use one temporary `NODE_V8_COVERAGE` folder. Suite output goes to stderr.
+The command writes `ast-report/coverage.json` only after both runs succeed.
+Without `dist/`, it says "Run npm run build first." The command needs no
+ast-metrics. It adds no integration or acceptance suite; CR-11 proposes
+that extension.
 
-For each function of a script under `dist/src/` (`dist/src/x.js` is the
-build of `src/x.ts`), the report gives its name, its range in characters of
-the build, the sum of its calls, and its covered share: the part of its
-characters that at least one process ran. A process does not run the
-characters of a block with count 0, or of a function that it did not call.
-The range of a function includes its nested functions, and each nested
-function has its own entry. The module function and the anonymous functions
-have the name `(anonymous)`. The tsc helpers (`__` names) and the functions
-inside them are left out; the wrapper of `__disposeResources` and its
-`SuppressedError` fallback stay as two `(anonymous)` entries in each file
-that uses `using`. A file that none of the selected emitted tests loads is
-not in the report. The current collector also omits portal files, so absence
-alone does not prove that no unit test loads a file. A function that only
-integration or acceptance tests call, such as
-`createApplication`, shows 0 calls.
+The collector accepts emitted JavaScript under `dist/src/` and source
+TypeScript under `src/`. It maps `dist/src/x.js` to `src/x.ts` and ignores
+test scripts and outside paths. Each file preserves `representation`
+(`emitted-javascript` or `source-typescript`) and `contentIdentity`
+(SHA-256 of the original file's UTF-8 text). Offsets use UTF-16 code units of that
+representation, not bytes. Equal length does not prove equal content.
+Ranges from emitted JavaScript and source TypeScript cannot be merged for
+one logical file; no source-map conversion is implemented.
 
-V8 gives a block only where its count differs from the count around it, so
-the blocks of one function differ from process to process; the command
-therefore merges per character. Two lengths for one script mean coverage
-files of two builds: the command stops with exit status 1. Exit status 1
-also follows a failed suite, a file that is not V8 coverage, or a folder
-without coverage files. Then no report is written.
+Node 24.20.0 keeps named function offsets in stripped TypeScript aligned
+with the original UTF-16 source text. It appends the exact trailer
+`\n\n//# sourceURL=<file URL>`, which extends the anonymous module's whole
+range. For `source-typescript`, the identified length includes that trailer;
+`contentIdentity` hashes the original file before the trailer. The collector
+preserves V8's whole ranges and validates against this exact length. It does
+not clamp ranges or allow arbitrary trailing characters. Named functions
+still measure their actual source characters; the anonymous module can
+include generated sourceURL characters.
 
-The architecture command reads this report to give each function of `src/`
-its CRAP and each community its band (see "Show the architecture delta").
-After a change of `src/`, collect coverage again if no current valid report
-is available. With `--from`, use files from a current valid full unit run;
-the option does not make a partial run into full unit coverage.
+For each measured function, the report preserves its whole `start` and
+`end`, name, sum of calls, and numeric `coveredShare`. The module function
+and anonymous functions have the name `(anonymous)`. A complete verified
+report can establish that an absent file was not loaded by the selected
+unit suite. An imported report with unknown capture origin cannot establish
+this. Functions called only by integration or acceptance tests can show
+zero calls.
+
+#### How the share is counted
+
+A function's own characters are its whole range minus the union of all
+strictly contained function ranges. Grandchildren are subtracted once;
+equal ranges do not establish parenthood. The collector builds that union
+from all processes with compatible representation and content identity
+before it calculates shares. Process order and a nested entry missing from
+one process do not change the denominator. A process runs no character of
+a zero-count block or of a function it did not call. Within one process,
+a positive block that overlaps a zero-count block does not restore the
+cleared characters. The collector unions execution over the remaining own
+characters across processes and sums calls.
+This is a character-coverage approximation, not basis-path coverage.
+
+Compiler helpers (`__` names) and their descendants are excluded from the
+reported functions. Their ranges are subtracted from containing source
+functions before exclusion. A valid function with no own characters is
+omitted from measured functions and recorded in `unmeasuredFunctions`
+with `path`, `name`, `start`, `end`, and reason `no-own-characters`. It is
+unmeasured, with neither zero nor full coverage. Measured entries keep a
+numeric share in [0,1]. The report keeps JSON schema `version: 1` and identifies the changed measurement as
+`measurementVersion: "own-characters-1"`.
+
+Every raw offset and count must be a finite nonnegative safe integer. A
+whole range must satisfy `0 ≤ start < end ≤ identified script UTF-16
+length`; each nonempty block must lie within its whole range. The collector
+rejects malformed, empty, inverted, or out-of-bounds ranges, crossing
+function ranges, conflicting content identities, invalid counts, and unsafe
+summed calls. It does not clamp invalid data or publish a report after a
+failed suite or invalid capture. Empty raw ranges are invalid; a nonempty
+function with no own characters after subtraction is the unmeasured case.
+
+With `--from DIR`, the command reads earlier V8 files and runs no tests.
+Use files from a current valid complete unit run. Until CR-03 adds original
+capture provenance and input-freshness checks, this option cannot prove the
+capture's original script content, build, suite completeness, or input
+freshness. Its content identity describes the representation available
+when the files are read. A current commit label and `own-characters-1`
+do not remove that limitation.
+
+The architecture command reads the report to give each matched measured
+function its CRAP and each community its band (see "Show the architecture
+delta"). Zero-own functions remain unmatched and get no CRAP. An unmeasured
+entry also blocks a measured same-name entry from supplying a share; name
+equality alone cannot distinguish them. After a change of `src/`, collect
+coverage again if no current valid report is available and both complete
+parts of the unit suite are within scope.
 
 ### Take a snapshot: `script/code-quality/ast-metrics-snapshot.ts`
 
@@ -355,7 +401,8 @@ that V8 gives: ast-metrics names a method `module\Class.method`, V8 names it
 `method`, and V8 names a constructor `Class`. A function gets no CRAP and
 counts as unmatched when it is anonymous (also a method without a name, such
 as `module\Class.`), when the file of the snapshot or of the report has its
-name twice, or when the report has the file but not the name. A file that
+name twice, or when the report has the file but not the name, including a zero-own
+function recorded as unmeasured. A file that
 the report does not have currently counts as uncovered: each named function
 has the share 0 and the CRAP `paths² + paths`. In the historical study at
 `76b514ac` on 2026-10-18, 721 of the 1022 functions of `src/` matched a

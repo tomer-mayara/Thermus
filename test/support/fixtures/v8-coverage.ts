@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 // The V8 coverage files that Node writes at exit, one file for each process, when NODE_V8_COVERAGE names a folder.
@@ -25,9 +25,23 @@ export function v8CoverageOf(root: string, scripts: ProcessRuns): string {
   return `${JSON.stringify({ result, timestamp: 52_000.5 })}\n`;
 }
 
-// The command reads the files in the order of their names, so the names keep the order of the list.
+// Missing script files get placeholder text so the reader can identify their content and validate their lengths.
+// Callers use temporary roots. Existing script text is kept. File names preserve process order.
 export function writeV8Coverage(folder: string, root: string, processes: readonly ProcessRuns[]): void {
   mkdirSync(folder, { recursive: true });
+  const lengths = new Map<string, number>();
+  for (const process of processes) {
+    for (const [path, functions] of Object.entries(process)) {
+      const length = Math.max(1, ...functions.flatMap(([, ...ranges]) => ranges.map(([, end]) => end)));
+      lengths.set(path, Math.max(lengths.get(path) ?? 1, length));
+    }
+  }
+  for (const [path, length] of lengths) {
+    const file = join(root, path);
+    if (existsSync(file)) continue;
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, ' '.repeat(Number.isSafeInteger(length) && length < 10_000 ? length : 100));
+  }
   processes.forEach((scripts, index) => {
     writeFileSync(join(folder, `coverage-${4000 + index}-1792300000000-0.json`), v8CoverageOf(root, scripts));
   });

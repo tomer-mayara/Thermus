@@ -5,12 +5,13 @@ import type { MergedCoverage, MergedFunction, MergedScript } from './merge.ts';
 import { CommandError } from '../shared/repository.ts';
 
 type FunctionCoverage = { readonly name: string; readonly start: number; readonly end: number; readonly called: number; readonly coveredShare: number };
-type FileCoverage = { readonly path: string; readonly functions: readonly FunctionCoverage[] };
+type FileCoverage = { readonly path: string; readonly representation: MergedScript['representation']; readonly contentIdentity: string; readonly functions: readonly FunctionCoverage[] };
+type UnmeasuredFunction = { readonly path: string; readonly name: string; readonly start: number; readonly end: number; readonly reason: 'no-own-characters' };
 
 // suite: the suite whose run gave the coverage. processes: the coverage files that the command read. scripts: the
 // scripts of the build of src/ in them.
 type CoverageReport = {
-  readonly version: 1; readonly suite: 'unit'; readonly commit: string;
+  readonly version: 1; readonly measurementVersion: 'own-characters-1'; readonly unmeasuredFunctions: readonly UnmeasuredFunction[]; readonly suite: 'unit'; readonly commit: string;
   readonly processes: number; readonly scripts: number; readonly files: readonly FileCoverage[];
 };
 
@@ -18,7 +19,8 @@ type CoverageReport = {
 // of one tree are equal and two reports of two trees give a short diff.
 export function writeCoverageReport(file: string, commit: string, { processes, scripts }: MergedCoverage): CoverageReport {
   const files = [...scripts].map(([path, script]) => fileCoverageOf(path, script)).sort((first, second) => (first.path < second.path ? -1 : 1));
-  const report: CoverageReport = { version: 1, suite: 'unit', commit, processes, scripts: scripts.size, files };
+  const unmeasuredFunctions = [...scripts].sort(([first], [second]) => first < second ? -1 : 1).flatMap(([path, script]) => orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters === 0).map(({ name, start, end }): UnmeasuredFunction => ({ path, name: name || '(anonymous)', start, end, reason: 'no-own-characters' })));
+  const report: CoverageReport = { version: 1, measurementVersion: 'own-characters-1', unmeasuredFunctions, suite: 'unit', commit, processes, scripts: scripts.size, files };
   try {
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, `${JSON.stringify(report, null, 2)}\n`);
@@ -28,13 +30,16 @@ export function writeCoverageReport(file: string, commit: string, { processes, s
   return report;
 }
 
-// A function that starts where another starts is inside it, so the longer one comes first.
-function fileCoverageOf(path: string, { functions }: MergedScript): FileCoverage {
-  return { path, functions: [...functions.values()].sort((first, second) => first.start - second.start || second.end - first.end).map(functionCoverageOf) };
+// Preserve the whole range while measuring only characters that the function owns.
+function orderedFunctions({ functions }: MergedScript): MergedFunction[] {
+  return [...functions.values()].sort((first, second) => first.start - second.start || second.end - first.end || first.name.localeCompare(second.name));
 }
 
-// A function without characters gets the share 0, not NaN, which JSON cannot hold.
-function functionCoverageOf({ name, start, end, called, covered }: MergedFunction): FunctionCoverage {
+function fileCoverageOf(path: string, script: MergedScript): FileCoverage {
+  return { path, representation: script.representation, contentIdentity: script.contentIdentity, functions: orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters > 0).map(functionCoverageOf) };
+}
+
+function functionCoverageOf({ name, start, end, called, covered, ownCharacters }: MergedFunction): FunctionCoverage {
   const ran = covered.reduce((sum, value) => sum + value, 0);
-  return { name: name || '(anonymous)', start, end, called, coveredShare: Math.round((ran / Math.max(covered.length, 1)) * 1000) / 1000 };
+  return { name: name || '(anonymous)', start, end, called, coveredShare: Math.round((ran / ownCharacters) * 1000) / 1000 };
 }
