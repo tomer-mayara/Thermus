@@ -21,7 +21,7 @@ a distinct later V8 flush, and normal owner completion. The private exit guard
 depends on pinned Node 24.20.0 and fails closed when absent.
 
 The complete real integration capture passed on 2026-10-19 at
-`4f5cf524a7e4afe7df13004e8e287a00c6100dfe`, on top of `main` at `bc722eef`
+`88bfbf7193e990474be87170b62e10cb7d8118ce`, on top of `main` at `bc722eef`
 (PR #192): 535 tests in 44 suites, zero failures, cancellations, skips, or todos.
 It kept the real work-slice tests unchanged. The version-4 archive has 226 raw
 files and all 113 participants: 109 normal-exit owners and four real internal

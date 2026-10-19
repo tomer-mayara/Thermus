@@ -225,7 +225,7 @@ Noncooperating ordinary workers, including the unreferenced esbuild worker from
 a direct require-preload `tsx` invocation, remain unverified. Manifest versions
 1, 2, and 3 keep their original rules.
 
-The complete real integration capture at `4f5cf524` passed all 535 tests in
+The complete real integration capture at `88bfbf71` passed all 535 tests in
 44 suites with zero failures, cancellations, skips, or todos. Its version-4
 archive has 226 raw files and all 113 participants: 109 normal-exit owners plus
 four real `tsx` internal loaders, each with matching owner and handshake,

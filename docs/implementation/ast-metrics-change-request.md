@@ -116,7 +116,7 @@ guard depends on pinned Node 24.20.0 and fails closed when absent. Legacy
 manifests keep their original rules.
 
 The complete real integration capture passed on 2026-10-19 at
-`4f5cf524a7e4afe7df13004e8e287a00c6100dfe`, on top of `main` at `bc722eef`
+`88bfbf7193e990474be87170b62e10cb7d8118ce`, on top of `main` at `bc722eef`
 (PR #192). All 535 tests in 44 suites passed, with zero failures, cancellations,
 skips, or todos. The unchanged real work-slice tests ran through `pnpm` and
 `tsx`. The version-4 archive retains 226 raw files and all 113 participants:

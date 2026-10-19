@@ -372,7 +372,7 @@ and clean registration-server shutdown. That earlier proof did not select
 integration; its union contracts used doubles.
 All 13 affected live cases passed without skips: two collecting, ten
 structural, and one CRAP case with verified imported unit coverage.
-The complete real integration capture at `4f5cf524` passed all 535 tests in
+The complete real integration capture at `88bfbf71` passed all 535 tests in
 44 suites on 2026-10-19, with zero failures, cancellations, skips, or todos.
 It kept the existing real work-slice tests unchanged. All 113 participants
 verified: 109 normal-exit owners and four real internal `tsx` loaders. Each

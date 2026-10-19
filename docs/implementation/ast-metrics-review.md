@@ -382,13 +382,13 @@ ten structural cases, and one CRAP case with verified imported unit coverage.
 Final typechecking also passed.
 
 Current loader proof, 2026-10-19: the complete real integration capture passed
-at `4f5cf524a7e4afe7df13004e8e287a00c6100dfe`, on top of `main` at `bc722eef`
+at `88bfbf7193e990474be87170b62e10cb7d8118ce`, on top of `main` at `bc722eef`
 (PR #192). All 535 tests in 44 suites passed, with zero failures, cancellations,
-skips, or todos. The tests took 89.284 seconds; collection completed with exit 0
-in 111.069 seconds. This is a complete repository capture, separate from the
-small protocol fixtures. The existing real work-slice tests were unchanged.
+skips, or todos. Collection completed with exit 0 in 29.671 seconds. This is a
+complete repository capture, separate from the small protocol fixtures. The
+existing real work-slice tests were unchanged.
 
-The retained `capture-integration-xmBT3R` archive uses manifest version 4 and
+The retained `capture-integration-aQqaHK` archive uses manifest version 4 and
 `normal-exit-or-sealed-or-loader-1`. It contains 226 raw V8 files from 109 PIDs
 and 113 participant identities: 109 normal-exit owners and four actual internal
 `tsx` loader threads. Every loader has matching request, acknowledgement, and
@@ -396,10 +396,10 @@ owner receipt evidence, an unchanged one-file checkpoint, one distinct later
 V8 flush, and a normally completed matching owner. The report covers 110 source
 files and records 24 calls to `createApplication`.
 
-Strict `--from` reimport exited 0 and produced a byte-identical report. It kept
-`["integration"]`, the original capture commit, and the nested original capture
+Strict `--from` reimport exited 0 in 2.447 seconds and produced a byte-identical
+report. It kept `["integration"]`, the original capture commit, and the nested original capture
 identity. The default `ast-report/coverage.json` stayed unchanged. Local evidence
-is under `ast-report/loader-integration-verification-2026-10-19/`.
+is under `ast-report/loader-integration-final-2026-10-19/`.
 The earlier `c620cf8f` run also passed all 535 integration tests, but its four
 raw-only loader threads caused strict verification to fail. That failed capture
 remains historical evidence; it was not promoted to verified status.
