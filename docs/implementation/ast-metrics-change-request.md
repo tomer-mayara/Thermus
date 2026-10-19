@@ -42,7 +42,8 @@ Delivery status:
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. PR #189 implements CR-19's remaining cleanup: the four
   helper exports are private, and all 31 characterization cases use existing
-  public entry points. PR #189 remains a draft pending complete verification.
+  public entry points. Its selected checks and quality process pass; the PR
+  awaits merge.
 - PR #179 merged delivery group 6, CR-05: file status, source evidence,
   and conservative function correspondence.
 - PR #180 merged delivery group 7, CR-06: live invariants and separate
@@ -1311,7 +1312,12 @@ can reject malformed token data before the private parser; those tests assert
 the existing sanitized public failure and no saved credentials. Metadata tests
 use the existing refresh path and preserve discovery request counts.
 The changed test paths select the complete unit and interface groups before
-Ready. This draft's complete selected checks and quality review remain pending.
+Ready. The unit group passes 3,544 emitted tests and 19 portal tests; the final
+verified unit capture repeats this selection and passes. The interface group
+passes 138 tests. The focused command acceptance tests pass 43 cases, and the
+inventory contract passes 18. Typechecking and habit-hooks pass. The final
+quality process passes with no regressions and no baseline change. Its report
+includes both architecture drawings and the verified unit coverage origin.
 
 ### CR-20. Split the MCP request-isolation acceptance file
 
@@ -1594,7 +1600,7 @@ or option updates its own README and contract in the same PR.
 | 15, PR #188 | CR-10 option A, CR-11, CR-12 | Test-change notice, independently selected suite capture, and manual structural backfill; no merge workflow. |
 | Implemented in PR #188 | CR-15, CR-18, CR-11 pre-crash protocol | Approved on 2026-10-19. Focused policy, boundary, and crash-protocol tests pass. Complete acceptance and unit capture passes. Selected tests, typechecking, and all 13 affected live cases pass. |
 | Pending owner | CR-10 option B and merge workflow | D4 option B and D5 remain open, as do D8 and D9. |
-| Implemented in draft PR #189 | CR-19 | TypeScript conversion merged in PR #173; remaining private helper cleanup preserves all 31 focused cases. Complete selected checks and quality review remain pending. |
+| Implemented in PR #189 | CR-19 | TypeScript conversion merged in PR #173; private helper cleanup preserves all 31 focused cases. Selected unit and interface groups, focused command and inventory cases, typechecking, habit-hooks, and the quality process pass. |
 | Independent | CR-20 | Separate cleanup and its selected checks. |
 | Last | CR-21 | Archive only when dependent work is complete or explicitly disposed of in a living specification. |
 
