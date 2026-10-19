@@ -19,4 +19,3 @@ function validateFunction({ ranges }: V8Function, script: { readonly path: strin
     }
   }
 }
-
