@@ -73,6 +73,10 @@ Keep organization selection as an HTML form that works without JavaScript.
 Preserve the existing POST route, CSRF protection, return destination, access
 checks, escaped organization names, and non-cacheable responses.
 
+The implemented [desktop](portal-screenshots/organizations-desktop.png) and
+[mobile](portal-screenshots/organizations-mobile.png) previews use the built
+portal assets and a sample personal workspace.
+
 ## AI agent quick guide
 
 For a user with product access, replace the generic setup list with a native
