@@ -486,11 +486,22 @@ files. All 13 affected live cases passed without skips: two collecting cases,
 ten structural cases, and one CRAP case with verified imported unit coverage.
 Final typechecking also passed.
 
-Current loader follow-up: at `c620cf8f`, all 535 real integration tests passed,
-but capture verification rejected four raw-only `tsx` loader threads. Passing
-tests did not make that capture verified. The new loader protocol requires a
-complete real integration capture and strict archived reimport before this
-follow-up can claim verification. That proof is pending.
+Current loader proof, 2026-10-19: complete real integration capture at
+`4f5cf524a7e4afe7df13004e8e287a00c6100dfe` passed all 535 tests in 44 suites,
+with zero failures, cancellations, skips, or todos. Collection exited 0 in
+111.069 seconds. The unchanged real work-slice tests ran through `pnpm` and
+`tsx`; the small protocol fixtures are separate evidence.
+The version-4 `capture-integration-xmBT3R` archive contains 226 raw V8 files,
+109 PIDs, and 113 participant identities: 109 normal-exit owners and four real
+internal `tsx` loaders. Each loader has matching request, acknowledgement, and
+owner receipt evidence, an intact one-file checkpoint, one distinct later
+flush, and a normally completed matching owner. The report covers 110 source
+files and records 24 `createApplication` calls. Strict `--from` reimport exited 0,
+produced a byte-identical report, and kept `["integration"]` plus the original
+capture commit and nested identity. The default coverage report stayed unchanged.
+Local evidence is under `ast-report/loader-integration-verification-2026-10-19/`.
+The earlier `c620cf8f` run passed all 535 integration tests but failed strict
+verification for four raw-only loaders; it remains an unverified historical run.
 
 Schema stays `version: 2` and `measurementVersion: "own-characters-1"`.
 New capture manifests use version 4 with

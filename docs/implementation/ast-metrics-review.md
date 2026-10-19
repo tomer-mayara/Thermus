@@ -381,11 +381,28 @@ files. All 13 affected live cases passed without skips: two collecting cases,
 ten structural cases, and one CRAP case with verified imported unit coverage.
 Final typechecking also passed.
 
-Current loader follow-up: at `c620cf8f`, all 535 real integration tests passed,
-but capture verification rejected four raw-only `tsx` loader threads. Passing
-tests did not make that capture verified. The new loader protocol requires a
-complete real integration capture and strict archived reimport before this
-follow-up can claim verification. That proof is pending.
+Current loader proof, 2026-10-19: the complete real integration capture passed
+at `4f5cf524a7e4afe7df13004e8e287a00c6100dfe`, on top of `main` at `bc722eef`
+(PR #192). All 535 tests in 44 suites passed, with zero failures, cancellations,
+skips, or todos. The tests took 89.284 seconds; collection completed with exit 0
+in 111.069 seconds. This is a complete repository capture, separate from the
+small protocol fixtures. The existing real work-slice tests were unchanged.
+
+The retained `capture-integration-xmBT3R` archive uses manifest version 4 and
+`normal-exit-or-sealed-or-loader-1`. It contains 226 raw V8 files from 109 PIDs
+and 113 participant identities: 109 normal-exit owners and four actual internal
+`tsx` loader threads. Every loader has matching request, acknowledgement, and
+owner receipt evidence, an unchanged one-file checkpoint, one distinct later
+V8 flush, and a normally completed matching owner. The report covers 110 source
+files and records 24 calls to `createApplication`.
+
+Strict `--from` reimport exited 0 and produced a byte-identical report. It kept
+`["integration"]`, the original capture commit, and the nested original capture
+identity. The default `ast-report/coverage.json` stayed unchanged. Local evidence
+is under `ast-report/loader-integration-verification-2026-10-19/`.
+The earlier `c620cf8f` run also passed all 535 integration tests, but its four
+raw-only loader threads caused strict verification to fail. That failed capture
+remains historical evidence; it was not promoted to verified status.
 
 The collector accepts emitted JavaScript under `dist/src/` and source
 TypeScript under `src/`. It maps `dist/src/x.js` to `src/x.ts` and ignores

@@ -372,9 +372,17 @@ and clean registration-server shutdown. That earlier proof did not select
 integration; its union contracts used doubles.
 All 13 affected live cases passed without skips: two collecting, ten
 structural, and one CRAP case with verified imported unit coverage.
-The later `c620cf8f` run passed all 535 integration tests, but four raw-only
-`tsx` loader threads prevented verified publication. The new protocol's complete
-real integration capture and strict archived reimport remain pending.
+The complete real integration capture at `4f5cf524` passed all 535 tests in
+44 suites on 2026-10-19, with zero failures, cancellations, skips, or todos.
+It kept the existing real work-slice tests unchanged. All 113 participants
+verified: 109 normal-exit owners and four real internal `tsx` loaders. Each
+loader has matching request, acknowledgement, and owner receipt evidence, an
+unchanged checkpoint, one distinct later V8 flush, and a normal matching owner.
+Strict `--from` reimport produced a byte-identical report and kept the original
+`["integration"]` capture identity. The default coverage report stayed unchanged.
+This full capture is separate from the small protocol fixtures. The earlier
+`c620cf8f` run passed all 535 integration tests but failed verification because
+four loaders had raw-only evidence; that run remains unverified history.
 
 `test/acceptance/script/ast-metrics-coverage.test.ts` checks merging two
 processes and the build and default run of a small suite in a temporary Git

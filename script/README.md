@@ -223,6 +223,14 @@ missing guard evidence fails closed. A require preload first records an incomple
 loader participant and the observer binds its owner to that same marker.
 Noncooperating ordinary workers, including the unreferenced esbuild worker from
 a direct require-preload `tsx` invocation, remain unverified. Manifest versions
-1, 2, and 3 keep their original rules. At `c620cf8f`, all 535 real integration tests passed, but four
-raw-only loader threads prevented verified publication. Complete capture and
-strict archived reimport with the new protocol remain pending.
+1, 2, and 3 keep their original rules.
+
+The complete real integration capture at `4f5cf524` passed all 535 tests in
+44 suites with zero failures, cancellations, skips, or todos. Its version-4
+archive has 226 raw files and all 113 participants: 109 normal-exit owners plus
+four real `tsx` internal loaders, each with matching owner and handshake,
+intact checkpoint, and one distinct later flush. Strict archived reimport
+produced a byte-identical report with the original `["integration"]` capture
+identity; the default coverage report stayed unchanged. This complete capture
+is separate from the protocol fixtures. The earlier `c620cf8f` run passed tests
+but remained unverified because four loaders had raw-only evidence.
