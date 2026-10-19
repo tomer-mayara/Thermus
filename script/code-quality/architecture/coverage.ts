@@ -1,7 +1,9 @@
-// The coverage report of script/code-quality/ast-metrics-coverage.ts, version 1. The check covers the fields that the CRAP of a
+// The coverage report of script/code-quality/ast-metrics-coverage.ts, versions 1 and 2. The check covers the fields that the CRAP of a
 // function reads, so that a wrong file, such as a snapshot, fails it.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { coverageProvenanceIn } from '../provenance/read.ts';
+import type { CoverageProvenance } from '../provenance/types.ts';
 import { arrayOf, jsonOf, numberOf, objectOf, textOf } from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
 
@@ -14,6 +16,10 @@ export interface CoverageFunction {
 
 // A src/ file that no unit test loaded is not in the report.
 export interface CoverageReport {
+  readonly commit?: string;
+  readonly suite?: string;
+  readonly measurementVersion?: string;
+  readonly provenance?: CoverageProvenance;
   readonly files: readonly { readonly path: string; readonly functions: readonly CoverageFunction[] }[];
 }
 
@@ -34,10 +40,11 @@ export function coverageOfRepository(root: string, file: string | undefined): Co
 // The path is relative to the current folder, as the command line gives it.
 export function coverageInFile(path: string): CoverageReport {
   const fields = objectOf(jsonOf(fileText(path)));
-  if (fields.version !== 1 || !Array.isArray(fields.files)) invalid(path);
+  if ((fields.version !== 1 && fields.version !== 2) || !Array.isArray(fields.files)) invalid(path);
   const check: Check = (value) => value ?? invalid(path);
   const unmeasured = unmeasuredNames(fields.unmeasuredFunctions, check);
-  return { files: arrayOf(fields.files).map((entry) => fileOf(objectOf(entry), check, unmeasured)) };
+  return { commit: textOf(fields.commit), suite: textOf(fields.suite), measurementVersion: textOf(fields.measurementVersion),
+    provenance: coverageProvenanceIn(fields.provenance), files: arrayOf(fields.files).map((entry) => fileOf(objectOf(entry), check, unmeasured)) };
 }
 
 function fileText(path: string): string {
@@ -49,7 +56,7 @@ function fileText(path: string): string {
 }
 
 function invalid(path: string): never {
-  throw new CommandError(`The file ${path} is not a valid coverage report of version 1.`);
+  throw new CommandError(`The file ${path} is not a valid coverage report of version 1 or 2.`);
 }
 
 function fileOf(fields: Fields, check: Check, unmeasured: ReadonlySet<string>): CoverageReport['files'][number] {

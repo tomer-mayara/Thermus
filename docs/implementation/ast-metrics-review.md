@@ -38,14 +38,15 @@ The coverage command runs both parts of the unit suite: emitted Node tests
 and source portal tests. Run it, or its live test, only when `src/` changed
 or both complete parts were already selected. A focused unit package or a
 script change alone does not select both complete parts. Reuse a current
-valid report when available; otherwise, a review outside that scope can use
-the architecture report without coverage.
+valid report when available; otherwise, a review outside that scope uses
+the architecture report with `--no-coverage`. The missing or stale report
+does not expand the test selection.
 The coverage-collecting case in `ast-metrics-architecture.live.ts` has the same
 restriction. Its structural case does not collect coverage. The MCP, snapshot,
 and architecture live checks need ast-metrics on PATH and skip when it is absent;
-`ast-metrics-coverage.live.ts` needs no ast-metrics. The coverage live test
-uses a temporary output report. Architecture's coverage live case still
-writes and removes the default report; CR-06 will isolate that output.
+`ast-metrics-coverage.live.ts` needs no ast-metrics. Both coverage-collecting live cases use a temporary output report and
+preserve the default report. The structural architecture case uses
+`--no-coverage` and starts no suite.
 
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
@@ -159,17 +160,21 @@ prove that it is current. If you cannot verify its inputs, use the
 architecture report without coverage.
 
 ```sh
-npm run build
-pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE]
+pnpm exec node script/code-quality/ast-metrics-coverage.ts [--no-build] [--from DIR] [--allow-unverified] [--out FILE]
 ```
 
-The command first runs the emitted Node unit tests (`node --test
---test-concurrency=1 "dist/test/unit/**/*.test.js"`), then the source portal
-unit tests (`node --test "test/unit/user-portal/**/*.test.ts"`). Both runs
-use one temporary `NODE_V8_COVERAGE` folder. Suite output goes to stderr.
-The command writes `ast-report/coverage.json` only after both runs succeed.
-Without `dist/`, it says "Run npm run build first." The command needs no
-ast-metrics. It adds no integration or acceptance suite; CR-11 proposes
+The command first builds the candidate. It then runs the emitted Node unit
+tests (`node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"`),
+then the source portal unit tests (`node --test
+"test/unit/user-portal/**/*.test.ts"`). Both runs use one
+`NODE_V8_COVERAGE` folder. Suite output goes to stderr. The command needs
+no ast-metrics. It publishes `ast-report/coverage.json` atomically only
+after the build, both runs, and the provenance checks succeed. It retains
+the raw capture and its manifest under
+`ast-report/coverage-captures/capture-<unique>/`. The build manifest is
+`dist/.coverage-build.json`. `--no-build` accepts this output only when its
+content hash and current input identity match; timestamps and file sizes
+are insufficient. It adds no integration or acceptance suite; CR-11 proposes
 that extension.
 
 The collector accepts emitted JavaScript under `dist/src/` and source
@@ -219,7 +224,7 @@ functions before exclusion. A valid function with no own characters is
 omitted from measured functions and recorded in `unmeasuredFunctions`
 with `path`, `name`, `start`, `end`, and reason `no-own-characters`. It is
 unmeasured, with neither zero nor full coverage. Measured entries keep a
-numeric share in [0,1]. The report keeps JSON schema `version: 1` and identifies the changed measurement as
+numeric share in [0,1]. New reports use JSON schema `version: 2` and identify the measurement as
 `measurementVersion: "own-characters-1"`.
 
 Every raw offset and count must be a finite nonnegative safe integer. A
@@ -231,13 +236,58 @@ summed calls. It does not clamp invalid data or publish a report after a
 failed suite or invalid capture. Empty raw ranges are invalid; a nonempty
 function with no own characters after subtraction is the unmeasured case.
 
-With `--from DIR`, the command reads earlier V8 files and runs no tests.
-Use files from a current valid complete unit run. Until CR-03 adds original
-capture provenance and input-freshness checks, this option cannot prove the
-capture's original script content, build, suite completeness, or input
-freshness. Its content identity describes the representation available
-when the files are read. A current commit label and `own-characters-1`
-do not remove that limitation.
+#### Capture provenance and reuse
+
+New reports use schema `version: 2`; measurement semantics are separately
+named by `measurementVersion: "own-characters-1"`. Verified `provenance`
+holds `sourceFingerprint`, `inputsFingerprint`, `runtime`, `compiler`,
+`suite: "unit"`, `measurementVersion`, `capturedCommit`, `buildFingerprint`,
+and `captureManifestFingerprint`. The commit is the original capture's
+commit, not the commit of a later import. The capture manifest also binds
+each script's path, representation, and content identity.
+
+The deterministic SHA-256 input identity covers the source tree, tests and
+helpers, non-TypeScript fixtures, scripts, configuration, package manifests,
+lockfiles, patches, migrations, Docker inputs, and files that tests read.
+The selected roots are `src/`, `test/`, `script/`, `patches/`,
+`migrations/`, `docker/`, `.github/`, and `.habit-hooks/`; root files except
+`.md`, `.txt`, and `.log` files; and `docs/lightpanda-runtime.md`, which tests
+read. Markdown outside `src/` and `test/` is excluded from the other
+selected roots. Generated roots `dist/`, `ast-report/`,
+and `coverage/`, plus
+`src/user-portal/dist/` and `src/user-portal/.vite/`, are excluded. So are
+`node_modules/`, `.git/`, and `.DS_Store` at any depth and unrelated prose.
+Markdown fixtures under `test/` remain inputs. Paths use forward
+slashes and lexical order. Length-prefixed path/content entries prevent
+ambiguous concatenation. Symlinks contribute their link text and the content
+of the target that is read; cycles and unsupported file kinds fail. Added,
+deleted, and untracked inputs affect the hash. Executable modes are hashed
+alongside content. Runtime, TypeScript compiler,
+suite, and measurement version are included. This fingerprint is not a Git
+tree ID. The input set is conservative: an included change can invalidate a
+capture even when it does not affect executed code.
+
+The collector checks inputs before and after build and suite execution and
+checks emitted content through the capture. A mutation fails publication.
+`--from DIR` runs no build or suite. It validates the original capture
+manifest and raw content, checks the original input and build identities,
+and preserves the capture commit. Raw V8 URLs are absolute, so import
+requires the original checkout path. Offline rendering of a completed
+report and snapshot has no such restriction. Arbitrary V8 files cannot
+gain verified provenance through import. Missing or invalid provenance,
+including mismatched script evidence, fails by default.
+Explicit `--allow-unverified` permits inspection with status `unverified`,
+a reason, original information when present, and `commit: null` when no
+original commit is available. Such output enables no bands or historical
+CRAP count. A successful raw archive remains available if report publication
+fails; `--from` can recover it. Legacy version-1 reports remain readable,
+but absent provenance is unverified.
+
+A document-only commit can reuse an older verified report when source and
+input fingerprints, runtime, compiler, suite, and measurement version all
+match the analyzed head snapshot. The capture commit label alone does not
+prove compatibility. Offline rendering checks the supplied head snapshot;
+it does not consult the caller's checkout or need Git.
 
 The architecture command reads the report to give each matched measured
 function its CRAP and each community its band (see "Show the architecture
@@ -269,6 +319,10 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
   other communities.
 - `files`: each `src/` file, sorted by path, with its community (or `null`),
   maintainability, decision paths, lines, risk, and functions.
+- `provenance`: source and expected coverage-input fingerprints, runtime,
+  compiler, suite, and measurement version. These inputs are checked before
+  and after analysis. The commit label alone does not identify uncommitted
+  snapshot content.
 
 Snapshots contain no coverage or CRAP. The architecture command joins a
 separate coverage report when it makes its output.
@@ -312,7 +366,7 @@ the diagnostic then names the folder that stays.
 ### Show the architecture delta: `script/code-quality/ast-metrics-architecture.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
+pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--record] [--trend-store DIR] [--timeout-ms MS] [--out FILE]
 ```
 
 The command prints the architecture delta of `src/`, the complexity table of
@@ -329,19 +383,31 @@ from the root, separated by commas), else there are none.
 The coverage comes from `--coverage` (a report of the coverage command,
 relative to the current folder), else from `ast-report/coverage.json` in the
 repository root when that file exists. With `--head` and `--base-snapshot`,
-only `--coverage` gives it. A file that is not a coverage report of version
-1 stops the command with exit status 1. Without coverage, the output has no
-bands: the line after the summary line is `Bands need the coverage: run pnpm
-exec node script/code-quality/ast-metrics-coverage.ts first.`, and the graph, the table,
-and the legend are as they were before the bands.
+only `--coverage` gives it. `--no-coverage` ignores any default report and
+is mutually exclusive with `--coverage`. An invalid report envelope still
+fails with exit status 1. Missing, legacy, unverified, incompatible, or
+explicitly skipped coverage does not fail structural rendering. It gives a
+specific reason after the Markdown summary, with no bands,
+CRAP column, or assessed-function list. Report and explicit-skip notices
+also go to stderr; missing coverage is quiet on stderr.
 
-That message describes how to obtain bands; it does not change the selected
-test scope. When coverage collection is outside that scope, the output without
-bands is required, including its graph and legend. Use a current valid report
-if one exists. Move aside a stale default `ast-report/coverage.json` before
-this command so that it does not read that report automatically. Do not run
-the coverage command or its live test to fill this gap for a change outside
-the permitted scope.
+A mismatched verified report gives:
+
+```text
+The coverage report is of another tree (<commit8>): the bands are withheld. Run the coverage command again when the test selection permits it.
+```
+
+The other notices distinguish missing data, no verified coverage provenance,
+a head snapshot without provenance, and an explicit skip. Compatible output
+adds `Coverage: unit suite at <commit8>.` after the complexity section,
+including when no production file changed. The commit names the original
+capture. Legacy snapshots can still show structure; they cannot establish
+coverage compatibility.
+
+These notices do not change the selected test scope. Use verified compatible
+coverage if available. Otherwise use `--no-coverage` when collection is
+outside the permitted scope, keeping the graph and legend. No file needs to
+be moved or deleted.
 
 The output is the header `## Architecture of src/: base <8 characters of the
 base commit> → head`, one summary line (modularity and cross share with two
@@ -354,9 +420,9 @@ always appears. When the map did not change, `The map did not change.`
 appears above it. Equal snapshots with no touched files keep every node and
 dependency without change arrows or touched borders; compatible coverage
 still supplies the bands.
-Without valid coverage, keep the graph and the missing-coverage message,
-without bands. Current parser errors still stop the command; CR-24 adds no
-coverage validity checks or incomplete-assessment behavior from CR-03 or CR-07.
+Without valid coverage, keep the graph and the specific withholding notice,
+without bands. Invalid report envelopes still stop the command. CR-07
+incomplete-assessment behavior remains follow-up work.
 
 Paste the fenced `mermaid` block and its legend unchanged into every pull
 request body, including a pull request that changes only documents or has
@@ -493,25 +559,53 @@ snapshot of the merge base (`modularity`, `crossShare`, `cycles` as a count,
 `functionsOver30`. It holds nothing for each file. The JSON has two spaces and
 a newline at the end, so that two files diff well.
 
-Nobody runs anything at merge time, so a pull request writes the file of its
-own merge base: before the output, the command writes that file when the store
-has no file of that commit under any date. A file that exists stays as it is,
-also when this run gives other numbers, such as a count from another coverage
-run. The count of the functions at CRAP 30 or more of the merge base comes
-from its decision paths with the coverage share of the head, as the bands do,
-so the count in a file is the one of the pull request that wrote the file. Thus the trend lags one pull request behind `main`, and a commit of
-`main` that no pull request used as its base gets no file. The command reads
-the files of the store before it writes: a file with the name of a record that
-is not a valid record of version 1 stops the command with exit status 1, and so
-does a store that it cannot write. Other files of the folder, such as a README,
-do not count. With `--head` and `--base-snapshot`, only `--trend-store DIR`
-(relative to the current folder) gives a store; without it, the section is the
-line `No trend store.`, and the command writes nothing. A configured empty
-store is a different state: the command writes its base record before output,
-so that run shows the base and head rows. The formatter says
-`No snapshot of main in the trend store yet.` if it receives no records from
-a configured store. In a repository, `--trend-store` replaces `docs/metrics/`,
-as the live test does with a temporary folder.
+Architecture runs are read-only unless `--record` is present. The complete
+candidate review uses that flag to record a missing base. Before any write,
+the command validates the store, resolves the full base commit, and verifies
+that it is an ancestor of `origin/main`. The snapshot date must equal the
+commit's committer date, and its source fingerprint must match the immutable
+commit content in a temporary worktree. A custom `--base` is allowed when
+its resolved merge base passes the same check. A verified non-ancestor gives
+`No record: <base8> is not on origin/main.`, shows existing history, and
+writes nothing. Missing refs or unverifiable commit identity fail.
+
+Offline rendering with two snapshot files needs neither Git nor ast-metrics.
+Offline `--record` also needs a repository that can verify the snapshot's
+full base commit and content. It refuses an unverifiable write. Offline mode
+uses only an explicit `--trend-store DIR`; without one the trend section says
+`No trend store.` A configured empty store without `--record` says
+`No snapshot of main in the trend store yet.`
+
+Record identity uses the full SHA. A short filename prefix collision, a
+malformed store, or conflicting records fail before publication. Every
+record-shaped path must be a regular file; its filename date and prefix
+must agree with its content. Required global and community fields and
+optional provenance are validated before a write. A new
+record is published atomically without overwrite, including concurrent
+writers. A store lock bounds contention to five seconds. If a failed run
+leaves `.record-lock`, confirm that no writer is active before removing
+that directory and retrying. An existing record stays byte-for-byte unchanged, also when its
+count is missing or a later run would give another count. Keep the file from
+`main` and drop the candidate's conflicting file during a merge conflict.
+
+Approved D3 retains counts from compatible head coverage as
+`head-derived-estimate`, with the original coverage commit, source and input
+fingerprints, build fingerprint, measurement version, and unknown-function
+count. The base count uses the base's decision paths
+with the head's shares; it is not a measurement of base coverage. The table
+labels historical estimates as `17 (estimate)`, the current head as
+`17 (measured)`, absent counts as `–`, and old unattributed counts as
+`22 (legacy unknown)`. A later pull request can
+produce another estimate for one base, but the stored value belongs to the
+first recording pull request. Missing, stale, or unverified coverage gives
+absent count fields, never zero. Existing legacy counts stay immutable and
+are labeled legacy unknown.
+
+Nobody runs anything at merge time. The trend therefore lags one pull
+request behind `main`, and a commit that no pull request records as a base
+gets no file. In a repository, `--trend-store` replaces `docs/metrics/`, as
+the live test does with a temporary folder. D3 authorizes no base-coverage
+store or merge workflow; those remain D4 and D5.
 
 Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
 diagnostic line for a failure, also for a store that the command cannot read or

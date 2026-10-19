@@ -1,6 +1,7 @@
 import { writeSync } from 'node:fs';
 import type { ArchitectureCommand } from './command-line.ts';
 import { coverageInFile, coverageOfRepository } from './coverage.ts';
+import { coverageForHead, missingCoverage, skippedCoverage } from './coverage-compatibility.ts';
 import { snapshotInFile } from './file.ts';
 import type { MapSources } from './types.ts';
 import { deltaFiles } from '../delta/files.ts';
@@ -13,18 +14,29 @@ type ReportCommand = Extract<ArchitectureCommand, { readonly kind: 'report' }>;
 // Two snapshot files need no repository, so their changed files come from --touched alone and their coverage from
 // --coverage alone. The changed files of a repository follow the delta rule of script/code-quality/ast-metrics-delta.ts, for the
 // files under src/, and its coverage is ast-report/coverage.json of the root when --coverage does not name a file.
-export async function mapSourcesOf({ source, touched, coverage: file }: ReportCommand): Promise<MapSources> {
+export async function mapSourcesOf(command: ReportCommand): Promise<MapSources> {
+  const root = command.source.kind === 'repository' ? repositoryRoot() : undefined;
+  const report = reportOf(command, root);
+  const sources = await snapshotsOf(command, root);
+  const selected = command.noCoverage ? { coverageNotice: skippedCoverage } : coverageForHead(report, sources.head.provenance);
+  if (selected.coverageNotice !== undefined && selected.coverageNotice !== missingCoverage) notice(selected.coverageNotice);
+  return { base: sources.base, head: sources.head, touched: sources.touched, ...selected };
+}
+
+async function snapshotsOf({ source, touched }: ReportCommand, repository: string | undefined) {
   if (source.kind === 'files') {
-    const coverage = file === undefined ? undefined : coverageInFile(file);
-    return { base: snapshotInFile(source.base), head: snapshotInFile(source.head), touched: touched ?? [], coverage };
+    return { base: snapshotInFile(source.base), head: snapshotInFile(source.head), touched: touched ?? [] };
   }
-  const root = repositoryRoot();
-  // The coverage goes before the snapshots, so that a wrong report fails before any analysis runs. The base goes next: it
-  // checks the ref, with the diagnostic of repository.ts.
-  const coverage = coverageOfRepository(root, file);
+  const root = repository ?? repositoryRoot();
   const base = await snapshotOfBase({ root, ref: source.ref, timeoutMs: source.timeoutMs, notice });
   const changed = touched ?? deltaFiles(root, source.ref).filter((path) => path.startsWith('src/'));
-  return { base, head: await snapshotOfTree(root, source.timeoutMs), touched: changed, coverage };
+  return { base, head: await snapshotOfTree(root, source.timeoutMs), touched: changed };
+}
+
+function reportOf({ coverage, noCoverage }: ReportCommand, root: string | undefined) {
+  if (noCoverage) return undefined;
+  if (root !== undefined) return coverageOfRepository(root, coverage);
+  return coverage === undefined ? undefined : coverageInFile(coverage);
 }
 
 // The line goes out at once, because a signal ends the process right after it.

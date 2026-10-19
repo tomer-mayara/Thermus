@@ -160,7 +160,7 @@ test('Given no coverage report, when the report is made, then the summary line h
   assert.deepEqual(report.split('\n').slice(2, 6), [
     'Modularity 0.50 → 0.50 · cross share 0.25 → 0.25 · cycles 0 → 0 · communities 1 → 1',
     '',
-    'Bands need the coverage: run pnpm exec node script/code-quality/ast-metrics-coverage.ts first.',
+    'No coverage report: the bands are withheld. Run the coverage command when the test selection permits it.',
     '',
   ]);
   assert.deepEqual(nodeLines(report), ['  c_known["known<br/>1 file · paths 10"]']);

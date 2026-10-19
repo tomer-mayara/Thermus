@@ -4,6 +4,7 @@
 // tests without git and ast-metrics.
 import { countOf, memberFunctionsOf, totalCountOf } from './bands.ts';
 import type { FileCrap } from './crap.ts';
+import { trendBasisOf, type TrendCoverage, type TrendCrapBasis } from './trend-basis.ts';
 import { textOrder } from './order.ts';
 import type { MapCommunity, MapSnapshot } from './types.ts';
 
@@ -32,22 +33,27 @@ export interface TrendRecord {
   readonly functions: number;
   readonly functionsOver30?: number;
   readonly communities: readonly TrendCommunity[];
+  readonly sourceFingerprint?: string;
+  readonly crap?: TrendCrapBasis;
 }
 
 // The numbers of one row of the trend table.
-export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30'>;
+export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30' | 'crap'>;
 
 // The CRAP of each file of the snapshot, by path, as the CRAP delta gives it.
 type FilesCrap = ReadonlyMap<string, FileCrap>;
 
 // Without coverage, crap is undefined and the record has no count of the functions at CRAP 30 or more.
-export function trendRecordOf(snapshot: MapSnapshot, crap: FilesCrap | undefined): TrendRecord {
+export function trendRecordOf(snapshot: MapSnapshot, crap: FilesCrap | undefined, coverage?: TrendCoverage): TrendRecord {
   const { modularity, crossShare, cycles, maintainability, paths, files, functions } = snapshot.global;
+  const assessed = coverage === undefined ? undefined : crap;
   const communities = [...snapshot.communities].sort((first, second) => textOrder(first.label, second.label));
   return {
     version: 1, commit: snapshot.commit, date: snapshot.date,
-    modularity, crossShare, cycles: cycles.length, maintainability, paths, files, functions, functionsOver30: crap && totalCountOf(crap),
-    communities: communities.map((community) => trendCommunityOf(community, crap)),
+    modularity, crossShare, cycles: cycles.length, maintainability, paths, files, functions, functionsOver30: assessed && totalCountOf(assessed),
+    communities: communities.map((community) => trendCommunityOf(community, assessed)),
+    sourceFingerprint: snapshot.provenance?.sourceFingerprint,
+    crap: assessed && coverage && trendBasisOf(coverage, assessed),
   };
 }
 

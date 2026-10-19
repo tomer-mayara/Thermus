@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { gitStubCommit, pathWithGitStub } from '../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
+import { pathWithGitStub } from '../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
 import { writeV8Coverage, type FunctionRuns, type ProcessRuns } from '../../support/fixtures/v8-coverage.ts';
 import { astMetricsCoverageScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
@@ -17,7 +17,7 @@ const noTools = { env: { PATH: '' } };
 const root = resolve(fileURLToPath(repositoryRoot));
 
 type FunctionEntry = { readonly name: string; readonly start: number; readonly end: number; readonly called: number; readonly coveredShare: number };
-type CoverageReport = { readonly commit: string; readonly files: readonly { readonly path: string; readonly functions: readonly FunctionEntry[] }[] };
+type CoverageReport = { readonly commit: string | null; readonly files: readonly { readonly path: string; readonly functions: readonly FunctionEntry[] }[] };
 
 function temporaryFolder(t: TestContext): string {
   const folder = mkdtempSync(join(tmpdir(), 'thermus-coverage-unit-'));
@@ -28,7 +28,7 @@ function temporaryFolder(t: TestContext): string {
 // The command asks git for the root and the commit of HEAD before it reads the folder. A stub of git answers both from
 // a PATH that holds nothing else, so these cases need no git, as the check stage of the hosted image has none.
 function runFrom(t: TestContext, folder: string, out: string): Promise<ScriptResult> {
-  return runScript(t, astMetricsCoverageScript, { args: ['--from', folder, '--out', out], cwd: dirname(folder), env: { PATH: pathWithGitStub(t, dirname(folder)) } });
+  return runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', folder, '--out', out], cwd: dirname(folder), env: { PATH: pathWithGitStub(t, dirname(folder)) } });
 }
 
 async function reportOf(t: TestContext, processes: readonly ProcessRuns[]): Promise<CoverageReport> {
@@ -48,7 +48,7 @@ test('Given --help, when the coverage command runs, then it explains the run of 
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-coverage\.ts \[--from DIR\] \[--out FILE\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-coverage\.ts \[--from DIR\] \[--out FILE\] \[--no-build\] \[--allow-unverified\] \[--help\]\n/);
   for (const text of ['NODE_V8_COVERAGE', 'dist/test/unit/**/*.test.js', 'npm run build', 'dist/src/', 'ast-report/coverage.json', '__', 'Exit status 1']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
@@ -56,7 +56,7 @@ test('Given --help, when the coverage command runs, then it explains the run of 
 
 for (const [args, diagnostic] of [
   [['--from'], 'Invalid arguments. Use --help for the supported options.'],
-  [['--from', '--out', 'coverage.json'], 'Invalid arguments. Use --help for the supported options.'],
+  [['--allow-unverified', '--from', '--out', 'coverage.json'], 'Invalid arguments. Use --help for the supported options.'],
   [['--to', 'coverage.json'], 'Invalid arguments. Use --help for the supported options.'],
   [['coverage-folder'], 'Invalid arguments. Use --help for the supported options.'],
   [['--from='], 'The --from value must name a folder.'],
@@ -124,10 +124,10 @@ test('Given files and functions in another order, when the coverage command merg
   assert.deepEqual(functionsOf(report, 'src/b.ts').map((entry) => entry.name), ['(anonymous)', 'first', 'early', 'late']);
 });
 
-test('Given the stub of git on PATH, when the coverage command merges a folder, then the report names the commit that the stub reports for HEAD', async (t) => {
+test('Given the stub of git on PATH, when the coverage command merges a folder, then raw inspection has no claimed capture commit', async (t) => {
   const report = await reportOf(t, [{ 'dist/src/a.js': [['', [0, 10, 1]]] }]);
 
-  assert.equal(report.commit, gitStubCommit);
+  assert.equal(report.commit, null);
 });
 
 test('Given --out with a folder that does not exist, when the coverage command runs, then it makes the folder, writes the report there, and names the file', async (t) => {

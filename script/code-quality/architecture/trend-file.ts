@@ -1,36 +1,37 @@
-// A file of the trend store, version 1, as script/code-quality/architecture/trend-store.ts writes it. The check covers
-// the fields that the trend table reads, so that a wrong file, such as a snapshot, fails it.
 import { readFileSync } from 'node:fs';
-import { isoDateOf, jsonOf, numberOf, objectOf, textOf } from '../shared/json.ts';
+import { isoDateOf, jsonOf, objectOf, textOf, type JsonObject } from '../shared/json.ts';
 import type { TrendNumbers } from './trend-record.ts';
+import { countIn, finiteNumber, validStructure } from './trend-validation.ts';
+import { trendBasisIn, validHash } from './trend-basis.ts';
 import { CommandError } from '../shared/repository.ts';
 
-// Gives the value of a field that a record always has, or stops the check.
 type Check = <T>(value: T | undefined) => T;
 
-// The path names the file in the diagnostic. A value that the record does not have, such as the count of the functions
-// at CRAP 30 or more without coverage, stays absent.
 export function trendNumbersInFile(path: string): TrendNumbers {
   const fields = objectOf(jsonOf(fileText(path)));
-  if (fields.version !== 1) invalid(path);
   const check: Check = (value) => value ?? invalid(path);
+  const commit = check(textOf(fields.commit));
+  if (fields.version !== 1 || !/^[a-f0-9]{40}$/u.test(commit) || !validStructure(fields)) invalid(path);
+  validateOptional(fields, path);
   return {
-    commit: check(textOf(fields.commit)),
-    date: check(isoDateOf(fields.date)),
-    modularity: check(numberOf(fields.modularity)),
-    crossShare: check(numberOf(fields.crossShare)),
-    cycles: check(numberOf(fields.cycles)),
-    maintainability: numberOf(fields.maintainability),
-    functionsOver30: numberOf(fields.functionsOver30),
+    commit, date: check(isoDateOf(fields.date)),
+    modularity: check(finiteNumber(fields.modularity)), crossShare: check(finiteNumber(fields.crossShare)),
+    cycles: check(countIn(fields.cycles)), maintainability: finiteNumber(fields.maintainability),
+    functionsOver30: countIn(fields.functionsOver30),
+    ...(fields.crap === undefined ? {} : { crap: check(trendBasisIn(fields.crap)) }),
   };
 }
 
+function validateOptional(fields: JsonObject, path: string): void {
+  if (fields.maintainability !== undefined && finiteNumber(fields.maintainability) === undefined) invalid(path);
+  if (fields.functionsOver30 !== undefined && countIn(fields.functionsOver30) === undefined) invalid(path);
+  if (fields.sourceFingerprint !== undefined && !validHash(fields.sourceFingerprint)) invalid(path);
+  if (fields.crap !== undefined && (fields.functionsOver30 === undefined || trendBasisIn(fields.crap) === undefined)) invalid(path);
+}
+
 function fileText(path: string): string {
-  try {
-    return readFileSync(path, 'utf8');
-  } catch {
-    throw new CommandError(`Cannot read the trend file ${path}.`);
-  }
+  try { return readFileSync(path, 'utf8'); }
+  catch { throw new CommandError(`Cannot read the trend file ${path}.`); }
 }
 
 function invalid(path: string): never {

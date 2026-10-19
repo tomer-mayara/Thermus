@@ -6,7 +6,6 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 import { runScript } from '../../support/processes/script-command.ts';
 import { repositoryGraph } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, noProductionFile } from './fixtures/ast-metrics-architecture-snapshots.ts';
-import { commitCells, trendSection } from './fixtures/ast-metrics-architecture-trend.ts';
 import { jsonReport, repositoryFiles } from './fixtures/ast-metrics-snapshot-answers.ts';
 import { baseDoublesOnPath, foldersLeftIn, worktreesOf } from './fixtures/ast-metrics-snapshot-base.ts';
 import { GitRepository } from './fixtures/git-repository.ts';
@@ -42,7 +41,7 @@ test('Given a branch that changes only a document, no coverage, and both doubles
     '',
     ...noProductionFile,
     '',
-    ...trendSection([`${commitCells(repository, 'main')} 0.42 | 0.33 | 1 | 70.3 | – |`, '| this pull request | | 0.42 | 0.33 | 1 | 70.3 | – |']),
+    '## Trend of src/ on main', '', 'No snapshot of main in the trend store yet.',
     '',
   ].join('\n'));
   assert.equal(result.code, 0);

@@ -156,7 +156,10 @@ source layout, Usage/Options contracts, and the complete ordinary/live test
 inventory. Select affected tests from that inventory; the full list does not
 require a run of every file. The documentation contract runs each command's
 help without child processes and checks the same test set in both guides.
-The architecture and coverage live files collect both complete parts of the
-unit suite: emitted Node tests and source portal tests. Their scope follows
-the test gate policy. Direct
+The coverage command builds first and collects both complete parts of the
+unit suite: emitted Node tests and source portal tests. Its live file and
+the coverage case of the architecture live file have the same scope under
+the test gate policy. Both use private output reports. Structural
+architecture uses `--no-coverage`. Exploratory architecture is read-only;
+`--record` verifies and records a missing base on `origin/main`. Direct
 `ast-metrics baseline` remains the documented exception until its wrapper exists.

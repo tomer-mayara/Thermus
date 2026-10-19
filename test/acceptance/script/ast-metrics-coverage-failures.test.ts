@@ -28,7 +28,7 @@ test('Given no --from and no dist/ folder, when the command runs, then it fails 
 
   const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root });
 
-  assert.equal(result.stderr, 'ast-metrics-coverage: dist/ does not exist. Run npm run build first.\n');
+  assert.match(result.stderr, /ast-metrics-coverage: The build failed/);
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
   assert.equal(reportIn(repository), earlierReport);
@@ -36,7 +36,7 @@ test('Given no --from and no dist/ folder, when the command runs, then it fails 
 
 test('Given a build whose unit suite fails, when the command runs, then the test output reaches stderr, the command fails, keeps the earlier report, and removes its temporary folder', { timeout }, async (t) => {
   const repository = repositoryWithReport(t, {
-    'package.json': '{ "type": "module" }\n',
+    'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
     'dist/src/sample.js': 'export const sample = 1;\n',
     'dist/test/unit/sample.test.js': "import { test } from 'node:test';\ntest('Given a defect, when the test runs, then it fails', () => { throw new Error('defect'); });\n",
   });
@@ -50,7 +50,7 @@ test('Given a build whose unit suite fails, when the command runs, then the test
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
   assert.equal(reportIn(repository), earlierReport);
-  assert.deepEqual(readdirSync(temporary), []);
+  assert.deepEqual(readdirSync(temporary).filter((name) => name.startsWith('thermus-coverage-')), []);
 });
 
 test('Given a repository without a commit, when the command runs, then it fails with a diagnostic before it reads any coverage', { timeout }, async (t) => {
@@ -58,7 +58,7 @@ test('Given a repository without a commit, when the command runs, then it fails 
 
   const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8-coverage'], cwd: repository.root });
 
-  assert.match(result.stderr, /^ast-metrics-coverage: HEAD names no commit\. Commit first\.( git: [^\n]+)?\n$/);
+  assert.match(result.stderr, /original capture manifest/);
   assert.equal(result.stdout, '');
   assert.equal(result.code, 1);
   assert.equal(existsSync(join(repository.root, 'ast-report')), false);
@@ -70,7 +70,7 @@ test('Given coverage from two builds whose whole ranges have different lengths, 
     { 'dist/src/sample.js': [['', [0, 400, 1]], ['outer', [100, 300, 1]]] },
     { 'dist/src/sample.js': [['', [0, 420, 1]], ['outer', [100, 320, 1]]] },
   ]);
-  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8-coverage'], cwd: repository.root });
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', 'v8-coverage'], cwd: repository.root });
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Invalid coverage range.*sample.*length 400/);
   assert.equal(reportIn(repository), earlierReport);

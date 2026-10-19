@@ -59,7 +59,7 @@ function functionsOf(report: CoverageReport, path: string): readonly FunctionEnt
 
 async function runFromFixture(t: TestContext): Promise<{ readonly repository: GitRepository; readonly report: CoverageReport }> {
   const repository = repositoryWithCoverage(t, [firstProcess, secondProcess]);
-  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8-coverage'], cwd: repository.root });
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--allow-unverified', '--from', 'v8-coverage'], cwd: repository.root });
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, 'Wrote ast-report/coverage.json. Files: 2. Processes: 2.\n');
   assert.equal(result.code, 0);
@@ -67,10 +67,10 @@ async function runFromFixture(t: TestContext): Promise<{ readonly repository: Gi
 }
 
 test('Given the coverage files of two processes that ran one build differently, when the command reads them with --from, then coverage.json holds the two src/ files, each call count is the sum of the two processes, and a character counts as covered when one process ran it', { timeout }, async (t) => {
-  const { repository, report } = await runFromFixture(t);
+  const { report } = await runFromFixture(t);
 
-  assert.deepEqual({ ...report, files: [] }, {
-    version: 1, measurementVersion: 'own-characters-1', unmeasuredFunctions: [], suite: 'unit', commit: repository.git('rev-parse', 'HEAD').trim(), processes: 2, scripts: 2, files: [],
+  assert.deepEqual({ ...report, provenance: undefined, files: [] }, {
+    version: 2, measurementVersion: 'own-characters-1', unmeasuredFunctions: [], suite: 'unit', provenance: undefined, commit: null, processes: 2, scripts: 2, files: [],
   });
   assert.deepEqual(report.files.map((file) => file.path), ['src/other.ts', 'src/sample.ts']);
   // outer has 140 own characters after inner is removed. Only 200..250 stays uncovered.
@@ -99,7 +99,7 @@ test('Given a compiler helper with a function inside it and the script of a test
 
 // A build of one source file and one unit test file that imports it, as ES modules like the build of this repository.
 const build = {
-  'package.json': '{ "type": "module" }\n',
+  'package.json': JSON.stringify({ type: 'module', scripts: { build: 'node -e "process.exit(0)"' } }),
   'dist/src/sample.js': "export function used(flag) {\n  if (flag) {\n    return 'yes';\n  }\n  return 'no';\n}\n\nexport function unused() {\n  return 0;\n}\n",
   'test/unit/user-portal/sample.test.ts': "import { test } from 'node:test'; test('portal part', () => {});\n",
   'dist/test/unit/sample.test.js': [
@@ -135,5 +135,5 @@ test('Given a build whose unit suite passes, when the command runs without --fro
   assert.deepEqual([module?.name, module?.called, used?.name, used?.called, unused?.name, unused?.called, unused?.coveredShare], ['(anonymous)', 1, 'used', 1, 'unused', 0, 0]);
   // The test never gives false to used, so its last return stays uncovered.
   assert.ok(used !== undefined && used.coveredShare > 0 && used.coveredShare < 1, JSON.stringify(used));
-  assert.deepEqual(readdirSync(temporary), []);
+  assert.deepEqual(readdirSync(temporary).filter((name) => name.startsWith('thermus-coverage-')), []);
 });

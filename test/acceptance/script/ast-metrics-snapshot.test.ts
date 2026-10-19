@@ -70,7 +70,8 @@ test('Given the doubles with the answers of a small repository, when the snapsho
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, 'Wrote ast-report/snapshot.json: 3 communities, 4 files, 5 functions.\n');
   assert.equal(result.code, 0);
-  const { commit, date, ...snapshot } = snapshotIn(join(repository.root, 'ast-report', 'snapshot.json')) as { readonly commit: string; readonly date: string };
+  const { commit, date, provenance, ...snapshot } = snapshotIn(join(repository.root, 'ast-report', 'snapshot.json')) as { readonly commit: string; readonly date: string; readonly provenance: unknown };
+  assert.ok(provenance);
   assert.deepEqual(snapshot, expectedSnapshot);
   assert.deepEqual({ commit, date }, { commit: repository.git('rev-parse', 'HEAD').trim(), date: repository.git('show', '-s', '--format=%cI', 'HEAD').trim() });
   assert.deepEqual(doubles.server.calls(), [

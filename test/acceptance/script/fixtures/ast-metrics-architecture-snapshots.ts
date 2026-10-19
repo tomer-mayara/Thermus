@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs';
+import type { InputIdentity } from '../../../../script/code-quality/provenance/types.ts';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { dataDirectory } from '../../../support/isolation/data-directory.ts';
@@ -47,6 +48,7 @@ export interface FileShape {
 }
 
 export interface SnapshotShape {
+  readonly provenance?: InputIdentity;
   readonly version: 1;
   readonly commit: string;
   readonly date: string;
@@ -59,7 +61,7 @@ export interface SnapshotShape {
 export const legend = 'Legend: thick border = a community this pull request touched; `· new` and `· gone` = a community or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base.';
 
 // Without a coverage report, this line follows the summary line.
-export const bandsNeedTheCoverage = 'Bands need the coverage: run pnpm exec node script/code-quality/ast-metrics-coverage.ts first.';
+export const bandsNeedTheCoverage = 'No coverage report: the bands are withheld. Run the coverage command when the test selection permits it.';
 
 export const complexityHeading = '## Complexity of the changed files';
 export const tableHead = ['| File | Maintainability | Decision paths | Risk rank |', '| --- | --- | --- | --- |'];

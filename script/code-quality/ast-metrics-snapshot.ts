@@ -15,7 +15,10 @@ the command runs ast-metrics analyze src for the JSON report, then one session
 of the MCP server (ast-metrics mcp src) with get_communities and
 get_file_metrics for each src/ file. Both analyze src/ alone, so that code
 outside src/ cannot regroup its communities. The snapshot names the commit and
-the date of HEAD; the files can hold changes that are not committed.
+the date of HEAD; the files can hold changes that are not committed. It also
+records the source and expected coverage input fingerprints, suite, measurement
+version, runtime, and compiler. Inputs must stay the same during capture; a
+change stops publication.
 
 With --base, the snapshot is of the merge base of REF and HEAD: the command adds
 a temporary worktree of that commit in the system temporary folder, with no hook

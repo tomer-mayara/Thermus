@@ -1,64 +1,67 @@
-// The trend store of docs/implementation/architecture-evolution-plan.md ("The views", view 3): a folder with one record
-// file for each commit of main that a pull request used as its base. Nobody runs anything at merge time, so each pull
-// request writes the record of its own base, and the trend lags one pull request behind main.
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { linkSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { textOrder } from './order.ts';
 import { trendNumbersInFile } from './trend-file.ts';
+import { withTrendLock } from './trend-lock.ts';
 import type { TrendNumbers, TrendRecord } from './trend-record.ts';
 import { CommandError } from '../shared/repository.ts';
 
-// The name of a record file: the day of the date of the commit, in the time zone of the commit, and the first eight
-// characters of the commit. A file with another name, such as a README, is no record.
 const recordName = /^\d{4}-\d{2}-\d{2}-([0-9a-f]{8})\.json$/u;
-const shownRecords = 10;
+interface StoredRecord { readonly name: string; readonly numbers: TrendNumbers }
 
-interface StoredRecord {
-  readonly name: string;
-  readonly numbers: TrendNumbers;
+// No base means read only. A writer scans and validates every record under one store lock.
+export function trendOfStore(folder: string, base?: TrendRecord): TrendNumbers[] {
+  if (base === undefined) return latestOf(storedRecordsIn(folder));
+  return withTrendLock(folder, () => recordedTrend(folder, base));
 }
 
-// Gives the last records of the store after the record of the base went to it. The store keeps the file of a commit
-// under any date: a later pull request with the same base keeps it, also when its numbers differ, such as a count from
-// another coverage run. The store reads its files first, so that a store with a wrong file gets no new file.
-export function trendOfStore(folder: string, base: TrendRecord): TrendNumbers[] {
+function recordedTrend(folder: string, base: TrendRecord): TrendNumbers[] {
   const records = storedRecordsIn(folder);
-  const commit = base.commit.slice(0, 8);
-  if (records.some(({ name }) => recordName.exec(name)?.[1] === commit)) return latestOf(records);
+  if (records.some(({ numbers }) => numbers.commit === base.commit)) return latestOf(records);
+  if (records.some(({ numbers }) => numbers.commit.slice(0, 8) === base.commit.slice(0, 8))) {
+    throw new CommandError(`The trend store has a commit prefix collision for ${base.commit.slice(0, 8)}.`);
+  }
   return latestOf([...records, { name: writtenRecord(folder, base), numbers: base }]);
 }
 
-// The last ten records by the time of their dates, oldest first. Two records of the same time come in the order of their
-// file names.
 function latestOf(records: readonly StoredRecord[]): TrendNumbers[] {
   const timeOf = ({ numbers }: StoredRecord) => Date.parse(numbers.date);
   const sorted = [...records].sort((first, second) => timeOf(first) - timeOf(second) || textOrder(first.name, second.name));
-  return sorted.slice(-shownRecords).map(({ numbers }) => numbers);
+  return sorted.slice(-10).map(({ numbers }) => numbers);
 }
 
 function storedRecordsIn(folder: string): StoredRecord[] {
-  return recordNamesIn(folder).map((name) => ({ name, numbers: trendNumbersInFile(join(folder, name)) }));
+  const records = recordNamesIn(folder).map((name) => ({ name, numbers: trendNumbersInFile(join(folder, name)) }));
+  const prefixes = new Set<string>();
+  for (const { name, numbers } of records) {
+    const prefix = recordName.exec(name)?.[1];
+    if (prefix !== numbers.commit.slice(0, 8) || !name.startsWith(numbers.date.slice(0, 10)) || prefixes.has(prefix)) throw new CommandError(`The trend store has a commit prefix collision or duplicate record in ${name}.`);
+    prefixes.add(prefix);
+  }
+  return records;
 }
 
-// A folder that does not exist holds no record. Nor does a path that is not a folder: the write then fails and names
-// the file that it could not write.
 function recordNamesIn(folder: string): string[] {
   try {
-    return readdirSync(folder, { withFileTypes: true }).filter((entry) => entry.isFile() && recordName.test(entry.name)).map((entry) => entry.name);
+    const entries = readdirSync(folder, { withFileTypes: true }).filter((entry) => recordName.test(entry.name));
+    if (entries.some((entry) => !entry.isFile())) throw new CommandError(`The trend store ${folder} has a record path that is not a regular file.`);
+    return entries.map((entry) => entry.name);
   } catch (error) {
-    if (['ENOENT', 'ENOTDIR'].includes((error as NodeJS.ErrnoException).code ?? '')) return [];
+    if (error instanceof CommandError) throw error;
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw new CommandError(`Cannot read the trend store ${folder}.`);
   }
 }
 
-// JSON with two spaces and a newline at the end, so that the files of two commits diff well.
+// A hard link publishes the completed bytes without replacing an existing file.
 function writtenRecord(folder: string, record: TrendRecord): string {
   const name = `${record.date.slice(0, 10)}-${record.commit.slice(0, 8)}.json`;
+  const temporary = join(folder, `.record-${randomUUID()}.tmp`);
   try {
-    mkdirSync(folder, { recursive: true });
-    writeFileSync(join(folder, name), `${JSON.stringify(record, null, 2)}\n`);
-  } catch {
-    throw new CommandError(`Cannot write the trend file ${join(folder, name)}.`);
-  }
+    writeFileSync(temporary, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
+    linkSync(temporary, join(folder, name));
+  } catch { throw new CommandError(`Cannot publish the trend file ${join(folder, name)} without overwrite.`); }
+  finally { try { unlinkSync(temporary); } catch { /* No temporary file was created. */ } }
   return name;
 }

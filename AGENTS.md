@@ -131,20 +131,20 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    commit the new `.ast-metrics-baseline.yaml`. Then the next pull request
    does not get the finding again. Put the Markdown output in the pull
    request description. Reuse current valid unit coverage when available.
-   If none is available, run `npm run build` and
+   If none is available, run
    `pnpm exec node script/code-quality/ast-metrics-coverage.ts` (about 90 seconds)
    only when `src/` changed or both complete parts of the unit suite were
    already selected by the test gate policy: emitted Node tests and source
-   portal tests. The command runs both complete parts; its live test has
-   the same restriction. Coverage must describe
-   the candidate's source, unit-test, and build inputs, including test helpers
-   and fixtures. A commit that changes only documents does not invalidate
-   coverage when those inputs are unchanged. Move aside a stale default
-   `ast-report/coverage.json` before the architecture command. For any other
-   selection without valid coverage, use the architecture output without
-   bands; its missing-coverage message does not require a broader test run.
+   portal tests. The command builds first and runs both complete parts; its
+   live test has the same restriction. Reuse requires verified capture provenance that
+   matches the candidate snapshot's source, unit-test, and build inputs,
+   including helpers and fixtures. A document-only commit can reuse an older
+   capture when these inputs match. For any other selection without valid
+   coverage, run architecture with `--no-coverage`; keep its output without
+   bands. A missing or stale report does not require a broader test run.
    Then run
-   `pnpm exec node script/code-quality/ast-metrics-architecture.ts` and put its output
+   `pnpm exec node script/code-quality/ast-metrics-architecture.ts --record`
+   (add `--no-coverage` when needed) and put its output
    in the pull request description too: the architecture delta of `src/`,
    the complexity table of the changed files, and the trend table of `src/`
    on `main`. Paste the fenced `mermaid` graph and its legend unchanged on
@@ -157,11 +157,14 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    for a kept finding of step 5, or when the pull request changes the
    rules in `.ast-metrics.yaml`. Then run `ast-metrics baseline` and commit
    the new file.
-7. The architecture command of step 5 writes the record of the base
-   commit of the pull request to `docs/metrics/` when that commit has no
-   record yet. The new file is part of the pull request: commit it. Do not
-   change a file that is in `docs/metrics/` already. Nothing runs when a
-   pull request merges, so these files are the only history of `main`.
+7. The architecture command writes a new base record only with `--record`.
+   It verifies the full base commit and its ancestry on `origin/main` before
+   writing. Commit a new record under `docs/metrics/` with the pull request.
+   Existing records are immutable, including records without a coverage
+   count. If a merge conflicts on a record, keep the file from `main` and
+   drop the candidate's conflicting file. Exploratory runs omit `--record`.
+   Nothing runs when a pull request merges, so these files are the only
+   history of `main`.
 
 The MCP server of ast-metrics runs only for the time of one call: the
 command starts it, makes the call, prints the answer, and stops it. Do not

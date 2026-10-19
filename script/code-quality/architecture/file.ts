@@ -2,6 +2,7 @@
 // that the map, the complexity table, and the trend read, so that a wrong file, such as another report of ast-metrics,
 // fails it.
 import { readFileSync } from 'node:fs';
+import { inputIdentityIn } from '../provenance/read.ts';
 import { arrayOf, isoDateOf, jsonOf, numberOf, objectOf, textOf, textsOf } from '../shared/json.ts';
 import type { MapSnapshot } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
@@ -39,6 +40,7 @@ function snapshotOf(fields: Fields, check: Check): MapSnapshot {
   return {
     commit: check(textOf(fields.commit)),
     date: check(isoDateOf(fields.date)),
+    provenance: inputIdentityIn(fields.provenance),
     global: {
       modularity: check(numberOf(global.modularity)), crossShare: check(numberOf(global.crossShare)), cycles: arrayOf(global.cycles).map(textsOf),
       maintainability: numberOf(global.maintainability), paths: check(numberOf(global.paths)), files: check(numberOf(global.files)), functions: check(numberOf(global.functions)),

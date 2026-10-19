@@ -1,6 +1,8 @@
 // A file of src/ that no process of the run loaded is not in the report: the coverage files do not name it.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { dirname } from 'node:path';
+import type { CoverageProvenance } from '../provenance/types.ts';
 import type { MergedCoverage, MergedFunction, MergedScript } from './merge.ts';
 import { CommandError } from '../shared/repository.ts';
 
@@ -11,20 +13,23 @@ type UnmeasuredFunction = { readonly path: string; readonly name: string; readon
 // suite: the suite whose run gave the coverage. processes: the coverage files that the command read. scripts: the
 // scripts of the build of src/ in them.
 type CoverageReport = {
-  readonly version: 1; readonly measurementVersion: 'own-characters-1'; readonly unmeasuredFunctions: readonly UnmeasuredFunction[]; readonly suite: 'unit'; readonly commit: string;
+  readonly version: 2; readonly measurementVersion: 'own-characters-1'; readonly unmeasuredFunctions: readonly UnmeasuredFunction[]; readonly suite: 'unit'; readonly commit: string | null; readonly provenance: CoverageProvenance;
   readonly processes: number; readonly scripts: number; readonly files: readonly FileCoverage[];
 };
 
 // The files come in the order of their paths and the functions in the order of their start, so that two reports
 // of one tree are equal and two reports of two trees give a short diff.
-export function writeCoverageReport(file: string, commit: string, { processes, scripts }: MergedCoverage): CoverageReport {
+export function writeCoverageReport(file: string, origin: { commit: string | null; provenance: CoverageProvenance }, { processes, scripts }: MergedCoverage): CoverageReport {
   const files = [...scripts].map(([path, script]) => fileCoverageOf(path, script)).sort((first, second) => (first.path < second.path ? -1 : 1));
   const unmeasuredFunctions = [...scripts].sort(([first], [second]) => first < second ? -1 : 1).flatMap(([path, script]) => orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters === 0).map(({ name, start, end }): UnmeasuredFunction => ({ path, name: name || '(anonymous)', start, end, reason: 'no-own-characters' })));
-  const report: CoverageReport = { version: 1, measurementVersion: 'own-characters-1', unmeasuredFunctions, suite: 'unit', commit, processes, scripts: scripts.size, files };
+  const report: CoverageReport = { version: 2, measurementVersion: 'own-characters-1', unmeasuredFunctions, suite: 'unit', ...origin, processes, scripts: scripts.size, files };
+  const temporary = `${file}.${randomUUID()}.tmp`;
   try {
-    mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, `${JSON.stringify(report, null, 2)}\n`);
+    fs.mkdirSync(dirname(file), { recursive: true });
+    fs.writeFileSync(temporary, `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });
+    fs.renameSync(temporary, file);
   } catch {
+    fs.rmSync(temporary, { force: true });
     throw new CommandError(`Cannot write the report ${file}.`);
   }
   return report;

@@ -6,8 +6,8 @@ of the tool. The current direct-call exception is `ast-metrics baseline`:
 use it only for a retained high-severity review finding with a written reason,
 or when `.ast-metrics.yaml` rules change. Commit the resulting baseline. A
 violation already on `main` is not a third exception. Run the commands from
-the repository root; the static commands need no build. A coverage run needs
-compiled Node unit tests and source portal unit tests. Delta, review, MCP,
+the repository root; the static commands need no build. A coverage run builds
+compiled Node unit tests before it runs both complete unit parts. Delta, review, MCP,
 snapshot, and online architecture runs need `ast-metrics` on PATH (`brew install ast-metrics/tap/ast-metrics`
 on macOS; the process is
 verified with 0.43.1). The
@@ -29,7 +29,8 @@ The six command entry points stay in this folder:
 | `ast-metrics-snapshot.ts` | Capture the metrics of one source tree. |
 
 Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
-`coverage/`, and `architecture/`. The `shared/` folder holds JSON readers,
+`coverage/`, `architecture/`, and `provenance/`. The last folder owns input
+identity and its checked readers. The `shared/` folder holds JSON readers,
 number calculations, and repository commands that more than one task uses.
 
 Select tests with the [test gate policy](../../docs/implementation/test-gate-policy.md).
@@ -131,7 +132,7 @@ listed scope.
 
 ## Measure the coverage per function
 
-Build first with `pnpm run build`. Run this command, or its live test, only
+The command builds first. Run it, or its live test, only
 when `src/` changed or both complete parts of the unit suite were already
 selected: emitted Node tests and source portal tests. A focused unit package
 does not select both complete parts. Reuse current valid coverage when available;
@@ -142,20 +143,26 @@ A commit that changes only documents does not invalidate coverage when those
 inputs are unchanged.
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE] [--no-build] [--allow-unverified] [--help]
 
 Options:
   --from DIR    Read the coverage files of an earlier run of the unit suite from
                 DIR, and do not run the suite
+  --no-build    Reuse dist/ only with a matching .coverage-build.json manifest
+  --allow-unverified  Inspect --from data without verified capture evidence
   --out FILE    Write the report to FILE (default: ast-report/coverage.json)
   --help, -h    Show this help
 ```
 
-Runs `node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"`, then
+Runs `npm run build`, then
+`node --test --test-concurrency=1 "dist/test/unit/**/*.test.js"`, then
 `node --test "test/unit/user-portal/**/*.test.ts"`, with one temporary
-`NODE_V8_COVERAGE` folder. Suite output goes to stderr. Writes
-`ast-report/coverage.json` only after both runs succeed. The report keeps
-`suite: "unit"` and schema `version: 1`; `measurementVersion` is
+`NODE_V8_COVERAGE` folder. Suite output goes to stderr. It checks inputs
+and output throughout capture and atomically publishes
+`ast-report/coverage.json` only after both runs succeed. Successful raw data
+and `capture-manifest.json` stay under
+`ast-report/coverage-captures/capture-<unique>/`. The report keeps
+`suite: "unit"` and schema `version: 2`; `measurementVersion` is
 `own-characters-1`.
 
 Each source file records `representation` (`emitted-javascript` or
@@ -190,25 +197,46 @@ crossing ranges, conflicting content identities, and unsafe summed calls.
 Every offset and count must be a finite nonnegative safe integer. Valid
 nonempty functions with no own characters are unmeasured, not invalid.
 
-`--from DIR` reads earlier coverage files and runs no tests. Until CR-03,
-it cannot prove original capture content, complete suite execution, or input
-freshness. The recorded content identity describes the script available
-when the files are read. Only a complete verified report can establish
-that an absent file was not loaded by the selected suite. The command and
-its live test need no ast-metrics. Exit status 0 means the report was
-written. Exit status 1 follows a missing `dist/`, a failed suite, or invalid
-coverage; then no report is written. The
-[ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
-gives the share and capture limits.
+Verified `provenance` holds the source and input fingerprints, runtime,
+compiler, unit suite, measurement version, original `capturedCommit`,
+`buildFingerprint`, and `captureManifestFingerprint`. It covers test helpers,
+fixtures, configuration, manifests, lockfiles, and other test inputs as well
+as TypeScript. Paths, content, and executable modes are hashed in lexical
+order with unambiguous framing. Symlinks include their link text and target
+content; dangling links and cycles fail. Generated output and unrelated
+prose do not affect this identity. Markdown fixtures under `src/` and
+`test/` remain inputs. See the
+[review guide](../../docs/implementation/ast-metrics-review.md#capture-provenance-and-reuse)
+for the exact input selection and limits.
 
-Focused tests: select the `ast-metrics-coverage*.test.ts` rows in the
+`--no-build` reuses output only when `dist/.coverage-build.json` verifies
+current inputs and all emitted content. `--from DIR` starts no build or
+suite. It validates the original capture manifest, raw content, script
+identities, and current inputs/build, preserving the original commit. Raw
+V8 URLs are absolute: import requires the original checkout path. This
+restriction does not apply to offline rendering of a completed report and
+snapshot. Arbitrary raw data cannot become verified by import.
+`--allow-unverified` is valid only with `--from`; it writes inspection data
+with an explicit reason, available original information, and `commit: null`
+when no original commit is available. Neither such output nor legacy
+version-1 reports without verified provenance enable bands or historical
+counts. `--no-build` and `--from` are mutually exclusive.
+Only a complete verified report can establish that an absent file was not
+loaded by the selected suite. The command and its live test need no
+ast-metrics. Exit status 0 means the report was written. A failed build,
+suite, provenance check, or invalid capture exits 1 and preserves an earlier
+report. If report publication fails after a successful archive, its raw data
+remain available for `--from` recovery.
+
+Focused tests: select the `ast-metrics-coverage*.test.ts` and
+`ast-metrics-provenance-*.test.ts` rows in the
 [available test inventory](#available-tests). Run a live row only within its
 listed scope.
 
 ## Show the architecture delta
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE] [--trend-store DIR] [--timeout-ms MS] [--out FILE] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--help]
 
 Options:
   --base REF            The base of the pull request (default: origin/main)
@@ -218,6 +246,8 @@ Options:
                         commas, in place of the changed files of git
   --coverage FILE       Read the coverage report from FILE (default in a
                         repository: ast-report/coverage.json when it exists)
+  --no-coverage         Ignore default coverage and print structure without bands
+  --record              Record a verified base on origin/main in the trend store
   --trend-store DIR     Use DIR as the trend store, relative to the current
                         folder (default in a repository: docs/metrics of the root)
   --timeout-ms MS       Deadline of each MCP session (100..300000; default: 60000)
@@ -239,30 +269,53 @@ head, or `No production file changed.` By default it snapshots the merge base of
 `--base` (default `origin/main`) in a temporary worktree and the working
 tree, and the changed files follow the rule of the delta command; with
 `--head` and `--base-snapshot` it reads two snapshot files and runs no tool
-(`--touched` then names the changed files). With the report of the coverage
+(`--touched` then names the changed files). With a verified compatible report of the coverage
 command (`--coverage`, or `ast-report/coverage.json` of the repository),
 each community gets a CRAP band (good, warning, or critical) from its
 functions at CRAP 30 or more and their change against the base, the table
 gets the column `CRAP ≥ 30`, and a list names each function that the pull
-request added or made worse. Last, it writes the record of the merge base to
-the trend store `docs/metrics/` (or `--trend-store`) when the store has no
-record of that commit, and prints the trend table of the last ten records of
-`main` with the head as the last row. Exit status 0 when the Markdown is
-printed; 1 with one diagnostic line for a failure. The
+request added or made worse. Last, it prints the trend table of the last
+ten records of `main` with the head as the last row. Only `--record` writes
+a missing merge-base record to `docs/metrics/` (or `--trend-store`). It
+verifies the full base commit, its ancestry on `origin/main`, and its source
+content and committer date before writing. Offline `--record` also needs a repository for
+these checks. A non-ancestor gives `No record: <base8> is not on origin/main.`
+and renders existing history without a write. Missing refs and unverifiable
+identity fail. Records use full SHAs; prefix collisions and malformed stores
+fail. Record-shaped directories and symlinks also fail. Atomic publication
+never overwrites an existing record, including
+concurrent writes. Keep the record from `main` in a merge conflict. Exit
+status 0 when the Markdown is printed; 1 with one diagnostic line for a failure. The
 [ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
 gives the matching rule, the encoding, the bands, the rules of the table, and
 the trend store.
 
-Move aside a stale default `ast-report/coverage.json` before the architecture
-run. Its missing-coverage message does not require a broader test run; use
-the graph and legend without bands when no current valid coverage is available
-and the selection does not permit collection. Paste the fenced `mermaid` block
-and its legend unchanged into every pull request body, including a pull request
-that changes only documents or has no valid coverage. Bands require compatible
-coverage; the graph does not require collection. Without a trend store in offline
-mode, the section says `No trend store.` A configured store receives the base
-record before the table is printed. An empty store passed directly to the
-trend formatter says `No snapshot of main in the trend store yet.`
+Coverage must match the supplied head snapshot's source and input
+fingerprints, runtime, compiler, unit suite, and measurement version.
+`--no-coverage` ignores default coverage and conflicts with `--coverage`.
+Missing, legacy, unverified, or stale coverage withholds bands, the CRAP
+column, and assessed-function list, with a specific notice after the summary.
+Report and explicit-skip notices also go to stderr. Structural rendering
+still exits 0. A stale report names the original capture commit; compatible
+output says `Coverage: unit suite at <commit8>.` after complexity, also when
+no production file changed. An older capture can match after a prose-only
+commit. Offline matching uses only the supplied head's provenance and needs
+no Git; a legacy head cannot establish compatibility.
+
+A missing or stale report does not authorize a broader suite. Use
+`--no-coverage` outside the collection scope. Paste the fenced `mermaid`
+block and legend unchanged into every pull request body, including one
+that changes only documents or has no valid coverage.
+
+Stored head-derived counts are labeled `estimate`, the head row is
+`measured`, old counts without provenance are `legacy unknown`, and absent
+counts show `–`. Estimate provenance records the original coverage commit,
+fingerprints, measurement version, and unknown-function count. The stored
+value belongs to the first recording pull request; another head can give a
+different estimate for the same base. Missing counts stay missing.
+Without an offline trend store, the section says `No trend store.` A
+configured empty store without `--record` says
+`No snapshot of main in the trend store yet.`
 
 Focused tests: select the `ast-metrics-architecture*.test.ts` rows in the
 [available test inventory](#available-tests). Run a live row only within its
@@ -288,7 +341,10 @@ Writes the snapshot of the working tree to `ast-report/snapshot.json`, or to
 `src/` file with its metrics and functions, from one `ast-metrics analyze
 src` run and one session of `ast-metrics mcp src`, so that only a change of
 `src/` changes the communities. The file is written only after all calls
-succeeded. Exit status 0 means the snapshot was written. `--timeout-ms`
+succeeded and its input identity is unchanged. The optional `provenance`
+field holds source and expected coverage-input fingerprints, runtime,
+compiler, suite, and measurement version. Legacy snapshots remain readable
+for structure. Exit status 0 means the snapshot was written. `--timeout-ms`
 sets the deadline of the session (default 60000
 ms). Exit status 1, with one diagnostic line on stderr, for a missing
 executable, a failed analysis, or a failed call. With `--base REF`, the
@@ -349,6 +405,8 @@ the complete graph without bands and proves that no test suite runs.
 | --- | --- | --- |
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-repository-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
@@ -356,6 +414,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
@@ -369,6 +428,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
@@ -376,17 +436,24 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-provenance.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-file.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-provenance.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-publication.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 <!-- code-quality-tests:end -->
