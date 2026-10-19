@@ -309,8 +309,13 @@ processes, not application suites.
 `test/unit/script/ast-metrics-coverage-seal.test.ts` checks request identities:
 positive integral PID, nonnegative integral thread ID, supported protocol,
 capture hash, nonce, and accepted request fields. Invalid requests cannot
-authorize a seal. Two real-fork regression cases check normal exit and delayed
-product IPC without an injected seal message listener.
+authorize a seal. Real-fork regression cases check normal exit and delayed
+product IPC without an injected seal message listener. A 15-second startup
+guard waits for child readiness after the capture preload and product listener
+setup. The original two-second exit guard starts at that readiness, and product
+IPC waits another 150 milliseconds before sending. A slow-start case exceeds
+two seconds before readiness to keep startup separate from the exit guarantee.
+Both parent and fork must exit normally; a 20-second outer timeout is a failsafe.
 
 `test/acceptance/script/ast-metrics-coverage-loader.test.ts` runs real `pnpm`
 and `tsx` TypeScript entries with actual asynchronous loaders under both import
