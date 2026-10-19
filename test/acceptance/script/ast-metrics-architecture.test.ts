@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
+import { baseEdges, baseGraph, baseNodes, graphDefinitions } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, baseSnapshot, community, complexityHeading, edge, edited, legend, noProductionFile, noTrend, snapshotArguments, tableHead } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // The architecture delta of two snapshot files. With --head and --base-snapshot, the command runs neither git nor
@@ -20,36 +21,20 @@ const noTools = { PATH: '' };
 const header = '## Architecture of src/: base a1b2c3d4 → head';
 const equalSummary = 'Modularity 0.52 → 0.52 · cross share 0.26 → 0.26 · cycles 0 → 0 · communities 4 → 4';
 
-// The nodes and the edges of the base snapshot, as the graph shows them when nothing changed.
-const baseNodes = {
-  auth: '  c_auth["auth<br/>4 files · MI 58.6 · paths 110"]',
-  hostedAdmin: '  c_hosted_admin["hosted-admin<br/>2 files · MI 66.6 · paths 75"]',
-  kernel: '  c_shared_kernel["shared kernel<br/>1 file · MI 77.0 · paths 18"]',
-  src: '  c_src["src<br/>2 files · MI 56.0 · paths 40"]',
-};
-const baseEdges = [
-  '  c_auth -- "10" --> c_hosted_admin',
-  '  c_auth -- "2" --> c_shared_kernel',
-  '  c_hosted_admin -- "4" --> c_shared_kernel',
-  '  c_src -- "20" --> c_auth',
-  '  c_src -- "5" --> c_hosted_admin',
-];
-
 function markdown(summary: string, picture: readonly string[], complexity: readonly string[] = noProductionFile): string {
   return [header, '', summary, '', bandsNeedTheCoverage, '', ...picture, '', ...complexity, '', ...noTrend, ''].join('\n');
 }
 
 // The lines of the graph between the edges and the end of the block.
 function graph(lines: readonly string[], classes: readonly string[] = []): string[] {
-  const classDefs = ['  classDef touched stroke-width:3px', '  classDef gone stroke-dasharray:4 4,color:#999999'];
-  return ['```mermaid', 'flowchart LR', ...lines, ...classDefs, ...classes, '```', '', legend];
+  return ['```mermaid', 'flowchart LR', ...lines, ...graphDefinitions, ...classes, '```', '', legend];
 }
 
-test('Given two equal snapshots, when the command runs with --head and --base-snapshot, then it prints the header, the summary line with equal sides, and that the map did not change, and no graph', { timeout }, async (t) => {
+test('Given two equal snapshots, when the command runs with --head and --base-snapshot, then it prints the header, the summary line with equal sides, the unchanged-map line, every node without change arrows or touched borders, the missing-coverage reason, and the legend', { timeout }, async (t) => {
   const result = await runScript(t, astMetricsArchitectureScript, { args: snapshotArguments(t, baseSnapshot, baseSnapshot), env: noTools });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(equalSummary, ['The map did not change.']));
+  assert.equal(result.stdout, markdown(equalSummary, ['The map did not change.', '', ...baseGraph]));
   assert.equal(result.code, 0);
 });
 
@@ -159,11 +144,18 @@ test('Given --touched with a file of one community whose maintainability fell by
   assert.equal(result.code, 0);
 });
 
-test('Given a head whose numbers and references changed but whose communities, dependencies, and cycles did not, and no touched file, when the command runs, then it prints that the map did not change', { timeout }, async (t) => {
+test('Given a head whose numbers and references changed but whose communities, dependencies, and cycles did not, and no touched file, when the command runs, then it prints the unchanged-map line and the graph with the numeric deltas', { timeout }, async (t) => {
   const result = await runScript(t, astMetricsArchitectureScript, { args: snapshotArguments(t, baseSnapshot, headWithNewNumbers), env: noTools });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(equalSummary, ['The map did not change.']));
+  assert.equal(result.stdout, markdown(equalSummary, ['The map did not change.', '', ...graph([
+    baseNodes.auth,
+    '  c_hosted_admin["hosted-admin<br/>2 files · MI 64.6 ↓2.0 · paths 81 ↑6"]',
+    baseNodes.kernel,
+    baseNodes.src,
+    '  c_auth -- "12 ↑2" --> c_hosted_admin',
+    ...baseEdges.slice(1),
+  ])]));
   assert.equal(result.code, 0);
 });
 
@@ -193,7 +185,7 @@ test('Given --out with a path in a new folder, when the command runs, then the f
   const result = await runScript(t, astMetricsArchitectureScript, { args, cwd, env: noTools });
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(equalSummary, ['The map did not change.']));
+  assert.equal(result.stdout, markdown(equalSummary, ['The map did not change.', '', ...baseGraph]));
   assert.equal(result.code, 0);
   assert.equal(readFileSync(join(cwd, 'reports', 'new', 'architecture.md'), 'utf8'), result.stdout);
 });

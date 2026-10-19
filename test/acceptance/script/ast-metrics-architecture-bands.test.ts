@@ -3,7 +3,8 @@ import { test, type TestContext } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
 import { bandedBase, bandedLegend, bandedTableHead, coverageArguments, fn, functionsSection } from './fixtures/ast-metrics-architecture-coverage.ts';
-import { bandsNeedTheCoverage, complexityHeading, edited, legend, noTrend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
+import { bandedBaseGraph, baseEdges, baseNodes, graphDefinitions } from './fixtures/ast-metrics-architecture-goldens.ts';
+import { bandsNeedTheCoverage, complexityHeading, edited, legend, noProductionFile, noTrend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
 // The CRAP bands of the architecture delta, from two snapshot files and a coverage report. With --head, --base-snapshot,
 // and --coverage, the command runs neither git nor ast-metrics, so these cases run with an empty PATH. Each expected
@@ -15,14 +16,6 @@ const noTools = { PATH: '' };
 
 const header = '## Architecture of src/: base a1b2c3d4 → head';
 const structure = 'Modularity 0.52 → 0.52 · cross share 0.26 → 0.26 · cycles 0 → 0 · communities 4 → 4';
-
-const baseEdges = [
-  '  c_auth -- "10" --> c_hosted_admin',
-  '  c_auth -- "2" --> c_shared_kernel',
-  '  c_hosted_admin -- "4" --> c_shared_kernel',
-  '  c_src -- "20" --> c_auth',
-  '  c_src -- "5" --> c_hosted_admin',
-];
 
 // The node lines of the banded base, as the graph shows them when no function changed.
 const bandedNodes = {
@@ -41,8 +34,7 @@ const classDefs = {
 // The lines of the graph after the node lines: the edges, the class definitions in the order touched, gone, good,
 // warning, critical, and the class lines in the same order.
 function graph(nodes: readonly string[], bandDefs: readonly string[], classes: readonly string[]): string[] {
-  const fixedDefs = ['  classDef touched stroke-width:3px', '  classDef gone stroke-dasharray:4 4,color:#999999'];
-  return ['```mermaid', 'flowchart LR', ...nodes, ...baseEdges, ...fixedDefs, ...bandDefs, ...classes, '```', '', bandedLegend];
+  return ['```mermaid', 'flowchart LR', ...nodes, ...baseEdges, ...graphDefinitions, ...bandDefs, ...classes, '```', '', bandedLegend];
 }
 
 function markdown(functions: string, picture: readonly string[], complexity: readonly string[]): string {
@@ -57,6 +49,16 @@ async function runWith(t: TestContext, head: SnapshotEdits, touched: string): Pr
   const args = [...snapshotArguments(t, bandedBase, edited(bandedBase, head)), '--touched', touched, ...coverageArguments(t)];
   return runScript(t, astMetricsArchitectureScript, { args, env: noTools });
 }
+
+test('Given equal covered snapshots, when the command runs, then it prints the unchanged-map line, every node with its assessable band and no change arrow or touched border, and the legend', { timeout }, async (t) => {
+  const args = [...snapshotArguments(t, bandedBase, bandedBase), ...coverageArguments(t)];
+
+  const result = await runScript(t, astMetricsArchitectureScript, { args, env: noTools });
+
+  assert.equal(result.stderr, '');
+  assert.equal(result.stdout, markdown('4 → 4', ['The map did not change.', '', ...bandedBaseGraph], noProductionFile));
+  assert.equal(result.code, 0);
+});
 
 test('Given a touched community with no function at CRAP 30 or more, when the command runs with --coverage, then its node says good with 0 functions and has the touched and the good class, each other node has its band, and the summary line counts the functions at 30 or more on each side', { timeout }, async (t) => {
   const result = await runWith(t, {}, 'src/kernel/ids.ts');
@@ -182,13 +184,9 @@ test('Given snapshot files without --coverage, when the command runs, then the l
 
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, [header, '', structure, '', bandsNeedTheCoverage, '', '```mermaid', 'flowchart LR',
-    '  c_auth["auth<br/>4 files · MI 58.6 · paths 110"]',
-    '  c_hosted_admin["hosted-admin<br/>2 files · MI 66.6 · paths 75"]',
-    '  c_shared_kernel["shared kernel<br/>1 file · MI 77.0 · paths 18"]',
-    '  c_src["src<br/>2 files · MI 56.0 · paths 40"]',
+    ...Object.values(baseNodes),
     ...baseEdges,
-    '  classDef touched stroke-width:3px',
-    '  classDef gone stroke-dasharray:4 4,color:#999999',
+    ...graphDefinitions,
     '  class c_shared_kernel touched',
     '```', '', legend, '',
     complexityHeading, '', ...tableHead, '| src/kernel/ids.ts | 77.0 → 77.0 | 18 → 18 | |', '', ...noTrend, '',

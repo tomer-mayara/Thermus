@@ -2,9 +2,11 @@
 
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
 "Review record"). Historical tickets T1 to T7 are done (see the appendix).
-CR-16 aligns this record with the current implementation. The remaining
-changes in the [change request](ast-metrics-change-request.md) are follow-up
-work; completion of T1 to T7 does not complete those CRs. This plan builds on
+PR #175 completed CR-16 and the CR-23 contract-test foundation. PR #176
+implements CR-24: always print the architecture drawing and require the
+fenced graph and legend in every pull request body. The other changes in
+the [change request](ast-metrics-change-request.md) remain follow-up work;
+completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
 ast-metrics" in [AGENTS.md](../../AGENTS.md) and
 [the review guide](ast-metrics-review.md)).
@@ -125,9 +127,12 @@ All three appear in the pull request body through step 5 of the process:
 
 1. **Architecture delta.** One Mermaid graph of the `src/` communities at the
    head with the base in the labels (encoding below), and one summary line:
-   modularity, cross share, cycles, base to head. The graph appears when a
-   community, a dependency, or a band changed; otherwise the summary line
-   says that the map did not change.
+   modularity, cross share, cycles, base to head. The graph and legend always
+   appear, including when only documents changed or compatible coverage is
+   unavailable. If the map did not change, `The map did not change.` appears
+   above the graph. Paste the fenced `mermaid` block and its legend unchanged
+   into the pull request body. Bands require compatible coverage; the graph
+   requirement does not expand the selected test scope.
 2. **Complexity delta.** One table of the `src/` files that the pull
    request changed: maintainability and decision paths, base to head, with
    `new` or `gone` for a file that one side does not have and
@@ -215,7 +220,8 @@ status colors and always comes with a symbol and a word, never color alone.
 | Border width | Thick when the pull request touched the community | The change. |
 | Edge | A dependency between communities, labeled with its references and their change | Coupling and its movement. |
 | Edge style | Red dashed when part of a cycle; bold when new in this pull request | The structure problems. |
-| Line under the graph | Modularity, cross share, cycles, base to head; the legend of the bands | The summary. |
+| Line above the graph | Modularity, cross share, cycles, base to head; `The map did not change.` when applicable | The summary and change status. |
+| Legend under the graph | Node and edge encoding, with bands when compatible coverage is available | The meaning of the drawing. |
 
 Colors: good `#0ca30c`, warning `#fab219`, critical `#d03b3b`, from the
 validated status palette, as borders and not as fills, so that GitHub's light
@@ -227,6 +233,14 @@ are `●` good, `▲` warning, `■` critical.
 Two rules keep the picture comparable from pull request to pull request: the
 bands and the colors are fixed, and the nodes come in a fixed order, so the
 Mermaid text itself gives a meaningful diff.
+
+CR-24 keeps the graph visible when the map did not change. Equal snapshots
+with no touched files have every node and dependency without change arrows
+or touched borders.
+Compatible coverage adds bands; without it, the graph and legend still
+appear with the existing missing-coverage message. Reuse valid coverage or
+collect only within the current test gate policy. CR-03 coverage validity
+checks and CR-07 incomplete assessments remain follow-up work.
 
 The shape of the output, with made-up numbers:
 
@@ -294,6 +308,11 @@ The owner decided on 2026-10-17:
    the changed `script/` and `test/` files, without a goal.
 5. The encoding above.
 
+On 2026-10-18, the owner approved CR-24 as delivery group 2 after PR #175.
+PR #176 updates the current encoding to always print the graph and legend
+and requires their fenced block and legend unchanged in every pull request
+body. The original decision and ticket records below remain historical.
+
 ## Limits known in advance
 
 - Coverage comes only from emitted Node unit tests. T5 and T6 added no
@@ -339,7 +358,8 @@ The review of 2026-10-17 corrected the first version:
 
 Each ticket is one pull request and one board ticket; the text below is the
 ticket body in the shape of the board. The order is the dependency order.
-The tickets below record the completed implementation. Current PR work
+The tickets below record the completed implementation at that time. CR-24
+supersedes T3's rule that an unchanged map has no graph. Current PR work
 always follows current AGENTS.md and the test gate policy, including the
 coverage restrictions above and the two permitted baseline refresh reasons.
 The direct `ast-metrics baseline` call remains an exception until CR-09 adds

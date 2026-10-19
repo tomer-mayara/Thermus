@@ -178,7 +178,7 @@ for (const [name, before, after, changed] of [
   test(`Given ${name} and no other change of the map, when the report is made, then the map ${changed ? 'changed' : 'did not change'}`, () => {
     const report = reportOf(snapshotOf([community('0', 'only', before)]), snapshotOf([community('0', 'only', after)]), []);
 
-    assert.equal(report.includes('```mermaid\n'), changed, report);
+    assert.ok(report.includes('```mermaid\n'), report);
     assert.equal(report.includes('\n\nThe map did not change.\n\n'), !changed, report);
   });
 }

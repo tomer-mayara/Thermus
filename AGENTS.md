@@ -144,11 +144,14 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    bands; its missing-coverage message does not require a broader test run.
    Then run
    `pnpm exec node script/code-quality/ast-metrics-architecture.ts` and put its output
-   in the pull request description too: the architecture delta of `src/`
-   with bands when coverage is available, the complexity table of the changed
-   files, and the trend table of `src/` on `main`. A pull request that
-   changes only documents gets `The map did not change.` and
-   `No production file changed.`; include these lines too.
+   in the pull request description too: the architecture delta of `src/`,
+   the complexity table of the changed files, and the trend table of `src/`
+   on `main`. Paste the fenced `mermaid` graph and its legend unchanged on
+   every pull request, including one that changes only documents or has no
+   current valid coverage. The graph always appears; bands appear only when
+   compatible coverage is available. An unchanged map gets
+   `The map did not change.` above the graph. A pull request that changes only
+   documents also gets `No production file changed.`; include these lines too.
 6. Do not change `.ast-metrics-baseline.yaml` in a pull request, except
    for a kept finding of step 5, or when the pull request changes the
    rules in `.ast-metrics.yaml`. Then run `ast-metrics baseline` and commit

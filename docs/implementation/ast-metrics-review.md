@@ -291,19 +291,31 @@ and the legend are as they were before the bands.
 
 That message describes how to obtain bands; it does not change the selected
 test scope. When coverage collection is outside that scope, the output without
-bands is acceptable. Use a current valid report if one exists. Move aside a
-stale default `ast-report/coverage.json` before this command so that it does
-not read that report automatically. Do not run the coverage command or its
-live test to fill this gap for a change outside the permitted scope.
+bands is required, including its graph and legend. Use a current valid report
+if one exists. Move aside a stale default `ast-report/coverage.json` before
+this command so that it does not read that report automatically. Do not run
+the coverage command or its live test to fill this gap for a change outside
+the permitted scope.
 
 The output is the header `## Architecture of src/: base <8 characters of the
 base commit> → head`, one summary line (modularity and cross share with two
 decimals, cycles, communities with the shared kernel, base → head, with
 ` (n new, m gone)` when there are such, and with coverage
 ` · functions ≥ 30: <base> → <head>`, the count of the functions at CRAP 30
-or more in all of `src/`), then the Mermaid graph with its legend, or `The
-map did not change.`, then the complexity section, and last the trend section
-(see "The trend").
+or more in all of `src/`), then the Mermaid graph with its legend, then the
+complexity section, and last the trend section (see "The trend"). The graph
+always appears. When the map did not change, `The map did not change.`
+appears above it. Equal snapshots with no touched files keep every node and
+dependency without change arrows or touched borders; compatible coverage
+still supplies the bands.
+Without valid coverage, keep the graph and the missing-coverage message,
+without bands. Current parser errors still stop the command; CR-24 adds no
+coverage validity checks or incomplete-assessment behavior from CR-03 or CR-07.
+
+Paste the fenced `mermaid` block and its legend unchanged into every pull
+request body, including a pull request that changes only documents or has
+no current valid coverage. Prose does not replace the graph. This requirement
+does not expand the selected test scope or permit coverage collection outside it.
 
 Matching: a head community matches the base community with the largest
 Jaccard overlap of their files, at 0.5 or more; the largest overlaps match

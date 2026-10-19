@@ -95,7 +95,9 @@ test('Given a head whose communities have other ids and labels but the same file
 
   const report = reportOf(base, head);
 
-  assert.ok(report.endsWith(`\n\nThe map did not change.${noProductionFileEnd}`), report);
+  assert.ok(report.includes('\n\nThe map did not change.\n\n```mermaid\n'), report);
+  assert.ok(report.endsWith(noProductionFileEnd), report);
+  assert.equal(nodeLines(report).length, head.communities.length);
 });
 
 test('Given labels with a Mermaid keyword, a double quote, a backtick, upper case, and parentheses, when the report is made, then each id is c_ and the label in lower case with _ for each other character, and each label text has a single quote for each quote and backtick', () => {
@@ -166,7 +168,7 @@ for (const [name, base, head, touched, changed] of [
   test(`Given ${name}, when the report is made, then the map ${changed ? 'changed' : 'did not change'}`, () => {
     const report = reportOf(base, head, touched);
 
-    assert.equal(report.includes('```mermaid\n'), changed, report);
+    assert.ok(report.includes('```mermaid\n'), report);
     assert.equal(report.includes('\n\nThe map did not change.\n\n'), !changed, report);
   });
 }

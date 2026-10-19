@@ -16,12 +16,12 @@ const legendParts = {
 
 const bandsNeedTheCoverage = 'Bands need the coverage: run pnpm exec node script/code-quality/ast-metrics-coverage.ts first.';
 
-// The graph and its legend appear only when the map changed, so that a pull request that keeps the structure gets one
-// line. Without coverage, the line after the summary says how to get the bands.
+// Every report includes the graph and its legend. An unchanged map keeps its note above the graph. Without coverage,
+// the line after the summary says how to get the bands.
 export function architectureReportOf(sources: MapSources, delta: CrapDelta | undefined): string {
   const map = architectureMapOf(sources, delta);
   const legend = [legendParts.start, ...(delta === undefined ? [] : [legendParts.bands]), legendParts.end].join(' ');
-  const picture = map.changed ? [...mermaidOf(map), '', legend] : ['The map did not change.'];
+  const picture = [...(map.changed ? [] : ['The map did not change.', '']), ...mermaidOf(map), '', legend];
   const coverageNote = delta === undefined ? ['', bandsNeedTheCoverage] : [];
   return `${[headerOf(sources), '', summaryOf(sources, map.nodes, delta), ...coverageNote, '', ...picture, '', ...complexityTableOf(sources, delta)].join('\n')}\n`;
 }
