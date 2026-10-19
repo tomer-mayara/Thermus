@@ -1,6 +1,6 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { textOrder } from './order.ts';
+import { textOrder } from '../shared/order.ts';
 import { trendNumbersInFile } from './trend-file.ts';
 import type { TrendNumbers } from './trend-record.ts';
 import { CommandError } from '../shared/repository.ts';

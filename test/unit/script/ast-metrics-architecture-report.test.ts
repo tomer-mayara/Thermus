@@ -1,43 +1,25 @@
+import type { MapCommunity as Community, MapSnapshot as Snapshot } from '../../../script/code-quality/architecture/types.ts';
+import { mapSnapshotOf } from '../../support/fixtures/ast-metrics-map-snapshot.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
-// The rules of the architecture report: the matching, the node ids and texts, the arrows, and the change of the map.
-// The report is pure, so the cases call it in the test process. Its module runs from source next to the command, as the
-// command runs it. The types give the parts of the contract that the cases use, and the cases read the lines of the
-// graph. ast-metrics-architecture-table.test.ts specifies the complexity table at the end of the report.
-interface Community {
-  readonly id: string;
-  readonly label: string;
-  readonly members: readonly string[];
-  readonly files: number;
-  readonly maintainability?: number;
-  readonly paths: number;
-  readonly edges: readonly { readonly to: string; readonly references: number; readonly inCycle: boolean }[];
-}
-
-interface Snapshot {
-  readonly commit: string;
-  readonly global: { readonly modularity: number; readonly crossShare: number; readonly cycles: readonly (readonly string[])[] };
-  readonly communities: readonly Community[];
-  readonly files: readonly { readonly path: string; readonly maintainability?: number; readonly paths: number }[];
-}
-
-const { architectureReportOf } = await import(new URL('architecture/report.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
-  architectureReportOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[] }, delta: undefined): string;
-};
+// These pure report cases check matching, Mermaid nodes and edges, and map changes.
+// Load the source module next to the command, as the command does.
+// ast-metrics-architecture-table.test.ts covers the complexity table.
+const { architectureReportOf } = await import(new URL('architecture/report.ts', pathToFileURL(astMetricsArchitectureScript)).href) as typeof import('../../../script/code-quality/architecture/report.ts');
 
 // One file for each member, in the folder of the label, unless the parts name the members.
 function community(id: string, label: string, parts: Partial<Community> & { readonly count?: number } = {}): Community {
   const members = parts.members ?? Array.from({ length: parts.count ?? 1 }, (_, index) => `src/${label}/${index}.ts`);
-  return { id, label, members, files: members.length, paths: 10, edges: [], ...parts };
+  return { id, label, members, files: members.length, loc: 0, paths: 10, edges: [], ...parts };
 }
 
 // Each member of a community is a file of the snapshot.
 function snapshotOf(communities: readonly Community[], cycles: readonly (readonly string[])[] = []): Snapshot {
   const files = communities.flatMap(({ members }) => members.map((path) => ({ path, maintainability: 70, paths: 5 })));
-  return { commit: 'c0ffee00c0ffee00', global: { modularity: 0.5, crossShare: 0.25, cycles }, communities, files };
+  return mapSnapshotOf(files, communities, cycles);
 }
 
 const noProductionFileEnd = '\n\n## Complexity of the changed files\n\nNo production file changed.\n';

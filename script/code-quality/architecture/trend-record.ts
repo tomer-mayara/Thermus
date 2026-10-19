@@ -5,7 +5,7 @@
 import * as riskCounts from './risk-counts.ts';
 import type { FileCrap } from './crap.ts';
 import { trendBasisOf, type TrendCoverage, type TrendCrapBasis } from './trend-basis.ts';
-import { textOrder } from './order.ts';
+import { textOrder } from '../shared/order.ts';
 import type { CrapDelta } from './crap-delta.ts';
 import type { MapSources, MapCommunity, MapSnapshot } from './types.ts';
 

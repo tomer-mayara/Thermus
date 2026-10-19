@@ -1,33 +1,17 @@
+import type { TableFile as File } from '../../../script/code-quality/architecture/types.ts';
+import { mapSnapshotOf } from '../../support/fixtures/ast-metrics-map-snapshot.ts';
 import { completeSourceEvidence, functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
-// The CRAP column of the complexity table and the list of the functions after the table, with coverage: the count of
-// the functions at CRAP 30 or more on each side of a changed file, and each function that the pull request added or made
-// worse. The table is pure, so the cases call it in the test process with the CRAP delta that the report gives it. The
-// modules run from source next to the command, as the command runs them. The types give the parts of the contract that
-// the cases use. ast-metrics-architecture-table.test.ts specifies the table without coverage.
-type File = import('../../../script/code-quality/architecture/types.ts').TableFile;
-
-interface Sources {
-  readonly base: { readonly files: readonly File[] };
-  readonly head: { readonly files: readonly File[] };
-  readonly touched: readonly string[];
-  readonly coverage: { readonly files: readonly { readonly path: string; readonly functions: readonly { readonly name: string; readonly coveredShare: number }[] }[] };
-}
-
-// The delta of the CRAP of the two snapshots, which the table gets from the report.
-type CrapDelta = object;
-
+// These pure table cases check the CRAP count for each side of a changed file and the list of added or worse functions.
+// Load the source modules next to the command and pass the CRAP delta to the table, as the command does.
+// ast-metrics-architecture-table.test.ts covers the table without coverage.
 const scriptFolder = pathToFileURL(astMetricsArchitectureScript);
-const { complexityTableOf } = await import(new URL('architecture/table.ts', scriptFolder).href) as {
-  complexityTableOf(sources: Sources, delta: CrapDelta | undefined): string[];
-};
-const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as {
-  crapDeltaOf(sources: Sources): CrapDelta | undefined;
-};
+const { complexityTableOf } = await import(new URL('architecture/table.ts', scriptFolder).href) as typeof import('../../../script/code-quality/architecture/table.ts');
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as typeof import('../../../script/code-quality/architecture/crap-delta.ts');
 
 type Functions = readonly (readonly [name: string, paths: number])[];
 
@@ -36,9 +20,9 @@ function fileOf(path: string, functions: Functions): File {
   return { path, sourceEvidence: completeSourceEvidence, maintainability: 70, paths: 5, functions: functions.map(([name, paths]) => ({ name, paths, identity: functionIdentityOf(name, paths) })) };
 }
 
-// The coverage report has no file, so each named function is uncovered: 5 decision paths give the CRAP 30, and 4 give 20.
+// The report has no files, so each named function is uncovered: 5 decision paths give CRAP 30, and 4 give 20.
 function bandedTableOf(base: readonly File[], head: readonly File[], touched: readonly string[]): string[] {
-  const sources = { base: { files: base }, head: { files: head }, touched, coverage: { files: [] } };
+  const sources = { base: mapSnapshotOf(base), head: mapSnapshotOf(head), touched, coverage: { files: [] } };
   return complexityTableOf(sources, crapDeltaOf(sources));
 }
 
@@ -110,8 +94,8 @@ test('Given added and worse functions in changed files out of order, and one in 
 
 test('Given a worse function with a covered share, when the table is made, then its line gives the share with two decimals and each CRAP with one', () => {
   const sources = {
-    base: { files: [fileOf('src/a.ts', [['grow', 7]])] },
-    head: { files: [fileOf('src/a.ts', [['grow', 14]])] },
+    base: mapSnapshotOf([fileOf('src/a.ts', [['grow', 7]])]),
+    head: mapSnapshotOf([fileOf('src/a.ts', [['grow', 14]])]),
     touched: ['src/a.ts'],
     coverage: { files: [{ path: 'src/a.ts', functions: [{ name: 'grow', coveredShare: 0.5 }] }] },
   };

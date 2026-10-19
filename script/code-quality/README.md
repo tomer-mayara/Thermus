@@ -38,8 +38,13 @@ The nine command entry points stay in this folder:
 
 Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
 `review/`, `coverage/`, `crap/`, `architecture/`, `process/`, `baseline/`,
-and `provenance/`. The last folder owns input identity and its checked readers. The `shared/` folder holds JSON readers,
-number calculations, and repository commands that more than one task uses.
+`identity/`, and `provenance/`. The `identity/` folder owns source evidence and
+function identity. The `provenance/` folder owns input identity and its checked readers.
+The `shared/` folder holds common argument and limit checks, JSON readers,
+text ordering, number calculations, and repository commands. JSON file reads
+keep file-kind diagnostics; consumers check their own schemas. Text ordering
+compares UTF-16 code units and returns zero for ties. Locale-sensitive ordering
+keeps its own comparator. Each command keeps its error output contract.
 
 Select tests with the [test gate policy](../../docs/implementation/test-gate-policy.md).
 Only a change under `src/` requires the full ordinary suite (`npm test`) and
@@ -701,6 +706,14 @@ run preserves a stored record's tool version and leaves the file unchanged.
 The unit `ast-metrics-architecture-trend-provenance.test.ts` checks that table-number
 reads preserve a present version and keep it absent for legacy records.
 
+`ast-metrics-json-file.test.ts` checks exact read and schema diagnostics
+through the snapshot, coverage, trend, and change metadata readers for missing
+files, malformed JSON, arrays, null, and empty objects.
+
+`ast-metrics-order.test.ts` checks meaningful ties in map, risk, file,
+community, namespace, and coverage ordering. Equal keys preserve input order,
+and locale-sensitive coverage names keep their existing ordering contract.
+
 Architecture acceptance cases share complete base, banded, and repository
 drawings in `test/acceptance/script/fixtures/ast-metrics-architecture-goldens.ts`.
 The document-only case in `ast-metrics-architecture-unchanged.test.ts` checks
@@ -786,7 +799,9 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |

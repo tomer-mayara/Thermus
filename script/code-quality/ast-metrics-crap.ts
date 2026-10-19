@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import { reportFailure } from './shared/command-error.ts';
 import { commandOf } from './crap/command-line.ts';
 import { runCrap } from './crap/run.ts';
-import { CommandError } from './shared/repository.ts';
 
 const help = `Usage: node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...] [--help]
 
@@ -54,7 +54,5 @@ async function main(): Promise<string> {
 try {
   process.stdout.write(await main());
 } catch (error) {
-  const message = error instanceof CommandError ? error.message : `Unexpected failure: ${error instanceof Error ? error.message : String(error)}`;
-  process.stderr.write(`ast-metrics-crap: ${message.replace(/\s+/g, ' ').trim()}\n`);
-  process.exitCode = 1;
+  reportFailure('ast-metrics-crap', error);
 }

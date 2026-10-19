@@ -1,5 +1,5 @@
 import type { JudgedFunction } from './crap-delta.ts';
-import { textOrder } from './order.ts';
+import { textOrder } from '../shared/order.ts';
 import { crapTextOf } from './crap-format.ts';
 
 interface ListedFunction {

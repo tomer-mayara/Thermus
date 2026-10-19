@@ -1,6 +1,6 @@
-import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import { join } from 'node:path';
+import { runAstMetrics } from '../shared/subprocess.ts';
 import * as repository from '../shared/repository.ts';
 import type { StageReport } from '../shared/report.ts';
 import { cliToolVersion } from '../shared/tool-version.ts';
@@ -28,11 +28,7 @@ function reportText(root: string, path: string): string {
 function collectReview(root: string, options: ReviewOptions): StageReport {
   freshReports(root);
   const args = ['review', '--base', options.base, '--format', 'markdown', '--max-findings', String(options.maxFindings ?? 50), '--report-markdown', markdownPath, '--report-json', jsonPath, '--fail-on', 'high'];
-  const run = spawnSync('ast-metrics', args, { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'inherit'] });
-  if (run.error) {
-    const { code, message } = run.error as NodeJS.ErrnoException;
-    throw new repository.CommandError(code === 'ENOENT' ? repository.notInstalled : `ast-metrics did not run: ${message}`);
-  }
+  const run = runAstMetrics(args, { cwd: root, stdio: ['ignore', 'pipe', 'inherit'] });
   if (run.status === null) throw new repository.CommandError(`ast-metrics review stopped on signal ${run.signal}.`);
   const text = reportText(root, markdownPath);
   const passed = reviewPassed(reportText(root, jsonPath), { base: options.base, status: run.status });

@@ -1,3 +1,4 @@
+import type { FileMeasurement as Measurement, Snapshot as BuiltSnapshot } from '../../../script/code-quality/snapshot/types.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -41,30 +42,8 @@ for (const [args, diagnostic] of [
 }
 
 // The build of the snapshot is pure, so the cases below call it in the test process. Its module runs from source next to
-// the command, as the command runs it. The types give the parts of the contract that the cases use.
-interface Measurement {
-  readonly path: string;
-  readonly paths: number;
-  readonly loc: number;
-  readonly maintainability?: number;
-  readonly risk?: number;
-}
-
-interface Sources {
-  readonly commit: string;
-  readonly date: string;
-  readonly files: readonly Measurement[];
-  readonly communities: string;
-  readonly functions: ReadonlyMap<string, string>;
-}
-
-interface BuiltSnapshot {
-  readonly global: { readonly cycles: readonly (readonly string[])[]; readonly maintainability?: number; readonly functions: number };
-  readonly communities: readonly { readonly id: string; readonly label: string; readonly members: readonly string[]; readonly loc: number; readonly paths: number; readonly maintainability?: number; readonly edges: readonly { readonly to: string }[] }[];
-  readonly files: readonly { readonly path: string; readonly community: string | null; readonly maintainability?: number; readonly risk?: number; readonly functions: readonly object[] }[];
-}
-
-const { snapshotOf } = await import(new URL('snapshot/build.ts', pathToFileURL(astMetricsSnapshotScript)).href) as { snapshotOf(sources: Sources): unknown };
+// the command, as the command runs it. The cases use the production types.
+const { snapshotOf } = await import(new URL('snapshot/build.ts', pathToFileURL(astMetricsSnapshotScript)).href) as typeof import('../../../script/code-quality/snapshot/build.ts');
 
 // A community of the get_communities answer, with its members as hubs.
 function community(id: string, members: readonly string[], namespaces: Readonly<Record<string, number>> = {}) {

@@ -1,11 +1,7 @@
+import { textOrder } from '../shared/order.ts';
 import type { MapEdge, MapNode, TableFile } from './types.ts';
 
 const rankedFiles = 10;
-
-// The order of the UTF-16 code units, in which the snapshot sorts its labels and its paths.
-export function textOrder(first: string, second: string): number {
-  return Number(first > second) - Number(first < second);
-}
 
 // The nodes come in the order of their labels, and the edges in the order of the labels of their ends, so that the
 // Mermaid text diffs well.

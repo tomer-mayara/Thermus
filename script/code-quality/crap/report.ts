@@ -1,5 +1,5 @@
 import { crapTextOf } from '../architecture/crap-format.ts';
-import { textOrder } from '../architecture/order.ts';
+import { textOrder } from '../shared/order.ts';
 import { toDoOf } from './advice.ts';
 import { goalAssessmentOf } from './goals.ts';
 import type { CrapGoals, GoalFunction } from './types.ts';

@@ -1,6 +1,7 @@
 // The shape of the JSON report of "ast-metrics analyze" follows ast-metrics 0.43.1.
 import { relative, sep } from 'node:path';
 import { arrayOf, isJsonObject, jsonOf, numberOf, numberOrZero, objectOf, textOf, textsOf } from '../shared/json.ts';
+import { textOrder } from '../shared/order.ts';
 import { rounded } from '../shared/numbers.ts';
 import type { CommunityReferences, FileMeasurement, SnapshotFunction } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
@@ -15,7 +16,7 @@ export function sourceFilesOf(text: string, root: string): FileMeasurement[] {
   return report.concernedFiles
     .flatMap((entry) => measurementOf(entry, root))
     .filter((file) => file.path.startsWith('src/'))
-    .sort((first, second) => (first.path < second.path ? -1 : 1));
+    .sort((first, second) => textOrder(first.path, second.path));
 }
 
 // An entry without a path names no file. The report leaves out the maintainability index of a file without code, such

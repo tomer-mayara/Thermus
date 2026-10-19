@@ -1,36 +1,22 @@
+import type { TableFile as File } from '../../../script/code-quality/architecture/types.ts';
+import { mapSnapshotOf } from '../../support/fixtures/ast-metrics-map-snapshot.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
-// The rules of the complexity table: the cells of a row, the risk rank, and the section without a production file. The
-// table is pure, so the cases call it in the test process. Its module runs from source next to the command, as the
-// command runs it. The types give the parts of the contract that the cases use. Without the CRAP delta, the table has no
-// CRAP column; ast-metrics-architecture-functions.test.ts specifies that column and the list after the table.
-interface File {
-  readonly path: string;
-  readonly maintainability?: number;
-  readonly paths?: number;
-  readonly risk?: number;
-}
-
-interface Sources {
-  readonly base: { readonly files: readonly File[] };
-  readonly head: { readonly files: readonly File[] };
-  readonly touched: readonly string[];
-}
-
-const { complexityTableOf } = await import(new URL('architecture/table.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
-  complexityTableOf(sources: Sources): string[];
-};
+// These pure table cases check row cells, risk rank, and the section without a production file.
+// Load the source module next to the command, as the command does.
+// ast-metrics-architecture-functions.test.ts covers the CRAP column and the function list.
+const { complexityTableOf } = await import(new URL('architecture/table.ts', pathToFileURL(astMetricsArchitectureScript)).href) as typeof import('../../../script/code-quality/architecture/table.ts');
 
 // The rows of the table, without its heading and its two head rows.
 function rowsOf(base: readonly File[], head: readonly File[], touched: readonly string[]): string[] {
-  return complexityTableOf({ base: { files: base }, head: { files: head }, touched }).slice(4);
+  return complexityTableOf({ base: mapSnapshotOf(base), head: mapSnapshotOf(head), touched }, undefined).slice(4);
 }
 
 test('Given a changed file under src/, when the table is made, then the section is the heading, an empty line, the head row, the separator row, and one row with a cell for each column', () => {
-  const lines = complexityTableOf({ base: { files: [{ path: 'src/a.ts', maintainability: 70, paths: 5 }] }, head: { files: [{ path: 'src/a.ts', maintainability: 70, paths: 5 }] }, touched: ['src/a.ts'] });
+  const lines = complexityTableOf({ base: mapSnapshotOf([{ path: 'src/a.ts', maintainability: 70, paths: 5 }]), head: mapSnapshotOf([{ path: 'src/a.ts', maintainability: 70, paths: 5 }]), touched: ['src/a.ts'] }, undefined);
 
   assert.deepEqual(lines, [
     '## Complexity of the changed files',
@@ -132,7 +118,7 @@ for (const [name, touched] of [
   ['changed files outside src/ only', ['test/unit/a.test.ts', 'script/b.ts', 'README.md', 'src', 'srcx/c.ts']],
 ] as const) {
   test(`Given ${name}, when the table is made, then the section is the heading and the line that no production file changed`, () => {
-    const lines = complexityTableOf({ base: { files: twelve }, head: { files: twelve }, touched });
+    const lines = complexityTableOf({ base: mapSnapshotOf(twelve), head: mapSnapshotOf(twelve), touched }, undefined);
 
     assert.deepEqual(lines, ['## Complexity of the changed files', '', 'No production file changed.']);
   });

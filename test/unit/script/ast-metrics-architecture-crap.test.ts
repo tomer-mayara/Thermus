@@ -1,34 +1,14 @@
+import type { MapSources as Sources } from '../../../script/code-quality/architecture/types.ts';
+import { mapSnapshotOf } from '../../support/fixtures/ast-metrics-map-snapshot.ts';
 import { completeSourceEvidence, functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
-// The CRAP of each function and its change against the base: the formula and its precision, the join with the coverage
-// by file and name, the functions that get no CRAP, the uncovered file, the share of the base, and the rules for added
-// and worse. The rules are pure, so the cases call them in the test process. Their module runs from source next to the
-// command, as the command runs it. The types give the parts of the contract that the cases use.
-interface SourceFile {
-  readonly path: string;
-  readonly functions: readonly { readonly name: string; readonly paths: number }[];
-}
-
-interface Sources {
-  readonly base: { readonly files: readonly SourceFile[] };
-  readonly head: { readonly files: readonly SourceFile[] };
-  readonly coverage?: { readonly files: readonly { readonly path: string; readonly functions: readonly { readonly name: string; readonly coveredShare: number }[] }[] };
-}
-
-type JudgedFunction = import('../../../script/code-quality/architecture/crap-delta.ts').JudgedFunction;
-
-interface CrapDelta {
-  readonly head: ReadonlyMap<string, { readonly functions: readonly JudgedFunction[]; readonly unmatched: number }>;
-  readonly base: ReadonlyMap<string, { readonly functions: readonly Omit<JudgedFunction, 'base' | 'addedOrWorse'>[]; readonly unmatched: number }>;
-}
-
-const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
-  crapDeltaOf(sources: Sources): CrapDelta | undefined;
-};
+// These pure CRAP cases check the formula, precision, coverage matching, base estimates, and added or worse functions.
+// Load the source module next to the command, as the command does.
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', pathToFileURL(astMetricsArchitectureScript)).href) as typeof import('../../../script/code-quality/architecture/crap-delta.ts');
 
 type Shares = Readonly<Record<string, readonly (readonly [string, number])[]>>;
 
@@ -37,7 +17,7 @@ type Shares = Readonly<Record<string, readonly (readonly [string, number])[]>>;
 function sourcesOf(head: Readonly<Record<string, readonly (readonly [string, number])[]>>, shares: Shares, base = head): Sources {
   const filesOf = (files: typeof head) => Object.entries(files).map(([path, functions]) => ({ path, sourceEvidence: completeSourceEvidence, functions: functions.map(([name, paths]) => ({ name, paths, identity: functionIdentityOf(name, paths) })) }));
   const coverage = { files: Object.entries(shares).map(([path, functions]) => ({ path, sourceEvidence: completeSourceEvidence, functions: functions.map(([name, coveredShare]) => ({ name, coveredShare })) })) };
-  return { base: { files: filesOf(base) }, head: { files: filesOf(head) }, coverage };
+  return { base: mapSnapshotOf(filesOf(base)), head: mapSnapshotOf(filesOf(head)), touched: [], coverage };
 }
 
 function headOf(sources: Sources, path: string) {
@@ -53,7 +33,7 @@ function crapOf(sources: Sources, path: string): Record<string, number> {
 }
 
 test('Given no coverage report, when the delta is made, then there is none', () => {
-  assert.equal(crapDeltaOf({ base: { files: [] }, head: { files: [] } }), undefined);
+  assert.equal(crapDeltaOf({ base: mapSnapshotOf([]), head: mapSnapshotOf([]), touched: [] }), undefined);
 });
 
 test('Given functions of 10 decision paths with the covered shares 0 and 1, when the CRAP is computed, then it is 10² × 1³ + 10 = 110 and 10² × 0³ + 10 = 10', () => {

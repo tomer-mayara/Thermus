@@ -1,12 +1,8 @@
-// Shared by the ast-metrics commands: the repository root, the base ref, and the expected failures.
+// Git operations shared by the ast-metrics commands.
 import { spawnSync } from 'node:child_process';
-
-// An expected failure. A command prints its message as one diagnostic line on stderr and exits 1.
-export class CommandError extends Error {}
-
-export const notInstalled = 'ast-metrics is not installed or not on PATH. See docs/implementation/ast-metrics-review.md.';
-
-const outputLimit = 64 * 1024 * 1024;
+import { CommandError } from './command-error.ts';
+import { outputLimit } from './subprocess.ts';
+export { CommandError, notInstalled } from './command-error.ts';
 
 export function git(cwd: string, args: readonly string[], failureMessage: string): string {
   const run = spawnSync('git', args, { cwd, encoding: 'utf8', maxBuffer: outputLimit });

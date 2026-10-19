@@ -1,63 +1,21 @@
+import type { MapCommunity as Community, MapSnapshot as Snapshot } from '../../../script/code-quality/architecture/types.ts';
+import type { CoverageReport as Coverage } from '../../../script/code-quality/architecture/coverage.ts';
+import type { CrapDelta } from '../../../script/code-quality/architecture/crap-delta.ts';
+import type { TrendNumbers } from '../../../script/code-quality/architecture/trend-record.ts';
+import type { VerifiedCoverageProvenance } from '../../../script/code-quality/provenance/types.ts';
 import { functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
-// The record of a snapshot for the trend store, and the trend section after the complexity table. Both are pure, so the
-// cases call them in the test process. The modules run from source next to the command, as the command runs them. The
-// types give the parts of the contract that the cases use. ast-metrics-architecture-trend-store.test.ts specifies the
-// store.
-interface Community {
-  readonly id: string;
-  readonly label: string;
-  readonly members: readonly string[];
-  readonly files: number;
-  readonly loc: number;
-  readonly maintainability?: number;
-  readonly paths: number;
-  readonly edges: readonly { readonly to: string; readonly references: number; readonly inCycle: boolean }[];
-}
-
-interface Snapshot {
-  readonly commit: string;
-  readonly date: string;
-  readonly global: {
-    readonly modularity: number; readonly crossShare: number; readonly cycles: readonly (readonly string[])[];
-    readonly maintainability?: number; readonly paths: number; readonly files: number; readonly functions: number;
-  };
-  readonly communities: readonly Community[];
-  readonly files: readonly { readonly path: string; readonly maintainability?: number; readonly paths: number; readonly functions: readonly import('../../../script/code-quality/architecture/types.ts').MapFunction[] }[];
-}
-
-interface Coverage {
-  readonly files: readonly { readonly path: string; readonly functions: readonly { readonly name: string; readonly coveredShare: number }[] }[];
-}
-
-// The numbers of one row of the trend table.
-interface TrendNumbers {
-  readonly commit: string;
-  readonly date: string;
-  readonly modularity: number;
-  readonly crossShare: number;
-  readonly cycles: number;
-  readonly maintainability?: number;
-  readonly functionsOver30?: number;
-}
-
-// The CRAP of each file of one snapshot, by path, as the CRAP delta gives it.
-type FilesCrap = object;
-
+// These pure cases check the trend record and the trend section after the complexity table.
+// Load the source modules next to the command, as the command does.
+// ast-metrics-architecture-trend-store.test.ts covers the store.
 const scriptFolder = pathToFileURL(astMetricsArchitectureScript);
-const { trendRecordsOf } = await import(new URL('architecture/trend-record.ts', scriptFolder).href) as {
-  trendRecordsOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[]; readonly coverage?: Coverage & { readonly provenance: object } }, delta: { readonly base: FilesCrap; readonly head: FilesCrap } | undefined): { readonly base: TrendNumbers };
-};
-const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as {
-  crapDeltaOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[]; readonly coverage: Coverage }): { readonly base: FilesCrap };
-};
-const { trendSectionOf } = await import(new URL('architecture/trend-table.ts', scriptFolder).href) as {
-  trendSectionOf(stored: readonly TrendNumbers[], head: TrendNumbers): string[];
-};
+const { trendRecordsOf } = await import(new URL('architecture/trend-record.ts', scriptFolder).href) as typeof import('../../../script/code-quality/architecture/trend-record.ts');
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as typeof import('../../../script/code-quality/architecture/crap-delta.ts');
+const { trendSectionOf } = await import(new URL('architecture/trend-table.ts', scriptFolder).href) as typeof import('../../../script/code-quality/architecture/trend-table.ts');
 
 // The id is the label, and each file has 40 lines.
 function community(label: string, members: readonly string[], maintainability?: number): Community {
@@ -80,16 +38,18 @@ const snapshot: Snapshot = {
 // run has 10 decision paths and the share 0: CRAP 110. helper has full coverage: CRAP 2. big is uncovered: CRAP 42.
 const coverage: Coverage = { files: [{ path: 'src/a/one.ts', functions: [{ name: 'run', coveredShare: 0 }, { name: 'helper', coveredShare: 1 }] }] };
 
-function crapOf(tree: Snapshot): FilesCrap {
-  return crapDeltaOf({ base: tree, head: tree, touched: [], coverage }).base;
+function crapOf(tree: Snapshot): CrapDelta {
+  const delta = crapDeltaOf({ base: tree, head: tree, touched: [], coverage });
+  assert.ok(delta !== undefined);
+  return delta;
 }
 
-const provenance = { status: 'verified', capturedCommit: 'a'.repeat(40), sourceFingerprint: 'b'.repeat(64), inputsFingerprint: 'c'.repeat(64), buildFingerprint: 'd'.repeat(64), measurementVersion: 'own-characters-1' };
+const provenance: VerifiedCoverageProvenance = { status: 'verified', capturedCommit: 'a'.repeat(40), sourceFingerprint: 'b'.repeat(64), inputsFingerprint: 'c'.repeat(64), buildFingerprint: 'd'.repeat(64), measurementVersion: 'own-characters-1', runtime: 'node-24', compiler: 'typescript', suite: 'unit', captureManifestFingerprint: 'e'.repeat(64) };
 const crapBasis = { kind: 'head-derived-estimate', coverageCommit: provenance.capturedCommit, sourceFingerprint: provenance.sourceFingerprint, inputsFingerprint: provenance.inputsFingerprint, buildFingerprint: provenance.buildFingerprint, measurementVersion: provenance.measurementVersion, unknownFunctions: 0 };
 
 test('Given a snapshot and the CRAP of its files, when the record is made, then it holds, in this order, the version, the commit, the date, the global numbers with the count of the cycles and the count of the functions at CRAP 30 or more, and each community sorted by label with its numbers and its count, and nothing for each file', () => {
   const crap = crapOf(snapshot);
-  const record = trendRecordsOf({ base: snapshot, head: snapshot, touched: [], coverage: { ...coverage, provenance } }, { base: crap, head: crap }).base;
+  const record = trendRecordsOf({ base: snapshot, head: snapshot, touched: [], coverage: { ...coverage, provenance } }, crap).base;
 
   assert.equal(JSON.stringify(record), JSON.stringify({
     version: 1, commit: 'c0ffee00c0ffee00c0ffee00c0ffee00c0ffee00', date: '2026-10-18T09:00:00+02:00',

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { resolve } from 'node:path';
-import { parseArgs } from 'node:util';
+import { reportCommandError } from './shared/command-error.ts';
+import { parseCommandArguments } from './shared/command-line.ts';
 import { collectCoverage } from './coverage/capture.ts';
 import { importedCoverage } from './coverage/import.ts';
 import { writeCoverageReport } from './coverage/report.ts';
@@ -48,11 +49,7 @@ const optionShape = { from: { type: 'string' }, out: { type: 'string' }, 'no-bui
 type CoverageOptions = { readonly from: string | undefined; readonly out: string | undefined; readonly noBuild: boolean; readonly allowUnverified: boolean };
 
 function parsedValues(args: readonly string[]) {
-  try {
-    return parseArgs({ args, options: optionShape }).values;
-  } catch {
-    throw new CommandError('Invalid arguments. Use --help for the supported options.');
-  }
+  return parseCommandArguments({ args, options: optionShape }).values;
 }
 
 function optionsOf(args: readonly string[]): CoverageOptions | { readonly help: true } {
@@ -84,7 +81,5 @@ function main(args: readonly string[]): number {
 try {
   process.exitCode = main(process.argv.slice(2));
 } catch (error) {
-  if (!(error instanceof CommandError)) throw error;
-  process.stderr.write(`ast-metrics-coverage: ${error.message}\n`);
-  process.exitCode = 1;
+  reportCommandError('ast-metrics-coverage', error);
 }

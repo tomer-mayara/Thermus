@@ -148,7 +148,9 @@ baseline warning, `--max-findings`, a missing executable, and an unknown
 base ref. `ast-metrics-mcp.test.ts` runs the one-shot MCP call against a
 double of the server: the function table, the pass-through of arguments,
 error answers, a hanging and an early-exiting server, and that no server
-process remains. `ast-metrics-mcp.live.ts` runs the real server when
+process remains. Its tools case checks unique names, nonempty descriptions,
+the four documented subcommand tools, and a representative description.
+`ast-metrics-mcp.live.ts` runs the real server when
 `ast-metrics` is on PATH; ordinary suites do not select it. It checks a
 positive function table, its declared row count, and the missing-file error,
 without requiring an incidental function name. An absent-tool skip is not a pass.
@@ -297,6 +299,16 @@ notices, complete structural output, and no CRAP assessment when withheld.
 prose-only commit reuses compatible default coverage and that explicit skip
 ignores a malformed default report.
 
+`test/unit/script/ast-metrics-json-file.test.ts` checks the snapshot,
+coverage, trend, and change metadata readers. Missing files retain the exact
+file-kind diagnostic. Malformed JSON, arrays, null, and empty objects retain
+each reader's exact schema diagnostic.
+
+`test/unit/script/ast-metrics-order.test.ts` checks tied map labels and
+edges, risk path tie-breaks, duplicate file paths, equal community and target
+labels, equal namespace counts, and coverage ranges with tied or locale-equal
+names. Equal keys preserve input order.
+
 `test/unit/script/ast-metrics-file-changes.test.ts` checks NUL-separated
 Git status records, similarity scores, exact unusual paths, malformed records,
 conflicting mappings, and moves across the source boundary.
@@ -329,6 +341,11 @@ groups checks same-file declaration continuity, changed bodies and signatures,
 unique unchanged moves and renames, new declarations, copies and ambiguity,
 legacy snapshots, and visible identity unknowns. Unpaired base functions,
 including removed functions, receive no estimated covered share.
+
+`test/support/fixtures/ast-metrics-map-snapshot.ts` supplies complete
+snapshot metadata to the architecture report, bands, table, functions, and
+CRAP unit tests. These tests import the production contracts with `import type`
+and type source-module loads with `typeof import`.
 
 `ast-metrics-architecture-crap.test.ts` checks the pure CRAP formula, rounding,
 and coverage join by file and V8 name. Anonymous, duplicate, missing, and
@@ -573,7 +590,9 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |

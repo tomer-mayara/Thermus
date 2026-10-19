@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { reportFailure } from './shared/command-error.ts';
 import { crapDeltaOf } from './architecture/crap-delta.ts';
 import { commandOf } from './architecture/command-line.ts';
 import { mapSourcesOf } from './architecture/input.ts';
 import { architectureReportOf } from './architecture/report.ts';
 import { trendLinesOf } from './architecture/trend.ts';
-import { CommandError } from './shared/repository.ts';
 
 const help = `Usage: node script/code-quality/ast-metrics-architecture.ts [--base REF] [--head FILE --base-snapshot FILE] [--changes FILE] [--touched FILES] [--coverage FILE | --no-coverage] [--trend-store DIR] [--record] [--timeout-ms MS] [--out FILE] [--allow-tool-version] [--help]
 
@@ -128,8 +128,5 @@ async function main(): Promise<string> {
 try {
   process.stdout.write(await main());
 } catch (error) {
-  const message = error instanceof CommandError ? error.message : `Unexpected failure: ${error instanceof Error ? error.message : String(error)}`;
-  // A diagnostic is one line, also when ast-metrics or the server wrote several lines.
-  process.stderr.write(`ast-metrics-architecture: ${message.replace(/\s+/g, ' ').trim()}\n`);
-  process.exitCode = 1;
+  reportFailure('ast-metrics-architecture', error);
 }

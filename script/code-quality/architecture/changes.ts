@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { jsonFieldsInFile } from '../shared/json-file.ts';
 import { validateChanges, type FileChange } from '../delta/changes.ts';
 import { changeOf, checkSides } from './changes-schema.ts';
 import * as json from '../shared/json.ts';
@@ -7,7 +7,7 @@ import type { MapSnapshot } from './types.ts';
 
 // Offline evidence belongs to both captured contents, including uncommitted edits.
 export function changesInFile(path: string, base: MapSnapshot, head: MapSnapshot): FileChange[] {
-  const fields = json.objectOf(json.jsonOf(fileText(path)));
+  const fields = jsonFieldsInFile(path, 'changes');
   if (fields.version !== 1 || !Array.isArray(fields.files)) invalid(path);
   checkIdentity(fields.base, base, 'base');
   checkIdentity(fields.head, head, 'head');
@@ -16,11 +16,6 @@ export function changesInFile(path: string, base: MapSnapshot, head: MapSnapshot
   const after = new Set(head.files.map((file) => file.path));
   for (const change of changes) checkSides(change, before, after);
   return changes;
-}
-
-function fileText(path: string): string {
-  try { return readFileSync(path, 'utf8'); }
-  catch { throw new CommandError(`Cannot read the changes file ${path}.`); }
 }
 
 function invalid(path: string): never {

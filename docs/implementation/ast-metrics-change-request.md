@@ -25,7 +25,7 @@ with “Use those recommendations”: CRAP ≤ 15 for new functions, goals with
 documented exceptions after at most three improvement cycles, and clearly
 labeled head-derived trend estimates. Section 3.2 records these decisions.
 D4 to D9 remain open. The approval itself changed no runtime behavior;
-PR #182 merged D1/D2 in CR-22. PR #183 composes those stages under CR-09.
+PR #182 merged D1/D2 in CR-22. PR #183 merged CR-09 and composes those stages.
 It authorizes no base-coverage storage or merge workflow.
 
 Delivery status:
@@ -50,8 +50,10 @@ Delivery status:
   assessments and the tool version pin.
 - PR #182 merged delivery group 9, CR-22: actionable per-function CRAP
   goals and approved D1/D2 exceptions.
-- PR #183 implements delivery group 10, CR-09: the composed process with
-  coverage reuse by default and the baseline wrapper. Owner review is pending.
+- PR #183 merged delivery group 10, CR-09: the composed process with
+  coverage reuse by default and the baseline wrapper.
+- PR #184 implements delivery group 11, CR-17: remove proven duplication
+  while preserving command contracts. Owner review is pending.
 - The other CRs have not been implemented.
 
 Contents:
@@ -156,7 +158,7 @@ in `.ts`; the main build excludes `script/`.
 | Entry point | Purpose | Helper folder |
 | --- | --- | --- |
 | `ast-metrics-delta.ts` | List changed files and maintainability; enforce the production-file goal. | `delta/` |
-| `ast-metrics-review.ts` | Pass the selected base ref to the tool's review; the guide describes comparison with that ref's tip. | Shared repository support |
+| `ast-metrics-review.ts` | Pass the selected base ref to the tool's review; the guide describes comparison with that ref's tip. | `review/` |
 | `ast-metrics-mcp.ts` | Make one MCP call and stop the server. | `mcp/` |
 | `ast-metrics-coverage.ts` | Collect and merge V8 coverage from emitted Node and source portal unit tests. | `coverage/` |
 | `ast-metrics-snapshot.ts` | Capture metrics and communities of `src/`, optionally at a merge base. | `snapshot/` |
@@ -825,10 +827,10 @@ implicitly. CR-06 owns live output isolation; do not postpone that fix.
 **Documents.** AGENTS.md, guide, README and index, inventory, knip entries,
 module paths, and paths test.
 
-**Delivery.** PR #183 implements this CR. It adds the process and baseline
-wrappers, typed stage outcomes, fresh structured review evidence, and focused
-command contracts. The process preserves scoped test selection and the two
-allowed baseline refresh reasons. Owner review is pending.
+**Delivery.** Merged in PR #183. It adds the process and baseline wrappers,
+typed stage outcomes, fresh structured review evidence, and focused command
+contracts. The process preserves scoped test selection and the two allowed
+baseline refresh reasons.
 
 ### CR-10. Explain and, after a decision, judge test changes
 
@@ -1077,8 +1079,17 @@ diagnostic change. Test meaningful tie ordering. Select affected focused
 consumers; actual test changes select their groups. No new unexplained
 habit-hooks finding, and future modules follow approved gate/exception rules.
 
-**Documents.** Layout and inventory as needed. Keep six entry points unless
-separate command CRs have been approved and implemented.
+**Documents.** Layout and inventory as needed. Keep the nine entry points
+now delivered by the approved command CRs.
+
+**Delivery.** PR #184 implements this CR and awaits owner review. Shared
+helpers own repeated argument parsing, timeout and base checks, output limits,
+JSON object file reads, and text ordering where their contracts match.
+File-kind read diagnostics and each consumer's schema checks stay intact.
+Text ordering returns zero for ties; locale-sensitive ordering keeps its
+existing contract. Tests use production types and the documented MCP tools
+contract. The architecture command already calculated the CRAP delta once
+before this CR. D9 remains open, so unexpected error output stays unchanged.
 
 ### CR-18. Revisit rule caps
 
@@ -1836,7 +1847,7 @@ example does not require a record write during an exploratory run.
 
 ## 11. Appendix D: composed process text
 
-PR #183 implements this CR-09 process in AGENTS.md. It reflects D1 to D3,
+PR #183 merged this CR-09 process into AGENTS.md. It reflects D1 to D3,
 approved on 2026-10-18: an inclusive new-function target of 15, goals with
 documented exceptions after at most three cycles, and clearly labeled
 head-derived historical estimates. D4 to D9 remain open. This text grants

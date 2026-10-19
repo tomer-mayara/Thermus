@@ -1,3 +1,4 @@
+import { textOrder } from '../shared/order.ts';
 import type { Namespace, ServerCommunity } from './input.ts';
 import type { CommunityMap } from './map.ts';
 import { sumOf, weightedMaintainability } from '../shared/numbers.ts';
@@ -7,7 +8,7 @@ import type { FileMeasurement, SnapshotCommunity, SnapshotEdge } from './types.t
 export function snapshotCommunitiesOf(map: CommunityMap, files: readonly FileMeasurement[]): SnapshotCommunity[] {
   return map.communities
     .map((community) => communityOf(community, map, files.filter((file) => map.communityOf(file.path) === community.id)))
-    .sort((first, second) => (first.label < second.label ? -1 : 1));
+    .sort((first, second) => textOrder(first.label, second.label));
 }
 
 function communityOf(community: ServerCommunity, map: CommunityMap, members: readonly FileMeasurement[]): SnapshotCommunity {
@@ -29,7 +30,7 @@ function edgesFrom(map: CommunityMap, id: string): SnapshotEdge[] {
   return map.edges
     .filter((edge) => edge.from === id)
     .map(({ to, references, inCycle }) => ({ to, references, inCycle }))
-    .sort((first, second) => (labelOf(map, first.to) < labelOf(map, second.to) ? -1 : 1));
+    .sort((first, second) => textOrder(labelOf(map, first.to), labelOf(map, second.to)));
 }
 
 function labelOf(map: CommunityMap, id: string): string {
@@ -59,7 +60,7 @@ function isSourceNamespace({ namespace }: Namespace): boolean {
 
 // A tie goes to the first name, so that the label does not depend on the order of the answer.
 function byCountThenName(first: Namespace, second: Namespace): number {
-  return second.count - first.count || (first.namespace < second.namespace ? -1 : 1);
+  return second.count - first.count || textOrder(first.namespace, second.namespace);
 }
 
 // A hub is a file without its extension or a folder.
