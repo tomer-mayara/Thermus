@@ -3,9 +3,11 @@
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
 "Review record"). Historical tickets T1 to T7 are done (see the appendix).
 PR #175 completed CR-16 and the CR-23 contract-test foundation. PR #176
-implements CR-24: always print the architecture drawing and require the
-fenced graph and legend in every pull request body. The other changes in
-the [change request](ast-metrics-change-request.md) remain follow-up work;
+merged CR-24: always print the architecture drawing and require the
+fenced graph and legend in every pull request body. Delivery group 3 in
+PR #177 implements CR-01 and CR-02 and awaits owner review: include portal
+unit coverage and measure each function's own characters. The other changes
+in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
 ast-metrics" in [AGENTS.md](../../AGENTS.md) and
@@ -163,34 +165,54 @@ A community that splits or merges can show as gone and new.
 
 ### CRAP per function
 
-The coverage run uses only the emitted Node unit tests under
-`NODE_V8_COVERAGE` (about 85 seconds on the measured Mac, 274 processes).
-It omits the source portal unit tests that `npm run test:unit` also runs;
-CR-01 will correct that bug. It adds no integration or acceptance suite;
-CR-11 proposes that extension. For each function in a `src/` file, current
-coverage is the covered share of its full range in the build: the share that
-at least one process ran, where a process runs no character of a block with
-count zero and no character of a function that it did not call. V8 gives a block only where its count differs from the count
-around it, so the blocks differ from process to process and the merge is per
-character, with the function's own range as the key. The range of a function
-includes its nested functions; each nested function has its own entry.
+The coverage run first runs the complete emitted Node unit tests, then the
+complete source portal unit tests, with one `NODE_V8_COVERAGE` folder. It
+adds no integration or acceptance suite; CR-11 proposes that extension.
+For each function, the share measures its own characters: the whole range
+minus the union of strictly contained function ranges from all compatible
+processes. Grandchildren are subtracted once, equal ranges do not establish
+parenthood, and a nested entry missing from one process still affects the
+common denominator. Execution is unioned over own characters; calls are
+summed. A process runs no character in a zero-count block or a function it
+did not call. This is character coverage, not basis-path coverage.
+
+Offsets use UTF-16 code units of the executed representation. The collector
+accepts emitted JavaScript under `dist/src/` and source TypeScript under
+`src/`, preserves representation and SHA-256 content identity, and rejects
+mixed representations for one logical file. On Node 24.20.0, stripped
+TypeScript keeps named function offsets aligned with the original UTF-16
+source. The anonymous module's whole range also includes Node's exact
+`\n\n//# sourceURL=<file URL>` trailer. Identified length includes the
+trailer; the SHA-256 identity hashes the original file without it. Whole
+ranges are preserved, with no clamping. The collector validates raw ranges
+and counts before merging and rejects crossing ranges, conflicting identities,
+and unsafe call sums. Helpers and their descendants are subtracted before
+they are excluded. Functions with no own characters are recorded as
+unmeasured with reason `no-own-characters`; they have no measured share.
+The JSON schema remains version 1; the measurement version is
+`own-characters-1`.
+
 Functions match ast-metrics by file (`dist/src/x.js` is `src/x.ts`) and by
 the name that V8 gives: ast-metrics names a method `module\Class.method`,
 V8 names it `method`, and V8 names a constructor `Class`. An anonymous
-function, a name that occurs twice in a file of the snapshot or of the
-coverage, a name that the coverage does not have, and a compiler helper
-(`__` prefix, with the functions inside it) stay unmatched and get no CRAP;
-the list under the table gives how many functions of the changed files
+function, a duplicate name in a snapshot or coverage file, a name absent
+from coverage, a compiler helper (`__` prefix, with its descendants), or a
+function with no own characters stays unmatched and gets no CRAP. An
+unmeasured entry also blocks a measured same-name entry from supplying a
+share. The list under the table gives how many functions of the changed files
 stayed unmatched. A `src/` file absent from the report currently counts as
-uncovered. Absence can come from the portal collection bug as well as a
-file that no selected emitted test loads.
+uncovered. Only a complete verified report can establish that an absent
+file was not loaded by the selected unit suite. `--from` still cannot prove
+original capture content, complete suite execution, or input freshness;
+CR-03 will add capture provenance. Current-file identity is not proof of
+original capture identity.
 
 The base tree gets no coverage run, so the CRAP of the base is an
 approximation: a function of the base has its own decision paths and the
 covered share of the head function with the same name in the same file, and
 the share 0 when the head file does not have the name, such as a removed
 function. Reuse current valid coverage when available. Collect it only when
-`src/` changed or the complete emitted Node unit suite was already selected
+`src/` changed or both complete parts of the unit suite were already selected
 under the test gate policy. Otherwise report without bands.
 
 ### Bands
@@ -298,7 +320,7 @@ The owner decided on 2026-10-17:
    of the process.
 2. CRAP is computed per pull request from current valid coverage when
    available. The current test gate policy permits collection only for a
-   `src/` change or when the complete emitted Node unit suite is already
+   `src/` change or when both complete parts of the unit suite are already
    selected. The pull request shows CRAP before and after for its changed
    functions and files when coverage is available.
 3. The trend store is JSON files under `docs/metrics/`, one per `main`
@@ -309,22 +331,21 @@ The owner decided on 2026-10-17:
 5. The encoding above.
 
 On 2026-10-18, the owner approved CR-24 as delivery group 2 after PR #175.
-PR #176 updates the current encoding to always print the graph and legend
-and requires their fenced block and legend unchanged in every pull request
-body. The original decision and ticket records below remain historical.
+PR #176 merged the change to always print the graph and legend and require
+their fenced block and legend unchanged in every pull request body. The original decision and ticket records below remain historical.
 
 ## Limits known in advance
 
-- Coverage comes only from emitted Node unit tests. T5 and T6 added no
-  other suite; this limit remains until CR-11. The portal unit omission is
-  a separate CR-01 bug. The coverage JSON names the unit suite; the
+- Coverage comes only from the unit suite: emitted Node tests and source
+  portal tests. PR #177 implements the portal part under CR-01. CR-11
+  proposes other suites. The coverage JSON names the unit suite; the
   architecture Markdown does not yet name it (CR-03). Functions tested only
   by integration or acceptance tests can count as uncovered.
 - `ast-metrics-architecture.live.ts` has a case that collects the complete
-  emitted Node unit suite and uses the same selection restriction as the
-  coverage command. Its structural case does not collect coverage. Both
-  coverage live paths currently write and remove the default report; CR-06
-  will isolate them. `ast-metrics-coverage.live.ts` needs no ast-metrics.
+  unit suite, including portal tests. It uses the same selection restriction
+  as the coverage command. Its structural case does not collect coverage. The coverage live test uses a temporary output report. Architecture's
+  coverage live case still writes and removes the default report; CR-06
+  will isolate it. `ast-metrics-coverage.live.ts` needs no ast-metrics.
 - The 2026-10-18 study observed a reported seven-point maintainability drop
   and an unreported 1.3-point drop. It established no exact drop threshold.
 - The base gets the coverage of the head (see "CRAP per function"), so a

@@ -105,22 +105,51 @@ error answers, a hanging and an early-exiting server, and that no server
 process remains. `ast-metrics-mcp.live.ts` runs the real server when
 `ast-metrics` is on PATH; the default suites skip it.
 
-`test/unit/script/ast-metrics-coverage.test.ts` checks the help and the
-refused arguments of the coverage command with an empty PATH, and the merge
-through `--from` with coverage files for this repository's `dist/src/` in a
-temporary folder: the path map, the union of zero-count blocks, a function
-that no process called, the rounding, the helper filter, the order, the
-commit of the report, `--out`, and the diagnostics. The merge cases run with
-a stub of git first on a PATH that holds nothing else
-(`test/support/doubles/ast-metrics/git-cli-stub.ts`), so the file needs no
-git and no ast-metrics, as the check stage of the hosted image has neither.
-`test/support/fixtures/v8-coverage.ts` writes the V8 coverage files.
-`test/acceptance/script/ast-metrics-coverage.test.ts` checks the merge of two
-processes and the default run of a small built suite in a temporary git
-repository; `ast-metrics-coverage-failures.test.ts` checks files of two
-builds, a missing `dist/`, a failing suite, and a repository without a
-commit. `ast-metrics-coverage.live.ts` runs the real unit suite
-(about 85 seconds); the default suites skip it.
+`test/unit/script/ast-metrics-coverage.test.ts` checks help, refused
+arguments, and `--from` with an empty PATH and a Git double. It covers the
+path map, execution union, calls, rounding, helper exclusion, report order,
+commit, output path, and diagnostics. These cases need no Git executable or
+ast-metrics. `test/support/fixtures/v8-coverage.ts` writes the V8 files and
+their identified script fixtures.
+
+`test/unit/script/ast-metrics-coverage-input.test.ts` checks the two ordered
+suite calls with one capture folder, source TypeScript and UTF-16 text,
+SHA-256 content identity, ignored test URLs, changed and missing script
+files, refusal of URL aliases, and failure of the second, portal test run. A fake runner proves the command contract
+without running either application suite.
+
+`test/unit/script/ast-metrics-coverage-own.test.ts` checks own-character
+shares across processes, a missing nested entry in either order,
+grandchildren, equal ranges, helper subtraction before exclusion,
+incompatible representations, content and identified lengths, crossing
+ranges, invalid raw
+offsets and counts, and summed-call overflow.
+`test/unit/script/ast-metrics-coverage-unmeasured.test.ts` checks that the
+architecture reader preserves an unmeasured function's file and withholds
+a measured namesake's share.
+
+`test/acceptance/script/ast-metrics-coverage.test.ts` checks merging two
+processes and the default run of a small built suite in a temporary Git
+repository. `ast-metrics-coverage-failures.test.ts` checks out-of-bounds
+build ranges, missing `dist/`, an emitted-suite failure, and a repository
+without a commit.
+`ast-metrics-coverage-own.test.ts` checks own-character measurement,
+zero-own exclusions, version-1 fields and `own-characters-1`, and rejection
+of malformed input, crossing function ranges, and call overflow without replacing
+an earlier report. It also checks a portal-suite failure after the emitted suite
+passes, with capture cleanup and the earlier report kept.
+Its small real typed fixture includes non-ASCII text and proves both unit
+parts run and that Node's stripped TypeScript offsets and shares match
+UTF-16 source text. It also checks the anonymous module range against
+Node 24.20.0's exact sourceURL trailer. This fixture does not run the
+application unit suite.
+
+`ast-metrics-coverage.live.ts` runs both complete parts of the real unit
+suite and checks a called `initializePortal` in
+`src/user-portal/portal.ts`. It uses a temporary `--out` report. Run it only
+when both complete parts are selected or `src/` changed; the default suites
+skip it. The architecture live coverage case keeps the same scope limit.
+
 `test/unit/script/ast-metrics-snapshot.test.ts` checks the help and the
 refused arguments of the snapshot command with an empty PATH, and the rules
 of the pure build in the test process: the LOC-weighted maintainability, the
@@ -268,7 +297,7 @@ a trend store in a folder of the test: the summary, the unchanged-map line,
 the fenced graph with every community, the legend, and `No production file
 changed.`, the record of HEAD in the store, and the trend table that ends with
 the row of HEAD and the row of the head with the same numbers. A second case
-first runs the real unit suite under coverage (about 90 seconds), then the
+first runs both complete parts of the real unit suite under coverage, then the
 command with each `src/` file touched: equal counts on both sides, a band
 without a change on each node, an equal CRAP cell on each row, and an empty
 list. It removes `ast-report/coverage.json` afterwards. Neither case writes to
@@ -297,6 +326,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
@@ -322,6 +352,9 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
@@ -1117,7 +1150,7 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 
 [V] Writes one line to stderr by default or to a supplied writable stream
 [V] Includes the timestamp, level label, level color, message, and final newline
-[V] Includes the caller file and line, including filenames with parentheses and files beside the logging directory
+[V] Includes the caller file and line, including filenames with parentheses and files beside the logging directory; the virtual sibling caller uses a `.fixture` name so coverage does not treat it as a built production script
 [V] Starts at INFO by default and applies each constructor threshold from DEBUG through NONE
 [V] Applies threshold changes, hides all levels at NONE, and resumes when the threshold is lowered
 [V] Writes the message of an `Error`, a string as it is, and the text of another value, such as a number or a plain object, from `error()` and `fatal()` after the caller file and line

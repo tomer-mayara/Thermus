@@ -133,9 +133,10 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    request description. Reuse current valid unit coverage when available.
    If none is available, run `npm run build` and
    `pnpm exec node script/code-quality/ast-metrics-coverage.ts` (about 90 seconds)
-   only when `src/` changed or the complete emitted Node unit suite was
-   already selected by the test gate policy. The command runs that whole
-   suite; its live test has the same restriction. Coverage must describe
+   only when `src/` changed or both complete parts of the unit suite were
+   already selected by the test gate policy: emitted Node tests and source
+   portal tests. The command runs both complete parts; its live test has
+   the same restriction. Coverage must describe
    the candidate's source, unit-test, and build inputs, including test helpers
    and fixtures. A commit that changes only documents does not invalidate
    coverage when those inputs are unchanged. Move aside a stale default

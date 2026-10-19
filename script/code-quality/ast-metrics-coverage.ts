@@ -10,16 +10,23 @@ import { CommandError, git, repositoryRoot } from './shared/repository.ts';
 const help = `Usage: node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE] [--help]
 
 Measure the coverage of each function of src/ by the unit suite. The command runs
-node --test on "dist/test/unit/**/*.test.js" in the repository root, with
+node --test on "dist/test/unit/**/*.test.js", then on
+"test/unit/user-portal/**/*.test.ts" in the repository root, with
 NODE_V8_COVERAGE set to a temporary folder. Run npm run build first. The output of
 the suite goes to stderr. Each Node process of the run writes a V8 coverage file
 at exit, and the command merges these files.
 
-The report holds each function of the scripts under dist/src/, the build of src/:
-its name, its range in the compiled JavaScript, the count of its calls, and its
-covered share, the part of its characters that at least one process ran. A
+The report holds source scripts under dist/src/ (emitted JavaScript) and src/
+(source TypeScript), with representation and content identity. Offsets use UTF-16
+code units of the executed representation. It records each function name, whole
+range, calls, and covered share of its own characters after nested ranges leave
+the mask. Measurement version is own-characters-1; schema version stays 1. A
 function without a name is "(anonymous)". The compiler helpers, whose names start
-with __, and the functions inside them are not in the report.
+with __, and the functions strictly inside them are not in the report. Functions
+with no own characters appear in unmeasuredFunctions with no-own-characters.
+Invalid ranges, unsafe counts, crossing functions, and incompatible identities
+fail before a report is written. --from identifies current script files; it does
+not prove the original capture identity.
 
 Options:
   --from DIR    Read the coverage files of an earlier run of the unit suite from

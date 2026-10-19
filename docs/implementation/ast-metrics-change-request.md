@@ -31,9 +31,11 @@ Delivery status:
 
 - PR #175 merged CR-16 and the CR-23 contract-test foundation. CR-23's later
   content consolidation remains.
-- PR #176 implements delivery group 2, CR-24: always print the architecture
+- PR #176 merged delivery group 2, CR-24: always print the architecture
   drawing and require its fenced block and legend in the pull request body.
-  It awaits owner review.
+- PR #177 implements delivery group 3, CR-01 and CR-02, and awaits owner
+  review: collect portal unit coverage and measure each function's own
+  characters. CR-03 capture provenance remains pending.
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
@@ -63,9 +65,10 @@ complexity of changed files, and a trend from `docs/metrics/` records.
 
 The review found these problems:
 
-1. Coverage omits portal unit tests, counts nested function text as part of
-   its parent, and lacks reliable input identity. CR-01 to CR-03 correct
-   collection, measurement, and validation.
+1. At the proposal baseline, coverage omitted portal unit tests and counted
+   nested function text as part of its parent. PR #177 implements CR-01 and
+   CR-02 to correct collection and measurement. Reliable original capture
+   provenance and input-freshness validation remain CR-03 work.
 2. Historical CRAP counts use head coverage to estimate the base. Valid
    head coverage does not make that a base measurement. CR-04 makes writes
    explicit and implements approved D3: clearly label head-derived counts
@@ -124,8 +127,11 @@ compatible coverage; this requirement does not expand the selected test scope.
 
 ### 2.2 Commands, layout, and documents
 
-There are six entry points and 50 helpers: 56 TypeScript modules under
-`script/code-quality/`. Node 24 runs them from source. Relative imports end
+At the proposal baseline there were six entry points and 50 helpers: 56
+TypeScript modules under `script/code-quality/`. The six entry points remain;
+CR-01 and CR-02 add helpers for script identity, validation, execution, and
+ownership. Node 24 runs them
+from source. Relative imports end
 in `.ts`; the main build excludes `script/`.
 
 | Entry point | Purpose | Helper folder |
@@ -133,7 +139,7 @@ in `.ts`; the main build excludes `script/`.
 | `ast-metrics-delta.ts` | List changed files and maintainability; enforce the production-file goal. | `delta/` |
 | `ast-metrics-review.ts` | Pass the selected base ref to the tool's review; the guide describes comparison with that ref's tip. | Shared repository support |
 | `ast-metrics-mcp.ts` | Make one MCP call and stop the server. | `mcp/` |
-| `ast-metrics-coverage.ts` | Collect and merge V8 coverage from emitted Node unit tests. | `coverage/` |
+| `ast-metrics-coverage.ts` | Collect and merge V8 coverage from emitted Node and source portal unit tests. | `coverage/` |
 | `ast-metrics-snapshot.ts` | Capture metrics and communities of `src/`, optionally at a merge base. | `snapshot/` |
 | `ast-metrics-architecture.ts` | Compare snapshots and print the map, complexity table, and trend. | `architecture/` |
 
@@ -224,9 +230,9 @@ general threshold. Remove the assertion that a drop of about ten counts.
 PR #170 corrected the snapshot live test's fixed counts from seven to
 eight non-shared communities and from one to two cycles. It still fixes
 those counts. The architecture live file still has a complete unit coverage
-case. Both coverage live paths write and remove the repository's default
-report. The README's claim that the architecture live file does not run the
-unit suite is false.
+case. The coverage live test uses a temporary output report. Architecture's
+coverage live case still writes and removes the repository's default report;
+CR-06 will isolate it. The current README identifies both live collectors and their scope limits.
 
 Ordinary acceptance tests run commands through
 `test/support/processes/script-command.ts` and compare complete Markdown
@@ -270,8 +276,9 @@ test group. Do not run the full inventory merely because it is listed.
 6. Keep that scope through child commands. Do not turn a focused run into
    a whole suite. Record unavoidable broader work as deferred, not passed.
    This includes coverage live and architecture's coverage-collecting case.
-   After CR-01, both parts of the unit suite must be within scope before
-   collection. Reuse valid coverage otherwise, or report without bands.
+   Both parts of the unit suite must be within scope before collection:
+   emitted Node tests and source portal tests. Reuse valid coverage otherwise,
+   or report without bands.
 7. A documentation-only change needs no executable test added for prose.
    A command reference does not select that command. Missing metric data
    does not authorize a broader suite.
@@ -327,12 +334,14 @@ README, not the script index.
 
 ### CR-01. Cover the user-portal unit tests
 
-P1 · S–M · mistake. No prerequisite; deliver with CR-02.
+P1 · S–M · mistake. No prerequisite; deliver with CR-02. Implemented in
+PR #177; awaiting owner review.
 
-**Evidence.** `coverage/run.ts` selects emitted Node tests only. The unit
-package command also runs `test/unit/user-portal/**/*.test.ts`. The build
-excludes portal source and tests, and `coverage/input.ts` accepts only
-`dist/src/*.js` URLs. Tested portal functions can therefore look uncovered.
+**Evidence at the proposal baseline.** `coverage/run.ts` selected emitted
+Node tests only. The unit package command also ran
+`test/unit/user-portal/**/*.test.ts`. The build excluded portal source and
+tests, and `coverage/input.ts` accepted only `dist/src/*.js` URLs. Tested
+portal functions could therefore look uncovered.
 
 **Required behavior.** Run emitted tests with current concurrency, then
 portal source tests under the same capture directory, only when both are
@@ -340,6 +349,12 @@ within the selected scope. Keep `suite: "unit"`. Accept source `.ts` URLs
 under the repository's `src/` as well as mapped emitted `.js` URLs. Ignore
 test URLs and outside paths. Preserve the representation and content
 identity of each script; offsets are UTF-16 code units, not bytes.
+
+The real fixture verifies Node 24.20.0's stripped TypeScript: named function
+offsets stay aligned with source text, and the anonymous module's whole
+range includes the exact `\n\n//# sourceURL=<file URL>` trailer. Identified
+length includes that trailer; the content hash uses the original file.
+Preserve whole ranges and validate this exact length without clamping.
 
 Validate V8 offsets and counts before merging. Each is a finite,
 nonnegative safe integer. A whole range must satisfy
@@ -373,11 +388,13 @@ can establish that an absent file was not loaded by the selected suite.
 
 ### CR-02. Count only a function's own characters
 
-P1 · S–M · mistake. No prerequisite; deliver with CR-01.
+P1 · S–M · mistake. No prerequisite; deliver with CR-01. Implemented in
+PR #177; awaiting owner review.
 
-**Evidence.** `coverage/merge.ts` marks a called function's full range as
-run and clears its own zero-count blocks. Separate nested entries do not
-remove their text from the parent's numerator or denominator. The study
+**Evidence at the proposal baseline.** `coverage/merge.ts` marked a called
+function's full range as run and cleared its own zero-count blocks. Separate
+nested entries did not remove their text from the parent's numerator or
+denominator. The study
 observed this in an uncalled handler returned by a called factory.
 
 **Required behavior.** Own characters are the whole range minus the union
@@ -1348,41 +1365,64 @@ fixtures and checked readers for each implemented extension.
 
 ### A.1 Coverage
 
-Current shape, abbreviated; counts are illustrative historical values:
+The implemented CR-01/CR-02 shape in PR #177 is abbreviated below. Counts
+are illustrative. JSON schema version 1 stays; `measurementVersion` names
+the changed measurement semantics.
 
 ```json
 {
   "version": 1,
   "suite": "unit",
+  "measurementVersion": "own-characters-1",
   "commit": "<40 hex>",
   "processes": 364,
   "scripts": 101,
   "files": [{
     "path": "src/application.ts",
+    "representation": "emitted-javascript",
+    "contentIdentity": "<sha256 of UTF-8 script text>",
     "functions": [{
       "name": "createApplication", "start": 1234, "end": 2345,
       "called": 0, "coveredShare": 0
     }]
+  }],
+  "unmeasuredFunctions": [{
+    "path": "src/example.ts", "name": "wrapper", "start": 0, "end": 10,
+    "reason": "no-own-characters"
   }]
 }
 ```
 
-Offsets belong to the executed representation and use UTF-16 code units.
-Emitted JavaScript ranges are not source-TypeScript ranges. Calls sum over
-processes. A measured share is in [0,1]. Compiler helpers are excluded.
+`representation` is `emitted-javascript` or `source-typescript`. Offsets
+belong to that representation and use UTF-16 code units, not bytes. For
+`source-typescript` on Node 24.20.0, named function offsets match the
+original source, while the anonymous module's whole range includes the
+exact appended `\n\n//# sourceURL=<file URL>` trailer. Identified length
+includes the trailer; `contentIdentity` hashes the original file's UTF-8
+text without it. Whole ranges stay unchanged and are validated without
+clamping. The anonymous module can therefore measure generated sourceURL
+characters; named functions still measure actual source characters. Calls
+sum over processes. Measured shares are in [0,1] and use only the function's
+own characters: subtract the union of strictly contained functions across
+compatible processes. Equal ranges do not establish parenthood.
+Grandchildren are subtracted once. Compiler helpers and their descendants
+are subtracted before exclusion. Zero-own functions are unmeasured; every
+measured entry retains numeric `coveredShare`.
 
 Every raw V8 offset and count must be a finite nonnegative safe integer.
 Whole ranges satisfy `0 ≤ start < end ≤ identified script UTF-16 length`.
 Each block has `start < end` and lies within its whole range. Summed calls
-must remain safe integers. Reject malformed, inverted, empty, out-of-bounds,
-or overflowing data with a diagnostic; do not invent a share or clamp an
-invalid range. An empty raw range is invalid. A valid nonempty function
-whose own range becomes empty after nested subtraction is instead the
-unmeasured case specified by CR-02.
+must remain safe integers. Invalid, crossing, empty, inverted, out-of-bounds,
+or overflowing data is rejected with a diagnostic. A valid nonempty
+function whose own range becomes empty after subtraction receives
+`no-own-characters` instead.
 
-CR-01 adds representation and content identity per file. CR-02 changes
-the measurement to own characters and records excluded zero-own functions
-as unmeasured, without removing required shares from measured entries.
+The collector rejects conflicting content identities and incompatible
+representations for one logical file. Equal lengths do not permit a union
+of emitted JavaScript and source TypeScript. `--from` reads the script
+available at import time; this identity cannot prove the original capture
+content, full suite execution, or fresh inputs. These remain CR-03 work.
+
 CR-03 adds original capture provenance, for example:
 
 ```json
@@ -1396,18 +1436,16 @@ CR-03 adds original capture provenance, for example:
     "runtime": "node-24.20.0",
     "capturedCommit": "<40 hex>",
     "captureManifestFingerprint": "<sha256>"
-  },
-  "unmeasuredFunctions": [{
-    "path": "src/example.ts", "name": "wrapper", "start": 0, "end": 10,
-    "reason": "no-own-characters"
-  }]
+  }
 }
 ```
 
-Finalize field names with checked format fixtures. Required invariants are
-original identity, stable inputs/output through capture, representation
-identity, semantic version, and explicit unverified status. Legacy data
-cannot enable bands. Revision 3 called the input hash `tree`; explicit
+The CR-01/CR-02 field names above are implemented; the CR-03 provenance
+fields remain proposed and need checked format fixtures. Required invariants
+for CR-03 are original identity, stable inputs/output through capture,
+representation identity, semantic version, and explicit unverified status.
+Under CR-03, legacy data cannot enable bands; current readers do not yet
+enforce that provenance rule. Revision 3 called the input hash `tree`; explicit
 fingerprint names prevent confusion with a Git tree. CR-11 adds a suite
 array with readers for the old string; test that type-contract extension.
 

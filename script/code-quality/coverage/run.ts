@@ -21,8 +21,13 @@ export function withUnitSuiteCoverage<T>(root: string, read: (folder: string) =>
 // The output of the suite goes to stderr, so that stdout holds only the result of the command. A test that runs this
 // command sets NODE_TEST_CONTEXT; with it, the inner node --test reports to that test instead of running on its own.
 function runUnitSuite(root: string, folder: string): void {
+  const suites = [['--test', '--test-concurrency=1', unitTests], ['--test', 'test/unit/user-portal/**/*.test.ts']];
+  for (const args of suites) runTests(root, folder, args);
+}
+
+function runTests(root: string, folder: string, args: readonly string[]): void {
   const { NODE_TEST_CONTEXT: _context, ...environment } = process.env;
-  const run = spawnSync(process.execPath, ['--test', '--test-concurrency=1', unitTests], {
+  const run = spawnSync(process.execPath, args, {
     cwd: root, env: { ...environment, NODE_V8_COVERAGE: folder }, stdio: ['ignore', 2, 2],
   });
   if (run.error) throw new CommandError(`node --test did not run: ${run.error.message}`);

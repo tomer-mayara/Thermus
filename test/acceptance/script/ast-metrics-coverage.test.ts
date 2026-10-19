@@ -70,12 +70,11 @@ test('Given the coverage files of two processes that ran one build differently, 
   const { repository, report } = await runFromFixture(t);
 
   assert.deepEqual({ ...report, files: [] }, {
-    version: 1, suite: 'unit', commit: repository.git('rev-parse', 'HEAD').trim(), processes: 2, scripts: 2, files: [],
+    version: 1, measurementVersion: 'own-characters-1', unmeasuredFunctions: [], suite: 'unit', commit: repository.git('rev-parse', 'HEAD').trim(), processes: 2, scripts: 2, files: [],
   });
   assert.deepEqual(report.files.map((file) => file.path), ['src/other.ts', 'src/sample.ts']);
-  // outer has 200 characters. The first process did not run 200..300, the second did not run 200..250, so only
-  // 200..250 stays uncovered: 1 - 50 / 200.
-  assert.deepEqual(functionsOf(report, 'src/sample.ts').find((entry) => entry.name === 'outer'), { name: 'outer', start: 100, end: 300, called: 3, coveredShare: 0.75 });
+  // outer has 140 own characters after inner is removed. Only 200..250 stays uncovered.
+  assert.deepEqual(functionsOf(report, 'src/sample.ts').find((entry) => entry.name === 'outer'), { name: 'outer', start: 100, end: 300, called: 3, coveredShare: 0.643 });
   // The first process did not call the function at 20, the second did.
   assert.deepEqual(functionsOf(report, 'src/other.ts')[1], { name: '(anonymous)', start: 20, end: 60, called: 3, coveredShare: 1 });
 });
@@ -86,7 +85,7 @@ test('Given a function with a nested function, when the command reads the covera
   // inner has 60 characters. The first process did not run 150..170; the second did not call inner: 1 - 20 / 60.
   assert.deepEqual(functionsOf(report, 'src/sample.ts'), [
     { name: '(anonymous)', start: 0, end: 400, called: 2, coveredShare: 1 },
-    { name: 'outer', start: 100, end: 300, called: 3, coveredShare: 0.75 },
+    { name: 'outer', start: 100, end: 300, called: 3, coveredShare: 0.643 },
     { name: 'inner', start: 120, end: 180, called: 2, coveredShare: 0.667 },
   ]);
 });
@@ -102,6 +101,7 @@ test('Given a compiler helper with a function inside it and the script of a test
 const build = {
   'package.json': '{ "type": "module" }\n',
   'dist/src/sample.js': "export function used(flag) {\n  if (flag) {\n    return 'yes';\n  }\n  return 'no';\n}\n\nexport function unused() {\n  return 0;\n}\n",
+  'test/unit/user-portal/sample.test.ts': "import { test } from 'node:test'; test('portal part', () => {});\n",
   'dist/test/unit/sample.test.js': [
     "import assert from 'node:assert/strict';",
     "import { test } from 'node:test';",
