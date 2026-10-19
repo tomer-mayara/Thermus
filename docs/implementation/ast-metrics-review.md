@@ -701,7 +701,8 @@ passes a required goal.
 
 The pinned tool omits `functions` for constant modules. CRAP accepts this as
 an empty list only when source evidence finds no function declarations, the
-answer names the selected file, complexity and risk are explicitly zero, and
+answer names the selected file through an absolute path or a path relative to
+the explicit repository root, complexity and risk are explicitly zero, and
 the line counts are valid nonnegative integers. Missing or malformed function
 data in other answers remains an operational error.
 
