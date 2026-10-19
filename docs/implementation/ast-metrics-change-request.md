@@ -33,9 +33,10 @@ Delivery status:
   content consolidation remains.
 - PR #176 merged delivery group 2, CR-24: always print the architecture
   drawing and require its fenced block and legend in the pull request body.
-- PR #177 implements delivery group 3, CR-01 and CR-02, and awaits owner
-  review: collect portal unit coverage and measure each function's own
-  characters. CR-03 capture provenance remains pending.
+- PR #177 merged delivery group 3, CR-01 and CR-02: collect portal unit
+  coverage and measure each function's own characters.
+- CR-03 and CR-04 are in progress together: verify coverage provenance,
+  make trend writes explicit, and identify historical estimates.
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
