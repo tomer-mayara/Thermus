@@ -3,7 +3,8 @@
 The commands below wrap the ast-metrics CLI for the process "Code quality review
 with ast-metrics" in [AGENTS.md](../../AGENTS.md). They carry the correct syntax
 of the tool; do not call `ast-metrics` directly in that process. Run them from
-the repository root; no build is needed. The `ast-metrics` executable must be
+the repository root; the static commands need no build. A coverage run needs
+compiled unit tests. The `ast-metrics` executable must be
 on PATH (`brew install ast-metrics/tap/ast-metrics` on macOS; the process is
 verified with 0.43.1). The
 [ast-metrics review guide](../../docs/implementation/ast-metrics-review.md)
@@ -26,6 +27,15 @@ The six command entry points stay in this folder:
 Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
 `coverage/`, and `architecture/`. The `shared/` folder holds JSON readers,
 number calculations, and repository commands that more than one task uses.
+
+Select tests with the [test gate policy](../../docs/implementation/test-gate-policy.md).
+Only a change under `src/` requires the full ordinary suite (`npm test`) and
+the remaining static and build checks in that policy. Do not add
+`npm run check`, which would repeat unit and portal tests. For other changes,
+run only affected test groups and existing focused tests. Keep the static
+delta, review, and architecture steps for each pull request. This scope also
+applies to tests and commands that start other
+tests: a focused caller must not expand it indirectly.
 
 ## Measure the delta
 
@@ -78,6 +88,14 @@ for a file that is not in the analysis, an unknown tool, a timeout, a server
 that exits before it answers, or a missing executable.
 
 ## Measure the coverage per function
+
+Run this command, or its live test, only when `src/` changed or the complete
+emitted Node unit suite was already selected. A focused unit package does
+not select that whole suite. Reuse current valid coverage when available;
+otherwise, an architecture report without coverage is acceptable outside
+that scope. Current coverage must describe the candidate's source, unit-test,
+and build inputs, including test helpers and fixtures. A commit that changes
+only documents does not invalidate coverage when those inputs are unchanged.
 
 ```sh
 pnpm run build
@@ -150,14 +168,32 @@ printed; 1 with one diagnostic line for a failure. The
 gives the matching rule, the encoding, the bands, the rules of the table, and
 the trend store.
 
-Run the focused offline tests after a clean build, and the live tests with
-the real executable on PATH and the real unit suite:
+Move aside a stale default `ast-report/coverage.json` before the architecture
+run. Its missing-coverage message does not require a broader test run; use
+the output without bands when no current valid coverage is available and
+the selection does not permit collection.
+
+The following offline command covers all six commands after a clean build.
+For a smaller change, select only the files for the affected commands and
+the consumers of changed shared helpers:
 
 ```sh
 pnpm run build
 pnpm exec node --test dist/test/unit/script/ast-metrics-delta.test.js dist/test/unit/script/ast-metrics-review.test.js dist/test/unit/script/ast-metrics-mcp.test.js dist/test/acceptance/script/ast-metrics-delta.test.js dist/test/acceptance/script/ast-metrics-delta-goal.test.js dist/test/acceptance/script/ast-metrics-delta-failures.test.js dist/test/acceptance/script/ast-metrics-review.test.js dist/test/acceptance/script/ast-metrics-mcp.test.js dist/test/unit/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot.test.js dist/test/acceptance/script/ast-metrics-snapshot-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-failures.test.js dist/test/acceptance/script/ast-metrics-snapshot-base-worktree.test.js dist/test/unit/script/ast-metrics-architecture.test.js dist/test/unit/script/ast-metrics-architecture-coverage.test.js dist/test/unit/script/ast-metrics-architecture-report.test.js dist/test/unit/script/ast-metrics-architecture-table.test.js dist/test/unit/script/ast-metrics-architecture-functions.test.js dist/test/unit/script/ast-metrics-architecture-crap.test.js dist/test/unit/script/ast-metrics-architecture-bands.test.js dist/test/unit/script/ast-metrics-architecture-trend.test.js dist/test/unit/script/ast-metrics-architecture-trend-store.test.js dist/test/acceptance/script/ast-metrics-architecture.test.js dist/test/acceptance/script/ast-metrics-architecture-table.test.js dist/test/acceptance/script/ast-metrics-architecture-bands.test.js dist/test/acceptance/script/ast-metrics-architecture-base.test.js dist/test/acceptance/script/ast-metrics-architecture-trend.test.js dist/test/unit/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage.test.js dist/test/acceptance/script/ast-metrics-coverage-failures.test.js
+```
+
+Run an affected live test below when the real ast-metrics executable is on
+PATH. These live tests do not run the unit suite:
+
+```sh
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
-pnpm exec node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
 pnpm exec node --test dist/test/acceptance/script/ast-metrics-architecture.live.js
+```
+
+The coverage live test runs the real complete unit suite. Run it only when
+`src/` changed or that whole unit suite was already selected:
+
+```sh
+pnpm exec node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
 ```

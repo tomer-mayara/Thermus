@@ -450,8 +450,10 @@ Done when: the acceptance test and the three unit tests pass.
    The dry runs of the entry point prove the path.
 5. Run `habit-hooks` and correct each finding.
 
-Done when: `npm run check` and `habit-hooks` pass, and the script starts and
-stops cleanly without a client. The last check needs step 0.
+Done when: the checks selected by the changed paths under the
+[test gate policy](test-gate-policy.md#required-runs) and `habit-hooks` pass,
+and the script starts and stops cleanly without a client. The last check needs
+step 0.
 
 ### Step 5: the slice run
 
@@ -527,15 +529,10 @@ APL result into the pull request notes. Do not paste the API key.
      The runbook of step 5 stays in `README.md`.
 2. Do the required runs of the
    [test gate policy](test-gate-policy.md#required-runs):
-   - `npm run check`
+   - the test groups or existing focused checks selected by the changed paths
    - `habit-hooks`, with `.habit-hooks/snooze.json` kept as `[]`
    - the focused command of the new tests
-   - `npm run test:acceptance`, because `test/acceptance/` changes. It needs
-     the Axiom settings and public network access for the OTel logger test.
-   - `npm run test:integration`. The change touches no `src/` file, but the
-     policy says to run a suite when you are not sure.
-   - `npm run test:container`, because `package.json` is a build input of the
-     image. Only its scripts block changes.
+   - the existing focused launcher checks for the package script change
 3. Open a draft pull request. Record each command, its exit status, and the
    test counts. Mark it Ready after the runs pass.
 

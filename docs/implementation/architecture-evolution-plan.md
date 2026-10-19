@@ -316,9 +316,11 @@ Every ticket reads this plan, [the review guide](ast-metrics-review.md),
 `docs/coding-principles.md`, `docs/testing/test-code-layout.md`, and
 `docs/implementation/test-gate-policy.md`, and follows the AGENTS.md process:
 the acceptance test first, then TDD, the focused test before each commit,
-`npm run check`, `habit-hooks`, and the ast-metrics review process before
-Ready. Commands under `script/code-quality/` are TypeScript, run from source, typed
-without `any`, and pass the rules of `.ast-metrics.yaml`; their doubles live
+the checks selected by the changed paths under the
+[test gate policy](test-gate-policy.md#required-runs), `habit-hooks`, and the
+ast-metrics review process before Ready. Commands under `script/code-quality/`
+are TypeScript, run from source, typed without `any`, and pass the rules of
+`.ast-metrics.yaml`; their doubles live
 under `test/support/doubles/ast-metrics/`, and their tests use `runScript`
 and the fixtures of `test/acceptance/script/`.
 

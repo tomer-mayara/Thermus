@@ -544,7 +544,21 @@ It also runs portal acceptance tests and builds the portal bundle. Portal tests
 run from TypeScript source on Node 24 because the Node build excludes browser source.
 
 `npm run check` does not run the full integration, acceptance, interface, or container suites,
-the hosted image gate, or the renderer gate. The [test gate policy](docs/implementation/test-gate-policy.md) gives the suite prerequisites, focused commands, and the runs that a pull request needs before Ready.
+the hosted image gate, or the renderer gate.
+
+Before Ready, run the full ordinary suite with `npm test` only when the pull
+request changes a file under `src/`, plus the remaining static and build checks
+in the test gate policy. Do not add `npm run check`, which would repeat unit
+and portal tests. For changes under `test/`, run only the affected test groups,
+including the groups that use changed helpers or fixtures. For
+other files, use the existing focused tests that cover the change. Combine
+these selections for mixed changes; a `src/` change requires the full ordinary
+suite. A selected command or test must not start a broader suite indirectly.
+Document changes alone need no executable tests added to check prose. Keep
+`habit-hooks` and the static ast-metrics review for each pull request. The
+[test gate policy](docs/implementation/test-gate-policy.md) gives the group
+selection, prerequisites, focused commands, and applicable gates. Explicit
+release work uses the separate release checks below.
 
 `pnpm test:container` makes a clean build, builds the image of the current candidate with Docker, and runs `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1`. The containers run with the production settings of the image and without outbound access. `pnpm test` and `pnpm test:acceptance` select the same file, but they skip its suite. Only `pnpm test:container` is a [container gate](docs/implementation/test-gate-policy.md#container-gate) pass.
 

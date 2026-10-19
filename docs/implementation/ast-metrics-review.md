@@ -23,6 +23,21 @@ systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
 The six entry points and their helper folders are in
 [`script/code-quality/`](../../script/code-quality/README.md).
 
+Select tests under the [test gate policy](test-gate-policy.md) before these
+commands. Only a change under `src/` requires the full ordinary suite
+(`npm test`) and the remaining static and build checks in that policy.
+Do not add `npm run check`, which would repeat unit and portal tests.
+For other changes, run only affected test groups and existing focused tests.
+The delta, review, snapshot, and architecture commands do not run tests.
+Keep the required delta, review, and architecture
+steps for every pull request.
+
+The coverage command runs the complete emitted Node unit suite. Run it, or
+its live test, only when `src/` changed or that whole unit suite was already
+selected. A focused unit package or a script change alone does not select
+the whole unit suite. Reuse a current valid report when available; otherwise,
+a review outside that scope can use the architecture report without coverage.
+
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
 ```sh
@@ -122,6 +137,14 @@ the repository.
 
 ### Measure the coverage per function: `script/code-quality/ast-metrics-coverage.ts`
 
+Use the following run only when the test selection permits the complete
+emitted Node unit suite, as stated above. A current valid report covers the
+candidate's source, unit-test, and build inputs, including test helpers and
+fixtures. A commit that changes only documents does not invalidate coverage
+when those inputs are unchanged. The report's commit label alone does not
+prove that it is current. If you cannot verify its inputs, use the
+architecture report without coverage.
+
 ```sh
 npm run build
 pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE]
@@ -159,8 +182,9 @@ without coverage files. Then no report is written.
 
 The architecture command reads this report to give each function of `src/`
 its CRAP and each community its band (see "Show the architecture delta").
-Run the coverage command again after a change of `src/`: a function that
-the report does not have gets no CRAP.
+After a change of `src/`, collect coverage again if no current valid report
+is available. With `--from`, use files from a current valid full unit run;
+the option does not make a partial run into full unit coverage.
 
 ### Take a snapshot: `script/code-quality/ast-metrics-snapshot.ts`
 
@@ -245,6 +269,13 @@ only `--coverage` gives it. A file that is not a coverage report of version
 bands: the line after the summary line is `Bands need the coverage: run pnpm
 exec node script/code-quality/ast-metrics-coverage.ts first.`, and the graph, the table,
 and the legend are as they were before the bands.
+
+That message describes how to obtain bands; it does not change the selected
+test scope. When coverage collection is outside that scope, the output without
+bands is acceptable. Use a current valid report if one exists. Move aside a
+stale default `ast-report/coverage.json` before this command so that it does
+not read that report automatically. Do not run the coverage command or its
+live test to fill this gap for a change outside the permitted scope.
 
 The output is the header `## Architecture of src/: base <8 characters of the
 base commit> → head`, one summary line (modularity and cross share with two

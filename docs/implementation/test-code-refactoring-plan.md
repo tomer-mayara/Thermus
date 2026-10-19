@@ -356,21 +356,26 @@ Rewrite the specifiers with a script, and let `npm run build` prove them: `tsc`
 refuses an import that does not resolve. Publish the move list in each pull
 request.
 
-Before Step 0, record the baseline: for each suite command, the counts of
-tests, pass, fail, skipped, and todo. After each step, each suite gives the
-same counts plus the new tests. This is characterization, as
-`docs/coding-principles.md` asks for a refactor; no step makes a false red.
+Before each step, record the baseline counts of tests, pass, fail, skipped,
+and todo for the groups selected by the changed paths. After the step, compare
+those groups with their baseline, with the new tests added. This is
+characterization, as `docs/coding-principles.md` asks for a refactor; no step
+makes a false red.
 
-Standard check (SC): `npm run build && npm run check`; `habit-hooks`;
-`npm run test:integration`; `npm run test:acceptance`;
-`node --test dist/test/unit/test-support-paths.test.js` (from Step 1);
+Standard check (SC): run the test groups or existing focused checks selected
+by the changed paths under the [test gate policy](test-gate-policy.md#required-runs),
+and run `habit-hooks`. Run the path check
+`node --test dist/test/unit/test-support-paths.test.js` (from Step 1) when the
+changed files affect those paths. Run
 `node --test dist/test/acceptance/auth/hosted-live-setup.test.js`, which loads
-the whole live module graph offline; the doc check of §3.6 item 9.
+the live module graph offline, when that graph changes. Apply the doc check
+of §3.6 item 9 when the documents change.
 
 "Docker" marks a step that changes a file in the import graph of
 `A/auth/self-hosted-container.test.ts` beyond its import specifiers: a
-run-time path, a container script, or code. The gate policy then asks for
-`npm run test:container`. A pure move needs no Docker run (owner decision 1).
+run-time path, a container script, or code. Select the relevant existing
+container checks under the [test gate policy](test-gate-policy.md#required-runs).
+A pure move needs no Docker run (owner decision 1).
 
 **Step 0. Terms and rules (docs only).** Add `docs/testing/test-code-layout.md`
 with §2.1 to 2.4 and §3.1. Link it from `docs/README.md` and from "Test types"
@@ -721,10 +726,10 @@ returns it to Draft, so it keeps its layout; Step 5 does the moves.
 
 ### 3.6 Acceptance criteria
 
-1. `npm run check`, `npm run test:integration`, `npm run test:acceptance`, and
-   the offline interface proofs give the baseline counts plus the new tests.
-   `npm run test:container` passes on a Docker host. The live gate passes or is
-   recorded as "did not run".
+1. The groups or focused checks selected by the changed paths under the
+   [test gate policy](test-gate-policy.md#required-runs) give their baseline
+   counts plus the new tests. Run any selected container checks on a Docker
+   host. Record a selected live check that cannot run as "did not run".
 2. `ls test/support` gives
    `container dsl doubles drivers fixtures hosted-live in-process isolation processes`.
    `find test/support -maxdepth 1 -type f` gives nothing. `test/helpers` does

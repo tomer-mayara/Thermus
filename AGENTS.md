@@ -63,11 +63,28 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 ## Pull requests
 
 - Open a draft pull request first.
-- Before Ready, run `npm run check` and `habit-hooks` on the complete
-  candidate. Correct each enforced smell, or give the reason that you keep
-  it. The snooze file of habit-hooks stays empty.
-- Run each new or changed test locally before the commit, also a test that
-  `npm run check` does not run. The test gate policy gives the commands.
+- Before Ready, select tests from the complete candidate. If any file under
+  `src/` changes, run the full ordinary suite with `npm test`, then
+  `npm run typecheck`, `npm run test:build`, and `npm run build:user-portal`,
+  plus the applicable gates in the test gate policy. These commands cover
+  the remaining check stages; do not add `npm run check`, which would repeat
+  unit and portal tests.
+  Otherwise, run only the affected test groups for changes under `test/`
+  and the existing focused tests for other changed files. Use the
+  [test code layout](docs/testing/test-code-layout.md) to identify groups;
+  follow shared helpers and fixtures to the groups that use them. Combine
+  the selections for mixed changes; a `src/` change takes precedence.
+  Do not expand the selection through a command or test that starts a
+  broader suite, including `npm run check`. A document change alone needs
+  no executable test added to check its prose. The test gate policy gives
+  the selection details; an explicit release uses its separate release gates.
+- Run `habit-hooks` on the complete candidate. Correct each enforced smell,
+  or give the reason that you keep it. The snooze file of habit-hooks stays
+  empty.
+- Run each selected new or changed test locally before the commit, including
+  tests outside the ordinary suite. If a test starts a broader suite
+  outside the selection, record that run as deferred. The test gate policy
+  gives the commands.
 - Update the documents that the change affects in the same pull request.
 - Run the ast-metrics review process (the section "Code quality review
   with ast-metrics" below) on the complete candidate before Ready.
@@ -113,13 +130,22 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    baseline in the same pull request: run `ast-metrics baseline` and
    commit the new `.ast-metrics-baseline.yaml`. Then the next pull request
    does not get the finding again. Put the Markdown output in the pull
-   request description. Then run `npm run build` and
-   `pnpm exec node script/code-quality/ast-metrics-coverage.ts` (about 90 seconds). It
-   measures how much of each function the unit tests run, so that the
-   next command can show the CRAP bands. Then run
+   request description. Reuse current valid unit coverage when available.
+   If none is available, run `npm run build` and
+   `pnpm exec node script/code-quality/ast-metrics-coverage.ts` (about 90 seconds)
+   only when `src/` changed or the complete emitted Node unit suite was
+   already selected by the test gate policy. The command runs that whole
+   suite; its live test has the same restriction. Coverage must describe
+   the candidate's source, unit-test, and build inputs, including test helpers
+   and fixtures. A commit that changes only documents does not invalidate
+   coverage when those inputs are unchanged. Move aside a stale default
+   `ast-report/coverage.json` before the architecture command. For any other
+   selection without valid coverage, use the architecture output without
+   bands; its missing-coverage message does not require a broader test run.
+   Then run
    `pnpm exec node script/code-quality/ast-metrics-architecture.ts` and put its output
    in the pull request description too: the architecture delta of `src/`
-   with the band of each community, the complexity table of the changed
+   with bands when coverage is available, the complexity table of the changed
    files, and the trend table of `src/` on `main`. A pull request that
    changes only documents gets `The map did not change.` and
    `No production file changed.`; include these lines too.
