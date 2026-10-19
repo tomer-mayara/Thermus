@@ -38,7 +38,8 @@ The nine command entry points stay in this folder:
 
 Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
 `review/`, `coverage/`, `crap/`, `architecture/`, `process/`, `baseline/`,
-and `provenance/`. The last folder owns input identity and its checked readers.
+`identity/`, and `provenance/`. The `identity/` folder owns source evidence and
+function identity. The `provenance/` folder owns input identity and its checked readers.
 The `shared/` folder holds common argument and limit checks, JSON readers,
 text ordering, number calculations, and repository commands. JSON file reads
 keep file-kind diagnostics; consumers check their own schemas. Text ordering
