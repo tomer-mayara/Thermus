@@ -445,8 +445,8 @@ Final `habit-hooks` exited 1; `.cache/mcp-pipe-03/habit-hooks-final.log` records
 four existing CLI exports, 22 comment lines, and four files over 200 lines.
 The snooze file remains `[]`. Each listed comment was read.
 
-- `readyToken` and `discoverHostedAuthorization` in `script/fetch-url/helper/oauth.mjs`,
-  and `callbackResult` and `launchBrowser` in `script/fetch-url/helper/browser.mjs`,
+- `readyToken` and `discoverHostedAuthorization` in `script/fetch-url/helper/oauth.ts`,
+  and `callbackResult` and `launchBrowser` in `script/fetch-url/helper/browser.ts`,
   are unchanged CLI exports. Their proper CLI/test boundary
   refactor is outside outgoing observation; no suppression was added.
 - Composition comments explain one shared operation versus per-request servers,

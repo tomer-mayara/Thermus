@@ -3,7 +3,7 @@
     ".": {
       "entry": [
         "docker/verify-hosted-runtime.mjs",
-        "script/fetch-url/fetch-url.mjs",
+        "script/fetch-url/fetch-url.ts",
         "script/code-quality/ast-metrics-delta.ts",
         "script/code-quality/ast-metrics-review.ts",
         "script/code-quality/ast-metrics-mcp.ts",

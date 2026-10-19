@@ -1,6 +1,6 @@
 # Fetch a URL through MCP
 
-`fetch-url.mjs` calls Thermus `getURLAsMarkdown` without an LLM client. It sends
+`fetch-url.ts` calls Thermus `getURLAsMarkdown` without an LLM client. It sends
 `{url, reason}` and writes the returned Markdown to standard output. It uses the
 MCP SDK for protocol negotiation and JSON or SSE responses.
 
@@ -21,19 +21,19 @@ build is needed to run the script.
 
 ## Source layout
 
-[`fetch-url.mjs`](fetch-url/fetch-url.mjs) is the command entry point. Its helper modules
-live in `fetch-url/helper/`: [`oauth.mjs`](fetch-url/helper/oauth.mjs) coordinates OAuth,
-[`browser.mjs`](fetch-url/helper/browser.mjs) handles browser sign-in,
-[`credential-store.mjs`](fetch-url/helper/credential-store.mjs) stores credentials, and
-[`errors.mjs`](fetch-url/helper/errors.mjs) defines command errors.
+[`fetch-url.ts`](fetch-url/fetch-url.ts) is the command entry point. Its helper modules
+live in `fetch-url/helper/`: [`oauth.ts`](fetch-url/helper/oauth.ts) coordinates OAuth,
+[`browser.ts`](fetch-url/helper/browser.ts) handles browser sign-in,
+[`credential-store.ts`](fetch-url/helper/credential-store.ts) stores credentials, and
+[`errors.ts`](fetch-url/helper/errors.ts) defines command errors.
 
 ## Sign in and fetch
 
 Run this from a terminal on the same machine as your browser:
 
 ```sh
-pnpm exec node script/fetch-url/fetch-url.mjs --login
-pnpm exec node script/fetch-url/fetch-url.mjs \
+pnpm exec node script/fetch-url/fetch-url.ts --login
+pnpm exec node script/fetch-url/fetch-url.ts \
   --url 'https://example.com/' \
   --reason 'Debug the page conversion' > page.md
 ```
@@ -76,7 +76,7 @@ request starts. An interrupted or failed refresh can require `--login`; the
 script does not retry a refresh token whose use is uncertain.
 
 ```sh
-pnpm exec node script/fetch-url/fetch-url.mjs --logout
+pnpm exec node script/fetch-url/fetch-url.ts --logout
 ```
 
 Logout removes the local grant or failure marker. It keeps the lock file.
@@ -95,7 +95,7 @@ Read the credential without echo in zsh, then pass it through the environment:
 read -rs 'THERMUS_API_KEY?Connect OAuth access token: '
 export THERMUS_API_KEY
 printf '\n'
-pnpm exec node script/fetch-url/fetch-url.mjs \
+pnpm exec node script/fetch-url/fetch-url.ts \
   --url 'https://example.com/' \
   --reason 'Debug the page conversion' > page.md
 unset THERMUS_API_KEY
@@ -107,7 +107,7 @@ replaces the environment value and must reach EOF:
 ```sh
 read -rs 'THERMUS_API_KEY?Connect OAuth access token: '
 printf '\n'
-printf '%s' "$THERMUS_API_KEY" | pnpm exec node script/fetch-url/fetch-url.mjs \
+printf '%s' "$THERMUS_API_KEY" | pnpm exec node script/fetch-url/fetch-url.ts \
   --api-key-stdin \
   --url 'https://example.com/' \
   --reason 'Inspect Markdown output'
@@ -123,7 +123,7 @@ HTTP on loopback (`localhost`, `127.0.0.0/8`, or `::1`). Redirects are refused.
 Only select an endpoint that you trust with the supplied credential.
 
 ```sh
-pnpm exec node script/fetch-url/fetch-url.mjs \
+pnpm exec node script/fetch-url/fetch-url.ts \
   --endpoint 'http://127.0.0.1:8080/mcp' \
   --url 'https://example.com/' \
   --reason 'Debug the local server' \
@@ -139,7 +139,7 @@ after success or failure.
 Success returns exit status 0, with exact Markdown on stdout, including an empty
 result. Failures return status 1, with a diagnostic on stderr and no Markdown.
 Remote error text is omitted because it can contain credentials. Use the server
-logs for details. Run `pnpm exec node script/fetch-url/fetch-url.mjs --help` for the options.
+logs for details. Run `pnpm exec node script/fetch-url/fetch-url.ts --help` for the options.
 
 Run the focused offline tests after a clean build:
 
