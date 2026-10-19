@@ -13,7 +13,7 @@ export type VerifiedCoverageProvenance = Omit<InputIdentity, 'suite'> & {
   readonly capturedCommit: string;
   readonly buildFingerprint: string;
   readonly captureManifestFingerprint: string;
-  readonly completionProtocol?: 'normal-exit-or-sealed-1';
+  readonly completionProtocol?: 'normal-exit-or-sealed-1' | 'normal-exit-or-sealed-or-loader-1';
   readonly captureId?: string;
   readonly comparisonIdentity?: InputIdentity;
   readonly captures?: readonly VerifiedCoverageProvenance[];

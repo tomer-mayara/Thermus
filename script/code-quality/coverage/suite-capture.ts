@@ -16,7 +16,7 @@ export function captureSuite(root: string, suite: provenance.CoverageSuite, sess
     const rawFingerprint = rawFingerprintOf(raw);
     const coverage = mergedCoverage(sourceScriptsIn(raw, root));
     verify();
-    const manifest = { version: 3, completionProtocol: protocol.completionProtocol, captureId: protocol.captureIdOf(raw), identity, comparisonIdentity, capturedCommit: session.commit, buildFingerprint, rawFingerprint, scripts: scriptIdentitiesOf(coverage) } as const;
+    const manifest = { version: 4, completionProtocol: protocol.completionProtocol, captureId: protocol.captureIdOf(raw), identity, comparisonIdentity, capturedCommit: session.commit, buildFingerprint, rawFingerprint, scripts: scriptIdentitiesOf(coverage) } as const;
     return retainCapture(root, raw, { manifest, verify });
   });
 }

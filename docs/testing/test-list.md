@@ -312,6 +312,49 @@ capture hash, nonce, and accepted request fields. Invalid requests cannot
 authorize a seal. Two real-fork regression cases check normal exit and delayed
 product IPC without an injected seal message listener.
 
+`test/acceptance/script/ast-metrics-coverage-loader.test.ts` runs real `pnpm`
+and `tsx` TypeScript entries with actual asynchronous loaders under both import
+and require capture preloads. The require case explicitly registers `tsx/esm`
+through public `module.register()` and uses a namespaced typed import, while
+retaining the real `pnpm` and `node --import tsx` chain. It checks manual exit emission, a later typed import, delayed shutdown cleanup,
+actual loader thread identities, verified collection, and strict archived
+reimport with the original provenance. `ast-metrics-coverage-loader-exit.test.ts`
+adds nested manual exit events, late synchronous module registration by an exit
+listener, and a worker-owned loader with its actual owner thread ID. The fixtures
+under `test/acceptance/script/fixtures/ast-metrics-coverage-loader*.ts` build the
+small temporary repository and inspect its retained evidence.
+`ast-metrics-coverage-loader-refusal.test.ts` checks default SIGTERM,
+`Worker.terminate()`, a blocked loader message handler with shared-memory proof,
+and an exit listener that throws. It also checks that a direct require-preload
+`node --import tsx` invocation with cache disabled refuses the noncooperating
+ordinary esbuild worker created by its synchronous hooks. Refusal stays within the shutdown deadline, preserves the
+original thrown error, and keeps a real earlier verified report and archive
+byte-identical. The successful entries have no child stderr. These fixtures do
+not run the complete integration suite.
+
+`test/unit/script/ast-metrics-coverage-loader-runtime.test.ts` checks that the
+observer preserves public registration arguments, receivers, return values, and
+thrown errors. It verifies nested exit listener order, bounded timeout receipts,
+manual exit events, unavailable private exit state, borrowed emitters, and
+original exit-listener exceptions with Node API doubles.
+
+`test/unit/script/ast-metrics-coverage-loader-validation.test.ts` checks complete
+main-owned and worker-owned loader evidence. It rejects absent or malformed
+participants and handshake fields, wrong captures, PIDs, threads, owners, nonces,
+protocols, and states; a consistently malformed capture ID; orphan or duplicate
+participants; and signal deaths. A
+parked marker cannot claim normal exit or skip owner completion.
+`ast-metrics-coverage-loader-checkpoint.test.ts` checks sorted unique raw names
+and hashes, unchanged checkpoint files, and exactly one distinct later flush.
+Missing, malformed, changed, extra, or earlier raw evidence fails verification.
+Noncanonical zero-padded PID or thread filenames cannot conceal an extra file.
+These stricter loader checks do not change ordinary normal-exit checkpoint rules.
+`ast-metrics-coverage-loader-manifest.test.ts` checks version-4
+strict import and provenance, handshake fingerprint inputs, unchanged legacy
+version-1, version-2, and version-3 archives, and refusal to pass loader evidence
+under a legacy protocol. `test/unit/script/fixtures/loader-capture.ts` supplies
+isolated raw and lifecycle evidence; it does not simulate a complete real suite.
+
 `test/acceptance/script/ast-metrics-coverage-crash.test.ts` specifies the
 approved intentional-crash capture protocol in a temporary repository.
 Known crash fixtures opt in with `THERMUS_COVERAGE_CRASH=1`; other captured
@@ -320,15 +363,26 @@ cannot run before SIGKILL. It rejects stale nonce/receipt, missing receipt or
 flush, changed or extra raw files, and active workers. Late-exit cases require
 raw evidence after `exitCheckpoint` and reject a late SIGKILL without a verified
 seal. A later flush is not proof of automatic-only termination. A protocol
-fixture is separate from the complete repository proof. The real combined
+fixture is separate from the complete repository proof. The earlier real combined
 capture passed in order `[acceptance, unit]`: 853 emitted and 16 portal
 acceptance tests, then 3,544 emitted and 19 portal unit tests, with zero
 failures and skips. Both suite captures passed strict completion verification,
 including eight sealed unit crash children, normal MCP fake SIGTERM cleanup,
-and clean registration-server shutdown. Real integration capture remains
-deferred because that group was not selected; union contracts use doubles.
+and clean registration-server shutdown. That earlier proof did not select
+integration; its union contracts used doubles.
 All 13 affected live cases passed without skips: two collecting, ten
 structural, and one CRAP case with verified imported unit coverage.
+The complete real integration capture at `88bfbf71` passed all 535 tests in
+44 suites on 2026-10-19, with zero failures, cancellations, skips, or todos.
+It kept the existing real work-slice tests unchanged. All 113 participants
+verified: 109 normal-exit owners and four real internal `tsx` loaders. Each
+loader has matching request, acknowledgement, and owner receipt evidence, an
+unchanged checkpoint, one distinct later V8 flush, and a normal matching owner.
+Strict `--from` reimport produced a byte-identical report and kept the original
+`["integration"]` capture identity. The default coverage report stayed unchanged.
+This full capture is separate from the small protocol fixtures. The earlier
+`c620cf8f` run passed all 535 integration tests but failed verification because
+four loaders had raw-only evidence; that run remains unverified history.
 
 `test/acceptance/script/ast-metrics-coverage.test.ts` checks merging two
 processes and the build and default run of a small suite in a temporary Git
@@ -372,10 +426,10 @@ prove build-before-suite ordering, stable capture and verified reimport with
 the original commit, mutation rejection at build and both unit stages,
 `--no-build` with valid and stale output, and tampered raw data with explicit
 unverified inspection. Its runner fixtures declare package selections and
-shutdown markers explicitly. New captures use version-3 manifests with per-suite
-identity, canonical unit comparison identity, completion protocol, and original
-capture identity. Legacy manifest versions 1 and 2 remain readable under their
-original rules. A later selected suite with a nested command prevents even
+shutdown markers explicitly. New captures use version-4 manifests with per-suite
+identity, canonical unit comparison identity, the loader-aware completion protocol,
+and original capture identity. Legacy manifest versions 1, 2, and 3 remain readable
+under their original rules. A later selected suite with a nested command prevents even
 the build or first suite from starting. Incomplete version-2 imports fail or
 remain explicitly unverified; legacy version-1 unit captures without shutdown
 markers remain readable as verified captures. It runs no application suite.
@@ -769,6 +823,9 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-crash.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-loader-exit.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-loader-refusal.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-loader.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
@@ -835,6 +892,10 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-checkpoint.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-manifest.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-runtime.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-loader-validation.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-propagation.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-seal.test.ts | no |

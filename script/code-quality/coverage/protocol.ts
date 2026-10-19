@@ -5,9 +5,10 @@ import { join, resolve } from 'node:path';
 const persistMarker = writeFileSync;
 const publishMarker = renameSync;
 
-export const completionProtocol = 'normal-exit-or-sealed-1';
+export const legacyCompletionProtocol = 'normal-exit-or-sealed-1';
+export const completionProtocol = 'normal-exit-or-sealed-or-loader-1';
 export const sealProtocol = 'pre-crash-seal-1';
-export type CaptureProtocol = { readonly completionProtocol: typeof completionProtocol; readonly captureId: string };
+export type CaptureProtocol = { readonly completionProtocol: typeof completionProtocol | typeof legacyCompletionProtocol; readonly captureId: string };
 export type ProcessIdentity = { readonly pid: number; readonly threadId: number };
 export type RawFileIdentity = { readonly name: string; readonly hash: string };
 export function captureIdOf(folder: string): string {

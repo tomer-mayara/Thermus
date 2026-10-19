@@ -19,9 +19,15 @@ unit selection is "dist/test/unit/**/*.test.js" followed by
 folder and retained manifest. Unsupported or nested child suite commands defer
 collection before any suite starts. No unselected suite is added. Output goes to
 stderr. Cooperating Node children inherit capture settings, flush on normal exit,
-and contribute to the union. A known crash fixture can instead flush, stop, seal
-its exact raw file set, and park before its parent observes SIGKILL. Missing
-shutdown, seal, signal, or flush evidence rejects capture.
+and contribute to the union. Actual asynchronous loader threads under either
+capture preload mode use a capture/PID/thread/owner/nonce exchange after genuine owner exit listeners finish, then flush and park
+without stopping coverage. A manually emitted exit event cannot stop capture.
+The private genuine-exit guard depends on pinned Node 24.20.0 and fails closed
+when absent. Ownerless loader participants and noncooperating ordinary workers
+remain unverified. The loader exchange has a three-second total deadline. A known crash
+fixture can instead flush, stop, seal its exact raw file set, and park before its
+parent observes SIGKILL. Missing shutdown, handshake, seal, signal, or flush
+evidence rejects capture.
 
 The report holds source scripts under dist/src/ (emitted JavaScript) and src/
 (source TypeScript), with representation and content identity. Offsets use UTF-16
@@ -33,15 +39,18 @@ with __, and the functions strictly inside them are not in the report. Functions
 with no own characters appear in unmeasuredFunctions with no-own-characters.
 Invalid ranges, unsafe counts, crossing functions, and incompatible identities
 fail before a report is written. Inputs and emitted outputs must stay stable.
-New capture manifests use version 3 and retain each suite identity plus an explicit
+New capture manifests use version 4 and retain each suite identity plus an explicit
 canonical unit comparisonIdentity for tree compatibility. completionProtocol is
-normal-exit-or-sealed-1 and captureId retains the original raw-folder identity.
-A cooperative normal-exit checkpoint must be followed by a later V8 flush.
-Signal exits require a verified pre-crash seal. v3 fingerprints include process,
-seal-request, seal-receipt, signal, and raw V8 files. Combined and nonunit
+normal-exit-or-sealed-or-loader-1 and captureId retains the original raw-folder
+identity. A normal-exit checkpoint must be followed by a later V8 flush. A loader
+checkpoint needs intact raw data and a distinct later V8 flush, plus a normally
+completed owner. Signal
+exits require a verified pre-crash seal. v4 fingerprints include process,
+seal-request, seal-receipt, signal, loader handshake, and raw V8 files. Combined and nonunit
 reports name a suite array and every original capture identity in provenance.captures.
 Their manifest fingerprint hashes the ordered suite/manifest-fingerprint descriptor.
-Old single-unit report strings and version 1 and 2 capture manifests remain readable.
+Old single-unit report strings and version 1, 2, and 3 capture manifests remain
+readable under their original rules.
 Successful captures retain their raw files and capture-manifest.json under
 ast-report/coverage-captures/. --from verifies this original manifest, its raw data,
 and current source/build identity. It retains the original capture commit.

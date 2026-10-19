@@ -325,7 +325,12 @@ the seal IPC listener. Ordinary captured forks have no injected message
 listener. OAuth uses a synchronous prepared nonce without an IPC listener.
 Incomplete process or thread identities must not be discarded or
 reported as verified. Passing a protocol fixture does not prove a complete real
-capture. These rules grant no additional suite selection.
+capture. Real loader threads need the verified shutdown exchange, including
+actual loader and owner identities, normal owner completion, an intact checkpoint,
+and a distinct later V8 flush. A manually emitted exit event cannot stop capture.
+The genuine-exit guard depends on pinned Node 24.20.0 and fails closed when its
+evidence is absent. A loader fixture still does not prove a complete real capture.
+These rules grant no additional suite selection.
 
 Dedicated tests keep their own commands: for example,
 `npm run test:mcp:renderer`, `npm run test:hosted-live`,
