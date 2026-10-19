@@ -70,5 +70,7 @@ export const gitCliStub = fileURLToPath(new URL('test/support/doubles/ast-metric
 export const astMetricsSnapshotScript = fileURLToPath(new URL('script/code-quality/ast-metrics-snapshot.ts', repositoryRoot));
 export const astMetricsArchitectureScript = fileURLToPath(new URL('script/code-quality/ast-metrics-architecture.ts', repositoryRoot));
 export const astMetricsCrapScript = fileURLToPath(new URL('script/code-quality/ast-metrics-crap.ts', repositoryRoot));
+export const astMetricsProcessScript = fileURLToPath(new URL('script/code-quality/ast-metrics-process.ts', repositoryRoot));
+export const astMetricsBaselineScript = fileURLToPath(new URL('script/code-quality/ast-metrics-baseline.ts', repositoryRoot));
 export const astMetricsCoverageScript = fileURLToPath(new URL('script/code-quality/ast-metrics-coverage.ts', repositoryRoot));
 export const astMetricsCoverageSourceFolder = fileURLToPath(new URL('script/code-quality/coverage', repositoryRoot));

@@ -11,8 +11,8 @@
 This proposal is standalone. Read sections 1 to 3 and Appendix D before
 implementing a CR. Current [AGENTS.md](../../AGENTS.md) and the
 [test gate policy](test-gate-policy.md) apply until an approved implementation
-changes them. Appendix D is proposed text, not an instruction to replace
-AGENTS.md now.
+changes them. CR-09 implements the composed process in Appendix D;
+AGENTS.md remains authoritative.
 
 Revision 3 used `76b514ac` as its baseline. PR #170 subsequently reorganized
 the scripts without changing their behavior. PR #172 limited test runs to
@@ -25,7 +25,7 @@ with “Use those recommendations”: CRAP ≤ 15 for new functions, goals with
 documented exceptions after at most three improvement cycles, and clearly
 labeled head-derived trend estimates. Section 3.2 records these decisions.
 D4 to D9 remain open. The approval itself changed no runtime behavior;
-PR #182 implements D1/D2 in CR-22 and the current individual-command process.
+PR #182 merged D1/D2 in CR-22. PR #183 composes those stages under CR-09.
 It authorizes no base-coverage storage or merge workflow.
 
 Delivery status:
@@ -48,9 +48,10 @@ Delivery status:
   structural and coverage-collecting architecture files.
 - PR #181 merged delivery group 8, CR-07 and CR-08: incomplete risk
   assessments and the tool version pin.
-- PR #182 implements delivery group 9, CR-22: actionable per-function CRAP
-  goals and approved D1/D2 exceptions. Owner review is pending. It updates
-  the current process with individual commands; CR-09 wrappers remain future work.
+- PR #182 merged delivery group 9, CR-22: actionable per-function CRAP
+  goals and approved D1/D2 exceptions.
+- PR #183 implements delivery group 10, CR-09: the composed process with
+  coverage reuse by default and the baseline wrapper. Owner review is pending.
 - The other CRs have not been implemented.
 
 Contents:
@@ -65,12 +66,12 @@ Contents:
 8. Appendix A: data contracts
 9. Appendix B: glossary
 10. Appendix C: example output
-11. Appendix D: proposed process text
+11. Appendix D: composed process text
 12. Appendix E: review record
 
 ## 1. Summary
 
-Every pull request runs the code quality review in AGENTS.md. Seven TypeScript
+Every pull request runs the code quality review in AGENTS.md. Nine TypeScript
 commands wrap ast-metrics. They report changed files, review findings, and
 three architecture views: the dependency communities of `src/`, the
 complexity of changed files, and a trend from `docs/metrics/` records.
@@ -95,7 +96,8 @@ The review found these problems:
    target of 15 or less for new functions. Under D2, use at most three
    improvement cycles and document exceptions for all unresolved required
    goals before Ready. The command still reports misses or unknown required
-   assessments with exit 1. CR-09 process and baseline wrappers remain future work.
+   assessments with exit 1. CR-09 in PR #183 composes these assessments and
+   adds the baseline wrapper.
 6. The graph shows clusters, not designed components. CR-13 adds the
    component view. CR-14 adds charts and component trends.
 7. At the proposal baseline, an unchanged map had no drawing. CR-24 in
@@ -104,8 +106,8 @@ The review found these problems:
 
 Other CRs align documentation, check command contracts, pin the tool,
 reduce repetition, and address separate cleanup. CR-22 adds `crap` as the
-seventh command. The proposed `process`,
-`baseline`, and `backfill` commands would bring the inventory to ten. The
+seventh command. CR-09 adds `process` and `baseline`, bringing the inventory
+to nine. The proposed `backfill` command would bring it to ten. The
 earlier instruction to keep six commands applied to the completed
 reorganization; it does not prevent additions delivered by their approved CRs.
 
@@ -120,8 +122,10 @@ goal of 85 or more; other files have no score goal. The review reports
 regressions and rule violations. High findings must be corrected or
 explained and baselined under the current rules.
 
-The process reuses valid unit coverage. It collects coverage only when the
-selected scope permits the complete nested suite. It then reports the
+The process wrapper saves the four report sections to `ast-report/process.md`
+and reuses valid unit coverage. It collects coverage only on an explicit
+`--collect-coverage` request when the selected scope permits the complete
+nested suite. It then reports the
 architecture with `--record` and commits any new verified base record.
 Exploratory runs omit that flag. Existing records are immutable; keep the
 record from `main` in a merge conflict. Baseline changes have two permitted reasons: a retained high
@@ -142,7 +146,8 @@ compatible coverage; this requirement does not expand the selected test scope.
 ### 2.2 Commands, layout, and documents
 
 At the proposal baseline there were six entry points and 50 helpers: 56
-TypeScript modules under `script/code-quality/`. The six entry points remain;
+TypeScript modules under `script/code-quality/`. The six original entry
+points remain;
 CR-01 and CR-02 add helpers for script identity, validation, execution, and
 ownership. Node 24 runs them
 from source. Relative imports end
@@ -156,6 +161,9 @@ in `.ts`; the main build excludes `script/`.
 | `ast-metrics-coverage.ts` | Collect and merge V8 coverage from emitted Node and source portal unit tests. | `coverage/` |
 | `ast-metrics-snapshot.ts` | Capture metrics and communities of `src/`, optionally at a merge base. | `snapshot/` |
 | `ast-metrics-architecture.ts` | Compare snapshots and print the map, complexity table, and trend. | `architecture/` |
+| `ast-metrics-crap.ts` | Assess per-function goals and give coverage or split advice. | `crap/` |
+| `ast-metrics-process.ts` | Compose the complete review with coverage reuse by default. | `process/` |
+| `ast-metrics-baseline.ts` | Refresh an allowed baseline and report ignored entry counts. | `baseline/` |
 
 `shared/` contains repository operations, JSON readers, and numeric helpers.
 `provenance/` owns deterministic input identity and its readers.
@@ -358,8 +366,7 @@ README, not the script index.
 
 ### CR-01. Cover the user-portal unit tests
 
-P1 · S–M · mistake. No prerequisite; deliver with CR-02. Implemented in
-PR #177; awaiting owner review.
+P1 · S–M · mistake. No prerequisite; deliver with CR-02. Merged in PR #177.
 
 **Evidence at the proposal baseline.** `coverage/run.ts` selected emitted
 Node tests only. The unit package command also ran
@@ -412,8 +419,7 @@ can establish that an absent file was not loaded by the selected suite.
 
 ### CR-02. Count only a function's own characters
 
-P1 · S–M · mistake. No prerequisite; deliver with CR-01. Implemented in
-PR #177; awaiting owner review.
+P1 · S–M · mistake. No prerequisite; deliver with CR-01. Merged in PR #177.
 
 **Evidence at the proposal baseline.** `coverage/merge.ts` marked a called
 function's full range as run and cleared its own zero-count blocks. Separate
@@ -647,8 +653,8 @@ base counts.
 identity limits, snapshot/change formats, and inventory.
 
 **Delivery.** PR #179 merged CR-05 after PR #178: file-status evidence and
-conservative function correspondence. PR #181 adds CR-07's incomplete
-coverage assessments; owner review is pending.
+conservative function correspondence. PR #181 merged CR-07's incomplete
+coverage assessments.
 
 ### CR-06. Keep live tests valid and within scope
 
@@ -721,7 +727,7 @@ and CR-02's excluded zero-own functions with units and goldens.
 
 **Documents.** Guide, README, plan bands and limits, inventory.
 
-**Delivery.** PR #181 implements CR-07. Owner review is pending.
+**Delivery.** PR #181 merged CR-07.
 
 ### CR-08. Pin the tool version
 
@@ -748,8 +754,7 @@ and performs no version check. Coverage-only work works without ast-metrics.
 **Documents.** Guide installation and upgrade rules, README options,
 snapshot/record formats, doubles, and inventory.
 
-**Delivery.** PR #181 implements CR-08 with the 0.43.1 pin. Owner review is
-pending.
+**Delivery.** PR #181 merged CR-08 with the 0.43.1 pin.
 
 ### CR-09. Run the process with one command
 
@@ -757,7 +762,7 @@ P2 · M · limit. Depends on CR-03, CR-04, and CR-22; approved D1 to D3 apply.
 
 **Purpose.** Compose the review stages and wrap baseline refresh. The
 original always-collect rule conflicts with current test scope and is
-withdrawn. Proposed commands are:
+withdrawn. The commands implemented in PR #183 are:
 
 ```sh
 pnpm exec node script/code-quality/ast-metrics-process.ts [--base REF] [--coverage FILE] [--collect-coverage | --skip-coverage] [--out FILE] [--allow-tool-version]
@@ -787,7 +792,9 @@ CR-22, and tool-version overrides to every tool operation.
   architecture's `--no-coverage`. Reject conflicting coverage options.
   A skip cannot make an unassessed required function pass.
 - Pass `--record` only for this complete-candidate process after required
-  analysis stages succeed. Follow CR-04 ancestry and count provenance.
+  analyses complete. Completed goal misses can record, but an unavailable
+  required assessment or failed operation cannot. Follow CR-04 ancestry and
+  count provenance.
   Exploratory architecture remains read-only. No coverage means no
   coverage-derived count.
 - Distinguish completed goal misses from operational failures. Continue
@@ -815,8 +822,13 @@ Custom base reaches all comparisons. Ordinary architecture writes nothing.
 Process tests use fake runners and never collect application coverage
 implicitly. CR-06 owns live output isolation; do not postpone that fix.
 
-**Documents.** AGENTS.md when these contracts are implemented, guide, README
-and index, inventory, knip entries, module paths, and paths test.
+**Documents.** AGENTS.md, guide, README and index, inventory, knip entries,
+module paths, and paths test.
+
+**Delivery.** PR #183 implements this CR. It adds the process and baseline
+wrappers, typed stage outcomes, fresh structured review evidence, and focused
+command contracts. The process preserves scoped test selection and the two
+allowed baseline refresh reasons. Owner review is pending.
 
 ### CR-10. Explain and, after a decision, judge test changes
 
@@ -1023,7 +1035,7 @@ P2 · S–M · mistake. Land early; maintain alignment through all CRs.
 | Plan T5 | The live check finds `createApplication` present, not called, and calls of other application functions. CR-01 adds the explicit called `initializePortal` proof. CR-06 in PR #180 checks default-report isolation. |
 | Plan T7 | Live checks use a temporary trend store, not writes/deletes under the repository's `docs/metrics/`. |
 | Suite limits | Unit-only remains a limit until CR-11; portal omission is a bug until CR-01. Historical tickets did not add another suite. |
-| Direct tool calls | Baseline remains a direct-call exception until CR-09 supplies its wrapper. |
+| Direct tool calls | CR-09 supplies the baseline wrapper; the same two refresh reasons apply. |
 | Live commands | CR-06 in PR #180 separates structural architecture from its coverage file. Both collectors keep their scope limit and preserve the default report. Coverage.live needs no ast-metrics. |
 | Empty trend text | Offline mode without a store says `No trend store.` A configured empty store gets a different message. This changes runtime output. |
 | Config lookup | Verify root versus analyzed-folder behavior in a controlled fixture during implementation, then align comment and guide. This review did not run that check. |
@@ -1259,12 +1271,12 @@ or run only when collection is eligible.
 **Documents.** AGENTS.md, guide “The CRAP goal”, README, plan bands/limits,
 inventory, knip, module paths, and paths test.
 
-**Delivery.** PR #182 implements this CR and approved D1/D2. It activates
+**Delivery.** PR #182 merged this CR and approved D1/D2. It activated
 these goals with the individual commands in AGENTS.md. A report rerun also
 exposed a CR-08 reader defect: stored trend versions were omitted on read.
 The correction preserves the optional version on later reads and leaves
 legacy absent versions unknown, without rewriting records. The process and
-baseline wrappers in Appendix D remain CR-09 work. No new coverage source,
+baseline wrappers are delivered by CR-09 in PR #183. No new coverage source,
 baseline exception, future option, or blanket live gate is approved here.
 
 ### CR-23. Keep the detailed README complete and checked
@@ -1280,7 +1292,7 @@ commands by process: delta, MCP, review, coverage, CRAP when present,
 architecture, snapshot, process/baseline when present, backfill when present.
 Each section has synopsis, output, options/defaults, exits, and applicable
 focused tests. Describe helper folders and doubles; keep the index linked
-and the direct-baseline exception accurate until its wrapper lands.
+and the baseline wrapper policy accurate.
 
 **Required contract test.** Add an ordinary command documentation test,
 such as `test/acceptance/script/script-readme.test.ts`. Derive commands
@@ -1288,7 +1300,7 @@ from knip entries under `script/code-quality/ast-metrics-*.ts`. Run real
 `--help` without a tool, Git, build, or suite call. Compare normalized
 synopses, including `pnpm exec node` versus `node` and multi-synopsis
 commands. Check every option/default against a defined help contract.
-All seven current commands have `Usage:` and `Options:` blocks. Treat missing
+All nine current commands have `Usage:` and `Options:` blocks. Treat missing
 blocks in a future command as a clear contract failure. Compare defaults
 declared in help; where a default is delegated to ast-metrics, require that
 delegation to be identified rather than inventing a wrapper-owned default.
@@ -1342,9 +1354,8 @@ the unchanged line still depends on them.
 **Documents.** AGENTS.md drawing requirement, guide, README, plan encoding,
 inventory. Scope remains unchanged before and after this CR.
 
-**Delivery.** Implemented in PR #176 after PR #175 merged; owner review is
-pending. This delivery
-changes graph output and the current step 5 drawing requirement. It does
+**Delivery.** Merged in PR #176 after PR #175. This delivery changed graph
+output and the drawing requirement in the process. It does
 not implement CR-03 coverage validation, CR-07 incomplete assessments,
 the CR-09 process wrapper, or the CR-13 component view. Invalid report envelopes
 still stop the command. CR-03 in PR #178 adds provenance gating and
@@ -1406,7 +1417,7 @@ the full coverage project.
    Record unknown assessments. Ready may proceed with these documented
    exceptions even when the command still reports exit 1 for required goal
    misses or unknowns. Tool failures remain errors. CR-22 activates these goal rules with
-   individual commands; CR-09 will compose them. Baseline
+   individual commands; CR-09 composes them in PR #183. Baseline
    retained high findings only under current approved exceptions.
 7. Commit a new verified record when the approved process requires it.
    Preserve existing records; keep the main version in a conflict. Missing
@@ -1823,82 +1834,89 @@ column illustrates CR-04's distinction under approved D3. Head-derived
 values must say `head-derived-estimate`; missing evidence stays unavailable. This
 example does not require a record write during an exploratory run.
 
-## 11. Appendix D: proposed process text
+## 11. Appendix D: composed process text
 
-This is the composed process text for CR-09 after its prerequisites land.
-PR #182 activates the CR-22 goals in current AGENTS.md with individual
-commands; it does not add either wrapper shown below. It reflects D1 to D3, approved on 2026-10-18: an inclusive
-new-function target of 15, goals with documented exceptions after at most
-three cycles, and clearly labeled head-derived historical estimates.
-D4 to D9 remain open; this text grants no approval for their proposals.
-Current AGENTS.md remains authoritative. CR-24 added the drawing
-requirement; CR-22 adds the approved goals without
-a process or baseline wrapper.
-Until CR-09 exists, run individual available commands with the same scope;
-do not prescribe an unavailable wrapper.
+PR #183 implements this CR-09 process in AGENTS.md. It reflects D1 to D3,
+approved on 2026-10-18: an inclusive new-function target of 15, goals with
+documented exceptions after at most three cycles, and clearly labeled
+head-derived historical estimates. D4 to D9 remain open. This text grants
+no approval for their proposals. Current AGENTS.md remains authoritative.
 
-> Run this process on the complete candidate after documents are updated
-> and before Ready. Use commands under `script/code-quality/`; the
-> [guide](ast-metrics-review.md) gives syntax and limits. Select tests first.
-> Neither a process command nor a live test may add a broader suite through
-> nested coverage collection.
+> Run this process on the complete candidate of each pull request, after the
+> documents are updated and before Ready. Use the commands under `script/code-quality/`;
+> they carry the correct syntax of ast-metrics. The details and the limits are
+> in [the ast-metrics review guide](ast-metrics-review.md).
 >
-> 1. Update from `origin/main`. Use the same base for every comparison.
-> 2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts` and
->    read `ast-report/process.md`. It runs delta/review, reuses compatible
->    coverage, and reports CRAP and architecture. If coverage is missing
->    or stale, use `--collect-coverage` only when `src/` changed or the
->    collector's complete unit suite was already selected. It builds first.
->    Otherwise retain the unavailable assessment and drawing without bands.
->    Explicit skip does not make an unassessed goal pass. A document-only
->    commit can reuse coverage when its inputs are unchanged.
->    An empty production-file selection has no CRAP goal to assess and
->    succeeds without coverage or an MCP call for that step.
-> 3. Maintainability goal: 85 or more for changed production files under
->    `src/`; other files have no goal. Inspect low files with
+> 1. Update the branch from `origin/main` first. Use the same base for every
+>    comparison. Select tests from the complete candidate before running
+>    these commands. No quality command or live test may add a broader suite
+>    through nested coverage collection.
+> 2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts` and read
+>    `ast-report/process.md`. It runs delta, review, coverage resolution, CRAP,
+>    and architecture in order. It prints and saves four report sections.
+>    It reuses verified compatible unit coverage by default. Missing or stale
+>    coverage never starts a suite. Use `--collect-coverage` only when `src/`
+>    changed or both complete unit parts were already selected: emitted Node
+>    tests and source portal tests. The collector builds first. Record that
+>    test selection in the pull request evidence. Otherwise keep the unavailable
+>    assessment and architecture without bands. `--skip-coverage` ignores all
+>    reports; it cannot make an unassessed required goal pass. An empty default
+>    production-file selection succeeds without coverage or MCP for CRAP.
+>    A document-only commit can reuse an older capture when its inputs match.
+> 3. Maintainability goal: 85 or more for each changed production file under
+>    `src/`. Test and support files have no goal. Inspect low files with
 >    `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.
->    Simplify functions with low scores or many paths and keep selected
->    tests green. Remeasure with delta for at most three passes. Record
->    every remaining low score and reason.
-> 4. Correct high review findings or record the reason. For a retained
->    high finding under the approved policy, run
->    `pnpm exec node script/code-quality/ast-metrics-baseline.ts` and
->    commit the baseline. Include review Markdown. A missing band does
->    not expand test selection.
-> 5. CRAP goal: added/changed functions below 30, added functions also
->    at 15 or less. The table includes unchanged and unknown functions
->    and identifies their scope. Improve missed required goals with
->    selected unit tests or fewer paths, following the report's advice.
->    Remeasure with compatible coverage and CRAP using the same base,
->    for at most three cycles. Record score, paths, coverage,
->    classification, and reason for unresolved goals, including new
->    functions above 15 but below 30. Unknown data is unresolved, not
->    passing. An unchanged function above 30 may retain that explicit
->    reason. Ready may proceed with the recorded reasons after at most
->    three cycles; the command still exits 1 for unresolved or unknown
->    required goals. Tool failures remain errors. Re-select from the actual
->    candidate when test changes make the unit group eligible for collection.
-> 6. Run the process on the complete candidate after fixes. Reuse still-
->    valid coverage; a final report does not require another collection.
->    Put the full Markdown in the PR body, including fenced `mermaid`
->    drawings and legends unchanged, even after `The map did not change.`
->    Keep complexity, CRAP or unavailable reason, and trend sections.
->    Clearly label historical counts from head coverage as estimates and
->    state their coverage origin, fingerprints, measurement version, and
->    unknown-function count under D3. The process requests
->    `--record`; only a verified eligible base gets a new record. Commit
->    it, never rewrite an existing record, and keep the main file in a
->    metrics conflict. Missing historical values remain absent. Nothing
->    runs at merge time without a separate approved workflow.
-> 7. Change `.ast-metrics-baseline.yaml` only for a retained high finding
->    in step 4 or changes to `.ast-metrics.yaml` rules. Run the wrapper
->    and commit it. A third exception for a violation already on main
->    requires a separate owner decision and policy update.
+>    Simplify functions with low scores or many decision paths. Keep selected
+>    tests green. Remeasure with delta for at most three passes. Record each
+>    remaining low score and its reason in the pull request description.
+> 4. Correct each review finding of severity high or record its reason. For
+>    a retained high finding, run
+>    `pnpm exec node script/code-quality/ast-metrics-baseline.ts` and commit
+>    `.ast-metrics-baseline.yaml` in the same pull request. The wrapper runs
+>    from the repository root and reports ignored entry counts before and
+>    after. Include the review Markdown in the description.
+> 5. CRAP goals: added or changed functions below 30; added functions also at
+>    15 or less. The table includes unchanged and identity-unknown functions
+>    and states their scope. Improve missed required goals with selected unit
+>    tests or fewer paths. Remeasure with compatible coverage and the same
+>    base for at most three cycles. Record score or bound, paths, coverage,
+>    classification, and reason for every unresolved required goal, including
+>    new functions above 15 but below 30 and unknown assessments. An unchanged
+>    high function can retain the reason `unchanged by this PR`. Ready may
+>    proceed with these documented exceptions after at most three cycles;
+>    the command still exits 1 for required goal misses or unknowns. Tool
+>    failures remain errors. Re-select tests from the actual candidate when
+>    test changes affect collection scope.
+> 6. Run the process on the complete candidate after fixes. Reuse still-valid
+>    coverage; a final report does not require another collection. Include its
+>    full Markdown in the pull request description: review, architecture delta,
+>    complexity, trend, and CRAP or the unavailable-assessment reason. Paste
+>    the fenced `mermaid` graph and its legend unchanged, including on
+>    document-only changes and reports without coverage. Include
+>    `The map did not change.` and `No production file changed.` when present.
+>    Historical counts from head coverage are estimates. Preserve their
+>    coverage origin, fingerprints, measurement version, and unknown count.
+>    Completed goal misses keep all report evidence. Failed prerequisites
+>    leave dependent sections unavailable, exit 1, and write no historical
+>    record. Unassessed required CRAP goals also prevent recording.
+> 7. Change `.ast-metrics-baseline.yaml` only for a retained high finding in
+>    step 4 or changes to `.ast-metrics.yaml` rules. Run the baseline wrapper
+>    and commit it. A violation already on `main` is not a third exception.
+> 8. The complete process requests architecture recording only after its
+>    required analyses complete. Completed goal misses can still record;
+>    operational failures or unavailable required assessments cannot. Only
+>    architecture with `--record` writes a missing base record. It checks the
+>    full base commit and its ancestry on `origin/main`. Commit the new record
+>    under `docs/metrics/`. Existing records are immutable, including records
+>    without coverage counts. In a metrics conflict, keep the file from `main`
+>    and drop the candidate's conflicting file. Exploratory architecture runs
+>    omit `--record`. Missing historical values remain absent. Nothing runs
+>    at merge time.
 >
-> Each command that uses MCP owns a bounded session for its requests and
-> stops it on success or failure. The MCP entry point makes one tool call;
-> snapshot and CRAP commands can make several requests in one session.
-> Do not start or register a persistent server yourself.
+> Commands that use MCP start and stop the server within a bounded operation,
+> on success or failure. The MCP entry point makes one tool call; snapshot
+> and CRAP can make several requests in one session. Do not start `ast-metrics mcp` yourself or register
+> it as a session server.
 
 ## 12. Appendix E: review record
 

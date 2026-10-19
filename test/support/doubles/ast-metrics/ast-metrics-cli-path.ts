@@ -1,10 +1,10 @@
-import { accessSync, chmodSync, constants, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import * as fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { astMetricsCliFake, gitCliStub } from '../../processes/module-paths.ts';
 
-// The answers of ast-metrics-cli-fake.ts. Without an answer, the fake writes empty reports and exits 0.
+// The fake writes empty analysis reports and a complete clean review report by default.
 export interface AstMetricsCliAnswers {
   readonly version?: string;
   // The OpenMetrics text that analyze writes. {root} stands for the working directory of the call.
@@ -16,6 +16,15 @@ export interface AstMetricsCliAnswers {
   readonly jsonInTree?: string;
   // The Markdown that review prints and writes.
   readonly review?: string;
+  // Override the complete JSON review report.
+  readonly reviewJson?: string;
+  readonly reviewSkipJson?: boolean;
+  readonly reviewExitCode?: number;
+  readonly reviewStderr?: string;
+  // A successful baseline call writes this YAML at the repository root.
+  readonly baseline?: string;
+  readonly baselineExitCode?: number;
+  readonly baselineStderr?: string;
   readonly stderr?: string;
   readonly exitCode?: number;
   // analyze and review wait this long before they answer, as a slow analysis does.
@@ -37,7 +46,7 @@ export interface AstMetricsCliFake {
 export function astMetricsCliFakeOnPath(t: TestContext, answers: AstMetricsCliAnswers = {}): AstMetricsCliFake {
   const folder = temporaryFolder(t);
   const bin = join(folder, 'bin');
-  mkdirSync(bin);
+  fs.mkdirSync(bin);
   writeShim(join(bin, 'ast-metrics'), [process.execPath, astMetricsCliFake]);
   const log = join(folder, 'calls.jsonl');
   return {
@@ -65,29 +74,34 @@ export function pathWithGitStub(t: TestContext, root: string): string {
   return bin;
 }
 
+const scalarOptions = {
+  VERSION: 'version', REVIEW: 'review', REVIEW_JSON: 'reviewJson', REVIEW_EXIT: 'reviewExitCode',
+  REVIEW_STDERR: 'reviewStderr', BASELINE: 'baseline', BASELINE_EXIT: 'baselineExitCode',
+  BASELINE_STDERR: 'baselineStderr', STDERR: 'stderr', EXIT: 'exitCode', DELAY_MS: 'delayMs',
+} as const;
+
 function answerSettings(folder: string, answers: AstMetricsCliAnswers): Record<string, string> {
-  const settings: Record<string, string> = {};
-  if (answers.version !== undefined) settings.AST_METRICS_FAKE_VERSION = answers.version;
+  const settings = Object.fromEntries(Object.entries(scalarOptions).flatMap(([suffix, key]) => {
+    const value = answers[key];
+    return value === undefined ? [] : [[`AST_METRICS_FAKE_${suffix}`, String(value)]];
+  }));
   if (answers.metrics !== undefined) {
     settings.AST_METRICS_FAKE_METRICS_FILE = join(folder, 'metrics.txt');
-    writeFileSync(settings.AST_METRICS_FAKE_METRICS_FILE, answers.metrics);
+    fs.writeFileSync(settings.AST_METRICS_FAKE_METRICS_FILE, answers.metrics);
   }
   if (answers.json !== undefined) {
     settings.AST_METRICS_FAKE_JSON_FILE = join(folder, 'report.json');
-    writeFileSync(settings.AST_METRICS_FAKE_JSON_FILE, answers.json);
+    fs.writeFileSync(settings.AST_METRICS_FAKE_JSON_FILE, answers.json);
   }
   if (answers.jsonInTree !== undefined) settings.AST_METRICS_FAKE_JSON_FILE = answers.jsonInTree;
-  if (answers.review !== undefined) settings.AST_METRICS_FAKE_REVIEW = answers.review;
-  if (answers.stderr !== undefined) settings.AST_METRICS_FAKE_STDERR = answers.stderr;
-  if (answers.exitCode !== undefined) settings.AST_METRICS_FAKE_EXIT = String(answers.exitCode);
-  if (answers.delayMs !== undefined) settings.AST_METRICS_FAKE_DELAY_MS = String(answers.delayMs);
+  if (answers.reviewSkipJson) settings.AST_METRICS_FAKE_REVIEW_SKIP_JSON = '1';
   return settings;
 }
 
 // The fake writes no log before its first call.
 function recordedCalls(log: string): AstMetricsCliCall[] {
-  if (!existsSync(log)) return [];
-  return readFileSync(log, 'utf8').split('\n').filter((line) => line !== '').map((line) => JSON.parse(line) as AstMetricsCliCall);
+  if (!fs.existsSync(log)) return [];
+  return fs.readFileSync(log, 'utf8').split('\n').filter((line) => line !== '').map((line) => JSON.parse(line) as AstMetricsCliCall);
 }
 
 function executableOnPath(name: string): string {
@@ -100,16 +114,16 @@ function executableOnPath(name: string): string {
 
 function isExecutableFile(path: string): boolean {
   try {
-    accessSync(path, constants.X_OK);
-    return statSync(path).isFile();
+    fs.accessSync(path, fs.constants.X_OK);
+    return fs.statSync(path).isFile();
   } catch {
     return false;
   }
 }
 
 function writeShim(path: string, commandLine: readonly string[]): void {
-  writeFileSync(path, `#!/bin/sh\nexec ${commandLine.map(shellWord).join(' ')} "$@"\n`);
-  chmodSync(path, 0o755);
+  fs.writeFileSync(path, `#!/bin/sh\nexec ${commandLine.map(shellWord).join(' ')} "$@"\n`);
+  fs.chmodSync(path, 0o755);
 }
 
 // The shell takes a word in single quotes literally.
@@ -118,7 +132,7 @@ function shellWord(text: string): string {
 }
 
 function temporaryFolder(t: TestContext): string {
-  const folder = mkdtempSync(join(tmpdir(), 'thermus-ast-metrics-'));
-  t.after(() => rmSync(folder, { recursive: true, force: true }));
+  const folder = fs.mkdtempSync(join(tmpdir(), 'thermus-ast-metrics-'));
+  t.after(() => fs.rmSync(folder, { recursive: true, force: true }));
   return folder;
 }

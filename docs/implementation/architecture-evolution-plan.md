@@ -12,8 +12,9 @@ approved D3. PR #179 merged CR-05: file status, source evidence, and
 conservative function correspondence. PR #180 merged CR-06: live
 invariants and separate structural and coverage-collecting architecture
 files. PR #181 merged CR-07 and CR-08: incomplete risk assessments and
-the tool version pin. PR #182 implements CR-22: per-function CRAP goals,
-actionable coverage advice, and the approved D1/D2 process. It awaits owner review.
+the tool version pin. PR #182 merged CR-22: per-function CRAP goals,
+actionable coverage advice, and the approved D1/D2 process. PR #183 implements CR-09: the composed
+review process and the baseline wrapper. It awaits owner review.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
@@ -302,8 +303,13 @@ these recorded exceptions, while the command still exits 1. Unchanged high
 functions remain visible and can retain `unchanged by this PR`. Tool failures
 remain errors. Reuse compatible coverage or collect only within the selected
 scope; otherwise record the assessment as unavailable and deferred. Keep the
-full architecture graph and legend even without bands. CR-09 process and
-baseline wrappers are not available yet.
+full architecture graph and legend even without bands. The CR-09 process
+wrapper reuses valid coverage by default and collects only on an explicit
+eligible request. It continues after completed goal misses and saves all
+four report sections. An unassessed required selection or failed operation
+prevents a history write. Completed goal misses can still record after all
+required analyses finish. A document-only empty CRAP selection needs no
+coverage or MCP for that step and can record structure without counts.
 
 ### Bands
 
@@ -497,8 +503,9 @@ The tickets below record the completed implementation at that time. CR-24
 supersedes T3's rule that an unchanged map has no graph. Current PR work
 always follows current AGENTS.md and the test gate policy, including the
 coverage restrictions above and the two permitted baseline refresh reasons.
-The direct `ast-metrics baseline` call remains an exception until CR-09 adds
-its wrapper; a third baseline exception remains owner decision D8.
+Use `ast-metrics-baseline.ts` for an allowed refresh and its ignored entry
+counts. The wrapper adds no exception; a third baseline exception remains
+owner decision D8.
 
 Every ticket reads this plan, [the review guide](ast-metrics-review.md),
 `docs/coding-principles.md`, `docs/testing/test-code-layout.md`, and

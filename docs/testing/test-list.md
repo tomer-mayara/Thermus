@@ -90,9 +90,40 @@ rendering with an empty PATH identifies different versions and rejects
 malformed snapshot tool metadata. Help starts no tool; coverage imports work
 without ast-metrics. Coverage has no version option.
 
-The seven commands run from source in `script/code-quality/`. See the
+The nine commands run from source in `script/code-quality/`. See the
 [code quality script guide](../../script/code-quality/README.md) for their
 entry points and helper folders.
+
+`test/unit/script/ast-metrics-baseline.test.ts` checks help and argument
+validation before Git or tool access, and counts YAML ignored entries without
+counting occurrence totals or message text. It rejects invalid baseline data.
+`test/acceptance/script/ast-metrics-baseline.test.ts` checks root execution,
+counts before and after, a missing initial baseline, the version pin and
+explicit override, and failed tools or malformed output without success counts.
+
+`test/unit/script/ast-metrics-process.test.ts` checks stage order, completed
+goal misses, operational failures, unavailable required coverage, an empty
+production selection, recording failure, and option conflicts. It checks a
+fenced delta with aligned rows and preserves indentation in Markdown stages.
+The acceptance process files check the complete command with tool and Git
+doubles: `ast-metrics-process.test.ts` checks the document-only four-section
+report and structural record without a CRAP session or suite;
+`ast-metrics-process-coverage.test.ts` checks compatible older captures,
+missing or stale required coverage, explicit skip, and paths from a nested
+caller; `ast-metrics-process-failures.test.ts` checks custom base and version
+propagation, continued evidence after a goal miss, failed analysis without
+history, and retained drawings when recording fails.
+`ast-metrics-process-collection.test.ts` selects both unit parts in a small
+fixture repository and proves explicit collection runs its build and each
+part once; a failed fixture build saves failure evidence and writes no
+history. These ordinary tests never collect application coverage implicitly.
+
+`test/unit/script/ast-metrics-review-report.test.ts` checks that fresh,
+structured review evidence identifies completed goals and rejects malformed
+or contradictory results. `test/acceptance/script/ast-metrics-stage-outcomes.test.ts`
+checks that delta, review, and CRAP distinguish completed goal misses from
+operational failures, including stale or absent review JSON. This prevents
+an ambiguous exit status from authorizing a history write.
 
 `test/unit/script/ast-metrics-delta.test.ts`,
 `test/unit/script/ast-metrics-review.test.ts`, and
@@ -480,6 +511,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-baseline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
@@ -498,6 +530,10 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
@@ -507,6 +543,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-stage-outcomes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-tool-version.test.ts | no |
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
@@ -525,6 +562,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-baseline.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
@@ -536,8 +574,10 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |

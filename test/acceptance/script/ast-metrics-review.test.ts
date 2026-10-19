@@ -11,7 +11,7 @@ const highFinding = '## AST Metrics review\n\n- high: src/a.ts: Cyclomatic compl
 const noBaseline = 'ast-metrics-review: no .ast-metrics-baseline.yaml; every existing rule violation counts as new.\n';
 
 function reviewArgs(base: string, maxFindings: number): string[] {
-  return ['review', '--base', base, '--format', 'markdown', '--max-findings', String(maxFindings), '--report-markdown', './ast-report/review.md', '--fail-on', 'high'];
+  return ['review', '--base', base, '--format', 'markdown', '--max-findings', String(maxFindings), '--report-markdown', './ast-report/review.md', '--report-json', './ast-report/review.json', '--fail-on', 'high'];
 }
 
 // The branch feature changes src/a.ts. By default, main also holds a baseline.

@@ -1,10 +1,7 @@
 #!/usr/bin/env node
-import { cliToolVersion } from './shared/tool-version.ts';
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { CommandError, notInstalled, repositoryRoot, verifyBase } from './shared/repository.ts';
+import { runReview, type ReviewOptions } from './review/run.ts';
+import { CommandError, repositoryRoot } from './shared/repository.ts';
 
 const help = `Usage: node script/code-quality/ast-metrics-review.ts [--base REF] [--max-findings N] [--allow-tool-version] [--help]
 
@@ -13,7 +10,7 @@ against the tree of REF. Uncommitted changes count. ast-metrics ignores each
 violation that .ast-metrics-baseline.yaml at the repository root lists.
 
 The command runs ast-metrics review at the repository root, prints its Markdown
-report, and writes the same report to ast-report/review.md.
+report, and writes fresh reports to ast-report/review.md and ast-report/review.json.
 
 Options:
   --base REF          Git ref to compare with (default: origin/main)
@@ -21,17 +18,15 @@ Options:
   --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h          Show this help
 
-Exit status: the status of ast-metrics review, which is 1 when a finding of
-high severity exists and 0 when none exists. The command also exits 1 when it
-fails.
+Exit status 0: a complete review has no finding of high severity. Exit status 1:
+a high finding exists, or the command failed. Missing, malformed, incomplete, or
+inconsistent review results are command failures.
 `;
 
 const optionShape = {
   base: { type: 'string', default: 'origin/main' }, 'max-findings': { type: 'string', default: '50' },
   'allow-tool-version': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
 } as const;
-
-type ReviewOptions = { readonly base: string; readonly maxFindings: number; readonly allowToolVersion: boolean };
 
 function parsedValues(args: readonly string[]) {
   try {
@@ -53,36 +48,15 @@ function optionsOf(args: readonly string[]): ReviewOptions | { readonly help: tr
   return { base: values.base, maxFindings, allowToolVersion: values['allow-tool-version'] === true };
 }
 
-// With --fail-on high, the exit status of ast-metrics is the result: 1 when a finding of high severity exists.
-function review(root: string, options: ReviewOptions): number {
-  const args = [
-    'review', '--base', options.base, '--format', 'markdown', '--max-findings', String(options.maxFindings),
-    '--report-markdown', './ast-report/review.md', '--fail-on', 'high',
-  ];
-  const run = spawnSync('ast-metrics', args, { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] });
-  if (run.error) {
-    const { code, message } = run.error as NodeJS.ErrnoException;
-    throw new CommandError(code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${message}`);
-  }
-  if (run.status === null) throw new CommandError(`ast-metrics review stopped on signal ${run.signal}.`);
-  return run.status;
-}
-
 function main(args: readonly string[]): number {
   const options = optionsOf(args);
   if ('help' in options) {
     process.stdout.write(help);
     return 0;
   }
-  const root = repositoryRoot();
-  verifyBase(root, options.base);
-  cliToolVersion(root, options.allowToolVersion);
-  if (!existsSync(join(root, '.ast-metrics-baseline.yaml'))) {
-    process.stderr.write('ast-metrics-review: no .ast-metrics-baseline.yaml; every existing rule violation counts as new.\n');
-  }
-  // ast-metrics fails when the folder of the report does not exist.
-  mkdirSync(join(root, 'ast-report'), { recursive: true });
-  return review(root, options);
+  const report = runReview(repositoryRoot(), options);
+  process.stdout.write(report.text);
+  return report.passed ? 0 : 1;
 }
 
 try {
