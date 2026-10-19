@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript, type ScriptResult } from '../../support/processes/script-command.ts';
+import { legacyImportEvidence, componentGolden, componentNodes } from './fixtures/ast-metrics-component-goldens.ts';
 import { baseGraph } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, baseSnapshot, complexityHeading, edited, file, noProductionFile, noTrend, snapshotArguments, tableHead, type SnapshotEdits } from './fixtures/ast-metrics-architecture-snapshots.ts';
 
@@ -28,8 +29,8 @@ const architecture = [
   ...baseGraph,
 ];
 
-function markdown(complexity: readonly string[]): string {
-  return [...architecture, '', ...complexity, '', ...noTrend, ''].join('\n');
+function markdown(complexity: readonly string[], components: readonly string[] = componentGolden()): string {
+  return [...architecture, ...legacyImportEvidence, '', ...components, '', ...complexity, '', ...noTrend, ''].join('\n');
 }
 
 function table(rows: readonly string[]): string[] {
@@ -48,7 +49,7 @@ test('Given a changed file whose maintainability fell from 72.0 to 60.0 and whos
   const result = await runWith(t, lowerScore, ['src/auth/access-context.ts']);
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(table(['| src/auth/access-context.ts | 72.0 → 60.0 ↓12.0 | 12 → 15 ↑3 | 3 |'])));
+  assert.equal(result.stdout, markdown(table(['| src/auth/access-context.ts | 72.0 → 60.0 ↓12.0 | 12 → 15 ↑3 | 3 |']), componentGolden(Object.values({ ...componentNodes, auth: '  c_auth["auth<br/>5 files · MI 58.9 ↓2.4 · paths 125 ↑3"]' }), ['  class c_auth touched'])));
   assert.equal(result.code, 0);
 });
 
@@ -58,7 +59,7 @@ test('Given a new file without a risk score, when the command runs, then its row
   const result = await runWith(t, newFile, ['src/mcp/new-file.ts']);
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(table(['| src/mcp/new-file.ts | new → 70.2 | new → 8 | |'])));
+  assert.equal(result.stdout, markdown(table(['| src/mcp/new-file.ts | new → 70.2 | new → 8 | |']), componentGolden([componentNodes.auth, componentNodes.hostedAdmin, componentNodes.kernel, '  c_mcp["mcp · new<br/>1 file · MI 70.2 · paths 8"]', componentNodes.old, componentNodes.src, componentNodes.portal], ['  class c_mcp touched'])));
   assert.equal(result.code, 0);
 });
 
@@ -68,7 +69,7 @@ test('Given a changed file that the head does not have, when the command runs, t
   const result = await runWith(t, goneFile, ['src/old/gone.ts']);
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(table(['| src/old/gone.ts | 55.0 → gone | 20 → gone | gone |'])));
+  assert.equal(result.stdout, markdown(table(['| src/old/gone.ts | 55.0 → gone | 20 → gone | gone |']), componentGolden(Object.values({ ...componentNodes, old: '  c_old["old · gone<br/>1 file · MI 55.0 · paths 20"]' }), ['  class c_old touched', '  class c_old gone'])));
   assert.equal(result.code, 0);
 });
 
@@ -76,7 +77,7 @@ test('Given a changed file of types, which has no maintainability index in the h
   const result = await runWith(t, {}, ['src/user-portal/env.d.ts']);
 
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout, markdown(table(['| src/user-portal/env.d.ts | not measured | not measured | |'])));
+  assert.equal(result.stdout, markdown(table(['| src/user-portal/env.d.ts | not measured | not measured | |']), componentGolden(Object.values(componentNodes), ['  class c_user_portal touched'])));
   assert.equal(result.code, 0);
 });
 
@@ -91,7 +92,7 @@ test('Given changed files of each kind, when the command runs, then the table ha
     '| src/mcp/new-file.ts | new → 70.2 | new → 8 | |',
     '| src/old/gone.ts | 55.0 → gone | 20 → gone | gone |',
     '| src/user-portal/env.d.ts | not measured | not measured | |',
-  ])));
+  ]), componentGolden(['  c_auth["auth<br/>5 files · MI 58.9 ↓2.4 · paths 125 ↑3"]', componentNodes.hostedAdmin, componentNodes.kernel, '  c_mcp["mcp · new<br/>1 file · MI 70.2 · paths 8"]', '  c_old["old · gone<br/>1 file · MI 55.0 · paths 20"]', componentNodes.src, componentNodes.portal], ['  class c_auth,c_mcp,c_old,c_user_portal touched', '  class c_old gone'])));
   assert.equal(result.code, 0);
 });
 

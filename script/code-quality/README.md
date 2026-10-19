@@ -38,8 +38,10 @@ The nine command entry points stay in this folder:
 
 Helper modules are grouped by task: `delta/`, `mcp/`, `snapshot/`,
 `review/`, `coverage/`, `crap/`, `architecture/`, `process/`, `baseline/`,
-`identity/`, and `provenance/`. The `identity/` folder owns source evidence and
+`identity/`, `dependencies/`, and `provenance/`. The `identity/` folder owns source evidence and
 function identity. The `provenance/` folder owns input identity and its checked readers.
+The `dependencies/` folder owns parsed source imports, resolution, and checked
+snapshot dependency evidence.
 The `shared/` folder holds common argument and limit checks, JSON readers,
 text ordering, number calculations, and repository commands. JSON file reads
 keep file-kind diagnostics; consumers check their own schemas. Text ordering
@@ -100,8 +102,8 @@ on CRAP and can prove a violation at 30 or more.
 Architecture joins compatible head coverage with proven base/head pairs to
 estimate base risk. Stored head-derived estimates retain their origin and
 unknown count; they are not measurements of base coverage. Missing historical
-values stay absent. The architecture report has the complete graph and
-legend with or without coverage, bands when justified, the complexity table,
+values stay absent. The architecture report has both complete graphs,
+legends, and import evidence with or without coverage, bands when justified, the complexity table,
 added or worsened risk list, and trend. See the
 [guide](../../docs/implementation/ast-metrics-review.md#the-crap-goal) for
 identity limits, goal exceptions, and exact boundary rules.
@@ -406,6 +408,15 @@ commit, one summary line (modularity, cross share, cycles, communities, base
 and its legend. The graph always appears. For an unchanged map, `The map did
 not change.` appears above the graph; equal snapshots with no touched files
 keep all nodes and dependencies without change arrows or touched borders.
+Import evidence below the community graph separates changed imports from
+unchanged imports regrouped by the tool, with at most ten file pairs per
+changed edge and an omitted count. Tool reference counts and file-pair
+counts have different units. Proven moves use CR-05 evidence.
+Next, `## Components of src/` always shows each populated top-level source
+folder, plus `src` for root files, with its own graph and legend. It uses
+file counts, LOC-weighted maintainability, paths, and eligible CRAP bands.
+Each cross-component edge counts an importing file once per target
+component. Internal imports give no self-edge or self-cycle.
 Then it prints the complexity table of the changed `src/` files: the maintainability and the
 decision paths of each file, base → head (`new`, `gone`, or `not measured`
 when a side has no value), and its rank among the ten riskiest files of the
@@ -461,8 +472,29 @@ no Git; a legacy head cannot establish compatibility.
 
 A missing or stale report does not authorize a broader suite. Use
 `--no-coverage` outside the collection scope. Paste the fenced `mermaid`
-block and legend unchanged into every pull request body, including one
+blocks, their legends, and import evidence unchanged into every pull request body, including one
 that changes only documents or has no valid coverage.
+
+Snapshots retain normalized dependency pairs from the TypeScript parser in
+`ts-morph`: local static, type, re-export, side-effect, and literal dynamic
+imports. The raw 0.43.1 report gives coupling counts and namespace relations,
+but no complete file-pair evidence. Packages are ignored; unresolved local
+imports, unsupported aliases, non-literal dynamic imports, parse errors,
+and outside-source targets remain explicit issues. See the
+[snapshot format](../../docs/implementation/ast-metrics-change-request.md#a2-snapshot)
+for resolution and normalization. Legacy snapshots without dependency data
+keep component edges and import explanations unavailable. When both snapshots
+have dependency metadata but either has issues, known head edges and cycles
+proven in that known subgraph still appear. Edge counts have no new/gone labels
+or count deltas. Gone base edges, cycle-change claims, and the component
+unchanged-map claim are withheld. The notice states that more dependencies
+and cycles may exist. With complete evidence, an unchanged component graph
+says `The component map did not change.` Missing file metrics remain
+unavailable. Offline mode reads only supplied evidence.
+New trend records add stable-name `components` with metrics and D3 count
+provenance per component. Counts need verified coverage and complete member
+assessments. A component without per-file LOC or paths withholds the whole
+record field. Legacy absence means unknown; component trend charts remain CR-14 work.
 
 Source evidence supplies function correspondence. Within the same file or
 a proven file rename, a unique declaration kind/owner/name pair keeps its
@@ -573,7 +605,8 @@ the shared kernel uses `shared kernel`. Duplicate labels append the basename
 of the hub in parentheses. Maintainability is weighted by LOC. LOC is a count
 of lines of code, not a source position.
 
-Focused tests: select the `ast-metrics-snapshot*.test.ts` rows in the
+Focused tests: select the `ast-metrics-snapshot*.test.ts` and
+`ast-metrics-dependencies*.test.ts` rows in the
 [available test inventory](#available-tests). Run a live row only within its
 listed scope.
 
@@ -680,10 +713,13 @@ Live contracts check invariants of the current repository, not fixed community,
 cycle, or file counts. MCP checks the function table and missing-file error.
 Snapshot checks the shared kernel, unique labels, source members, valid
 community and cycle references, positive file and function counts, HEAD,
-deadlines, and worktree cleanup.
+deadlines, and worktree cleanup. It also checks normalized unique dependency
+pairs between analyzed source files and the literal dynamic import in
+`application.ts`.
 
 `ast-metrics-architecture.live.ts` is structural only. It uses `--no-coverage`,
-checks equal metrics and the graph against the reported communities, and starts
+checks equal metrics, every reported community, each populated source-folder
+component, and both graphs and legends, and starts
 no suite. `ast-metrics-architecture-coverage.live.ts` separately collects both
 complete unit parts and passes its private report with `--coverage`.
 `ast-metrics-coverage.live.ts` also collects both complete parts and keeps the
@@ -726,6 +762,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-components.test.ts | no |
 | live | test/acceptance/script/ast-metrics-architecture-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
@@ -738,6 +775,7 @@ the complete graph without bands and proves that no test suite runs.
 | live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-baseline.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
@@ -764,6 +802,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
@@ -774,6 +813,8 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/script-readme.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-component-records.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-components.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
@@ -789,6 +830,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-baseline.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-community-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
@@ -798,6 +840,8 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-dependencies-read.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-dependencies.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
@@ -807,8 +851,10 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-tool-version.test.ts | no |
+
 <!-- code-quality-tests:end -->

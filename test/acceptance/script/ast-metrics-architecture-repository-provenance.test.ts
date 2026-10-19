@@ -54,7 +54,7 @@ test('Given coverage from another source tree, when repository architecture uses
   const notice = `The coverage report is of another tree (${capturedCommit.slice(0, 8)}): the bands are withheld. Run the coverage command again when the test selection permits it.`;
   assert.equal(result.code, 0, result.stderr);
   assert.equal(result.stderr, `ast-metrics-architecture: ${notice}\n`);
-  assert.equal(result.stdout, repositoryProvenanceMarkdown(capturedCommit, { notice }));
+  assert.equal(result.stdout, repositoryProvenanceMarkdown(capturedCommit, { notice, componentTouched: true }));
   assert.ok(!result.stdout.includes('functions ≥ 30:'));
   assert.ok(!result.stdout.includes('CRAP ≥ 30 |'));
   assert.ok(!result.stdout.includes('### Functions at CRAP'));

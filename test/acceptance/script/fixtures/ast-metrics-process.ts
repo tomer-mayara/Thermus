@@ -4,6 +4,7 @@ import type { TestContext } from 'node:test';
 import type { AstMetricsCliAnswers } from '../../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
 import { astMetricsProcessScript } from '../../../support/processes/module-paths.ts';
 import { runScript } from '../../../support/processes/script-command.ts';
+import { completeImportEvidence, repositoryComponents } from './ast-metrics-component-goldens.ts';
 import { repositoryGraph } from './ast-metrics-architecture-goldens.ts';
 import { noProductionFile } from './ast-metrics-architecture-snapshots.ts';
 import { baseDoublesOnPath, baseRepository } from './ast-metrics-snapshot-base.ts';
@@ -38,7 +39,7 @@ export function documentProcessMarkdown(repository: GitRepository): string {
     '## CRAP', '', 'Status: passed.', '', missingCoverage, '', 'No production files to assess.', '',
     '## Architecture', '', 'Status: passed.', '', `## Architecture of src/: base ${commit.slice(0, 8)} → head`, '',
     'Modularity 0.42 → 0.42 · cross share 0.33 → 0.33 · cycles 1 → 1 · communities 3 → 3', '', missingCoverage, '',
-    'The map did not change.', '', ...repositoryGraph(), '', ...noProductionFile, '',
+    'The map did not change.', '', ...repositoryGraph(), ...completeImportEvidence, '', ...repositoryComponents({ unchanged: true }), '', ...noProductionFile, '',
     'Unknown function identity: 5 (no proven declaration or unique unchanged body/signature correspondence).', '',
     '## Trend of src/ on main', '',
     '| Commit | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',

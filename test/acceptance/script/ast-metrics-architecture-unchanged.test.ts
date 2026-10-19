@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
+import { completeImportEvidence, repositoryComponents } from './fixtures/ast-metrics-component-goldens.ts';
 import { repositoryGraph } from './fixtures/ast-metrics-architecture-goldens.ts';
 import { bandsNeedTheCoverage, noProductionFile } from './fixtures/ast-metrics-architecture-snapshots.ts';
 import { jsonReport, repositoryFiles } from './fixtures/ast-metrics-snapshot-answers.ts';
@@ -37,7 +38,7 @@ test('Given a branch that changes only a document, no coverage, and both doubles
     '',
     'The map did not change.',
     '',
-    ...repositoryGraph(),
+    ...repositoryGraph(), ...completeImportEvidence, '', ...repositoryComponents({ unchanged: true }),
     '',
     ...noProductionFile,
     '',

@@ -14,9 +14,12 @@ invariants and separate structural and coverage-collecting architecture
 files. PR #181 merged CR-07 and CR-08: incomplete risk assessments and
 the tool version pin. PR #182 merged CR-22: per-function CRAP goals,
 actionable coverage advice, and the approved D1/D2 process. PR #183 merged
-CR-09: the composed review process and the baseline wrapper. PR #184 implements
+CR-09: the composed review process and the baseline wrapper. PR #184 merged
 CR-17: share proven command checks, JSON reading, and ordering while preserving
-the nine entry points, diagnostics, and report contracts. It awaits owner review.
+the nine entry points, diagnostics, and report contracts. PR #185 implements
+CR-13: source dependency evidence, community import explanations, and a
+stable component map. It awaits owner review. CR-14 charts and component
+trend views remain follow-up work.
 The CRAP delta was already calculated once before CR-17. D9 remains open.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
@@ -121,7 +124,8 @@ identified below:
 The snapshot of one tree, `snapshot.json`, holds the global numbers
 (modularity, cross share, cycles, LOC-weighted maintainability of `src/`,
 file and function counts), the `src/` communities with their members and
-references, the per-file metrics, and the per-function decision paths. It
+references, the per-file metrics, per-function decision paths, and normalized
+source dependency pairs with unresolved-evidence issues. It
 holds no coverage or CRAP. `tool` names the actual checked ast-metrics
 version. A legacy snapshot without `tool` has an unknown version. One
 module makes it from one JSON report and one
@@ -160,16 +164,24 @@ A pin change needs applicable live contracts and fixture review.
 
 ### The views
 
-All three appear in the pull request body through the AGENTS.md process:
+All views appear in the pull request body through the AGENTS.md process:
 
 1. **Architecture delta.** One Mermaid graph of the `src/` communities at the
    head with the base in the labels (encoding below), and one summary line:
    modularity, cross share, cycles, base to head. The graph and legend always
    appear, including when only documents changed or compatible coverage is
    unavailable. If the map did not change, `The map did not change.` appears
-   above the graph. Paste the fenced `mermaid` block and its legend unchanged
+   above the graph. Paste both fenced `mermaid` blocks, their legends, and import evidence unchanged
    into the pull request body. Bands require compatible coverage; the graph
-   requirement does not expand the selected test scope.
+   requirement does not expand the selected test scope. Community edge
+   evidence explains changed imports separately from unchanged imports
+   regrouped by the tool, with at most ten file pairs per changed edge and
+   an omitted count. Proven file moves use CR-05 evidence.
+   A second graph under `## Components of src/` uses each populated
+   top-level source folder, plus `src` for root files. Its names are stable
+   across community regrouping. Each cross-component edge counts importing
+   files once per target component. Internal imports give no self-edge or
+   self-cycle. Both graphs and legends always appear.
 2. **Complexity delta.** One table of the `src/` files that the pull
    request changed: maintainability and decision paths, base to head, with
    `new` or `gone` for a file that one side does not have and
@@ -182,8 +194,10 @@ All three appear in the pull request body through the AGENTS.md process:
 3. **Trend.** One table of the last ten snapshots of `main`: modularity, cross
    share, cycles, LOC-weighted maintainability, functions with CRAP at 30 or
    more. The store is `docs/metrics/<date>-<commit>.json`, one file per
-   `main` commit, holding the global numbers and the numbers per community
-   only. Nobody runs anything at merge time. The complete-candidate review uses
+   `main` commit, holding global, community, and stable component numbers.
+   Component counts retain D3 provenance. Legacy absent component data is
+   unknown. CR-14 will add component trend views.
+   Nobody runs anything at merge time. The complete-candidate review uses
    `--record` to write a missing base record after the full commit and its
    ancestry on `origin/main` are verified. Exploratory runs are read-only.
    Records are immutable; keep the file from `main` in a merge conflict.
@@ -345,11 +359,11 @@ status colors and always comes with a symbol and a word, never color alone.
 
 | Channel | Carries | Reason |
 | --- | --- | --- |
-| Node | One `src/` community (about seven) | The structure. |
+| Node | One `src/` community, or one stable source component in the component view | The structure. |
 | Node text | Label, files, LOC-weighted maintainability with an arrow for the change, decision paths with an arrow, the band symbol and word, the count of functions at CRAP 30 or more with its change | Where complexity lives stays numeric; text reads the same in every theme. |
 | Node border color | The band | Unprotected complexity is the one color-coded metric. |
-| Border width | Thick when the pull request touched the community | The change. |
-| Edge | A dependency between communities, labeled with its references and their change | Coupling and its movement. |
+| Border width | Thick when the pull request touched the community or component | The change. |
+| Edge | A cross-community tool reference count, or an importing-file count per target component | Coupling and its movement. |
 | Edge style | Red dashed when part of a cycle; bold when new in this pull request | The structure problems. |
 | Line above the graph | Modularity, cross share, cycles, base to head; `The map did not change.` when applicable | The summary and change status. |
 | Legend under the graph | Node and edge encoding, with bands when compatible coverage is available | The meaning of the drawing. |
@@ -435,7 +449,7 @@ The owner decided on 2026-10-17:
    functions and files when coverage is available.
 3. The trend store is JSON files under `docs/metrics/`, one per `main`
    commit.
-4. The architecture map and the complexity table cover `src/` only, because
+4. The community and component maps and the complexity table cover `src/` only, because
    the snapshot holds `src/` alone since T1; the delta command still lists
    the changed `script/` and `test/` files, without a goal.
 5. The encoding above.
@@ -446,6 +460,24 @@ their fenced block and legend unchanged in every pull request body. The original
 
 ## Limits known in advance
 
+- The raw ast-metrics 0.43.1 report has file coupling counts and namespace
+  relations, but no complete per-file import pairs. CR-13 uses the
+  TypeScript parser from the existing `ts-morph` dependency. Local static,
+  type, re-export, side-effect, and literal dynamic imports are retained.
+  Packages are ignored; unresolved local imports, unsupported aliases,
+  non-literal dynamic imports, parse errors, and outside-source targets
+  remain explicit issues. See the [snapshot format](ast-metrics-change-request.md#a2-snapshot)
+  for resolution rules. These pairs have different units from tool references.
+- Legacy snapshots can show their community map and component nodes from
+  file metrics, but component edges and import explanations are unavailable
+  without dependency evidence. Offline rendering never fills gaps from the
+  caller's checkout. Source-folder components do not implement mapping files
+  or layer rules. When both snapshots have dependency metadata but either
+  has issues, the component view shows known head edges and cycles proven
+  in that known subgraph. Edge counts have no change labels or deltas;
+  removed base edges and cycle-change or unchanged-map claims are withheld.
+  The report states that more dependencies and cycles may exist. Charts and
+  component trend views remain CR-14 work.
 - Coverage comes only from the unit suite: emitted Node tests and source
   portal tests. PR #177 implements the portal part under CR-01. CR-11
   proposes other suites. Compatible architecture output names the unit

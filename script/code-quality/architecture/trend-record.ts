@@ -2,6 +2,7 @@
 // 3): the global numbers of the snapshot and the numbers of each community, and nothing for each file, so that a record
 // stays small and its numbers stay comparable from commit to commit. The record is pure, so that its rules have unit
 // tests without git and ast-metrics.
+import * as componentRecord from './component-record.ts';
 import * as riskCounts from './risk-counts.ts';
 import type { FileCrap } from './crap.ts';
 import { trendBasisOf, type TrendCoverage, type TrendCrapBasis } from './trend-basis.ts';
@@ -35,6 +36,7 @@ export interface TrendRecord {
   readonly functions: number;
   readonly functionsOver30?: number;
   readonly communities: readonly TrendCommunity[];
+  readonly components?: readonly componentRecord.TrendComponent[];
   readonly sourceFingerprint?: string;
   readonly crap?: TrendCrapBasis;
 }
@@ -54,6 +56,7 @@ function trendRecordOf(snapshot: MapSnapshot, crap: FilesCrap | undefined, cover
     version: 1, tool: snapshot.tool, commit: snapshot.commit, date: snapshot.date,
     modularity, crossShare, cycles: cycles.length, maintainability, paths, files, functions, functionsOver30: assessed && riskCounts.totalCountOf(assessed),
     communities: communities.map((community) => trendCommunityOf(community, assessed)),
+    components: componentRecord.componentRecordsOf(snapshot, assessed, coverage),
     sourceFingerprint: snapshot.provenance?.sourceFingerprint,
     crap: assessed && coverage && trendBasisOf(coverage, assessed),
   };

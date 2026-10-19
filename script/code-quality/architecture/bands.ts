@@ -7,7 +7,7 @@ import type { CrapDelta, JudgedFunction } from './crap-delta.ts';
 import type { Band, MapCommunity, NodeBand } from './types.ts';
 
 // Gives the band of the node of a head community and its partner in the base, or of a gone community of the base.
-type BandRule = (head: MapCommunity | undefined, base: MapCommunity | undefined) => NodeBand | undefined;
+type BandRule = (head: Pick<MapCommunity, 'members'> | undefined, base: Pick<MapCommunity, 'members'> | undefined) => NodeBand | undefined;
 
 export function bandRuleOf(delta: CrapDelta | undefined): BandRule {
   if (delta === undefined) return () => undefined;
@@ -22,7 +22,7 @@ interface CommunityRisk<T extends FunctionCrap> {
   readonly unmeasuredFiles: number;
 }
 
-function riskOf<T extends FunctionCrap>(files: ReadonlyMap<string, { readonly functions: readonly T[]; readonly incomplete?: true }>, community: MapCommunity): CommunityRisk<T> {
+function riskOf<T extends FunctionCrap>(files: ReadonlyMap<string, { readonly functions: readonly T[]; readonly incomplete?: true }>, community: Pick<MapCommunity, 'members'>): CommunityRisk<T> {
   return { functions: memberFunctionsOf(files, community), unmeasuredFiles: community.members.filter((path) => files.get(path)?.incomplete !== undefined || !files.has(path)).length };
 }
 

@@ -160,7 +160,10 @@ The coverage command builds first and collects both complete parts of the
 unit suite: emitted Node tests and source portal tests. Its live file and
 the coverage case of the architecture live file have the same scope under
 the test gate policy. Both use private output reports. Structural
-architecture uses `--no-coverage`. Exploratory architecture is read-only;
+architecture uses `--no-coverage`. The report always includes community
+and source-folder component graphs, their legends, and import evidence.
+Snapshots retain normalized source dependency pairs for offline reports;
+legacy missing evidence remains unavailable. Exploratory architecture is read-only;
 `--record` verifies and records a missing base on `origin/main`. Use
 `ast-metrics-process.ts` for the complete review; it reuses compatible
 coverage and collects only with an explicit eligible request. It prints and

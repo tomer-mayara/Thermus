@@ -1,38 +1,18 @@
-import { isJsonObject, isoDateOf, textOf, type JsonObject } from '../shared/json.ts';
+import * as schema from './trend-schema.ts';
+import { isJsonObject, type JsonObject } from '../shared/json.ts';
+import { validComponentName } from './component-name.ts';
 import { validHash, validTrendEvidence } from './trend-basis.ts';
 import type { TrendRecord } from './trend-record.ts';
 
-type Rule = (value: unknown) => boolean;
-type Fields = Readonly<Record<string, Rule>>;
-const count: Rule = (value) => Number.isSafeInteger(value) && (value as number) >= 0;
-const finite: Rule = (value) => typeof value === 'number' && Number.isFinite(value);
-const nonemptyText: Rule = (value) => Boolean(textOf(value));
-const commit: Rule = (value) => typeof value === 'string' && /^[a-f0-9]{40}$/u.test(value);
-const date: Rule = (value) => isoDateOf(value) !== undefined;
-const version: Rule = (value) => value === 1;
-
-const communityFields: Fields = {
-  label: nonemptyText, files: count, loc: count, paths: count,
-  maintainability: optional(finite), functionsOver30: optional(count),
-};
-const recordFields: Fields = {
-  version, tool: optional(nonemptyText), commit, date, modularity: finite, crossShare: finite, cycles: count,
-  paths: count, files: count, functions: count, communities: validCommunities,
-  maintainability: optional(finite), functionsOver30: optional(count), sourceFingerprint: optional(validHash),
+const recordFields: schema.Fields = {
+  version: schema.version, tool: schema.optional(schema.nonemptyText), commit: schema.commit, date: schema.date, modularity: schema.finite, crossShare: schema.finite, cycles: schema.count,
+  paths: schema.count, files: schema.count, functions: schema.count, communities: validCommunities, components: schema.optional(validComponents),
+  maintainability: schema.optional(schema.finite), functionsOver30: schema.optional(schema.count), sourceFingerprint: schema.optional(validHash),
 };
 
 export function validTrendRecord(value: JsonObject): value is JsonObject & TrendRecord {
-  if (!validFields(value, recordFields)) return false;
+  if (!schema.validFields(value, recordFields)) return false;
   return validTrendEvidence(value);
-}
-
-function optional(rule: Rule): Rule {
-  return (value) => value === undefined || rule(value);
-}
-
-function validFields(value: unknown, rules: Fields): boolean {
-  if (!isJsonObject(value)) return false;
-  return Object.entries(rules).every(([name, rule]) => rule(value[name]));
 }
 
 function validCommunities(value: unknown): boolean {
@@ -40,5 +20,18 @@ function validCommunities(value: unknown): boolean {
 }
 
 function validCommunity(value: unknown): boolean {
-  return validFields(value, communityFields);
+  return schema.validFields(value, schema.communityFields);
+}
+
+function validComponents(value: unknown): boolean {
+  if (!Array.isArray(value)) return false;
+  const names = new Set<string>();
+  return value.every((component) => {
+    if (!schema.validFields(component, schema.componentFields) || !isJsonObject(component) || !validTrendEvidence(component)) return false;
+    const name = component.name as string;
+    if (names.has(name) || !validComponentName(name)) return false;
+    if ((component.functionsOver30 === undefined) !== (component.crap === undefined)) return false;
+    names.add(name);
+    return true;
+  });
 }

@@ -147,9 +147,10 @@ in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
    test changes affect collection scope.
 6. Run the process on the complete candidate after fixes. Reuse still-valid
    coverage; a final report does not require another collection. Include its
-   full Markdown in the pull request description: review, architecture delta,
-   complexity, trend, and CRAP or the unavailable-assessment reason. Paste
-   the fenced `mermaid` graph and its legend unchanged, including on
+   full Markdown in the pull request description: review, community and
+   component architecture deltas, complexity, trend, and CRAP or the
+   unavailable-assessment reason. Paste both fenced `mermaid` graphs,
+   their legends, and import evidence unchanged, including on
    document-only changes and reports without coverage. Include
    `The map did not change.` and `No production file changed.` when present.
    Historical counts from head coverage are estimates. Preserve their

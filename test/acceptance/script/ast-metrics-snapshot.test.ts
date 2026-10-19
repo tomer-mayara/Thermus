@@ -33,6 +33,7 @@ function snapshotIn(path: string): unknown {
 const expectedSnapshot = {
   tool: '0.43.1',
   version: 1,
+  dependencies: { version: 1, pairs: [], issues: [] },
   global: { modularity: 0.42, crossShare: 0.33, cycles: [['admin', 'auth']], maintainability: 70.3, paths: 13, files: 4, functions: 5 },
   communities: [
     {

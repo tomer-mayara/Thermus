@@ -75,7 +75,7 @@ function nodeTextOf(node: MapNode): string {
 // A community without code, such as one of types only, has no maintainability.
 function numbersOf({ numbers, change }: MapNode): string[] {
   const files = `${numbers.files} ${numbers.files === 1 ? 'file' : 'files'}${changeText(change?.files, 0)}`;
-  const paths = `paths ${numbers.paths}${changeText(change?.paths, 0)}`;
+  const paths = numbers.paths === undefined ? 'paths not measured' : `paths ${numbers.paths}${changeText(change?.paths, 0)}`;
   if (numbers.maintainability === undefined) return [files, paths];
   return [files, `MI ${numbers.maintainability.toFixed(1)}${changeText(change?.maintainability, 1)}`, paths];
 }
