@@ -18,6 +18,10 @@ Revision 3 used `76b514ac` as its baseline. PR #170 subsequently reorganized
 the scripts without changing their behavior. PR #172 limited test runs to
 changed paths. This revision preserves both changes and all 24 CR identifiers.
 
+The owner approved staged implementation after merging revision 4 in
+PR #174. Delivery group 1 covers CR-16 and the CR-23 contract-test foundation.
+The decisions in section 3.2 remain open until the owner answers them.
+
 Contents:
 
 1. Summary
