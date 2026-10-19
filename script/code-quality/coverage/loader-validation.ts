@@ -3,7 +3,7 @@ import { basename, join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import * as json from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
-import * as protocol from './protocol.ts';
+import type * as protocol from './protocol.ts';
 import * as loader from './loader-contract.ts';
 import { assertLoaderFinalFlush } from './loader-checkpoint.ts';
 
@@ -31,18 +31,10 @@ export function assertLegacyLoaderAbsence(folder: string): void {
 }
 
 function loaderIdentityOf(marker: json.JsonObject, capture: protocol.CaptureProtocol | undefined): loader.LoaderIdentity {
-  if (capture?.completionProtocol !== protocol.completionProtocol) invalidLoader();
-  if (marker.completionProtocol !== capture.completionProtocol || marker.captureId !== capture.captureId) invalidLoader();
-  const binding = loaderBindingIn(marker);
-  const { pid, threadId, ownerThreadId } = marker;
-  if (!validThread(threadId) || threadId === 0 || !validThread(ownerThreadId) || threadId === ownerThreadId) invalidLoader();
-  return { ...capture, ...binding, pid: pid as number, threadId, ownerThreadId };
-}
-
-function loaderBindingIn(marker: json.JsonObject): Pick<loader.LoaderIdentity, 'captureId' | 'loaderProtocol' | 'nonce'> {
-  if (marker.loaderProtocol !== loader.loaderProtocol || typeof marker.nonce !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(marker.nonce)) invalidLoader();
-  if (typeof marker.captureId !== 'string' || !/^[a-f0-9]{64}$/.test(marker.captureId)) invalidLoader();
-  return { captureId: marker.captureId, loaderProtocol: loader.loaderProtocol, nonce: marker.nonce };
+  const identity = loader.loaderIdentityIn(marker);
+  if (identity === undefined || capture === undefined) invalidLoader();
+  if (identity.completionProtocol !== capture.completionProtocol || identity.captureId !== capture.captureId) invalidLoader();
+  return identity;
 }
 
 function assertNormalOwner(identity: loader.LoaderIdentity, evidence: CaptureEvidence): void {
@@ -72,7 +64,6 @@ function assertLoaderProof(folder: string, marker: json.JsonObject, identity: lo
 function isLoaderMarker(marker: json.JsonObject): boolean {
   return marker.loaderProtocol !== undefined || (typeof marker.state === 'string' && marker.state.startsWith('loader-'));
 }
-function validThread(value: unknown): value is number { return Number.isSafeInteger(value) && (value as number) >= 0; }
 function recordIn(file: string): json.JsonObject {
   try { return json.objectOf(json.jsonOf(readFileSync(file, 'utf8'))); } catch { return {}; }
 }

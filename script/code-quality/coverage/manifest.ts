@@ -8,7 +8,7 @@ import { assertLegacyLoaderAbsence } from './loader-validation.ts';
 import * as json from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
 import * as format from './manifest-format.ts';
-export type { CaptureManifest } from './manifest-format.ts';
+export type CaptureManifest = format.CaptureManifest;
 
 const captureManifestName = 'capture-manifest.json';
 
