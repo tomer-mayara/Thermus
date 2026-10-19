@@ -31,9 +31,10 @@ Delivery status:
 
 - PR #175 merged CR-16 and the CR-23 contract-test foundation. CR-23's later
   content consolidation remains.
-- PR #176 implements delivery group 2, CR-24: always print the architecture
+- PR #176 merged delivery group 2, CR-24: always print the architecture
   drawing and require its fenced block and legend in the pull request body.
-  It awaits owner review.
+- Delivery group 3, CR-01 and CR-02, is in progress: collect portal unit
+  coverage and measure each function's own characters.
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
