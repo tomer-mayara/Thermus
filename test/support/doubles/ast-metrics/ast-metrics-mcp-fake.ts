@@ -19,6 +19,7 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { createInterface, type Interface } from 'node:readline';
 
 type JsonObject = Readonly<Record<string, unknown>>;
+const busyTimers = new Set<ReturnType<typeof setTimeout>>();
 
 const settings = {
   folder: process.argv[3],
@@ -126,7 +127,7 @@ function toolResult(name: unknown, args: unknown): JsonObject {
 function callTool(id: unknown, params: JsonObject): void {
   if (settings.hang) {
     // A busy server. The timer keeps the process alive after the end of the input, for at most 30 seconds.
-    setTimeout(() => process.exit(4), 30_000);
+    busyTimers.add(setTimeout(() => process.exit(4), 30_000));
     return;
   }
   if (!tools.some((tool) => tool.name === params.name)) {
@@ -166,6 +167,11 @@ function isJsonObject(value: unknown): value is JsonObject {
 
 function serve(): void {
   const input = createInterface({ input: process.stdin });
+  if (settings.hang) process.once('SIGTERM', () => {
+    for (const timer of busyTimers) clearTimeout(timer);
+    input.close();
+    process.stdin.destroy();
+  });
   input.on('line', (line) => {
     if (line.trim() === '') return;
     let request: unknown;

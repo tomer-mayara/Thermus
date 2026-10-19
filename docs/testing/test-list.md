@@ -25,6 +25,14 @@ bad metadata. `fetch-url-oauth-failures.test.ts` checks durable write order,
 uncertain refresh outcomes, and explicit-credential isolation. The script unit
 files cover callback validation, token response
 validation, private file storage, durable replacement, and process locks.
+`test/support/processes/oauth-store-process.ts` keeps the intentional crash at
+the marker, ready, and temporary-write boundaries. Under coverage it prepares
+`THERMUS_COVERAGE_SEAL_NONCE` and seals synchronously before blocking without
+adding an IPC listener, then the parent verifies the
+SIGKILL receipt. The temporary-write fault intercepts only the actual grant-file
+rename; capture marker renames pass through. The credential-state and
+forced-exit assertions remain intact. This is not limited to an event-loop IPC
+seal and does not by itself prove full-suite capture.
 `test/interface/script/fetch-url-oauth.test.ts` checks the pinned SDK's metadata
 boundary with strict resource, issuer, endpoint, and PKCE requirements.
 
@@ -178,6 +186,11 @@ double of the server: the function table, the pass-through of arguments,
 error answers, a hanging and an early-exiting server, and that no server
 process remains. Its tools case checks unique names, nonempty descriptions,
 the four documented subcommand tools, and a representative description.
+`ast-metrics-mcp-shutdown.test.ts` checks the busy timeout fake separately.
+An actual SIGTERM releases its timers and input, produces no answer, and ends
+with exit code 0 and no signal or live child. This allows normal completion
+evidence without changing the never-answering timeout contract. The original
+MCP command specification stays unchanged.
 `ast-metrics-mcp.live.ts` runs the real server when
 `ast-metrics` is on PATH; ordinary suites do not select it. It checks a
 positive function table, its declared row count, and the missing-file error,
@@ -192,16 +205,37 @@ empty default selection without coverage or MCP, explicit inspection paths,
 custom base, unchanged high functions, and missing or stale coverage. These
 cases run no application suite.
 
+`ast-metrics-review-policy.test.ts` in the unit script group checks the strict
+new-function boundary, native high preservation, invalid numeric path evidence,
+metadata and improvements, full native evidence, and unchanged report handling.
+The acceptance file of the same name uses a complete Markdown golden in
+`fixtures/ast-metrics-review-policy.ts` and checks both approved resolved-path rules,
+aliases and re-exports, type/side-effect/literal dynamic imports, proven Git
+renames and unique exact-content unstaged moves, allowed pairs moved across a boundary, merge-base comparison after divergence,
+unrelated old uncertainty, affected dependency errors, report agreement, and the
+composed Review-stage gate. Markdown limits do not remove JSON findings or
+permit a hidden high finding to pass.
+
+`test/unit/script/ast-metrics-review-moves.test.ts` checks unique exact-content
+deleted/added move proof, ambiguity, and the existing Git rename map. The layer
+rule still checks whether a pair was forbidden before translating its move.
+
 `test/acceptance/script/ast-metrics-rules.live.ts` probes ast-metrics 0.43.1
 capabilities in temporary repositories. It checks that path-target coupling
 patterns do not catch named TypeScript imports, symbol patterns follow aliases
 and match the same symbol across target paths, and coupling findings are low
 severity. It checks that the fixed new-function warning starts at ten decision
 paths and becomes high at twenty-five, using separate files with nine, ten,
-eleven, twenty-four, and twenty-five paths under a high file cap.
+eleven, twenty-four, and twenty-five paths under a high file cap. The same
+case checks that the wrapper removes 10 and retains 11 and high 25. Separate
+native cases check file limits at 39/40/41 paths and 149/150/151 LOC.
 It needs the real tool, skips explicitly when absent, and runs no coverage or
-application suite. CR-15 path rules and CR-18 threshold changes remain pending;
-these capability cases add no native rule or project gate.
+application suite. The owner approved cleaner → MCP and website-fetcher →
+auth path rules through the review wrapper, file cap 40 with LOC 150 unchanged,
+and a strict new-function warning above 10 paths on 2026-10-19. These rules
+are implemented, and focused policy and boundary tests pass. Selected tests, typechecking, and all 13 affected live cases pass. Native coupling cases
+explain the need for resolved-path checks; the separate policy tests cover
+those wrapper rules.
 
 `test/acceptance/script/ast-metrics-crap.live.ts` uses real files and an
 existing compatible report from `AST_METRICS_CRAP_COVERAGE`, or
@@ -247,6 +281,44 @@ offsets and counts, and summed-call overflow.
 architecture reader preserves an unmeasured function's file and withholds
 a measured namesake's share.
 
+`test/unit/script/ast-metrics-coverage-propagation.test.ts` checks capture
+preload propagation through Node child-process APIs, promisified calls, shell
+and native children, reduced environments, and custom Node options. Explicit
+alternate, empty, or own-undefined capture choices remain independent. Worker
+cases check explicit options and the active-worker registry used by sealing.
+An actual `node --test` regression checks default ESM file workers with an
+ambient Node option and both inherited and replaced `NODE_OPTIONS`. Undefined
+worker arguments retain Node's default filtering; only an explicit array gets
+the required capture preload. Default CommonJS eval workers without that
+adaptation stay unverified.
+Signal-outcome cases check captured PID receipts and preserve Node coverage
+when an uncaptured native child stops on a signal. These cases start fixture
+processes, not application suites.
+
+`test/unit/script/ast-metrics-coverage-seal.test.ts` checks request identities:
+positive integral PID, nonnegative integral thread ID, supported protocol,
+capture hash, nonce, and accepted request fields. Invalid requests cannot
+authorize a seal. Two real-fork regression cases check normal exit and delayed
+product IPC without an injected seal message listener.
+
+`test/acceptance/script/ast-metrics-coverage-crash.test.ts` specifies the
+approved intentional-crash capture protocol in a temporary repository.
+Known crash fixtures opt in with `THERMUS_COVERAGE_CRASH=1`; other captured
+forks have no seal IPC listener. It checks that work before sealing is covered and queued later product work
+cannot run before SIGKILL. It rejects stale nonce/receipt, missing receipt or
+flush, changed or extra raw files, and active workers. Late-exit cases require
+raw evidence after `exitCheckpoint` and reject a late SIGKILL without a verified
+seal. A later flush is not proof of automatic-only termination. A protocol
+fixture is separate from the complete repository proof. The real combined
+capture passed in order `[acceptance, unit]`: 853 emitted and 16 portal
+acceptance tests, then 3,544 emitted and 19 portal unit tests, with zero
+failures and skips. Both suite captures passed strict completion verification,
+including eight sealed unit crash children, normal MCP fake SIGTERM cleanup,
+and clean registration-server shutdown. Real integration capture remains
+deferred because that group was not selected; union contracts use doubles.
+All 13 affected live cases passed without skips: two collecting, ten
+structural, and one CRAP case with verified imported unit coverage.
+
 `test/acceptance/script/ast-metrics-coverage.test.ts` checks merging two
 processes and the build and default run of a small suite in a temporary Git
 repository. `ast-metrics-coverage-failures.test.ts` checks out-of-bounds
@@ -289,9 +361,10 @@ prove build-before-suite ordering, stable capture and verified reimport with
 the original commit, mutation rejection at build and both unit stages,
 `--no-build` with valid and stale output, and tampered raw data with explicit
 unverified inspection. Its runner fixtures declare package selections and
-shutdown markers explicitly. New captures use version-2 manifests with per-suite
-identity and a canonical unit comparison identity; old version-1 manifests
-remain readable. A later selected suite with a nested command prevents even
+shutdown markers explicitly. New captures use version-3 manifests with per-suite
+identity, canonical unit comparison identity, completion protocol, and original
+capture identity. Legacy manifest versions 1 and 2 remain readable under their
+original rules. A later selected suite with a nested command prevents even
 the build or first suite from starting. Incomplete version-2 imports fail or
 remain explicitly unverified; legacy version-1 unit captures without shutdown
 markers remain readable as verified captures. It runs no application suite.
@@ -683,6 +756,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-backfill.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-baseline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-community-evidence.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-coverage-crash.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
@@ -699,12 +773,14 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-review-policy.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
 | live | test/acceptance/script/ast-metrics-rules.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
@@ -749,6 +825,8 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-propagation.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-coverage-seal.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-suites.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
@@ -765,6 +843,8 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-review-moves.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-review-policy.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
@@ -1063,8 +1143,13 @@ The tests set process environment variables and restore them at the end of each 
 [V] A second lock from the same process or from another process fails with `DataDirectoryInUseError` until the holder releases it or ends, also after `SIGKILL`
 
 The child fixture retains its lock handle until exit. This prevents garbage
-collection from releasing the lock before the assertion. The forced-exit cases
-still use `SIGKILL`; their coverage cannot supply normal-shutdown evidence.
+collection from releasing the lock before the assertion. Forced-exit cases
+still use SIGKILL. Known crash fixtures opt in with
+`THERMUS_COVERAGE_CRASH=1`. Under coverage the child flushes, stops, seals, and parks;
+the parent checks hashes and the actual signal before writing the receipt.
+These seals provide explicit pre-crash evidence rather than normal-shutdown
+evidence; the forced-exit and lock assertions stay unchanged.
+
 [V] A lock that another process holds fails at once, in less than one second; the lock does not wait for its holder
 [V] Three processes that lock one fresh directory at the same time: exactly one gets the lock, and each other process gets `DataDirectoryInUseError`, in each of 50 rounds
 [V] A second release does nothing; the lock leaves only `data-directory.lock` in the directory
@@ -3306,6 +3391,12 @@ Each test runs the built entry point as a separate process with the passwords on
 
 [V] Given the Thermus program, an unknown command gives usage that names `thermus users` and `thermus clients register`
 [V] Given a fresh Thermus installation with an approved client, a user signs in on a page that names Thermus and discovers an MCP server with the `thermus` identity
+
+After successful discovery, the case closes its MCP client and calls
+`server.stop()`, then requires exit code 0 without a signal. This explicit
+cleanup replaces the fallback hard kill for this case; the shared server
+helper stays unchanged.
+
 [V] Given an enabled account, client registration with an exact loopback redirect URI persists the client in the data directory, leaves no registration session, and lets a user authorize; unknown, disabled, and wrong-password targets and non-loopback, fragment, and credential redirect URIs give safe errors and register nothing
 
 Run only the tests of the offline commands:

@@ -11,6 +11,7 @@ import { writeV8Coverage } from '../../support/fixtures/v8-coverage.ts';
 import { astMetricsCoverageScript } from '../../support/processes/module-paths.ts';
 
 const scriptFolder = pathToFileURL(astMetricsCoverageScript);
+const { captureIdOf, completionProtocol } = await import(new URL('coverage/protocol.ts', scriptFolder).href) as typeof import('../../../script/code-quality/coverage/protocol.ts');
 const { sourceScriptsIn } = await import(new URL('coverage/input.ts', scriptFolder).href) as typeof import('../../../script/code-quality/coverage/input.ts');
 const { withSuiteCoverage } = await import(new URL('coverage/run.ts', scriptFolder).href) as typeof import('../../../script/code-quality/coverage/run.ts');
 
@@ -30,7 +31,7 @@ test('Given both unit parts, when coverage runs, then both Node calls share one 
     assert.equal(options.env?.NODE_TEST_CONTEXT, undefined);
     const folder = options.env?.NODE_V8_COVERAGE as string;
     writeV8Coverage(folder, root, [{ 'dist/src/a.js': [['a', [0, 10, 1]]] }]);
-    writeFileSync(join(folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: true }));
+    writeFileSync(join(folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: true, state: 'normal-exit', exitCheckpoint: [{ name: 'coverage-4000-1792300000000-0.json', hash: '0'.repeat(64) }], completionProtocol, captureId: captureIdOf(folder) }));
     return { status: 0, signal: null, output: [], pid: 0, stdout: null, stderr: null };
   });
 

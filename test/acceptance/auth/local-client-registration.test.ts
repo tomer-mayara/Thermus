@@ -47,6 +47,8 @@ describe('Offline approved MCP client registration', () => {
     assert.doesNotMatch(signInPage.body, /magumagu/i);
     assert.deepEqual(pages, ['/sign-in', '/consent']);
     assert.equal(discovery._meta?.[SERVER_INFO_META_KEY]?.name, 'thermus');
+    await client.close();
+    assert.deepEqual(await server.stop(), { code: 0, signal: null });
   });
 
   test('Given an enabled account and an approved native client with an exact loopback redirect URI, when registration runs, then the client persists in the data directory, no registration session stays, and a user can authorize with that redirect URI; invalid targets and redirect URIs give safe errors and register nothing', { timeout: 120_000 }, async (t) => {

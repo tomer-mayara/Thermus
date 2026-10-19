@@ -223,6 +223,7 @@ lists the available focused tests and identifies both coverage collectors.
 
 | Changed module area or contract | Affected live contract |
 | --- | --- |
+| `ast-metrics-review.ts`, `review/`, approved layer resolution or warning policy, or `.ast-metrics.yaml` cap changes | Focused review policy and report tests; `ast-metrics-rules.live.ts` for affected pinned-tool capability and rule boundaries. These start no coverage collector. |
 | `ast-metrics-mcp.ts`, `mcp/`, or MCP double behavior | `ast-metrics-mcp.live.ts`; snapshot and architecture contracts only when their MCP use is affected. |
 | `ast-metrics-snapshot.ts`, `snapshot/`, snapshot identity/provenance, or analysis/MCP snapshot answers | `ast-metrics-snapshot.live.ts`; structural architecture when its snapshot input is affected. |
 | `ast-metrics-coverage.ts`, `coverage/`, capture provenance, or build/suite collection | `ast-metrics-coverage.live.ts`; collecting architecture when report compatibility or joining is affected. Both are subject to the collector limit below. |
@@ -317,6 +318,14 @@ select both complete parts. The same limit applies to a live metrics test that
 starts coverage collection. Use an existing coverage file only when it is valid
 for the source, selected-suite, and build inputs, or report metrics without coverage
 as the review guide permits.
+
+Intentional crash children need the approved verified pre-crash flush/stop/seal
+protocol. Only known crash fixtures set `THERMUS_COVERAGE_CRASH=1` to install
+the seal IPC listener. Ordinary captured forks have no injected message
+listener. OAuth uses a synchronous prepared nonce without an IPC listener.
+Incomplete process or thread identities must not be discarded or
+reported as verified. Passing a protocol fixture does not prove a complete real
+capture. These rules grant no additional suite selection.
 
 Dedicated tests keep their own commands: for example,
 `npm run test:mcp:renderer`, `npm run test:hosted-live`,

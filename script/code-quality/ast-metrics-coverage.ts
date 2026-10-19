@@ -19,7 +19,9 @@ unit selection is "dist/test/unit/**/*.test.js" followed by
 folder and retained manifest. Unsupported or nested child suite commands defer
 collection before any suite starts. No unselected suite is added. Output goes to
 stderr. Cooperating Node children inherit capture settings, flush on normal exit,
-and contribute to the union. Missing shutdown or flush evidence rejects capture.
+and contribute to the union. A known crash fixture can instead flush, stop, seal
+its exact raw file set, and park before its parent observes SIGKILL. Missing
+shutdown, seal, signal, or flush evidence rejects capture.
 
 The report holds source scripts under dist/src/ (emitted JavaScript) and src/
 (source TypeScript), with representation and content identity. Offsets use UTF-16
@@ -31,11 +33,15 @@ with __, and the functions strictly inside them are not in the report. Functions
 with no own characters appear in unmeasuredFunctions with no-own-characters.
 Invalid ranges, unsafe counts, crossing functions, and incompatible identities
 fail before a report is written. Inputs and emitted outputs must stay stable.
-New capture manifests use version 2 and retain each suite identity plus an explicit
-canonical unit comparisonIdentity for tree compatibility. Combined and nonunit
+New capture manifests use version 3 and retain each suite identity plus an explicit
+canonical unit comparisonIdentity for tree compatibility. completionProtocol is
+normal-exit-or-sealed-1 and captureId retains the original raw-folder identity.
+A cooperative normal-exit checkpoint must be followed by a later V8 flush.
+Signal exits require a verified pre-crash seal. v3 fingerprints include process,
+seal-request, seal-receipt, signal, and raw V8 files. Combined and nonunit
 reports name a suite array and every original capture identity in provenance.captures.
 Their manifest fingerprint hashes the ordered suite/manifest-fingerprint descriptor.
-Old single-unit report strings and version 1 capture manifests remain readable.
+Old single-unit report strings and version 1 and 2 capture manifests remain readable.
 Successful captures retain their raw files and capture-manifest.json under
 ast-report/coverage-captures/. --from verifies this original manifest, its raw data,
 and current source/build identity. It retains the original capture commit.

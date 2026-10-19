@@ -21,11 +21,13 @@ export function coverageProvenanceIn(value: unknown): CoverageProvenance | undef
   return Array.isArray(record.suite) ? combinedCaptureIn(record) : singleCaptureIn(record);
 }
 
-type CaptureMetadata = Pick<VerifiedCoverageProvenance, 'status' | 'capturedCommit' | 'buildFingerprint' | 'captureManifestFingerprint'>;
+type CaptureMetadata = Pick<VerifiedCoverageProvenance, 'status' | 'capturedCommit' | 'buildFingerprint' | 'captureManifestFingerprint' | 'completionProtocol' | 'captureId'>;
 function captureMetadataIn(record: JsonObject): CaptureMetadata | undefined {
   if (record.status !== 'verified' || typeof record.capturedCommit !== 'string' || !/^[a-f0-9]{40}$/.test(record.capturedCommit)) return undefined;
   if (!isHash(record.buildFingerprint) || !isHash(record.captureManifestFingerprint)) return undefined;
-  return { status: 'verified', capturedCommit: record.capturedCommit, buildFingerprint: record.buildFingerprint, captureManifestFingerprint: record.captureManifestFingerprint };
+  const protocol = captureProtocolIn(record);
+  if (protocol === undefined) return undefined;
+  return { ...protocol, status: 'verified', capturedCommit: record.capturedCommit, buildFingerprint: record.buildFingerprint, captureManifestFingerprint: record.captureManifestFingerprint };
 }
 function singleCaptureIn(record: JsonObject): VerifiedCoverageProvenance | undefined {
   const identity = inputIdentityIn(record);
@@ -75,4 +77,10 @@ export function coverageSuitesIn(value: unknown): readonly CoverageSuite[] | und
   const suites = typeof value === 'string' ? [value] : value;
   if (!Array.isArray(suites) || suites.length === 0 || suites.some((suite) => !['unit', 'integration', 'acceptance'].includes(suite)) || new Set(suites).size !== suites.length) return undefined;
   return suites;
+}
+
+function captureProtocolIn(record: JsonObject): Pick<VerifiedCoverageProvenance, 'completionProtocol' | 'captureId'> | undefined {
+  if (record.completionProtocol === undefined && record.captureId === undefined) return {};
+  if (record.completionProtocol !== 'normal-exit-or-sealed-1' || !isHash(record.captureId)) return undefined;
+  return { completionProtocol: record.completionProtocol, captureId: record.captureId };
 }

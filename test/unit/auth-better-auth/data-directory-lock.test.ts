@@ -10,6 +10,7 @@ import {
   DataDirectoryUnavailableError,
   lockDataDirectory,
 } from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
+import { crashChild } from '../../support/processes/crash-child.ts';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 
 const moduleExtension = import.meta.url.endsWith('.ts') ? 'ts' : 'js';
@@ -24,8 +25,9 @@ async function lockInOtherProcess(t: TestContext, directory: string) {
     process.on('exit', () => heldLock.release());
     console.log('locked');
     setInterval(() => {}, 1_000);
-  `], { stdio: ['ignore', 'pipe', 'inherit'] });
-  t.after(() => holder.kill('SIGKILL'));
+  `], { env: { ...process.env, THERMUS_COVERAGE_CRASH: '1' }, stdio: ['ignore', 'pipe', 'inherit', 'ipc'] });
+  t.after(() => crashChild(holder));
+  assert.ok(holder.stdout !== null);
   const [line] = await once(holder.stdout.setEncoding('utf8'), 'data');
   assert.equal(String(line).trim(), 'locked');
   return holder;
@@ -45,13 +47,15 @@ async function startLockingProcess(t: TestContext) {
         console.log(error.name);
       }
     }
-  `], { stdio: ['pipe', 'pipe', 'inherit'] });
-  t.after(() => locker.kill('SIGKILL'));
+  `], { env: { ...process.env, THERMUS_COVERAGE_CRASH: '1' }, stdio: ['pipe', 'pipe', 'inherit', 'ipc'] });
+  t.after(() => crashChild(locker));
+  assert.ok(locker.stdout !== null && locker.stdin !== null);
+  const input = locker.stdin;
   const lines = createInterface({ input: locker.stdout })[Symbol.asyncIterator]();
   assert.equal((await lines.next()).value, 'ready');
   return {
     lock: (directory: string): void => {
-      locker.stdin.write(`${directory}\n`);
+      input.write(`${directory}\n`);
     },
     outcome: async (): Promise<string> => String((await lines.next()).value),
   };
@@ -83,8 +87,7 @@ test('Given a data directory that another process locks, when this process locks
     assert.equal(error.message, 'The data directory is in use by another Thermus process. Stop that process, then try again.');
     return true;
   });
-  holder.kill('SIGKILL');
-  await once(holder, 'exit');
+  await crashChild(holder);
   lockDataDirectory(directory).release();
 });
 

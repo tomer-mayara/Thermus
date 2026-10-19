@@ -5,7 +5,7 @@
 | Repository | `tomer-mayara/Thermus` |
 | Baseline | `main` at `7c302fa5`, after the reorganization in PR #170 (`94adf2d2`) and scoped test gates in PR #172 |
 | Owner | Tomer Mayara; decides the open items and merges implementation pull requests |
-| Status | Revision 4, 2026-10-18. Staged implementation and D1–D3 are approved; the delivery status below records progress. D4–D9 remain open. |
+| Status | Revision 4, 2026-10-18. Staged implementation, D1–D3, D6, D7, and the CR-11 pre-crash capture protocol are approved; delivery and verification status are recorded below. D4, D5, D8, and D9 remain open. |
 | Audience | An engineering team that has not worked in this repository |
 
 This proposal is standalone. Read sections 1 to 3 and Appendix D before
@@ -24,7 +24,7 @@ On 2026-10-18, the owner approved the recommendations for D1, D2, and D3
 with “Use those recommendations”: CRAP ≤ 15 for new functions, goals with
 documented exceptions after at most three improvement cycles, and clearly
 labeled head-derived trend estimates. Section 3.2 records these decisions.
-D4 to D9 remain open. The approval itself changed no runtime behavior;
+D4, D5, D8, and D9 remain open. The earlier D1–D3 approval itself changed no runtime behavior;
 PR #182 merged D1/D2 in CR-22. PR #183 merged CR-09 and composes those stages.
 It authorizes no base-coverage storage or merge workflow.
 
@@ -58,15 +58,36 @@ Delivery status:
   community edge changes, and show stable source-folder components.
 - PR #186 merged CR-14: global trend charts, commit titles and PR
   numbers, and a stable component trend matrix.
-- Draft PR #188 implements CR-10 option A, selected-suite coverage under
+- PR #188 implements CR-10 option A, selected-suite coverage under
   CR-11, and manual CR-12 backfill and gap reporting. It is not merged.
-  CR-15/D6 and CR-18/D7 configuration remain pending owner decisions. Their
-  capability checks alone approve no rule, cap, workaround, or baseline change.
-  Separately, the baseline wrapper refreshed 175 entries to 209 under the
-  existing retained-high exception. Configuration remains unchanged. The pull
-  request description records individual retained-high reasons; the refresh
-  does not silence high file-maintainability regressions.
+  The owner approved D6's cleaner → MCP and website-fetcher → auth path
+  rules through the review wrapper, D7's file cap of 40 paths with LOC 150
+  unchanged and a strict new-function warning above 10 paths, and CR-11's
+  verified pre-crash flush/stop/seal protocol. These changes are implemented;
+  selected tests, typechecking, and all 13 affected live cases pass. The verified
+  combined capture proof is recorded under CR-11.
+  The rule refresh changed 209 intermediate entries to 169 after the approved
+  D6/D7 changes; `origin/main` has 175 entries. Final verification stayed at
+  169 and left the baseline byte-identical. The refresh uses the existing
+  retained-high exception. The pull request description records
+  individual retained-high reasons; a refresh does not silence high file-maintainability regressions.
 - The other CRs have not been implemented.
+
+Owner decisions on 2026-10-19:
+
+- D6 approves the two directed path restrictions: cleaner → MCP and
+  website-fetcher → auth. The review wrapper must enforce them because the
+  pinned native coupling rule does not match resolved target paths or emit
+  the required high finding.
+- D7 approves 40 decision paths per file, keeps file LOC at 150, and keeps a
+  strict new-function warning above 10 paths. The native boundary differs;
+  focused policy and pinned-tool tests prove the approved boundary.
+- CR-11 approves an explicit verified pre-crash flush/stop/seal protocol for
+  intentional crash children. Other incomplete capture identities must still
+  fail verification. The complete acceptance and unit capture now passes with
+  strict completion checks; real integration capture remains deferred.
+- D4 option B, D5's merge workflow, D8, and D9 remain open. No decision
+  expands the selected tests or supplies missing verification evidence.
 
 Contents:
 
@@ -85,8 +106,8 @@ Contents:
 
 ## 1. Summary
 
-Every pull request runs the code quality review in AGENTS.md. Nine TypeScript
-commands wrap ast-metrics. They report changed files, review findings, and
+Every pull request runs the code quality review in AGENTS.md. Ten TypeScript
+commands, including manual backfill, wrap ast-metrics. They report changed files, review findings, and
 three architecture views: the dependency communities of `src/`, the
 complexity of changed files, and a trend from `docs/metrics/` records.
 
@@ -122,7 +143,7 @@ The review found these problems:
 Other CRs align documentation, check command contracts, pin the tool,
 reduce repetition, and address separate cleanup. CR-22 adds `crap` as the
 seventh command. CR-09 adds `process` and `baseline`, bringing the inventory
-to nine. Manual `backfill` in draft PR #188 brings the candidate inventory
+to nine. Manual `backfill` in PR #188 brings the candidate inventory
 to ten. The earlier instruction to keep six commands applied to the completed
 reorganization; it does not prevent additions delivered by their approved CRs.
 
@@ -209,11 +230,13 @@ The installed CLI reports it with `ast-metrics version`; `--version` is
 not supported. The tool's maintainability index goes from 0 to 128. Current
 rules set class maintainability 85, efferent coupling 10, file LOC 150,
 function LOC 30, function logical LOC 20, and file cyclomatic complexity
-20. The separate delta command enforces the file maintainability goal.
-The current candidate baseline has 209 entries. The wrapper refreshed the
-previous 175 entries under AGENTS.md's existing exception for retained high
-findings. This is separate from the native capability findings and adds no
-configuration change or baseline exception. High file-maintainability
+40 after the approved D7 change. The earlier file cap was 20. The separate delta command enforces the file maintainability goal.
+The rule refresh changed 209 intermediate entries to 169 after the approved
+D6/D7 changes; `origin/main` has 175 entries. The refresh uses
+AGENTS.md's existing exception for retained high findings and adds no baseline
+exception. Final verification stayed at 169 and left the baseline byte-identical.
+Final review reports 10 high maintainability findings, two medium findings,
+no low findings, and six improvements. High file-maintainability
 regressions remain reported after refresh; the pull request description gives
 individual retained-high reasons. Tests are excluded from the tool's rules.
 
@@ -309,7 +332,8 @@ test group. Do not run the full inventory merely because it is listed.
 
 1. Use TypeScript and erasable syntax under `script/`, with `import type`
    and `.ts` imports. CR-19 covers the existing fetch-url exception.
-2. Keep current caps until CR-18 is approved. Explain retained findings
+2. Apply the owner-approved CR-18 file cap of 40 paths and keep LOC 150.
+   Verify the strict new-function warning above 10 paths. Explain retained findings
    under the review process. Do not split only to hit a count. Follow the
    [coding principles](../coding-principles.md) and use simple language.
 3. Write a failing acceptance specification for new behavior, then use
@@ -367,16 +391,17 @@ current command or AGENTS.md rule.
 | D2 | CR-22 | Use goals with documented exceptions after at most three improvement cycles, as for maintainability. | Commands still exit 1 for unresolved or unknown required goals. CR-22 activates the individual-command process: Ready may proceed after at most three cycles with recorded scores, paths, coverage, classification, and reasons. The exception does not change the command result or excuse tool failures. |
 | D3 | CR-04 | Preserve clearly labeled head-derived historical estimates. | Record coverage origin, fingerprints, measurement version, and unknown-function count. Missing or incompatible evidence remains absent, not zero. This approves no base-coverage store or merge workflow. |
 
-D4 to D9 remain open. Their recommendations are proposals, not approval.
-Proceed with independent work while a decision is open, but do not invent
-its answer.
+D6 and D7 were approved on 2026-10-19 and are implemented. Focused policy
+and pinned-tool boundary tests pass. Selected tests, typechecking, and all 13
+affected live cases pass. D4, D5, D8, and D9 remain open. Their
+recommendations are proposals, not approval. Do not invent an open answer.
 
-| ID | CR | Open decision | Recommendation and consequence |
+| ID | CR | Decision and status | Contract or recommendation |
 | --- | --- | --- | --- |
 | D4 | CR-10 | Store and use coverage of merged trees beyond option A. | Land the warning first. Decide capture, identity, retention, and size before option B. D3 does not approve this storage. |
 | D5 | CR-12 | Workflow to record every merge on `main`. | Keep manual backfill until workflow behavior is approved. |
-| D6 | CR-15 | Forbidden component dependencies. | Choose explicit path rules; do not freeze communities. Pinned 0.43.1 matches imported symbols and emits low findings, so it cannot provide the intended high-severity path gate. No workaround is approved. |
-| D7 | CR-18 | File complexity cap and new-function warning threshold. | Consider 40 per file, LOC 150 unchanged; separately decide the new-function warning. The verified native warning starts at 10 paths, not above 10. |
+| D6, approved 2026-10-19 | CR-15 | Cleaner → MCP and website-fetcher → auth are forbidden. | Enforce resolved target paths in the review wrapper with high findings; the pinned native rule cannot provide this gate. Implemented; focused policy tests pass. Selected tests, typechecking, and all 13 affected live cases pass. |
+| D7, approved 2026-10-19 | CR-18 | File cap 40, file LOC 150 unchanged, new-function warning strictly above 10 paths. | Prove the approved boundary separately from the native warning, which starts at 10. Implemented; focused boundary tests pass. Selected tests, typechecking, and all 13 affected live cases pass. |
 | D8 | CR-16 / Appendix D | Third baseline exception for violations already on `main`. | Keep the current two exceptions until approved. Historical practice does not grant permission. |
 | D9 | CR-17 | Normalize unexpected errors to one line or preserve stack output. | Preserve command contracts during deduplication. A diagnostic behavior change needs approval and tests. |
 
@@ -860,7 +885,7 @@ P2 · D4 + M · limit. Depends on CR-03 and CR-04.
 **Evidence.** Using head coverage on both sides hides changes in test
 protection. A test-only PR cannot measure the change against the base.
 
-**Option A, implemented in draft PR #188.** When paths under `test/`,
+**Option A, implemented in PR #188.** When paths under `test/`,
 including helpers, fixtures, and untracked files of any extension, change
 without any changed `src/` path, print
 `Test changes are not judged: the base uses the coverage of the head.`
@@ -918,7 +943,7 @@ representation conflicts, child shutdown, and incomplete capture. Default
 process runs never start extra suites. A real proof runs only when those
 complete groups are selected.
 
-**Delivery.** Draft PR #188 implements explicit suite selection. Requests
+**Delivery.** PR #188 implements explicit suite selection. Requests
 are deduplicated in first-requested order. Each suite gets an isolated retained
 capture after one build. Unit includes emitted Node and source portal unit
 tests; integration uses emitted integration tests; acceptance uses emitted
@@ -933,9 +958,9 @@ unit-only by default; compatible verified combined reports can be reused.
 Default unit reports retain `suite: "unit"`. Explicit non-unit and combined
 reports use an ordered suite array, full original per-suite `captures`, and a
 canonical unit `comparisonIdentity` for current-tree compatibility. Each true
-per-suite input identity remains distinct. New capture-manifest version 2
-binds process and worker lifecycle evidence as well as raw V8 data. Missing,
-killed, untracked, or unflushed participants prevent verified publication;
+per-suite input identity remains distinct. New capture-manifest version 3
+binds process/worker lifecycle, verified pre-crash seals, and raw V8 data. Missing,
+unsealed killed, untracked, or unflushed participants prevent verified publication;
 failed suites preserve the previous good report. This conservative check can
 reject intentionally killed test children. Legacy unit strings and version-1
 unit manifests remain readable. Source/emitted representation conflicts still
@@ -943,17 +968,29 @@ fail. `--from` imports one archived capture and cannot combine with `--suite`.
 Real multi-suite proofs run only when those complete groups are independently
 selected; fixtures do not establish that a complete real suite will succeed.
 
-**Unresolved real proof.** The current unit lock tests intentionally use
-`SIGKILL` on children that load production code. These captures cannot supply
-normal-shutdown evidence. Verified full-unit collection and its positive live
-checks are blocked until a crash-capture policy is defined. PR #188 remains
-Draft; fixture success does not satisfy that real proof. The child lock fixture
-now retains its handle so garbage collection cannot release the lock before
-the assertion; its forced-exit behavior and assertions stay unchanged.
-The latest real capture passed all 3,531 unit tests, then refused publication
-for 159 process/thread identities without complete evidence. The five known
-lock crash children are only part of that set. A protocol for those children
-alone is not yet a proven fix for complete real collection.
+**Complete real proof.** The complete real combined capture passed on 2026-10-19 in requested order
+`[acceptance, unit]`: 853 emitted acceptance tests and 16 portal acceptance
+tests, then 3,544 emitted unit tests and 19 portal unit tests. Every group had
+zero failures and zero skips. Both captures are verified under
+`normal-exit-or-sealed-1` and retain distinct original capture IDs. The report
+contains 115 production files and 3,430 raw V8 files; its `processes` field
+counts raw files, not distinct processes. `createApplication` was called 89
+times with covered share 1. The proof includes eight sealed unit crash children,
+the busy MCP fake's normal SIGTERM cleanup, and the registration test's clean
+server stop. Real integration capture remains deferred because that complete
+group was not selected; suite-union contracts cover it with doubles. Both collecting live checks passed, with no skips. The latest retained unit
+capture also imported as verified, with 104 production files and 880 raw V8
+files. All 13 affected live cases passed without skips: two collecting cases,
+ten structural cases, and one CRAP case with verified imported unit coverage.
+Final typechecking also passed.
+The lock fixture keeps its handle alive so garbage collection cannot release
+the lock before the assertion. Its forced-exit behavior and assertions stay
+unchanged.
+Actual `tsx` entry loaders can create raw-only or running loader threads.
+Both import and require collector preloads must reject those captures unless
+those threads cooperate. The collector must not ignore those identities or
+label them verified. Ordinary cooperating worker support does not prove loader
+support; current emitted-unit and native TypeScript portal runs need no loader.
 
 **Documents.** Guide, README options and cost, plan limits, inventory,
 formats, and proposed process text if it uses these suites.
@@ -962,7 +999,7 @@ formats, and proposed process text if it uses these suites.
 
 P3 · M + D5 · limit. Depends on CR-04; compatible with CR-08.
 
-**Required behavior.** Draft PR #188 implements
+**Required behavior.** PR #188 implements
 `pnpm exec node script/code-quality/ast-metrics-backfill.ts [--count N] [--allow-tool-version]`.
 The help defines default count 10; `N` must be a positive safe integer.
 Help and argument validation precede Git and tool access. Require complete
@@ -1114,28 +1151,42 @@ features that were not verified on GitHub. See the
 for fenced diagrams and renderer-version checks. Numeric tables retain all
 values, D3 labels, and gaps.
 
-### CR-15. Add approved layer rules native to ast-metrics
+### CR-15. Add approved layer rules
 
 P3 · S + D6 · gap. Depends on owner-approved forbidden dependencies.
 
-**Capability finding in draft PR #188.** A controlled native 0.43.1 check
+**Capability finding in PR #188.** A controlled native 0.43.1 check
 found that `coupling.forbidden` matches imported symbol names rather than
-resolved source paths, and emits low review findings. This does not meet the
-intended high-severity path gate below. D6 is open. No layer rule, workaround,
-configuration edit, or baseline refresh is approved by this finding.
+resolved source paths, and emits low review findings. It cannot provide the
+required path gate.
 
-**Required behavior after D6.** Verify supported `coupling.forbidden` syntax with
-the pinned tool. Add the owner's selected `from`/`to` path rules, refresh
-the baseline in the same rule-change PR, and explain each rule. Cleaner →
-MCP and fetcher → auth were examples, not approved restrictions. Do not
-enable `no_cross_community_dependencies`; clusters can drift.
+**Owner approval, 2026-10-19.** D6 approves cleaner → MCP and
+website-fetcher → auth as directed path restrictions, implemented in the review
+wrapper with high findings. The candidate implements these rules, and focused
+policy tests pass. Selected tests, typechecking, and all 13 affected live cases pass.
+Native symbol matching is not evidence that the approved path rules work.
+Do not enable `no_cross_community_dependencies`; clusters can drift.
+The rule refresh changed 209 intermediate entries to 169; `origin/main` has
+175 entries. Final verification stayed at 169 and left the baseline
+byte-identical. Retained findings still need individual reasons.
 
-**Intended acceptance criteria.** Temporary source fixtures show a new
-forbidden import as a high finding and an allowed import as permitted. The
-pinned native capability cannot currently meet this criterion; the owner must
-decide how to proceed before implementation.
-Use doubles for ordinary command behavior and a selected real-tool contract
-for rule syntax. Do not change product imports only to prove the rule.
+**Candidate behavior.** The review wrapper uses CR-13 source resolution for
+`src/html-cleaner-pipeline/**` → `src/mcp/**` and
+`src/website-fetcher/**` → `src/auth/**`, compared with the merge base. Known
+forbidden base pairs follow proven Git renames or unique exact-content
+deleted/added moves; an allowed pair moved across a forbidden boundary is new. Uncertainty in affected guarded sources fails
+explicitly; unchanged unrelated uncertainty does not block prose-only work.
+Adjusted reports retain complete `nativeReview`, add `reviewPolicy`, recompute
+counts and gate, limit Markdown findings, and retain the full JSON list.
+Native evidence is validated before adjustment. The native baseline does not
+suppress wrapper path checks. Selected tests, typechecking, and all 13 affected live cases pass.
+
+**Acceptance criteria.** Temporary source fixtures must show a new forbidden
+resolved-path import as a high finding and an allowed import as permitted.
+Check renamed or aliased imports and symbols from allowed target paths so
+symbol equality cannot create a false restriction. Use doubles for ordinary
+command behavior and selected real-tool contracts for native capability.
+Do not change product imports only to prove the rules.
 
 **Documents.** Guide configuration and rationale, plan limits, inventory,
 and baseline-refresh evidence.
@@ -1151,7 +1202,7 @@ P2 · S–M · mistake. Land early; maintain alignment through all CRs.
 | Labels | State the largest-source-namespace rule, tie-break, and duplicate suffix from section 2.3. |
 | Plan T5 | The live check finds `createApplication` present, not called, and calls of other application functions. CR-01 adds the explicit called `initializePortal` proof. CR-06 in PR #180 checks default-report isolation. |
 | Plan T7 | Live checks use a temporary trend store, not writes/deletes under the repository's `docs/metrics/`. |
-| Suite limits | CR-11 in draft PR #188 adds explicit independently selected integration and acceptance groups; default unit/process behavior stays unchanged. Historical tickets did not authorize broader scope. |
+| Suite limits | CR-11 in PR #188 adds explicit independently selected integration and acceptance groups; default unit/process behavior stays unchanged. Historical tickets did not authorize broader scope. |
 | Direct tool calls | CR-09 supplies the baseline wrapper; the same two refresh reasons apply. |
 | Live commands | CR-06 in PR #180 separates structural architecture from its coverage file. Both collectors keep their scope limit and preserve the default report. Coverage.live needs no ast-metrics. |
 | Empty trend text | Offline mode without a store says `No trend store.` A configured empty store gets a different message. This changes runtime output. |
@@ -1195,7 +1246,7 @@ consumers; actual test changes select their groups. No new unexplained
 habit-hooks finding, and future modules follow approved gate/exception rules.
 
 **Documents.** Layout and inventory as needed. CR-17 preserved the nine
-entry points then delivered. CR-12 in draft PR #188 adds the tenth command.
+entry points then delivered. CR-12 in PR #188 adds the tenth command.
 
 **Delivery.** PR #184 merged this CR. Shared
 helpers own repeated argument parsing, timeout and base checks, output limits,
@@ -1215,17 +1266,17 @@ modules. PR #170 consolidated them and retained documented medium/low
 findings. Do not claim all existing modules satisfy every configured cap.
 The tool's maintainability rule is class-level; delta handles the file goal.
 
-**Capability finding in draft PR #188.** The native new-function warning
-starts at 10 decision paths, not above 10. The owner has not approved a cap
-change or a different warning threshold. This finding alone authorizes no
-configuration or baseline change and approves no workaround. The separate
-retained-high baseline refresh uses the existing AGENTS.md exception.
+**Capability finding in PR #188.** The native new-function warning
+starts at 10 decision paths, not above 10, and becomes high at 25. Its default
+boundary differs from the approved project boundary.
 
-**Required behavior.** After D7, change the approved cap and baseline in
-one PR. The proposal remains 40 paths per file and 150 LOC unchanged.
-Verify whether the pinned tool permits changing the new-function warning
-threshold before promising that change. Until then use current gates and
-their explicit retained-finding rules, not a silent configuration change.
+**Owner approval, 2026-10-19.** D7 approves 40 paths per file, file LOC 150
+unchanged, and a strict new-function warning above 10 paths. These changes
+are implemented, and focused boundary tests pass. The candidate sets the file
+cap to 40,
+keeps LOC 150, and filters only native medium new-function findings at exactly
+10 paths; native high severity at 25 or more remains. Final baseline
+verification stayed at 169 entries and left the file byte-identical. Selected tests, typechecking, and all 13 affected live cases pass.
 
 **Acceptance criteria and tests.** Focused tool fixtures show the approved
 boundaries and actual review capability. Explain retained findings and
@@ -1524,8 +1575,9 @@ or option updates its own README and contract in the same PR.
 | 12 | CR-13 | Add component/dependency metadata and output. |
 | 13 | CR-14 | Add charts and component history after CR-13 and CR-04 implement approved D3. |
 | 14 | CR-23 content consolidation | Consolidate explanation; earlier command PRs already update their own sections. |
-| 15, draft PR #188 | CR-10 option A, CR-11, CR-12 | Test-change notice, independently selected suite capture, and manual structural backfill; no merge workflow. |
-| Pending owner | CR-10 option B, CR-15, CR-18 | D4, D6, and D7 remain open. Pinned coupling cannot provide the intended high-severity path gate; no workaround or config change is approved. |
+| 15, PR #188 | CR-10 option A, CR-11, CR-12 | Test-change notice, independently selected suite capture, and manual structural backfill; no merge workflow. |
+| Implemented in PR #188 | CR-15, CR-18, CR-11 pre-crash protocol | Approved on 2026-10-19. Focused policy, boundary, and crash-protocol tests pass. Complete acceptance and unit capture passes. Selected tests, typechecking, and all 13 affected live cases pass. |
+| Pending owner | CR-10 option B and merge workflow | D4 option B and D5 remain open, as do D8 and D9. |
 | Independent | CR-19 and CR-20 | Separate cleanup and its selected checks. |
 | Last | CR-21 | Archive only when dependent work is complete or explicitly disposed of in a living specification. |
 
@@ -1594,7 +1646,7 @@ fixtures and checked readers for each implemented extension.
 ### A.1 Coverage
 
 The default unit shape after CR-01/CR-02 in PR #177 and CR-03 in PR #178 is
-abbreviated below. CR-11's draft PR #188 suite extension follows it. Counts
+abbreviated below. CR-11's PR #188 suite extension follows it. Counts
 are illustrative. New reports use JSON schema version 2. Legacy version 1
 remains readable; absent provenance cannot establish assessment.
 `measurementVersion` names the unchanged own-character semantics.
@@ -1706,7 +1758,7 @@ A document-only commit can reuse an older capture when the full input
 identity matches. Schema, measurement semantics, and tool versions are
 separate.
 
-CR-11 in draft PR #188 preserves this default unit string. Explicit non-unit
+CR-11 in PR #188 preserves this default unit string. Explicit non-unit
 or multi-suite reports use the same ordered suite array at report and
 provenance level. `provenance.captures` preserves each original full verified
 capture identity: true suite, input/source fingerprints, original commit,
@@ -1717,13 +1769,40 @@ compare the current tree. It does not relabel per-suite captures. The aggregate
 `{suite, captureManifestFingerprint}` values. Readers reject duplicate or
 reordered suite/capture sets and conflicting capture identities.
 
-New capture manifests use version 2 and add the canonical `comparisonIdentity`
-to the true per-suite `identity`. Their `rawFingerprint` hashes both raw
-`coverage-*` files and `process-*` lifecycle files. Each process and worker
-must be tracked, flush coverage, and exit normally. Missing, killed, untracked,
-or unflushed participants cannot produce a verified report. The retained
+New capture manifests use version 3 and retain canonical `comparisonIdentity`
+and true per-suite `identity`. They add `completionProtocol:
+"normal-exit-or-sealed-1"` and original `captureId`; verified per-capture
+provenance retains those fields. `captureId` hashes the resolved original
+capture directory and is preserved during import. `rawFingerprint` binds
+`coverage-*`, `process-*`, `seal-request-*`, `seal-receipt-*`, and `signal-*`
+names and bytes.
+
+Normal-exit markers record an `exitCheckpoint` after an explicit V8 flush.
+Verification requires later V8 raw evidence beyond that checkpoint. This proves
+a later flush; it does not by itself prove that termination was automatic-only.
+Parent observations in `signal-*` receipts reject signal exits for captured
+PIDs unless a verified pre-crash seal supports SIGKILL. A later flush alone
+cannot turn such a signal exit into normal completion. Signals from native
+children with no captured Node identity do not invalidate Node coverage.
+
+Each process/thread needs normal flushed exit evidence or an explicit verified
+pre-crash seal. The main-thread request binds capture ID, PID/thread, and
+nonce. IPC or a prepared nonce at a synchronous blocked fixture boundary use
+the same evidence checks. Only known crash fixtures set
+`THERMUS_COVERAGE_CRASH=1` to install the seal IPC listener. Ordinary captured
+forks have no injected message listener, which preserves normal exit and
+product IPC behavior. OAuth uses a prepared `THERMUS_COVERAGE_SEAL_NONCE` at
+its synchronous boundary and adds no IPC listener. The child flushes and stops V8 coverage, hashes raw files, writes the
+sealed marker, and blocks execution. The parent verifies that evidence before
+SIGKILL, waits for closure, verifies unchanged raw bytes, and writes the receipt.
+Active workers or any previous worker-thread evidence reject sealing. Missing, stale, mismatched, or changed evidence
+cannot establish verification. Same-capture children and workers receive the
+lifecycle preload even through reduced environments; independent captures stay
+separate. Other missing, untracked, unflushed, or unsealed killed participants
+cannot produce a verified report. The retained
 archive path is `ast-report/coverage-captures/capture-<suite>-<unique>/`.
-Legacy unit strings and version-1 unit manifests remain readable. New trend
+Legacy unit strings and manifest versions 1 and 2 retain their original
+evidence rules and remain readable. New trend
 `crap.captureProvenance` keeps the full capture evidence, including suite
 arrays, original captures, and the comparison identity. Charts separate
 normalized suite sets as well as count bases; legacy records stay unchanged.
@@ -2038,8 +2117,9 @@ example does not require a record write during an exploratory run.
 PR #183 merged this CR-09 process into AGENTS.md. It reflects D1 to D3,
 approved on 2026-10-18: an inclusive new-function target of 15, goals with
 documented exceptions after at most three cycles, and clearly labeled
-head-derived historical estimates. D4 to D9 remain open. This text grants
-no approval for their proposals. Current AGENTS.md remains authoritative.
+head-derived historical estimates. D4 to D9 were open at that approval;
+D6 and D7 were later approved on 2026-10-19 as recorded above. This historical
+text does not replace current AGENTS.md, which remains authoritative.
 
 > Run this process on the complete candidate of each pull request, after the
 > documents are updated and before Ready. Use the commands under `script/code-quality/`;
@@ -2126,9 +2206,10 @@ After the revision 4 review below, the owner answered “Use those
 recommendations” for D1 to D3. The approved contracts are CRAP ≤ 15 for
 new functions, goals with documented exceptions after at most three
 improvement cycles, and clearly labeled head-derived historical estimates
-with provenance. D4 to D9 remain open. This approval implements no runtime
-behavior or AGENTS.md rule and authorizes no base-coverage store or merge
-workflow. The revision 4 review below records the earlier proposal state.
+with provenance. D4 to D9 were open at that approval; D6 and D7 were later
+approved on 2026-10-19 as recorded above. The earlier approval implemented no
+runtime behavior or AGENTS.md rule and authorized no base-coverage store or
+merge workflow. The revision 4 review below records the earlier proposal state.
 
 ### Revision 4 — 2026-10-18
 

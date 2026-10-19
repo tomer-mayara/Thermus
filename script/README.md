@@ -191,6 +191,19 @@ a store state that snapshot dates cannot prove gaps.
 Test-only architecture reports explain that base estimates use head coverage,
 or that no coverage comparison was made. Offline test-only claims require known,
 equal source fingerprints and declared test paths without source changes.
-CR-15 path-coupling rules and CR-18 threshold changes remain pending. The
-`ast-metrics-rules.live.ts` cases probe pinned-tool capabilities; they add no
-native rule or new project gate.
+The owner approved cleaner → MCP and website-fetcher → auth path restrictions
+through the review wrapper, a file cap of 40 paths with LOC 150 unchanged,
+and a strict new-function warning above 10 paths on 2026-10-19. Implementation
+is complete; selected tests, typechecking, and all 13 affected live cases pass.
+The native capability cases explain why the
+wrapper is needed; they do not prove those project rules. The verified
+pre-crash flush/stop/seal protocol is implemented. Complete acceptance and unit
+capture passed in order `[acceptance, unit]`: 853 emitted plus 16 portal
+acceptance tests, then 3,544 emitted plus 19 portal unit tests, all with zero
+failures and skips. Both captures are verified. Real integration capture is
+deferred because that group was not selected. The 13 live cases include two
+collecting cases, ten structural cases, and one CRAP case with verified imported
+unit coverage. Only known crash fixtures opt in to the seal
+IPC listener with `THERMUS_COVERAGE_CRASH=1`. Ordinary captured forks have no
+injected message listener; OAuth uses a synchronous prepared nonce without
+one. No approval expands test selection.

@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { test, type TestContext } from 'node:test';
-import { astMetricsReviewScript } from '../../support/processes/module-paths.ts';
+import { fileURLToPath } from 'node:url';
+import { astMetricsReviewScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
 import { GitRepository } from './fixtures/git-repository.ts';
 
@@ -31,9 +32,10 @@ function rulesRepository(t: TestContext, rules: string): GitRepository {
 async function review(t: TestContext, repository: GitRepository): Promise<{ readonly code: number | null; readonly stderr: string; readonly findings: readonly Finding[] }> {
   const result = await runScript(t, astMetricsReviewScript, { cwd: repository.root, args: ['--base', 'main'] });
   if (result.code === 0) assert.equal(result.stderr, '', result.stderr);
-  const report = JSON.parse(readFileSync(join(repository.root, 'ast-report/review.json'), 'utf8'));
+  const published = JSON.parse(readFileSync(join(repository.root, 'ast-report/review.json'), 'utf8'));
+  const report = published.nativeReview ?? published;
   assert.equal(report.methodologyVersion, '1.1');
-  return { code: result.code, stderr: result.stderr, findings: report.regressions };
+  return { code: report.gate === 'passed' ? 0 : 1, stderr: result.stderr, findings: report.regressions };
 }
 
 function forbiddenRule(to: string): string {
@@ -96,11 +98,35 @@ test('Given a high file cap and new functions with nine, ten, eleven, twenty-fou
   const result = await review(t, repository);
 
   assert.equal(result.code, 1);
+  assert.match(result.stderr, /^Native ast-metrics review diagnostic:\n/);
   assert.match(result.stderr, /quality gate failed: 1 high, 3 medium, 0 low regression\(s\)/);
   assert.deepEqual(result.findings.map(({ rule, severity, subject, after }) => ({ rule, severity, subject, after })), [
     { rule: 'new-complex-function', severity: 'high', subject: 'paths25', after: 25 },
     { rule: 'new-complex-function', severity: 'medium', subject: 'paths10', after: 10 },
     { rule: 'new-complex-function', severity: 'medium', subject: 'paths11', after: 11 },
     { rule: 'new-complex-function', severity: 'medium', subject: 'paths24', after: 24 },
+  ]);
+  const published = JSON.parse(readFileSync(join(repository.root, 'ast-report/review.json'), 'utf8'));
+  assert.equal(published.reviewPolicy.newFunctionPaths, '>10');
+  assert.equal(published.summary.high, 1);
+  assert.equal(published.summary.medium, 2);
+  assert.deepEqual(published.regressions.map((finding: { subject: string }) => finding.subject), ['paths25', 'paths11', 'paths24']);
+  assert.equal(published.nativeReview.summary.medium, 3);
+});
+
+test('Given the approved repository caps, when files reach 39, 40, and 41 paths and 149, 150, and 151 lines, then only 41 paths and 151 lines exceed the native limits', live, async (t) => {
+  const repository = rulesRepository(t, '');
+  repository.write({ '.ast-metrics.yaml': readFileSync(join(fileURLToPath(repositoryRoot), '.ast-metrics.yaml'), 'utf8') });
+  repository.commit('Add files at the approved cap boundaries', Object.fromEntries([
+    ...[39, 40, 41].map((paths) => [`src/file-paths${paths}.ts`, Array.from({ length: paths }, (_, index) => `export function f${index}() { return ${index}; }`).join('\n') + '\n']),
+    ...[149, 150, 151].map((lines) => [`src/file-lines${lines}.ts`, Array.from({ length: lines }, (_, index) => `export const n${index} = ${index};`).join('\n') + '\n']),
+  ]));
+
+  const result = await review(t, repository);
+
+  assert.equal(result.code, 0);
+  assert.deepEqual(result.findings.map(({ rule, severity, file }) => ({ rule, severity, file })).sort((a, b) => a.file.localeCompare(b.file)), [
+    { rule: 'new-violation:max_loc', severity: 'medium', file: 'src/file-lines151.ts' },
+    { rule: 'new-violation:cyclomatic_complexity', severity: 'medium', file: 'src/file-paths41.ts' },
   ]);
 });

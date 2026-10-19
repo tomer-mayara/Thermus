@@ -30,6 +30,9 @@ requirements:
   # Refresh that file with "ast-metrics baseline" when the rules change.
   rules:
     architecture:
+      # The review wrapper checks resolved component paths: html-cleaner-pipeline
+      # must not import mcp; website-fetcher must not import auth. Native 0.43.1
+      # coupling rules match symbol names and cannot enforce these path rules.
       # Checked for each class, not for each file. script/code-quality/ast-metrics-delta.ts
       # checks the file goal.
       min_maintainability: 85
@@ -42,4 +45,4 @@ requirements:
       max_loc_by_method: 30
       max_logical_loc_by_method: 20
     complexity:
-      max_cyclomatic: 20
+      max_cyclomatic: 40

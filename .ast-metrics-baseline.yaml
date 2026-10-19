@@ -7,10 +7,6 @@ ignored:
       file: script/code-quality/architecture/map.ts
       message: 'Efferent coupling too high: got 11 (max: 10)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/architecture/mermaid.ts
-      message: 'Cyclomatic complexity too high: got 34 (max: 20)'
-      count: 1
     - rule: efferent_coupling
       file: script/code-quality/architecture/report.ts
       message: 'Efferent coupling too high: got 11 (max: 10)'
@@ -18,10 +14,6 @@ ignored:
     - rule: efferent_coupling
       file: script/code-quality/architecture/sources.ts
       message: 'Efferent coupling too high: got 13 (max: 10)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/architecture/trend-basis.ts
-      message: 'Cyclomatic complexity too high: got 27 (max: 20)'
       count: 1
     - rule: efferent_coupling
       file: script/code-quality/architecture/trend-record.ts
@@ -36,52 +28,16 @@ ignored:
       message: 'Efferent coupling too high: got 11 (max: 10)'
       count: 1
     - rule: efferent_coupling
-      file: script/code-quality/coverage/capture.ts
-      message: 'Efferent coupling too high: got 14 (max: 10)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/coverage/completeness.ts
-      message: 'Cyclomatic complexity too high: got 29 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/coverage/import.ts
-      message: 'Cyclomatic complexity too high: got 28 (max: 20)'
-      count: 1
-    - rule: efferent_coupling
       file: script/code-quality/coverage/import.ts
       message: 'Efferent coupling too high: got 13 (max: 10)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/coverage/input.ts
-      message: 'Cyclomatic complexity too high: got 24 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/coverage/manifest.ts
-      message: 'Cyclomatic complexity too high: got 26 (max: 20)'
-      count: 1
-    - rule: efferent_coupling
-      file: script/code-quality/coverage/manifest.ts
-      message: 'Efferent coupling too high: got 11 (max: 10)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/coverage/suites.ts
-      message: 'Cyclomatic complexity too high: got 24 (max: 20)'
       count: 1
     - rule: efferent_coupling
       file: script/code-quality/mcp/output.ts
       message: 'Efferent coupling too high: got 13 (max: 10)'
       count: 1
     - rule: cyclomatic_complexity
-      file: script/code-quality/mcp/server-process.ts
-      message: 'Cyclomatic complexity too high: got 23 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
       file: script/code-quality/provenance/read.ts
-      message: 'Cyclomatic complexity too high: got 60 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: script/code-quality/snapshot/communities.ts
-      message: 'Cyclomatic complexity too high: got 26 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 66 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: script/code-quality/snapshot/input.ts
@@ -89,7 +45,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: script/fetch-url/fetch-url.ts
-      message: 'Cyclomatic complexity too high: got 78 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 78 (max: 40)'
       count: 1
     - rule: max_loc
       file: script/fetch-url/fetch-url.ts
@@ -97,7 +53,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: script/fetch-url/helper/browser.ts
-      message: 'Cyclomatic complexity too high: got 46 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 46 (max: 40)'
       count: 1
     - rule: lloc_by_method
       file: script/fetch-url/helper/browser.ts
@@ -109,7 +65,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: script/fetch-url/helper/credential-store.ts
-      message: 'Cyclomatic complexity too high: got 119 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 119 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: script/fetch-url/helper/credential-store.ts
@@ -133,15 +89,11 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: script/fetch-url/helper/oauth.ts
-      message: 'Cyclomatic complexity too high: got 66 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 66 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: script/fetch-url/helper/oauth.ts
       message: 'Efferent coupling too high: got 12 (max: 10)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/application.ts
-      message: 'Cyclomatic complexity too high: got 40 (max: 20)'
       count: 1
     - rule: efferent_coupling
       file: src/application.ts
@@ -165,7 +117,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/hosted-auth/workos/session-cookies.ts
-      message: 'Cyclomatic complexity too high: got 42 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 42 (max: 40)'
       count: 1
     - rule: max_loc
       file: src/auth/hosted-auth/workos/session-cookies.ts
@@ -174,10 +126,6 @@ ignored:
     - rule: max_loc
       file: src/auth/hosted-auth/workos/workos-approved-signup-documents.ts
       message: Too many Lines of code (313 > 150)
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/auth/hosted-auth/workos/workos-auth-provider.ts
-      message: 'Cyclomatic complexity too high: got 36 (max: 20)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/hosted-auth/workos/workos-auth-provider.ts
@@ -193,7 +141,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/hosted-auth/workos/workos-browser-session.ts
-      message: 'Cyclomatic complexity too high: got 49 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 49 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/hosted-auth/workos/workos-browser-session.ts
@@ -209,7 +157,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/hosted-auth/workos/workos-google-onboarding.ts
-      message: 'Cyclomatic complexity too high: got 44 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 44 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/hosted-auth/workos/workos-google-onboarding.ts
@@ -221,7 +169,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/hosted-auth/workos/workos-organizations.ts
-      message: 'Cyclomatic complexity too high: got 110 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 110 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/hosted-auth/workos/workos-organizations.ts
@@ -237,7 +185,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/hosted-auth/workos/workos-session-routes.ts
-      message: 'Cyclomatic complexity too high: got 48 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 48 (max: 40)'
       count: 1
     - rule: maintainability
       file: src/auth/hosted-auth/workos/workos-session-routes.ts
@@ -247,17 +195,9 @@ ignored:
       file: src/auth/hosted-auth/workos/workos-session-routes.ts
       message: Too many Lines of code (159 > 150)
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/auth/hosted-auth/workos/workos-settings.ts
-      message: 'Cyclomatic complexity too high: got 37 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/auth/hosted-auth/workos/workos-settings.ts
       message: 'Maintainability too low: got 80 (min: 85)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/auth/hosted-auth/workos/workos-sign-in.ts
-      message: 'Cyclomatic complexity too high: got 21 (max: 20)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/hosted-auth/workos/workos-sign-in.ts
@@ -268,12 +208,8 @@ ignored:
       message: 'Maintainability too low: got 65 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
-      file: src/auth/hosted-auth/workos/workos-signup-pages.ts
-      message: 'Cyclomatic complexity too high: got 25 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
       file: src/auth/hosted-auth/workos/workos-signup-routes.ts
-      message: 'Cyclomatic complexity too high: got 61 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 61 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/hosted-auth/workos/workos-signup-routes.ts
@@ -289,7 +225,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/hosted-auth/workos/workos-signup.ts
-      message: 'Cyclomatic complexity too high: got 102 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 102 (max: 40)'
       count: 1
     - rule: maintainability
       file: src/auth/hosted-auth/workos/workos-signup.ts
@@ -301,7 +237,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/local-auth/better-auth/better-auth-provider.ts
-      message: 'Cyclomatic complexity too high: got 41 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 41 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/local-auth/better-auth/better-auth-provider.ts
@@ -331,10 +267,6 @@ ignored:
       file: src/auth/local-auth/better-auth/better-auth-runtime.ts
       message: 'LOC too high in method localProviderOptions(): got 34 (max: 30)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/auth/local-auth/better-auth/better-auth-user-administration.ts
-      message: 'Cyclomatic complexity too high: got 40 (max: 20)'
-      count: 1
     - rule: efferent_coupling
       file: src/auth/local-auth/better-auth/better-auth-user-administration.ts
       message: 'Efferent coupling too high: got 12 (max: 10)'
@@ -349,7 +281,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/local-auth/better-auth/local-auth-pages.ts
-      message: 'Cyclomatic complexity too high: got 60 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 60 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/local-auth/better-auth/local-auth-pages.ts
@@ -363,17 +295,13 @@ ignored:
       file: src/auth/local-auth/better-auth/local-auth-pages.ts
       message: Too many Lines of code (155 > 150)
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/auth/local-auth/better-auth/local-auth-provider-routes.ts
-      message: 'Cyclomatic complexity too high: got 34 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/auth/local-auth/better-auth/local-auth-provider-routes.ts
       message: 'Maintainability too low: got 67 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/auth/local-auth/better-auth/local-installation.ts
-      message: 'Cyclomatic complexity too high: got 57 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 57 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/auth/local-auth/better-auth/local-installation.ts
@@ -387,17 +315,9 @@ ignored:
       file: src/auth/local-auth/better-auth/local-installation.ts
       message: Too many Lines of code (228 > 150)
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/auth/local-auth/local-auth-command-line.ts
-      message: 'Cyclomatic complexity too high: got 21 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/auth/local-auth/local-auth-command-line.ts
       message: 'Maintainability too low: got 84 (min: 85)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/auth/local-auth/local-auth-command.ts
-      message: 'Cyclomatic complexity too high: got 35 (max: 20)'
       count: 1
     - rule: maintainability
       file: src/auth/local-auth/local-auth-command.ts
@@ -413,7 +333,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/config/deployment-config.ts
-      message: 'Cyclomatic complexity too high: got 42 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 42 (max: 40)'
       count: 1
     - rule: maintainability
       file: src/config/deployment-config.ts
@@ -429,11 +349,11 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/hosted-admin/account-form.ts
-      message: 'Cyclomatic complexity too high: got 49 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 49 (max: 40)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/hosted-admin/account-routes.ts
-      message: 'Cyclomatic complexity too high: got 46 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 46 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/hosted-admin/account-routes.ts
@@ -447,17 +367,13 @@ ignored:
       file: src/hosted-admin/account-routes.ts
       message: Too many Lines of code (169 > 150)
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/hosted-admin/administration-pages.ts
-      message: 'Cyclomatic complexity too high: got 21 (max: 20)'
-      count: 1
     - rule: efferent_coupling
       file: src/hosted-admin/administration-pages.ts
       message: 'Efferent coupling too high: got 13 (max: 10)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/hosted-admin/administration-routes.ts
-      message: 'Cyclomatic complexity too high: got 44 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 44 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/hosted-admin/administration-routes.ts
@@ -470,10 +386,6 @@ ignored:
     - rule: max_loc
       file: src/hosted-admin/administration-routes.ts
       message: Too many Lines of code (166 > 150)
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/hosted-portal.ts
-      message: 'Cyclomatic complexity too high: got 33 (max: 20)'
       count: 1
     - rule: maintainability
       file: src/hosted-portal.ts
@@ -491,10 +403,6 @@ ignored:
       file: src/hosted-workos-application.ts
       message: 'LOC too high in method workosProviderParts(): got 49 (max: 30)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts
-      message: 'Cyclomatic complexity too high: got 34 (max: 20)'
-      count: 1
     - rule: efferent_coupling
       file: src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts
       message: 'Efferent coupling too high: got 11 (max: 10)'
@@ -509,7 +417,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser.ts
-      message: 'Cyclomatic complexity too high: got 46 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 46 (max: 40)'
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser.ts
@@ -533,7 +441,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts
-      message: 'Cyclomatic complexity too high: got 63 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 63 (max: 40)'
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts
@@ -542,10 +450,6 @@ ignored:
     - rule: max_loc
       file: src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts
       message: Too many Lines of code (205 > 150)
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/html-to-markdown/sanitize-html-document.ts
-      message: 'Cyclomatic complexity too high: got 35 (max: 20)'
       count: 1
     - rule: lloc_by_method
       file: src/html-cleaner-pipeline/html-to-markdown/sanitize-html-document.ts
@@ -560,12 +464,8 @@ ignored:
       message: 'Maintainability too low: got 59 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/prompt-injection-remover/css-selector-predicates.ts
-      message: 'Cyclomatic complexity too high: got 34 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-provenance.ts
-      message: 'Cyclomatic complexity too high: got 55 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 55 (max: 40)'
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-provenance.ts
@@ -577,7 +477,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-rules.ts
-      message: 'Cyclomatic complexity too high: got 76 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 76 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-rules.ts
@@ -587,25 +487,13 @@ ignored:
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-rules.ts
       message: Too many Lines of code (172 > 150)
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-selectors.ts
-      message: 'Cyclomatic complexity too high: got 32 (max: 20)'
-      count: 1
     - rule: max_loc_by_method
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-selectors.ts
       message: 'LOC too high in method boundedAdapter(): got 34 (max: 30)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts
-      message: 'Cyclomatic complexity too high: got 22 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts
       message: 'Maintainability too low: got 55 (min: 85)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility.ts
-      message: 'Cyclomatic complexity too high: got 29 (max: 20)'
       count: 1
     - rule: efferent_coupling
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility.ts
@@ -621,7 +509,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts
-      message: 'Cyclomatic complexity too high: got 78 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 78 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts
@@ -637,7 +525,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/html-control-context.ts
-      message: 'Cyclomatic complexity too high: got 54 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 54 (max: 40)'
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/html-text-source-ranges.ts
@@ -651,37 +539,13 @@ ignored:
       file: src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts
       message: 'Maintainability too low: got 50 (min: 85)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/prompt-injection-remover/sanitize-html-controls.ts
-      message: 'Cyclomatic complexity too high: got 25 (max: 20)'
-      count: 1
     - rule: efferent_coupling
       file: src/html-cleaner-pipeline/prompt-injection-remover/sanitize-html-controls.ts
       message: 'Efferent coupling too high: got 11 (max: 10)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/html-cleaner-pipeline/prompt-injection-remover/small-text-policy.ts
-      message: 'Cyclomatic complexity too high: got 22 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/small-text-policy.ts
       message: 'Maintainability too low: got 66 (min: 85)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/http/fetch-exchange.ts
-      message: 'Cyclomatic complexity too high: got 38 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/http/server.ts
-      message: 'Cyclomatic complexity too high: got 21 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/index.ts
-      message: 'Cyclomatic complexity too high: got 22 (max: 20)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/logging/base-logger.ts
-      message: 'Cyclomatic complexity too high: got 33 (max: 20)'
       count: 1
     - rule: maintainability
       file: src/logging/base-logger.ts
@@ -707,17 +571,13 @@ ignored:
       file: src/mcp/fetch-tool-server.ts
       message: 'LOC too high in method createFetchToolServer(): got 47 (max: 30)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/mcp/identity-verifier-sdk-adapter.ts
-      message: 'Cyclomatic complexity too high: got 27 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/mcp/identity-verifier-sdk-adapter.ts
       message: 'Maintainability too low: got 62 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/mcp/mcp-server.ts
-      message: 'Cyclomatic complexity too high: got 77 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 77 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/mcp/mcp-server.ts
@@ -745,7 +605,7 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/organizations/organization-administration.ts
-      message: 'Cyclomatic complexity too high: got 57 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 57 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/organizations/organization-administration.ts
@@ -759,10 +619,6 @@ ignored:
       file: src/organizations/organization-administration.ts
       message: Too many Lines of code (204 > 150)
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/page-fetch/execute-incoming-step.ts
-      message: 'Cyclomatic complexity too high: got 28 (max: 20)'
-      count: 1
     - rule: lloc_by_method
       file: src/page-fetch/execute-incoming-step.ts
       message: 'LLOC too high in method executeIncomingStep(): got 21 (max: 20)'
@@ -770,10 +626,6 @@ ignored:
     - rule: max_loc_by_method
       file: src/page-fetch/execute-incoming-step.ts
       message: 'LOC too high in method executeIncomingStep(): got 32 (max: 30)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/page-fetch/execute-outgoing-step.ts
-      message: 'Cyclomatic complexity too high: got 23 (max: 20)'
       count: 1
     - rule: efferent_coupling
       file: src/page-fetch/fetch-page.ts
@@ -791,17 +643,9 @@ ignored:
       file: src/user-portal/agent-guides.ts
       message: 'LOC too high in method agentGuides(): got 58 (max: 30)'
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/user-portal/connection-guide.ts
-      message: 'Cyclomatic complexity too high: got 22 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/user-portal/connection-guide.ts
       message: 'Maintainability too low: got 40 (min: 85)'
-      count: 1
-    - rule: cyclomatic_complexity
-      file: src/user-portal/portal.ts
-      message: 'Cyclomatic complexity too high: got 33 (max: 20)'
       count: 1
     - rule: lloc_by_method
       file: src/user-portal/portal.ts
@@ -811,17 +655,13 @@ ignored:
       file: src/user-portal/portal.ts
       message: Too many Lines of code (176 > 150)
       count: 1
-    - rule: cyclomatic_complexity
-      file: src/website-fetcher/network-policy.ts
-      message: 'Cyclomatic complexity too high: got 21 (max: 20)'
-      count: 1
     - rule: maintainability
       file: src/website-fetcher/network-policy.ts
       message: 'Maintainability too low: got 59 (min: 85)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/website-fetcher/website-fetcher-lightpanda.ts
-      message: 'Cyclomatic complexity too high: got 65 (max: 20)'
+      message: 'Cyclomatic complexity too high: got 65 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/website-fetcher/website-fetcher-lightpanda.ts

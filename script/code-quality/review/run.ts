@@ -5,6 +5,8 @@ import * as repository from '../shared/repository.ts';
 import type { StageReport } from '../shared/report.ts';
 import { cliToolVersion } from '../shared/tool-version.ts';
 import { reviewPassed } from './report.ts';
+import { layerRegressions } from './layers.ts';
+import { adjustedReview, reviewMarkdown } from './policy.ts';
 
 export interface ReviewOptions {
   readonly base: string;
@@ -28,12 +30,31 @@ function reportText(root: string, path: string): string {
 function collectReview(root: string, options: ReviewOptions): StageReport {
   freshReports(root);
   const args = ['review', '--base', options.base, '--format', 'markdown', '--max-findings', String(options.maxFindings ?? 50), '--report-markdown', markdownPath, '--report-json', jsonPath, '--fail-on', 'high'];
-  const run = runAstMetrics(args, { cwd: root, stdio: ['ignore', 'pipe', 'inherit'] });
+  const run = runAstMetrics(args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+  let adjusted = false;
+  try {
+    const result = completedReview(root, options, run);
+    adjusted = result.adjusted;
+    return result.report;
+  } finally {
+    if (run.stderr) process.stderr.write(`${adjusted ? 'Native ast-metrics review diagnostic:\n' : ''}${run.stderr}`);
+  }
+}
+
+function completedReview(root: string, options: ReviewOptions, run: ReturnType<typeof runAstMetrics>): { readonly report: StageReport; readonly adjusted: boolean } {
   if (run.status === null) throw new repository.CommandError(`ast-metrics review stopped on signal ${run.signal}.`);
   const text = reportText(root, markdownPath);
-  const passed = reviewPassed(reportText(root, jsonPath), { base: options.base, status: run.status });
+  const json = reportText(root, jsonPath);
+  const passed = reviewPassed(json, { base: options.base, status: run.status });
   if (text !== run.stdout) throw new repository.CommandError('ast-metrics review wrote inconsistent Markdown.');
-  return { text, passed };
+  const adjusted = adjustedReview(json, options.base, layerRegressions(root, options.base));
+  if (adjusted) {
+    const rendered = reviewMarkdown(adjusted, options.maxFindings ?? 50);
+    fs.writeFileSync(join(root, jsonPath), `${JSON.stringify(adjusted, null, 2)}\n`);
+    fs.writeFileSync(join(root, markdownPath), rendered);
+    return { report: { text: rendered, passed: adjusted.gate === 'passed' }, adjusted: true };
+  }
+  return { report: { text, passed }, adjusted: false };
 }
 
 export function runReview(root: string, options: ReviewOptions): StageReport {

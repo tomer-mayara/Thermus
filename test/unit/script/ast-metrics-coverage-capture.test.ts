@@ -8,6 +8,7 @@ import { test, type TestContext } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsCoverageScript } from '../../support/processes/module-paths.ts';
 const script = pathToFileURL(astMetricsCoverageScript);
+const { captureIdOf, completionProtocol } = await import(new URL('coverage/protocol.ts', script).href) as typeof import('../../../script/code-quality/coverage/protocol.ts');
 const { collectCoverage } = await import(new URL('coverage/capture.ts', script).href) as typeof import('../../../script/code-quality/coverage/capture.ts');
 const { rawFingerprintOf } = await import(new URL('coverage/manifest.ts', script).href) as typeof import('../../../script/code-quality/coverage/manifest.ts');
 const { importedCoverage } = await import(new URL('coverage/import.ts', script).href) as typeof import('../../../script/code-quality/coverage/import.ts');
@@ -29,7 +30,7 @@ function runner(t: TestContext, root: string, change?: (call: number) => void): 
     else {
       const folder = options.env?.NODE_V8_COVERAGE as string;
       writeV8Coverage(folder, root, [{ 'dist/src/a.js': [['a', [0, 10, 1]]] }]);
-      writeFileSync(join(folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: true }));
+      writeFileSync(join(folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: true, state: 'normal-exit', exitCheckpoint: [{ name: 'coverage-4000-1792300000000-0.json', hash: '0'.repeat(64) }], completionProtocol, captureId: captureIdOf(folder) }));
     }
     change?.(calls.length);
     return { status: 0, signal: null, output: [], pid: 0, stdout: null, stderr: null };
@@ -122,7 +123,9 @@ test('Given an archived v2 capture loses normal shutdown evidence, when imported
   const root = rootOf(t);
   runner(t, root);
   const result = collectCoverage(root, { commit: 'a'.repeat(40), noBuild: false });
-  writeFileSync(join(result.folder, 'process-4000.json'), JSON.stringify({ pid: 4000, threadId: 0, complete: false }));
+  const markerFile = join(result.folder, 'process-4000.json');
+  const marker = JSON.parse(readFileSync(markerFile, 'utf8'));
+  writeFileSync(markerFile, JSON.stringify({ ...marker, complete: false, state: 'running' }));
   assert.throws(() => importedCoverage(root, { folder: result.folder, allowUnverified: false }), /Incomplete captures are unverified/);
   assert.equal(importedCoverage(root, { folder: result.folder, allowUnverified: true }).provenance.status, 'unverified');
 });

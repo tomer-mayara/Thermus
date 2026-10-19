@@ -25,13 +25,19 @@ CRAP before commands, puts commands in process order, and links their focused
 tests. Its help contracts and both test inventories remain checked by the
 existing documentation contract.
 The CRAP delta was already calculated once before CR-17. D9 remains open.
-Draft PR #188 implements CR-10 option A, selected-suite coverage under CR-11,
+PR #188 implements CR-10 option A, selected-suite coverage under CR-11,
 and manual backfill and gap reporting under CR-12. This candidate is not merged.
-CR-15/D6 and CR-18/D7 configuration remain pending owner decisions; the pinned
-tool capability findings below alone authorize no rule or baseline change.
-Separately, the baseline wrapper refreshed 175 entries to 209 under the existing
-AGENTS.md exception for retained high findings. Configuration stays unchanged.
-The refresh does not silence high file-maintainability regressions; the pull
+The owner approved D6's cleaner → MCP and website-fetcher → auth path rules
+through the review wrapper, D7's file cap 40 with LOC 150 unchanged and a strict
+new-function warning above 10 paths, and CR-11's verified pre-crash
+flush/stop/seal protocol on 2026-10-19. These approved changes are implemented;
+selected tests, typechecking, and all 13 affected live cases pass. D4 option B,
+D5, D8, and D9 remain open.
+The rule refresh changed 209 intermediate entries to 169 after the approved
+D6/D7 changes; `origin/main` has 175 entries. Final verification stayed at
+169 and left the baseline byte-identical.
+The refresh uses the existing AGENTS.md exception for retained high findings.
+A refresh does not silence high file-maintainability regressions; the pull
 request description gives an individual reason for each retained high finding.
 No new baseline exception is added.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
@@ -239,7 +245,7 @@ All views appear in the pull request body through the AGENTS.md process:
    are not checked. Missing or shallow history gets an explicit reason;
    offline dates cannot prove omitted commits.
 
-Manual structural backfill in draft PR #188 uses:
+Manual structural backfill in PR #188 uses:
 
 ```sh
 pnpm exec node script/code-quality/ast-metrics-backfill.ts [--count N] [--allow-tool-version]
@@ -275,7 +281,7 @@ capture and publishes only after both runs succeed. `--no-build` requires
 a matching content manifest. Retained raw captures have a manifest;
 `--from` validates that original capture and preserves its commit. Explicit
 `--allow-unverified` imports are for inspection and cannot enable bands or
-historical counts. Coverage defaults to unit coverage. CR-11 in draft PR #188
+historical counts. Coverage defaults to unit coverage. CR-11 in PR #188
 adds repeatable
 `--suite unit|integration|acceptance`. Every complete requested group must
 already be selected under the test gate policy; the option grants no extra
@@ -310,8 +316,8 @@ unmeasured with reason `no-own-characters`; they have no measured share.
 New coverage reports use JSON schema version 2; legacy version 1 remains
 readable; absent provenance cannot establish assessment. The measurement version stays
 `own-characters-1`. Snapshot, build-manifest, and trend record schemas remain
-version 1. New capture manifests use version 2; version-1 unit manifests remain
-readable.
+version 1. New capture manifests use version 3; legacy version-1 unit and
+version-2 manifests remain readable under their original contracts.
 
 Functions match ast-metrics by file (`dist/src/x.js` is `src/x.ts`) and by
 the name that V8 gives: ast-metrics names a method `module\Class.method`,
@@ -333,17 +339,45 @@ identity match the supplied head snapshot's source and input fingerprints,
 runtime, compiler, and measurement version. Each per-suite input hash retains
 its true suite. Default unit reports still use `suite: "unit"`; explicit
 non-unit or multi-suite reports use an ordered array and preserve full
-`captures` provenance. New version-2 capture manifests bind process lifecycle
-evidence; legacy unit strings and version-1 unit manifests remain readable.
-Missing, killed, untracked, or unflushed child processes and workers prevent
-verified publication. The current unit lock tests intentionally kill children
-that load production code, so verified full-unit collection and its positive
-live checks remain blocked until a crash-capture policy is defined. Fixture
-success does not satisfy that real proof. The latest real capture passed all
-3,531 unit tests, then refused publication for 159 process/thread identities
-without complete evidence. The five known lock crash children are only part
-of that set. D6 and D7 remain open. The original
-capture commit stays visible. A commit that changes
+`captures` provenance. New version-3 capture manifests bind raw coverage,
+process lifecycle, seal request/receipt, and signal-outcome evidence. Per-capture provenance
+retains the original `captureId` and `completionProtocol:
+"normal-exit-or-sealed-1"`. Legacy unit strings and manifest versions 1 and 2
+remain readable under their own rules. Same-capture child processes and workers
+receive the capture lifecycle preload. Every identity needs normal flushed
+exit evidence or an explicit verified pre-crash seal; other incomplete
+identities prevent verified publication. The complete real combined capture passed
+on 2026-10-19 in order `[acceptance, unit]`: 853 emitted and 16 portal acceptance
+tests, then 3,544 emitted and 19 portal unit tests, with zero failures and skips.
+Both captures are verified under `normal-exit-or-sealed-1` with distinct original
+capture IDs. The proof includes eight sealed unit crash children, normal busy
+MCP fake shutdown, and clean registration-server shutdown. Real integration
+capture remains deferred because its complete group was not selected; its
+suite-union contracts use doubles. Both collecting live checks passed without
+skips. Verified import of the latest unit capture also passed, with 104 files
+and 880 raw V8 files. All 13 affected live cases passed without skips: two collecting cases,
+ten structural cases, and one CRAP case with verified imported unit coverage.
+Final typechecking also passed.
+D6 and D7 are implemented; focused policy and pinned-tool boundary tests pass.
+Normal completion requires V8 raw evidence after the marker's `exitCheckpoint`.
+That proves a later flush, not automatic-only termination. Parent `signal-*`
+receipts reject signal exits for captured PIDs unless a verified pre-crash seal
+supports SIGKILL; uncaptured native child signals do not invalidate Node data.
+The approved main-thread crash protocol binds the capture, process/thread, and
+nonce; flushes and stops V8 coverage; hashes raw files; blocks execution; and
+requires the parent's post-SIGKILL receipt with unchanged hashes. IPC or a
+prepared nonce can reach that checkpoint at a synchronous fixture boundary.
+Only known crash fixtures set `THERMUS_COVERAGE_CRASH=1` to install the seal
+IPC listener. Ordinary captured forks have no injected message listener.
+OAuth uses a prepared `THERMUS_COVERAGE_SEAL_NONCE` at its synchronous boundary
+and adds no IPC listener. Active workers, previous worker evidence, and invalid or incomplete evidence
+prevent a verified seal. This protocol does
+not replace the complete real-capture proof.
+Actual `tsx` entry loaders can create incomplete internal threads. The
+collector rejects those captures until every thread supplies evidence; ordinary
+cooperating worker support does not establish loader-thread support. Current
+emitted-unit and native TypeScript portal collection need no such loader.
+The original capture commit stays visible. A commit that changes
 only unrelated prose can reuse a capture when these inputs match.
 
 For test-only changes, the architecture report says
@@ -600,14 +634,14 @@ their fenced block and legend unchanged in every pull request body. The original
 - ast-metrics complexity measures TypeScript only; changes to `.mjs` files or
   configuration do not appear in that metric. The separate CR-10 test-change
   notice checks actual changed paths of all extensions.
-- D6 and D7 remain open. The pinned 0.43.1 `coupling.forbidden` rule matches
-  imported symbol names, not resolved source paths, and produces low review
-  findings. It cannot enforce the proposed high-severity path rule. These
-  findings alone authorize no workaround, layer restriction, cap change, or
-  baseline refresh. The independent retained-high refresh described above
-  uses the existing AGENTS.md exception.
-  The native new-function warning starts at 10 paths; the proposal must not
-  describe it as starting above 10. A file cap of 40 remains a D7 proposal.
+- The owner approved D6 and D7 on 2026-10-19. The review wrapper must enforce
+  cleaner → MCP and website-fetcher → auth resolved-path restrictions with
+  high findings. The approved file cap is 40 paths, LOC stays 150, and the
+  project warning starts strictly above 10 new-function paths. These rules
+  are implemented, with focused policy and pinned-tool boundary tests passing.
+  Selected tests, typechecking, and all 13 affected live cases pass. Native 0.43.1 symbol matching and its
+  warning at 10 paths do not establish those project contracts. D4 option B,
+  D5, D8, and D9 remain open.
 - The trend lags one pull request behind `main`, and a `main` commit that no
   pull request records as a base gets no snapshot. Stored counts belong to
   the first recording pull request. They are head-derived estimates, not
@@ -820,7 +854,7 @@ its body.
 ### T5. Coverage per function
 
 Historical ticket. CR-01/CR-02 replaced the original range calculation;
-CR-03 added verified capture identity. CR-11 in draft PR #188 extends suite
+CR-03 added verified capture identity. CR-11 in PR #188 extends suite
 selection and provenance without expanding the default unit selection.
 The current behavior is in "CRAP per function" above.
 
@@ -920,7 +954,7 @@ coverage run and the review guide with the band rules.
 
 ### T7. Trend
 
-Historical ticket. CR-12 in draft PR #188 adds manual exact-commit backfill
+Historical ticket. CR-12 in PR #188 adds manual exact-commit backfill
 and bounded first-parent gap checks. It adds no merge workflow. CR-04 in
 PR #178 supersedes the original automatic-write rule:
 only `--record` writes, after full-commit and `origin/main` ancestry checks.

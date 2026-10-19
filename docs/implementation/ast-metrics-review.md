@@ -216,16 +216,43 @@ The report lists:
 
 - A file whose maintainability score dropped, with the scores before and
   after (severity high).
-- A new function with at least 10 decision paths, with its file, line, and
+- A new function with more than 10 decision paths, with its file, line, and
   name (severity high at 25 or more, else medium).
+- A new forbidden resolved import from `src/html-cleaner-pipeline/` to
+  `src/mcp/`, or from `src/website-fetcher/` to `src/auth/` (severity high).
 - A rule violation that the baseline does not list, for the rules in
   `.ast-metrics.yaml`.
 - A summary of the change in complexity, maintainability, outgoing
   dependencies, and estimated bugs, and the improvements.
 
+The wrapper validates native Markdown, JSON, counts, gate, stdout, and exit
+status before applying project policy. Native 0.43.1 warns at 10 paths; the
+wrapper removes only its medium new-function finding with numeric path count
+exactly 10. Other function warnings and native high findings remain. Adjusted
+JSON retains the complete `nativeReview` and `reviewPolicy` metadata, with
+recomputed counts and gate. Adjusted Markdown obeys `--max-findings`; JSON
+keeps every finding, and hidden high findings still fail the gate.
+
+When policy changes the report, forwarded tool stderr is labelled
+`Native ast-metrics review diagnostic:` so native counts remain distinct from
+wrapper counts. Unchanged native output and operational-failure diagnostics
+keep their original form.
+
+The layer rules use CR-13 resolved source imports and compare with the merge
+base of REF and HEAD. They check ordinary, type-only, side-effect, re-export,
+and literal dynamic imports. Known forbidden base pairs can follow proven Git
+source/target renames or unique exact-content deleted/added moves without a
+new finding. An allowed pair moved across a
+forbidden boundary is new risk. Affected guarded sources with parse errors,
+unresolved local imports, unsupported aliases, or nonliteral dynamic imports
+fail with a dependency diagnostic. Unchanged unrelated uncertainty does not
+block a document-only review. Symbol names alone cannot prove a forbidden path.
+The native baseline does not suppress these resolved-path checks. Existing
+forbidden pairs are established from the merge base, not baseline messages.
+
 The exit status is 1 when a finding of severity high exists, else 0. The
-review compares the working tree with the tip of the base ref, not with the
-merge base: update the branch from `origin/main` first, or the review lists
+native review compares the working tree with the tip of the base ref, not with
+the merge base: update the branch from `origin/main` first, or the review lists
 changes that are not yours.
 
 ### Ask the MCP server: `script/code-quality/ast-metrics-mcp.ts`
@@ -309,23 +336,34 @@ with `--suite`.
 
 Compatible own-character execution is unioned across requested suites.
 Source TypeScript and emitted JavaScript for one logical file still conflict.
-Children inherit capture settings. New captures record each Node process and
-worker start, flush coverage, and record normal exit. Missing, killed, untracked,
-or unflushed participants prevent verified publication; a failed suite keeps
-the previous good report. This conservative check can reject a suite that
-intentionally kills a child. A real collector proof runs only when all of its
+The collector propagates its lifecycle preload into same-capture Node children
+and workers, including children with a reduced environment. The runner uses
+`--import`. Default ESM file workers keep Node's normal argument filtering.
+Workers with an explicit argument array receive the required preload. A default
+CommonJS eval worker does not inherit `--import` execution and stays unverified
+unless it has the explicit captured-argument adaptation.
+Explicit independent captures stay separate. Each process/thread needs normal flush-and-exit evidence
+or the approved verified pre-crash seal. Missing, untracked, unflushed, or
+unsealed killed participants prevent verified publication; a failed suite keeps
+the previous good report. A real collector proof runs only when all of its
 complete groups are already selected; fixture success does not prove that
 whole-repository collection will succeed.
 
-The current lock tests deliberately kill children that load production code.
-Their shutdown evidence is incomplete, so verified full-unit collection and
-the positive collection live checks are blocked. A separate crash-capture
-policy is needed. Do not discard those children or publish their capture as
-verified. This limit does not prevent the selected suites from running normally.
-The latest real unit capture passed all 3,531 tests, then refused publication
-for 159 process/thread identities without complete evidence. The five known
-lock-test crash children are only part of that set. A lock-only protocol is
-not yet a proven fix for the complete suite.
+The complete real combined capture passed on 2026-10-19 in requested order
+`[acceptance, unit]`: 853 emitted acceptance tests and 16 portal acceptance
+tests, then 3,544 emitted unit tests and 19 portal unit tests. Every group had
+zero failures and zero skips. Both captures are verified under
+`normal-exit-or-sealed-1` and retain distinct original capture IDs. The report
+contains 115 production files and 3,430 raw V8 files; its `processes` field
+counts raw files, not distinct processes. `createApplication` was called 89
+times with covered share 1. The proof includes eight sealed unit crash children,
+the busy MCP fake's normal SIGTERM cleanup, and the registration test's clean
+server stop. Real integration capture remains deferred because that complete
+group was not selected; suite-union contracts cover it with doubles. Both collecting live checks passed, with no skips. The latest retained unit
+capture also imported as verified, with 104 production files and 880 raw V8
+files. All 13 affected live cases passed without skips: two collecting cases,
+ten structural cases, and one CRAP case with verified imported unit coverage.
+Final typechecking also passed.
 
 The collector accepts emitted JavaScript under `dist/src/` and source
 TypeScript under `src/`. It maps `dist/src/x.js` to `src/x.ts` and ignores
@@ -408,11 +446,50 @@ duplicates, and check each capture's commit, source, runtime, compiler, build,
 measurement version, and comparison identity. Legacy unit strings remain
 readable.
 
-New capture manifests use `version: 2`, retain the full per-suite `identity`,
-and add `comparisonIdentity`. Their `rawFingerprint` binds both `coverage-*`
-and process lifecycle evidence in `process-*` files. Version-1 unit manifests
-remain importable under their existing contract. The build manifest still uses
-the canonical unit identity and a content hash of emitted output.
+New capture manifests use `version: 3`, retain full per-suite `identity` and
+`comparisonIdentity`, and add `completionProtocol: "normal-exit-or-sealed-1"`
+and the original `captureId`. Per-capture provenance retains both fields.
+`captureId` hashes the resolved original capture directory; import preserves it.
+`rawFingerprint` binds raw `coverage-*`, lifecycle `process-*`, `seal-request-*`,
+`seal-receipt-*`, and `signal-*` file names and contents. Version-1 unit manifests and
+version-2 manifests remain readable under their original evidence rules;
+legacy data is not relabeled as using the new protocol. Report schema stays
+version 2 and the measurement stays `own-characters-1`. The build manifest
+still uses the canonical unit identity and an emitted-output hash.
+
+Normal-exit markers record an `exitCheckpoint` after an explicit V8 flush.
+Verification requires later V8 raw evidence beyond that checkpoint. This proves
+a later flush; it does not by itself prove that termination was automatic-only.
+Parent observations in `signal-*` receipts reject signal exits for captured
+PIDs unless a verified pre-crash seal supports SIGKILL. A later flush alone
+cannot turn such a signal exit into normal completion. Signals from native
+children with no captured Node identity do not invalidate Node coverage.
+
+For intentional crashes, `test/support/processes/crash-child.ts` requests a
+seal tied to capture ID, PID, main-thread identity, and a fresh nonce. It can
+use IPC or a prepared nonce at a synchronous blocked fixture boundary; both
+paths require the same request and receipt evidence. Only known crash fixtures
+set `THERMUS_COVERAGE_CRASH=1` to install the seal IPC listener. Ordinary
+captured forks keep their normal exit and product IPC behavior without that
+listener. The OAuth fixture uses `THERMUS_COVERAGE_SEAL_NONCE` and a synchronous
+seal boundary; it adds no IPC listener. The child flushes V8, stops coverage, hashes its raw file set, writes the sealed
+marker, and blocks execution. Only a process without worker-thread history
+can seal; active workers and previous worker evidence both prevent it. The parent
+verifies the seal, sends SIGKILL, waits for closure, verifies the raw set and
+hashes again, and writes the receipt. A queued later product call must not run
+after sealing. Missing, stale, mismatched, or changed seal evidence fails
+verification. The approved protocol is explicit; an arbitrary killed child
+cannot obtain verified status by being omitted.
+
+Verified public worker cases include default ESM file workers and workers
+with explicit captured arguments. A default CommonJS eval worker without
+that adaptation stays unverified; support does not imply that all worker
+forms can supply completion evidence. Actual TypeScript entries using the `tsx`
+loader can create loader threads without that evidence. Both import and require
+preloads must reject those captures while the loader threads do not cooperate;
+raw-only or still-running loader identities cannot be ignored or called
+verified. The current emitted-unit and native TypeScript portal selections do
+not require that loader.
 
 The deterministic SHA-256 input identity covers the source tree, tests and
 helpers, non-TypeScript fixtures, scripts, configuration, package manifests,
@@ -1140,29 +1217,34 @@ adding no config under `src/`. The root file:
   where a long function is normal. The goal of 85 of the delta command
   applies to production files for the same reason.
 - Sets the rules: maintainability 85 for each class, efferent coupling at
-  most 10, at most 150 lines and 20 decision paths for a file, at most 30
+  most 10, at most 150 lines and 40 decision paths for a file, at most 30
   lines and 20 logical lines for a function. The rule `no_community_cycles`
   is not used: it judges how ast-metrics groups the files of the whole
   repository, not an import cycle, and its baseline entry drifted with every
   change of `script/`; the architecture delta of the evolution plan shows the
   cycles of `src/` instead.
 
-CR-15 and CR-18 configuration changes remain pending owner decisions D6 and
-D7. A controlled 0.43.1 capability check found that `coupling.forbidden`
+The owner approved D6 and D7 on 2026-10-19: cleaner → MCP and
+website-fetcher → auth path restrictions enforced by the review wrapper,
+a file cap of 40 paths with LOC 150 unchanged, and a new-function warning
+strictly above 10 paths. The candidate implements these rules. Selected tests,
+typechecking, and all 13 affected live cases pass. Retained
+review findings still need individual reasons. A controlled 0.43.1 capability
+check found that `coupling.forbidden`
 matches imported symbol names, not resolved source paths, and emits low
 review findings. It cannot provide the proposed high-severity path gate.
-No workaround or layer rule is approved. The native new-function warning
-starts at 10 decision paths, not above 10. The proposed file cap of 40 paths
-and any warning-threshold change remain proposals. These capability findings
-alone authorize no configuration change or baseline refresh. The configuration
-remains unchanged.
+The approved review-wrapper rules address that native limit. The native
+new-function warning starts at 10 decision paths; the wrapper applies the
+approved strict boundary above 10. Configuration now uses file cap 40 and
+LOC 150. Focused policy and pinned-tool boundary tests pass.
 
-`.ast-metrics-baseline.yaml` has 209 entries in this candidate, after the
-wrapper refreshed it from 175 under the existing AGENTS.md exception for
-retained high findings. The pull request description gives each retained
-finding and its reason. This separate permitted refresh does not approve D6
-or D7 and adds no baseline exception. The earlier count was 175 after PR #165
-on 2026-10-18.
+The rule refresh changed 209 intermediate entries to 169 after the approved
+D6/D7 changes; `origin/main` has 175 entries.
+Final verification stayed at 169 entries and left the baseline byte-identical.
+The refresh uses the existing AGENTS.md exception for retained high findings.
+Final review reports 10 high maintainability findings, two medium findings,
+no low findings, and six improvements. Each retained high finding still needs
+its own reason in the pull request description. This refresh adds no baseline exception.
 
 The baseline lists rule violations that existed when the rules were set or
 refreshed. Review and `ast-metrics lint` omit listed rule violations. The

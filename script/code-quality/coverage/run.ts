@@ -1,23 +1,24 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import * as fs from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { CoverageSuite } from '../provenance/types.ts';
 import { CommandError } from '../shared/repository.ts';
 import { suiteCommands } from './suites.ts';
+import { captureIdOf, completionProtocol } from './protocol.ts';
 import { assertCompleteCapture } from './completeness.ts';
 
 export function withSuiteCoverage<T>(root: string, request: { suite: CoverageSuite; verify?: () => void }, read: (folder: string) => T): T {
   const { suite, verify = () => {} } = request;
   const commands = suiteCommands(root, suite);
-  if (!existsSync(join(root, 'dist'))) throw new CommandError('dist/ does not exist. Run npm run build first.');
-  const folder = mkdtempSync(join(tmpdir(), 'thermus-coverage-'));
+  if (!fs.existsSync(join(root, 'dist'))) throw new CommandError('dist/ does not exist. Run npm run build first.');
+  const folder = fs.mkdtempSync(join(tmpdir(), 'thermus-coverage-'));
   try {
     const capture = { suite, folder };
     for (const args of commands) { verify(); runTests(root, capture, args); verify(); }
-    assertCompleteCapture(folder);
+    assertCompleteCapture(folder, { captureId: captureIdOf(folder), completionProtocol });
     return read(folder);
-  } finally { rmSync(folder, { recursive: true, force: true }); }
+  } finally { fs.rmSync(folder, { recursive: true, force: true }); }
 }
 type SuiteCapture = { readonly suite: CoverageSuite; readonly folder: string };
 function runTests(root: string, capture: SuiteCapture, args: readonly string[]): void {
