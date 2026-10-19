@@ -45,11 +45,11 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: script/fetch-url/fetch-url.ts
-      message: 'Cyclomatic complexity too high: got 78 (max: 40)'
+      message: 'Cyclomatic complexity too high: got 81 (max: 40)'
       count: 1
     - rule: max_loc
       file: script/fetch-url/fetch-url.ts
-      message: Too many Lines of code (192 > 150)
+      message: Too many Lines of code (201 > 150)
       count: 1
     - rule: cyclomatic_complexity
       file: script/fetch-url/helper/browser.ts
@@ -463,6 +463,10 @@ ignored:
       file: src/html-cleaner-pipeline/process-html-step.ts
       message: 'Maintainability too low: got 59 (min: 85)'
       count: 1
+    - rule: maintainability
+      file: src/html-cleaner-pipeline/prompt-injection-remover/css-opacity-animations.ts
+      message: 'Maintainability too low: got 68 (min: 85)'
+      count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-provenance.ts
       message: 'Cyclomatic complexity too high: got 55 (max: 40)'
@@ -477,19 +481,23 @@ ignored:
       count: 1
     - rule: cyclomatic_complexity
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-rules.ts
-      message: 'Cyclomatic complexity too high: got 76 (max: 40)'
+      message: 'Cyclomatic complexity too high: got 78 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-rules.ts
-      message: 'Efferent coupling too high: got 11 (max: 10)'
+      message: 'Efferent coupling too high: got 12 (max: 10)'
       count: 1
     - rule: max_loc
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-rules.ts
-      message: Too many Lines of code (172 > 150)
+      message: Too many Lines of code (178 > 150)
+      count: 1
+    - rule: lloc_by_method
+      file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-selectors.ts
+      message: 'LLOC too high in method boundedAdapter(): got 28 (max: 20)'
       count: 1
     - rule: max_loc_by_method
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-selectors.ts
-      message: 'LOC too high in method boundedAdapter(): got 34 (max: 30)'
+      message: 'LOC too high in method boundedAdapter(): got 47 (max: 30)'
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts
@@ -497,7 +505,7 @@ ignored:
       count: 1
     - rule: efferent_coupling
       file: src/html-cleaner-pipeline/prompt-injection-remover/css-visibility.ts
-      message: 'Efferent coupling too high: got 13 (max: 10)'
+      message: 'Efferent coupling too high: got 14 (max: 10)'
       count: 1
     - rule: maintainability
       file: src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-removal-counts.ts
