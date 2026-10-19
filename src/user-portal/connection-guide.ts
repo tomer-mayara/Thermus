@@ -1,4 +1,5 @@
 import { agentGuides, type AgentGuide } from './agent-guides.ts';
+import { renderGuideSelector } from './guide-selector.ts';
 
 const testPrompt = 'Use Thermus to fetch https://example.com and summarize the page.';
 
@@ -17,10 +18,8 @@ export function renderConnectionGuide(document: Document, endpoint: string): HTM
 
 class ConnectionGuide {
   readonly element: HTMLElement;
-  private readonly select: HTMLSelectElement;
   private readonly guide: HTMLElement;
   private readonly status: HTMLElement;
-  private readonly guides: readonly AgentGuide[];
   private copyRevision = 0;
   private readonly document: Document;
 
@@ -29,38 +28,22 @@ class ConnectionGuide {
     this.element = document.createElement('div');
     this.element.className = 'connection-widget';
     this.element.innerHTML = `
-      <label for="ai-agent">Your AI agent</label>
-      <select id="ai-agent" aria-controls="agent-instructions"></select>
       <div id="agent-instructions" class="connection-guide"></div>
       <div class="endpoint-row"><p></p></div>
       <p class="guide-status" role="status" aria-live="polite" aria-atomic="true"></p>
     `;
-    this.select = guideElement(this.element, 'select');
     this.guide = guideElement(this.element, '.connection-guide');
     this.status = guideElement(this.element, '[role="status"]');
-    this.guides = agentGuides(endpoint);
-    this.addOptions();
-    this.select.addEventListener('change', () => this.selectGuide());
-    const firstGuide = this.guides[0];
+    const guides = agentGuides(endpoint);
+    this.element.prepend(renderGuideSelector(document, guides, this.selectGuide.bind(this)));
+    const firstGuide = guides[0];
     if (firstGuide) this.showGuide(firstGuide);
     const endpointRow = guideElement(this.element, '.endpoint-row');
     guideElement(endpointRow, 'p').textContent = `MCP endpoint: ${endpoint}`;
     endpointRow.append(this.copyButton(endpoint, 'endpoint'));
   }
 
-  private addOptions(): void {
-    for (const agent of this.guides) {
-      const option = this.document.createElement('option');
-      option.value = agent.id;
-      option.textContent = agent.name;
-      option.selected = agent.id === 'claude-code';
-      this.select.append(option);
-    }
-  }
-
-  private selectGuide(): void {
-    const agent = this.guides.find((candidate) => candidate.id === this.select.value);
-    if (!agent) return;
+  private selectGuide(agent: AgentGuide): void {
     this.showGuide(agent);
     this.status.textContent = `${agent.name} guide selected.`;
   }

@@ -76,6 +76,22 @@ approve the connection, and fetch a page. The client's verified Connect token
 sets the MCP workspace through its `org_id`. A browser workspace change does
 not change that token or move an existing client connection.
 
+## MCP setup guides
+
+Choose CLI or Desktop Apps above the client list. CLI starts with Claude Code
+and also offers Codex CLI. Desktop Apps starts with Claude (web / desktop)
+and also offers Codex app, ChatGPT (web setup), Cursor, VS Code, and Other MCP
+client. Each method keeps its last app selection while the page is open.
+Changing a method or app makes no server request.
+
+Desktop guides use the app's connector or MCP settings and the displayed
+server URL. Cursor uses its documented `~/.cursor/mcp.json` configuration.
+ChatGPT setup and its Work chat instructions explicitly use the web app.
+Each guide links to the official instructions, gives the browser consent
+steps, and includes a prompt to try Thermus. The endpoint comes from the
+server. Copy buttons announce success after the clipboard write completes,
+or show how to copy manually if the write fails.
+
 ## Deployment
 
 The production hosted application serves `src/user-portal/dist/` itself. Run
@@ -172,7 +188,10 @@ builds its browser bundle. `pnpm test`, `pnpm test:unit`, and
 double of the server and a local DOM. Public entry cases cover the exact copy,
 action and footer destinations, the flow's accessible description, native
 links, and error recovery. Existing cases cover signed-in profile display,
-access, workspace selection, safe server values, and the sign-out form. The hosted live gate,
+access, workspace selection, safe server values, and the sign-out form. Setup
+cases cover method-specific apps, app selection without new requests, the
+configured endpoint, saved selections, and copy results after a selection
+change. The hosted live gate,
 `npm run test:hosted-live`, builds the portal and proves the sign-in, the
 callback, the sign-out, the external sign-in through `/login`, and the
 protected portal request with WorkOS. See the

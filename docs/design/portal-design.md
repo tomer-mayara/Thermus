@@ -79,9 +79,13 @@ portal assets and a sample personal workspace.
 
 ## AI agent quick guide
 
-For a user with product access, replace the generic setup list with a native
-selector labelled Your AI agent. Start with Claude Code. Also offer Codex CLI,
-Cursor, VS Code, Claude (web / desktop), ChatGPT, and Other MCP client.
+For a user with product access, show a native radio group labelled Connect
+with above the client selector. Offer CLI and Desktop Apps. Start with CLI
+and Claude Code. CLI also offers Codex CLI. Label its selector Your AI agent.
+Desktop Apps starts with Claude (web / desktop). It also offers Codex app,
+ChatGPT (web setup), Cursor, VS Code, and Other MCP client. Label its selector
+Your desktop app. Keep the last selection for each method while the page is
+open. Native radio controls support keyboard navigation and show focus.
 Keep the heading Connect your MCP client and the free-access sentence.
 
 Show a compact terminal-style panel with three steps: Add Thermus, Authorize
@@ -91,7 +95,8 @@ local IBM Plex Mono for commands, JSON, and step numbers. Keep controls at least
 endpoint visible in its own paragraph, with a separate Copy endpoint button.
 Keep Details closed as the last item below the guide.
 
-Selection changes only the guide. It makes no request and changes no access.
+Method and app selection change only the guide. They make no request and
+change no access.
 Use the MCP endpoint supplied by the server in all client commands, JSON, and
 URL fields. Quote shell arguments and encode JSON. Render the endpoint as text.
 Copy controls report success only after the clipboard write completes. If the
@@ -106,17 +111,19 @@ intended workspace, and approve the connection. The test prompt is:
 Each selection links to its official client guide. Account and workspace
 permissions can limit custom connectors or MCP servers.
 
-The client instructions were checked on 17 October 2026 against the
+The desktop client instructions were checked on 19 October 2026 against
+their official sources. The CLI instructions were checked on 17 October 2026 against the
 [WorkOS MCP guide](https://workos.com/docs/mcp) and these client sources:
 
 | Client | Setup shown | Official guide |
 |---|---|---|
 | Claude Code | Add the HTTP server in user scope for all projects; use `/mcp` to sign in. | [Claude Code MCP](https://code.claude.com/docs/en/mcp) |
 | Codex CLI | Add the server with `--url`; use `codex mcp login thermus`; start a new session and check `/mcp`. | [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) |
+| Codex app | Open Settings → MCP servers → Add server; choose Streamable HTTP and paste the URL; save, restart, and authenticate. | [Codex app MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=app) |
 | Cursor | Merge the entry into `~/.cursor/mcp.json` for all projects; retain existing entries. | [Cursor MCP](https://cursor.com/docs/mcp) |
-| VS Code | Merge the HTTP entry into `.vscode/mcp.json`; use MCP: List Servers to start and authenticate. | [VS Code MCP](https://code.visualstudio.com/docs/agent-customization/mcp-servers) |
+| VS Code | Run MCP: Add Server from the Command Palette; choose HTTP, paste the URL, name the server, and choose where to save it; review trust and sign in. | [VS Code MCP](https://code.visualstudio.com/docs/agent-customization/mcp-servers) |
 | Claude (web / desktop) | Add a custom connector through Customize → Connectors; sign in and enable it in the chat. | [Claude custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) |
-| ChatGPT | Add a custom MCP server through Plugins; select OAuth, sign in, create and install it; use @Thermus in a Work chat. | [ChatGPT custom MCP servers](https://developers.openai.com/api/docs/guides/custom-mcp-server) |
+| ChatGPT (web setup) | On the web, add a custom MCP server through Plugins; select OAuth, sign in, create and install it; select Thermus with @ in a Work chat on the web. | [ChatGPT custom MCP servers](https://developers.openai.com/api/docs/guides/custom-mcp-server) |
 | Other MCP client | Add a remote Streamable HTTP server with OAuth. | [MCP client concepts](https://modelcontextprotocol.io/docs/learn/client-concepts) |
 
 These are client setup instructions. The widget does not install software,
