@@ -1,5 +1,5 @@
-// A fake of the ast-metrics executable for the tests of script/ast-metrics-delta.ts, script/ast-metrics-review.ts,
-// and script/ast-metrics-snapshot.ts. ast-metrics-cli-path.ts puts a shim named ast-metrics first on PATH, and the
+// A fake of the ast-metrics executable for the tests of script/code-quality/ast-metrics-delta.ts, script/code-quality/ast-metrics-review.ts,
+// and script/code-quality/ast-metrics-snapshot.ts. ast-metrics-cli-path.ts puts a shim named ast-metrics first on PATH, and the
 // shim runs this file with Node. The environment gives the answers:
 //   AST_METRICS_FAKE_LOG           each call adds one JSON line with its arguments and working directory to this file
 //   AST_METRICS_FAKE_METRICS_FILE  the OpenMetrics text that analyze writes; {root} becomes the working directory

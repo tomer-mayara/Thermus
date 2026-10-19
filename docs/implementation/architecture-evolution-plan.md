@@ -317,7 +317,7 @@ Every ticket reads this plan, [the review guide](ast-metrics-review.md),
 `docs/implementation/test-gate-policy.md`, and follows the AGENTS.md process:
 the acceptance test first, then TDD, the focused test before each commit,
 `npm run check`, `habit-hooks`, and the ast-metrics review process before
-Ready. Commands under `script/` are TypeScript, run from source, typed
+Ready. Commands under `script/code-quality/` are TypeScript, run from source, typed
 without `any`, and pass the rules of `.ast-metrics.yaml`; their doubles live
 under `test/support/doubles/ast-metrics/`, and their tests use `runScript`
 and the fixtures of `test/acceptance/script/`.
@@ -332,7 +332,7 @@ communities of `src/` (7 to 6) with no change in `src/`. The snapshot
 therefore runs `ast-metrics analyze src` and `ast-metrics mcp src`, and its
 numbers describe `src/` alone.
 
-**Outcome and scope.** Add `script/ast-metrics-snapshot.ts [--out FILE]`.
+**Outcome and scope.** Add `script/code-quality/ast-metrics-snapshot.ts [--out FILE]`.
 It runs `ast-metrics analyze --report-json` and one MCP session
 (`get_communities` with members, then `get_file_metrics` for each `src/`
 file) and writes the snapshot JSON described in "The snapshot": the commit
@@ -364,7 +364,7 @@ filter; the cycle list from the edges; the file-to-function join.
 
 **Development and completion rules.** One MCP session for all calls, never
 one run per file. Keep each new file under the rules of `.ast-metrics.yaml`.
-Update the review guide and `script/README.md` with the command.
+Update the review guide and `script/code-quality/README.md` with the command.
 
 ### T2. Snapshot of the merge base
 
@@ -392,12 +392,12 @@ base commit.
   then the exit status is 1 and `git worktree list` shows no temporary
   worktree afterwards.
 - Given an unknown ref, when the command runs, then the exit status is 1
-  with the diagnostic of the shared `repository.ts` helper.
+  with the diagnostic of the shared `script/code-quality/shared/repository.ts` helper.
 
 **Unit test list.** The merge-base lookup; the temporary folder name; the
 removal in a `finally` path.
 
-**Development and completion rules.** Reuse `repository.ts` for git calls.
+**Development and completion rules.** Reuse `script/code-quality/shared/repository.ts` for git calls.
 Never run `pnpm install` in the worktree; the analysis needs no
 `node_modules`.
 
@@ -408,7 +408,7 @@ Done in PR #163. The map changes when a community is new, gone, or
 touched, or when a dependency or a cycle appeared or disappeared; numbers,
 reference counts, and labels alone do not change it.
 
-**Outcome and scope.** Add `script/ast-metrics-architecture.ts --base REF`.
+**Outcome and scope.** Add `script/code-quality/ast-metrics-architecture.ts --base REF`.
 It makes the head and the base snapshot (or reads them with `--head FILE
 --base-snapshot FILE`, for the tests), matches the communities by Jaccard
 overlap of members at 0.5 or more, and prints the summary line (modularity,
@@ -459,7 +459,7 @@ table of the files that the pull request changed (the delta rule of
 and the risk rank when the file is among the ten riskiest of the head
 snapshot; a file that is new or gone says so. Then wire the process: AGENTS.md
 step 5 says to run the command and to put its output in the pull request
-body; the review guide, `script/README.md`, `docs/testing/test-list.md`,
+body; the review guide, `script/code-quality/README.md`, `docs/testing/test-list.md`,
 `knip.json`, and the paths test name the new commands and doubles.
 
 **Acceptance criteria.**
@@ -488,7 +488,7 @@ parent's), the helpers are filtered by range, and the live check names a
 called function of `src/application.ts` instead of `createApplication`,
 which only the integration and acceptance tests call.
 
-**Outcome and scope.** Add `script/ast-metrics-coverage.ts [--from DIR]
+**Outcome and scope.** Add `script/code-quality/ast-metrics-coverage.ts [--from DIR]
 [--out FILE]`. By default it runs the unit suite of `dist/` with
 `NODE_V8_COVERAGE` set to a temporary folder; with `--from`, it reads an
 existing folder. It merges the V8 coverage files, keeps the scripts under

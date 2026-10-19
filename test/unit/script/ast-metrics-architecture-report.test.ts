@@ -24,8 +24,8 @@ interface Snapshot {
   readonly files: readonly { readonly path: string; readonly maintainability?: number; readonly paths: number }[];
 }
 
-const { architectureReportOf } = await import(new URL('ast-metrics-architecture-report.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
-  architectureReportOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[] }): string;
+const { architectureReportOf } = await import(new URL('architecture/report.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
+  architectureReportOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[] }, delta: undefined): string;
 };
 
 // One file for each member, in the folder of the label, unless the parts name the members.
@@ -43,7 +43,7 @@ function snapshotOf(communities: readonly Community[], cycles: readonly (readonl
 const noProductionFileEnd = '\n\n## Complexity of the changed files\n\nNo production file changed.\n';
 
 function reportOf(base: Snapshot, head: Snapshot, touched: readonly string[] = []): string {
-  return architectureReportOf({ base, head, touched });
+  return architectureReportOf({ base, head, touched }, undefined);
 }
 
 function graphLines(report: string, pattern: RegExp): string[] {

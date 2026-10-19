@@ -11,7 +11,7 @@ test('Given --help, when the review runs, then it explains the options, the repo
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/ast-metrics-review\.ts \[--base REF\] \[--max-findings N\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-review\.ts \[--base REF\] \[--max-findings N\] \[--help\]\n/);
   for (const text of ['origin/main', 'default: 50', 'ast-report/review.md', '.ast-metrics-baseline.yaml', 'high']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }

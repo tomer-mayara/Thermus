@@ -29,8 +29,21 @@ interface Coverage {
   readonly files: readonly { readonly path: string; readonly functions: readonly { readonly name: string; readonly coveredShare: number }[] }[];
 }
 
-const { architectureReportOf } = await import(new URL('ast-metrics-architecture-report.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
-  architectureReportOf(sources: { readonly base: Snapshot; readonly head: Snapshot; readonly touched: readonly string[]; readonly coverage?: Coverage }): string;
+interface Sources {
+  readonly base: Snapshot;
+  readonly head: Snapshot;
+  readonly touched: readonly string[];
+  readonly coverage?: Coverage;
+}
+
+// The command computes the risk once and gives the result to each report view.
+type CrapDelta = object;
+const scriptFolder = pathToFileURL(astMetricsArchitectureScript);
+const { architectureReportOf } = await import(new URL('architecture/report.ts', scriptFolder).href) as {
+  architectureReportOf(sources: Sources, delta: CrapDelta | undefined): string;
+};
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as {
+  crapDeltaOf(sources: Sources): CrapDelta | undefined;
 };
 
 // A community of one file, src/<label>.ts, with its functions. The coverage report of the cases has no file, so each
@@ -49,7 +62,8 @@ function snapshotOf(communities: readonly (readonly [Community, Functions])[], o
 const emptyCoverage: Coverage = { files: [] };
 
 function reportOf(base: Snapshot, head: Snapshot, touched: readonly string[]): string {
-  return architectureReportOf({ base, head, touched, coverage: emptyCoverage });
+  const sources = { base, head, touched, coverage: emptyCoverage };
+  return architectureReportOf(sources, crapDeltaOf(sources));
 }
 
 function linesOf(report: string, pattern: RegExp): string[] {
@@ -141,12 +155,12 @@ test('Given a coverage report, when the report is made, then the summary line en
 test('Given no coverage report, when the report is made, then the summary line has no count, the next line says that the bands need the coverage run, and the graph has no band text, no band class, and no band legend', () => {
   const tree = snapshotOf([community('0', 'known', [['big', 5]])]);
 
-  const report = architectureReportOf({ base: tree, head: tree, touched: ['src/known.ts'] });
+  const report = architectureReportOf({ base: tree, head: tree, touched: ['src/known.ts'] }, undefined);
 
   assert.deepEqual(report.split('\n').slice(2, 6), [
     'Modularity 0.50 → 0.50 · cross share 0.25 → 0.25 · cycles 0 → 0 · communities 1 → 1',
     '',
-    'Bands need the coverage: run pnpm exec node script/ast-metrics-coverage.ts first.',
+    'Bands need the coverage: run pnpm exec node script/code-quality/ast-metrics-coverage.ts first.',
     '',
   ]);
   assert.deepEqual(nodeLines(report), ['  c_known["known<br/>1 file · paths 10"]']);
