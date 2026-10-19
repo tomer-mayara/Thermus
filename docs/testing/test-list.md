@@ -130,11 +130,14 @@ a measured namesake's share.
 
 `test/acceptance/script/ast-metrics-coverage.test.ts` checks merging two
 processes and the default run of a small built suite in a temporary Git
-repository. `ast-metrics-coverage-failures.test.ts` checks incompatible
-captures, missing `dist/`, failed suites, and a repository without a commit.
+repository. `ast-metrics-coverage-failures.test.ts` checks out-of-bounds
+build ranges, missing `dist/`, an emitted-suite failure, and a repository
+without a commit.
 `ast-metrics-coverage-own.test.ts` checks own-character measurement,
 zero-own exclusions, version-1 fields and `own-characters-1`, and rejection
-of malformed input and call overflow without replacing an earlier report.
+of malformed input, crossing function ranges, and call overflow without replacing
+an earlier report. It also checks a portal-suite failure after the emitted suite
+passes, with capture cleanup and the earlier report kept.
 Its small real typed fixture includes non-ASCII text and proves both unit
 parts run and that Node's stripped TypeScript offsets and shares match
 UTF-16 source text. It also checks the anonymous module range against

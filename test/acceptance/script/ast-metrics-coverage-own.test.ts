@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -8,6 +9,9 @@ import { writeV8Coverage } from '../../support/fixtures/v8-coverage.ts';
 import { astMetricsCoverageScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
 import { GitRepository } from './fixtures/git-repository.ts';
+
+const timeout = 30_000;
+const earlierReport = '{ "version": 1, "files": [] }\n';
 
 test('Given called factories with uncalled and partly called nested functions, when coverage is read, then each share measures only its own characters', async (t) => {
   const repository = GitRepository.create(t);
@@ -107,4 +111,38 @@ test('Given summed calls that exceed a safe integer, when the command reads them
   assert.equal(result.code, 1);
   assert.match(result.stderr, /safe|overflow/i);
   assert.equal(readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8'), 'earlier\n');
+});
+
+test('Given two processes with crossing function ranges, when the command reads them, then it fails with a diagnostic and keeps the earlier report', { timeout }, async (t) => {
+  const repository = GitRepository.create(t);
+  repository.commit('Start', { 'ast-report/coverage.json': earlierReport });
+  writeV8Coverage(join(repository.root, 'v8-coverage'), repository.root, [
+    { 'dist/src/sample.js': [['', [0, 400, 1]], ['outer', [100, 300, 1]]] },
+    { 'dist/src/sample.js': [['', [0, 400, 1]], ['other', [200, 350, 1]]] },
+  ]);
+
+  const result = await runScript(t, astMetricsCoverageScript, { args: ['--from', 'v8-coverage'], cwd: repository.root });
+
+  assert.match(result.stderr, /ast-metrics-coverage: .*cross.*src\/sample\.ts/i);
+  assert.equal(result.stdout, '');
+  assert.equal(result.code, 1);
+  assert.equal(readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8'), earlierReport);
+});
+
+test('Given emitted tests that pass and portal tests that fail, when collection runs, then it keeps the earlier report and removes the capture folder', { timeout }, async (t) => {
+  const repository = GitRepository.create(t);
+  repository.commit('Start', {
+    'ast-report/coverage.json': earlierReport,
+    'package.json': '{"type":"module"}\n',
+    'dist/src/sample.js': 'export const value = 1;\n',
+    'dist/test/unit/sample.test.js': "import '../../src/sample.js';\n",
+    'test/unit/user-portal/sample.test.ts': "import { test } from 'node:test'; test('portal failure', () => { throw Error('defect'); });\n",
+  });
+  const temporary = mkdtempSync(join(tmpdir(), 'thermus-coverage-test-'));
+  t.after(() => rmSync(temporary, { recursive: true, force: true }));
+  const result = await runScript(t, astMetricsCoverageScript, { cwd: repository.root, env: { TMPDIR: temporary } });
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portal failure/);
+  assert.equal(readFileSync(join(repository.root, 'ast-report/coverage.json'), 'utf8'), earlierReport);
+  assert.deepEqual(readdirSync(temporary), []);
 });

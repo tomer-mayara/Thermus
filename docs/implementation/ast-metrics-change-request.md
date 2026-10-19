@@ -129,7 +129,8 @@ compatible coverage; this requirement does not expand the selected test scope.
 
 At the proposal baseline there were six entry points and 50 helpers: 56
 TypeScript modules under `script/code-quality/`. The six entry points remain;
-CR-01 and CR-02 add helpers for validation and ownership. Node 24 runs them
+CR-01 and CR-02 add helpers for script identity, validation, execution, and
+ownership. Node 24 runs them
 from source. Relative imports end
 in `.ts`; the main build excludes `script/`.
 
