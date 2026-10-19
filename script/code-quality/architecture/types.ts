@@ -13,6 +13,7 @@ export interface MapSnapshot {
   readonly tool?: string;
   readonly commit: string;
   readonly date: string;
+  readonly title?: string;
   readonly provenance?: InputIdentity;
   readonly dependencies?: DependencyEvidence;
   readonly global: Snapshot['global'];

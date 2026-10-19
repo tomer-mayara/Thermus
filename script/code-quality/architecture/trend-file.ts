@@ -11,6 +11,8 @@ export function trendNumbersInFile(path: string): TrendNumbers {
   const { tool, commit, date, modularity, crossShare, cycles, maintainability, functionsOver30 } = fields;
   return { commit, date, modularity, crossShare, cycles, maintainability, functionsOver30,
     ...(tool === undefined ? {} : { tool }),
+    ...(fields.title === undefined ? {} : { title: fields.title }),
+    ...(fields.components === undefined ? {} : { components: fields.components }),
     ...(fields.crap === undefined ? {} : { crap: fields.crap }),
   };
 }

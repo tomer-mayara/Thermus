@@ -82,23 +82,23 @@ test('Given two stored records and the head, when the trend section is made, the
     { commit: '8437236c9d0e1f2a', date: '2026-10-18T09:00:00+02:00', modularity: 0.55, crossShare: 0.25, cycles: 2, maintainability: 56.94, functionsOver30: 22 },
   ];
 
-  assert.deepEqual(trendSectionOf(stored, head), [
+  assert.deepEqual(trendSectionOf(stored, head).slice(0, 7), [
     '## Trend of src/ on main',
     '',
-    '| Commit | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',
-    '| --- | --- | --- | --- | --- | --- | --- |',
-    '| 1a2b3c4d | 2026-10-12 | 0.52 | 0.26 | 1 | 57.4 | 20 (legacy unknown) |',
-    '| 8437236c | 2026-10-18 | 0.55 | 0.25 | 2 | 56.9 | 22 (legacy unknown) |',
-    '| this pull request | | 0.50 | 0.25 | 3 | 57.0 | 22 (legacy unknown) |',
+    '| Commit | PR | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| 1a2b3c4d | – | 2026-10-12 | 0.52 | 0.26 | 1 | 57.4 | 20 (legacy unknown) |',
+    '| 8437236c | – | 2026-10-18 | 0.55 | 0.25 | 2 | 56.9 | 22 (legacy unknown) |',
+    '| this pull request | – | | 0.50 | 0.25 | 3 | 57.0 | 22 (legacy unknown) |',
   ]);
 });
 
 test('Given a stored record and a head without maintainability and without the count of the functions at CRAP 30 or more, when the trend section is made, then each of those cells has an en dash', () => {
   const stored: TrendNumbers = { commit: '1a2b3c4d5e6f7a8b', date: '2026-10-12T12:00:00+02:00', modularity: 0.52, crossShare: 0.26, cycles: 0 };
 
-  assert.deepEqual(trendSectionOf([stored], { ...head, maintainability: undefined, functionsOver30: undefined }).slice(-2), [
-    '| 1a2b3c4d | 2026-10-12 | 0.52 | 0.26 | 0 | – | – |',
-    '| this pull request | | 0.50 | 0.25 | 3 | – | – |',
+  assert.deepEqual(trendSectionOf([stored], { ...head, maintainability: undefined, functionsOver30: undefined }).filter((line) => line.startsWith('|')).slice(-2), [
+    '| 1a2b3c4d | – | 2026-10-12 | 0.52 | 0.26 | 0 | – | – |',
+    '| this pull request | – | | 0.50 | 0.25 | 3 | – | – |',
   ]);
 });
 

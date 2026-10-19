@@ -437,8 +437,9 @@ command (`--coverage`, or `ast-report/coverage.json` of the repository),
 each community gets a CRAP band (good, warning, or critical) from its
 functions at CRAP 30 or more and their change against the base, the table
 gets the column `CRAP ≥ 30`, and a list names each function that the pull
-request added or made worse. Last, it prints the trend table of the last
-ten records of `main` with the head as the last row. Only `--record` writes
+request added or made worse. Last, it prints the trend table, separate global
+maintainability and risk chart sections, and `### Trend by component` over
+the same last ten records of `main` and head. Only `--record` writes
 a missing merge-base record to `docs/metrics/` (or `--trend-store`). It
 verifies the full base commit, its ancestry on `origin/main`, and its source
 content and committer date before writing. Offline `--record` also needs a repository for
@@ -494,7 +495,11 @@ unavailable. Offline mode reads only supplied evidence.
 New trend records add stable-name `components` with metrics and D3 count
 provenance per component. Counts need verified coverage and complete member
 assessments. A component without per-file LOC or paths withholds the whole
-record field. Legacy absence means unknown; component trend charts remain CR-14 work.
+record field. Legacy absence means unknown. The component trend matrix has
+stable, sorted component rows and chronological commit columns, then the
+head. Each cell labels `MI` and `functions ≥ 30` independently. Risk cells
+keep their D3 basis; each missing measure gives `–`, including missing legacy
+component data. Community labels are not joined across history.
 
 Source evidence supplies function correspondence. Within the same file or
 a proven file rename, a unique declaration kind/owner/name pair keeps its
@@ -537,6 +542,26 @@ counts show `–`. Estimate provenance records the original coverage commit,
 fingerprints, measurement version, and unknown-function count. The stored
 value belongs to the first recording pull request; another head can give a
 different estimate for the same base. Missing counts stay missing.
+New snapshots and records can hold commit `title`, the first message line.
+Only a terminal `(#<n>)` supplies `#<n>` in the global table's `PR` column.
+A missing title or suffix gives `–`; offline mode makes no Git or GitHub
+lookup and existing records stay unchanged.
+
+The chart sections split at missing values; risk sections also split when
+the D3 basis changes. Each contiguous run of at least two values gets a
+fenced `mermaid` `xychart-beta` line chart with an explicit basis caption
+for risk. A single value gets a caption, empty series get an unavailable
+message, and constant runs get a nonzero y-axis range. The numeric tables
+retain all gaps and values. The documented
+[Mermaid XY syntax](https://mermaid.js.org/syntax/xyChart.html) defines numeric
+line values but no missing-value token, so several small charts can appear
+for one measure. A two-point `xychart-beta` probe rendered in a real GitHub
+pull request comment on 2026-10-19. This verifies the basic syntax used here,
+not newer features. The
+[GitHub diagram guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
+explains fenced diagrams and renderer-version checks. Keep these charts,
+captions, and the component matrix in the complete pull request report.
+
 Mixed tool versions in the displayed history and head add
 `Trend tool versions: <commit8>: ast-metrics X; this pull request: ast-metrics Y.`
 The notice names each displayed commit and the head in table order; absent
@@ -572,7 +597,8 @@ src` run and one session of `ast-metrics mcp src`, so that only a change of
 `src/` changes the communities. The file is written only after all calls
 succeeded and its input identity is unchanged. `tool` names the actual
 checked ast-metrics version, including an explicitly permitted version. The
-optional `provenance`
+optional `title` is the commit message's first line. Legacy snapshots can
+omit it; a present title must be a string. The optional `provenance`
 field holds source and expected coverage-input fingerprints, runtime,
 compiler, suite, and measurement version. Each file can hold optional
 `sourceEvidence` (`version: "typescript-tokens-v1"`, `coordinates: "utf16"`,
@@ -769,6 +795,8 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-trend-charts.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-architecture-trend-view.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
@@ -806,6 +834,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-stage-outcomes.test.ts | no |
@@ -822,10 +851,13 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-architecture-provenance.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-charts.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-provenance.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-publication.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-title.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-architecture-trend-view.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
@@ -852,6 +884,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |

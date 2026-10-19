@@ -21,10 +21,10 @@ test('Given measured, estimated, legacy, and absent counts, when the trend rende
     { ...numbers, crap: { ...measured, kind: 'head-derived-estimate' } }, numbers,
     { ...numbers, functionsOver30: undefined },
   ], { ...numbers, crap: measured });
-  assert.ok(rows.includes('| aaaaaaaa | 2026-10-18 | 0.50 | 0.20 | 0 | – | 17 (estimate) |'));
-  assert.ok(rows.includes('| aaaaaaaa | 2026-10-18 | 0.50 | 0.20 | 0 | – | 17 (legacy unknown) |'));
-  assert.ok(rows.includes('| aaaaaaaa | 2026-10-18 | 0.50 | 0.20 | 0 | – | – |'));
-  assert.ok(rows.includes('| this pull request | | 0.50 | 0.20 | 0 | – | 17 (measured) |'));
+  assert.ok(rows.includes('| aaaaaaaa | – | 2026-10-18 | 0.50 | 0.20 | 0 | – | 17 (estimate) |'));
+  assert.ok(rows.includes('| aaaaaaaa | – | 2026-10-18 | 0.50 | 0.20 | 0 | – | 17 (legacy unknown) |'));
+  assert.ok(rows.includes('| aaaaaaaa | – | 2026-10-18 | 0.50 | 0.20 | 0 | – | – |'));
+  assert.ok(rows.includes('| this pull request | – | | 0.50 | 0.20 | 0 | – | 17 (measured) |'));
   assert.match(rows.join('\n'), /first recording pull request/);
 });
 

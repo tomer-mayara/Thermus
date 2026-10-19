@@ -5,6 +5,7 @@ export type Fields = Readonly<Record<string, Rule>>;
 export const count: Rule = (value) => Number.isSafeInteger(value) && (value as number) >= 0;
 export const finite: Rule = (value) => typeof value === 'number' && Number.isFinite(value);
 export const nonemptyText: Rule = (value) => Boolean(textOf(value));
+export const text: Rule = (value) => typeof value === 'string';
 export const commit: Rule = (value) => typeof value === 'string' && /^[a-f0-9]{40}$/u.test(value);
 export const date: Rule = (value) => isoDateOf(value) !== undefined;
 export const version: Rule = (value) => value === 1;

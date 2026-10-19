@@ -17,6 +17,7 @@ export interface Snapshot {
   // the working tree can hold changes that are not committed.
   readonly commit: string;
   readonly date: string;
+  readonly title?: string;
   readonly provenance?: InputIdentity;
   readonly dependencies?: DependencyEvidence;
   readonly global: GlobalNumbers;

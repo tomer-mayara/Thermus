@@ -35,6 +35,7 @@ function snapshotOf(fields: Fields, check: Check): MapSnapshot {
   return {
     commit: check(json.textOf(fields.commit)),
     date: check(json.isoDateOf(fields.date)),
+    title: fields.title === undefined ? undefined : check(typeof fields.title === 'string' ? fields.title : undefined),
     tool: fields.tool === undefined ? undefined : check(json.textOf(fields.tool)?.trim() || undefined),
     provenance: inputIdentityIn(fields.provenance),
     global: {

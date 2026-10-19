@@ -35,8 +35,8 @@ export interface TrendRecordShape {
 }
 
 export const trendTableHead = [
-  '| Commit | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',
-  '| --- | --- | --- | --- | --- | --- | --- |',
+  '| Commit | PR | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',
+  '| --- | --- | --- | --- | --- | --- | --- | --- |',
 ];
 
 // The trend section with a store: the heading and the table, whose last row is the head.

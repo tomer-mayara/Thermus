@@ -11,6 +11,7 @@ import type { FileMeasurement, Snapshot, SnapshotFile } from './types.ts';
 export interface SnapshotSources {
   readonly commit: string;
   readonly date: string;
+  readonly title?: string;
   // Sorted by path, as sourceFilesOf gives them. The snapshot keeps this order.
   readonly files: readonly FileMeasurement[];
   // The answer texts of get_communities and of get_file_metrics for each file.
@@ -29,6 +30,7 @@ export function snapshotOf(sources: SnapshotSources): Snapshot {
     version: 1,
     commit: sources.commit,
     date: sources.date,
+    title: sources.title,
     global: {
       modularity: numbers.rounded(answer.modularity, 2),
       crossShare: numbers.rounded(answer.crossShare, 2),

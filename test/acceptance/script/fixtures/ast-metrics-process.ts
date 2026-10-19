@@ -41,10 +41,30 @@ export function documentProcessMarkdown(repository: GitRepository): string {
     'Modularity 0.42 → 0.42 · cross share 0.33 → 0.33 · cycles 1 → 1 · communities 3 → 3', '', missingCoverage, '',
     'The map did not change.', '', ...repositoryGraph(), ...completeImportEvidence, '', ...repositoryComponents({ unchanged: true }), '', ...noProductionFile, '',
     'Unknown function identity: 5 (no proven declaration or unique unchanged body/signature correspondence).', '',
-    '## Trend of src/ on main', '',
-    '| Commit | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',
-    '| --- | --- | --- | --- | --- | --- | --- |',
-    `| ${commit.slice(0, 8)} | ${date} | 0.42 | 0.33 | 1 | 70.3 | – |`,
-    '| this pull request | | 0.42 | 0.33 | 1 | 70.3 | – |', '',
+    ...documentTrendMarkdown(commit, date),
   ].join('\n');
+}
+
+function documentTrendMarkdown(commit: string, date: string): string[] {
+  return [
+    '## Trend of src/ on main', '',
+    '| Commit | PR | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- |',
+    `| ${commit.slice(0, 8)} | – | ${date} | 0.42 | 0.33 | 1 | 70.3 | – |`,
+    '| this pull request | – | | 0.42 | 0.33 | 1 | 70.3 | – |', '',
+    '### Maintainability trend', '',
+    'Missing values are gaps; lines stop at each gap.', '',
+    `Maintainability (maintainability), ${commit.slice(0, 8)} to this pull request.`, '',
+    '```mermaid', 'xychart-beta', '    title "Maintainability"',
+    `    x-axis ["${commit.slice(0, 8)}", "this pull request"]`, '    y-axis "Maintainability" 69.3 --> 71.3',
+    '    line [70.3, 70.3]', '```', '', '',
+    '### Functions ≥ 30 trend', '',
+    'Missing values are gaps; lines stop at each gap or change of count basis.', '',
+    'Functions ≥ 30 unavailable.', '',
+    '### Trend by component', '',
+    `| Component | ${commit.slice(0, 8)} | this pull request |`, '| --- | --- | --- |',
+    '| admin | MI 70.1; functions ≥ 30: – | MI 70.1; functions ≥ 30: – |',
+    '| auth | MI 70.4; functions ≥ 30: – | MI 70.4; functions ≥ 30: – |',
+    '| kernel | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – |', '',
+  ];
 }

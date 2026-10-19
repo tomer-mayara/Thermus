@@ -27,6 +27,7 @@ export interface TrendRecord {
   readonly tool?: string;
   readonly commit: string;
   readonly date: string;
+  readonly title?: string;
   readonly modularity: number;
   readonly crossShare: number;
   readonly cycles: number;
@@ -42,7 +43,7 @@ export interface TrendRecord {
 }
 
 // The numbers of one row of the trend table.
-export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'tool' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30' | 'crap'>;
+export type TrendNumbers = Pick<TrendRecord, 'commit' | 'date' | 'title' | 'tool' | 'modularity' | 'crossShare' | 'cycles' | 'maintainability' | 'functionsOver30' | 'crap' | 'components'>;
 
 // The CRAP of each file of the snapshot, by path, as the CRAP delta gives it.
 type FilesCrap = ReadonlyMap<string, FileCrap>;
@@ -53,7 +54,7 @@ function trendRecordOf(snapshot: MapSnapshot, crap: FilesCrap | undefined, cover
   const assessed = coverage === undefined ? undefined : crap;
   const communities = [...snapshot.communities].sort((first, second) => textOrder(first.label, second.label));
   return {
-    version: 1, tool: snapshot.tool, commit: snapshot.commit, date: snapshot.date,
+    version: 1, tool: snapshot.tool, commit: snapshot.commit, date: snapshot.date, title: snapshot.title,
     modularity, crossShare, cycles: cycles.length, maintainability, paths, files, functions, functionsOver30: assessed && riskCounts.totalCountOf(assessed),
     communities: communities.map((community) => trendCommunityOf(community, assessed)),
     components: componentRecord.componentRecordsOf(snapshot, assessed, coverage),
