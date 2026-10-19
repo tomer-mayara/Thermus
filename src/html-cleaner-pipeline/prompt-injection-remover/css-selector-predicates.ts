@@ -4,6 +4,7 @@ import type { HtmlElement } from './css-visibility-selectors.ts';
 type MatchContext = {
   getAttributeValue(element: HtmlElement, name: string): string | undefined;
   getName(element: HtmlElement): string;
+  hasClass(element: HtmlElement, name: string): boolean;
   quirksMode: boolean;
 };
 type AttributeMatch = {
@@ -62,14 +63,17 @@ function attributeMatch(node: AttributeSelector): AttributeMatch {
   return { name, value, matcher: node.matcher, insensitive };
 }
 
+function classPredicate(name: string, context: MatchContext) {
+  const expected = context.quirksMode ? asciiLower(name) : name;
+  if (expected === '' || htmlWhitespace.test(expected)) return () => false;
+  return (element: HtmlElement) => context.hasClass(element, expected);
+}
+
 export function simpleSelectorPredicate(node: CssNode, context: MatchContext) {
   switch (node.type) {
     case 'AttributeSelector': return attributePredicate(attributeMatch(node), context);
     case 'ClassSelector':
-      return attributePredicate({
-        name: 'class', matcher: '~=', value: ident.decode(node.name),
-        insensitive: context.quirksMode,
-      }, context);
+      return classPredicate(ident.decode(node.name), context);
     case 'IdSelector':
       return attributePredicate({
         name: 'id', matcher: '=', value: ident.decode(node.name),

@@ -42,8 +42,9 @@ export function documentElements(document: HtmlDocument, includeTemplateContent 
   return elements;
 }
 
-function boundedAdapter() {
+function boundedAdapter(quirksMode: boolean) {
   let remaining = maxSelectorWork;
+  const classTokens = new WeakMap<HtmlElement, Set<string>>();
   const spend = (cost = 1) => {
     remaining -= cost;
     if (remaining < 0) throw new CssSelectorLimitError('work');
@@ -62,6 +63,18 @@ function boundedAdapter() {
       const value = DomUtils.getAttributeValue(element, name);
       spend(1 + (value?.length ?? 0));
       return value;
+    },
+    hasClass(element: HtmlElement, name: string) {
+      spend();
+      let tokens = classTokens.get(element);
+      if (tokens === undefined) {
+        const value = DomUtils.getAttributeValue(element, 'class') ?? '';
+        spend(value.length);
+        const normalized = quirksMode ? value.replace(/[A-Z]/g, (character) => character.toLowerCase()) : value;
+        tokens = new Set(normalized.split(/[\t\n\f\r ]/));
+        classTokens.set(element, tokens);
+      }
+      return tokens.has(name);
     },
     getName(element: HtmlElement) {
       spend(1 + element.name.length);
@@ -98,9 +111,10 @@ function compileSelector(selector: Selector, options: {
 }
 
 export function createSelectorMatcher(document: HtmlDocument) {
+  const quirksMode = document['x-mode'] === 'quirks';
   const options = {
-    adapter: boundedAdapter(),
-    quirksMode: document['x-mode'] === 'quirks',
+    adapter: boundedAdapter(quirksMode),
+    quirksMode,
   };
   return (prelude: CssNode) => {
     if (prelude.type !== 'SelectorList') return undefined;

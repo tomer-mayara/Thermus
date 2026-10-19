@@ -14,7 +14,8 @@ and the stdin deadline. `test/acceptance/script/fetch-url.test.ts` runs the actu
 script against an MCP SDK server through the production HTTP bridge. It checks
 exact and empty Markdown, the `getURLAsMarkdown` arguments, environment and stdin
 credentials, modern JSON and SSE, legacy negotiation, refused authentication,
-HTTP failures, failed and unexpected tool results, invalid protocol data,
+HTTP failures, failed and unexpected tool results, exact public failure messages
+without private metadata or extra content, invalid protocol data,
 connection failures, redirects, and cancellation of hung requests. All use local
 fake credentials and need no live provider or renderer.
 
@@ -1883,6 +1884,9 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Skips pseudo selectors, namespace selectors, invalid selector forms, and inactive media rules
 [V] Rejects selector matching when a selector or document exceeds its stated complexity budget
 [V] Rejects over-budget documents without returning partial HTML or Markdown
+[V] Reuses parsed class tokens within each scan, charges repeated lookups, and keeps fresh scan budgets and ASCII-only quirks matching (`css-class-token-budget.test.ts`)
+[V] Keeps opacity unknown for supported local reveal animations; checks names, timing, fill, playback, keyframes, declaration priority, and shorthand resets (`css-opacity-animation.test.ts`)
+[V] Keeps important opacity and independent hiding active when a local animation can reveal content (`css-opacity-animation.test.ts`)
 [V] Handles uppercase and escaped units and function names
 [V] Keeps visible text for invalid declarations, malformed escaped values, and unresolved variables
 [V] Keeps same-color text visible when its background image is unresolved
@@ -1908,6 +1912,8 @@ The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-
 [V] Checks exact final Markdown for deferred font sizes, composed transforms and offsets, preserved 3D descendants, and quirks-mode font sizes
 [V] Omits the fenced offscreen payload from final Markdown and retains the hidden-HTML finding
 [V] Removes hidden payload after an ad with an omitted paragraph end tag and keeps following visible text
+[V] Keeps all visible paragraphs on an ordinary page with many class rules, and removes hidden content (`test/acceptance/pipeline-css-work.test.ts`)
+[V] Keeps the story and links when a supported delayed local opacity animation reveals the body, while still removing hidden content (`test/acceptance/pipeline-css-work.test.ts`)
 
 **HTML page processor adapter** (`test/unit/html-cleaner-pipeline/html-page-processor.test.ts`)
 

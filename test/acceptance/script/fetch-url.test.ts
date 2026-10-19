@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import type { CallToolResult } from '@modelcontextprotocol/server';
 import { serveFetchUrlDebugSite } from '../../support/in-process/fetch-url-debug-site.ts';
 import { runFetchUrl } from '../../support/processes/fetch-url-command.ts';
 
@@ -59,6 +60,46 @@ test('Given a rejected credential, when the command fetches, then it reports aut
   assert.doesNotMatch(result.stderr, /private-wrong-token/);
   assert.deepEqual(site.calls, []);
 });
+
+for (const message of [
+  'Page processing failed',
+  'Page fetch failed',
+  'Server busy. Try again later.',
+  'Request cancelled',
+  'Invalid tool arguments',
+  'Access denied',
+]) {
+  test(`Given the public failure "${message}", when the command fetches, then it preserves the diagnosis on stderr`, { timeout: 10_000 }, async (t) => {
+    const site = await serveFetchUrlDebugSite(t, { result: {
+      isError: true,
+      content: [{ type: 'text', text: message, _meta: { detail: 'private-debug-token' } }],
+      structuredContent: { detail: 'private-debug-token' },
+    }, credential: 'private-debug-token' });
+    const result = await runFetchUrl(t, ['--endpoint', site.endpoint, '--url', pageUrl, '--reason', reason], { credential: 'private-debug-token' });
+    assert.equal(result.code, 1);
+    assert.equal(result.stdout, '');
+    assert.equal(result.stderr, `fetch-url: ${message}\n`);
+  });
+}
+
+for (const [name, toolResult] of [
+  ['unknown text', { isError: true, content: [{ type: 'text', text: 'private-debug-token' }] }],
+  ['a public message with private text appended', { isError: true, content: [{ type: 'text', text: 'Page processing failed: private-debug-token' }] }],
+  ['a public message with a line break', { isError: true, content: [{ type: 'text', text: 'Page processing failed\nprivate-debug-token' }] }],
+  ['a public message with terminal control characters', { isError: true, content: [{ type: 'text', text: '\u001b[31mPage processing failed\u001b[0m' }] }],
+  ['a second text item', { isError: true, content: [{ type: 'text', text: 'Page processing failed' }, { type: 'text', text: 'private-debug-token' }] }],
+  ['an extra image', { isError: true, content: [{ type: 'text', text: 'Page processing failed' }, { type: 'image', data: 'YWJj', mimeType: 'image/png' }] }],
+  ['no error text', { isError: true, content: [] }],
+  ['an error image', { isError: true, content: [{ type: 'image', data: 'YWJj', mimeType: 'image/png' }] }],
+] satisfies [string, CallToolResult][]) {
+  test(`Given a tool error with ${name}, when the command fetches, then it uses the generic diagnosis without exposing content`, { timeout: 10_000 }, async (t) => {
+    const site = await serveFetchUrlDebugSite(t, { result: toolResult, credential: 'private-debug-token' });
+    const result = await runFetchUrl(t, ['--endpoint', site.endpoint, '--url', pageUrl, '--reason', reason], { credential: 'private-debug-token' });
+    assert.equal(result.code, 1);
+    assert.equal(result.stdout, '');
+    assert.equal(result.stderr, 'fetch-url: getURLAsMarkdown failed. Check the page URL and server logs.\n');
+  });
+}
 
 for (const toolResult of [
   { isError: true, content: [{ type: 'text' as const, text: 'private-debug-token' }] },

@@ -28,3 +28,29 @@ test('Given an ordinary page with many class rules and paragraphs, when the prod
   assert.deepEqual(result.found, ['hidden-html']);
   assert.equal(result.scanWithholding, undefined);
 });
+
+test('Given a page that reveals its body with a delayed opacity animation, when the production pipeline converts it without an animation clock, then it keeps the visible story and links while removing hidden content', async () => {
+  const pipeline = new HtmlToMarkdownPipeline([
+    new CleanHtmlAdsAdblockRs(''),
+    new PromptInjectionRemoverSanitizer(),
+    new CleanHtmlToMarkdownDefuddle(),
+  ]);
+  const html = '<!doctype html><html><head><style>'
+    + '@keyframes reveal{0%{opacity:0}to{opacity:1}}'
+    + 'body{opacity:0;animation-name:reveal;animation-duration:0s;'
+    + 'animation-delay:3s;animation-fill-mode:forwards}.payload{display:none}'
+    + '</style></head><body><main><h2>Paris results</h2>'
+    + '<p>Read <a href="/paris">Paris</a>.</p>'
+    + '<!-- Remove this comment. --><p class="payload">Hidden instruction.</p></main></body></html>';
+
+  const result = await pipeline.process({
+    requestedUrl: 'https://example.com/search?q=paris',
+    finalUrl: 'https://example.com/search?q=paris',
+    html,
+  });
+
+  assert.equal(result.markdown, '## Paris results\n\nRead [Paris](https://example.com/paris).');
+  assert.doesNotMatch(result.html, /Hidden instruction/);
+  assert.deepEqual(result.found, ['html-comments', 'hidden-html']);
+  assert.equal(result.scanWithholding, undefined);
+});

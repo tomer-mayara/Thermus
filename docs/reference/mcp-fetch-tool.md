@@ -72,6 +72,26 @@ The SDK owns negotiation, envelopes, and its 4 MiB request-body limit with HTTP
 413. The HTTP bridge streams the request to it. Tool validation adds no second
 body parser or alternate JSON-RPC implementation.
 
+## Debug command
+
+Use the debug command to fetch a page through MCP:
+
+```sh
+pnpm exec node script/fetch-url/fetch-url.ts --url 'https://example.com/' --reason 'Inspect the page content'
+```
+
+Hosted Thermus uses browser OAuth when no explicit credential is present. Use
+`--login` to sign in first in an interactive terminal, or `--non-interactive`
+to use a saved grant. Use `--help` for explicit Bearer credentials and custom
+endpoints.
+
+The command writes exact Markdown to stdout on success. On failure, it exits
+with status 1 and leaves stdout empty. A tool error with exactly one text item
+preserves these public diagnoses on stderr: `Page processing failed`,
+`Page fetch failed`, `Server busy. Try again later.`, `Request cancelled`,
+`Invalid tool arguments`, and `Access denied`. Unknown messages or extra content
+items use a generic tool failure diagnosis. Other tool fields are never printed.
+
 ## Production composition
 
 The self-hosted server registers the tool. Its application branch loads

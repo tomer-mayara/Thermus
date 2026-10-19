@@ -3,6 +3,7 @@ import {
   type AttributeSelector, type CssNode, type Declaration, type Selector,
 } from 'css-tree';
 import { isValidVisibilityValue } from 'agent-input-sanitizer/html';
+import { animationDeclarations } from './css-animation-declarations.ts';
 
 type Specificity = readonly [inline: number, ids: number, classes: number, types: number];
 type ParsedDeclaration = { declaration: Declaration; resolved: boolean };
@@ -87,6 +88,11 @@ export function normalizeDeclarations(nodes: CssNode[], quirksMode = false): Par
   const declarations: ParsedDeclaration[] = [];
   for (const node of nodes) {
     if (node.type !== 'Declaration') continue;
+    const animations = animationDeclarations(node);
+    if (animations !== undefined) {
+      declarations.push(...animations.map((declaration) => ({ declaration, resolved: true })));
+      continue;
+    }
     const declaration = normalizeDeclaration(node, quirksMode);
     if (declaration) declarations.push(declaration);
   }
