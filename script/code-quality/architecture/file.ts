@@ -3,11 +3,11 @@
 // fails it.
 import { readFileSync } from 'node:fs';
 import { inputIdentityIn } from '../provenance/read.ts';
-import { arrayOf, isoDateOf, jsonOf, numberOf, objectOf, textOf, textsOf } from '../shared/json.ts';
+import * as json from '../shared/json.ts';
 import type { MapSnapshot } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
 
-type Fields = ReturnType<typeof objectOf>;
+type Fields = ReturnType<typeof json.objectOf>;
 type MapCommunity = MapSnapshot['communities'][number];
 type TableFile = MapSnapshot['files'][number];
 type MapFunction = NonNullable<TableFile['functions']>[number];
@@ -17,7 +17,7 @@ type Check = <T>(value: T | undefined) => T;
 
 // The path is relative to the current folder, as the command line gives it.
 export function snapshotInFile(path: string): MapSnapshot {
-  const fields = objectOf(jsonOf(fileText(path)));
+  const fields = json.objectOf(json.jsonOf(fileText(path)));
   if (fields.version !== 1 || !Array.isArray(fields.communities) || !Array.isArray(fields.files)) invalid(path);
   return snapshotOf(fields, (value) => value ?? invalid(path));
 }
@@ -36,33 +36,33 @@ function invalid(path: string): never {
 
 // The maintainability is absent for a src/ without code, so it stays optional.
 function snapshotOf(fields: Fields, check: Check): MapSnapshot {
-  const global = objectOf(fields.global);
+  const global = json.objectOf(fields.global);
   return {
-    commit: check(textOf(fields.commit)),
-    date: check(isoDateOf(fields.date)),
+    commit: check(json.textOf(fields.commit)),
+    date: check(json.isoDateOf(fields.date)),
     provenance: inputIdentityIn(fields.provenance),
     global: {
-      modularity: check(numberOf(global.modularity)), crossShare: check(numberOf(global.crossShare)), cycles: arrayOf(global.cycles).map(textsOf),
-      maintainability: numberOf(global.maintainability), paths: check(numberOf(global.paths)), files: check(numberOf(global.files)), functions: check(numberOf(global.functions)),
+      modularity: check(json.numberOf(global.modularity)), crossShare: check(json.numberOf(global.crossShare)), cycles: json.arrayOf(global.cycles).map(json.textsOf),
+      maintainability: json.numberOf(global.maintainability), paths: check(json.numberOf(global.paths)), files: check(json.numberOf(global.files)), functions: check(json.numberOf(global.functions)),
     },
-    communities: arrayOf(fields.communities).map((entry) => communityOf(objectOf(entry), check)),
-    files: arrayOf(fields.files).map((entry) => fileOf(objectOf(entry), check)),
+    communities: json.arrayOf(fields.communities).map((entry) => communityOf(json.objectOf(entry), check)),
+    files: json.arrayOf(fields.files).map((entry) => fileOf(json.objectOf(entry), check)),
   };
 }
 
 // The maintainability is absent for a community without code, so it stays optional.
 function communityOf(fields: Fields, check: Check): MapCommunity {
   return {
-    id: check(textOf(fields.id)),
-    label: check(textOf(fields.label)),
-    members: textsOf(fields.members),
-    files: check(numberOf(fields.files)),
-    loc: check(numberOf(fields.loc)),
-    maintainability: numberOf(fields.maintainability),
-    paths: check(numberOf(fields.paths)),
-    edges: arrayOf(fields.edges).map((entry) => {
-      const edge = objectOf(entry);
-      return { to: check(textOf(edge.to)), references: check(numberOf(edge.references)), inCycle: edge.inCycle === true };
+    id: check(json.textOf(fields.id)),
+    label: check(json.textOf(fields.label)),
+    members: json.textsOf(fields.members),
+    files: check(json.numberOf(fields.files)),
+    loc: check(json.numberOf(fields.loc)),
+    maintainability: json.numberOf(fields.maintainability),
+    paths: check(json.numberOf(fields.paths)),
+    edges: json.arrayOf(fields.edges).map((entry) => {
+      const edge = json.objectOf(entry);
+      return { to: check(json.textOf(edge.to)), references: check(json.numberOf(edge.references)), inCycle: edge.inCycle === true };
     }),
   };
 }
@@ -70,10 +70,10 @@ function communityOf(fields: Fields, check: Check): MapCommunity {
 // A value that ast-metrics did not measure is absent, so a file needs only its path. A file without functions, such as
 // a file of types, has none to join with the coverage.
 function fileOf(fields: Fields, check: Check): TableFile {
-  const functions = arrayOf(fields.functions).map((entry) => functionOf(objectOf(entry), check));
-  return { path: check(textOf(fields.path)), maintainability: numberOf(fields.maintainability), paths: numberOf(fields.paths), risk: numberOf(fields.risk), functions };
+  const functions = json.arrayOf(fields.functions).map((entry) => functionOf(json.objectOf(entry), check));
+  return { path: check(json.textOf(fields.path)), maintainability: json.numberOf(fields.maintainability), paths: json.numberOf(fields.paths), risk: json.numberOf(fields.risk), functions };
 }
 
 function functionOf(fields: Fields, check: Check): MapFunction {
-  return { name: check(textOf(fields.name)), paths: check(numberOf(fields.paths)) };
+  return { name: check(json.textOf(fields.name)), paths: check(json.numberOf(fields.paths)) };
 }

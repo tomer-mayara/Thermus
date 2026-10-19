@@ -1,4 +1,4 @@
-import { objectOf } from '../shared/json.ts';
+import { objectOf, type JsonObject } from '../shared/json.ts';
 import type { VerifiedCoverageProvenance } from '../provenance/types.ts';
 import type { FileCrap } from './crap.ts';
 
@@ -23,7 +23,7 @@ export function trendBasisOf(coverage: TrendCoverage, files: ReadonlyMap<string,
   return { kind: coverage.kind, coverageCommit: capturedCommit, sourceFingerprint, inputsFingerprint, buildFingerprint, measurementVersion, unknownFunctions };
 }
 
-export function trendBasisIn(value: unknown): TrendCrapBasis | undefined {
+function trendBasisIn(value: unknown): TrendCrapBasis | undefined {
   const fields = objectOf(value);
   if (fields.kind !== 'head-derived-estimate' && fields.kind !== 'measured') return undefined;
   if (typeof fields.coverageCommit !== 'string' || !/^[a-f0-9]{40}$/u.test(fields.coverageCommit)) return undefined;
@@ -35,4 +35,9 @@ export function trendBasisIn(value: unknown): TrendCrapBasis | undefined {
 
 export function validHash(value: unknown): value is string {
   return typeof value === 'string' && /^[a-f0-9]{64}$/u.test(value);
+}
+
+export function validTrendEvidence(fields: JsonObject): boolean {
+  if (fields.crap === undefined) return true;
+  return fields.functionsOver30 !== undefined && trendBasisIn(fields.crap) !== undefined;
 }

@@ -42,8 +42,7 @@ test('Given valid count provenance, when a trend file is read, then the basis is
   assert.deepEqual(trendNumbersInFile(path).crap, measured);
 });
 
-
-const { trendRecordOf } = await import(new URL('trend-record.ts', folder).href) as typeof import('../../../script/code-quality/architecture/trend-record.ts');
+const { trendRecordsOf } = await import(new URL('trend-record.ts', folder).href) as typeof import('../../../script/code-quality/architecture/trend-record.ts');
 const provenance = {
   status: 'verified', capturedCommit: measured.coverageCommit, sourceFingerprint: measured.sourceFingerprint,
   inputsFingerprint: measured.inputsFingerprint, buildFingerprint: measured.buildFingerprint,
@@ -61,8 +60,10 @@ const unknownFiles = new Map([
 ]);
 
 test('Given verified coverage with unmatched functions, when base and head records are made, then both retain the total unknown count and their distinct basis', () => {
-  const base = trendRecordOf(snapshot, unknownFiles, { kind: 'head-derived-estimate', provenance });
-  const head = trendRecordOf(snapshot, unknownFiles, { kind: 'measured', provenance });
+  const { base, head } = trendRecordsOf(
+    { base: snapshot, head: snapshot, touched: [], coverage: { files: [], provenance } },
+    { base: unknownFiles, head: unknownFiles },
+  );
   assert.equal(base.crap?.unknownFunctions, 3);
   assert.equal(base.crap?.kind, 'head-derived-estimate');
   assert.equal(head.crap?.unknownFunctions, 3);
@@ -71,7 +72,9 @@ test('Given verified coverage with unmatched functions, when base and head recor
 });
 
 test('Given CRAP values without verified coverage, when a record is made, then coverage counts and basis stay absent', () => {
-  const record = JSON.parse(JSON.stringify(trendRecordOf(snapshot, unknownFiles)));
+  const record = JSON.parse(JSON.stringify(trendRecordsOf(
+    { base: snapshot, head: snapshot, touched: [] }, { base: unknownFiles, head: unknownFiles },
+  ).base));
   assert.equal('functionsOver30' in record, false);
   assert.equal('crap' in record, false);
 });

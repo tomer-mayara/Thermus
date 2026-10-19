@@ -32,7 +32,7 @@ export function commandOf(args: readonly string[]): ArchitectureCommand {
   if (values.coverage === '') throw new CommandError('The --coverage value must name a file.');
   if (values['trend-store'] === '') throw new CommandError('The --trend-store value must name a folder.');
   // git would take a ref that starts with a dash as an option.
-  if (values.base === '' || values.base.startsWith('-')) throw new CommandError('The --base value must name a git ref.');
+  if (!/^[^-]/u.test(values.base)) throw new CommandError('The --base value must name a git ref.');
   const touched = values.touched?.split(',').filter((path) => path !== '');
   const files = { noCoverage: values['no-coverage'] === true, record: values.record === true, coverage: values.coverage, trendStore: values['trend-store'], out: values.out };
   return { kind: 'report', source: sourceOf(values, timeoutOf(values['timeout-ms'])), touched, ...files };

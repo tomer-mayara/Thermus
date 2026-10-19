@@ -6,11 +6,12 @@ interface CoverageSelection {
   readonly coverageNotice?: string;
 }
 
-export const missingCoverage = 'No coverage report: the bands are withheld. Run the coverage command when the test selection permits it.';
-export const skippedCoverage = 'Coverage was skipped with --no-coverage: the bands are withheld.';
+const missingCoverage = 'No coverage report: the bands are withheld. Run the coverage command when the test selection permits it.';
+const skippedCoverage = 'Coverage was skipped with --no-coverage: the bands are withheld.';
 
 // Only the analyzed head can establish compatibility. Its commit may follow a prose-only change.
-export function coverageForHead(report: CoverageReport | undefined, head: InputIdentity | undefined): CoverageSelection {
+export function coverageForHead(report: CoverageReport | undefined, head: InputIdentity | undefined, skip = false): CoverageSelection {
+  if (skip) return { coverageNotice: skippedCoverage };
   if (report === undefined) return { coverageNotice: missingCoverage };
   const provenance = report.provenance;
   if (provenance?.status !== 'verified') return { coverageNotice: 'The coverage report has no verified provenance: the bands are withheld.' };
@@ -27,4 +28,9 @@ function compatible(report: CoverageReport, head: InputIdentity): boolean {
   if (report.commit !== provenance.capturedCommit || report.suite !== head.suite || report.measurementVersion !== head.measurementVersion) return false;
   return (['sourceFingerprint', 'inputsFingerprint', 'runtime', 'compiler', 'measurementVersion', 'suite'] as const)
     .every((key) => provenance[key] === head[key]);
+}
+
+// Missing data has a Markdown explanation; stale or skipped data also gets a command diagnostic.
+export function coverageDiagnosticOf({ coverageNotice }: CoverageSelection): string | undefined {
+  return coverageNotice === missingCoverage ? undefined : coverageNotice;
 }

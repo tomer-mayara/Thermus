@@ -1,11 +1,19 @@
 import { spawnSync } from 'node:child_process';
 import type { MapSnapshot } from './types.ts';
 import { sourceFingerprintOf } from '../provenance/inputs.ts';
-import { CommandError, git } from '../shared/repository.ts';
+import { CommandError, git, repositoryRoot } from '../shared/repository.ts';
 import { addTemporaryWorktree } from '../snapshot/worktree.ts';
 
+export function recordBaseIfRequested(requested: boolean | undefined, store: string | undefined, base: MapSnapshot): boolean {
+  if (!requested) return false;
+  if (store === undefined) throw new CommandError('Cannot record without a trend store; use --trend-store.');
+  if (canRecordBase(repositoryRoot(), base)) return true;
+  process.stderr.write(`No record: ${base.commit.slice(0, 8)} is not on origin/main.\n`);
+  return false;
+}
+
 // Identity and ancestry must be known before a caller can request any store mutation.
-export function canRecordBase(root: string, base: MapSnapshot): boolean {
+function canRecordBase(root: string, base: MapSnapshot): boolean {
   verifyCommit(root, base.commit);
   const date = git(root, ['show', '-s', '--format=%cI', base.commit], 'Cannot verify the base commit date.').trim();
   if (date !== base.date) throw new CommandError('Cannot record: the base snapshot date does not match its commit.');
