@@ -10,7 +10,7 @@ import { bandsNeedTheCoverage, baseSnapshot, community, complexityHeading, edge,
 // The architecture delta of two snapshot files. With --head and --base-snapshot, the command runs neither git nor
 // ast-metrics, so these cases run with an empty PATH. Each expected text is the complete output, with the complexity
 // section and the trend section at its end. These cases give no coverage report, so the line after the summary says
-// that the bands need it, and no --trend-store, so the trend section says that main has no snapshot yet.
+// that the bands need it, and no --trend-store, so the trend section says No trend store.
 // ast-metrics-architecture-table.test.ts specifies the complexity section, ast-metrics-architecture-bands.test.ts the
 // bands, ast-metrics-architecture-trend.test.ts the trend, and ast-metrics-architecture-base.test.ts the command with
 // the snapshots of a repository.

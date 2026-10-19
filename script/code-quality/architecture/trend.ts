@@ -23,7 +23,7 @@ const storeOfRoot = join('docs', 'metrics');
 // functions at CRAP 30 or more are those of the summary line.
 export function trendLinesOf(choice: StoreChoice, sources: MapSources, delta: CrapDelta | undefined): string[] {
   const store = storeOf(choice);
-  const stored = store === undefined ? [] : trendOfStore(store, trendRecordOf(sources.base, delta?.base));
+  const stored = store === undefined ? undefined : trendOfStore(store, trendRecordOf(sources.base, delta?.base));
   return trendSectionOf(stored, trendRecordOf(sources.head, delta?.head));
 }
 

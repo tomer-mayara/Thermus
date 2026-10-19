@@ -1,7 +1,11 @@
 # Architecture and complexity evolution plan
 
 Status: agreed with the owner on 2026-10-17 and reviewed the same day (see
-"Review record"). Tickets T1 to T7 are done (see the appendix). It builds on the process of PR #154 ("Code quality review with
+"Review record"). Historical tickets T1 to T7 are done (see the appendix).
+CR-16 aligns this record with the current implementation. The remaining
+changes in the [change request](ast-metrics-change-request.md) are follow-up
+work; completion of T1 to T7 does not complete those CRs. This plan builds on
+the process of PR #154 ("Code quality review with
 ast-metrics" in [AGENTS.md](../../AGENTS.md) and
 [the review guide](ast-metrics-review.md)).
 
@@ -71,13 +75,16 @@ The published practice, condensed to what applies here:
 
 ## What ast-metrics gives today
 
-Verified with 0.43.1 on this repository:
+Verified with 0.43.1 on this repository on 2026-10-17, with later observations
+identified below:
 
 - Communities from the dependency graph of the production files
   (`get_communities`): members, hubs, internal, inbound, and outbound
   references, cohesion, bus factor; globally modularity, cross share, cycles,
-  typed findings, and ranked cut actions. `src/` has 7 communities and one
-  cycle; `script/` is a community of its own.
+  typed findings, and ranked cut actions. The 2026-10-17 observation was seven
+  communities and one cycle. The 2026-10-18 study at `76b514ac` found nine
+  communities including the shared kernel and two cycles. These are dated
+  observations; grouping changes as files change.
 - Per file: maintainability, decision paths, lines, coupling, risk. Per
   function (`get_file_metrics`, one call per file): name, decision paths,
   maintainability, lines; no line numbers.
@@ -94,15 +101,18 @@ Verified with 0.43.1 on this repository:
 
 ### The snapshot
 
-One data model feeds every view: the snapshot of one tree, `snapshot.json`,
-with the global numbers (modularity, cross share, cycles, LOC-weighted
-maintainability of `src/`, the count of functions with CRAP at 30 or more),
-the `src/` communities with their members and references, the per-file
-metrics, and the per-function decision paths and, when coverage is present,
-coverage and CRAP. One module makes it from one JSON report and one MCP
-session, both of `src/` alone (`ast-metrics analyze src`, `ast-metrics mcp
-src`), so that growth of `script/` or `test/` cannot regroup the
-communities; the commands read snapshots and nothing else.
+The snapshot of one tree, `snapshot.json`, holds the global numbers
+(modularity, cross share, cycles, LOC-weighted maintainability of `src/`,
+file and function counts), the `src/` communities with their members and
+references, the per-file metrics, and the per-function decision paths. It
+holds no coverage or CRAP. One module makes it from one JSON report and one
+MCP session, both of `src/` alone (`ast-metrics analyze src`, `ast-metrics
+mcp src`), so that growth of `script/` or `test/` cannot regroup the
+communities. The architecture command joins a separate coverage report when
+it computes CRAP and bands. The wrappers run from the repository root;
+keep its configuration authoritative by adding no config under `src/`.
+The [review guide](ast-metrics-review.md#the-configuration) records the
+controlled 0.43.1 configuration lookup check.
 
 A pull request has two snapshots: the head (the working tree) and the base
 (the merge base with `origin/main`, analyzed in a temporary `git worktree`
@@ -139,19 +149,23 @@ All three appear in the pull request body through step 5 of the process:
 ### Community identity
 
 Head communities match base communities by the Jaccard overlap of their
-members, 0.5 or more; a community without a match is new or gone. The label
-is the hub and the largest namespace of the community, never the generated
-name. A community that splits or merges shows as one gone and one or two new
-ones; the output says so instead of hiding it.
+members, 0.5 or more; a community without a match is new or gone. A label
+uses the largest source namespace by member count, with a lexical namespace
+tie-break, and removes `src/`. Without a source namespace, it uses `src`;
+the shared community ID gives `shared kernel`. Duplicate labels append the
+first hub basename in parentheses, or the community ID when no hub exists.
+A community that splits or merges can show as gone and new.
 
 ### CRAP per function
 
-The coverage run is the unit suite once more, under `NODE_V8_COVERAGE`
-(about 85 seconds on this Mac, 274 processes). For each function in a
-`src/` file, coverage is the covered share of its own characters in the
-build: the share that at least one process ran, where a process runs no
-character of a block with count zero and no character of a function that it
-did not call. V8 gives a block only where its count differs from the count
+The coverage run uses only the emitted Node unit tests under
+`NODE_V8_COVERAGE` (about 85 seconds on the measured Mac, 274 processes).
+It omits the source portal unit tests that `npm run test:unit` also runs;
+CR-01 will correct that bug. It adds no integration or acceptance suite;
+CR-11 proposes that extension. For each function in a `src/` file, current
+coverage is the covered share of its full range in the build: the share that
+at least one process ran, where a process runs no character of a block with
+count zero and no character of a function that it did not call. V8 gives a block only where its count differs from the count
 around it, so the blocks differ from process to process and the merge is per
 character, with the function's own range as the key. The range of a function
 includes its nested functions; each nested function has its own entry.
@@ -162,14 +176,17 @@ function, a name that occurs twice in a file of the snapshot or of the
 coverage, a name that the coverage does not have, and a compiler helper
 (`__` prefix, with the functions inside it) stay unmatched and get no CRAP;
 the list under the table gives how many functions of the changed files
-stayed unmatched. A `src/` file that no unit test loads is absent from the
-coverage and counts as uncovered.
+stayed unmatched. A `src/` file absent from the report currently counts as
+uncovered. Absence can come from the portal collection bug as well as a
+file that no selected emitted test loads.
 
 The base tree gets no coverage run, so the CRAP of the base is an
 approximation: a function of the base has its own decision paths and the
 covered share of the head function with the same name in the same file, and
 the share 0 when the head file does not have the name, such as a removed
-function. The pull request thus needs one coverage run, not two.
+function. Reuse current valid coverage when available. Collect it only when
+`src/` changed or the complete emitted Node unit suite was already selected
+under the test gate policy. Otherwise report without bands.
 
 ### Bands
 
@@ -265,9 +282,11 @@ The owner decided on 2026-10-17:
 1. The picture in the pull request is a Mermaid graph in the body: text that
    GitHub renders, diff-able, produced by the command. An image is not part
    of the process.
-2. CRAP is computed per pull request: each review adds one coverage run of
-   the unit suite, and the pull request shows CRAP before and after for its
-   changed functions and files.
+2. CRAP is computed per pull request from current valid coverage when
+   available. The current test gate policy permits collection only for a
+   `src/` change or when the complete emitted Node unit suite is already
+   selected. The pull request shows CRAP before and after for its changed
+   functions and files when coverage is available.
 3. The trend store is JSON files under `docs/metrics/`, one per `main`
    commit.
 4. The architecture map and the complexity table cover `src/` only, because
@@ -277,10 +296,18 @@ The owner decided on 2026-10-17:
 
 ## Limits known in advance
 
-- Coverage comes from the unit suite; code that only the acceptance tests
-  exercise counts as uncovered until A2 adds that suite. CRAP overstates the
-  risk of such code, and the table names the suite that produced the
-  coverage.
+- Coverage comes only from emitted Node unit tests. T5 and T6 added no
+  other suite; this limit remains until CR-11. The portal unit omission is
+  a separate CR-01 bug. The coverage JSON names the unit suite; the
+  architecture Markdown does not yet name it (CR-03). Functions tested only
+  by integration or acceptance tests can count as uncovered.
+- `ast-metrics-architecture.live.ts` has a case that collects the complete
+  emitted Node unit suite and uses the same selection restriction as the
+  coverage command. Its structural case does not collect coverage. Both
+  coverage live paths currently write and remove the default report; CR-06
+  will isolate them. `ast-metrics-coverage.live.ts` needs no ast-metrics.
+- The 2026-10-18 study observed a reported seven-point maintainability drop
+  and an unreported 1.3-point drop. It established no exact drop threshold.
 - The base gets the coverage of the head (see "CRAP per function"), so a
   pull request that only removes unit tests makes no function worse, and a
   function that the pull request removed counts as uncovered in the base.
@@ -312,6 +339,12 @@ The review of 2026-10-17 corrected the first version:
 
 Each ticket is one pull request and one board ticket; the text below is the
 ticket body in the shape of the board. The order is the dependency order.
+The tickets below record the completed implementation. Current PR work
+always follows current AGENTS.md and the test gate policy, including the
+coverage restrictions above and the two permitted baseline refresh reasons.
+The direct `ast-metrics baseline` call remains an exception until CR-09 adds
+its wrapper; a third baseline exception remains owner decision D8.
+
 Every ticket reads this plan, [the review guide](ast-metrics-review.md),
 `docs/coding-principles.md`, `docs/testing/test-code-layout.md`, and
 `docs/implementation/test-gate-policy.md`, and follows the AGENTS.md process:
@@ -319,9 +352,9 @@ the acceptance test first, then TDD, the focused test before each commit,
 the checks selected by the changed paths under the
 [test gate policy](test-gate-policy.md#required-runs), `habit-hooks`, and the
 ast-metrics review process before Ready. Commands under `script/code-quality/`
-are TypeScript, run from source, typed without `any`, and pass the rules of
-`.ast-metrics.yaml`; their doubles live
-under `test/support/doubles/ast-metrics/`, and their tests use `runScript`
+are TypeScript, run from source, and typed without `any`. Use the configured
+gates and explain retained findings; PR #170 retained medium/low findings.
+Their doubles live under `test/support/doubles/ast-metrics/`, and their tests use `runScript`
 and the fixtures of `test/acceptance/script/`.
 
 ### T1. Snapshot of the working tree
@@ -340,8 +373,8 @@ It runs `ast-metrics analyze --report-json` and one MCP session
 file) and writes the snapshot JSON described in "The snapshot": the commit
 and date of HEAD, the global numbers (modularity, cross share, the cycles,
 the LOC-weighted maintainability of `src/`, the total decision paths), the
-`src/` communities with label (hub and largest namespace), members, hubs,
-references, and edges, and the files with their metrics and functions. The
+`src/` communities with a largest-namespace label and duplicate hub suffix,
+members, hub, references, and edges, and the files with their metrics and functions. The
 CRAP fields stay absent. Default output `ast-report/snapshot.json`. Extend
 the CLI double to answer `analyze --report-json` from a fixture and the MCP
 double to answer the two tools from fixtures.
@@ -349,8 +382,8 @@ double to answer the two tools from fixtures.
 **Acceptance criteria.**
 - Given doubles that answer with the fixtures of a small repository, when
   the command runs, then the snapshot holds only the `src/` communities, each
-  labeled by its hub and largest namespace, with members, references, and
-  edges, the LOC-weighted maintainability (checked against a hand-computed
+  labeled by its largest source namespace and duplicate suffix, with members,
+  references and edges, the LOC-weighted maintainability (checked against a hand-computed
   value), and each file with its functions, and the exit status is 0.
 - Given a `script/` community in the answer, when the command runs, then it
   is not in the snapshot.
@@ -358,8 +391,9 @@ double to answer the two tools from fixtures.
   one file, when the command runs, then the exit status is 1 with one
   diagnostic line and no partial snapshot file.
 - Given the real ast-metrics (live test), when the command runs on this
-  repository, then the snapshot has 7 communities and one cycle, within 60
-  seconds.
+  repository, then the current live check fixes eight non-shared communities
+  and two cycles, within 60 seconds (updated in PR #170). CR-06 will replace
+  those incidental counts with invariants.
 
 **Unit test list.** The LOC-weighted average; the label rule; the `src/`
 filter; the cycle list from the edges; the file-to-function join.
@@ -486,16 +520,17 @@ its body.
 Source: step A2 and "CRAP per function". Depends on T1 (the snapshot gives
 the function names); independent of T3 and T4. Done in PR #158: the merge is
 per character (V8 gives a block only where its count differs from its
-parent's), the helpers are filtered by range, and the live check names a
-called function of `src/application.ts` instead of `createApplication`,
-which only the integration and acceptance tests call.
+parent's), the helpers are filtered by range, and the live check finds
+`createApplication` present in `src/application.ts` and checks calls of other
+functions of that file. Unit tests do not call `createApplication`;
+integration and acceptance tests do.
 
 **Outcome and scope.** Add `script/code-quality/ast-metrics-coverage.ts [--from DIR]
 [--out FILE]`. By default it runs the unit suite of `dist/` with
 `NODE_V8_COVERAGE` set to a temporary folder; with `--from`, it reads an
 existing folder. It merges the V8 coverage files, keeps the scripts under
 `dist/src/`, maps each to its `src/*.ts` path, computes for each function
-the covered share of its bytes (the blocks with count zero are uncovered)
+the covered share of its characters (the blocks with count zero are uncovered)
 and whether it was called, skips compiler helpers (`__` prefix), and writes
 `ast-report/coverage.json`: the suite that produced it, the files, and the
 functions with name, covered share, and call count. Extend the fixtures
@@ -504,16 +539,17 @@ with small V8 coverage files.
 **Acceptance criteria.**
 - Given a folder with V8 coverage files of two processes for the same
   script, when the command runs with `--from`, then the function counts are
-  the sums and the covered share is the share of bytes outside zero-count
+  the sums and the covered share is the share of characters outside zero-count
   blocks, checked against hand-computed values.
 - Given a function with a nested function, when the command runs, then each
   has its own entry and share.
 - Given a compiler helper, when the command runs, then it is absent.
 - Given the real unit suite (live test), when the command runs on this
   repository, then `coverage.json` names the unit suite and holds
-  `createApplication` of `src/application.ts` with a count of at least 1.
+  `createApplication` of `src/application.ts` and calls of other functions
+  of that file; it does not require a call of `createApplication`.
 
-**Unit test list.** The merge of two files; the byte share; the path map;
+**Unit test list.** The merge of two files; the character share; the path map;
 the helper filter.
 
 **Development and completion rules.** The default run is `node --test` on
@@ -545,8 +581,8 @@ the band of each community and file from the change against the base
 symbol, word, and count to the node text, the border color class, the CRAP
 columns to the complexity table, the list of functions that the pull request
 added or changed with CRAP at 30 or more (name, complexity, covered share),
-and the count of unmatched functions. The snapshot gains the coverage and
-CRAP fields.
+and the count of unmatched functions. Snapshots retain their structural
+metrics; coverage and CRAP are joined only when the report is made.
 
 **Acceptance criteria.**
 - Given a function with 10 decision paths and no coverage, when the command
@@ -577,7 +613,11 @@ first record. The rows come by the time of the committer date, and two records
 of the same time by their file names. The command reads the store before it
 writes, so that a store with a wrong file gets no new file. With `--head` and
 `--base-snapshot`, only `--trend-store DIR` gives a store; the live test uses
-it, so that no test writes under `docs/metrics/`.
+it, so that no test writes under `docs/metrics/`. Offline mode without a
+store says `No trend store.` A configured empty store gets the base record
+before output and then shows the base and head rows. The formatter says
+`No snapshot of main in the trend store yet.` when given an empty record
+list for a configured store.
 
 **Outcome and scope.** The architecture command writes the base snapshot's
 global numbers and per-community numbers to
@@ -595,8 +635,10 @@ file is part of the pull request.
 - Given twelve files, when the command runs, then the table shows the last
   ten by date, oldest first, with the head as the last row marked "this
   pull request".
-- Given the real ast-metrics (live test), then the file for the current
-  merge base is written under `docs/metrics/` and removed again by the test.
+- Given the real ast-metrics (live test), then the record for the current
+  merge base is written in a temporary trend store passed with `--trend-store`;
+  the test cleanup removes that temporary folder. It does not write or delete
+  a record under the repository's `docs/metrics/`.
 
 **Unit test list.** The file name; the row order; the "unchanged" rule.
 

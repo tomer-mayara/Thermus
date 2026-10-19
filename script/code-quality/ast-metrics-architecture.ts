@@ -47,7 +47,7 @@ community, and nothing for each file. Before the output, the command writes the
 file of the merge base when the store has no file of that commit; a file that
 exists stays as it is. Commit the new file with the pull request. With --head
 and --base-snapshot, the command writes and reads no store unless --trend-store
-names one.
+names one. Without a store, the trend section says No trend store.
 
 By default, the command takes two snapshots, as script/code-quality/ast-metrics-snapshot.ts
 does: the base is the merge base of REF and HEAD, in a temporary worktree, and

@@ -5,8 +5,8 @@ ast-metrics" in [AGENTS.md](../../AGENTS.md). AGENTS.md gives the rules; this
 guide gives the commands, what they report, the configuration, and the limits
 of the tool. If the two disagree, follow AGENTS.md and correct this guide.
 
-The facts in this guide were verified on 2026-10-17 with ast-metrics 0.43.1
-on this repository. A later version can behave differently; verify the limits
+The facts in this guide were verified on 2026-10-17 and 2026-10-18 with
+ast-metrics 0.43.1 on this repository. A later version can behave differently; verify the limits
 again before you change the process.
 
 ## Installation
@@ -21,7 +21,9 @@ systems get it from <https://github.com/ast-metrics/ast-metrics>. Check
 ## The commands
 
 The six entry points and their helper folders are in
-[`script/code-quality/`](../../script/code-quality/README.md).
+[`script/code-quality/`](../../script/code-quality/README.md). Use these wrappers
+for the review process. `ast-metrics baseline` remains a direct-call exception
+until CR-09 of the [change request](ast-metrics-change-request.md) adds its wrapper.
 
 Select tests under the [test gate policy](test-gate-policy.md) before these
 commands. Only a change under `src/` requires the full ordinary suite
@@ -37,6 +39,11 @@ its live test, only when `src/` changed or that whole unit suite was already
 selected. A focused unit package or a script change alone does not select
 the whole unit suite. Reuse a current valid report when available; otherwise,
 a review outside that scope can use the architecture report without coverage.
+The coverage-collecting case in `ast-metrics-architecture.live.ts` has the same
+restriction. Its structural case does not collect coverage. The MCP, snapshot,
+and architecture live checks need ast-metrics on PATH and skip when it is absent;
+`ast-metrics-coverage.live.ts` needs no ast-metrics. Both current coverage live
+paths write and remove the default report; CR-06 will isolate their output.
 
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
@@ -120,7 +127,8 @@ follow your edits. A call takes about one second.
 
 - `file <path>` is the tool for a refactor pass: it prints the score, the
   decision paths, and the lines of each function in the file, lowest score
-  first. The functions at the top of the list are the ones to split first.
+  first. The lines column counts lines of code (LOC); it does not give source
+  positions. The functions at the top of the list are the ones to split first.
 - `complex` and `risky` list the classes and files of the whole repository
   with the highest complexity, the lowest maintainability, and the highest
   risk (complexity, maintainability, coupling, and change frequency
@@ -129,6 +137,9 @@ follow your edits. A call takes about one second.
   suggestions: dependency cycles between groups of packages and packages that
   always change together.
 - `call` reaches every tool of the server; `tools` lists them.
+
+When `--limit` or `--max-cyclomatic` is absent, the wrapper omits that tool
+argument and delegates the default to ast-metrics.
 
 The server analyzes the same files as the delta command, test files
 included. In a test file, each case is an anonymous function in the table.
@@ -150,14 +161,16 @@ npm run build
 pnpm exec node script/code-quality/ast-metrics-coverage.ts [--from DIR] [--out FILE]
 ```
 
-The command runs the unit suite of `dist/` (`node --test --test-concurrency=1
-"dist/test/unit/**/*.test.js"`, as `npm run test:unit` does) with
-`NODE_V8_COVERAGE` set to a temporary folder, and writes
+The command runs only the emitted Node unit tests (`node --test
+--test-concurrency=1 "dist/test/unit/**/*.test.js"`) with `NODE_V8_COVERAGE`
+set to a temporary folder, and writes
 `ast-report/coverage.json`. The output of the suite goes to stderr. Without
 `dist/`, it says "Run npm run build first." With `--from DIR`, it reads the
 coverage files of an earlier run and does not run the suite. On this Mac the
 run takes about 85 seconds (274 processes, 95 files of `src/`, 1138
-functions). The command needs no ast-metrics.
+functions). The command needs no ast-metrics. Unlike `npm run test:unit`, it
+omits the source portal unit tests. This is the CR-01 collection bug, separate
+from the unit-only suite limit that remains until CR-11 adds other suites.
 
 For each function of a script under `dist/src/` (`dist/src/x.js` is the
 build of `src/x.ts`), the report gives its name, its range in characters of
@@ -169,8 +182,10 @@ function has its own entry. The module function and the anonymous functions
 have the name `(anonymous)`. The tsc helpers (`__` names) and the functions
 inside them are left out; the wrapper of `__disposeResources` and its
 `SuppressedError` fallback stay as two `(anonymous)` entries in each file
-that uses `using`. A file that no unit test loads is not in the report. A
-function that only integration or acceptance tests call, such as
+that uses `using`. A file that none of the selected emitted tests loads is
+not in the report. The current collector also omits portal files, so absence
+alone does not prove that no unit test loads a file. A function that only
+integration or acceptance tests call, such as
 `createApplication`, shows 0 calls.
 
 V8 gives a block only where its count differs from the count around it, so
@@ -209,11 +224,15 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
 - `files`: each `src/` file, sorted by path, with its community (or `null`),
   maintainability, decision paths, lines, risk, and functions.
 
-A label is the largest namespace in `src/` by member count, without the
-`src/` prefix. The files at the top of `src/` give `src`, and the shared
-kernel is `shared kernel`. When two communities get the same label, each
-label gets the basename of its hub in parentheses. The maintainability of a
-community or of `src/` is the sum of index × lines over the sum of lines of
+Snapshots contain no coverage or CRAP. The architecture command joins a
+separate coverage report when it makes its output.
+
+A label uses the largest source namespace by member count. A tie uses the
+lexically first namespace. Remove the `src/` prefix; without a source
+namespace, use `src`. The shared community ID gives `shared kernel`. When
+labels repeat, each gets the basename of its first hub in parentheses, or
+the community ID if it has no hub. The hub is a duplicate suffix, not the
+primary label rule. The maintainability of a community or of `src/` is the sum of index × lines over the sum of lines of
 the files with an index. A score keeps one decimal and a share two. A value
 that ast-metrics does not give is absent. A function without a name is
 `(anonymous)`. The exit status is 1, with one diagnostic line and no
@@ -325,13 +344,13 @@ that V8 gives: ast-metrics names a method `module\Class.method`, V8 names it
 counts as unmatched when it is anonymous (also a method without a name, such
 as `module\Class.`), when the file of the snapshot or of the report has its
 name twice, or when the report has the file but not the name. A file that
-the report does not have counts as uncovered, because no unit test loaded
-it: each of its named functions has the share 0 and the CRAP
-`paths² + paths`. On this repository on 2026-10-18, 721 of the 1022
-functions of `src/` matched a function of the report, 68 were in files that
-the report does not have, and 233 stayed unmatched, 227 of them anonymous;
+the report does not have currently counts as uncovered: each named function
+has the share 0 and the CRAP `paths² + paths`. In the historical study at
+`76b514ac` on 2026-10-18, 721 of the 1022 functions of `src/` matched a
+function of the report, 68 were in files that the report does not have, and 233 stayed unmatched, 227 of them anonymous;
 with the names of ast-metrics as they are, only 402 matched. 22 functions
-had CRAP 30 or more, 15 of them in files that no unit test loads.
+had CRAP 30 or more, 15 of them in files absent from the report. These are
+dated observations, not assertions about the current tree.
 
 The base tree gets no coverage run, so its CRAP is an approximation, as the
 [evolution plan](architecture-evolution-plan.md) records: a function of the
@@ -428,9 +447,12 @@ is not a valid record of version 1 stops the command with exit status 1, and so
 does a store that it cannot write. Other files of the folder, such as a README,
 do not count. With `--head` and `--base-snapshot`, only `--trend-store DIR`
 (relative to the current folder) gives a store; without it, the section is the
-line `No snapshot of main in docs/metrics yet.`, and the command writes
-nothing. In a repository, `--trend-store` replaces `docs/metrics/`, as the live
-test does.
+line `No trend store.`, and the command writes nothing. A configured empty
+store is a different state: the command writes its base record before output,
+so that run shows the base and head rows. The formatter says
+`No snapshot of main in the trend store yet.` if it receives no records from
+a configured store. In a repository, `--trend-store` replaces `docs/metrics/`,
+as the live test does with a temporary folder.
 
 Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
 diagnostic line for a failure, also for a store that the command cannot read or
@@ -438,9 +460,16 @@ write; 130 or 143 when a signal stops the base snapshot.
 
 ## The configuration
 
-`.ast-metrics.yaml` at the repository root is the only configuration that
-ast-metrics reads; it ignores `--config` and a configuration in another
-folder. The file:
+Use `.ast-metrics.yaml` at the repository root for the wrappers, which run
+ast-metrics from that root. A controlled two-file exclusion check with 0.43.1
+on 2026-10-18 showed that a config in the initial working folder and an
+explicit `--config` are both honored. A config in the analyzed folder can
+replace either: with `analyze src`, `src/.ast-metrics.yaml` won over the root
+and explicit configs; with `analyze .`, the root config won over the explicit
+config. With no analyzed-folder config, the explicit config won over the root
+config for `analyze src`. These checks establish exclusion lookup behavior,
+not precedence for every setting. Keep the root config authoritative by
+adding no config under `src/`. The root file:
 
 - Analyzes the repository and excludes `node_modules/`, the agent worktrees
   under `.claude/`, the generated reports under `ast-report/`, and the
@@ -463,12 +492,13 @@ folder. The file:
 were last set or at a later refresh (175 after PR #165 on 2026-10-18). The
 review and `ast-metrics lint` report only a violation that the baseline does
 not list. A baseline entry carries the measured value in its message, so a
-file whose value moved appears again. Refresh the baseline in three cases: when the rules change, in the
-same pull request as the rule change; when a violation reached `main` without
-the process (PR #155 brought two), in a pull request that names it; and when
-a pull request keeps a finding of severity high with a reason (step 5 of
-AGENTS.md), in that pull request, so that the next pull request does not get
-the finding again. Run `ast-metrics baseline` and commit the file.
+file whose value moved appears again. Current AGENTS.md permits a refresh
+for two reasons only: the pull request changes `.ast-metrics.yaml` rules, or
+it keeps a finding of severity high with a reason under step 5. Refresh and
+commit the baseline in that same pull request. A third exception for violations
+already on `main` remains owner decision D8 of the change request; historical
+refreshes do not grant permission. `ast-metrics baseline` is the current
+direct-call exception until CR-09 provides a wrapper.
 
 ## How ast-metrics counts
 
@@ -496,8 +526,9 @@ These facts, measured with `ast-metrics-mcp.ts file <path> --json` on
   The delta command checks the file goal instead.
 - The review reports a score drop of a changed file, but not a new file that
   starts below 85. The delta command catches that file.
-- The review drops a small change of a score; a drop of about 10 points
-  counts.
+- The study on 2026-10-18 observed a reported seven-point score drop and
+  an unreported 1.3-point drop. These examples do not establish an exact
+  general threshold.
 - `compare.html` lists only the files whose metrics moved enough. The delta
   command lists every delta file.
 - ast-metrics analyzes TypeScript only. The commands under `script/` are

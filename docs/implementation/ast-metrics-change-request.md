@@ -5,7 +5,7 @@
 | Repository | `tomer-mayara/Thermus` |
 | Baseline | `main` at `7c302fa5`, after the reorganization in PR #170 (`94adf2d2`) and scoped test gates in PR #172 |
 | Owner | Tomer Mayara; decides the open items and merges implementation pull requests |
-| Status | Proposed, revision 4, 2026-10-18. This document implements no CR and changes no command, test, policy, or metric record. |
+| Status | Revision 4, 2026-10-18. Staged implementation and D1–D3 are approved; the delivery status below records progress. D4–D9 remain open. |
 | Audience | An engineering team that has not worked in this repository |
 
 This proposal is standalone. Read sections 1 to 3 and Appendix D before
@@ -17,6 +17,24 @@ AGENTS.md now.
 Revision 3 used `76b514ac` as its baseline. PR #170 subsequently reorganized
 the scripts without changing their behavior. PR #172 limited test runs to
 changed paths. This revision preserves both changes and all 24 CR identifiers.
+
+The owner approved staged implementation after merging revision 4 in
+PR #174. Delivery group 1 covers CR-16 and the CR-23 contract-test foundation.
+On 2026-10-18, the owner approved the recommendations for D1, D2, and D3
+with “Use those recommendations”: CRAP ≤ 15 for new functions, goals with
+documented exceptions after at most three improvement cycles, and clearly
+labeled head-derived trend estimates. Section 3.2 records these decisions.
+D4 to D9 remain open. This approval changes no runtime behavior or current
+AGENTS.md rule and authorizes no base-coverage storage or merge workflow.
+
+Delivery status:
+
+- PR #175 implements CR-16 and the CR-23 contract-test foundation. It awaits
+  owner review. CR-23's later content consolidation remains.
+- PR #173 already converted and organized the fetch-url scripts as
+  TypeScript. CR-19's removal of the four exported test seams remains;
+  that PR retained them to preserve its characterization tests.
+- The other CRs have not been implemented.
 
 Contents:
 
@@ -47,16 +65,19 @@ The review found these problems:
    collection, measurement, and validation.
 2. Historical CRAP counts use head coverage to estimate the base. Valid
    head coverage does not make that a base measurement. CR-04 makes writes
-   explicit and requires an owner decision on the count's provenance.
+   explicit and implements approved D3: clearly label head-derived counts
+   as estimates and record their provenance.
 3. Moves and deletions distort comparisons. CR-05 adds file status and
    source evidence for function identity. A matching name alone is not
    proof of a function move.
 4. Live tests fix incidental architecture counts and can start broader
    suites. CR-06 uses invariants and preserves the selected test scope.
-5. The process has no per-function CRAP goal. CR-22 proposes a strict
-   limit below 30, an inclusive target of 15 or less for new functions,
-   and at most three improvement cycles. The target and enforcement need
-   owner decisions.
+5. The process has no per-function CRAP goal. CR-22 will add a strict
+   goal below 30 and the approved inclusive target of 15 or less for new
+   functions. Under D2, use at most three improvement cycles and document
+   exceptions for unresolved goals before Ready. Commands still report goal
+   misses with exit 1; the approval does not implement the goals in current
+   commands or activate the future AGENTS.md process.
 6. The graph shows clusters, not designed components. CR-13 adds the
    component view. CR-14 adds charts and component trends.
 7. An unchanged map has no drawing. CR-24 always prints it, with bands
@@ -261,16 +282,24 @@ test group. Do not run the full inventory merely because it is listed.
     point makes one tool call; snapshot and CRAP operations can make
     several requests in one session. Never register a persistent server.
 
-### 3.2 Open owner decisions
+### 3.2 Owner decisions
 
-Recommendations are proposals, not approval. Proceed with independent work
-while a decision is open, but do not invent its answer.
+The owner approved D1 to D3 on 2026-10-18 with “Use those recommendations.”
+The approval sets the contracts for future implementation; it changes no
+current command or AGENTS.md rule.
 
-| ID | CR | Decision | Recommendation and consequence |
+| ID | CR | Approved decision | Consequence |
 | --- | --- | --- | --- |
-| D1 | CR-22 | New-function target. | CRAP ≤ 15. This is a repository target, not a universal standard. |
-| D2 | CR-22 | Goal with reasons, or blocking gate. | Goal with three cycles and explicit reasons, as for maintainability. Commands still report goal misses. |
-| D3 | CR-04 | Labeled head-derived historical estimates, or counts measured for the recorded tree. | Preserve estimates with coverage origin, measurement version, and unknown count. Measured-only history instead needs an approved base-capture mechanism; unavailable values remain gaps. |
+| D1 | CR-22 | New functions have an inclusive CRAP target of 15 or less. | This is a repository target, not a universal standard. |
+| D2 | CR-22 | Use goals with documented exceptions after at most three improvement cycles, as for maintainability. | Commands still exit 1 for unresolved or unknown required goals. Once the future process is implemented, Ready may proceed after at most three cycles with recorded scores, paths, coverage, classification, and reasons. The exception does not change the command result or excuse tool failures. |
+| D3 | CR-04 | Preserve clearly labeled head-derived historical estimates. | Record coverage origin, fingerprints, measurement version, and unknown-function count. Missing or incompatible evidence remains absent, not zero. This approves no base-coverage store or merge workflow. |
+
+D4 to D9 remain open. Their recommendations are proposals, not approval.
+Proceed with independent work while a decision is open, but do not invent
+its answer.
+
+| ID | CR | Open decision | Recommendation and consequence |
+| --- | --- | --- | --- |
 | D4 | CR-10 | Store and use coverage of merged trees beyond option A. | Land the warning first. Decide capture, identity, retention, and size before option B. D3 does not approve this storage. |
 | D5 | CR-12 | Workflow to record every merge on `main`. | Keep manual backfill until workflow behavior is approved. |
 | D6 | CR-15 | Forbidden component dependencies. | Choose explicit path rules; do not freeze communities. |
@@ -443,7 +472,8 @@ as revision 3 proposed, is insufficient.
 
 ### CR-04. Make trend writes deliberate and identify historical estimates
 
-P1 · M + D3 · limit. Depends on CR-03; coordinate CR-05 identity.
+P1 · M · limit. Implements approved D3. Depends on CR-03; coordinate CR-05
+identity.
 
 **Evidence.** Exploratory architecture runs write permanent base records.
 Two heads can produce different counts for one base, and first write wins.
@@ -465,26 +495,24 @@ no overwrite, including concurrent writers. Never truncate the winner.
 On a merge conflict, keep the file on `main` and drop the candidate's
 conflicting file. Never fill an existing missing count by rewriting it.
 
-**Count policy is pending D3.** Preserve CRAP in the trend without calling
-an estimate a measurement. The recommended option stores head-derived
-base estimates with their coverage origin, fingerprints, semantic version,
-and unknown-function count. Tables and charts identify them as estimates.
-A later PR can show another estimate for the same base; explain that the
-stored value belongs to the first recording PR. The alternative stores
-counts only when coverage was measured for the recorded tree, requiring
-an approved capture mechanism, potentially CR-10 option B. It does not
-authorize broader suites or approve that storage implicitly.
+**Count policy: approved D3, 2026-10-18.** Preserve CRAP in the trend
+without calling an estimate a measurement. Store head-derived base
+estimates with their coverage origin, fingerprints, measurement semantic
+version, and unknown-function count. Tables and charts clearly label them
+as estimates. A later PR can show another estimate for the same base;
+explain that the stored value belongs to the first recording PR.
 
-In either option, stale, missing, or unverified data gives absent fields,
-not zero. Existing records remain immutable and readers label their
-missing provenance as legacy unknown. Common structural write safety can
-land independently; the count contract waits for D3.
+Stale, missing, or unverified data gives absent fields, not zero. Existing
+records remain immutable and readers label missing provenance as legacy
+unknown. Common structural write safety can land independently of the
+count implementation. D3 approves neither a base-coverage store nor a
+merge workflow; D4 and D5 remain open. It does not authorize broader suites.
 
 **Acceptance criteria and tests.** Cover ancestors, non-ancestors, missing
 refs, offline verification, no write without the flag, repeated/concurrent
 writes, full SHA and prefix collisions, malformed stores, and immutable
 existing records. Goldens distinguish measured, estimated, unavailable,
-and legacy counts under the selected decision. No count uses stale data.
+and legacy counts under approved D3. No count uses stale data.
 
 **Documents.** AGENTS.md recording/conflict rules, guide trend section,
 README, plan T7 note, formats, and inventory.
@@ -632,7 +660,7 @@ snapshot/record formats, doubles, and inventory.
 
 ### CR-09. Run the process with one command
 
-P2 · M · limit. Depends on CR-03, CR-04, and CR-22; D1 to D3 apply.
+P2 · M · limit. Depends on CR-03, CR-04, and CR-22; approved D1 to D3 apply.
 
 **Purpose.** Compose the review stages and wrap baseline refresh. The
 original always-collect rule conflicts with current test scope and is
@@ -677,8 +705,9 @@ CR-22, and tool-version overrides to every tool operation.
 - Exit 0 for completed passing required assessments; exit 1 for a goal
   miss, required assessment without sufficient data, or tool failure.
   Use structured internal outcomes or equivalent reliable classification,
-  not an ambiguous child exit code. D2 governs Ready exceptions, not
-  whether the command reports the missed goal.
+  not an ambiguous child exit code. Approved D2 permits Ready with recorded
+  reasons for unresolved goals after at most three cycles; it does not
+  change the command's exit 1 or excuse tool failures.
 - Baseline runs from the repository root and reports entry counts before
   and after. The wrapper adds no new permission to change the baseline.
 
@@ -693,8 +722,8 @@ Custom base reaches all comparisons. Ordinary architecture writes nothing.
 Process tests use fake runners and never collect application coverage
 implicitly. CR-06 owns live output isolation; do not postpone that fix.
 
-**Documents.** AGENTS.md after decisions, guide, README and index, inventory,
-knip entries, module paths, and paths test.
+**Documents.** AGENTS.md when these contracts are implemented, guide, README
+and index, inventory, knip entries, module paths, and paths test.
 
 ### CR-10. Explain and, after a decision, judge test changes
 
@@ -844,7 +873,7 @@ record formats, and process body sections. Mapping files remain out of scope.
 
 ### CR-14. Show charts and component trends
 
-P3 · S–M · gap. Depends on CR-13 and CR-04's provenance decision.
+P3 · S–M · gap. Depends on CR-13 and CR-04's implementation of approved D3.
 
 **Required behavior.** During implementation, verify GitHub `xychart-beta`
 rendering with a disposable two-point test comment under the owner's
@@ -1013,11 +1042,13 @@ for prose. CR-21 is last, not an item that can land at any time.
 
 ### CR-22. Add a per-function CRAP goal and actionable report
 
-P1 · M–L + D1/D2 · gap. Depends on CR-01 to CR-03, CR-05 classification,
-and CR-07 unknown-data handling.
+P1 · M–L · gap. Implements approved D1 and D2. Depends on CR-01 to CR-03,
+CR-05 classification, and CR-07 unknown-data handling.
 
-**Purpose and basis.** Propose CRAP < 30 for added or changed functions
-and CRAP ≤ 15 for added functions. Savoia and Evans gave
+**Purpose and basis.** Add the CRAP < 30 goal for added or changed
+functions and the approved D1 target of CRAP ≤ 15 for added functions. D2
+approves goals with documented exceptions after at most three cycles,
+while commands continue to report missed goals. Savoia and Evans gave
 `CRAP = p² × (1 − c)³ + p` and described 30 as an initial threshold, using
 basis-path coverage. This repository's V8 character share is an approximation,
 not the same coverage measure. See their
@@ -1068,8 +1099,8 @@ pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage 
 Defaults are `origin/main`, `ast-report/coverage.json`, 30, 15, and changed
 source files. Validate finite positive thresholds, `target < limit`, and
 source paths. State accepted numeric precision in help. Defaults become
-process goals only after D1/D2. Explicit paths select inspection files;
-they do not classify every function as newly added.
+the approved D1/D2 process goals when CR-22 is implemented. Explicit paths
+select inspection files; they do not classify every function as newly added.
 
 **Required behavior.**
 
@@ -1105,14 +1136,17 @@ they do not classify every function as newly added.
   and continue structural output. A valid report with individual unknowns
   prints their bounds.
 - Exit 1 for known limit violations in inspected files or insufficient
-  data for a required goal. After D1, required new-target misses also fail
-  the goal result. Unchanged functions at 30 remain visible and can retain
-  the explicit reason “unchanged by this PR” under D2. Exit 0 represents
-  completed passing applicable assessments, not missing data.
+  data for a required goal. Under approved D1, required new-target misses
+  also fail the goal result. Unchanged functions at 30 remain visible and
+  can retain the explicit reason “unchanged by this PR” under D2. Exit 0
+  represents completed passing applicable assessments, not missing data.
 - Improve in at most three cycles with selected unit tests or fewer paths.
   Remeasure within scope. Record score, paths, coverage, classification,
   and reason for all unresolved required goals, including new functions
-  above the target but below 30. Unknown data also requires a reason.
+  above the target but below 30. Unknown data also requires a reason. Under
+  D2, Ready may then proceed with these recorded reasons; the command still
+  exits 1 for unresolved or unknown required goals. This is a goal with
+  exceptions, not a blocking gate, and does not excuse tool failures.
 
 **Acceptance criteria and tests.** Twenty paths at share 0.5 gives 70,
 `cover ≥ 71%`, and exit 1. Thirty-five at full coverage says split. Four
@@ -1128,8 +1162,8 @@ fails as unresolved.
 Use MCP doubles and goldens. Real-file checks reuse compatible coverage
 or run only when collection is eligible.
 
-**Documents.** AGENTS.md after decisions, guide “The CRAP goal”, README,
-plan bands/limits, inventory, knip, module paths, and paths test.
+**Documents.** AGENTS.md when CR-22 is implemented, guide “The CRAP goal”,
+README, plan bands/limits, inventory, knip, module paths, and paths test.
 
 ### CR-23. Keep the detailed README complete and checked
 
@@ -1218,25 +1252,26 @@ or option updates its own README and contract in the same PR.
 | 2 | CR-24 | Show drawings early, before later report changes. |
 | 3 | CR-01 + CR-02 | Correct coverage collection and counting together. |
 | 4 | CR-03 | Establish capture, reuse, and offline identity. |
-| 5 | CR-04 | Make recording explicit and safe. D3 precedes the count contract; common write safety can be split out. |
+| 5 | CR-04 | Make recording explicit and safe under approved D3; common write safety can be split out. |
 | 6 | CR-05 | Add statuses and function identity after provenance. |
 | 7 | CR-06 | Independent invariants and isolation; may move earlier or run alongside 3 to 6. |
 | 8 | CR-07 + CR-08 | Make unknown results explicit and pin tool contracts. |
-| 9 | CR-22 | Needs corrected coverage, function identity, D1, and D2. |
+| 9 | CR-22 | Needs corrected coverage and function identity; D1 and D2 are approved. |
 | 10 | CR-09 | Compose stable commands with coverage reuse as the default. |
 | 11 | CR-17 | Remove remaining proven duplication after command changes. |
 | 12 | CR-13 | Add component/dependency metadata and output. |
-| 13 | CR-14 | Add charts and component history after CR-13 and D3. |
+| 13 | CR-14 | Add charts and component history after CR-13 and CR-04 implement approved D3. |
 | 14 | CR-23 content consolidation | Consolidate explanation; earlier command PRs already update their own sections. |
 | Later | CR-10 option A, CR-11, CR-12, CR-15, CR-18 | Follow their dependencies and decisions. Option A does not await option B. |
 | Independent | CR-19 and CR-20 | Separate cleanup and its selected checks. |
 | Last | CR-21 | Archive only when dependent work is complete or explicitly disposed of in a living specification. |
 
 CR-04 depends on CR-03. CR-05 uses CR-03 identity. CR-22 depends on
-CR-01 to CR-03, CR-05, CR-07, D1, and D2. CR-09 depends on CR-03,
-CR-04, CR-22, and their decisions. CR-13 coordinates snapshot formats with
-CR-03 and CR-05. CR-14 needs CR-13 and count provenance. CR-06 and
-CR-24 need not wait for the full coverage project.
+CR-01 to CR-03, CR-05, and CR-07; D1 and D2 are approved. CR-09 depends
+on CR-03, CR-04, and CR-22, using approved D1 to D3. CR-13 coordinates
+snapshot formats with CR-03 and CR-05. CR-14 needs CR-13 and the approved
+D3 count provenance implemented in CR-04. CR-06 and CR-24 need not wait for
+the full coverage project.
 
 ## 6. Definition of done for each implementation PR
 
@@ -1253,12 +1288,16 @@ CR-24 need not wait for the full coverage project.
    or unavailable-assessment reason. After CR-24, always include fenced
    community Mermaid and legend; after CR-13 include components too.
 5. Bands/counts use compatible coverage or are explicitly withheld.
-   Collection is within scope. State historical count provenance and D3's
-   approved interpretation. Never call an estimated base value measured.
+   Collection is within scope. State historical count provenance and
+   clearly label head-derived estimates under approved D3. Never call an
+   estimated base value measured.
 6. Explain maintainability still below 85 after at most three passes and
    unresolved applicable CRAP goals after at most three cycles, under D2.
-   Record unknown assessments. Baseline retained high findings only under
-   current approved exceptions.
+   Record unknown assessments. Ready may proceed with these documented
+   exceptions even when the command still reports exit 1 for required goal
+   misses or unknowns. Tool failures remain errors. These rules take effect
+   only when the prerequisite CRs implement the future process. Baseline
+   retained high findings only under current approved exceptions.
 7. Commit a new verified record when the approved process requires it.
    Preserve existing records; keep the main version in a conflict. Missing
    historical counts do not authorize broader runs or rewriting history.
@@ -1433,7 +1472,8 @@ Filename `<date>-<commit8>.json` stays readable; embedded full SHA is
 authoritative. Old files, including those without provenance, stay immutable.
 CR-04 adds D3's provenance; CR-08 adds tool; CR-13 adds components sorted
 by name; CR-14 adds optional title. Counts without compatible evidence
-are absent, not zero. An estimated basis could be:
+are absent, not zero. The proposed fields below implement the approved D3
+head-estimate policy:
 
 ```json
 {
@@ -1447,10 +1487,11 @@ are absent, not zero. An estimated basis could be:
 }
 ```
 
-This does not approve D3. A measured-tree choice must instead establish
-coverage of that recorded content. Apply the same basis to global and
-component/community counts. Readers label legacy missing provenance;
-they never fill it retrospectively.
+D3 is approved; this example specifies future fields, not an implemented
+format. Apply the same head-estimate basis to global and component/community
+counts and clearly label it in output. Readers label legacy missing
+provenance; they never fill it retrospectively. D3 authorizes no storage or
+capture of base coverage and no merge workflow; D4 and D5 remain open.
 
 ### A.4 Offline change metadata
 
@@ -1473,8 +1514,10 @@ proof of arbitrary function identity.
 - **Shared kernel:** the tool's special community used by many other groups.
 - **CRAP:** `p²(1−c)³+p`. Full coverage gives p, no coverage gives p²+p.
   V8 character share approximates the original coverage input.
-- **Limit / target:** proposed strict <30 and inclusive ≤15 for new
-  functions; D1/D2 decide target and enforcement.
+- **Limit / target:** strict <30 for added or changed functions and the
+  approved D1 inclusive target ≤15 for new functions. Approved D2 uses goals
+  with documented exceptions after at most three cycles; commands still
+  report misses. Implementation remains CR-22 work.
 - **Lower bound:** unmatched CRAP cannot be below paths. A bound below a
   threshold does not prove compliance.
 - **Band:** good, warning, or critical based on known risk and its change;
@@ -1483,7 +1526,8 @@ proof of arbitrary function identity.
   commit or tree ID.
 - **Measurement version:** collector semantics, separate from schema/tool.
 - **Base estimate:** base complexity combined with matched head coverage,
-  not a measured base run.
+  not a measured base run. Approved D3 preserves these estimates with clear
+  labels and provenance; it approves no base-coverage store or workflow.
 - **Merge base:** common ancestor of the selected base ref and HEAD.
 - **Record:** immutable entry for a verified commit on `main`.
 - **Golden:** complete expected output, such as Markdown.
@@ -1528,14 +1572,17 @@ No production file changed.
 ````
 
 Implementation goldens fix the exact legend/table text. The provenance
-column illustrates CR-04's required distinction and awaits D3. This example
-does not require a record write during an exploratory run.
+column illustrates CR-04's distinction under approved D3. Head-derived
+values must say `head-estimate`; missing evidence stays unavailable. This
+example does not require a record write during an exploratory run.
 
 ## 11. Appendix D: proposed process text
 
 This replaces only the process section after CR-03, CR-04, CR-09, CR-22,
-and CR-24 land. It assumes D1 approves 15, D2 approves goals with reasons,
-and D3 has an approved history policy. Revise it if a decision differs.
+and CR-24 land. It reflects D1 to D3, approved on 2026-10-18: an inclusive
+new-function target of 15, goals with documented exceptions after at most
+three cycles, and clearly labeled head-derived historical estimates.
+D4 to D9 remain open; this text grants no approval for their proposals.
 Current AGENTS.md remains authoritative. CR-24 can first add the drawing
 requirement to current step 5. Until CR-09 exists, run individual available
 commands with the same scope; do not prescribe an unavailable wrapper.
@@ -1577,14 +1624,18 @@ commands with the same scope; do not prescribe an unavailable wrapper.
 >    classification, and reason for unresolved goals, including new
 >    functions above 15 but below 30. Unknown data is unresolved, not
 >    passing. An unchanged function above 30 may retain that explicit
->    reason. Re-select from the actual candidate when test changes
->    make the unit group eligible for collection.
+>    reason. Ready may proceed with the recorded reasons after at most
+>    three cycles; the command still exits 1 for unresolved or unknown
+>    required goals. Tool failures remain errors. Re-select from the actual
+>    candidate when test changes make the unit group eligible for collection.
 > 6. Run the process on the complete candidate after fixes. Reuse still-
 >    valid coverage; a final report does not require another collection.
 >    Put the full Markdown in the PR body, including fenced `mermaid`
 >    drawings and legends unchanged, even after `The map did not change.`
 >    Keep complexity, CRAP or unavailable reason, and trend sections.
->    State approved historical count provenance. The process requests
+>    Clearly label historical counts from head coverage as estimates and
+>    state their coverage origin, fingerprints, measurement version, and
+>    unknown-function count under D3. The process requests
 >    `--record`; only a verified eligible base gets a new record. Commit
 >    it, never rewrite an existing record, and keep the main file in a
 >    metrics conflict. Missing historical values remain absent. Nothing
@@ -1600,6 +1651,16 @@ commands with the same scope; do not prescribe an unavailable wrapper.
 > Do not start or register a persistent server yourself.
 
 ## 12. Appendix E: review record
+
+### Owner approval — 2026-10-18
+
+After the revision 4 review below, the owner answered “Use those
+recommendations” for D1 to D3. The approved contracts are CRAP ≤ 15 for
+new functions, goals with documented exceptions after at most three
+improvement cycles, and clearly labeled head-derived historical estimates
+with provenance. D4 to D9 remain open. This approval implements no runtime
+behavior or AGENTS.md rule and authorizes no base-coverage store or merge
+workflow. The revision 4 review below records the earlier proposal state.
 
 ### Revision 4 — 2026-10-18
 

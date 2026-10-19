@@ -54,10 +54,11 @@ const columns = ['Commit', 'Date', 'Modularity', 'Cross share', 'Cycles', 'Maint
 // a record without coverage.
 const noValue = '–';
 
-// stored: the records of the store, oldest first. Without a record, the section has one line and no row of the head,
-// because there is nothing to compare the head with.
-export function trendSectionOf(stored: readonly TrendNumbers[], head: TrendNumbers): string[] {
-  if (stored.length === 0) return [heading, '', 'No snapshot of main in docs/metrics yet.'];
+// stored: the records of the store, oldest first; undefined means no store. Without a record, the section has one
+// line and no row of the head, because there is nothing to compare the head with.
+export function trendSectionOf(stored: readonly TrendNumbers[] | undefined, head: TrendNumbers): string[] {
+  if (stored === undefined) return [heading, '', 'No trend store.'];
+  if (stored.length === 0) return [heading, '', 'No snapshot of main in the trend store yet.'];
   const rows = stored.map((record) => rowOf([record.commit.slice(0, 8), record.date.slice(0, 10), ...numbersOf(record)]));
   return [heading, '', rowOf(columns), rowOf(columns.map(() => '---')), ...rows, rowOf(['this pull request', '', ...numbersOf(head)])];
 }

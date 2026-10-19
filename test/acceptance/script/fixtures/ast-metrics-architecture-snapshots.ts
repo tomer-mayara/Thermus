@@ -68,7 +68,7 @@ export const noProductionFile = [complexityHeading, '', 'No production file chan
 // The trend section after the complexity section. Two snapshot files without --trend-store have no store, so the
 // section has one line.
 export const trendHeading = '## Trend of src/ on main';
-export const noTrend = [trendHeading, '', 'No snapshot of main in docs/metrics yet.'];
+export const noTrend = [trendHeading, '', 'No trend store.'];
 
 export function edge(to: string, references: number, inCycle = false): EdgeShape {
   return { to, references, inCycle };
