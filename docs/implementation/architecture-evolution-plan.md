@@ -7,9 +7,11 @@ merged CR-24: always print the architecture drawing and require the
 fenced graph and legend in every pull request body. PR #177 merged delivery
 group 3, CR-01 and CR-02: include portal unit coverage and measure each
 function's own characters. PR #178 merged CR-03 and CR-04: verified capture
-provenance, explicit safe recording, and labeled historical estimates under approved D3. PR #179
-implements CR-05: file status, source evidence, and conservative function
-correspondence. It awaits owner review.
+provenance, explicit safe recording, and labeled historical estimates under
+approved D3. PR #179 merged CR-05: file status, source evidence, and
+conservative function correspondence. PR #180 implements CR-06: live
+invariants and separate structural and coverage-collecting architecture
+files. It awaits owner review.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with
@@ -384,11 +386,21 @@ their fenced block and legend unchanged in every pull request body. The original
   proposes other suites. Compatible architecture output names the unit
   suite and the original capture commit. Functions tested only
   by integration or acceptance tests can count as uncovered.
-- `ast-metrics-architecture.live.ts` has a case that collects the complete
-  unit suite, including portal tests. It uses the same selection restriction
-  as the coverage command. Its structural case does not collect coverage. Both coverage-collecting live cases use temporary output reports and
-  preserve the default report. Structural architecture uses `--no-coverage`
-  and starts no suite. `ast-metrics-coverage.live.ts` needs no ast-metrics.
+- `ast-metrics-architecture.live.ts` is structural only. It uses
+  `--no-coverage` and starts no suite. The separate
+  `ast-metrics-architecture-coverage.live.ts` and
+  `ast-metrics-coverage.live.ts` collect both complete unit parts. Run either
+  only when `src/` changed or both complete parts were independently selected.
+  Otherwise record it as deferred, not passed. Both collectors use private
+  output reports and assert that the default report stays unchanged.
+  Architecture files use private trend stores; the structural case checks
+  worktree cleanup.
+  The coverage live file needs no ast-metrics; MCP, snapshot, and architecture
+  live files skip without it. A skip is not a pass. Live contracts check
+  dynamic structure and positive counts rather than dated repository counts.
+  The [policy mapping](test-gate-policy.md#ast-metrics-focused-and-live-contracts)
+  selects affected focused and live contracts; command and double changes do
+  not select all live files or a broader nested suite.
 - The 2026-10-18 study observed a reported seven-point maintainability drop
   and an unreported 1.3-point drop. It established no exact drop threshold.
 - The base gets the coverage of the head (see "CRAP per function"), so a
@@ -478,9 +490,11 @@ double to answer the two tools from fixtures.
   one file, when the command runs, then the exit status is 1 with one
   diagnostic line and no partial snapshot file.
 - Given the real ast-metrics (live test), when the command runs on this
-  repository, then the current live check fixes eight non-shared communities
-  and two cycles, within 60 seconds (updated in PR #170). CR-06 will replace
-  those incidental counts with invariants.
+  repository, then the snapshot has the shared kernel, unique labels,
+  source members, valid community and cycle references, positive file and
+  function counts, and HEAD within 60 seconds. The `--base HEAD` case also
+  checks its deadline and worktree cleanup. CR-06 in PR #180 replaces the
+  dated community, cycle, and file counts with these invariants.
 
 **Unit test list.** The LOC-weighted average; the label rule; the `src/`
 filter; the cycle list from the edges; the file-to-function join.
@@ -610,7 +624,9 @@ per character (V8 gives a block only where its count differs from its
 parent's), the helpers are filtered by range, and the live check finds
 `createApplication` present in `src/application.ts` and checks calls of other
 functions of that file. Unit tests do not call `createApplication`;
-integration and acceptance tests do.
+integration and acceptance tests do. CR-06 in PR #180 keeps these application
+contracts and CR-01's explicit proof that portal unit tests call
+`initializePortal`; it adds a check that the default report stays unchanged.
 
 **Outcome and scope.** Add `script/code-quality/ast-metrics-coverage.ts [--from DIR]
 [--out FILE]`. By default it runs the unit suite of `dist/` with
@@ -632,9 +648,10 @@ with small V8 coverage files.
   has its own entry and share.
 - Given a compiler helper, when the command runs, then it is absent.
 - Given the real unit suite (live test), when the command runs on this
-  repository, then `coverage.json` names the unit suite and holds
-  `createApplication` of `src/application.ts` and calls of other functions
-  of that file; it does not require a call of `createApplication`.
+  repository, then `coverage.json` names the unit suite, has verified
+  provenance, holds `createApplication` and calls of other application
+  functions, and proves that portal unit tests call `initializePortal`.
+  CR-06 checks that the default report stays unchanged.
 
 **Unit test list.** The merge of two files; the character share; the path map;
 the helper filter.

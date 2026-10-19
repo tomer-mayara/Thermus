@@ -103,7 +103,9 @@ base ref. `ast-metrics-mcp.test.ts` runs the one-shot MCP call against a
 double of the server: the function table, the pass-through of arguments,
 error answers, a hanging and an early-exiting server, and that no server
 process remains. `ast-metrics-mcp.live.ts` runs the real server when
-`ast-metrics` is on PATH; the default suites skip it.
+`ast-metrics` is on PATH; ordinary suites do not select it. It checks a
+positive function table, its declared row count, and the missing-file error,
+without requiring an incidental function name. An absent-tool skip is not a pass.
 
 `test/unit/script/ast-metrics-coverage.test.ts` checks help, refused
 arguments, and unverified `--from` inspection with an empty PATH and a Git
@@ -164,11 +166,16 @@ unverified inspection. It runs no application suite.
 raw data without its original manifest fails by default and that explicit
 inspection has unverified status and no invented capture commit.
 
-`ast-metrics-coverage.live.ts` runs both complete parts of the real unit
-suite and checks a called `initializePortal` in
-`src/user-portal/portal.ts`. It uses a temporary `--out` report. Run it only
-when both complete parts are selected or `src/` changed; the default suites
-skip it. The architecture live coverage case keeps the same scope limit.
+`ast-metrics-coverage.live.ts` builds and runs both complete parts of the
+real unit suite. It checks verified report provenance, `createApplication`
+present in `src/application.ts`, calls of other application functions, and
+the explicit proof that portal unit tests call `initializePortal` in
+`src/user-portal/portal.ts`. It uses a private `--out` report and asserts
+that the default report stays unchanged. It needs no
+ast-metrics. Run it only when `src/` changed or both complete unit parts
+were independently selected: emitted Node tests and source portal tests.
+Otherwise record it as deferred, not passed. Ordinary suites do not select it.
+The separate architecture coverage live file has the same scope limit.
 
 `test/unit/script/ast-metrics-snapshot.test.ts` checks the help and the
 refused arguments of the snapshot command with an empty PATH, and the rules
@@ -193,7 +200,11 @@ worktrees (also a locked one, also one of an active run that must stay, also
 one that git cannot remove), SIGTERM and SIGINT with exit 143 and 130, and
 that no repository hook runs in the worktree. `ast-metrics-snapshot.live.ts`
 runs the real tool on the repository when it is on PATH, with and without
-`--base HEAD`; the default suites skip it.
+`--base HEAD`. It checks the shared kernel, unique labels, source members,
+valid community and cycle references, positive file and function counts,
+HEAD, deadlines, and worktree cleanup. Community, cycle, and file counts
+can change without breaking these invariants. Ordinary suites do not select
+it; an absent-tool skip is not a pass.
 
 `test/acceptance/script/ast-metrics-snapshot-provenance.test.ts` checks that
 capture records source and expected coverage-input identity and refuses to
@@ -367,17 +378,32 @@ short commits, missing provenance, source and date mismatches, offline
 verification against immutable base content, malformed history, concurrent
 writers, and repository-free reading of legacy history. Temporary trend
 stores isolate every case.
-`ast-metrics-architecture.live.ts` runs the real tool with `--base HEAD`
-and a temporary trend store. The structural case uses `--no-coverage`,
-checks equal summary values, the complete graph and legend, no production
-file changes, no record, and no worktree left. Its second case builds and
-collects both complete unit parts to a private output report, then passes
-that report with `--coverage` and marks each source file touched. It checks
-equal counts, good or warning bands without changes, equal CRAP cells, and
-an empty added-or-worse list. Both cases preserve the default coverage
-report and write no repository trend record. Run the collecting case only
-when both complete unit parts were already selected or `src/` changed;
-the default suites skip this live file.
+`ast-metrics-architecture.live.ts` runs only the structural case with the
+real tool, `--base HEAD`, `--no-coverage`, and a private trend store. It
+checks equal summary values, every reported community, the complete graph
+and legend, no production file changes, no record, and no worktree left.
+It starts no suite.
+
+`ast-metrics-architecture-coverage.live.ts` separately builds and collects
+both complete unit parts to a private report, then passes it with
+`--coverage` and marks each source file touched. It checks that numeric base
+risk counts do not exceed head counts and that no band is critical and no
+function is added or worse. CR-05 can withhold base risk where function
+identity is unknown, so a base cell can be `not measured` and its head cell
+numeric. It asserts that the default coverage report stays unchanged and
+uses a private trend store. It writes no repository trend record. Run it
+only when `src/` changed or both complete unit parts were independently selected.
+Otherwise record it as deferred, not passed.
+
+Both architecture files need ast-metrics on PATH and skip when it is absent;
+a skip is not a pass. Ordinary suites do not select these live files.
+Command and double changes select affected focused and live contracts only,
+as the [policy mapping](../implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts)
+describes. A slice that changes only dedicated live files and documents can
+run MCP, snapshot, structural architecture, and the existing focused README
+contract after a build. It defers both collectors and selects no complete
+unit, acceptance, integration, or interface suite. The build only prepares
+emitted tests.
 
 The following is the same complete inventory as the script README. The
 contract discovers available files in lexical order. These rows do not select
@@ -395,6 +421,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
+| live | test/acceptance/script/ast-metrics-architecture-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
@@ -402,7 +429,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
-| live | test/acceptance/script/ast-metrics-architecture.live.ts | yes |
+| live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |

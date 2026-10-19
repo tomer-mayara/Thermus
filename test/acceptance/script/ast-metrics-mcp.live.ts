@@ -16,11 +16,12 @@ test('Given the real ast-metrics and a production file, when file runs in the re
   const result = await runScript(t, astMetricsMcpScript, { args: ['file', 'src/application.ts'], cwd: root });
   assert.equal(result.code, 0, result.stderr);
   const [header, heading, ...functions] = result.stdout.trimEnd().split('\n');
-  assert.match(header, /^src\/application\.ts: (score \d+\.\d, )?\d+ decision paths?, \d+ functions?$/);
+  const summary = /^src\/application\.ts: (?:score \d+\.\d, )?\d+ decision paths?, (\d+) functions?$/.exec(header);
+  assert.ok(summary, header);
   assert.equal(heading, '  score  paths  lines  name');
   assert.ok(functions.length > 0, result.stdout);
   for (const line of functions) assert.match(line, /^ +(\d+\.\d|-) +\d+ +\d+ {2}\S/);
-  assert.ok(functions.some((line) => line.endsWith('  createSelfHostedApplication')), result.stdout);
+  assert.equal(functions.length, Number(summary[1]), result.stdout);
 });
 
 test('Given the real ast-metrics and a file that does not exist, when file runs in the repository root, then it fails with the text of ast-metrics within 30 seconds', live, async (t) => {

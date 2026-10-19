@@ -41,8 +41,10 @@ Delivery status:
 - PR #173 already converted and organized the fetch-url scripts as
   TypeScript. CR-19's removal of the four exported test seams remains;
   that PR retained them to preserve its characterization tests.
-- PR #179 implements delivery group 6, CR-05: file status, source evidence,
-  and conservative function correspondence. Owner review is pending.
+- PR #179 merged delivery group 6, CR-05: file status, source evidence,
+  and conservative function correspondence.
+- PR #180 implements delivery group 7, CR-06: live invariants and separate
+  structural and coverage-collecting architecture files. Owner review is pending.
 - The other CRs have not been implemented.
 
 Contents:
@@ -237,12 +239,15 @@ unreported drop of 1.3 points. These examples do not establish an exact
 general threshold. Remove the assertion that a drop of about ten counts.
 
 PR #170 corrected the snapshot live test's fixed counts from seven to
-eight non-shared communities and from one to two cycles. It still fixes
-those counts. The architecture live file still has a complete unit coverage
-case. Both coverage-collecting live cases use temporary output reports and
-preserve the default report. The structural architecture case uses
-`--no-coverage` and starts no suite. The remaining CR-06 invariant work stays
-pending. The current README identifies both live collectors and their scope limits.
+eight non-shared communities and from one to two cycles. PR #180 implements
+CR-06 and replaces those dated counts with structural invariants.
+`ast-metrics-architecture.live.ts` is now structural only and uses
+`--no-coverage`. The collecting case is separate in
+`ast-metrics-architecture-coverage.live.ts`. It and
+`ast-metrics-coverage.live.ts` use private output reports and assert that
+the default report stays unchanged. Both collectors remain deferred unless
+`src/` changed or both complete unit parts were independently selected.
+The policy, guide, README, and inventories state these limits.
 
 Ordinary acceptance tests run commands through
 `test/support/processes/script-command.ts` and compare complete Markdown
@@ -632,9 +637,9 @@ base counts.
 **Documents.** Guide delta and comparison rules, README options, plan
 identity limits, snapshot/change formats, and inventory.
 
-**Delivery.** PR #179 implements CR-05 after PR #178 merged. Owner review is
-pending. The slice adds file-status evidence and conservative function
-correspondence. CR-07's incomplete-coverage bands remain follow-up work.
+**Delivery.** PR #179 merged CR-05 after PR #178: file-status evidence and
+conservative function correspondence. CR-07's incomplete-coverage bands
+remain follow-up work.
 
 ### CR-06. Keep live tests valid and within scope
 
@@ -648,15 +653,22 @@ other live cases for incidental literals while retaining actual contracts.
 
 Give each coverage live case a temporary `--out` and pass it explicitly
 with `--coverage`; never overwrite or delete the default report. Structural
-cases use `--no-coverage` after CR-03. Make structural and coverage-collecting
-architecture cases separately selectable, or split their live files.
+cases use `--no-coverage` after CR-03. Keep structural architecture in
+`ast-metrics-architecture.live.ts` and collection in
+`ast-metrics-architecture-coverage.live.ts`, so the file commands select
+them separately.
 
 For command/double changes, select affected focused and live contracts.
-Do not require all four live files unconditionally. Coverage-collecting
-cases run only when their complete nested suite is selected or `src/`
-changed. Otherwise record them as deferred and use permitted structural
-checks and doubles. The current architecture live case has this restriction
-just as coverage.live does.
+Do not require all live files unconditionally. Coverage-collecting cases run
+only when `src/` changed or both complete unit parts were independently
+selected: emitted Node tests and source portal tests. Otherwise record them
+as deferred and use permitted structural checks and doubles. The separate
+architecture coverage file has this restriction just as coverage.live does.
+A slice that changes only dedicated live files and documents runs affected
+MCP, snapshot, and structural
+architecture contracts plus the existing focused README contract. It adds
+no complete unit, acceptance, integration, or interface suite, `check`, or
+`build:hosted`. A build only prepares emitted tests.
 
 **Acceptance criteria and tests.** Community-count changes do not break
 invariants. Structural cases start no suite and leave no worktree. Coverage
@@ -665,6 +677,15 @@ proofs pass when eligible; absent tools and deferred runs are not passes.
 
 **Documents.** Policy examples, README live descriptions, guide, inventory.
 Preserve the nested-run limit when documenting the selected live checks.
+
+**Delivery.** PR #180 implements CR-06 after PR #179 merged. Owner review is
+pending. The slice updates the four existing live contracts and splits the
+architecture collector into its own live file. Snapshot checks dynamic
+structure, valid references, positive counts, HEAD, deadlines, and cleanup.
+MCP drops an incidental function name; coverage retains the explicit
+`initializePortal` exercised-function proof. The policy maps affected
+module areas to focused and live contracts. Both exhaustive inventories
+mark structural architecture as non-collecting and the new file as collecting.
 
 ### CR-07. Show what is known about unmatched functions
 
@@ -985,11 +1006,11 @@ P2 · S–M · mistake. Land early; maintain alignment through all CRs.
 | MCP help | Index 0 to 128, not 0 to 100. LOC is not a source position. This is runtime help, with a focused test. |
 | Snapshot description | Coverage/CRAP are joined at architecture report time, not stored in current snapshots. |
 | Labels | State the largest-source-namespace rule, tie-break, and duplicate suffix from section 2.3. |
-| Plan T5 | The live check finds `createApplication` present, not called by unit tests; it checks calls of other functions. |
+| Plan T5 | The live check finds `createApplication` present, not called, and calls of other application functions. CR-01 adds the explicit called `initializePortal` proof. CR-06 in PR #180 checks default-report isolation. |
 | Plan T7 | Live checks use a temporary trend store, not writes/deletes under the repository's `docs/metrics/`. |
 | Suite limits | Unit-only remains a limit until CR-11; portal omission is a bug until CR-01. Historical tickets did not add another suite. |
 | Direct tool calls | Baseline remains a direct-call exception until CR-09 supplies its wrapper. |
-| Live commands | Architecture's current coverage case runs the complete unit suite; CR-06 isolates it. Coverage.live needs no ast-metrics. |
+| Live commands | CR-06 in PR #180 separates structural architecture from its coverage file. Both collectors keep their scope limit and preserve the default report. Coverage.live needs no ast-metrics. |
 | Empty trend text | Offline mode without a store says `No trend store.` A configured empty store gets a different message. This changes runtime output. |
 | Config lookup | Verify root versus analyzed-folder behavior in a controlled fixture during implementation, then align comment and guide. This review did not run that check. |
 | Drop threshold | Use the dated seven-point and 1.3-point observations, not an invented ten-point rule. |

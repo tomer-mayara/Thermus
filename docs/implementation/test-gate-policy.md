@@ -210,6 +210,62 @@ Examples:
 - A move out of `src/` still selects rule 1 because its old path changed.
   A move between two test groups selects both groups.
 
+### ast-metrics focused and live contracts
+
+For command or double changes, select existing focused tests and the live
+contracts of the affected behavior. Do not select all metrics live files
+unconditionally. Trace shared modules and doubles to their real consumers.
+The [README inventory](../../script/code-quality/README.md#available-tests)
+lists the available focused tests and identifies both coverage collectors.
+
+| Changed module area or contract | Affected live contract |
+| --- | --- |
+| `ast-metrics-mcp.ts`, `mcp/`, or MCP double behavior | `ast-metrics-mcp.live.ts`; snapshot and architecture contracts only when their MCP use is affected. |
+| `ast-metrics-snapshot.ts`, `snapshot/`, snapshot identity/provenance, or analysis/MCP snapshot answers | `ast-metrics-snapshot.live.ts`; structural architecture when its snapshot input is affected. |
+| `ast-metrics-coverage.ts`, `coverage/`, capture provenance, or build/suite collection | `ast-metrics-coverage.live.ts`; collecting architecture when report compatibility or joining is affected. Both are subject to the collector limit below. |
+| `ast-metrics-architecture.ts`, `architecture/` structural input, matching, map, table, or trend behavior | Structural `ast-metrics-architecture.live.ts`, with `--no-coverage`. |
+| Architecture coverage compatibility, correspondence, CRAP, bands, or coverage rendering | `ast-metrics-architecture-coverage.live.ts`, subject to the collector limit; select affected focused tests with doubles even when collection is deferred. |
+| Shared repository, identity, provenance, process, or double helpers | Only the focused and live contracts that consume the changed behavior. Apply the collector limit to each collecting consumer. |
+| README command help or either test inventory | The existing focused `script-readme.test.ts` contract. Reading a listed command does not select that command. |
+
+`ast-metrics-architecture.live.ts` contains only the structural case and
+starts no suite. The separate `ast-metrics-architecture-coverage.live.ts`
+and `ast-metrics-coverage.live.ts` each build and run both complete unit
+parts. Run either collector only when a `src/` path changed or both complete
+parts were independently selected by the path rules: emitted Node tests and
+source portal tests. A dedicated live-file change, a focused unit test, or a
+script/document change does not select those complete parts. Keep an affected
+collector deferred outside that scope. Deferred is not passed.
+
+For a slice that changes only these dedicated live files and their documents,
+run the changed MCP, snapshot, and structural architecture contracts and the
+existing focused README contract. Build only to prepare their emitted files:
+
+```sh
+npm run build
+node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
+node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
+node --test dist/test/acceptance/script/ast-metrics-architecture.live.js
+node --test dist/test/acceptance/script/script-readme.test.js
+```
+
+This example selects these files because that slice changes their contracts.
+For a narrower change, select only affected rows. Do not add the whole unit,
+acceptance, integration, or interface suite, `npm run check`, or
+`npm run build:hosted`. Record both collectors as deferred for this slice.
+MCP, snapshot, and architecture live files skip without ast-metrics on PATH;
+`ast-metrics-coverage.live.ts` needs no ast-metrics. An absent-tool skip is
+not a pass. Both collectors use private output reports and assert that the
+default report stays unchanged. Architecture cases use private trend stores.
+
+When collection is selected and permitted, run only the affected collector
+file after the build. Run no other suite at the same time on a shared host:
+
+```sh
+node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
+node --test dist/test/acceptance/script/ast-metrics-architecture-coverage.live.js
+```
+
 ### Keep the selection through nested commands
 
 Check what each selected command runs, including child processes and image

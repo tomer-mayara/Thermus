@@ -424,12 +424,30 @@ against the [test inventory](../../docs/testing/test-list.md#ast-metrics-command
 It reads listed test commands; it does not execute them. Prose changes alone do
 not select a broader suite through a command reference.
 
-Live MCP and snapshot tests need ast-metrics on PATH. The architecture live file
-also needs ast-metrics, and its coverage case runs both complete parts of the
-unit suite. The coverage live file runs both parts without ast-metrics. Both
-collector files are eligible only when `src/` changed or both complete parts
-were already selected. Keep them deferred outside that scope. Each architecture live case
-uses a temporary trend store; neither changes repository `docs/metrics/`.
+Live contracts check invariants of the current repository, not fixed community,
+cycle, or file counts. MCP checks the function table and missing-file error.
+Snapshot checks the shared kernel, unique labels, source members, valid
+community and cycle references, positive file and function counts, HEAD,
+deadlines, and worktree cleanup.
+
+`ast-metrics-architecture.live.ts` is structural only. It uses `--no-coverage`,
+checks equal metrics and the graph against the reported communities, and starts
+no suite. `ast-metrics-architecture-coverage.live.ts` separately collects both
+complete unit parts and passes its private report with `--coverage`.
+`ast-metrics-coverage.live.ts` also collects both complete parts and keeps the
+explicit proof that portal unit tests call `initializePortal`.
+Both collectors assert that the default report stays unchanged. Each
+architecture file uses a temporary trend store and writes no repository
+trend record. Structural architecture checks that no worktree stays.
+
+MCP, snapshot, and both architecture live files need ast-metrics on PATH and
+skip when it is absent. The coverage live file needs no ast-metrics. A skip is
+not a pass. Run either collector only when `src/` changed or both complete
+unit parts were independently selected: emitted Node tests and source portal
+tests. Otherwise record it as deferred, not passed. A build only prepares
+emitted tests. Command and double changes select the affected focused and live
+contracts, as mapped in the [policy](../../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts);
+they do not select all live files.
 
 Architecture acceptance cases share complete base, banded, and repository
 drawings in `test/acceptance/script/fixtures/ast-metrics-architecture-goldens.ts`.
@@ -442,6 +460,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
+| live | test/acceptance/script/ast-metrics-architecture-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
@@ -449,7 +468,7 @@ the complete graph without bands and proves that no test suite runs.
 | ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
-| live | test/acceptance/script/ast-metrics-architecture.live.ts | yes |
+| live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
