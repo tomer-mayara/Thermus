@@ -1,4 +1,4 @@
-import { parseArgs } from 'node:util';
+import { parseCommandArguments } from '../shared/command-line.ts';
 import { CommandError } from '../shared/repository.ts';
 import type { CrapGoals } from './types.ts';
 
@@ -20,11 +20,7 @@ export function commandOf(args: readonly string[]): CrapCommand {
 }
 
 function parsed(args: readonly string[]) {
-  try {
-    return parseArgs({ args, options, allowPositionals: true });
-  } catch {
-    throw new CommandError('Invalid arguments. Use --help for the supported options.');
-  }
+  return parseCommandArguments({ args, options, allowPositionals: true });
 }
 
 function thresholdOf(option: string, text: string): number {

@@ -4,7 +4,7 @@ import { countOf } from './risk-counts.ts';
 import { cellOf, type Side } from './format.ts';
 import type { CrapDelta } from './crap-delta.ts';
 import { crapLimit, type FileCrap } from './crap.ts';
-import { textOrder } from './order.ts';
+import { textOrder } from '../shared/order.ts';
 import { addedOrWorseLines, unmeasuredLines } from './function-lines.ts';
 
 // A side without a function that has a CRAP, such as a file of types, is not measured.

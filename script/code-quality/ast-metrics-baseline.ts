@@ -2,9 +2,11 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseArgs } from 'node:util';
+import { checkAstMetricsStarted } from './shared/subprocess.ts';
+import { reportCommandError } from './shared/command-error.ts';
+import { parseCommandArguments } from './shared/command-line.ts';
 import { ignoredEntryCount } from './baseline/ignored-count.ts';
-import { CommandError, notInstalled, repositoryRoot } from './shared/repository.ts';
+import { CommandError, repositoryRoot } from './shared/repository.ts';
 import { cliToolVersion } from './shared/tool-version.ts';
 
 const help = `Usage: node script/code-quality/ast-metrics-baseline.ts [--allow-tool-version] [--help]
@@ -24,11 +26,7 @@ Exit status: 0 after a successful refresh and valid counts; 1 on failure.
 `;
 
 function optionsOf(args: readonly string[]) {
-  try {
-    return parseArgs({ args, options: { 'allow-tool-version': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } }).values;
-  } catch {
-    throw new CommandError('Invalid arguments. Use --help for the supported options.');
-  }
+  return parseCommandArguments({ args, options: { 'allow-tool-version': { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } }).values;
 }
 
 function baselineCount(root: string, allowMissing = false): number {
@@ -44,10 +42,7 @@ function baselineCount(root: string, allowMissing = false): number {
 
 function refresh(root: string): void {
   const run = spawnSync('ast-metrics', ['baseline'], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'], timeout: 60_000 });
-  if (run.error) {
-    const { code, message } = run.error as NodeJS.ErrnoException;
-    throw new CommandError(code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${message}`);
-  }
+  checkAstMetricsStarted(run.error);
   if (run.status === null) throw new CommandError(`ast-metrics baseline stopped on signal ${run.signal}.`);
   if (run.status !== 0) throw new CommandError(`ast-metrics baseline failed with exit status ${run.status}.`);
 }
@@ -69,7 +64,5 @@ function main(args: readonly string[]): void {
 try {
   main(process.argv.slice(2));
 } catch (error) {
-  if (!(error instanceof CommandError)) throw error;
-  process.stderr.write(`ast-metrics-baseline: ${error.message}\n`);
-  process.exitCode = 1;
+  reportCommandError('ast-metrics-baseline', error);
 }

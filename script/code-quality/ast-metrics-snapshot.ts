@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { cliToolVersion } from './shared/tool-version.ts';
 import * as fs from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { reportFailure } from './shared/command-error.ts';
+import { cliToolVersion } from './shared/tool-version.ts';
 import { snapshotOfBase } from './snapshot/base.ts';
 import { commandOf } from './snapshot/command-line.ts';
 import { snapshotOfTree } from './snapshot/tree.ts';
@@ -89,8 +90,5 @@ function plural(count: number, one: string, many: string): string {
 try {
   process.stdout.write(await main());
 } catch (error) {
-  const message = error instanceof repository.CommandError ? error.message : `Unexpected failure: ${error instanceof Error ? error.message : String(error)}`;
-  // A diagnostic is one line, also when ast-metrics or the server wrote several lines.
-  process.stderr.write(`ast-metrics-snapshot: ${message.replace(/\s+/g, ' ').trim()}\n`);
-  process.exitCode = 1;
+  reportFailure('ast-metrics-snapshot', error);
 }

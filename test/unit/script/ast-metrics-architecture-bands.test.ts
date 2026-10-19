@@ -1,62 +1,30 @@
+import type { MapCommunity as Community, MapSnapshot as Snapshot } from '../../../script/code-quality/architecture/types.ts';
+import type { CoverageReport as Coverage } from '../../../script/code-quality/architecture/coverage.ts';
+import { mapSnapshotOf } from '../../support/fixtures/ast-metrics-map-snapshot.ts';
 import { completeSourceEvidence, functionIdentityOf } from '../../support/fixtures/ast-metrics-function-identity.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { astMetricsArchitectureScript } from '../../support/processes/module-paths.ts';
 
-// The bands of the architecture report: the band of each community, its line in the node text, the border classes, the
-// summary count, the legend, and the change of the map when a band changed. The report is pure, so the cases call it in
-// the test process. Its module runs from source next to the command, as the command runs it. The types give the parts of
-// the contract that the cases use, and the cases read the lines of the report.
+// These pure report cases check community bands, node text, border classes, summary counts, and the legend.
+// They also check whether a band change changes the map. Load the source modules next to the command, as it does.
 type Functions = readonly (readonly [name: string, paths: number])[];
 
-interface Community {
-  readonly id: string;
-  readonly label: string;
-  readonly members: readonly string[];
-  readonly files: number;
-  readonly paths: number;
-  readonly edges: readonly { readonly to: string; readonly references: number; readonly inCycle: boolean }[];
-}
-
-interface Snapshot {
-  readonly commit: string;
-  readonly global: { readonly modularity: number; readonly crossShare: number; readonly cycles: readonly (readonly string[])[] };
-  readonly communities: readonly Community[];
-  readonly files: readonly { readonly path: string; readonly maintainability: number; readonly paths: number; readonly functions: readonly { readonly name: string; readonly paths: number }[] }[];
-}
-
-interface Coverage {
-  readonly files: readonly { readonly path: string; readonly functions: readonly { readonly name: string; readonly coveredShare: number }[] }[];
-}
-
-interface Sources {
-  readonly base: Snapshot;
-  readonly head: Snapshot;
-  readonly touched: readonly string[];
-  readonly coverage?: Coverage;
-}
-
-// The command computes the risk once and gives the result to each report view.
-type CrapDelta = object;
 const scriptFolder = pathToFileURL(astMetricsArchitectureScript);
-const { architectureReportOf } = await import(new URL('architecture/report.ts', scriptFolder).href) as {
-  architectureReportOf(sources: Sources, delta: CrapDelta | undefined): string;
-};
-const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as {
-  crapDeltaOf(sources: Sources): CrapDelta | undefined;
-};
+const { architectureReportOf } = await import(new URL('architecture/report.ts', scriptFolder).href) as typeof import('../../../script/code-quality/architecture/report.ts');
+const { crapDeltaOf } = await import(new URL('architecture/crap-delta.ts', scriptFolder).href) as typeof import('../../../script/code-quality/architecture/crap-delta.ts');
 
 // A community of one file, src/<label>.ts, with its functions. The coverage report of the cases has no file, so each
 // named function is uncovered: a function of 5 decision paths has the CRAP 5² + 5 = 30, and one of 4 has 20.
 function community(id: string, label: string, functions: Functions): readonly [Community, Functions] {
-  return [{ id, label, members: [`src/${label}.ts`], files: 1, paths: 10, edges: [] }, functions];
+  return [{ id, label, members: [`src/${label}.ts`], files: 1, loc: 0, paths: 10, edges: [] }, functions];
 }
 
 function snapshotOf(communities: readonly (readonly [Community, Functions])[], others: Readonly<Record<string, Functions>> = {}): Snapshot {
   const fileOf = (path: string, functions: Functions) => ({ path, sourceEvidence: completeSourceEvidence, maintainability: 70, paths: 10, functions: functions.map(([name, paths]) => ({ name, paths, identity: functionIdentityOf(name, paths) })) });
   const files = [...communities.map(([{ members }, functions]) => fileOf(members[0], functions)), ...Object.entries(others).map(([path, functions]) => fileOf(path, functions))];
-  return { commit: 'c0ffee00c0ffee00', global: { modularity: 0.5, crossShare: 0.25, cycles: [] }, communities: communities.map(([entry]) => entry), files };
+  return mapSnapshotOf(files, communities.map(([entry]) => entry));
 }
 
 // A report without files: each named function is uncovered.

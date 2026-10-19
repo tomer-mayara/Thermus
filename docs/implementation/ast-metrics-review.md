@@ -36,7 +36,12 @@ them from the repository root with `pnpm exec node`.
 The nine entry points and their helper folders are in
 [`script/code-quality/`](../../script/code-quality/README.md). Use these wrappers
 for the review process. The process wrapper composes the complete review.
-The baseline wrapper reports counts for an allowed refresh.
+The baseline wrapper reports counts for an allowed refresh. Shared helpers
+handle repeated argument and limit checks, JSON file reads, and UTF-16 text
+ordering. Consumers keep their schema checks and file-kind diagnostics.
+Comparators return zero for ties; locale-sensitive sorts keep their existing
+contract. Each command keeps its help, output, cleanup, and failure behavior.
+CR-17 does not resolve the open D9 diagnostic decision.
 
 Select tests under the [test gate policy](test-gate-policy.md) before these
 commands. Only a change under `src/` requires the full ordinary suite

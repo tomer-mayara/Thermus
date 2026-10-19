@@ -1,7 +1,7 @@
 // The shape of a snapshot file follows version 1 of script/code-quality/snapshot/types.ts. The check covers the fields
 // that the map, the complexity table, and the trend read, so that a wrong file, such as another report of ast-metrics,
 // fails it.
-import { readFileSync } from 'node:fs';
+import { jsonFieldsInFile } from '../shared/json-file.ts';
 import { inputIdentityIn } from '../provenance/read.ts';
 import { identityForMetric } from '../identity/metric.ts';
 import { fileEvidenceIn } from '../identity/file.ts';
@@ -19,17 +19,9 @@ type Check = <T>(value: T | undefined) => T;
 
 // The path is relative to the current folder, as the command line gives it.
 export function snapshotInFile(path: string): MapSnapshot {
-  const fields = json.objectOf(json.jsonOf(fileText(path)));
+  const fields = jsonFieldsInFile(path, 'snapshot');
   if (fields.version !== 1 || !Array.isArray(fields.communities) || !Array.isArray(fields.files)) invalid(path);
   return snapshotOf(fields, (value) => value ?? invalid(path));
-}
-
-function fileText(path: string): string {
-  try {
-    return readFileSync(path, 'utf8');
-  } catch {
-    throw new CommandError(`Cannot read the snapshot file ${path}.`);
-  }
 }
 
 function invalid(path: string): never {

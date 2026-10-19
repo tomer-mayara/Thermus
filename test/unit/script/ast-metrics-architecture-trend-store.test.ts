@@ -1,3 +1,4 @@
+import type { TrendRecord } from '../../../script/code-quality/architecture/trend-record.ts';
 import assert from 'node:assert/strict';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,27 +11,7 @@ import { astMetricsArchitectureScript } from '../../support/processes/module-pat
 // that keeps the file of a commit, the files that are not records, the check of a record file, and the choice and the
 // order of the last ten records. The cases give the store a folder of the test. The module runs from source next to
 // the command, as the command runs it. ast-metrics-architecture-trend.test.ts specifies the record.
-interface TrendNumbers {
-  readonly commit: string;
-  readonly date: string;
-  readonly modularity: number;
-  readonly crossShare: number;
-  readonly cycles: number;
-  readonly maintainability?: number;
-  readonly functionsOver30?: number;
-}
-
-interface TrendRecord extends TrendNumbers {
-  readonly version: 1;
-  readonly paths: number;
-  readonly files: number;
-  readonly functions: number;
-  readonly communities: readonly { readonly label: string; readonly files: number; readonly loc: number; readonly paths: number }[];
-}
-
-const { trendOfStore } = await import(new URL('architecture/trend-store.ts', pathToFileURL(astMetricsArchitectureScript)).href) as {
-  trendOfStore(folder: string, base: TrendRecord): TrendNumbers[];
-};
+const { trendOfStore } = await import(new URL('architecture/trend-store.ts', pathToFileURL(astMetricsArchitectureScript)).href) as typeof import('../../../script/code-quality/architecture/trend-store.ts');
 
 function recordOf(commit: string, date: string): TrendRecord {
   return { version: 1, commit: commit.padEnd(40, '0'), date, modularity: 0.47, crossShare: 0.31, cycles: 1, maintainability: 64.2, paths: 30, files: 2, functions: 3, communities: [{ label: 'alpha', files: 2, loc: 80, paths: 30 }] };

@@ -1,6 +1,7 @@
 // The coverage report of script/code-quality/ast-metrics-coverage.ts, versions 1 and 2. The check covers the fields that the CRAP of a
 // function reads, so that a wrong file, such as a snapshot, fails it.
-import { existsSync, readFileSync } from 'node:fs';
+import { jsonFieldsInFile } from '../shared/json-file.ts';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { coverageProvenanceIn } from '../provenance/read.ts';
 import type { CoverageProvenance } from '../provenance/types.ts';
@@ -41,7 +42,7 @@ export function coverageOfRepository(root: string | undefined, file: string | un
 
 // The path is relative to the current folder, as the command line gives it.
 function coverageInFile(path: string): CoverageReport {
-  const fields = json.objectOf(json.jsonOf(fileText(path)));
+  const fields = jsonFieldsInFile(path, 'coverage');
   if (!supportedVersions.has(fields.version)) invalid(path);
   const check: Check = (value) => value ?? invalid(path);
   const entries = requiredArray(fields.files, check);
@@ -50,14 +51,6 @@ function coverageInFile(path: string): CoverageReport {
     commit: json.textOf(fields.commit), suite: json.textOf(fields.suite), measurementVersion: json.textOf(fields.measurementVersion),
     provenance: coverageProvenanceIn(fields.provenance), files: entries.map((entry) => fileOf(json.objectOf(entry), check, unmeasured)),
   };
-}
-
-function fileText(path: string): string {
-  try {
-    return readFileSync(path, 'utf8');
-  } catch {
-    throw new CommandError(`Cannot read the coverage file ${path}.`);
-  }
 }
 
 function invalid(path: string): never {

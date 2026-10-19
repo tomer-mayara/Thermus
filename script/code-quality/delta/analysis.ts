@@ -1,12 +1,11 @@
-import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { runAstMetrics } from '../shared/subprocess.ts';
 import type { DeltaMeasurement } from './report.ts';
-import { CommandError, notInstalled } from '../shared/repository.ts';
+import { CommandError } from '../shared/repository.ts';
 
 export const reportFolder = 'ast-report';
 const metricsReport = `${reportFolder}/metrics.txt`;
-const outputLimit = 64 * 1024 * 1024;
 
 type AnalysisOptions = { readonly base: string; readonly compare: boolean };
 
@@ -19,13 +18,9 @@ function analyze(root: string, options: AnalysisOptions): void {
   const args = ['analyze', ...comparison, `--report-html=./${reportFolder}`, `--report-openmetrics=./${metricsReport}`, '--report-summary=false', '.'];
   // A Go program such as ast-metrics takes its working directory from PWD when PWD names that folder. Without the root
   // in PWD, a caller that came through a symbolic link gets paths through the link, and no score matches its file.
-  const run = spawnSync('ast-metrics', args, {
-    cwd: root, env: { ...process.env, PWD: root }, encoding: 'utf8', maxBuffer: outputLimit, stdio: ['ignore', 'pipe', 'inherit'],
+  const run = runAstMetrics(args, {
+    cwd: root, env: { ...process.env, PWD: root }, stdio: ['ignore', 'pipe', 'inherit'],
   });
-  if (run.error) {
-    const { code, message } = run.error as NodeJS.ErrnoException;
-    throw new CommandError(code === 'ENOENT' ? notInstalled : `ast-metrics did not run: ${message}`);
-  }
   if (run.status === 0) return;
   // After a success, the list of reports on stdout is noise. After a failure, it can tell the cause.
   process.stderr.write(run.stdout);

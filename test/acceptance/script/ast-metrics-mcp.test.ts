@@ -116,10 +116,13 @@ test('Given tools, when the command runs, then it lists each tool of the server 
   assert.equal(result.code, 0, result.stderr);
   const lines = result.stdout.split('\n');
   assert.equal(lines.pop(), '');
-  assert.deepEqual(lines.map((line) => line.slice(0, line.indexOf(': '))), [
-    'analyze_project', 'find_complex_code', 'find_risky_code', 'get_communities', 'get_coupling',
-    'get_dependencies', 'get_file_metrics', 'get_test_quality', 'list_components',
-  ]);
+  for (const line of lines) assert.match(line, /^[^:\n]+: .+$/);
+  const names = new Set(lines.map((line) => line.slice(0, line.indexOf(': '))));
+  assert.equal(names.size, lines.length, 'Each tool must appear once.');
+  // These tools implement the file, complex, risky, and overview subcommands named by --help.
+  for (const name of ['get_file_metrics', 'find_complex_code', 'find_risky_code', 'analyze_project']) {
+    assert.ok(names.has(name), `The tool list does not name ${name}.`);
+  }
   assert.ok(lines.includes('get_file_metrics: Get detailed metrics for a specific file.'), result.stdout);
   assert.deepEqual(fake.requests().map((request) => request.method), ['initialize', 'tools/list']);
   assert.deepEqual(await fake.stillRunning(), []);

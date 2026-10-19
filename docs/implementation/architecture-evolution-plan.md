@@ -13,8 +13,11 @@ conservative function correspondence. PR #180 merged CR-06: live
 invariants and separate structural and coverage-collecting architecture
 files. PR #181 merged CR-07 and CR-08: incomplete risk assessments and
 the tool version pin. PR #182 merged CR-22: per-function CRAP goals,
-actionable coverage advice, and the approved D1/D2 process. PR #183 implements CR-09: the composed
-review process and the baseline wrapper. It awaits owner review.
+actionable coverage advice, and the approved D1/D2 process. PR #183 merged
+CR-09: the composed review process and the baseline wrapper. PR #184 implements
+CR-17: share proven command checks, JSON reading, and ordering while preserving
+the nine entry points, diagnostics, and report contracts. It awaits owner review.
+The CRAP delta was already calculated once before CR-17. D9 remains open.
 The other changes in the [change request](ast-metrics-change-request.md) remain follow-up work;
 completion of T1 to T7 does not complete those CRs. This plan builds on
 the process of PR #154 ("Code quality review with

@@ -1,6 +1,5 @@
-import { parseArgs } from 'node:util';
+import { checkBaseRef, parseCommandArguments, timeoutOf } from '../shared/command-line.ts';
 import { CommandError } from '../shared/repository.ts';
-import { checkedOptionsOf } from './command-options.ts';
 
 // With two snapshot files, the command runs neither git nor ast-metrics.
 type SnapshotSource =
@@ -28,7 +27,7 @@ type Values = ReturnType<typeof parsedValues>;
 export function commandOf(args: readonly string[]): ArchitectureCommand {
   const values = parsedValues(args);
   if (values.help) return { kind: 'help' };
-  const { timeoutMs } = checkedOptionsOf(values);
+  const timeoutMs = checkedTimeoutOf(values);
   const touched = values.touched?.split(',').filter((path) => path !== '');
   const files = { noCoverage: values['no-coverage'] === true, record: values.record === true, coverage: values.coverage, trendStore: values['trend-store'], out: values.out };
   const source = sourceOf(values, timeoutMs);
@@ -37,11 +36,7 @@ export function commandOf(args: readonly string[]): ArchitectureCommand {
 }
 
 function parsedValues(args: readonly string[]) {
-  try {
-    return parseArgs({ args, options: optionShape }).values;
-  } catch {
-    throw new CommandError('Invalid arguments. Use --help for the supported options.');
-  }
+  return parseCommandArguments({ args, options: optionShape }).values;
 }
 
 function sourceOf(values: Values, timeoutMs: number): SnapshotSource {
@@ -49,4 +44,14 @@ function sourceOf(values: Values, timeoutMs: number): SnapshotSource {
   if (head === undefined && base === undefined) return { kind: 'repository', ref: values.base, timeoutMs, allowToolVersion: values['allow-tool-version'] === true };
   if (!head || !base) throw new CommandError('Give --head and --base-snapshot together, each with a snapshot file.');
   return { kind: 'files', head, base };
+}
+
+function checkedTimeoutOf(values: Values): number {
+  if (values.out === '') throw new CommandError('The --out value must name a file.');
+  if (values['no-coverage'] && values.coverage !== undefined) throw new CommandError('Give --coverage or --no-coverage, not both.');
+  if (values.coverage === '') throw new CommandError('The --coverage value must name a file.');
+  if (values.changes === '') throw new CommandError('The --changes value must name a file.');
+  if (values['trend-store'] === '') throw new CommandError('The --trend-store value must name a folder.');
+  checkBaseRef(values.base);
+  return timeoutOf(values['timeout-ms']);
 }

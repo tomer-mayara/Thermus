@@ -1,4 +1,4 @@
-import { parseArgs } from 'node:util';
+import { checkBaseRef, parseCommandArguments } from '../shared/command-line.ts';
 import { CommandError } from '../shared/repository.ts';
 import type { ProcessOptions } from './types.ts';
 
@@ -11,7 +11,7 @@ const shape = {
 export function processCommandOf(args: readonly string[]): ProcessOptions | { readonly help: true } {
   const values = parsedValues(args);
   if (values.help) return { help: true };
-  if (!/^[^-]/u.test(values.base)) throw new CommandError('The --base value must name a git ref.');
+  checkBaseRef(values.base);
   if (values.coverage === '') throw new CommandError('The --coverage value must name a file.');
   if (values.out === '') throw new CommandError('The --out value must name a file.');
   const collectCoverage = values['collect-coverage'] === true;
@@ -23,6 +23,5 @@ export function processCommandOf(args: readonly string[]): ProcessOptions | { re
 }
 
 function parsedValues(args: readonly string[]) {
-  try { return parseArgs({ args, options: shape }).values; }
-  catch { throw new CommandError('Invalid arguments. Use --help for the supported options.'); }
+  return parseCommandArguments({ args, options: shape }).values;
 }

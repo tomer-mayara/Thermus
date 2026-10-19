@@ -1,4 +1,5 @@
 // A file of src/ that no process of the run loaded is not in the report: the coverage files do not name it.
+import { textOrder } from '../shared/order.ts';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname } from 'node:path';
@@ -20,8 +21,8 @@ type CoverageReport = {
 // The files come in the order of their paths and the functions in the order of their start, so that two reports
 // of one tree are equal and two reports of two trees give a short diff.
 export function writeCoverageReport(file: string, origin: { commit: string | null; provenance: CoverageProvenance }, { processes, scripts }: MergedCoverage): CoverageReport {
-  const files = [...scripts].map(([path, script]) => fileCoverageOf(path, script)).sort((first, second) => (first.path < second.path ? -1 : 1));
-  const unmeasuredFunctions = [...scripts].sort(([first], [second]) => first < second ? -1 : 1).flatMap(([path, script]) => orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters === 0).map(({ name, start, end }): UnmeasuredFunction => ({ path, name: name || '(anonymous)', start, end, reason: 'no-own-characters' })));
+  const files = [...scripts].map(([path, script]) => fileCoverageOf(path, script)).sort((first, second) => textOrder(first.path, second.path));
+  const unmeasuredFunctions = [...scripts].sort(([first], [second]) => textOrder(first, second)).flatMap(([path, script]) => orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters === 0).map(({ name, start, end }): UnmeasuredFunction => ({ path, name: name || '(anonymous)', start, end, reason: 'no-own-characters' })));
   const report: CoverageReport = { version: 2, measurementVersion: 'own-characters-1', unmeasuredFunctions, suite: 'unit', ...origin, processes, scripts: scripts.size, files };
   const temporary = `${file}.${randomUUID()}.tmp`;
   try {
