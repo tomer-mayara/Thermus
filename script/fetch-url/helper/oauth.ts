@@ -1,11 +1,17 @@
 import { randomBytes } from 'node:crypto';
 import { discoverOAuthProtectedResourceMetadata, discoverAuthorizationServerMetadata, startAuthorization, exchangeAuthorization, refreshAuthorization } from '@modelcontextprotocol/client';
-import { browserAuthorization } from './browser.mjs';
-import { FetchUrlError } from './errors.mjs';
+import type { OAuthProfile, OAuthStore, ReadyCredentials } from './credential-store.ts';
+import type { BrowserOpener } from './browser.ts';
+import { browserAuthorization } from './browser.ts';
+import { FetchUrlError } from './errors.ts';
 
-export function readyToken(response, startedAt) {
+type ReadyToken = Omit<ReadyCredentials, 'status'>;
+type AuthorizationMetadata = NonNullable<Awaited<ReturnType<typeof discoverAuthorizationServerMetadata>>>;
+export type OAuthOptions = { profile: OAuthProfile; operation: 'fetch' | 'login' | 'logout'; interactive: boolean; authTimeoutMs?: number; redirectUrl?: string; openBrowser?: BrowserOpener; fetch?: typeof fetch };
+
+export function readyToken(response: { token_type?: unknown; access_token?: unknown; refresh_token?: unknown; scope?: unknown; expires_in?: unknown }, startedAt: number): ReadyToken {
   if (typeof response.token_type !== 'string' || response.token_type.toLowerCase() !== 'bearer') throw tokenError();
-  const ready = { accessToken: requiredCredential(response.access_token), expiresAt: tokenExpiry(response.expires_in, startedAt) };
+  const ready: ReadyToken = { accessToken: requiredCredential(response.access_token), expiresAt: tokenExpiry(response.expires_in, startedAt) };
   if (response.refresh_token !== undefined) ready.refreshToken = requiredCredential(response.refresh_token);
   if (response.scope !== undefined) {
     if (typeof response.scope !== 'string' || response.scope.length > 65_536) throw tokenError();
@@ -14,26 +20,26 @@ export function readyToken(response, startedAt) {
   return ready;
 }
 
-function tokenError() { return new FetchUrlError('The OAuth token response is not usable. Run --login again.'); }
+function tokenError(): FetchUrlError { return new FetchUrlError('The OAuth token response is not usable. Run --login again.'); }
 
-function requiredCredential(value) {
+function requiredCredential(value: unknown): string {
   if (typeof value !== 'string' || !value || value.length > 65_536 || !/^[A-Za-z0-9._~+/-]+=*$/.test(value)) throw tokenError();
   return value;
 }
 
-function tokenExpiry(duration, startedAt) {
-  if (!Number.isSafeInteger(duration) || duration <= 0) throw tokenError();
+function tokenExpiry(duration: unknown, startedAt: number): number {
+  if (typeof duration !== 'number' || !Number.isSafeInteger(duration) || duration <= 0) throw tokenError();
   const expiresAt = startedAt + duration * 1000;
   if (!Number.isSafeInteger(expiresAt) || Math.abs(expiresAt) > 8_640_000_000_000_000) throw tokenError();
   return expiresAt;
 }
 
-function issuerMetadataUrl(issuer) {
+function issuerMetadataUrl(issuer: string): string {
   const url = new URL(issuer);
   return new URL(`/.well-known/oauth-authorization-server${url.pathname.replace(/\/$/, '')}`, url.origin).href;
 }
 
-function oauthFetch(allowed, signal, fetchImpl = fetch) {
+function oauthFetch(allowed: readonly string[], signal: AbortSignal, fetchImpl: typeof fetch = fetch): typeof fetch {
   return async (input, init) => {
     const url = new URL(input instanceof Request ? input.url : input);
     if (!allowed.includes(url.href)) throw new FetchUrlError('OAuth metadata selected an unexpected endpoint.');
@@ -50,7 +56,7 @@ function oauthFetch(allowed, signal, fetchImpl = fetch) {
   };
 }
 
-export async function discoverHostedAuthorization(profile, signal, fetchImpl) {
+export async function discoverHostedAuthorization(profile: OAuthProfile, signal: AbortSignal, fetchImpl?: typeof fetch) {
   const endpoint = new URL(profile.endpoint);
   const resourceMetadataUrl = new URL(`/.well-known/oauth-protected-resource${endpoint.pathname.replace(/\/$/, '')}`, endpoint.origin).href;
   const metadataFetch = oauthFetch([resourceMetadataUrl, issuerMetadataUrl(profile.issuer)], signal, fetchImpl);
@@ -61,19 +67,19 @@ export async function discoverHostedAuthorization(profile, signal, fetchImpl) {
   return { metadata, fetchFn: oauthFetch([metadata.token_endpoint], signal, fetchImpl) };
 }
 
-function requireAuthorizationMetadata(metadata, issuer) {
+function requireAuthorizationMetadata(metadata: AuthorizationMetadata | undefined, issuer: string): asserts metadata is AuthorizationMetadata {
   if (!metadata || metadata.issuer !== issuer || !metadata.code_challenge_methods_supported?.includes('S256') || !metadata.response_types_supported?.includes('code')) throw new FetchUrlError('OAuth issuer metadata is not complete for hosted Thermus.');
   for (const value of [metadata.authorization_endpoint, metadata.token_endpoint]) {
     requireIssuerEndpoint(value, issuer);
   }
 }
 
-function requireIssuerEndpoint(value, issuer) {
-  const url = new URL(value);
+function requireIssuerEndpoint(value: string | undefined, issuer: string): void {
+  const url = new URL(value ?? '');
   if (url.protocol !== 'https:' || url.origin !== new URL(issuer).origin || url.username || url.password || url.hash) throw new FetchUrlError('OAuth issuer metadata selected an unsafe endpoint.');
 }
 
-async function freshAuthorization(options, signal) {
+async function freshAuthorization(options: OAuthOptions, signal: AbortSignal): Promise<ReadyToken> {
   if (!options.interactive) throw new FetchUrlError('No usable hosted credentials. Run --login interactively.');
   const { profile } = options;
   const { metadata, fetchFn } = await discoverHostedAuthorization(profile, signal, options.fetch);
@@ -92,7 +98,7 @@ async function freshAuthorization(options, signal) {
   return readyToken(response, startedAt);
 }
 
-async function credentialsFromStore(options, store, signal) {
+async function credentialsFromStore(options: OAuthOptions, store: OAuthStore, signal: AbortSignal): Promise<string | undefined> {
   if (options.operation === 'logout') { store.logout(); return; }
   if (options.operation === 'login') return saveCredentials(store, await freshAuthorization(options, signal), signal);
   const saved = store.read();
@@ -112,7 +118,7 @@ async function credentialsFromStore(options, store, signal) {
   } catch { throw new FetchUrlError('OAuth refresh did not finish safely. Run --login interactively; the old refresh will not be replayed.'); }
 }
 
-function saveCredentials(store, ready, signal) {
+function saveCredentials(store: OAuthStore, ready: ReadyToken, signal: AbortSignal): string {
   signal.throwIfAborted();
   if (ready.expiresAt <= Date.now() + 30_000) throw new FetchUrlError('The OAuth token response expires too soon. Run --login again.');
   store.saveReady(ready);
@@ -120,13 +126,13 @@ function saveCredentials(store, ready, signal) {
   return ready.accessToken;
 }
 
-export async function prepareOAuth(options, signal) {
+export async function prepareOAuth(options: OAuthOptions, signal: AbortSignal): Promise<string | undefined> {
   if (options.operation === 'login' && !options.interactive) throw new FetchUrlError('Run --login interactively to create hosted credentials.');
   const timeout = new AbortController();
   const timer = setTimeout(() => timeout.abort(new FetchUrlError('Hosted authorization timed out. Run --login again.')), options.authTimeoutMs ?? 300_000);
   const bounded = AbortSignal.any([signal, timeout.signal]);
   try {
-    const { withOAuthStore, OAuthStoreError } = await import('./credential-store.mjs');
+    const { withOAuthStore, OAuthStoreError } = await import('./credential-store.ts');
     try { return await withOAuthStore(options.profile, (store) => { bounded.throwIfAborted(); return credentialsFromStore(options, store, bounded); }); }
     catch (error) { if (error instanceof OAuthStoreError) throw new FetchUrlError(error.message); throw error; }
   } catch (error) {

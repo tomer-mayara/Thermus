@@ -501,8 +501,8 @@ These facts, measured with `ast-metrics-mcp.ts file <path> --json` on
 - `compare.html` lists only the files whose metrics moved enough. The delta
   command lists every delta file.
 - ast-metrics analyzes TypeScript only. The commands under `script/` are
-  TypeScript and appear in the delta without a goal; `script/fetch-url.mjs`
-  and other JavaScript files stay outside the measurements.
+  TypeScript and appear in the delta without a goal, including
+  `script/fetch-url/fetch-url.ts`. JavaScript files stay outside the measurements.
 - ast-metrics groups the dependency graph of all that it analyzes, so the
   snapshot analyzes `src/` alone: growth of `script/` or `test/` cannot
   regroup the communities of `src/`. The review and the lint analyze the

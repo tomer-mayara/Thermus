@@ -264,8 +264,8 @@ The following findings remain with reasons; this gate is not recorded as green.
 `.habit-hooks/snooze.json` remains `[]`.
 
 - Four pre-existing CLI exports remain: `readyToken` and
-  `discoverHostedAuthorization` in `script/fetch-url/oauth.mjs`, plus
-  `callbackResult` and `launchBrowser` in `script/fetch-url/browser.mjs`.
+  `discoverHostedAuthorization` in `script/fetch-url/helper/oauth.ts`, plus
+  `callbackResult` and `launchBrowser` in `script/fetch-url/helper/browser.ts`.
   Their test-facing CLI boundaries need a separate CLI/test refactor; this
   extraction does not alter those modules or silence their findings.
 - Ten comment findings remain. The two comments at

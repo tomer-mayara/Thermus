@@ -53,9 +53,9 @@ export const hostedImageIdentity = containerModule('hosted-image-identity');
 
 // The debug command runs directly from source; no build copies the script.
 export const fetchPublicScriptEntry = fileURLToPath(siblingModule('fetch-public-script-entry'));
-export const fetchUrlOAuthEntry = fileURLToPath(new URL('test/support/processes/fetch-url-oauth-entry.mjs', repositoryRoot));
-export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url.mjs', repositoryRoot));
-export const fetchUrlCredentials = new URL('script/fetch-url/credential-store.mjs', repositoryRoot).href;
+export const fetchUrlOAuthEntry = fileURLToPath(siblingModule('fetch-url-oauth-entry'));
+export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.ts', repositoryRoot));
+export const fetchUrlCredentials = new URL('script/fetch-url/helper/credential-store.ts', repositoryRoot).href;
 
 // The ast-metrics commands run directly from source too. Their tests put a double of the ast-metrics executable, or
 // of git, first on PATH; the doubles run from source as well.

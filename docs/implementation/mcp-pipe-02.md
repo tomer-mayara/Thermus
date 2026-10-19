@@ -396,8 +396,8 @@ The final `habit-hooks` run exited 1;
 additional reader fixes. The snooze file remains `[]`.
 
 - The four pre-existing CLI exports are `readyToken` and
-  `discoverHostedAuthorization` in `script/fetch-url/oauth.mjs`, and
-  `callbackResult` and `launchBrowser` in `script/fetch-url/browser.mjs`. Fixing
+  `discoverHostedAuthorization` in `script/fetch-url/helper/oauth.ts`, and
+  `callbackResult` and `launchBrowser` in `script/fetch-url/helper/browser.ts`. Fixing
   their CLI/test boundary needs a separate refactor; no CLI behavior changes
   in this slice.
 - Privacy and lifecycle comments explain why log failure cannot change a

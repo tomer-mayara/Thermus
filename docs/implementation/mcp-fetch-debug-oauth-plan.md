@@ -4,7 +4,7 @@ Status: **Implemented and validated; awaiting owner review**. Date: **2026-10-17
 
 ## Purpose and current behavior
 
-Before this upgrade, [fetch-url.mjs](../../script/fetch-url.mjs) accepted a
+Before this upgrade, [fetch-url.ts](../../script/fetch-url/fetch-url.ts) accepted a
 supplied Bearer credential, connected through the pinned MCP client, called
 `getURLAsMarkdown` with `{url, reason}`, and printed exact Markdown. It did not
 sign in or refresh. The [original specification](mcp-fetch-debug.md) records
@@ -48,9 +48,9 @@ If `THERMUS_API_KEY` is present, give a useful instruction to unset it first.
 Fetch still requires a URL and reason. Use:
 
 ```sh
-pnpm exec node script/fetch-url.mjs --login
-pnpm exec node script/fetch-url.mjs --url 'https://example.com/' --reason 'Inspect the page content'
-pnpm exec node script/fetch-url.mjs --logout
+pnpm exec node script/fetch-url/fetch-url.ts --login
+pnpm exec node script/fetch-url/fetch-url.ts --url 'https://example.com/' --reason 'Inspect the page content'
+pnpm exec node script/fetch-url/fetch-url.ts --logout
 ```
 
 Fetch success prints exact Markdown; controls print no stdout. Diagnostics
@@ -314,22 +314,24 @@ state were removed after the test.
 
 ## Implementation review and validation
 
-Code candidate: `682eea29d38373c7efa35e889d61b1b48d3b2d13`.
+The current command entry point is `script/fetch-url/fetch-url.ts`. Its four
+internal modules are under `script/fetch-url/helper/`: `oauth.ts`, `browser.ts`,
+`credential-store.ts`, and `errors.ts`. These TypeScript modules define the
+command, callback, token, and store contracts and narrow untrusted values.
+The directory and language changes preserve the CLI options and OAuth behavior.
 
-`script/fetch-url.mjs` is the only command entry point. Its four internal
-modules are under `script/fetch-url/`: `oauth.mjs`, `browser.mjs`,
-`credential-store.mjs`, and `errors.mjs`. The helper bodies are unchanged
-apart from relative import paths. The folder change keeps the CLI options and
-OAuth behavior the same. The manager reviewed the CLI/OAuth implementation,
-credential store, live proofs, file moves, and test-support cleanups and signed
-them off. The implementation adds no dependency or backend authorization change.
-The store removes validated orphan temporary files under its lock after an
-interrupted write.
+The following evidence records the earlier JavaScript candidate
+`682eea29d38373c7efa35e889d61b1b48d3b2d13`. The manager reviewed its CLI/OAuth
+implementation, credential store, live proofs, file moves, and test-support
+cleanups and signed them off. That implementation added no dependency or
+backend authorization change. The store removes validated orphan temporary
+files under its lock after an interrupted write.
 
-The initial filename in the helper folder was `credentials.mjs`. Packaging admission
-caught that both hosted build contexts exclude `credentials*` files. The final
-name is `credential-store.mjs`; both credential-file exclusions stay intact.
-The final image context includes the store module.
+The initial helper filename was `credentials.mjs`. Packaging admission caught
+that both hosted build contexts exclude `credentials*` files. That candidate
+used `credential-store.mjs`; the current TypeScript file is
+`credential-store.ts`. Both credential-file exclusions stay intact, and the
+image context includes the store module.
 
 The two new `.live.ts` files are real Staging acceptance tests. The Connect
 proof checks browser PKCE and provider tokens against the hosted MCP backend.

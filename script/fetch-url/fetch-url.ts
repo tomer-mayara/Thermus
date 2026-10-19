@@ -2,12 +2,16 @@
 import { pathToFileURL } from 'node:url';
 import { Client, StreamableHTTPClientTransport, SdkHttpError, UnauthorizedError } from '@modelcontextprotocol/client';
 import { parseArgs } from 'node:util';
-import { FetchUrlError } from './fetch-url/errors.mjs';
+import type { OAuthOptions } from './helper/oauth.ts';
+import { FetchUrlError } from './helper/errors.ts';
 
 
 const hostedEndpoint = 'https://app.thermus.ai/mcp';
 
-function commandOptions(args) {
+type CommandOptions = { operation: 'fetch' | 'login' | 'logout'; explicit: boolean; url?: string; reason?: string; endpoint: URL; timeoutMs: number; stdin: boolean; nonInteractive: boolean };
+export type FetchUrlRuntime = Partial<Omit<OAuthOptions, 'operation' | 'interactive'>> & { interactive?: boolean };
+
+function commandOptions(args: readonly string[]): CommandOptions | { help: true } {
   let values;
   try {
     ({ values } = parseArgs({ args, options: {
@@ -33,7 +37,7 @@ function commandOptions(args) {
   };
 }
 
-function controlOperation(values, explicit) {
+function controlOperation(values: { login?: boolean; logout?: boolean; url?: string; reason?: string }, explicit: boolean): CommandOptions['operation'] {
   if (!values.login && !values.logout) return 'fetch';
   if (process.env.THERMUS_API_KEY !== undefined) throw new FetchUrlError('First unset THERMUS_API_KEY to use --login or --logout.');
   if (values.login && values.logout || explicit || values.url !== undefined || values.reason !== undefined) {
@@ -42,7 +46,7 @@ function controlOperation(values, explicit) {
   return values.login ? 'login' : 'logout';
 }
 
-function timeoutOf(value) {
+function timeoutOf(value: string): number {
   const timeout = Number(value);
   if (!/^\d+$/.test(value) || !Number.isInteger(timeout) || timeout < 100 || timeout > 300_000) {
     throw new FetchUrlError('The --timeout-ms value must be an integer from 100 to 300000.');
@@ -50,7 +54,7 @@ function timeoutOf(value) {
   return timeout;
 }
 
-function endpointOf(value) {
+function endpointOf(value: string): URL {
   const endpoint = httpUrl(value, 'endpoint');
   if (endpoint.hash) throw new FetchUrlError('The endpoint must not contain a fragment.');
   const loopback = endpoint.hostname === 'localhost' || endpoint.hostname === '[::1]' || /^127(?:\.\d{1,3}){3}$/.test(endpoint.hostname);
@@ -58,17 +62,17 @@ function endpointOf(value) {
   return endpoint;
 }
 
-function httpUrl(value, label) {
+function httpUrl(value: string | undefined, label: string): URL {
   let url;
-  try { url = new URL(value); } catch { throw new FetchUrlError(`Supply a valid ${label}.`); }
+  try { url = new URL(value ?? ''); } catch { throw new FetchUrlError(`Supply a valid ${label}.`); }
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
     throw new FetchUrlError(`The ${label} must use HTTP or HTTPS without embedded credentials.`);
   }
   return url;
 }
 
-const help = `Usage: node script/fetch-url.mjs --url URL --reason TEXT [options]
-       node script/fetch-url.mjs --login | --logout
+const help = `Usage: node script/fetch-url/fetch-url.ts --url URL --reason TEXT [options]
+       node script/fetch-url/fetch-url.ts --login | --logout
 
 Call Thermus getURLAsMarkdown and print the exact Markdown to stdout.
 
@@ -90,7 +94,7 @@ Customer API keys require separate backend support. Endpoint redirects are refus
 Custom and self-hosted endpoints need explicit Bearer input. Use HTTPS, or loopback HTTP.
 `;
 
-async function explicitCredential(fromStdin) {
+async function explicitCredential(fromStdin: boolean): Promise<string> {
   let credential = process.env.THERMUS_API_KEY ?? '';
   if (fromStdin) {
     credential = '';
@@ -107,7 +111,7 @@ async function explicitCredential(fromStdin) {
   return credential;
 }
 
-async function callTool(options, signal, credential) {
+async function callTool(options: CommandOptions, signal: AbortSignal, credential: string): Promise<string> {
   signal.throwIfAborted();
   const client = new Client({ name: 'thermus-fetch-debug', version: '0.0.0' }, {
     versionNegotiation: { mode: 'auto', probe: { timeoutMs: options.timeoutMs, maxRetries: 0 } },
@@ -125,14 +129,14 @@ async function callTool(options, signal, credential) {
   } finally { await client.close(); }
 }
 
-async function fetchWithDeadline(options, signal, credential) {
+async function fetchWithDeadline(options: CommandOptions, signal: AbortSignal, credential?: string): Promise<string> {
   const deadline = new AbortController();
   const timer = setTimeout(() => deadline.abort(new FetchUrlError('The command timed out. Increase --timeout-ms if needed.')), options.timeoutMs);
   const bounded = AbortSignal.any([signal, deadline.signal]);
   const work = (async () => callTool(options, bounded, credential ?? await explicitCredential(options.stdin)))();
-  let rejectAbort;
+  let rejectAbort: (reason: unknown) => void;
   const onAbort = () => rejectAbort(bounded.reason);
-  const aborted = new Promise((_resolve, reject) => { rejectAbort = reject; bounded.addEventListener('abort', onAbort, { once: true }); });
+  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; bounded.addEventListener('abort', onAbort, { once: true }); });
   try {
     bounded.throwIfAborted();
     return await Promise.race([work, aborted]);
@@ -147,18 +151,18 @@ async function fetchWithDeadline(options, signal, credential) {
   }
 }
 
-async function run(options, runtime, signal) {
+async function run(options: CommandOptions, runtime: FetchUrlRuntime, signal: AbortSignal): Promise<boolean | void> {
   if (options.explicit) return process.stdout.write(await fetchWithDeadline(options, signal));
   const profile = runtime.profile ?? { endpoint: hostedEndpoint, issuer: 'https://spontaneous-mountain-26.authkit.app', clientId: 'client_01M561NFVWJDE1SQ4EFMKS38C6' };
   if (options.endpoint.href !== profile.endpoint) throw new FetchUrlError('This endpoint needs an explicit Bearer credential. OAuth is only available for hosted Thermus.');
-  const { prepareOAuth } = await import('./fetch-url/oauth.mjs');
+  const { prepareOAuth } = await import('./helper/oauth.ts');
   const credential = await prepareOAuth({ ...runtime, profile, operation: options.operation, interactive: !options.nonInteractive && (runtime.interactive ?? Boolean(process.stdin.isTTY && process.stderr.isTTY)) }, signal);
   if (options.operation === 'logout') return process.stderr.write('Local grant deleted. Remote authorization, browser sessions, and running requests remain unchanged.\n');
   if (options.operation === 'login') return process.stderr.write('Hosted login saved.\n');
   process.stdout.write(await fetchWithDeadline(options, signal, credential));
 }
 
-function diagnostic(error) {
+function diagnostic(error: unknown): string {
   if (error instanceof FetchUrlError) return error.message;
   if (error instanceof UnauthorizedError || error instanceof SdkHttpError && error.status === 401) return 'Authentication refused. Run --login for hosted OAuth, or supply a valid explicit credential.';
   if (error instanceof SdkHttpError && error.status === 403) return 'Workspace access refused. Check the authorized workspace and current Thermus access; login may not repair it.';
@@ -166,14 +170,14 @@ function diagnostic(error) {
   return 'MCP connection or protocol failed. Check the endpoint, credential, and server logs.';
 }
 
-export async function runFetchUrlCommand(args, runtime = {}) {
+export async function runFetchUrlCommand(args: readonly string[], runtime: FetchUrlRuntime = {}): Promise<number> {
   const controller = new AbortController();
   const cancel = () => controller.abort(new FetchUrlError('The command was cancelled.'));
   process.once('SIGINT', cancel);
   process.once('SIGTERM', cancel);
   try {
     const options = commandOptions(args);
-    if (options.help) process.stdout.write(help);
+    if ('help' in options) process.stdout.write(help);
     else await run(options, runtime, controller.signal);
     return 0;
   } catch (error) {
