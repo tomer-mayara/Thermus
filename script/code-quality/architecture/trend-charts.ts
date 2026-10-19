@@ -18,7 +18,7 @@ function runLinesOf(metric: TrendSeries, run: TrendRun): string[] {
   if (run.length === 1) return [`${first.label}: ${first.value} (${first.basis}). One point; no line.`, ''];
   const title = first.basis === 'maintainability' ? metric.axis : `${metric.axis} - ${first.basis}`;
   return [`${metric.name} (${first.basis}), ${first.label} to ${last.label}.`, '',
-    '```mermaid', 'xychart-beta', `    title "${title}"`,
+    '```mermaid', '---', 'config:', '  xyChart:', '    xAxis:', '      labelRotation: 45', '---', 'xychart-beta', `    title "${title}"`,
     `    x-axis [${run.map((sample) => `"${sample.label}"`).join(', ')}]`,
     `    y-axis "${metric.axis}" ${rangeOf(run)}`,
     `    line [${run.map((sample) => decimalOf(sample.value)).join(', ')}]`, '```', ''];

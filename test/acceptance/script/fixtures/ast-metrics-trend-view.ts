@@ -43,7 +43,7 @@ export const trendViewMarkdown = [
   '### Maintainability trend', '',
   'Missing values are gaps; lines stop at each gap.', '',
   'Maintainability (maintainability), aaaaaaaa to bbbbbbbb.', '',
-  '```mermaid', 'xychart-beta', '    title "Maintainability"',
+  '```mermaid', '---', 'config:', '  xyChart:', '    xAxis:', '      labelRotation: 45', '---', 'xychart-beta', '    title "Maintainability"',
   '    x-axis ["aaaaaaaa", "bbbbbbbb"]', '    y-axis "Maintainability" 60 --> 61',
   '    line [60, 61]', '```', '',
   'this pull request: 66 (maintainability). One point; no line.', '', '',

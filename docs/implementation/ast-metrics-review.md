@@ -894,7 +894,8 @@ nonzero y-axis range, including when every value is zero. Chart labels use
 eight hexadecimal commit characters or `this pull request`; an invalid
 commit prefix becomes the literal `unknown`. Chart values and axis bounds
 use exact decimal text without exponent notation. Numeric tables retain
-every value and gap.
+every value and gap. Mermaid frontmatter rotates commit labels 45 degrees
+so the full eleven-point window remains readable.
 
 This uses separate charts for contiguous runs because the documented
 [Mermaid XY chart syntax](https://mermaid.js.org/syntax/xyChart.html) takes
@@ -902,8 +903,10 @@ numeric line values and defines no missing-value token. This can produce
 several small charts instead of one continuous chart. A two-point
 `xychart-beta` probe rendered in a real GitHub pull request comment on
 2026-10-19 during CR-14 implementation. The disposable comment was removed
-after its body and rendered image were saved. That check covers the basic
-syntax used here; GitHub's renderer version was not identified. Separately,
+after its body and rendered image were saved. A later GitHub pull request
+preview also verified separated, rotated labels over the full eleven-point
+window. These checks cover the syntax used here; GitHub's renderer version
+was not identified. Separately,
 the actual Mermaid 12.2.0 parser accepted the generated chart blocks from a
 temporary installation, with no repository dependency added. Parser acceptance
 does not establish support for newer features on GitHub. See

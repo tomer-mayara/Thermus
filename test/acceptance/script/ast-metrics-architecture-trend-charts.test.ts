@@ -18,7 +18,7 @@ test('Given stored history with missing values and different count bases, when o
   assert.equal(result.code, 0, result.stderr);
   const trend = result.stdout.slice(result.stdout.indexOf('## Trend of src/ on main'));
   assert.match(trend, /### Maintainability trend/u);
-  assert.match(trend, /```mermaid\nxychart-beta\n[\s\S]*line \[60, 61\]/u);
+  assert.match(trend, /```mermaid\n---\nconfig:\n  xyChart:\n    xAxis:\n      labelRotation: 45\n---\nxychart-beta\n[\s\S]*line \[60, 61\]/u);
   assert.match(trend, /this pull request: 66 \(maintainability\)\. One point; no line\./u);
   assert.match(trend, /### Functions ≥ 30 trend/u);
   assert.match(trend, /aaaaaaaa: 7 \(legacy unknown\)/u);

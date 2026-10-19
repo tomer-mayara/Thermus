@@ -55,7 +55,7 @@ function documentTrendMarkdown(commit: string, date: string): string[] {
     '### Maintainability trend', '',
     'Missing values are gaps; lines stop at each gap.', '',
     `Maintainability (maintainability), ${commit.slice(0, 8)} to this pull request.`, '',
-    '```mermaid', 'xychart-beta', '    title "Maintainability"',
+    '```mermaid', '---', 'config:', '  xyChart:', '    xAxis:', '      labelRotation: 45', '---', 'xychart-beta', '    title "Maintainability"',
     `    x-axis ["${commit.slice(0, 8)}", "this pull request"]`, '    y-axis "Maintainability" 69.3 --> 71.3',
     '    line [70.3, 70.3]', '```', '', '',
     '### Functions ≥ 30 trend', '',

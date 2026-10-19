@@ -450,9 +450,10 @@ script groups checks separate maintainability and risk charts, missing-value
 gaps, splits at count-basis changes, single values, empty series, constant
 zero and nonzero axes, safe commit labels, and exact decimal output for tiny
 and large finite values without exponents. Unit cases check the documented
-numeric Mermaid grammar. The acceptance case uses three stored records
-through the offline command. Parser validation is separate from the actual
-two-point GitHub rendering check recorded in the review guide.
+numeric Mermaid grammar and frontmatter for 45-degree x-axis labels. The
+acceptance case uses three stored records through the offline command.
+Parser validation is separate from the two-point and full-window rotated
+GitHub rendering checks recorded in the review guide.
 
 `test/acceptance/script/ast-metrics-architecture.test.ts` compares the
 complete Markdown for snapshot files from

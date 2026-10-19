@@ -96,7 +96,9 @@ test('Given numeric runs, when charts render, then each block uses the documente
   const lines = trendChartsOf([record('a', { maintainability: 55.25, functionsOver30: 3 })], record('b', { maintainability: 60, functionsOver30: 2 }));
   const number = '-?\\d+(?:\\.\\d+)?';
   for (const block of blocksOf(lines)) {
-    const syntax = block.split('\n');
+    const lines = block.split('\n');
+    assert.deepEqual(lines.slice(0, 6), ['---', 'config:', '  xyChart:', '    xAxis:', '      labelRotation: 45', '---']);
+    const syntax = lines.slice(6);
     assert.equal(syntax[0], 'xychart-beta');
     assert.match((syntax[1] ?? ''), /^    title "[a-zA-Z0-9 -]+"$/u);
     assert.match((syntax[2] ?? ''), /^    x-axis \["[a-f0-9]{8}", "this pull request"\]$/u);

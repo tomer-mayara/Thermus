@@ -551,8 +551,9 @@ The chart sections split at missing values; risk sections also split when
 the D3 basis changes. Each contiguous run of at least two values gets a
 fenced `mermaid` `xychart-beta` line chart with an explicit basis caption
 for risk. A single value gets a caption, empty series get an unavailable
-message, and constant runs get a nonzero y-axis range. The numeric tables
-retain all gaps and values. The documented
+message, and constant runs get a nonzero y-axis range. Mermaid frontmatter
+rotates commit labels 45 degrees so the full eleven-point window remains
+readable. The numeric tables retain all gaps and values. The documented
 [Mermaid XY syntax](https://mermaid.js.org/syntax/xyChart.html) defines numeric
 line values but no missing-value token, so several small charts can appear
 for one measure. A two-point `xychart-beta` probe rendered in a real GitHub
