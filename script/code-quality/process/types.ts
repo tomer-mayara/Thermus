@@ -6,6 +6,7 @@ export interface ProcessOptions {
   readonly collectCoverage: boolean;
   readonly skipCoverage: boolean;
   readonly out?: string;
+  readonly json?: string;
   readonly allowToolVersion: boolean;
 }
 
@@ -24,4 +25,8 @@ export interface StageOutcome {
   readonly name: string;
   readonly status: 'passed' | 'goal miss' | 'failed' | 'unavailable';
   readonly text: string;
+}
+
+export interface ProcessResult extends StageReport {
+  readonly outcomes: readonly StageOutcome[];
 }
