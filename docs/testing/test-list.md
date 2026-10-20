@@ -171,7 +171,10 @@ missing or stale required coverage, explicit skip, paths from a nested
 caller, and reuse of combined-suite provenance without any added suite launch;
 `ast-metrics-process-failures.test.ts` checks custom base and version
 propagation, continued evidence after a goal miss, failed analysis without
-history, and retained drawings when recording fails.
+history, and retained drawings when recording fails. It also checks that a
+completed goal miss saves exactly the printed report, and that a final report
+write failure keeps complete stdout and the immutable base record. A retry
+saves the report without changing that record.
 `ast-metrics-process-collection.test.ts` selects both unit parts in a small
 fixture repository and proves explicit collection runs its build and each
 part once; a failed fixture build saves failure evidence and writes no

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { coverageReport } from './fixtures/ast-metrics-architecture-repository-goldens.ts';
-import { processFixture, recordsIn } from './fixtures/ast-metrics-process.ts';
+import { documentProcessMarkdown, processFixture, recordsIn } from './fixtures/ast-metrics-process.ts';
 import { metricsReportOf } from './fixtures/ast-metrics-report.ts';
 import { verifiedCoverageFor } from './fixtures/ast-metrics-verified-coverage.ts';
 
@@ -23,11 +23,47 @@ test('Given a source goal miss, a custom base, and a version override, when the 
   assert.match(result.stdout, /## CRAP\n\nStatus: goal miss\./);
   assert.match(result.stdout, /\| src\/auth\/session.ts \| openSession \| changed \|/);
   assert.match(result.stdout, /## Architecture\n\nStatus: passed\./);
+  assert.equal(readFileSync(join(repository.root, 'ast-report/process.md'), 'utf8'), result.stdout);
   assert.equal(recordsIn(repository).length, 1);
   const commands = doubles.cli.calls().map(({ argv }) => argv);
   assert.equal(commands.filter((args) => args[0] === 'mcp').length, 3);
   assert.ok(commands.some((args) => args.includes('--compare-with=release')));
   assert.ok(commands.some((args) => args[0] === 'review' && args.includes('release')));
+});
+
+test('Given a document-only candidate and an output directory, when saving fails and a file retry succeeds, then complete output and the base record remain', { timeout: 20_000 }, async (t) => {
+  const { repository, run } = processFixture(t);
+  const outputDirectory = join(repository.root, 'ast-report/output');
+  mkdirSync(outputDirectory, { recursive: true });
+
+  const failed = await run(['--out', outputDirectory]);
+
+  assert.equal(failed.code, 1);
+  assert.match(failed.stderr, /^ast-metrics-process: /m);
+  assert.equal(failed.stdout, documentProcessMarkdown(repository));
+  assert.deepEqual([...failed.stdout.matchAll(/^## (Delta|Review|CRAP|Architecture)\n\nStatus: (\w+)\./gm)].map((match) => [match[1], match[2]]), [
+    ['Delta', 'passed'], ['Review', 'passed'], ['CRAP', 'passed'], ['Architecture', 'passed'],
+  ]);
+  const baseCommit = repository.git('rev-parse', 'origin/main').trim();
+  const baseDate = repository.git('show', '-s', '--format=%cI', 'origin/main').trim();
+  const recordName = `${baseDate.slice(0, 10)}-${baseCommit.slice(0, 8)}.json`;
+  const recordDirectory = join(repository.root, 'docs/metrics');
+  assert.deepEqual(readdirSync(recordDirectory).filter((name) => name.endsWith('.json')), [recordName]);
+  const record = recordsIn(repository)[0];
+  assert.equal(record.version, 1);
+  assert.equal(record.commit, baseCommit);
+  assert.equal(record.date, baseDate);
+  assert.equal(record.functionsOver30, undefined);
+  assert.equal(record.crap, undefined);
+  const recordBytes = readFileSync(join(recordDirectory, recordName));
+
+  const retry = await run(['--out', 'ast-report/retry.md']);
+
+  assert.equal(retry.code, 0, retry.stderr);
+  assert.equal(retry.stdout, failed.stdout);
+  assert.equal(readFileSync(join(repository.root, 'ast-report/retry.md'), 'utf8'), retry.stdout);
+  assert.deepEqual(readdirSync(recordDirectory).filter((name) => name.endsWith('.json')), [recordName]);
+  assert.deepEqual(readFileSync(join(recordDirectory, recordName)), recordBytes);
 });
 
 test('Given an ambiguous review exit 1 with no completed JSON, when the process runs, then it saves a failed review and unavailable dependent sections without history', { timeout: 20_000 }, async (t) => {

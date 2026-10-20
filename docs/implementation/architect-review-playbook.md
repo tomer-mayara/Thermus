@@ -2301,6 +2301,41 @@ decisions under section 4. Preserve immutable evidence, P/origin/best anchors an
 append corrections; never reset history or run competing writers. Stop decisions
 that depend on invalid evidence. Keep every merge manual.
 
+### F.7. Slice 1 implementation record
+
+The owner authorized the characterization slice on 2026-10-20. This slice
+preserves current behavior; it activates no proposed policy or command. The
+remaining slices stay pending. [PR #201](https://github.com/tomer-mayara/Thermus/pull/201)
+holds the changes and validation evidence. Merging remains manual.
+
+Existing tests already cover the default CLI/help, exact four-section report,
+graphs/notices, goal misses, partial failures, coverage choices and structural
+publication. Reuse them instead of adding duplicate cases:
+
+| Contract | Existing test file under `test/` |
+| --- | --- |
+| Parser/help, stage outcomes and report formatting | `unit/script/ast-metrics-process.test.ts` |
+| Default stdout, saved report, graphs and base record | `acceptance/script/ast-metrics-process.test.ts` |
+| Coverage reuse, missing/stale evidence and explicit fixture collection | `acceptance/script/ast-metrics-process-coverage.test.ts` and `ast-metrics-process-collection.test.ts` |
+| Goal misses and failed stages | `acceptance/script/ast-metrics-process-failures.test.ts` |
+| Existing history stays immutable | `unit/script/ast-metrics-architecture-trend-store.test.ts` and `acceptance/script/ast-metrics-architecture-trend.test.ts` |
+| Help and document inventories agree | `acceptance/script/script-readme.test.ts` |
+
+The slice adds one failure/retry case to the existing process-failures file.
+An output path that is a directory makes the final Markdown write fail. The
+command must exit 1, keep complete stdout and retain its valid base record.
+A retry to a file must exit 0, save the printed report and preserve the record
+bytes. The existing goal-miss case now also checks saved-report/stdout equality.
+These are passing characterization cases, with no production edit or artificial
+failing step. No new harness, test file or runtime interface is needed.
+
+The changed acceptance file selects the acceptance group. Run that file locally
+before commit, the existing focused process unit characterization, and the
+README contract. Because no `src/` file changes, this slice does not select the
+full ordinary suite. It selects no complete unit group or live coverage
+collector. Current habit-hooks and metrics review requirements still apply
+before Ready.
+
 ## References
 
 These sources support the plan and explain existing behavior. They are not extra
