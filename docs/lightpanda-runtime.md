@@ -94,7 +94,8 @@ the build and test inputs, including `script/` for the debug-client tests,
 and excludes local environment files and keys. The failed-check proof copies
 the same script inputs into its temporary build context.
 The build runs `npm run build:hosted` without external network access,
-including the real local renderer gate with its bundled executable. It then
+including both real local fetch and search renderer gates with its bundled
+executable. It excludes the separate public Brave search proof. It then
 checks the assembled outputs with production dependencies as `node`.
 
 Run the final image proof with Docker Engine, Buildx, and a native or emulated
@@ -238,15 +239,21 @@ node --test dist/test/interface/website-fetcher.test.js
 
 `pnpm test:interface` and `pnpm test` include that public-site smoke test. The fetcher turns [telemetry](#telemetry) off for each renderer run of these tests and of the renderer gate. `npm run check` runs type checking, offline unit tests, and build acceptance tests. It does not run the live renderer interface tests or the renderer gate.
 
-With `LIGHTPANDA_BIN` set to the verified executable, run the explicit renderer gate. It proves the production fetch tool with this renderer:
+With `LIGHTPANDA_BIN` set to the verified executable, run the explicit renderer gate. It checks the fetch and search tools with this renderer:
 
 ```sh
 npm run test:mcp:renderer
 ```
 
-The command makes a clean build and runs `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select the file. The gate runs the self-hosted server in the test process with real Better Auth, the real cleaning pipeline, trusted test rules, and this renderer. The real MCP SDK HTTP client calls `getURLAsMarkdown` for local HTTP pages on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address in the test scope. It keeps the other launch options of the fetcher, also the renderer environment. The gate needs no public network access and no Axiom credentials.
+The command makes a clean build and runs both
+`dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and
+`dist/test/acceptance/mcp/search-pipeline.runtime.js`. Their `.runtime.ts`
+names do not match ordinary suite globs. The final phase of
+`npm run build:hosted` runs both files too. The fetch runtime file runs the
+self-hosted server in the test process with real Better Auth, the real
+cleaning pipeline, trusted test rules, and this renderer. The real MCP SDK HTTP client calls `getURLAsMarkdown` for local HTTP pages on `127.0.0.1`. The test-only `permitIPv4Fixture` seam lets the renderer reach only that address in the test scope. It keeps the other launch options of the fetcher, also the renderer environment. The gate needs no public network access and no Axiom credentials.
 
-The nine cases prove these behaviors:
+The nine fetch cases check these behaviors:
 
 - In the modern 2026-07-28 and legacy 2025-11-25 protocol eras, a user signs in and consents on the bundled pages. The client then gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record.
 - A local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY` gets a local JavaScript page, and the renderer run has telemetry off. The case gives the server a new `HOME` and an `XDG_DATA_HOME` under it. Lightpanda 1.0.0 makes its data directory there at each start: on macOS under `HOME`, on Linux under `XDG_DATA_HOME`. With telemetry on, it writes its telemetry install ID, the file `iid`, there and starts the telemetry sender, which alone connects to `telemetry.lightpanda.io`. The case checks that the directory holds no file.
@@ -257,7 +264,41 @@ The nine cases prove these behaviors:
 - A modern client cancellation stops the renderer child, and the server writes one `cancelled` record.
 - Server shutdown cancels a legacy call. The renderer child stops before the server finishes stopping, and the server writes one `cancelled` record.
 
-Setup fails when `LIGHTPANDA_BIN` is unset or empty, when it is relative, when it does not run, or when it reports a version other than 1.0.0. Then no gate test passes. Each setup message starts with `Renderer gate setup failed:` and points to this document. The [test gate policy](implementation/test-gate-policy.md#renderer-gate-mcp-p03) gives the evidence rules.
+Both runtime files and the live search file use the shared validator
+`test/support/processes/pinned-renderer.ts`. Setup fails when
+`LIGHTPANDA_BIN` is unset or empty, relative, does not run, or reports a
+version other than 1.0.0. Then no gate test passes and no provider request
+starts. Each setup message starts with `Renderer gate setup failed:` and
+points to this document. The setup acceptance test checks all three files
+with outbound network access blocked. The [test gate policy](implementation/test-gate-policy.md#renderer-gate-mcp-p03) gives the evidence rules.
+
+The search runtime file uses a test-only `WebsiteFetcher` transport. It maps
+the canonical Brave URL to a local fixture rendered by the pinned executable,
+then returns canonical Brave metadata to the real adapter. The classifier,
+cleaners, and MCP result run with that rendered page and a test identity
+provider. The transport keeps its
+loopback allowance inside the isolated fixture scope. It adds no production
+endpoint override or network bypass. A local gate pass proves this pipeline;
+it does not prove current Brave access. A renderer gate pass requires every
+case in both runtime files to pass; nine passing fetch cases alone are not a
+complete gate pass.
+
+Run the separate public Brave proof with the same verified executable:
+
+```sh
+npm run test:mcp:search:live
+```
+
+This command makes a clean backend build and runs only
+`dist/test/acceptance/mcp/search-pipeline.live.js`. It uses a local Better Auth
+account and the production search composition. The real provider response
+must pass the adapter, classifier, cleaners, and MCP result checks for useful
+result titles, destination links, and snippets. It needs public network access,
+with no Brave API key or Axiom credential. Ordinary, offline, and container
+build gates exclude this `.live.ts` file. A block, HTTP 429, unsupported page,
+or setup failure is an incomplete live proof. Record the command, date,
+pinned version, and tool result in SEARCH-06 evidence. The local fixture
+gate and earlier raw or nightly probes cannot replace this proof.
 
 ## Upgrade policy
 

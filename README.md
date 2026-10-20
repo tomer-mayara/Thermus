@@ -487,7 +487,8 @@ pnpm test:container   # clean build, then the self-hosted container gate without
 pnpm test:container:hosted # clean build, then the final Linux AMD64 hosted image gate
 pnpm build:hosted     # offline checks, integration selection, and local renderer gate; needs pinned LIGHTPANDA_BIN and OpenSSL
 pnpm test:hosted-live # clean build, portal build, then the hosted live gate; needs WorkOS staging settings, Playwright Chromium, and the pinned LIGHTPANDA_BIN
-pnpm test:mcp:renderer # clean build, then the renderer gate: the fetch tool with the pinned Lightpanda; needs LIGHTPANDA_BIN
+pnpm test:mcp:renderer # clean build, then local fetch and search renderer gates; needs pinned LIGHTPANDA_BIN
+pnpm test:mcp:search:live # clean build, then only the real Brave MCP search proof; needs pinned LIGHTPANDA_BIN and public network access
 pnpm work-slice:basic-mcp-url-fetch # the basic MCP URL fetch work slice: the fetch tool with the mock provider, a local LLM client, and Axiom logs; needs PUBLIC_BASE_URL, AD_RULES_FILE, LIGHTPANDA_BIN, and the Axiom settings
 pnpm work-slice:auth-workos-mcp-url-fetch # the auth WorkOS MCP URL fetch work slice: the hosted edition with the real WorkOS provider and the fetch tool, Google sign-in, a Connect token for Claude Code, and Axiom logs; needs the staging launcher, the defaults and the certificate of its launcher script, AD_RULES_FILE, LIGHTPANDA_BIN, the portal build, and the Axiom settings
 pnpm typecheck   # server and portal types; no output
@@ -571,7 +572,8 @@ release work uses the separate release checks below.
 
 `pnpm build:hosted` runs `check`, all emitted integration tests, the selected
 architecture and hosted acceptance/interface tests, including signup close and
-reopen, and the real local renderer gate. Set an absolute `LIGHTPANDA_BIN` to
+reopen, public search, shared capacity, search shutdown, and both real local
+renderer gates. Set an absolute `LIGHTPANDA_BIN` to
 Lightpanda 1.0.0 and have OpenSSL in
 `PATH` and port 46443 free. No live credentials or public network access are
 needed. `Dockerfile.hosted` supplies the renderer and requires these checks
@@ -590,7 +592,29 @@ owner-selected pinned EasyList snapshot for the hosted rules. The [hosted image 
 gives its provenance, license, limits, and update process. The self-hosted
 Compose installation keeps its separate gate.
 
-`pnpm test:mcp:renderer` makes a clean build and runs the explicit renderer gate, `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The `.runtime.ts` name does not match the `*.test.js` globs, so `pnpm test` and `pnpm test:acceptance` do not select it. Set `LIGHTPANDA_BIN` to the absolute path of the pinned Lightpanda 1.0.0 executable first; the [runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) tells how. The gate needs no public network access and no Axiom credentials: its pages are local HTTP fixtures on `127.0.0.1`. Without the pinned renderer, setup fails, and no test passes. The last phase of `pnpm build:hosted` runs this same complete file. A pass of the renderer gate proves its rendered tool cases; the self-hosted container gate checks one local page with the renderer of that image. The [renderer gate](docs/implementation/test-gate-policy.md#renderer-gate-mcp-p03) gives the rules.
+`pnpm test:mcp:renderer` makes a clean build and runs both explicit renderer
+files: `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and
+`dist/test/acceptance/mcp/search-pipeline.runtime.js`. Their `.runtime.ts`
+names keep them out of ordinary suite globs. Set `LIGHTPANDA_BIN` to the
+absolute path of the pinned Lightpanda 1.0.0 executable; the
+[runtime setup guide](docs/lightpanda-runtime.md#verify-rendering) gives the
+steps. Both files use local fixtures and need no public network access or
+Axiom credentials. The search transport maps the canonical Brave request to
+a local renderer fixture and returns canonical Brave metadata to the real
+engine. It proves local rendering, classification, cleaning, and MCP output.
+It does not prove current Brave access. The last phase of `pnpm build:hosted`
+runs both complete files. Missing or unsupported renderer setup fails the gate.
+The [renderer gate policy](docs/implementation/test-gate-policy.md#renderer-gate-mcp-p03)
+gives the evidence rules.
+
+`pnpm test:mcp:search:live` makes a clean backend build and runs only
+`dist/test/acceptance/mcp/search-pipeline.live.js`. It calls the public Brave
+provider through the real adapter, classifier, cleaners, and MCP result with
+the pinned renderer. It needs public network access and no API key. A block,
+rate limit, or unsupported page fails the proof. Ordinary suites and offline
+or container build gates do not select it. Record the dated tool result
+separately from the local fixture result under
+[SEARCH-06](docs/implementation/search-pipeline-plan.md#search-06-prove-the-pinned-runtime-and-select-the-delivery-gates).
 
 `pnpm work-slice:basic-mcp-url-fetch` runs `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts` from source with `tsx`. The file name has no `.test`, so `pnpm test` and `pnpm test:acceptance` do not select it, as with the `.runtime.ts` and `.live.ts` files. The script composes the production parts with the test-only mock provider, which accepts any Bearer token. It prints the command that adds the server to Claude Code with a static `Authorization` header. It sends its log only to Axiom's `system-log-test` dataset: one tool call writes the URL before the fetch, the Markdown after it, and the completion record. The console shows only the export failures and, when the script fails, one `FATAL` line. The script reads the settings of the server. `PUBLIC_BASE_URL` is required, for example `http://127.0.0.1:8080`. `AD_RULES_FILE` is required; an empty file gives no ad rules, as for the server. `LIGHTPANDA_BIN` must be the absolute path of the pinned Lightpanda 1.0.0. `LISTEN_HOST` and `LISTEN_PORT` are optional; the default port is 8080, and it must be free. The script also needs the Axiom settings of the [OTel logger test guide](docs/testing/otel-logger.md), in the environment or in `.env.local`, and public network access. `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` sets the required settings with their defaults, except `AXIOM_API_KEY`, and runs the entry point with the pinned Node runtime of pnpm from the repository root, also when you start it from another directory; a signal to its process stops the server. The [README of the slice](test/acceptance/work-slice/basic-mcp-url-fetch/README.md) describes it, and the [work slice guide](test/acceptance/work-slice/README.md) lists the slices. The [work slice plan](docs/implementation/basic-mcp-url-fetch-plan.md) records the decisions and the run. The acceptance test of the slice, `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts`, runs offline in the acceptance suite with a renderer double. The script is a development tool. Production keeps Better Auth and the hosted WorkOS provider, and no server setting selects the mock provider.
 

@@ -34,8 +34,9 @@ malformed arguments and outcomes, logger failures, and tracked cancellation.
 formatting reads no argument properties, even when they have throwing getters.
 
 The [SEARCH-05 record](../implementation/search-05.md) gives the runs and
-limits. The pinned local search runtime gate and live Brave proof remain in
-SEARCH-06; these ordinary tests do not replace them.
+limits. SEARCH-06 adds separate pinned local runtime and live Brave files. These
+ordinary tests do not replace their proof. Their dated results belong in the
+SEARCH-06 evidence; file selection alone is not a gate pass.
 
 ## Shared fetch and search resources
 
@@ -3142,13 +3143,52 @@ npm run build && node --test dist/test/acceptance/mcp/self-hosted-rules-startup.
 
 **Renderer gate setup** (`test/acceptance/mcp/renderer-gate-setup.test.ts`)
 
-The test runs the built renderer gate file in a separate `node --test` process with bad prerequisites. It needs no renderer.
+The tests run both built renderer runtime files and the live search file
+in separate `node --test` processes with bad prerequisites and network access
+blocked. All three use the shared validator in
+`test/support/processes/pinned-renderer.ts`. They need no renderer. Two cases also
+inspect the actual package scripts without starting builds or gates.
 
-[V] Given `LIGHTPANDA_BIN` that is unset, relative, a missing file, or an unsupported Lightpanda version, the explicit renderer gate fails with its setup error, and no gate test passes, is skipped, or is left as todo
+Given `LIGHTPANDA_BIN` that is unset, relative, a missing file, or an
+unsupported Lightpanda version, each of the three files must fail with its
+setup error before an outbound network attempt. No gate test may pass, be
+skipped, or remain as todo.
+
+Given the package scripts, the local renderer command must select both fetch
+and search runtime files; hosted build must select those files plus ordinary
+public search, shared capacity, and search shutdown acceptance. Only
+`test:mcp:search:live` may build and select the live Brave file. These checks
+inspect executable selection, not document prose.
 
 ```sh
 npm run build && node --test dist/test/acceptance/mcp/renderer-gate-setup.test.js
 ```
+
+**Search runtime and live proof**
+
+`test/acceptance/mcp/search-pipeline.runtime.ts` uses pinned Lightpanda 1.0.0
+and a test-only `WebsiteFetcher` transport from the canonical Brave request
+to a local rendered fixture. It returns canonical Brave metadata to the real
+adapter, classifier, cleaners, and MCP result with a test identity provider.
+The fixture has an isolated
+loopback allowance. The test introduces no production endpoint override or
+network bypass. `npm run test:mcp:renderer` and the final phase of
+`npm run build:hosted` select this file and the fetch runtime file together.
+
+`test/acceptance/mcp/search-pipeline.live.ts` calls actual Brave through the
+production composition with a real local Better Auth token and pinned
+Lightpanda 1.0.0. It checks useful result titles, links, snippets, and safe
+correlated stage and completion records. A provider block or rate limit fails
+the proof. Only its dedicated command selects it; ordinary, offline, and
+container build gates exclude it:
+
+```sh
+npm run test:mcp:search:live
+```
+
+These two proofs have separate scopes. Record the command, date, pinned
+version, and tool result under SEARCH-06 before claiming either proof passed.
+A local fixture pass does not establish live Brave access.
 
 **Renderer gate** (`test/acceptance/mcp/get-url-as-markdown.runtime.ts`)
 
@@ -3163,7 +3203,8 @@ The production `serve()` runs in the test process with real Better Auth, the rea
 [V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
 [V] Given a legacy call that keeps the renderer waiting, server shutdown cancels it; the renderer child stops before the server finishes stopping, and the server writes one `cancelled` record
 
-Run the renderer gate with the pinned runtime. The `.runtime.ts` name keeps the file out of `npm test` and `npm run test:acceptance`:
+Run both renderer runtime files with the pinned runtime. Their `.runtime.ts`
+names keep them out of `npm test` and `npm run test:acceptance`:
 
 ```sh
 npm run test:mcp:renderer

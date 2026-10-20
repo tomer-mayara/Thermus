@@ -101,11 +101,42 @@ record. Refusals before dispatch get no tool completion or stage record.
 Logger or sink failures cannot change the result or repeat the operation.
 Fetch completion fields retain their existing contract.
 
-## Verification status
+## Verification
 
 [SEARCH-05](../implementation/search-05.md) records public MCP verification.
 Ordinary tests use controlled renderer processes with the captured Brave page
-and real classification and cleaning. The pinned local search runtime gate
-and the separate live Brave end-to-end proof remain in
-[SEARCH-06](../implementation/search-pipeline-plan.md#search-06-prove-the-pinned-runtime-and-select-the-delivery-gates).
-Ordinary fixture tests do not establish current Brave availability.
+and real classification and cleaning.
+
+With `LIGHTPANDA_BIN` set to an absolute path for Lightpanda 1.0.0, run:
+
+```sh
+npm run test:mcp:renderer
+```
+
+This command runs both fetch and search runtime files. The search file maps
+the canonical Brave request to a local renderer fixture through a test-only
+transport and returns canonical Brave metadata to the real engine. It checks
+rendering, classification, cleaning, and MCP output without public network
+access. The hosted offline build also selects both runtime files and ordinary
+public search, capacity, and shutdown cases. Production has no endpoint
+override or private-network bypass.
+
+The public provider proof has its own command:
+
+```sh
+npm run test:mcp:search:live
+```
+
+It builds and runs only `search-pipeline.live.js`, using the pinned renderer,
+real Brave adapter, classifier, cleaners, and MCP result. It needs public
+network access and no Brave API key. It requires useful result titles,
+destination links, snippets, and private correlated records. Ordinary,
+offline, and container build gates exclude it. A block, rate limit, or
+unsupported page fails this proof. A successful local fixture run does not
+establish current Brave availability.
+
+The [SEARCH-06 work package](../implementation/search-pipeline-plan.md#search-06-prove-the-pinned-runtime-and-select-the-delivery-gates)
+tracks the dated local and live evidence. The
+[runtime guide](../lightpanda-runtime.md#verify-rendering) and
+[test gate policy](../implementation/test-gate-policy.md#live-brave-search-proof-search-06)
+give setup and evidence rules.

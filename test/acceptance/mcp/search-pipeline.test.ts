@@ -66,6 +66,46 @@ const fetchDescription = 'Fetch a known web page URL as Markdown. For web search
 const searchUrl = 'https://search.brave.com/search?q=private-acceptance-query';
 const fixture = (name: string) => readFileSync(new URL(`test/support/fixtures/search-engine/${name}`, repositoryRoot), 'utf8');
 
+test('Given the captured Brave page with a video result, when an authorized MCP client searches, then all eighteen cleaned result links, titles, and descriptions reach the client in order', async (t) => {
+  const renderer = RendererProcessDouble.install(t);
+  const metadata = JSON.parse(fixture('brave-results-video.json')) as { query: string; requestedUrl: string; finalUrl: string };
+  renderer.serve(metadata.requestedUrl, { finalUrl: metadata.finalUrl, html: fixture('brave-results-video.html') });
+  const site = await openSearchSite(t, '2026-07-28', 'self-hosted');
+
+  const result = await site.client.callTool({ name: 'search', arguments: { query: metadata.query, reason } });
+
+  assert.notEqual(result.isError, true);
+  assert.equal(result.content.length, 1);
+  const content = result.content[0];
+  assert.equal(content.type, 'text');
+  if (content.type !== 'text') throw new Error('Expected Markdown');
+  const document = parseHTML(`<html><body>${micromark(content.text)}</body></html>`).document;
+  const text = document.body.textContent.replace(/\s+/g, ' ').trim();
+  const links = [...document.querySelectorAll('a[href]')];
+  const expected = JSON.parse(fixture('brave-results-video-expected.json')) as { title: string; url: string; snippet: string }[];
+  assert.equal(expected.length, 18);
+  let previousLink = -1;
+  let previousText = -1;
+  for (const entry of expected) {
+    const position = links.findIndex((link, index) => index > previousLink && link.getAttribute('href') === entry.url
+      && link.textContent.replace(/\s+/g, ' ').trim().includes(entry.title));
+    assert.ok(position > previousLink, `Missing or reordered result link: ${entry.title}`);
+    const titlePosition = text.indexOf(entry.title, previousText + 1);
+    assert.ok(titlePosition > previousText, `Missing or reordered title: ${entry.title}`);
+    const snippetPosition = text.indexOf(entry.snippet, titlePosition + entry.title.length);
+    assert.ok(snippetPosition >= 0, `Missing result description: ${entry.title}`);
+    previousLink = position;
+    previousText = snippetPosition;
+  }
+  assert.equal(renderer.launches.length, 1);
+  assert.equal(site.completions().length, 1);
+  assert.equal(site.completions()[0].status, 'success');
+  assert.deepEqual(site.stages().map(({ stepId, outcome }) => ({ stepId, outcome })), [
+    { stepId: 'search.outgoing.observe_request', outcome: 'allowed' },
+    { stepId: 'search.incoming.process_html', outcome: 'allowed' },
+  ]);
+});
+
 for (const edition of ['hosted', 'self-hosted'] as const) {
   for (const era of mcpProtocolEras) {
     test(`Given ${edition} in ${era}, when an authorized client discovers and searches the captured Brave page, then guidance and all cleaned results reach the client with private correlated records`, async (t) => {

@@ -1,6 +1,6 @@
 # Search pipeline plan
 
-Status: SEARCH-01 contracts, SEARCH-02 provider, and SEARCH-03 core implemented; public search remains open.
+Status: SEARCH-01 through SEARCH-05 implemented; SEARCH-06 verification is in progress.
 Date: 2026-10-20.
 
 Add MCP `search({ query, reason })` to return cleaned first-page Markdown.
@@ -395,7 +395,7 @@ checks above apply to the complete implementation candidate.
 
 These are local work packages. SEARCH-01 contracts, SEARCH-02 provider
 behavior, SEARCH-03 core, SEARCH-04 composition, and SEARCH-05 public MCP
-dispatch are implemented. SEARCH-06 is **Planned**; its pinned search runtime
+dispatch are implemented. SEARCH-06 is **In progress**; its pinned search runtime
 and live Brave proofs remain open. See the
 [SEARCH-05 verification record](search-05.md) for complete-candidate checks.
 The entries are not board issues or instructions to open separate pull requests.
@@ -415,7 +415,7 @@ does not defer checks from earlier work. Add no executable tests for prose.
 
 ### SEARCH-01: Define the query and document contracts
 
-**Status:** Contracts implemented; public acceptance remains open.
+**Status:** Implemented; SEARCH-05 verifies public acceptance.
 **Dependencies:** none. **Acceptance:** AC2.
 
 The [implementation record](search-01.md) gives the changes and verification
@@ -438,11 +438,11 @@ with a fixed error. The document contract carries the original page and only
 **Done evidence:** Focused query tests show red then green, including
 512/513 values and supplementary characters. The public BDD specification
 states reason limits, extra-field refusal, and fixed safe outcomes. Record
-its initial failure; the cross-package flow remains open until implemented.
+its initial failure. SEARCH-05 records the completed public flow.
 
 ### SEARCH-02: Prove Brave HTTP classification and full-page fidelity
 
-**Status:** Implemented and reviewed; public search and delivery gates remain open.
+**Status:** Implemented and reviewed; SEARCH-06 verifies the final delivery gates.
 **Dependencies:** SEARCH-01. **Acceptance:** AC5, AC6,
 and the provider/renderer distinction in AC9. The
 [implementation record](search-02.md) gives the evidence and limits.
@@ -471,13 +471,13 @@ for the full-page fidelity proof.
 
 ### SEARCH-03: Implement the protected search pipeline and records
 
-**Status:** Core implemented; public acceptance remains open.
+**Status:** Implemented; SEARCH-05 verifies public acceptance.
 **Dependencies:** SEARCH-02. **Acceptance:** AC2, AC3,
 AC4, stage cancellation in AC7, and stage records in AC9.
 
 The [implementation record](search-03.md) gives the test-first evidence,
-manager review, and complete-candidate check results. The pull request stays
-Draft while public MCP search remains incomplete.
+manager review, and complete-candidate check results. SEARCH-05 completes
+public MCP search; SEARCH-06 records the final runtime and delivery evidence.
 
 **Scope and main paths:** Add `src/search-pipeline/search-pipeline.ts` and its
 two local executors. Reuse public page-fetch steps, execution validation, and
@@ -501,12 +501,12 @@ The core imports contracts rather than concrete adapters or transport.
 
 ### SEARCH-04: Share renderer resources and hosted operation capacity
 
-**Status:** Composition implemented; public acceptance remains open.
+**Status:** Implemented; SEARCH-05 verifies public acceptance.
 **Dependencies:** SEARCH-03. **Acceptance:** AC7, AC8.
 
 The [implementation record](search-04.md) gives the resource ownership,
 capacity tests, review, and selected verification gates. One hosted factory
-wraps both operations with one owner. Public MCP search remains in SEARCH-05.
+wraps both operations with one owner. SEARCH-05 verifies public MCP search.
 
 **Scope and main paths:** Expand `src/fetch-tool.ts` concrete composition and
 wire `src/application.ts` and `src/hosted-workos-application.ts`. Replace the
@@ -563,7 +563,7 @@ required checks and SEARCH-06 proofs pass.
 
 ### SEARCH-06: Prove the pinned runtime and select the delivery gates
 
-**Status:** Planned. **Dependencies:** SEARCH-05. **Acceptance:** AC10 and
+**Status:** In progress. **Dependencies:** SEARCH-05. **Acceptance:** AC10 and
 complete verification of AC1–AC9.
 
 **Scope and main paths:** Add

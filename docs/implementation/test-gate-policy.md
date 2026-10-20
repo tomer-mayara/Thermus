@@ -36,7 +36,8 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, Git and OpenSSL in `PATH`, free local port 46443, and local loopback access. The Docker build supplies Git and the renderer. |
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
-| Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
+| Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
+| Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
 `npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
@@ -56,10 +57,12 @@ that gate; the ordinary commands do not register it as a skipped test.
 Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
 `npm run test:container` sets the setting.
 
-The renderer gate file uses the `.runtime.ts` name, so `npm test` and
-`npm run test:acceptance` do not select it. `npm run test:mcp:renderer`
-runs it directly, and `npm run build:hosted` runs the same complete file as its
-last phase. The [renderer gate](#renderer-gate-mcp-p03) section gives the rules.
+Both renderer gate files use the `.runtime.ts` name, so `npm test` and
+`npm run test:acceptance` do not select them. `npm run test:mcp:renderer`
+runs both directly, and `npm run build:hosted` runs both complete files as its
+last phase. The separate `.live.ts` search proof runs only through
+`npm run test:mcp:search:live`; ordinary, offline, and container build gates
+do not select it. The [renderer gate](#renderer-gate-mcp-p03) section gives the rules.
 
 The interface suite needs the pinned Lightpanda executable. It also contains a
 public-site smoke test that needs public network access.
@@ -333,7 +336,8 @@ evidence is absent. A loader fixture still does not prove a complete real captur
 These rules grant no additional suite selection.
 
 Dedicated tests keep their own commands: for example,
-`npm run test:mcp:renderer`, `npm run test:hosted-live`,
+`npm run test:mcp:renderer`, `npm run test:mcp:search:live`,
+`npm run test:hosted-live`,
 `npm run test:interface:workos-signup`, and `npm run test:container`.
 Their prerequisites and evidence rules still apply. Do not use
 `npm run build:hosted` to prepare a test-only renderer or hosted-live run;
@@ -361,7 +365,8 @@ In addition to the source validation in rule 1, run these gates when the
 changed source affects their behavior:
 
 - `npm run test:mcp:renderer` for the fetch tool composition
-  (`src/fetch-tool.ts`), renderer runtime (`src/website-fetcher/`), cleaning
+  (`src/fetch-tool.ts`), search engine or pipeline (`src/search-engine/` and
+  `src/search-pipeline/`), renderer runtime (`src/website-fetcher/`), cleaning
   pipeline (`src/html-cleaner-pipeline/`), or rules loading
   (`src/config/ad-rules-file.ts`).
 - `npm run test:container` for the self-hosted server and commands, including
@@ -533,16 +538,25 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/auth/hosted-signup-guidance.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js`,
    `dist/test/acceptance/mcp/hosted-fetch-tool.test.js`,
+   `dist/test/acceptance/mcp/search-pipeline.test.js`,
+   `dist/test/acceptance/mcp/hosted-search-capacity.test.js`,
+   `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`, and
    `dist/test/interface/hosted-renderer-startup.test.js`.
-3. `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`: the real local
-   renderer gate, with the pinned executable.
+3. `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and
+   `dist/test/acceptance/mcp/search-pipeline.runtime.js`: both real local
+   renderer gates, with the pinned executable.
+
+The search acceptance files cover public results and safe records in both
+editions and eras, shared hosted capacity through operation settlement, and
+shutdown during search renderer cleanup. These are offline cases with
+controlled renderer processes; the last phase checks actual rendering.
 
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
 excludes the Axiom tests, public-site renderer smoke test, live WorkOS gate,
-and Docker gates. The command needs the pinned Node and dependencies, Git and OpenSSL
+live Brave search proof, and Docker gates. The command needs the pinned Node and dependencies, Git and OpenSSL
 in `PATH`, a free local port 46443, local loopback connections, and the
 absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no live credential or
 public network access. When that aggregate gate is selected, a local command is:
@@ -632,11 +646,12 @@ command result.
 
 MCP-P03 added the explicit renderer gate,
 `test/acceptance/mcp/get-url-as-markdown.runtime.ts`, and its own command,
-`npm run test:mcp:renderer`. The command makes a clean build and runs
-`node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js`. The
-`.runtime.ts` name does not match the `*.test.js` globs on purpose, so
-`npm test` and `npm run test:acceptance` do not select it. The command is also
-the focused command of the file.
+`npm run test:mcp:renderer`. SEARCH-06 adds
+`test/acceptance/mcp/search-pipeline.runtime.ts`. The command makes a clean
+build and runs both emitted files in one `node --test` invocation. Their
+`.runtime.ts` names do not match the `*.test.js` globs, so
+`npm test` and `npm run test:acceptance` do not select them. The command is
+also the focused command of each runtime file.
 
 The gate needs `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda
 1.0.0 executable. [Lightpanda runtime](../lightpanda-runtime.md) gives the
@@ -647,9 +662,10 @@ address in the test scope. It keeps the other launch options of the fetcher,
 also the renderer environment, so the gate checks the telemetry setting of the
 fetcher. Production has no private-network bypass.
 
-The gate runs the production `serve()` in the test process with real Better
-Auth, the real cleaning pipeline, trusted test rules, and the pinned renderer.
-The real MCP SDK HTTP client calls `getURLAsMarkdown`. The nine cases cover:
+The fetch runtime file runs the production `serve()` in the test process
+with real Better Auth, the real cleaning pipeline, trusted test rules, and
+the pinned renderer.
+The real MCP SDK HTTP client calls `getURLAsMarkdown`. Its nine cases cover:
 
 - exact cleaned Markdown from a local JavaScript page and one safe completion
   record, in the modern 2026-07-28 and the legacy 2025-11-25 era, after the
@@ -679,17 +695,45 @@ Setup fails when `LIGHTPANDA_BIN` is unset or empty, is relative, does not run,
 or reports a version other than 1.0.0. Each setup message starts with
 `Renderer gate setup failed:` and points to the runtime guide. The normal
 acceptance suite has `test/acceptance/mcp/renderer-gate-setup.test.ts`. It runs
-the gate four times with bad prerequisites. It checks that each run fails with
-its setup error and that no gate test passes, is skipped, or is left as todo.
+both runtime files and the live search file four times each with bad
+prerequisites. All three files use `test/support/processes/pinned-renderer.ts`
+for setup validation. The specification blocks network access and checks
+that setup fails before any outbound attempt, with no test passed, skipped,
+or left as todo. It also checks package selection and live-file isolation.
 
 A run of `npm run test:mcp:renderer` that exits with status 0 and shows
-each of the nine cases as passed is a renderer gate pass. The final phase of
-`npm run build:hosted` runs that same complete file; record its renderer
-result separately from the earlier build phases. A run that selects zero
+every case in both runtime files as passed is a renderer gate pass. The
+search file maps the canonical Brave request to a local rendered fixture
+through a test-only `WebsiteFetcher` transport. The real engine receives
+canonical Brave metadata, classifies the page, and sends it through the real
+cleaners and MCP result. This local file uses a test identity provider; the
+separate live proof uses real Better Auth. The transport uses test-scoped loopback permission
+only. Production has no endpoint override. This proves the pinned pipeline
+with a local page; it does not prove public Brave access.
+
+The final phase of `npm run build:hosted` runs both complete runtime files.
+Record its renderer result separately from the earlier build phases. A run that selects zero
 tests, skips a test, leaves a test as todo, or stops with a setup error is not a
 pass. A passing default acceptance suite never counts as rendered end-to-end
 proof, and a container gate pass does not count either. Claim rendered tool
 behavior only after a renderer gate pass.
+
+## Live Brave search proof (SEARCH-06)
+
+`npm run test:mcp:search:live` makes a clean backend build and runs only
+`dist/test/acceptance/mcp/search-pipeline.live.js`. It needs an absolute
+`LIGHTPANDA_BIN` for Lightpanda 1.0.0 and public network access to Brave.
+It uses a local Better Auth account, the production composition, the real
+Brave adapter, classifier, cleaners, and MCP client. It requires useful
+result titles, links, snippets, and safe correlated records. No endpoint
+mapping or captured page replaces the provider response.
+
+The `.live.ts` name keeps this file out of ordinary suite globs. The renderer,
+hosted offline build, and container build gates do not run it. A blocked,
+rate-limited, unsupported, or failed response is an incomplete proof, even
+when the local renderer gate passes. Record the command, date, pinned version,
+and tool result in the SEARCH-06 evidence. Earlier raw requests or nightly
+renderer probes do not replace this complete proof.
 
 ## Hosted offline checks
 
