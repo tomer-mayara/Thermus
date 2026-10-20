@@ -51,6 +51,7 @@ defines the description field.
 | Contract | Responsibility |
 | --- | --- |
 | MCP schema | Accept only `query` and `reason`; reject invalid arguments and extra fields. |
+| `SearchQuery` | Own the exact query text; enforce its Unicode and length rules at construction; expose read-only `value`. |
 | `SearchPipeline` | Check access and semantic inputs; run stages in order; retain provider classification; make the final release decision. |
 | `SearchEngine` | Accept query and signal; return `SearchDocument = { page: WebsiteFetchResult, kind: 'results' \| 'no_results' }`. |
 | Brave HTTP engine | Build the fixed URL, use an injected public `WebsiteFetcher`, check the final URL, and classify the returned DOM. |
@@ -82,9 +83,15 @@ unused response-format union now.
 
 The query must contain 1 to 512 well-formed Unicode scalar values and at least
 one non-whitespace character. Reject lone UTF-16 surrogates. Do not trim or
-normalize accepted text. The MCP schema declares the same limit; its argument
-parser and the protected pipeline use one semantic predicate. Preserve the
-existing reason contract: 1 to 2000 code points and nonblank. Reject extra fields.
+normalize accepted text. `SearchQuery` owns these rules and exposes
+`SearchQuery.MAX_SCALARS` and a read-only `value`. Construction rejects invalid
+input with `TypeError('Invalid search query')`, without including the input.
+The MCP schema declares the same limit. Its argument parser and the protected
+pipeline use `SearchQuery` for semantic validation before effects. Pass
+`query.value` to the string-based stage and engine contracts. The MCP parser
+maps a construction failure to the fixed invalid-arguments result.
+Preserve the existing reason contract: 1 to 2000 code points and nonblank.
+Reject extra fields.
 
 Before stage, report, or provider effects, the core checks `product:access`,
 the query, and the operation ID with the existing canonical
@@ -191,7 +198,7 @@ unchanged. Sink or logger failure must not change a result or repeat work.
 | `src/search-engine/search-engine.ts` | Public engine and rendered-document contracts. |
 | `src/search-engine/search-engine-brave-http.ts` | Public HTTP implementation, fixed URL checks, and private classifier functions. |
 | `src/search-pipeline/search-pipeline.ts` | Protected orchestration and final decision. |
-| `src/search-pipeline/search-query.ts` | Exact Unicode and query bounds. |
+| `src/search-pipeline/search-query.ts` | `SearchQuery` class with exact text, Unicode rules, and query bounds. |
 | `src/search-pipeline/execute-outgoing-step.ts` | Unchanged-query checks and outgoing records. |
 | `src/search-pipeline/execute-incoming-step.ts` | Incoming checks, withholding, and records. |
 | `src/mcp/search-tool-schema.ts` | Search argument schema and parsing. |
@@ -396,19 +403,20 @@ The [implementation record](search-01.md) gives the changes and verification
 evidence. The complete search flow remains in Draft.
 
 **Scope and main paths:** Add the failing public search specification and the
-working semantic query validator in `src/search-pipeline/search-query.ts`.
+`SearchQuery` value class in `src/search-pipeline/search-query.ts`.
 Define `SearchDocument` and the engine contract in
 `src/search-engine/search-engine.ts`. Use
 `test/unit/search-pipeline/` and
 `test/acceptance/mcp/search-pipeline.test.ts`; reuse existing MCP drivers.
 
-**Given-When-Then:** Given boundary queries and contract fixtures, when the
-validator runs, then it accepts exactly 1 to 512 well-formed Unicode scalar
-values with nonblank content, preserves accepted text, and rejects lone
-surrogates and oversized or blank input. The document contract carries the
-original page and only `results` or `no_results` classification.
+**Given-When-Then:** Given boundary queries and contract fixtures, when a
+`SearchQuery` is constructed, then it accepts exactly 1 to 512 well-formed
+Unicode scalar values with nonblank content, preserves accepted text as
+read-only `value`, and rejects lone surrogates and oversized or blank input
+with a fixed error. The document contract carries the original page and only
+`results` or `no_results` classification.
 
-**Done evidence:** Focused validator tests show red then green, including
+**Done evidence:** Focused query tests show red then green, including
 512/513 values and supplementary characters. The public BDD specification
 states reason limits, extra-field refusal, and fixed safe outcomes. Record
 its initial failure; the cross-package flow remains open until implemented.

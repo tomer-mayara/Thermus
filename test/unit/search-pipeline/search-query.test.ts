@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { isValidSearchQuery, SEARCH_QUERY_MAX_SCALARS } from '../../../src/search-pipeline/search-query.ts';
+import { SearchQuery } from '../../../src/search-pipeline/search-query.ts';
 
 test('Given the search query contract, when its public bound is read, then it permits at most 512 Unicode scalar values', () => {
-  assert.equal(SEARCH_QUERY_MAX_SCALARS, 512);
+  assert.equal(SearchQuery.MAX_SCALARS, 512);
 });
 
 for (const [description, value] of [
@@ -14,8 +14,8 @@ for (const [description, value] of [
   ['surrounding whitespace', ' \t café 😀\n '],
   ['decomposed Unicode', 'e\u0301'],
 ] as const) {
-  test(`Given ${description}, when the query is checked, then the exact supplied text is accepted`, () => {
-    assert.equal(isValidSearchQuery(value), true);
+  test(`Given ${description}, when a search query is constructed, then it retains the exact supplied text`, () => {
+    assert.equal(new SearchQuery(value).value, value);
   });
 }
 
@@ -41,7 +41,17 @@ for (const [description, value] of [
   ['a high surrogate after a valid pair', '😀\uD800'],
   ['a low surrogate after a valid pair', '😀\uDC00'],
 ] as const) {
-  test(`Given ${description}, when the query is checked, then it is refused`, () => {
-    assert.equal(isValidSearchQuery(value), false);
+  test(`Given ${description}, when a search query is constructed, then it throws the fixed safe TypeError`, () => {
+    assert.throws(() => new SearchQuery(value), {
+      name: 'TypeError',
+      message: 'Invalid search query',
+    });
   });
 }
+
+test('Given a validated search query, when its public value is replaced, then the write fails and its text stays unchanged', () => {
+  const query = new SearchQuery('original query');
+
+  assert.equal(Reflect.set(query, 'value', 'replacement query'), false);
+  assert.equal(query.value, 'original query');
+});
