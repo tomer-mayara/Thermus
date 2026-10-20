@@ -809,17 +809,21 @@ payment collection, hosted features, or migration between editions.
    Then run the process "Code quality review with ast-metrics" of AGENTS.md
    on the complete candidate; the
    [ast-metrics review guide](ast-metrics-review.md) gives the commands.
-4. Mark the pull request Ready. Wait for every Actions job that starts for its
+4. Compute and record the review route as the section "Review route" of
+   AGENTS.md says.
+5. Mark the pull request Ready. Wait for every Actions job that starts for its
    head to pass. A started job that is pending, skipped, cancelled, or failed is
    not a pass.
-5. If you must make a fix after Ready, return the pull request to Draft first.
+6. If you must make a fix after Ready, return the pull request to Draft first.
    Then continue from step 2 with the new candidate.
-6. The review is manual. The manager reviews the work of each subagent. The
-   owner reviews the pull request. No agent reviewer runs on it.
-7. Merge a clean pull request one time. The owner merges a pull request that
+7. The review is manual. The manager reviews the work of each subagent. The
+   owner reviews the pull request with the depth that its route suggests. No
+   agent reviewer runs on it.
+8. Merge a clean pull request one time. The owner merges a pull request that
    adds a decision record under `architecture/decisions/`.
 
-A Delamain worker run does the required runs and none of the pull request steps.
+A Delamain worker run does the required runs and steps 1 to 4 of the review
+route, and none of the pull request steps.
 For a Delamain ticket, the session opens and merges the pull request one time
 each. A restart reuses the same pull request and merge result.
 

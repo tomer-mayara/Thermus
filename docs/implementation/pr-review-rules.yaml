@@ -1,8 +1,10 @@
 # PR review rules for Thermus.
 #
-# Status: draft proposal of 2026-10-20. Not active. The playbook
-# docs/implementation/pr-review-playbook.md explains the routes and the seven
-# checks. The checks read this file. A change to this file is ASK.
+# Status: proposal of 2026-10-20, in manual trial. The checks do not exist yet.
+# Agents apply these rules by hand, as the section "Review route" of AGENTS.md
+# says. In the trial that section governs where it differs from this file. The playbook docs/implementation/pr-review-playbook.md explains the
+# routes and the seven checks. The checks will read this file. A change to
+# this file is ASK.
 #
 # A scan of the imports in src/**/*.ts on main 304cd24f (PR #200) seeded the
 # lists: 138 files, 438 import statements, every relative specifier resolved
@@ -10,7 +12,7 @@
 # "to create" marks a path that does not exist yet.
 
 version: 1
-status: draft
+status: manual-trial
 glob_syntax: minimatch on the repository path, dot files included
 diff_base: the merge base with origin/main, with rename detection
 
@@ -164,6 +166,9 @@ read_paths:
   paths:
     - .ast-metrics-baseline.yaml     # the accepted native lint violations
     - .code-quality-exceptions.yaml  # to create; the metric exceptions of check 4
+    - docs/implementation/test-gate-policy.md     # while no CI exists, this document is the enforcement; move it out when workflows run the checks
+    - docs/implementation/ast-metrics-review.md   # same reason
+    - .agent/**                                   # agent configuration
   moved_by_stop_rule: []             # executable files of reverted SHOW pull requests; the owner removes them after the fix
 
 # Check 2. CI emits a declaration file for each module below and compares it
@@ -236,7 +241,7 @@ dependency_graph:
   triggers:
     edge_not_listed: FIX             # until the pull request lists it; the listing is ASK through protected_paths
     type_edge_becomes_runtime: FIX   # the same as a new edge
-    runtime_edge_becomes_type: SHOW  # update the list in the same pull request
+    runtime_edge_becomes_type: none  # the kind is a maximum; a weaker use needs no change
     folder_not_listed: FIX           # a new top-level folder under src/
     package_removed: FIX             # until the list changes
     cycle_not_listed: FIX
@@ -262,7 +267,7 @@ dependency_graph:
     - user-portal
     - website-fetcher
     - composition
-  allowed_edges:                     # kind is runtime, type or both; 34 edges on 2026-10-20
+  allowed_edges:                     # 34 edges on 2026-10-20; kind is the maximum allowed: type allows type-only imports, runtime and both allow any import
     - { from: auth, to: billing, kind: type }
     - { from: auth, to: config, kind: both }
     - { from: auth, to: hosted-admin, kind: runtime }   # known cycle

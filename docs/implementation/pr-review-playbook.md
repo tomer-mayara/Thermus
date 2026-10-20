@@ -1,9 +1,14 @@
 # PR review playbook
 
-Status: draft proposal of 2026-10-20. Not active. [AGENTS.md](../../AGENTS.md)
-and the [test gate policy](test-gate-policy.md) govern until the owner adopts
-this playbook. The lists, thresholds and routes of each trigger are in
-[pr-review-rules.yaml](pr-review-rules.yaml). The checks read that file.
+Status: proposal of 2026-10-20, in manual trial. The checks and the merge
+automation do not exist yet. Until they exist, agents compute the route by
+hand, as the section "Review route" of [AGENTS.md](../../AGENTS.md) says. In
+the trial, the agent computes the route, declares the facts, and drafts the
+decision; the owner decides and reviews. The route guides the depth of the
+owner's review. It does not yet change who merges: AGENTS.md and the
+[test gate policy](test-gate-policy.md) govern the merge.
+The lists, thresholds and routes of each trigger are in
+[pr-review-rules.yaml](pr-review-rules.yaml). The checks will read that file.
 This playbook replaces the long architect review draft of 2026-10-20, which
 is not in the repository.
 
@@ -22,10 +27,10 @@ merge. No check calls a language model.
 | Route | Condition | Human action | When |
 | --- | --- | --- | --- |
 | `FIX` | A required check failed, or a check found a fact that the pull request has not declared in the rules file: a new edge, a changed surface, a forbidden edge. | The author repairs the pull request, or declares the fact. A human cannot approve a red check. | Before merge. |
-| `ASK` | The pull request changes a protected path. The rules file, a surface snapshot, a contract document and the dependency graph section are protected paths. | The architect answers the question of the matching rule and adds a decision record (ADR) under `architecture/decisions/`. | Before merge. |
+| `ASK` | The pull request changes a protected path. The rules file, a surface snapshot, a contract document and the dependency graph section are protected paths. | The architect answers the question of the matching rule and records the decision: in the trial in the pull request description, later as a decision record (ADR) under `architecture/decisions/`. | Before merge. |
 | `READ` | A size or test signal fired, or the pull request changes a metric exception or the lint baseline. | The owner reads the diff and sets the `approved` label. | Before merge. |
 | `SHOW` | All checks are green and an executable file changed. | The owner skims the merged diff within one working day and reverts a bad change. Render deploys `main` on each push, so the change is live before the owner reads it. | After merge. |
-| `SHIP` | All checks are green and only documents changed. | Nobody. | Merge on green. |
+| `SHIP` | All checks are green and no file under `scopes.executable` changed. | Nobody. | Merge on green. |
 
 Take the first route from the top whose condition holds. Print every reason,
 not only the first. A `hold` label blocks the merge on every route. The merge
@@ -85,16 +90,19 @@ itself turns a failed command into `FIX`.
 
 ## Adoption steps
 
-1. Add CI with the current suite and the metrics process. This is check 7.
-   The runner needs Node 24.20.0, pnpm, ast-metrics 0.43.1, habit-hooks, the
-   Lightpanda runtime of the renderer gate, Docker, and the secrets of the
-   Axiom and WorkOS interface tests.
+1. Manual trial, one month: agents compute the routes by hand and record
+   them on each pull request, as AGENTS.md says. The labels and the pull
+   request descriptions are the record; the monthly review collects them
+   into the calibration file. The trial does not wait for CI.
 2. Seed the lists in the rules file from the current code. The draft rules
    file seeds the packages, the edges, the builtins, and the surface
    candidates.
-3. Build checks 1 to 6 under `script/pr-review/`.
-4. Run checks 1 to 5 in report-only mode for one month: the checks print
-   routes and set labels, but nothing merges or blocks on the routes. Record the
-   routes in the calibration file.
-5. Turn on merge on green for `SHIP` and `SHOW`. Update AGENTS.md, the test
+3. Add CI with the current suite and the metrics process. This is check 7.
+   The runner needs Node 24.20.0, pnpm, ast-metrics 0.43.1, habit-hooks, the
+   Lightpanda runtime of the renderer gate, Docker, and the secrets of the
+   Axiom and WorkOS interface tests.
+4. Build checks 1 to 6 under `script/pr-review/`.
+5. Run checks 1 to 5 in report-only mode for one month: the checks print
+   routes and set labels, but nothing merges or blocks on the routes.
+6. Turn on merge on green for `SHIP` and `SHOW`. Update AGENTS.md, the test
    gate policy, and the metrics guide in the same pull request.

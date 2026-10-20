@@ -88,15 +88,106 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 - Update the documents that the change affects in the same pull request.
 - Run the ast-metrics review process (the section "Code quality review
   with ast-metrics" below) on the complete candidate before Ready.
+- Compute and record the review route as the section "Review route" below
+  says: steps 1 to 4 when you open the draft, steps 5 to 8 before Ready.
 - Mark the pull request Ready and wait for every Actions job that starts
   for its head to pass; a started job that is pending, skipped, cancelled,
   or failed is not a pass. A fix after Ready returns the pull request to
   Draft first. The details are in
   [the test gate policy](docs/implementation/test-gate-policy.md).
 - The review is manual for now: you review the work of your subagents, and
-  the owner reviews the pull request. No agent reviewer runs on it.
+  the owner reviews the pull request with the depth that its route suggests.
+  No agent reviewer runs on it.
 - Merge a clean pull request one time. The owner merges a pull request that
   adds a decision record under `architecture/decisions/`.
+
+## Review route
+
+The [PR review playbook](docs/implementation/pr-review-playbook.md) and its
+[rules file](docs/implementation/pr-review-rules.yaml) define five routes:
+`FIX`, `ASK`, `READ`, `SHOW`, `SHIP`. A route says how deeply a human reads
+the pull request. The checks that compute a route do not exist yet. Until
+they exist, you compute the route by hand with the steps below. The route
+does not change who merges.
+
+In this trial, this section governs where it differs from the rules file.
+Do not apply the keys `required_checks`, `ratchet`,
+`public_surface.snapshot_dir`, `size.test_counts.source`, `calibration`, or
+the merge keys of `routes`. Match the facts against the rules file of the
+merge base. The head lists the facts that you declare.
+
+Do steps 1 to 4 when you open the draft, and again after each change to the
+candidate. Do steps 5 to 8 after the final metrics report and before Ready.
+A subagent or a worker does steps 1 to 4 on its part and reports the facts.
+The manager, or the Delamain session, does steps 5 to 8 on the complete
+candidate.
+
+1. **Changed paths.** Commit every file first, so that `git status --porcelain`
+   prints nothing. Set `B=$(git merge-base origin/main HEAD)`. List the
+   changed paths with `git diff --name-status -M $B HEAD`. For a rename,
+   match the old path and the new path. Match each path against
+   `protected_paths` and `read_paths`. The glob syntax is minimatch, and a
+   pattern also matches dot files. A match in `protected_paths` is a reason
+   for `ASK`. A match in `read_paths` is a reason for `READ`.
+2. **Facts to declare.** List the imports that the candidate adds under
+   `src/`:
+   `git diff -U0 --no-renames $B HEAD -- src | grep -E "^(\+\+\+ |\+[[:space:]]*import ['\"]|\+.*(from ['\"]|import\(['\"]))"`.
+   Read each full statement. Apply each trigger under
+   `dependency_graph.triggers` to the imports. Choose the kind of an edge
+   with `dependency_graph.counting.type_only`. The rules file does not list
+   these facts yet: a new package edge; a type edge that becomes a runtime
+   edge; a new top-level folder under `src/`; an npm package or a Node
+   builtin that the package does not list; an import, from a package other
+   than composition, of a file in another package that `public_surface` does
+   not list. Remove an unintended fact, for example by an import through a
+   module that `public_surface` lists. Declare each other fact in the rules
+   file in the same pull request: the edge with its kind under
+   `allowed_edges`; the file under `public_surface.between_packages`; the
+   import under `allowed_external_imports` or `allowed_node_builtins`.
+   Update the count and date comments. That edit changes a protected path,
+   so the route is `ASK`. An edge in `forbidden_edges` is `FIX`: remove the
+   import. A new package cycle, or a known cycle that gains a package edge
+   or a member, is `FIX`.
+3. **Public surface.** Check each module in `public_surface` that changed,
+   or that re-exports or imports types from a changed file of its package.
+   Check each changed document under `docs/reference/`. Compare the exported
+   declarations and the documented behavior before and after. A difference
+   is a reason for `ASK`. Answer the question of `protected_paths.contracts`
+   for that difference.
+4. **Size and tests.** Count the changed production lines with
+   `git diff --numstat -M $B HEAD -- src | awk '{s+=$1+$2} END {print s+0}'`.
+   Count the total with the same command on `-- .` and these exclusions:
+   `':(exclude,glob)docs/metrics/**' ':(exclude,glob)docs/api-surface/**' ':(exclude)pnpm-lock.yaml' ':(exclude).ast-metrics-baseline.yaml'`.
+   A count above a limit in `size` is a reason for `READ`. A test that the
+   diff removes with no replacement, or a new `skip` or `todo`, is a reason
+   for `READ`. Name the tests.
+5. **Metrics.** Use the final report of the process "Code quality review with
+   ast-metrics" below. A recorded miss of an added or changed function or
+   file, or a kept high finding, is a reason for `READ`. A miss with the
+   reason `unchanged by this PR` is not. An MI drop of five or more on an
+   existing file is a reason for `READ`. These rules replace `ratchet` in
+   the trial.
+6. **Route.** A required check is a required run of the test gate policy, or
+   habit-hooks. While one fails, the route is `FIX`. Do not mark a `FIX`
+   pull request Ready: make the check pass, then compute the route again.
+   Otherwise take the first route in the order `ASK`, `READ`, `SHOW`, `SHIP`
+   that has a reason. `SHOW` applies when no other route has a reason and a
+   file under `scopes.executable` changed. `SHIP` applies when no other
+   route has a reason and no file under `scopes.executable` changed. Keep
+   every reason, not only the first.
+7. **Record.** Add a section "Review route" to the pull request description:
+   the route; each reason as `<key>: <path or fact>`; the changed paths; the
+   line counts; the declared facts; the surface differences. Set the label
+   with `gh pr edit <n> --repo tomer-mayara/Thermus --add-label route:<new> --remove-label route:<old>`.
+   The labels `route:fix`, `route:ask`, `route:read`, `route:show` and
+   `route:ship` exist in the repository. Update the section and the label
+   after each change to the candidate.
+8. **Decision.** For `ASK`, write the draft decision in the "Review route"
+   section. Answer the question of each matching group of `protected_paths`.
+   State the guarantee that holds after the change. The owner decides
+   whether the decision becomes a record under `architecture/decisions/`.
+   A record has the name `YYYY-MM-DD-<topic>.md` and the headings Context,
+   Decision, and Consequences. The owner merges a pull request that adds one.
 
 ## Code quality review with ast-metrics
 
@@ -177,5 +268,6 @@ server.
 For a ticket from a Delamain board, follow the code prompt of your run.
 The prompt gives the order of the steps. The session opens and merges the
 pull request one time each. A worker run does neither: it runs the checks
-of "Pull requests" and none of its pull request steps. A restart reuses
+of "Pull requests", does steps 1 to 4 of the review route, and reports the
+results; it does none of the pull request steps. A restart reuses
 the same pull request and merge result.
