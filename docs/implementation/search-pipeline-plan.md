@@ -1,6 +1,6 @@
 # Search pipeline plan
 
-Status: SEARCH-01 contracts implemented; the search tool is not yet implemented.
+Status: SEARCH-01 contracts and SEARCH-02 provider implemented; public search remains open.
 Date: 2026-10-20.
 
 Add MCP `search({ query, reason })` to return cleaned first-page Markdown.
@@ -137,6 +137,16 @@ early. If it loses required safe fixture results, add a narrow search-only
 preservation setting in the HTML converter, with fetch defaults unchanged.
 Do not discard CSS or ancestors to force fragment extraction.
 
+SEARCH-02 found that default conversion produced blank lines inside result
+link labels. Its opt-in `CleanHtmlToMarkdownDefuddle` setting,
+`{ preserveSearchResults: true }`, keeps the full cleaned body and converts
+block children of links to inline labels. SEARCH-04 must enable this setting
+for search only. Share the ad cleaner and sanitizer; use separate converter
+instances for the two modes. The [SEARCH-02 record](search-02.md) and
+[fixture notes](../../test/support/fixtures/search-engine/README.md) give the
+capture evidence and its limits. The supported English no-results template
+has a controlled derived fixture; a live empty response remains unverified.
+
 Provider classification failures must remain distinct from renderer failures.
 Report and preserve safe public renderer diagnostics only for renderer errors.
 Unknown provider shapes, challenges, and unsupported final URLs are search
@@ -196,7 +206,7 @@ unchanged. Sink or logger failure must not change a result or repeat work.
 | New production path | Purpose |
 | --- | --- |
 | `src/search-engine/search-engine.ts` | Public engine and rendered-document contracts. |
-| `src/search-engine/search-engine-brave-http.ts` | Public HTTP implementation, fixed URL checks, and private classifier functions. |
+| `src/search-engine/search-engine-brave-http.ts` | Public HTTP implementation, fixed URL checks, and private classification methods. |
 | `src/search-pipeline/search-pipeline.ts` | Protected orchestration and final decision. |
 | `src/search-pipeline/search-query.ts` | `SearchQuery` class with exact text, Unicode rules, and query bounds. |
 | `src/search-pipeline/execute-outgoing-step.ts` | Unchanged-query checks and outgoing records. |
@@ -336,7 +346,10 @@ Keep the live proof separate from deterministic ordinary tests. Record its
 command, date, pinned version, and tool result. Earlier raw probes used
 `1.1.0-nightly.10257+c3dfbaab3` and returned twice in about 2.3 seconds.
 They establish neither pinned-1.0.0 compatibility, conversion fidelity, nor
-sustained public access. No live proof has passed under this plan.
+sustained public access. SEARCH-02 captured a full results page with verified
+1.0.0 and proved its fidelity offline through the real engine and cleaners.
+A later raw request received HTTP 429. No live proof through the complete MCP
+search flow has passed under this plan.
 
 ## Implementation order and gates
 
@@ -377,8 +390,9 @@ checks above apply to the complete implementation candidate.
 
 ## Appendix A: implementation tickets
 
-These are local work packages. SEARCH-01 contracts are implemented; its public
-acceptance flow remains open. SEARCH-02 through SEARCH-06 are **Planned**.
+These are local work packages. SEARCH-01 contracts and SEARCH-02 provider
+behavior are implemented; public search acceptance remains open.
+SEARCH-03 through SEARCH-06 are **Planned**.
 The entries are not board issues or instructions to open separate pull requests.
 No board issue has been created.
 AC numbers refer to the acceptance criteria above. The dependency order is:
@@ -423,8 +437,10 @@ its initial failure; the cross-package flow remains open until implemented.
 
 ### SEARCH-02: Prove Brave HTTP classification and full-page fidelity
 
-**Status:** Planned. **Dependencies:** SEARCH-01. **Acceptance:** AC5, AC6,
-and the provider/renderer distinction in AC9.
+**Status:** Implemented; complete-candidate verification in progress.
+**Dependencies:** SEARCH-01. **Acceptance:** AC5, AC6,
+and the provider/renderer distinction in AC9. The
+[implementation record](search-02.md) gives the evidence and limits.
 
 **Scope and main paths:** Implement
 `src/search-engine/search-engine-brave-http.ts`, with classification private

@@ -6,6 +6,8 @@ import { PreparedHtmlDocument } from './prepare-html-document.ts';
 import { type SanitizeText } from './sanitize-html-document.ts';
 
 export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
+  public constructor(private readonly options: { preserveSearchResults?: boolean } = {}) {}
+
   public async invoke(ctx: HtmlProcessingContext): Promise<HtmlProcessingContext> {
     if (/^[\t\n\f\r ]*$/.test(ctx.html)) {
       return {
@@ -49,6 +51,6 @@ export class CleanHtmlToMarkdownDefuddle implements CleanHtmlToMarkdown {
   }
 
   private async convertHtml(ctx: HtmlProcessingContext, sanitizeText: SanitizeText): Promise<{ content: string; title: string }> {
-    return PreparedHtmlDocument.fromHtml(ctx.html, ctx.finalUrl).extract(sanitizeText);
+    return PreparedHtmlDocument.fromHtml(ctx.html, ctx.finalUrl, this.options.preserveSearchResults).extract(sanitizeText);
   }
 }
