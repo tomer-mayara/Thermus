@@ -220,7 +220,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
   after(() => removeGateResources());
 
-  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address gets the fixed fetch failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+  test('Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address reports a renderer connection failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t);
     const server = await setup.site.startServer(setup.volume);
     const users = mcpUsers(setup);
@@ -238,7 +238,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     const exit = await server.stop();
 
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
-    assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed' }], true]);
+    assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed: Renderer connection failed' }], true]);
     assert.match(server.output, /"tool":"getURLAsMarkdown","url":"https:\/\/93\.184\.216\.34\/page".*"status":"fetch_failed"/);
     assert.doesNotMatch(server.output, /Renderer setup failure/);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);
@@ -379,7 +379,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await setup.site.assertNoOutboundRequests();
   });
 
-  test('Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, each call gets Page fetch failed and one fetch_failed record, the page gets no connection, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
+  test('Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, the address-policy refusals keep the generic fetch error, the renderer refusal reports a connection failure, each call gets one fetch_failed record, the page gets no connection, and no container tries an outbound connection', { timeout: 300_000 }, async (t) => {
     const setup = await installation(t, [alice]);
     const server = await setup.site.startServer(setup.volume, { page: 'blocked' });
     const privateAddress = await setup.site.privateAddress(server.name);
@@ -390,7 +390,9 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     for (const url of urls) results.push(await fetchPage(client, url));
     const exit = await server.stop();
 
-    assert.deepEqual(results.map(({ content, isError }) => [content, isError]), urls.map(() => [[{ type: 'text', text: 'Page fetch failed' }], true]));
+    assert.deepEqual(results.map(({ content, isError }) => [content, isError]), [
+      'Page fetch failed', 'Page fetch failed', 'Page fetch failed: Renderer connection failed',
+    ].map((text) => [[{ type: 'text', text }], true]));
     assert.deepEqual(server.completionRecords().map(({ url, status }) => ({ url, status })), urls.map((url) => ({ url, status: 'fetch_failed' })));
     assert.deepEqual(seamLines(server, 'renderer launch'), [`${containerPage}/story`]);
     assert.deepEqual([...seamLines(server, 'page connection'), ...seamLines(server, 'page request')], []);

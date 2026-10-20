@@ -54,7 +54,7 @@ fetches the page, including when a caller invokes it without MCP.
 | Invalid named arguments | `isError: true`, `Invalid tool arguments` |
 | Missing product permission | `isError: true`, `Access denied` |
 | Hosted capacity occupied | `isError: true`, `Server busy. Try again later.`; completion status `busy` |
-| Fetch failure | `isError: true`, `Page fetch failed`; no HTML processing |
+| Fetch failure | `isError: true`, one safe text result from [public fetch failures](#public-fetch-failures); no HTML processing |
 | Oversized HTML, thrown pipeline failure, or absent/nonstring Markdown | `isError: true`, `Page processing failed`; no partial output |
 | Observed per-call cancellation | Work stops; no successful result |
 
@@ -88,9 +88,12 @@ endpoints.
 The command writes exact Markdown to stdout on success. On failure, it exits
 with status 1 and leaves stdout empty. A tool error with exactly one text item
 preserves these public diagnoses on stderr: `Page processing failed`,
-`Page fetch failed`, `Server busy. Try again later.`, `Request cancelled`,
+`Page fetch failed`, the exact detailed messages below,
+`Server busy. Try again later.`, `Request cancelled`,
 `Invalid tool arguments`, and `Access denied`. Unknown messages or extra content
 items use a generic tool failure diagnosis. Other tool fields are never printed.
+The hosted server must have this change deployed to return detailed failures.
+The command still accepts the generic `Page fetch failed` from older servers.
 
 ## Production composition
 
@@ -183,9 +186,10 @@ user that `users disable` disabled get HTTP 401. A banned user with a live
 session gets HTTP 403. These refusals happen before any fetch or cleaning and
 write no completion record.
 
-Self-hosted startup does not run or check the renderer. Without a usable renderer, each page
-fetch fails with `Page fetch failed` and a `fetch_failed` record. The tool does
-not pass on the fetcher error. The operator log gets a
+Self-hosted startup does not run or check the renderer. A renderer launch
+failure gives a safe `Page fetch failed: Renderer could not start` detail and a
+`fetch_failed` record. The tool does not pass on the fetcher error or its cause.
+The operator log gets a
 [renderer setup report](#renderer-setup-report) instead. The container image
 holds the pinned renderer, as the
 [runtime guide](../lightpanda-runtime.md#container-image) tells, so a server
@@ -233,7 +237,7 @@ new code, for example `EACCES` after the operator puts a file without execute
 permission at the path, adds one new line. A corrected file at the same path
 needs no restart; a changed `LIGHTPANDA_BIN` needs one, because the server reads
 it at startup. After a correction, a recurrence of a reported code writes no new
-line until the next server start. The client result stays `Page fetch failed`,
+line until the next server start. The client gets the safe launch detail below,
 and the completion record stays `fetch_failed`. Other fetch failures, such as
 HTTP errors, timeouts, signals, DNS failures, blocked destinations, and system
 limits such as `EMFILE`, write no renderer setup report. The local commands
@@ -244,8 +248,8 @@ reports as the self-hosted server.
 
 The renderer has a fixed 20-second readiness allowance, including navigation.
 When it stays active at the deadline, the fetcher stops the child and waits for
-its completion. The client gets `Page fetch failed`, no partial Markdown, and
-one completion record with `fetch_failed`.
+its completion. The client gets `Page fetch failed: Renderer readiness timed out`,
+no partial Markdown, and one completion record with `fetch_failed`.
 
 The application logger writes one correlated failure event for each readiness timeout.
 The event includes `category: 'readiness_timeout'`, `phase: 'renderer_process'`,
@@ -254,6 +258,44 @@ Cancellation takes priority and writes no failure diagnostic. The optional
 `reportRendererReadinessTimeout` dependency remains available to other compositions;
 the server uses the unified reporter below, so it does not duplicate this event.
 See the [runtime guide](../lightpanda-runtime.md#renderer-readiness-report).
+
+## Public fetch failures
+
+`FetchPage` converts a typed `WebsiteFetchFailure` to a page-fetch-owned
+`PageFetchFailure`. This public error has only an approved message, with no raw
+cause or diagnostic. MCP returns that message in one text item with
+`isError: true` and completion status `fetch_failed`. It returns no partial
+Markdown and starts no HTML processing after a failed fetch.
+
+Each detailed message starts with `Page fetch failed: `:
+
+| Observed failure | Detail after the prefix |
+| --- | --- |
+| HTTP failure with a valid status from 400 to 599 | `HTTP NNN`, for example `HTTP 429` |
+| HTTP failure without a valid status | `HTTP request failed (status unavailable)` |
+| Renderer readiness deadline | `Renderer readiness timed out` |
+| DNS deadline | `DNS lookup timed out` |
+| Renderer launch failure | `Renderer could not start`, optionally followed by ` (ENOENT)`, ` (EACCES)`, ` (ENOEXEC)`, or ` (ENOTDIR)` |
+| Known DNS failure | `DNS lookup failed` |
+| Known renderer request timeout | `Renderer request timed out` |
+| Known connection failure | `Renderer connection failed` |
+| Known TLS failure | `Renderer TLS failed` |
+| Known redirect limit | `Renderer redirect limit exceeded` |
+| Known transfer failure | `Renderer transfer failed` |
+| Renderer output limit | `Renderer output limit exceeded` |
+| Killed, interrupted, or failed renderer process | `Renderer process was killed`, `Renderer process was interrupted`, or `Renderer process failed` |
+
+The formatter validates observed typed facts. It does not use arbitrary error
+messages, causes, URLs, credentials, paths, or process output. Unknown failures
+retain `Page fetch failed`. A failed HTTP status in output from an interrupted
+process does not make HTTP the cause of that interruption. The details do not
+identify which network component failed or who returned an HTTP response.
+Cancellation takes priority and retains `Request cancelled`.
+
+The CLI preserves only these exact detailed messages and the fixed public
+messages in the debug command contract. Changed spelling, added text, invalid
+HTTP status numbers, and extra content items use the generic tool failure
+diagnosis. Operator reports and completion records keep their existing fields.
 
 ## Fetch failure diagnostics
 

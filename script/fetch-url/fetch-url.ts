@@ -4,13 +4,10 @@ import { Client, StreamableHTTPClientTransport, SdkHttpError, UnauthorizedError 
 import { parseArgs } from 'node:util';
 import type { OAuthOptions } from './helper/oauth.ts';
 import { FetchUrlError } from './helper/errors.ts';
+import { isPublicToolFailure } from './helper/public-tool-failure.ts';
 
 
 const hostedEndpoint = 'https://app.thermus.ai/mcp';
-const publicToolFailures = new Set([
-  'Page processing failed', 'Page fetch failed', 'Server busy. Try again later.',
-  'Request cancelled', 'Invalid tool arguments', 'Access denied',
-]);
 
 type CommandOptions = { operation: 'fetch' | 'login' | 'logout'; explicit: boolean; url?: string; reason?: string; endpoint: URL; timeoutMs: number; stdin: boolean; nonInteractive: boolean };
 export type FetchUrlRuntime = Partial<Omit<OAuthOptions, 'operation' | 'interactive'>> & { interactive?: boolean };
@@ -129,7 +126,7 @@ async function callTool(options: CommandOptions, signal: AbortSignal, credential
     const result = await client.callTool({ name: 'getURLAsMarkdown', arguments: { url: options.url, reason: options.reason } }, { signal, timeout: options.timeoutMs });
     if (result.isError) {
       const item = result.content.length === 1 ? result.content[0] : undefined;
-      const message = item?.type === 'text' && publicToolFailures.has(item.text)
+      const message = item?.type === 'text' && isPublicToolFailure(item.text)
         ? item.text : 'getURLAsMarkdown failed. Check the page URL and server logs.';
       throw new FetchUrlError(message);
     }

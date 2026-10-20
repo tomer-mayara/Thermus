@@ -456,8 +456,9 @@ AUTH-09 added the container acceptance suite
   volume, and that a command container still adds an account;
 - calls the fetch tool with an address-literal URL, so the call needs no DNS
   lookup. The container has no route out, so the renderer cannot connect, and
-  the call gets `Page fetch failed` and a `fetch_failed` record. The renderer
-  starts, so the server log gets no renderer setup report;
+  the call gets `Page fetch failed: Renderer connection failed` and a
+  `fetch_failed` record. The renderer starts, so the server log gets no
+  renderer setup report;
 - loads the test-only page seam `test/support/container/container-page.ts` into the server
   container of the two renderer cases, with `--import` in `NODE_OPTIONS`. The
   seam serves a JavaScript page on port 8090 of the container and gives the
@@ -472,9 +473,10 @@ AUTH-09 added the container acceptance suite
   exact cleaned Markdown, and that the server writes one safe completion record;
 - checks in the blocked case that the fetcher blocks the loopback address and
   the private address of the server container before a renderer starts, and
-  that the renderer blocks the loopback socket of `localhost`. Each call gets
-  `Page fetch failed` and a `fetch_failed` record, and the page gets no
-  connection;
+  that the renderer blocks the loopback socket of `localhost`. The two address
+  checks give `Page fetch failed`; the renderer socket block gives
+  `Page fetch failed: Renderer connection failed`. Each call has a
+  `fetch_failed` record, and the page gets no connection;
 - keeps hosted, paid, and private-provider paths closed to a signed-in local
   user, with no new account and only the fetch tool in MCP. Starting this
   self-hosted image with `DEPLOYMENT=hosted`, valid WorkOS settings, trusted
@@ -660,12 +662,13 @@ The real MCP SDK HTTP client calls `getURLAsMarkdown`. The nine cases cover:
 - a redirect that changes the host and the path: `requestedUrl` keeps the
   requested spelling, and the final URL selects the rules and resolves links;
 - hidden content, sanitizer-withheld HTML with exact empty success, an HTTP
-  error with `Page fetch failed` and no renderer setup report, and a DOM deeper
-  than 256 levels with `Page processing failed`;
+  error with `Page fetch failed: HTTP 404` and no renderer setup report, and a
+  DOM deeper than 256 levels with `Page processing failed`;
 - a page whose script completes after 6.5 seconds and returns rendered content
   within the fixed 20-second readiness allowance;
 - a page that never reaches network idle: the child stops before the call
-  completes, no partial Markdown returns, and the server writes one safe
+  completes, the client gets `Page fetch failed: Renderer readiness timed out`,
+  no partial Markdown returns, and the server writes one safe
   `readiness_timeout` report and one `fetch_failed` completion record;
 - a modern client cancellation that stops the renderer child and writes one
   `cancelled` record;

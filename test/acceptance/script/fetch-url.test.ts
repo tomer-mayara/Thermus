@@ -64,6 +64,11 @@ test('Given a rejected credential, when the command fetches, then it reports aut
 for (const message of [
   'Page processing failed',
   'Page fetch failed',
+  'Page fetch failed: HTTP 429',
+  'Page fetch failed: HTTP request failed (status unavailable)',
+  'Page fetch failed: Renderer readiness timed out',
+  'Page fetch failed: DNS lookup failed',
+  'Page fetch failed: Renderer could not start (ENOENT)',
   'Server busy. Try again later.',
   'Request cancelled',
   'Invalid tool arguments',
@@ -84,6 +89,13 @@ for (const message of [
 
 for (const [name, toolResult] of [
   ['unknown text', { isError: true, content: [{ type: 'text', text: 'private-debug-token' }] }],
+  ['an unapproved HTTP status', { isError: true, content: [{ type: 'text', text: 'Page fetch failed: HTTP 200' }] }],
+  ['a detailed diagnosis with private text appended', { isError: true, content: [{ type: 'text', text: 'Page fetch failed: HTTP 429 private-debug-token' }] }],
+  ['a detailed diagnosis with a line break', { isError: true, content: [{ type: 'text', text: 'Page fetch failed: HTTP 429\nprivate-debug-token' }] }],
+  ['a detailed diagnosis with terminal control characters', { isError: true, content: [{ type: 'text', text: '\u001b[31mPage fetch failed: HTTP 429\u001b[0m' }] }],
+  ['a detailed diagnosis and a second text item', { isError: true, content: [{ type: 'text', text: 'Page fetch failed: HTTP 429' }, { type: 'text', text: 'private-debug-token' }] }],
+  ['a detailed diagnosis and an image', { isError: true, content: [{ type: 'text', text: 'Page fetch failed: HTTP 429' }, { type: 'image', data: 'YWJj', mimeType: 'image/png' }] }],
+  ['a diagnosis only in metadata', { isError: true, content: [{ type: 'text', text: 'private-debug-token' }], structuredContent: { message: 'Page fetch failed: HTTP 429' } }],
   ['a public message with private text appended', { isError: true, content: [{ type: 'text', text: 'Page processing failed: private-debug-token' }] }],
   ['a public message with a line break', { isError: true, content: [{ type: 'text', text: 'Page processing failed\nprivate-debug-token' }] }],
   ['a public message with terminal control characters', { isError: true, content: [{ type: 'text', text: '\u001b[31mPage processing failed\u001b[0m' }] }],

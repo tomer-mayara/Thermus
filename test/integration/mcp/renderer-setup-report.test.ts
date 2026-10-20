@@ -37,10 +37,10 @@ function operationDoubles(t: TestContext, fetchFailure: unknown) {
   };
 }
 
-async function assertSafeFetchFailure(call: Promise<unknown>): Promise<void> {
+async function assertSafeFetchFailure(call: Promise<unknown>, message = 'Page fetch failed'): Promise<void> {
   await assert.rejects(call, (error: unknown) => {
     assert.ok(error instanceof Error);
-    assert.equal(error.message, 'Page fetch failed');
+    assert.equal(error.message, message);
     assert.equal(error.cause, undefined);
     return true;
   });
@@ -56,11 +56,11 @@ async function connectedClient(t: TestContext, server: Server): Promise<Client> 
 }
 
 const otherFetchFailures = [
-  ['an HTTP 404 error', new WebsiteFetchHttpError(404)],
-  ['the readiness limit', new WebsiteFetchReadinessTimeoutError()],
-  ['the process timeout', Object.assign(new Error('Command failed'), { code: null, killed: true, signal: 'SIGTERM' })],
-  ['an untyped readiness message', new Error('Lightpanda readiness limit exceeded after 20000 ms')],
-  ['a blocked destination', new Error('Fetch destination is not a public network address: 127.0.0.1')],
+  ['an HTTP 404 error', new WebsiteFetchHttpError(404), 'Page fetch failed: HTTP 404'],
+  ['the readiness limit', new WebsiteFetchReadinessTimeoutError(), 'Page fetch failed: Renderer readiness timed out'],
+  ['the process timeout', Object.assign(new Error('Command failed'), { code: null, killed: true, signal: 'SIGTERM' }), 'Page fetch failed'],
+  ['an untyped readiness message', new Error('Lightpanda readiness limit exceeded after 20000 ms'), 'Page fetch failed'],
+  ['a blocked destination', new Error('Fetch destination is not a public network address: 127.0.0.1'), 'Page fetch failed'],
 ] as const;
 
 describe('Renderer setup reports of the neutral page fetch operation', () => {
@@ -82,7 +82,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const failure = new WebsiteFetchReadinessTimeoutError({ cause: Object.assign(new Error(`spawn /private/lightpanda fetch ${url}`), { stderr: 'Bearer private-token password=private-password' }) });
     const dependencies = operationDoubles(t, failure);
 
-    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()), 'Page fetch failed: Renderer readiness timed out');
 
     assert.deepEqual(dependencies.reportRendererReadinessTimeout.mock.calls.map(({ arguments: args }) => args), [[{ category: 'readiness_timeout', budgetMs: 20_000 }]]);
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
@@ -93,7 +93,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const dependencies = operationDoubles(t, new WebsiteFetchReadinessTimeoutError());
     dependencies.reportRendererReadinessTimeout.mock.mockImplementation(() => { throw new Error('private logging failure'); });
 
-    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()), 'Page fetch failed: Renderer readiness timed out');
 
     assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 1);
   });
@@ -116,18 +116,18 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     test(`Given a renderer that cannot start with ${code}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets one report with only the failure class and code`, async (t) => {
       const dependencies = operationDoubles(t, launchFailure(code));
 
-      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
+      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()), 'Page fetch failed: Renderer could not start');
 
       assert.deepEqual(dependencies.reportRendererSetupFailure.mock.calls.map((call) => call.arguments), [[{ failure, code }]]);
       assert.equal(dependencies.incoming.execute.mock.callCount(), 0);
     });
   }
 
-  for (const [name, fetchFailure] of otherFetchFailures) {
+  for (const [name, fetchFailure, message] of otherFetchFailures) {
     test(`Given ${name}, when the operation fetches, then only the safe fetch error is returned and the operator reporter gets no report`, async (t) => {
       const dependencies = operationDoubles(t, fetchFailure);
 
-      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
+      await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()), message);
 
       assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
       if (!(fetchFailure instanceof WebsiteFetchReadinessTimeoutError)) assert.equal(dependencies.reportRendererReadinessTimeout.mock.callCount(), 0);
@@ -138,7 +138,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const dependencies = operationDoubles(t, launchFailure('ENOENT'));
     dependencies.reportRendererSetupFailure.mock.mockImplementation(() => { throw new Error('private log failure'); });
 
-    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()));
+    await assertSafeFetchFailure(createFetchPage(dependencies)(url, context, executionContextOf()), 'Page fetch failed: Renderer could not start');
 
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 1);
   });
@@ -156,7 +156,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     assert.equal(dependencies.reportRendererSetupFailure.mock.callCount(), 0);
   });
 
-  test('Given a renderer that cannot start, a page with an HTTP error, and a readiness timeout, when an SDK client calls the fetch tool for each, then each call gets the same fixed fetch failure and fetch_failed record, with separate safe launch and timeout reports', async (t) => {
+  test('Given a renderer that cannot start, a page with an HTTP error, and a readiness timeout, when an SDK client calls the fetch tool for each, then each call gets a safe fetch diagnosis and fetch_failed record, with separate safe launch and timeout reports', async (t) => {
     const failures = [launchFailure('ENOENT'), new WebsiteFetchHttpError(404), new WebsiteFetchReadinessTimeoutError()];
     const dependencies = operationDoubles(t, undefined);
     dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw failures.shift(); });
@@ -170,7 +170,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const results: CallToolResult[] = [];
     for (let call = 0; call < 3; call += 1) results.push(await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } }) as CallToolResult);
 
-    assert.deepEqual(results, [1, 2, 3].map(() => ({ content: [{ type: 'text', text: 'Page fetch failed' }], isError: true })));
+    assert.deepEqual(results, ['Renderer could not start', 'HTTP 404', 'Renderer readiness timed out'].map((detail) => ({ content: [{ type: 'text', text: `Page fetch failed: ${detail}` }], isError: true })));
     const completions = completionRecordsIn(lines.info.join('\n'));
     assert.equal(new Set(completions.map(({ operationId }) => operationId)).size, 3);
     const records = completions.map(({ durationMs: _durationMs, operationId: _operationId, ...record }) => {

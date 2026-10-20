@@ -247,7 +247,7 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
       const client = await connectWithToken(t, { server: server.address, token: () => token, era });
 
       for (const { name, text } of incomingPageCases) assertText(await callFetchTool(client, `https://source.example/${name}`), text, text !== '');
-      assertText(await callFetchTool(client, 'https://source.example/missing'), 'Page fetch failed', true);
+      assertText(await callFetchTool(client, 'https://source.example/missing'), 'Page fetch failed: HTTP 404', true);
       await server.stop();
 
       const completions = server.completionRecords();

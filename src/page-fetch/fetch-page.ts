@@ -1,5 +1,5 @@
 import { requirePermission, type RequestContext } from '../auth/access-context.ts';
-import type { WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
+import { WebsiteFetchFailure, type WebsiteFetcher } from '../website-fetcher/website-fetcher.ts';
 import { isValidFetchUrl } from './fetch-url.ts';
 import { assertOperationId, type ExecutionContext } from './execution-context.ts';
 import { reportRendererFailure, type RendererFailureReports } from './renderer-failure-reports.ts';
@@ -7,6 +7,7 @@ import { executeOutgoingStep } from './execute-outgoing-step.ts';
 import { executeIncomingStep } from './execute-incoming-step.ts';
 import type { OutgoingStep, IncomingStep } from './pipeline-step.ts';
 import type { StepRecordSink } from './step-record.ts';
+import { PageFetchFailure } from './fetch-failure.ts';
 
 export type FetchPageOutcome =
   | { status: 'released'; markdown: string }
@@ -35,7 +36,7 @@ export function createFetchPage(dependencies: RendererFailureReports & {
     } catch (error) {
       throwIfCancelled(signal, error);
       reportRendererFailure(dependencies, error, execution.operationId);
-      throw new Error('Page fetch failed');
+      throw new PageFetchFailure(error instanceof WebsiteFetchFailure ? error.diagnostic : undefined);
     }
 
     throwIfCancelled(signal);

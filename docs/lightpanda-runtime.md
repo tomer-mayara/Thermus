@@ -128,7 +128,7 @@ command -v lightpanda
 lightpanda version
 ```
 
-A selected executable that is missing or cannot start produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Self-hosted startup does not run or check the renderer. A self-hosted server with a missing executable starts. Each page fetch then fails with `Page fetch failed` and a `fetch_failed` completion record. Clients and completion records do not get the fetcher error. The server log gets a [renderer setup report](#renderer-setup-report). The operator must verify the runtime before use with the commands above.
+A selected executable that is missing or cannot start produces an error that points to this document and keeps the process error in `cause`. A configured path does not fall back to another executable. The fetcher does not run a version check on each fetch. Self-hosted startup does not run or check the renderer. A self-hosted server with a missing executable starts. Each page fetch then fails with `Page fetch failed: Renderer could not start (ENOENT)` and a `fetch_failed` completion record. Clients and completion records do not get the fetcher error. The server log gets a [renderer setup report](#renderer-setup-report). The operator must verify the runtime before use with the commands above.
 
 Hosted startup requires an absolute `LIGHTPANDA_BIN` path. After trusted rules and
 the native cleaner load, it runs the executable directly with `version`, with
@@ -156,7 +156,7 @@ When the renderer cannot start, the server writes one `ERROR` line to its log, f
 Renderer setup failure: the Lightpanda executable is missing (ENOENT). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.
 ```
 
-The line gives the failure class, `is missing` or `cannot start`, and the system error code. It shows no URL, reason, renderer arguments, page text, token, executable path, or process output. The client still gets `Page fetch failed`, and the completion record still has `fetch_failed`. HTTP errors, timeouts, and blocked destinations write no such line.
+The line gives the failure class, `is missing` or `cannot start`, and the system error code. It shows no URL, reason, renderer arguments, page text, token, executable path, or process output. The client gets a safe `Renderer could not start` detail, with an approved launch code when available, and the completion record still has `fetch_failed`. See the [public failure contract](reference/mcp-fetch-tool.md#public-fetch-failures). HTTP errors, timeouts, and blocked destinations write no such line.
 
 The server writes the line one time for each code in the life of its process, so a renderer that stays missing adds only one line. A new code adds one new line.
 
@@ -172,7 +172,8 @@ On Linux, the system gives a file that it cannot execute to `/bin/sh`. The proce
 
 A page has a fixed 20-second readiness allowance, including navigation. If the
 renderer is still active at the deadline, the fetcher sends `SIGKILL` and waits
-for the process to finish. The client gets `Page fetch failed` without partial
+for the process to finish. The client gets
+`Page fetch failed: Renderer readiness timed out` without partial
 Markdown. The completion record has `fetch_failed`, and the application logger
 writes this safe `ERROR` record for each readiness timeout:
 
@@ -250,9 +251,9 @@ The nine cases prove these behaviors:
 - In the modern 2026-07-28 and legacy 2025-11-25 protocol eras, a user signs in and consents on the bundled pages. The client then gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record.
 - A local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY` gets a local JavaScript page, and the renderer run has telemetry off. The case gives the server a new `HOME` and an `XDG_DATA_HOME` under it. Lightpanda 1.0.0 makes its data directory there at each start: on macOS under `HOME`, on Linux under `XDG_DATA_HOME`. With telemetry on, it writes its telemetry install ID, the file `iid`, there and starts the telemetry sender, which alone connects to `telemetry.lightpanda.io`. The case checks that the directory holds no file.
 - After a redirect that changes the host and the path, `requestedUrl` keeps the requested spelling. The final URL selects the ad rules and resolves the relative links.
-- Hidden content is removed. HTML that the sanitizer withholds gives exact empty success. An HTTP error gives `Page fetch failed` and no renderer setup report. A DOM deeper than 256 levels gives `Page processing failed`.
+- Hidden content is removed. HTML that the sanitizer withholds gives exact empty success. An HTTP error gives a safe HTTP detail, such as `Page fetch failed: HTTP 404`, and no renderer setup report. A DOM deeper than 256 levels gives `Page processing failed`.
 - A page whose script completes after 6.5 seconds returns its rendered content within the 20-second readiness allowance.
-- A page that never reaches network idle gets `Page fetch failed` and no partial Markdown. The renderer child stops before the call completes. The server writes one safe readiness report and one `fetch_failed` completion record.
+- A page that never reaches network idle gets `Page fetch failed: Renderer readiness timed out` and no partial Markdown. The renderer child stops before the call completes. The server writes one safe readiness report and one `fetch_failed` completion record.
 - A modern client cancellation stops the renderer child, and the server writes one `cancelled` record.
 - Server shutdown cancels a legacy call. The renderer child stops before the server finishes stopping, and the server writes one `cancelled` record.
 
