@@ -111,6 +111,9 @@ Node 24.20.0 through `pnpm exec`.
 | `npm run build:user-portal` | 0 | Passed. |
 | Isolated metrics timeout diagnosis | 0 | All 16 existing cases in `ast-metrics-mcp.test.js` passed. |
 | `git diff --check` | 0 | No whitespace findings. |
+| Verified unit and integration coverage | 0 | All 3,961 backend unit, 23 portal unit, and 657 integration cases passed. The verified report contains 131 files from 1,146 processes. |
+| `habit-hooks --branch origin/main` | 1 | Ten retained findings, explained below. No lint errors. |
+| Complete ast-metrics process | 1 | All four sections completed. Architecture passed. Four file scores and 28 function identity or coverage assessments remain exceptions. No measured CRAP target miss. |
 
 Every completed Thermus test run above had zero cancelled, skipped, or todo
 tests. The ordinary suite is still a failed gate:
@@ -125,3 +128,134 @@ tests. The ordinary suite is still a failed gate:
 
 No failing case was skipped, weakened, or changed to expect failure. The
 pull request stays Draft.
+
+## Code quality review
+
+The production and test candidate is `557e28e9`. Later edits add only this
+verification record and the generated metrics history. Coverage remains
+compatible with the source, tests, and build inputs.
+
+The complete habit-hooks run has ten retained findings. The snooze file
+stays `[]`:
+
+- Five comments are required `@ts-expect-error` assertions. They prove the
+  negative type contract; removing them removes that compiler check.
+- Two config comments explain why the list of standalone container scripts
+  must match the import-boundary specification. They state a dependency rule
+  that the file names cannot express.
+- The lint config exceeds 200 lines because it holds ordered dependency
+  rules. Keeping their precedence visible prevents one block from silently
+  replacing another rule for the same files.
+- The protected-search test file exceeds 200 lines because it holds one
+  public operation contract and its private fixture. Its matrices test
+  validation, decisions, records, and cancellation through that boundary.
+- The fetch outgoing test file exceeds 200 lines because it holds one stage
+  contract and the shared record-writer cases. A size-only split would add
+  navigation without separating a responsibility.
+
+### Maintainability and high findings
+
+Direct inspection with `ast-metrics-mcp.ts file` confirms these file scores.
+Each function has at most ten decision paths. The page-field validation was
+simplified during review. Retain the remaining low scores for these reasons:
+
+| Changed production file | Score | Reason |
+| --- | --- | --- |
+| `src/search-pipeline/search-pipeline.ts` | 43.2 | One owner keeps validation, stage order, final release, and cancellation at each boundary. The engine and result-validation error paths stay separate so provider data cannot produce a renderer report. |
+| `src/search-pipeline/execute-incoming-step.ts` | 46.7 | Outcome validation, typed withholding, cancellation, and the single terminal record belong to one entered stage. Splitting the try/finally lifecycle would hide its record invariant. |
+| `src/search-pipeline/search-failure.ts` | 47.6 | Fixed detail allowlists and bounds form one public error policy. Small named functions separate the diagnostic categories. A file split or generic formatter would obscure this safety boundary. |
+| `src/search-pipeline/execute-outgoing-step.ts` | 48.2 | Exact query validation, refusal, cancellation, and one terminal record belong to the outgoing role. Its checks are local because search has its own error contract. |
+
+The shared `pipeline-step.ts` contains type declarations and is not measured.
+The high review findings for the new search pipeline and failure class are
+covered by the reasons above; class scores differ from file scores. The nine
+other high findings are retained for these design reasons:
+
+| File | Reported score | Reason |
+| --- | --- | --- |
+| `src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts` | 63 | One converter owns ordered sanitization, extraction, and reports; its preservation setting changes document preparation. |
+| `src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts` | 59 | Parsing, normalization, and library workarounds share one document lifecycle; keep the full-document safety context together. |
+| `src/page-fetch/fetch-failure.ts` | 71 | The immutable public message and bounded detail allowlists form one error boundary. |
+| `src/search-engine/search-engine-brave-http.ts` | 34 | One provider owns the fixed request, bounds, destination checks, and strict supported DOM grammar. Those refusals must stay explicit. |
+| `src/search-pipeline/search-query.ts` | 65 | The small class owns bounded Unicode validation and exact read-only text. Its early scalar bound uses constant space. |
+| `src/website-fetcher/fetch-diagnostic.ts` | 81 | Fixed code lists and field bounds keep request data out of diagnostic records. |
+| `src/website-fetcher/network-policy.ts` | 61 | DNS waits, timers, late completion, and abandoned-work protection share state and must keep one owner. |
+| `src/website-fetcher/website-fetcher-lightpanda.ts` | 71 | Rendering, readiness, cancellation, child completion, and release need one lifecycle owner. |
+| `src/website-fetcher/website-fetcher.ts` | 80 | This module groups the small public page, renderer, and canonical failure contracts. Splitting their constructors adds navigation without removing a rule. |
+
+The new incoming executor's method-length findings describe the same single
+stage lifecycle. The new failure file's aggregate complexity comes from the
+separate bounded diagnostic categories. The core's coupling consists of
+public role contracts, shared execution helpers, and local modules. The
+architecture acceptance cases prove that concrete implementations cannot
+enter those imports. These medium and low findings need no extra layer.
+
+### Function assessment limits
+
+All four new source files are additions in Git. The analyzer conservatively
+marks their 28 function identities as unknown. The table below records each
+score or bound, path count, and coverage. Retain the identity exception for
+each row: the comparison does not establish declaration correspondence.
+No measured score misses either numeric CRAP target.
+
+Two rows also lack a coverage match: the page-field callback and the public
+message getter. The integration and unit cases execute them, but that does
+not establish a numeric analyzer match. Keep their reported lower bounds
+and unknown coverage; do not substitute an inferred score. The process has
+no operational failure, and no coverage report was edited.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/search-pipeline/search-failure.ts | failureDetail | unknown | 10 | 94.5% | 10.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-incoming-step.ts | executeIncomingStep | unknown | 10 | 99.7% | 10.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-incoming-step.ts | checkedResult | unknown | 10 | 100% | 10.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-outgoing-step.ts | checkedResult | unknown | 10 | 100% | 10.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | checkedDocument | unknown | 9 | 100% | 9.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-outgoing-step.ts | executeOutgoingStep | unknown | 7 | 99.6% | 7.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | exitedProcessDetail | unknown | 5 | 100% | 5.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | httpFailureDetail | unknown | 5 | 100% | 5.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | interruptedProcessDetail | unknown | 5 | 100% | 5.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | rendererDetail | unknown | 5 | 100% | 5.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | search-pipeline\SearchPipeline.search | unknown | 5 | 100% | 5.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-incoming-step.ts | isResultObject | unknown | 4 | 100% | 4.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-outgoing-step.ts | isResultObject | unknown | 4 | 100% | 4.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | isPage | unknown | 4 | 100% | 4.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | search-pipeline\SearchPipeline.searchDocument | unknown | 4 | 100% | 4.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | throwIfCancelled | unknown | 4 | 100% | 4.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-incoming-step.ts | isIncomingBlockCode | unknown | 3 | 100% | 3.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | destinationFailureDetail | unknown | 3 | 100% | 3.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | launchDetail | unknown | 3 | 100% | 3.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | safeSearchFailure | unknown | 3 | 100% | 3.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-incoming-step.ts | throwIfCancelled | unknown | 2 | 100% | 2.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/execute-outgoing-step.ts | throwIfCancelled | unknown | 2 | 100% | 2.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | safeFailureDetail | unknown | 2 | 100% | 2.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | search-failure\SearchFailure.constructor | unknown | 2 | 100% | 2.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | (anonymous) | unknown | 2 | unknown | ≥ 2 | no coverage data; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | checkedQuery | unknown | 2 | 100% | 2.0 | ok; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-failure.ts | search-failure\SearchFailure.publicMessage | unknown | 1 | unknown | ≥ 1 | no coverage data; identity unknown: cannot classify the new-function target |
+| src/search-pipeline/search-pipeline.ts | search-pipeline\SearchPipeline.constructor | unknown | 1 | 100% | 1.0 | ok; identity unknown: cannot classify the new-function target |
+
+### Commands and history
+
+The complete runs use the same base and the locally corrected analyzer
+documented in SEARCH-02. The binary and saved patch hashes were verified
+against that record. The installed analyzer, metrics rules, and baseline are
+unchanged.
+
+```sh
+pnpm exec node script/code-quality/ast-metrics-coverage.ts \
+  --suite unit --suite integration
+
+PATH="$PWD/ast-report/search-02-tooling/0.43.1-search02-anonymous-fix/bin:$PATH" \
+  pnpm exec node script/code-quality/ast-metrics-process.ts \
+  --base 304cd24fd0f198716c372bd2ec404eeffc12a132 --allow-tool-version
+```
+
+The first complete process wrote the immutable base record
+`docs/metrics/2026-10-20-304cd24f.json`, with SHA-256
+`7191f52971a5a16eef92b641b29e75bc0a28d3861e617fa99fd95eeef8985ab4`.
+That record is committed without edits. Existing history records are
+unchanged. After this document update, the final process reuses verified
+coverage. The pull request description includes the complete final
+`ast-report/process.md` without changes, including all graphs, legends,
+import evidence, and notices.
