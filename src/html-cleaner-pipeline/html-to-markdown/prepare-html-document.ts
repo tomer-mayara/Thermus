@@ -7,23 +7,27 @@ type HtmlDocument = ReturnType<typeof parseHTML>['document'];
 const headElements = new Set(['TITLE', 'META', 'LINK', 'BASE', 'STYLE', 'SCRIPT', 'NOSCRIPT', 'TEMPLATE']);
 
 export class PreparedHtmlDocument {
+  private readonly isFragment: boolean;
+
   private constructor(
     private readonly document: HtmlDocument,
     private readonly originalUrl: string,
-    private readonly isFragment: boolean,
-  ) {}
+    private readonly preserveSearchResults: boolean,
+  ) {
+    this.isFragment = document.documentElement?.localName !== 'html' || !document.querySelector('body');
+  }
 
-  public static fromHtml(html: string, url: string): PreparedHtmlDocument {
+  public static fromHtml(html: string, url: string, preserveSearchResults = false): PreparedHtmlDocument {
     const { document } = parseHTML(html);
-    const isFragment = document.documentElement?.localName !== 'html' || !document.querySelector('body');
-    return new PreparedHtmlDocument(document, url, isFragment);
+    return new PreparedHtmlDocument(document, url, preserveSearchResults);
   }
 
   public async extract(sanitizeText: SanitizeText): Promise<{ content: string; title: string }> {
     const document = this.document;
     normalizeDocument(document);
     sanitizeHtmlDocument(document, sanitizeText);
-    const preserveSuppliedContent = this.isFragment || !hasBodyContent(document);
+    if (this.preserveSearchResults) this.inlineSearchLinkLabels(document);
+    const preserveSuppliedContent = this.preserveSearchResults || this.isFragment || !hasBodyContent(document);
     const codeStartMarker = `code-start-${randomUUID()}:\n`;
     if (preserveSuppliedContent) {
       preserveFragmentHeadings(document);
@@ -37,7 +41,10 @@ export class PreparedHtmlDocument {
     const result = await Defuddle(document, extractionUrl, {
       markdown: true,
       useAsync: false,
-      processExtractedDom: (root) => sanitizeHtmlDocument(root, sanitizeText),
+      processExtractedDom: (root) => {
+        sanitizeHtmlDocument(root, sanitizeText);
+        if (this.preserveSearchResults) this.inlineSearchLinkLabels(root);
+      },
       standardize: !preserveSuppliedContent,
       removeContentPatterns: !preserveSuppliedContent,
       removeExactSelectors: !preserveSuppliedContent,
@@ -51,6 +58,17 @@ export class PreparedHtmlDocument {
         .replaceAll(codeStartMarker.trimEnd(), ''),
       title: result.title ?? '',
     };
+  }
+
+  private inlineSearchLinkLabels(root: Parameters<typeof sanitizeHtmlDocument>[0]): void {
+    // Block children make blank lines inside Markdown links, so their titles cease to be links.
+    for (const block of root.querySelectorAll('a div, a p, a cite, a h1, a h2, a h3, a h4, a h5, a h6')) {
+      const inline = this.document.createElement('span');
+      inline.appendChild(this.document.createTextNode(' '));
+      while (block.firstChild) inline.appendChild(block.firstChild);
+      inline.appendChild(this.document.createTextNode(' '));
+      block.replaceWith(inline);
+    }
   }
 }
 

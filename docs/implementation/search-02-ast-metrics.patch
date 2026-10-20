@@ -1,0 +1,146 @@
+diff --git a/internal/engine/util.go b/internal/engine/util.go
+index f07ed82..bf37b50 100644
+--- a/internal/engine/util.go
++++ b/internal/engine/util.go
+@@ -236,6 +236,12 @@ func functionDedupKey(function *pb.StmtFunction) string {
+ 		return ""
+ 	}
+ 	if function.Name != nil {
++		if strings.TrimSpace(function.Name.Short) == "" {
++			if location := function.Location; location != nil && location.EndFilePos > location.StartFilePos {
++				return fmt.Sprintf("anonymous:%d:%d", location.StartFilePos, location.EndFilePos)
++			}
++			return fmt.Sprintf("ptr:%p", function)
++		}
+ 		if q := strings.TrimSpace(function.Name.Qualified); q != "" {
+ 			return "q:" + q
+ 		}
+diff --git a/internal/engine/anonymous_function_dedup_test.go b/internal/engine/anonymous_function_dedup_test.go
+new file mode 100644
+index 0000000..9d08194
+--- /dev/null
++++ b/internal/engine/anonymous_function_dedup_test.go
+@@ -0,0 +1,79 @@
++package engine
++
++import (
++	"testing"
++
++	pb "github.com/ast-metrics/ast-metrics/pb"
++)
++
++func TestGetFunctionsInFile_AnonymousDeclarations(t *testing.T) {
++	for _, scenario := range []struct {
++		name   string
++		first  *pb.StmtLocationInFile
++		second *pb.StmtLocationInFile
++		want   int
++	}{
++		{"distinct spans", &pb.StmtLocationInFile{StartFilePos: 10, EndFilePos: 20}, &pb.StmtLocationInFile{StartFilePos: 30, EndFilePos: 40}, 2},
++		{"same span aliases", &pb.StmtLocationInFile{StartFilePos: 10, EndFilePos: 20}, &pb.StmtLocationInFile{StartFilePos: 10, EndFilePos: 20}, 1},
++		{"missing spans", nil, nil, 2},
++		{"empty spans", &pb.StmtLocationInFile{}, &pb.StmtLocationInFile{}, 2},
++	} {
++		t.Run(scenario.name, func(t *testing.T) {
++			firstPaths, secondPaths := int32(1), int32(3)
++			first := &pb.StmtFunction{
++				Name:     &pb.Name{Qualified: "Example."},
++				Location: scenario.first,
++				Stmts:    &pb.Stmts{Analyze: &pb.Analyze{Complexity: &pb.Complexity{Cyclomatic: &firstPaths}}},
++			}
++			second := &pb.StmtFunction{
++				Name:     &pb.Name{Qualified: "Example."},
++				Location: scenario.second,
++				Stmts:    &pb.Stmts{Analyze: &pb.Analyze{Complexity: &pb.Complexity{Cyclomatic: &secondPaths}}},
++			}
++			file := &pb.File{Stmts: &pb.Stmts{StmtNamespace: []*pb.StmtNamespace{{Stmts: &pb.Stmts{StmtFunction: []*pb.StmtFunction{first, second}}}}}}
++
++			functions := GetFunctionsInFile(file)
++
++			if len(functions) != scenario.want {
++				t.Fatalf("expected %d declarations, got %d", scenario.want, len(functions))
++			}
++			if functions[0] != first || functions[0].Stmts.Analyze.Complexity.GetCyclomatic() != firstPaths {
++				t.Fatal("the first declaration and its metrics must remain unchanged")
++			}
++			if scenario.want == 2 && (functions[1] != second || functions[1].Stmts.Analyze.Complexity.GetCyclomatic() != secondPaths) {
++				t.Fatal("the second declaration and its metrics must remain unchanged")
++			}
++		})
++	}
++}
++
++func TestGetFunctionsInFile_AnonymousAliases(t *testing.T) {
++	function := &pb.StmtFunction{Name: &pb.Name{Qualified: "Example."}}
++	class := &pb.StmtClass{Stmts: &pb.Stmts{StmtFunction: []*pb.StmtFunction{function}}}
++	file := &pb.File{Stmts: &pb.Stmts{
++		StmtNamespace: []*pb.StmtNamespace{{Stmts: &pb.Stmts{StmtFunction: []*pb.StmtFunction{function}}}},
++		StmtClass:     []*pb.StmtClass{class},
++		StmtFunction:  []*pb.StmtFunction{function},
++	}}
++
++	functions := GetFunctionsInFile(file)
++
++	if len(functions) != 1 || functions[0] != function {
++		t.Fatalf("expected one declaration across namespace, class, and file aliases, got %d", len(functions))
++	}
++}
++
++func TestGetFunctionsOutsideClassesInFile_DistinctAnonymousDeclarations(t *testing.T) {
++	method := &pb.StmtFunction{Name: &pb.Name{Qualified: "Example."}, Location: &pb.StmtLocationInFile{StartFilePos: 10, EndFilePos: 20}}
++	outside := &pb.StmtFunction{Name: &pb.Name{Qualified: "Example."}, Location: &pb.StmtLocationInFile{StartFilePos: 30, EndFilePos: 40}}
++	file := &pb.File{Stmts: &pb.Stmts{
++		StmtNamespace: []*pb.StmtNamespace{{Stmts: &pb.Stmts{StmtFunction: []*pb.StmtFunction{method, outside}}}},
++		StmtClass:     []*pb.StmtClass{{Stmts: &pb.Stmts{StmtFunction: []*pb.StmtFunction{method}}}},
++	}}
++
++	functions := GetFunctionsOutsideClassesInFile(file)
++
++	if len(functions) != 1 || functions[0] != outside {
++		t.Fatalf("expected the distinct outside declaration, got %d functions", len(functions))
++	}
++}
+diff --git a/internal/engine/typescript/typescript_anonymous_functions_test.go b/internal/engine/typescript/typescript_anonymous_functions_test.go
+new file mode 100644
+index 0000000..9d2e30f
+--- /dev/null
++++ b/internal/engine/typescript/typescript_anonymous_functions_test.go
+@@ -0,0 +1,38 @@
++package typescript
++
++import (
++	"testing"
++
++	enginePkg "github.com/ast-metrics/ast-metrics/internal/engine"
++)
++
++func TestTypeScriptParser_PreservesAnonymousClassCallbacks(t *testing.T) {
++	const source = `class Example {
++    run(values: number[]) {
++        values.map(value => value + 1);
++        values.filter(value => value > 0 ? true : false);
++    }
++}`
++	file, err := enginePkg.CreateTestFileWithCode(&TypeScriptRunner{}, source)
++	if err != nil {
++		t.Fatalf("parse error: %v", err)
++	}
++	functions := enginePkg.GetFunctionsInFile(file)
++	if len(functions) != 3 {
++		t.Fatalf("expected the method and both anonymous callbacks, got %d functions", len(functions))
++	}
++	callbacks, ternaries := 0, 0
++	for _, function := range functions {
++		if function.Name.Short != "" {
++			continue
++		}
++		callbacks++
++		if function.Location == nil || function.Location.EndFilePos <= function.Location.StartFilePos {
++			t.Fatal("each callback must retain its concrete source span")
++		}
++		ternaries += len(function.Stmts.StmtDecisionTernary)
++	}
++	if callbacks != 2 || ternaries != 1 {
++		t.Fatalf("expected two distinct callbacks with one ternary between them, got %d callbacks and %d ternaries", callbacks, ternaries)
++	}
++}
