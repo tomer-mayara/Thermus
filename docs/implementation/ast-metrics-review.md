@@ -10,9 +10,13 @@ ast-metrics 0.43.1 on this repository. PR #188 merged CR-10 option A,
 CR-11, and manual CR-12 at `efed6618`.
 The architecture plan is now an [archival record](../archive/architecture-evolution-plan.md).
 This guide holds its current decisions and limits. On 2026-10-19, the owner
-deferred D4's measured base-coverage store and D5's merge workflow. D8 keeps
-the existing two baseline refresh reasons and rejects a third reason for
-violations already on `main`. D9 keeps each command's unexpected-error
+deferred D4's measured base-coverage store and D5's merge workflow. D8 kept
+the two baseline refresh reasons and rejected a third reason for violations
+already on `main`. Later that day, the owner reduced the reasons to one: a
+change to the rules in `.ast-metrics.yaml`. A retained high finding is not a
+reason, because the baseline cannot list the high findings of the review: a
+score drop, a new function at 25 or more paths, or a forbidden import. D9
+keeps each command's unexpected-error
 diagnostics; no shared normalization is approved. These dispositions change
 no runtime behavior and grant no broader test scope.
 A later version can behave differently; verify the limits again before you
@@ -151,8 +155,10 @@ verified recording operation. A completed goal miss can still record;
 a failed operation or an unavailable required assessment cannot. Existing
 records remain immutable. Commit a new verified record with the candidate.
 Standalone architecture is read-only without `--record`. Use the same base
-and reuse compatible coverage after fixes; a final report does not require
-another collection. The approved exceptions after at most three improvement
+after fixes. A fix under `src/`, `test/`, or `script/` makes the coverage
+report stale; collect again when the test selection permits it. A
+document-only fix can reuse the report. The approved exceptions after at
+most three improvement
 cycles change neither exit results nor tool failure requirements.
 
 ### Refresh a permitted baseline: `script/code-quality/ast-metrics-baseline.ts`
@@ -165,9 +171,9 @@ The wrapper runs `ast-metrics baseline` from the repository root and counts
 YAML ignored entries before and after. A missing initial baseline counts as
 zero. Exit 0 means the refresh succeeded and counts are valid; failures exit
 1. The same version pin and explicit override apply. This command adds no
-permission: refresh only for a retained high review finding with a written
-reason or a change to `.ast-metrics.yaml` rules. Commit the baseline in the
-same pull request. A violation already on `main` is not a third exception.
+permission: refresh only when the pull request changes the rules in
+`.ast-metrics.yaml`. Commit the baseline in the same pull request. A retained
+review finding and a violation already on `main` are not reasons.
 
 ### Measure the delta: `script/code-quality/ast-metrics-delta.ts`
 
@@ -1170,7 +1176,7 @@ Community labels are not joined across history. The complete report in the pull 
 these chart blocks, captions, and the component matrix with the numeric table.
 
 The trend store of a repository is `docs/metrics/` of its root, and the pull
-requests commit its files (step 8 of the process). It holds one JSON file for
+requests commit its files (step 7 of the process). It holds one JSON file for
 each recorded commit of `main`, from a verified pull request base or manual
 backfill, named
 `<date>-<commit8>.json`: the day of the committer date of the commit in the
@@ -1329,7 +1335,7 @@ LOC 150. Focused policy and pinned-tool boundary tests pass.
 The rule refresh changed 209 intermediate entries to 169 after the approved
 D6/D7 changes; the base before PR #188 had 175 entries.
 Final verification stayed at 169 entries and left the baseline byte-identical.
-The refresh uses the existing AGENTS.md exception for retained high findings.
+The rule change of PR #188 permitted that refresh.
 PR #188's final review reports 10 high maintainability findings, two medium findings,
 no low findings, and six improvements. Each retained high finding still needs
 its own reason in the pull request description. This refresh adds no baseline exception.
@@ -1339,12 +1345,15 @@ refreshed. Review and `ast-metrics lint` omit listed rule violations. The
 refresh does not silence high file-maintainability regressions; those still
 need individual reasons in the pull request description. A baseline entry
 carries the measured value in its message, so a file whose value moved can
-appear again. Current AGENTS.md permits a refresh
-for two reasons only: the pull request changes `.ast-metrics.yaml` rules, or
-it keeps a finding of severity high with a reason under step 4. Refresh and
-commit the baseline in that same pull request. D8 rejects a third exception
-for violations already on `main`; historical refreshes do not grant permission. Use
-`pnpm exec node script/code-quality/ast-metrics-baseline.ts` for the refresh.
+appear again. AGENTS.md permits a refresh for one reason only: the pull
+request changes the rules in `.ast-metrics.yaml` (step 4). Refresh and commit
+the baseline in that same pull request. A retained high finding is not a
+reason: the baseline cannot list a score drop, a new function at 25 or more
+paths, or a forbidden import, and a refresh would only hide the new lint-rule
+violations of the candidate from its own review. A violation already on
+`main` is not a reason either; historical refreshes do not grant permission.
+Use `pnpm exec node script/code-quality/ast-metrics-baseline.ts` for the
+refresh.
 
 ## How ast-metrics counts
 
