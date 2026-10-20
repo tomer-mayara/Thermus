@@ -283,7 +283,10 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['success', 'success', 'fetch_failed', 'processing_failed']);
     assert.doesNotMatch(site.server.completionLines().join('\n'), /private-|Hidden instruction|Display none|Missing page|HtmlDepthLimitError/);
     assert.equal(site.pipelineRuns.mock.calls.length, 3);
-    assert.deepEqual(site.server.errorLines(), []);
+    assert.deepEqual(site.server.errorLines().map((line) => JSON.parse(line)), [{
+      event: 'renderer.fetch.failed', category: 'http', phase: 'renderer_result',
+      httpStatus: 404, exitCode: 22, killed: false, operationId: site.server.completionRecords()[2]?.operationId,
+    }]);
   });
 
   test('Given a page that keeps the renderer waiting, when the modern client cancels its call, then the renderer child stops, the client gets no Markdown, and the server writes one cancelled record', { timeout: 120_000 }, async (t) => {
@@ -341,8 +344,11 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     assert.ok(pid !== undefined);
     assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['fetch_failed']);
-    assert.deepEqual(site.server.errorLines().map((line) => JSON.parse(line)), [{ event: 'renderer.fetch.failed', category: 'readiness_timeout', budgetMs: 20_000 }]);
-    assert.doesNotMatch(site.server.errorLines().join('\n'), /https?:|localhost|private-|secret|token|Slow story|SIGKILL|lightpanda\//);
+    assert.deepEqual(site.server.errorLines().map((line) => JSON.parse(line)), [{
+      event: 'renderer.fetch.failed', category: 'readiness_timeout', phase: 'renderer_process',
+      budgetMs: 20_000, signal: 'SIGKILL', killed: true, operationId: site.server.completionRecords()[0]?.operationId,
+    }]);
+    assert.doesNotMatch(site.server.errorLines().join('\n'), /https?:|localhost|private-|secret|token|Slow story|lightpanda\//);
   });
 
   test('Given a legacy client call that keeps the renderer waiting, when the server shuts down, then the call is cancelled, the renderer child stops before the server finishes stopping, and the server writes one cancelled record', { timeout: 120_000 }, async (t) => {
