@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { constants } from 'node:os';
+import { systemErrorName } from '../../../src/website-fetcher/website-fetcher.ts';
 import { test } from 'node:test';
 import type { ExecFileException } from 'node:child_process';
 import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
@@ -88,4 +90,14 @@ test('Given DNS stays pending, when its budget expires, then diagnostics identif
   t.mock.timers.tick(5_000);
   await rejected;
   assert.equal(renderer.execute.mock.callCount(), 0);
+});
+
+
+test('Given known platform errno names and DNS names, when their safe system names are requested, then real codes including ECONNREFUSED remain available and arbitrary names stay unknown', () => {
+  for (const code of [...Object.keys(constants.errno), 'ENOTFOUND', 'EAI_AGAIN']) {
+    assert.equal(systemErrorName(code), code);
+  }
+  for (const code of ['ESECRETTOKEN', 'ETOKEN123', '__proto__', 'toString', 'ECONNREFUSED\nprivate', 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER', undefined, 22]) {
+    assert.equal(systemErrorName(code), 'UNKNOWN');
+  }
 });

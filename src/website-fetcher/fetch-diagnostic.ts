@@ -23,11 +23,11 @@ const rendererCodes = [
 type RendererErrorCode = typeof rendererCodes[number] | 'unknown';
 const knownRendererCodes: ReadonlySet<unknown> = new Set(rendererCodes);
 
-const processCodes = new Set(['ENOENT', 'EACCES', 'ENOEXEC', 'EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM', 'EINVAL', 'EPERM', 'ENOTDIR', 'EISDIR', 'ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT', 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER']);
+const processCodes = new Set(['ENOTFOUND', 'EAI_AGAIN', 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER']);
 
 // Only fixed names cross the logging boundary. A pattern alone can admit secret text.
 export function safeProcessCode(code: unknown): string {
-  return typeof code === 'string' && processCodes.has(code) ? code : 'unknown';
+  return typeof code === 'string' && (Object.hasOwn(constants.errno, code) || processCodes.has(code)) ? code : 'unknown';
 }
 
 export function processDiagnostic(error: unknown): Partial<FetchDiagnostic> {
