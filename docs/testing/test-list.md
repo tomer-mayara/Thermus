@@ -3607,7 +3607,7 @@ later suites. Production readiness and shutdown bounds stay unchanged.
 [V] Given the unmodified image and placeholder runtime settings, the real CLI serves portal assets and CSP, responds to health, requires MCP authentication, and refuses a foreign Origin
 [V] Given the unmodified image and placeholder credentials with signup enabled only in the test, a visitor sees the complete byte-exact approved notice before sign-in and no activation form
 [V] Given the provider seam's Connect User, the real renderer fetches public HTTPS with verified TLS and returns the controlled page's JavaScript output after the native cleaner applies the shipped policy
-[V] Given private targets, overload, disconnect, and active-renderer SIGTERM, private calls fail before rendering, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
+[V] Given private targets, overload, disconnect, and active-renderer SIGTERM, address-policy refusals give `Page fetch failed` before rendering, a blocked renderer socket gives `Page fetch failed: Renderer connection failed`, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
 [V] Given missing rules, a missing renderer, an empty cookie password, or an HTTP public base URL, the real CLI exits with status 1 before listening and shows no secret
 [V] Given a final image with its portal hidden by an empty mount, startup fails before listening with a safe portal error
 [V] Given a copied context with an injected failing offline test, the final-target build fails and creates no runtime image
