@@ -695,7 +695,8 @@ Paths in this appendix are relative to
 [`script/code-quality/`](../../script/code-quality/README.md). The map reflects
 the reference commit, with exact-snapshot CLI, raw file MI and native class
 observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
-process outcomes in F.12 and exact per-file MI85 calculation in F.13.
+process outcomes in F.12, exact per-file MI85 in F.13 and absolute CRAP
+calculation in F.14.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -721,6 +722,7 @@ Other proposed operations remain unavailable.
 | `snapshot/commit.ts`, `tree.ts`, `worktree.ts`, `sweep.ts` | Exact static revision analysis and cleanup. | Temporary static checkouts have no dependency installation or coverage run. They do not solve base coverage. |
 | `snapshot/input.ts`, `build.ts` | Native file metric parsing, raw file MI and optional typed native class observations beside rounded output. | F.9/F.10 preserve available raw values and the native reported class subset; the architecture reader ignores them. F.11 adds the separate `snapshot/observations.ts` projection decoder. Full assessment/provenance validation, source class correspondence/completeness and class history remain pending. |
 | `assessment/file-mi85.ts` | F.13 calculates exact per-file MI85 states from declared observations and caller selection; first non-test caller of the F.11 decoder. | No source/authenticity or full-scope proof, route/AUTO eligibility or full assessment. |
+| `assessment/crap-absolute.ts` | F.14 calculates both absolute CRAP goals from supplied paths and optional coverage, with exact comparisons and safe bounds. | Arithmetic only; no accepted evidence, origin/applicability, exceptions, decline or route decisions. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | Add sound upper/difference bounds and lasting origin rules. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -2076,7 +2078,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 
 | Owner/path | Planned change |
 | --- | --- |
-| `assessment/` | F.13 adds only exact per-file MI85 calculation. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
+| `assessment/` | F.13/F.14 add only exact per-file MI85 and absolute CRAP calculations. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
@@ -2089,7 +2091,8 @@ offline projection decoder, with their validation limits. The decoder adds no
 CLI option; full assessment/provenance validation remains pending. F.12 exposes
 final typed process outcomes through the programmatic API only, with no new
 operation, artifact or policy adoption. F.13 adds only a synchronous per-file
-MI85 calculation for declared inputs and caller selection; no command changes.
+MI85 calculation for declared inputs and caller selection. F.14 adds pure
+absolute CRAP arithmetic over supplied operands; neither changes commands.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2691,6 +2694,58 @@ checks ran, with no coverage collection or broader suite. Required failures keep
 PR #201 in Draft; merging stays manual. Final habit-hooks and clean committed
 candidate process evidence, with reasons for retained findings, will be added
 to the PR.
+
+### F.14. Absolute CRAP arithmetic implementation record
+
+`assessment/crap-absolute.ts` adds pure `crapAbsoluteOf({ paths, share? })`.
+It returns a `known-coverage` observation with paths, share and `displayValue`,
+a `missing-coverage` observation for positive paths with exact `[p,p²+p]` bounds,
+or a `proven-zero` observation with paths/value zero. Both `atMost15` and
+`below30` return `PASS`, `MISS` or `UNKNOWN` with a reason.
+
+Paths must be nonnegative safe integers; supplied shares must be finite in
+`[0,1]`, with null invalid. Returned missing-coverage bounds must fit safe
+integers; known coverage has no unused bound cap. Missing coverage with zero
+paths proves zero without an invented share. Existing `compareCrap` decides
+exactly from operands; `crapValueOf` is display only. Five paths with share
+`1e-320` can display 30 while strict `below30` passes.
+
+This is arithmetic over supplied operands, not accepted evidence. Origin,
+applicability, exceptions, lineage/history, decline, route/AUTO eligibility,
+scope/provenance and full assessment remain pending. There is no command or
+process integration or policy adoption. Existing MI85, CLI/report/process/history
+behavior and manual merging stay unchanged.
+
+The unit and acceptance files are both named `ast-metrics-crap-absolute.test.ts`.
+They specify exact goals, bounds/zero cases, display limits and input rejection.
+
+Validation on 2026-10-20:
+
+- The baseline passed 112/112 before new files. Four new acceptance and 38 new
+  unit cases first failed for the absent module. The initial green set passed
+  154/154. Typed imports and proof reasons were checked; manager review added a
+  display-15/`atMost15`-`MISS` case beside the display-30/`below30`-`PASS` case.
+  The final build and focused set passed 155/155: 112 existing, 38 new unit and
+  five new acceptance checks.
+- `pnpm run test:unit` passed 4,093 compiled and 23 portal checks, 4,116 total,
+  with exit 0. Full acceptance passed 915/918 compiled checks and exited 1:
+  the same two missing-public-search cases and existing logger setup case failed.
+  The logger lacked `AXIOM_API_KEY`; both `AXIOM_API_KEY` and `AXOIM_ENDPOINT_URL`
+  were absent, with no `.env.local`. Search/logger source, tests and support
+  were unchanged from `origin/main`.
+- Separate selected portal acceptance passed 18/18. README/help/inventory checks
+  passed 18/18 within full acceptance. All five new acceptance cases and existing
+  fetch, OAuth and MCP timeout cases passed. Native snapshot passed 3/3;
+  structural architecture with `--no-coverage` passed 1/1. Every completed run
+  had zero cancelled, skipped or todo tests.
+- Manager and independent review found no actionable defect. Sign-off covers
+  this small slice's correctness only, not Ready or merge.
+
+No `src/` file changed. Complete selected unit/acceptance groups and affected live
+checks ran, with no collector or broader suite. Required failures keep PR #201
+in Draft; merging stays manual. Final habit-hooks and clean committed candidate
+process evidence, with reasons for retained findings, will be added to the PR;
+those results are not yet available.
 
 ## References
 

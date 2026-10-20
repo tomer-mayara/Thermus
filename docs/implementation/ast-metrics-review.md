@@ -675,6 +675,24 @@ CRAP standard. The architecture bands and risk counts keep their boundary
 at CRAP ≥ 30. A new function between 15 and 30 can miss its required target
 without adding a critical architecture band.
 
+The separate pure `crapAbsoluteOf({ paths, share? })` in
+`assessment/crap-absolute.ts` calculates both `atMost15` and `below30`, each with
+`PASS`, `MISS` or `UNKNOWN` and a reason. Its observation is one of
+`known-coverage { paths, share, displayValue }`, positive
+`missing-coverage { paths, lower, upper }`, or `proven-zero { paths: 0, value: 0 }`.
+Paths must be a nonnegative safe integer. A supplied share must be finite and in
+`[0,1]`; null is invalid. Missing coverage gives exact safe-integer bounds
+`[p,p²+p]`; reject a bound that is not a safe integer. Known coverage needs no unused
+bound cap. Zero paths without coverage prove zero without an invented share.
+
+`compareCrap` decides from the exact operands; `crapValueOf` supplies an
+approximate display value only. For five paths and share `1e-320`, display can
+be 30 while `below30` is `PASS`. This is arithmetic over supplied operands,
+not accepted evidence. It does not select origin/applicability, apply exceptions,
+track lineage/history or decline, decide routes/AUTO eligibility, or verify
+scope/provenance. It adds no command or process integration and activates no
+policy. MI85, CLI/report/process/history behavior and manual merging stay unchanged.
+
 | Paths | Minimum whole percent for CRAP < 30 | Minimum whole percent for CRAP ≤ 15 |
 | --- | --- | --- |
 | 0 | 0% | 0% |
