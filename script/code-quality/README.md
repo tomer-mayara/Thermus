@@ -858,10 +858,10 @@ counts before and after; a missing baseline starts at zero. Exit 0 means
 refresh succeeded and both counts are valid; invalid input, invalid YAML,
 or tool failure exits 1. Help needs no Git or tool access.
 
-Use this wrapper only for a retained high-severity finding with a written
-reason or a change to `.ast-metrics.yaml` rules. Commit the resulting
-`.ast-metrics-baseline.yaml` in the same pull request. A violation already
-on `main` is not a third exception; the wrapper grants no extra permission.
+Use this wrapper only when the pull request changes the rules in
+`.ast-metrics.yaml`. Commit the resulting `.ast-metrics-baseline.yaml` in the
+same pull request. A retained review finding and a violation already on
+`main` are not reasons; the wrapper grants no extra permission.
 
 Focused tests: affected `ast-metrics-baseline.test.ts` rows in the
 [available inventory](#available-tests).
