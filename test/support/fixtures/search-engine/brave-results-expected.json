@@ -1,0 +1,92 @@
+[
+  {
+    "title": "Lightpanda | The headless browser",
+    "url": "https://lightpanda.io/",
+    "snippet": "An open source headless browser rewritten in Zig designed for AI and automation."
+  },
+  {
+    "title": "GitHub - lightpanda-io/browser: Lightpanda: the headless browser designed for AI and automation · GitHub",
+    "url": "https://github.com/lightpanda-io/browser",
+    "snippet": "A new browser, written in Zig."
+  },
+  {
+    "title": "Lightpanda Browser download | SourceForge.net",
+    "url": "https://sourceforge.net/projects/lightpanda-browser.mirror/",
+    "snippet": "This is an exact mirror of the Lightpanda Browser project, hosted at https://github.com/lightpanda-io/browser."
+  },
+  {
+    "title": "Lightpanda: The Headless Browser Built for AI Agents and Scalable Automation | ScrapingBee",
+    "url": "https://www.scrapingbee.com/blog/lightpanda-headless-browser/",
+    "snippet": "Lightpanda: a headless browser engineered in Zig for AI agents and automation."
+  },
+  {
+    "title": "GitHub - lucoffe/lightpanda-browser: The open-source browser made for headless usage · GitHub",
+    "url": "https://github.com/lucoffe/lightpanda-browser",
+    "snippet": "A new browser, written in Zig."
+  },
+  {
+    "title": "lightpanda/browser",
+    "url": "https://www.npmjs.com/package/@lightpanda/browser?activeTab=readme",
+    "snippet": "yarn add @lightpanda/browser && npx @lightpanda/browser install"
+  },
+  {
+    "title": "Lightpanda | agent-browser",
+    "url": "https://agent-browser.dev/engines/lightpanda",
+    "snippet": "Lightpanda is a headless browser engine built from scratch in Zig for machines."
+  },
+  {
+    "title": "Lightpanda: The Beginner’s Guide to the Fastest Headless Browser | by Muhammad Ikramullah Khan | Medium",
+    "url": "https://medium.com/@mikram2015/lightpanda-the-beginners-guide-to-the-fastest-headless-browser-45e3f4ff4a83",
+    "snippet": "Lightpanda is a headless browser written in Zig (a systems programming language) from the ground up."
+  },
+  {
+    "title": "GitHub - MeshkatShB/lightpanda-browser: The open-source browser made for headless usage · GitHub",
+    "url": "https://github.com/MeshkatShB/lightpanda-browser",
+    "snippet": "A new browser, written in Zig."
+  },
+  {
+    "title": "How to use Lightpanda in 2026",
+    "url": "https://roundproxies.com/blog/lightpanda/",
+    "snippet": "It is a headless browser engine written from scratch in Zig for web automation, scraping, and AI agents,"
+  },
+  {
+    "title": "GitHub - langba113/light-panda-browser: Lightpanda: the headless browser designed for AI and automation · GitHub",
+    "url": "https://github.com/langba113/light-panda-browser",
+    "snippet": "A new browser, written in Zig."
+  },
+  {
+    "title": "Lightpanda: The Headless Browser Written in Zig That’s 11x Faster Than Chrome for AI Automation | by Tran Quy Doan | Medium",
+    "url": "https://medium.com/@quydoantran/lightpanda-the-headless-browser-written-in-zig-thats-11x-faster-than-chrome-for-ai-automation-9d4ca05a15fe",
+    "snippet": "Lightpanda is a headless browser built from scratch in Zig"
+  },
+  {
+    "title": "lightpanda/browser - Docker Image",
+    "url": "https://hub.docker.com/r/lightpanda/browser",
+    "snippet": "$ docker run -d --name lightpanda -p 127.0.0.1:9222:9222 lightpanda/browser:latest Copy"
+  },
+  {
+    "title": "Lightpanda: The Beginner's Guide to the Fastest Headless Browser - DEV Community",
+    "url": "https://dev.to/ikram_khan/lightpanda-the-beginners-guide-to-the-fastest-headless-browser-1l5a",
+    "snippet": "Lightpanda is a headless browser written in Zig (a systems programming language) from the ground up."
+  },
+  {
+    "title": "Lightpanda: A Browser Engine Built for Agents, Not Humans - DEV Community",
+    "url": "https://dev.to/stevengonsalvez/lightpanda-a-browser-engine-built-for-agents-not-humans-49o4",
+    "snippet": "Lightpanda is a Zig-based headless browser engine built from scratch for AI agent automation."
+  },
+  {
+    "title": "GitHub - lightpanda-io/demo: Lightpanda browser demo · GitHub",
+    "url": "https://github.com/lightpanda-io/demo",
+    "snippet": "This demo repository provides examples, tests and benchmarks for the Lightpanda browser."
+  },
+  {
+    "title": "Lightpanda: An AI Headless Browser 11x Faster Than Chrome, Now Free and Open Source | AI for Automation",
+    "url": "https://aiforautomation.io/news/2026-03-16-lightpanda-ai-headless-browser",
+    "snippet": "Lightpanda is a headless browser purpose-built for AI web automation."
+  },
+  {
+    "title": "Show HN: Lightpanda, an open-source headless browser in Zig | Hacker News",
+    "url": "https://news.ycombinator.com/item?id=42817439",
+    "snippet": "Why start over? We’ve worked a lot with Chrome headless at our previous company, scraping millions of web pages per day."
+  }
+]

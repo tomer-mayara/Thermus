@@ -1,0 +1,9 @@
+{
+  "requestedUrl": "https://search.brave.com/search?q=lightpanda+browser",
+  "finalUrl": "https://search.brave.com/search?q=lightpanda+browser",
+  "query": "lightpanda browser",
+  "capturedAt": "2026-10-20T18:22:11.871Z",
+  "renderer": "1.0.0",
+  "bytes": 244841,
+  "elapsedMs": 3707
+}
