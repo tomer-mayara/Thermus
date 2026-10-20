@@ -486,6 +486,9 @@ label rule, the `src/` filter, the cycles, the community of a file in a
 folder member, and the join of the functions.
 It also checks exact-commit help and rejects malformed SHA values and the
 `--base`/`--commit` combination before tools.
+Raw file MI cases retain finite precision and zero, preserve unavailable values,
+and reject malformed/nonfinite native MI for `src/` files without changing
+rounded scores. Out-of-scope entries remain ignored.
 `test/acceptance/script/ast-metrics-snapshot.test.ts` runs the command
 against both doubles with the answers of
 `fixtures/ast-metrics-snapshot-answers.ts`: the whole snapshot from one
@@ -522,6 +525,12 @@ data and refuses invalid evidence. `test/acceptance/script/ast-metrics-snapshot-
 checks retained dependency pairs and issues through the snapshot command.
 The snapshot live cases also check unique normalized pairs between analyzed
 source files and the real literal dynamic import from `application.ts`.
+They compare emitted raw file MI with the pinned native analysis value.
+
+`test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts` checks raw file MI
+beside rounded output, refusal before publication, and identical architecture
+reports from legacy and raw-enriched snapshots. The architecture reader still
+ignores the optional raw field; assessment raw validation remains future work.
 
 `test/acceptance/script/ast-metrics-snapshot-provenance.test.ts` checks that
 capture records source and expected coverage-input identity and refuses to
@@ -895,6 +904,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |

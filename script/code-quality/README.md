@@ -760,6 +760,16 @@ communities. Publication requires every call to succeed and unchanged input
 identity. The snapshot stores no coverage or CRAP; architecture joins those
 when reporting.
 
+Capture emits optional file `maintainabilityRaw` by default when native file MI
+is available. It keeps finite precision before rounding, including zero, with
+no assumed upper clamp. Rounded `maintainability`
+stays unchanged; top-level snapshot version stays 1. Missing/legacy raw values
+remain unavailable, never inferred from rounded scores. Present malformed or
+nonfinite native MI for a `src/` file stops capture before publication;
+out-of-scope entries remain ignored. The existing
+architecture reader ignores this optional field; displays/trends/process retain
+rounded data. A raw-retaining assessment reader remains future work.
+
 `tool` keeps the checked actual version, including an explicit override.
 Optional `title` is the commit message's first line; optional `provenance`
 contains source and expected coverage-input fingerprints, runtime, compiler,
@@ -788,8 +798,8 @@ its merge base. Require a full lowercase 40-character hexadecimal commit SHA;
 reject combination with `--base` before starting tools. Default output is
 `ast-report/snapshot-commit.json` at the repository root. The command reuses the
 existing exact-commit owner and temporary-worktree cleanup. It starts no build,
-test or coverage run and changes no snapshot schema. Working-tree default and
-`--base` merge-base behavior stay unchanged.
+test or coverage run and uses the same version-1 snapshot format. Working-tree
+default and `--base` merge-base behavior stay unchanged.
 
 Exit 0 means the snapshot was written. Exit 1 gives one diagnostic line for
 invalid input, a missing executable, failed analysis/call, or publication
@@ -1026,6 +1036,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |

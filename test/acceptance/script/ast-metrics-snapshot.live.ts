@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
-import { delimiter, join } from 'node:path';
+import { delimiter, join, relative, sep } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import type { Snapshot } from '../../../script/code-quality/snapshot/types.ts';
@@ -25,13 +25,26 @@ function snapshotIn(path: string): Snapshot {
   return JSON.parse(readFileSync(path, 'utf8')) as Snapshot;
 }
 
-test('Given the real ast-metrics, when the snapshot runs in the repository root, then it names HEAD and has valid source communities, cycles, dependencies, and positive counts within 60 seconds', live, async (t) => {
-  const out = join(dataDirectory(t), 'snapshot.json');
+test('Given the real ast-metrics, when the snapshot runs in the repository root, then it keeps native file MI precision and valid source metrics within 60 seconds', live, async (t) => {
+  const folder = dataDirectory(t);
+  const out = join(folder, 'snapshot.json');
 
   const result = await runScript(t, astMetricsSnapshotScript, { args: ['--out', out], cwd: root });
 
   assert.equal(result.code, 0, result.stderr);
-  assertSnapshotOfHead(snapshotIn(out), git('rev-parse', 'HEAD').trim());
+  const snapshot = snapshotIn(out);
+  assertSnapshotOfHead(snapshot, git('rev-parse', 'HEAD').trim());
+  const nativePath = join(folder, 'native.json');
+  execFileSync('ast-metrics', ['analyze', `--report-json=${nativePath}`, '--report-summary=false', 'src'], { cwd: root, env: { ...process.env, PWD: root }, stdio: 'pipe', timeout: 60_000 });
+  const native = JSON.parse(readFileSync(nativePath, 'utf8')) as { concernedFiles: readonly { path: string; maintainability?: { maintainabilityIndex?: number } }[] };
+  const indexes = new Map(native.concernedFiles.map((file) => [relative(root, file.path).split(sep).join('/'), file.maintainability?.maintainabilityIndex]));
+  for (const file of snapshot.files) {
+    assert.ok(indexes.has(file.path), file.path);
+    const raw = indexes.get(file.path);
+    assert.equal(file.maintainabilityRaw, raw, file.path);
+    assert.equal(file.maintainability, raw === undefined ? undefined : Number(raw.toFixed(1)), file.path);
+  }
+  assert.ok(snapshot.files.some((file) => file.maintainabilityRaw !== undefined && file.maintainabilityRaw !== file.maintainability), 'The native report must include precision beyond the display value.');
 });
 
 // HEAD is the merge base of HEAD and HEAD, so the temporary worktree holds the commit of HEAD. TMPDIR names a folder of
