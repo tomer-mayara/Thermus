@@ -6,7 +6,7 @@ import { openHostedFetchSite } from '../../support/in-process/hosted-fetch-site.
 
 const url = 'https://source.example/private-path?private-query=yes#private-fragment';
 
-test('Given a hosted renderer that returns HTTP 404, when an authorized user fetches the page, then a safe failure diagnostic joins its completion by operation ID and the public error stays Page fetch failed', async (t) => {
+test('Given a hosted renderer that returns HTTP 404, when an authorized user fetches the page, then a safe failure diagnostic joins its completion by operation ID and the public error reports HTTP 404', async (t) => {
   const site = await openHostedFetchSite(t);
   RendererProcessDouble.install(t);
 
@@ -17,7 +17,7 @@ test('Given a hosted renderer that returns HTTP 404, when an authorized user fet
     params: { name: 'getURLAsMarkdown', arguments: { url, reason: 'Read the page' } },
   })));
 
-  assert.deepEqual(result.content, [{ type: 'text', text: 'Page fetch failed' }]);
+  assert.deepEqual(result.content, [{ type: 'text', text: 'Page fetch failed: HTTP 404' }]);
   assert.equal(result.isError, true);
   const completion = site.completions()[0];
   assert.equal(completion?.status, 'fetch_failed');

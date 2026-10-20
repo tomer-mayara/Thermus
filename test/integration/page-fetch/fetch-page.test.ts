@@ -4,7 +4,7 @@ import { createRequestContext } from '../../../src/auth/access-context.ts';
 import { createFetchPage } from '../../../src/page-fetch/fetch-page.ts';
 import type { StepResult } from '../../../src/page-fetch/pipeline-step.ts';
 import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetchHttpError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 
 const url = 'https://source.example/article';
@@ -317,3 +317,20 @@ for (const mode of ['failure', 'success', 'cancelled', 'reporter_throws'] as con
     assert.deepEqual(reports, mode === 'success' || mode === 'cancelled' ? [] : [{ category: 'unknown', phase: 'unknown', operationId: execution.operationId }]);
   });
 }
+
+test('Given a typed HTTP 429 failure with a private cause, when the protected operation fetches, then it keeps only the safe status and does not process HTML', async (t) => {
+  const dependencies = operationDoubles(t);
+  const failure = new WebsiteFetchHttpError(429, { cause: new Error('private-fetch-cause') });
+  failure.message = 'private-renderer-message';
+  dependencies.fetcher.fetchURL.mock.mockImplementation(async () => { throw failure; });
+
+  await assert.rejects(createFetchPage(dependencies)(url, context, executionContextOf()), (error: unknown) => {
+    assert.ok(error instanceof Error);
+    assert.equal(error.message, 'Page fetch failed: HTTP 429');
+    assert.equal(error.cause, undefined);
+    assert.doesNotMatch(JSON.stringify(error), /private-/);
+    return true;
+  });
+  assert.equal(dependencies.fetcher.fetchURL.mock.callCount(), 1);
+  assert.equal(dependencies.incoming.execute.mock.callCount(), 0);
+});

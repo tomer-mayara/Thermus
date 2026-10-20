@@ -47,7 +47,7 @@ async function connectedClient(t: TestContext, server: ReturnType<RequestServerB
   return client;
 }
 
-test('Given the server composition and renderer starts that fail with ENOENT and EACCES two times each and then with ENOEXEC at once, when a client calls the fetch tool for each, then each call gets Page fetch failed and the operator log gets one error line for each code, in order, with no request data', async (t) => {
+test('Given the server composition and renderer starts that fail with ENOENT and EACCES two times each and then with ENOEXEC at once, when a client calls the fetch tool for each, then each call reports its launch code and the operator log gets one setup warning for each code, in order, with no request data', async (t) => {
   failedStarts(t, ['ENOENT', 'ENOENT', 'EACCES', 'EACCES', 'ENOEXEC']);
   const lines = { info: [] as string[], error: [] as string[] };
   const logger = {
@@ -62,7 +62,7 @@ test('Given the server composition and renderer starts that fail with ENOENT and
     results.push(await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason: 'Read the page' } }) as CallToolResult);
   }
 
-  for (const result of results) assert.deepEqual([result.content, result.isError], [[{ type: 'text', text: 'Page fetch failed' }], true]);
+  assert.deepEqual(results.map(({ content, isError }) => [content, isError]), ['ENOENT', 'ENOENT', 'EACCES', 'EACCES', 'ENOEXEC'].map((code) => [[{ type: 'text', text: `Page fetch failed: Renderer could not start (${code})` }], true]));
   assert.deepEqual(completionRecordsIn(lines.info.join('\n')).map(({ status }) => status), Array(5).fill('fetch_failed'));
   const diagnostics = lines.error.filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
   assert.deepEqual(diagnostics.map(({ operationId }) => operationId), completionRecordsIn(lines.info.join('\n')).map(({ operationId }) => operationId));
@@ -92,7 +92,7 @@ for (const loggerFails of [false, true]) {
     for (let call = 0; call < 2; call += 1) {
       await assert.rejects(operation(url, context, executions[call]), (error: unknown) => {
         assert.ok(error instanceof Error);
-        assert.equal(error.message, 'Page fetch failed');
+        assert.equal(error.message, 'Page fetch failed: Renderer readiness timed out');
         assert.equal(error.cause, undefined);
         return true;
       });

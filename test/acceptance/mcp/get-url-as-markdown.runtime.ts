@@ -278,7 +278,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
 
     assertText(results[0] as CallToolResult, '## Hidden story\n\nThe visible paragraph has enough words to stay in the article body.');
     assertText(results[1] as CallToolResult, '');
-    assertText(results[2] as CallToolResult, 'Page fetch failed', true);
+    assertText(results[2] as CallToolResult, 'Page fetch failed: HTTP 404', true);
     assertText(results[3] as CallToolResult, 'Page processing failed', true);
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['success', 'success', 'fetch_failed', 'processing_failed']);
     assert.doesNotMatch(site.server.completionLines().join('\n'), /private-|Hidden instruction|Display none|Missing page|HtmlDepthLimitError/);
@@ -335,7 +335,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     const elapsed = performance.now() - started;
     await site.server.stop();
 
-    assertText(result, 'Page fetch failed', true);
+    assertText(result, 'Page fetch failed: Renderer readiness timed out', true);
     assert.ok(elapsed >= 19_500 && elapsed < 23_000, `Fetch took ${elapsed} ms`);
     assert.equal(site.pipelineRuns.mock.calls.length, 0);
     assert.ok(fixture.requests.filter((path) => path === '/ongoing').length >= 10);

@@ -10,6 +10,7 @@ import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
 import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
 import { completionLinesIn } from '../../support/drivers/operator-log.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { PageFetchFailure } from '../../../src/page-fetch/fetch-failure.ts';
 
 const context: RequestContext = {
   user: { authority: 'trusted-authority', subject: 'trusted-subject' }, tenantId: 'trusted-workspace', grants: [], permissions: ['product:access'],
@@ -101,6 +102,23 @@ for (const [message, status] of [['Access denied', 'access_denied'], ['Server bu
     assert.doesNotMatch(info[0], /secret-cause|secret-info-error|secret-log-error/);
   });
 }
+
+test('Given a typed fetch failure with an overwritten Error message, when the tool handles it, then it projects the selected safe diagnosis and records fetch_failed', async (t) => {
+  const failure = new PageFetchFailure({ category: 'http', phase: 'renderer_result', httpStatus: 429 });
+  failure.message = 'PRIVATE Error message';
+  const site = await connect(t, { operation: async () => { throw failure; } });
+
+  assert.deepEqual(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs }), { content: [{ type: 'text', text: 'Page fetch failed: HTTP 429' }], isError: true });
+  assert.equal(JSON.parse(site.info[0]).status, 'fetch_failed');
+  assert.doesNotMatch(site.info.join('\n'), /PRIVATE/);
+});
+
+test('Given an untyped error that copies a public fetch detail, when the tool handles it, then it reports only the safe processing failure', async (t) => {
+  const site = await connect(t, { operation: async () => { throw new Error('Page fetch failed: HTTP 429'); } });
+
+  assert.deepEqual(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs }), { content: [{ type: 'text', text: 'Page processing failed' }], isError: true });
+  assert.equal(JSON.parse(site.info[0]).status, 'processing_failed');
+});
 
 test('Given successful empty Markdown, when both log methods fail, then the exact empty success remains and no retry runs', async (t) => {
   const { client, calls, info, errors } = await connect(t, { operation: async () => '', infoFails: true, errorFails: true });

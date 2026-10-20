@@ -124,7 +124,7 @@ for (const era of mcpProtocolEras) {
       assert.equal(result.structuredContent, undefined);
     }
     const failure = await call('https://source.example/missing');
-    assert.deepEqual(failure.content, [{ type: 'text', text: 'Page fetch failed' }]);
+    assert.deepEqual(failure.content, [{ type: 'text', text: 'Page fetch failed: HTTP 404' }]);
     assert.equal(failure.isError, true);
 
     const completions = site.completions();

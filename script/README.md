@@ -25,7 +25,9 @@ build is needed to run the script.
 live in `fetch-url/helper/`: [`oauth.ts`](fetch-url/helper/oauth.ts) coordinates OAuth,
 [`browser.ts`](fetch-url/helper/browser.ts) handles browser sign-in,
 [`credential-store.ts`](fetch-url/helper/credential-store.ts) stores credentials, and
-[`errors.ts`](fetch-url/helper/errors.ts) defines command errors. Internal token parsing,
+[`errors.ts`](fetch-url/helper/errors.ts) defines command errors.
+[`public-tool-failure.ts`](fetch-url/helper/public-tool-failure.ts) checks the exact
+public tool failure text that the command can print. Internal token parsing,
 metadata discovery, callback parsing, and OS browser launch stay private.
 The tests use the same `prepareOAuth()` and `browserAuthorization()` entry
 points as the command. They check saved credentials, HTTP callback responses,
@@ -142,8 +144,16 @@ after success or failure.
 
 Success returns exit status 0, with exact Markdown on stdout, including an empty
 result. Failures return status 1, with a diagnostic on stderr and no Markdown.
-Remote error text is omitted because it can contain credentials. Use the server
-logs for details. Run `pnpm exec node script/fetch-url/fetch-url.ts --help` for the options.
+The script preserves only exact approved public errors from a tool failure
+with one text item. These include `Page fetch failed`, safe fetch details such
+as `Page fetch failed: HTTP 429`, and the other fixed public messages in the
+[MCP debug command contract](../docs/reference/mcp-fetch-tool.md#debug-command).
+Unknown text, changed spelling, added text, invalid HTTP status numbers, or extra
+content items give a generic tool failure diagnosis. Other result fields are
+never printed. The [public fetch failure contract](../docs/reference/mcp-fetch-tool.md#public-fetch-failures)
+lists all details. Hosted details require the updated server to be deployed;
+the script also accepts generic failures from older servers. Use the server
+logs for operator diagnostics. Run `pnpm exec node script/fetch-url/fetch-url.ts --help` for the options.
 
 Run the focused offline tests after a clean build:
 

@@ -5,6 +5,7 @@ import { fetchToolInputSchema, parseFetchToolArguments } from './fetch-tool-sche
 import type { FetchOperation } from './get-url-as-markdown.ts';
 import { formatToolCompletion, type CompletionStatus } from './tool-completion-record.ts';
 import type { McpRequestLifetime } from './mcp-server.ts';
+import { PageFetchFailure } from '../page-fetch/fetch-failure.ts';
 
 interface CompletionLogger {
   info(record: string): void;
@@ -61,6 +62,7 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
 
 function safeFailure(error: unknown, signal: AbortSignal): { status: CompletionStatus; message: string } {
   if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) return { status: 'cancelled', message: 'Request cancelled' };
+  if (error instanceof PageFetchFailure) return { status: 'fetch_failed', message: error.publicMessage };
   const failures = {
     'Server busy. Try again later.': 'busy',
     'Invalid tool arguments': 'invalid_arguments',

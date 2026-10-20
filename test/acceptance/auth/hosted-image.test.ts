@@ -125,7 +125,7 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.doesNotMatch(await server.logs(), /Image renderer started/);
     const socketRefused = await call(server.url, 'http://localhost:8090/blocked', step.signal);
     assert.equal(socketRefused.isError, true);
-    assert.deepEqual(socketRefused.content, [{ type: 'text', text: 'Page fetch failed' }]);
+    assert.deepEqual(socketRefused.content, [{ type: 'text', text: 'Page fetch failed: Renderer connection failed' }]);
     const refusedLogs = await server.logs();
     assert.match(refusedLogs, /Image renderer started http:\/\/localhost:8090\/blocked/);
     assert.doesNotMatch(refusedLogs, /Image page connection|Image page request \/blocked/);

@@ -51,9 +51,10 @@ async function callFetchTool(client: Client, url = requestedUrl): Promise<CallTo
   return await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } });
 }
 
-function assertFetchFailed(results: readonly CallToolResult[]): void {
-  for (const result of results) {
-    assert.deepEqual(result.content, [{ type: 'text', text: 'Page fetch failed' }]);
+function assertFetchFailed(results: readonly CallToolResult[], messages: readonly string[]): void {
+  assert.equal(results.length, messages.length);
+  for (const [index, result] of results.entries()) {
+    assert.deepEqual(result.content, [{ type: 'text', text: messages[index] }]);
     assert.equal(result.isError, true);
   }
 }
@@ -67,7 +68,7 @@ function assertNoRequestData(lines: readonly string[], setup: Installation, exec
 }
 
 describe('Renderer setup reports in the operator log', () => {
-  test('Given a server with LIGHTPANDA_BIN that names a missing executable, when an authorized client calls getURLAsMarkdown two times, then each call gets Page fetch failed and a fetch_failed record, and the operator log has one report that names the missing renderer and the runtime guide but no request data', { timeout: 120_000 }, async (t) => {
+  test('Given a server with LIGHTPANDA_BIN that names a missing executable, when an authorized client calls getURLAsMarkdown two times, then each call gets a safe fetch diagnosis and a fetch_failed record, and the operator log has one report that names the missing renderer and the runtime guide but no request data', { timeout: 120_000 }, async (t) => {
     const setup = await installation(t);
     const executable = join(dataDirectory(t), 'missing-lightpanda');
     const site = await openSite(t, setup, executable);
@@ -75,7 +76,7 @@ describe('Renderer setup reports in the operator log', () => {
     const results = [await callFetchTool(site.client), await callFetchTool(site.client)];
     await site.server.stop();
 
-    assertFetchFailed(results);
+    assertFetchFailed(results, Array(2).fill('Page fetch failed: Renderer could not start (ENOENT)'));
     const diagnostics = site.server.errorLines().filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
     assert.deepEqual(diagnostics.map(({ operationId }) => operationId), site.server.completionRecords().map(({ operationId }) => operationId));
     assert.deepEqual(site.server.completionRecords().map(({ url, status }) => ({ url, status })), [1, 2].map(() => ({
@@ -85,7 +86,7 @@ describe('Renderer setup reports in the operator log', () => {
     assertNoRequestData(site.server.errorLines(), setup, executable);
   });
 
-  test('Given a server that reported its missing executable, when the operator puts a file that is not executable at that path and the client calls two more times, then each call still gets Page fetch failed and a fetch_failed record, and the log gets one more report, which names an executable that cannot start (EACCES)', { timeout: 120_000 }, async (t) => {
+  test('Given a server that reported its missing executable, when the operator puts a file that is not executable at that path and the client calls two more times, then each call gets a safe launch diagnosis and a fetch_failed record, and the log gets one more report, which names an executable that cannot start (EACCES)', { timeout: 120_000 }, async (t) => {
     const setup = await installation(t);
     const executable = join(dataDirectory(t), 'lightpanda');
     const site = await openSite(t, setup, executable);
@@ -95,7 +96,7 @@ describe('Renderer setup reports in the operator log', () => {
     results.push(await callFetchTool(site.client), await callFetchTool(site.client));
     await site.server.stop();
 
-    assertFetchFailed(results);
+    assertFetchFailed(results, ['ENOENT', 'EACCES', 'EACCES'].map((code) => `Page fetch failed: Renderer could not start (${code})`));
     const diagnostics = site.server.errorLines().filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
     assert.deepEqual(diagnostics.map(({ operationId }) => operationId), site.server.completionRecords().map(({ operationId }) => operationId));
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['fetch_failed', 'fetch_failed', 'fetch_failed']);
@@ -103,7 +104,7 @@ describe('Renderer setup reports in the operator log', () => {
     assertNoRequestData(site.server.errorLines(), setup, executable);
   });
 
-  test('Given a renderer process double that answers with HTTP 404, when an authorized client gets that page and a blocked destination, then each call gets Page fetch failed and a fetch_failed record, and the server writes no renderer setup report', { timeout: 120_000 }, async (t) => {
+  test('Given a renderer process double that answers with HTTP 404, when an authorized client gets that page and a blocked destination, then each call gets a safe fetch diagnosis and a fetch_failed record, and the server writes no renderer setup report', { timeout: 120_000 }, async (t) => {
     const setup = await installation(t);
     const renderer = RendererProcessDouble.install(t);
     const site = await openSite(t, setup, '/opt/thermus-test/lightpanda');
@@ -111,7 +112,7 @@ describe('Renderer setup reports in the operator log', () => {
     const results = [await callFetchTool(site.client, 'https://source.example/missing'), await callFetchTool(site.client, 'https://127.0.0.1/private')];
     await site.server.stop();
 
-    assertFetchFailed(results);
+    assertFetchFailed(results, ['Page fetch failed: HTTP 404', 'Page fetch failed']);
     const diagnostics = site.server.errorLines().filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
     assert.deepEqual(diagnostics.map(({ operationId }) => operationId), site.server.completionRecords().map(({ operationId }) => operationId));
     assert.equal(renderer.launches.length, 1);

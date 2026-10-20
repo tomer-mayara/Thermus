@@ -16,7 +16,19 @@ exact and empty Markdown, the `getURLAsMarkdown` arguments, environment and stdi
 credentials, modern JSON and SSE, legacy negotiation, refused authentication,
 HTTP failures, failed and unexpected tool results, exact public failure messages
 without private metadata or extra content, invalid protocol data,
-connection failures, redirects, and cancellation of hung requests. All use local
+connection failures, redirects, and cancellation of hung requests. The changed
+public-error cases also check approved details and refuse appended private text,
+control characters, invalid HTTP status numbers, extra content, and details that
+appear only in metadata.
+
+`test/unit/script/fetch-url-public-failure.test.ts` checks every fixed public
+phrase and HTTP status from 400 to 599. It refuses malformed text, unknown
+launch codes, control characters, and private suffixes.
+`test/acceptance/script/fetch-url-failure-details.test.ts` runs the actual CLI
+against the real fetch operation and MCP tool, with a fetcher double. It checks
+HTTP 429, readiness timeout, DNS failure, and unknown-error fallback, with no
+private data, partial output, HTML processing, or changed completion status.
+The focused changed tests and the full ordinary suite passed. All use local
 fake credentials and need no live provider or renderer.
 
 `test/acceptance/script/fetch-url-oauth.test.ts` adds process tests with a local
@@ -2361,20 +2373,20 @@ The neutral operation runs with the real permission helper and fetcher,
 processor, and reporter doubles. The last case adds the thin MCP adapter,
 real tool server, and SDK client.
 
-[V] Gives only the fixed `readiness_timeout` category and `20000` budget to the readiness reporter, without the private cause or stderr; the client gets only `Page fetch failed`, and no pipeline work starts
+[V] Gives only the fixed `readiness_timeout` category and `20000` budget to the readiness reporter, without the private cause or stderr; the client gets `Page fetch failed: Renderer readiness timed out`, and no pipeline work starts
 [V] Keeps the safe client failure if the readiness reporter throws
 [V] Gives no readiness report for an untyped error whose message copies the readiness timeout text
 [V] Gives cancellation priority over a readiness timeout and writes no readiness report
-[V] Gives a renderer launch failure (`ENOENT` or `EACCES`) to the operator reporter one time with only the failure class and the code; the client still gets only `Page fetch failed` without a cause, and no processing starts
+[V] Gives a renderer launch failure (`ENOENT` or `EACCES`) to the operator reporter one time with only the failure class and the code; the client gets a safe launch detail with the approved code and no cause, and no processing starts
 [V] Gives no renderer setup report for an HTTP 404 error, the readiness limit, the process timeout, or a blocked destination
 [V] Keeps the safe fetch error when the reporter throws, and gives only the cancellation and no report for a call that is cancelled when the renderer cannot start
-[V] Gives the same client result and the same `fetch_failed` record for a renderer launch failure, an HTTP error, and a readiness timeout; only the launch failure gives a setup report, and only the readiness timeout gives a readiness report
+[V] Gives distinct safe launch, HTTP, and readiness details and the same `fetch_failed` record for each; only the launch failure gives a setup report, and only the readiness timeout gives a readiness report
 
 **Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
 
 `createFetchOperation` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
 
-[V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets one setup warning for each code and one correlated structured failure event for each call
+[V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets a safe launch detail with its approved code and a `fetch_failed` record, and the operator log gets one setup warning for each code and one correlated structured failure event for each call
 
 [V] Given two readiness timeouts with private causes, each call gets the safe fetch failure and each timeout sends one correlated JSON failure report with the readiness category, phase, and budget; this remains true when the application logger throws
 
@@ -3033,7 +3045,7 @@ Each test runs the production `serve()` in the test process with `InProcessServe
 [V] Given a real Better Auth token in each era, the client lists `getURLAsMarkdown` with the shared schema and gets one exact cleaned Markdown entry; the final URL selects the rules and resolves the links, the requested URL keeps its spelling, the server keeps the rules that it read at startup after the file changes, the renderer gets the production arguments, limits, and environment with `LIGHTPANDA_DISABLE_TELEMETRY=true`, and each call writes one safe completion record
 [V] Given forged credentials (a changed token payload or a malformed token), a token that a password reset revoked, and a token of a user that `users disable` disabled, each call gets 401 in both eras, and a banned user with a live session gets 403; no fetch, cleaning, or completion record happens, and a peer with a current token still gets the cleaned page
 [V] Given an empty rules file, the ad rules do nothing, and the hidden content is still removed
-[V] Given HTML that the sanitizer withholds, HTML deeper than the ad cleaner limit, and a failed render, the client gets exact empty success, `Page processing failed`, or `Page fetch failed` without partial Markdown; no record holds a cause or page text
+[V] Given HTML that the sanitizer withholds, HTML deeper than the ad cleaner limit, and a failed render, the client gets exact empty success, `Page processing failed`, or `Page fetch failed: HTTP 404` without partial Markdown; no record holds a cause or page text
 
 ```sh
 npm run build && node --test dist/test/acceptance/mcp/self-hosted-fetch-tool.test.js
@@ -3043,9 +3055,9 @@ npm run build && node --test dist/test/acceptance/mcp/self-hosted-fetch-tool.tes
 
 Each test runs the production `serve()` in the test process with `InProcessServer`, real Better Auth on SQLite files, and trusted test rules. An authorized SDK client calls `getURLAsMarkdown`. The first two tests let Node start a missing executable and a file without execute permission, so the server gets the real `ENOENT` and `EACCES`; no renderer runs. Their address-literal URL needs no DNS lookup. The third test uses `RendererProcessDouble`. These cases are offline.
 
-[V] Given `LIGHTPANDA_BIN` that names a missing executable, two calls each get `Page fetch failed` and a `fetch_failed` record, and the operator log has exactly one error line: the report that names the missing renderer (`ENOENT`) and the runtime guide, without the URL, the reason, the token, the executable path, the renderer arguments, or the process error
-[V] Given a server that reported its missing executable, after the operator puts a file without execute permission at that path, two more calls still get `Page fetch failed` and `fetch_failed` records, and the log gets one more report, which names an executable that cannot start (`EACCES`)
-[V] Given a renderer process double, an HTTP 404 error and a blocked destination each give `Page fetch failed` and a `fetch_failed` record, and the server writes no renderer setup report
+[V] Given `LIGHTPANDA_BIN` that names a missing executable, two calls each get `Page fetch failed: Renderer could not start (ENOENT)` and a `fetch_failed` record, and the operator log has exactly one error line: the report that names the missing renderer (`ENOENT`) and the runtime guide, without the URL, the reason, the token, the executable path, the renderer arguments, or the process error
+[V] Given a server that reported its missing executable, after the operator puts a file without execute permission at that path, two more calls get `Page fetch failed: Renderer could not start (EACCES)` and `fetch_failed` records, and the log gets one more report, which names an executable that cannot start (`EACCES`)
+[V] Given a renderer process double, an HTTP 404 error gives `Page fetch failed: HTTP 404`, a blocked destination gives `Page fetch failed`, and each gives a `fetch_failed` record, and the server writes no renderer setup report
 
 ```sh
 npm run build && node --test dist/test/acceptance/mcp/renderer-setup-report.test.js
@@ -3090,9 +3102,9 @@ The production `serve()` runs in the test process with real Better Auth, the rea
 [V] Given the pinned renderer and a real Better Auth token in each protocol era, after the user signs in and consents on the bundled pages, the client gets exact cleaned Markdown from a local JavaScript page, and the server writes one safe completion record
 [V] Given a local server whose environment does not set `LIGHTPANDA_DISABLE_TELEMETRY`, with a new `HOME`, the client gets exact cleaned Markdown from a local JavaScript page, and the renderer run has telemetry off: it writes no telemetry install ID (`iid`) in its data directory, so it starts no telemetry sender and tries no connection to `telemetry.lightpanda.io`
 [V] Given a redirect that changes the host and the path, `requestedUrl` keeps the accepted spelling, and the final URL selects the ad rules and resolves the relative links
-[V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed` and `Page processing failed` without partial Markdown; the server writes no renderer setup report
+[V] Given hidden content, HTML that the sanitizer withholds, an HTTP error, and a DOM deeper than 256 levels, the hidden content is removed, withheld HTML gives exact empty success, and the failures give `Page fetch failed: HTTP 404` and `Page processing failed` without partial Markdown; the server writes no renderer setup report
 [V] Given a page whose script completes after 6.5 seconds, the client gets the rendered Markdown within the fixed 20-second readiness allowance
-[V] Given a page that never reaches network idle, the child stops before the fetch completes, the client gets `Page fetch failed` without partial Markdown, and the server writes one safe `readiness_timeout` report and one `fetch_failed` completion record
+[V] Given a page that never reaches network idle, the child stops before the fetch completes, the client gets `Page fetch failed: Renderer readiness timed out` without partial Markdown, and the server writes one safe `readiness_timeout` report and one `fetch_failed` completion record
 [V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
 [V] Given a legacy call that keeps the renderer waiting, server shutdown cancels it; the renderer child stops before the server finishes stopping, and the server writes one `cancelled` record
 
@@ -3542,11 +3554,11 @@ npm run build && node --test dist/test/acceptance/auth/self-hosted-routes.test.j
 
 The suite builds the image of the current candidate two times; the second build is the replacement image. It runs the server and the bundled commands in containers of the image with the real provider and SQLite on Docker volumes. The containers get only the image settings and `PUBLIC_BASE_URL`. An internal Docker network gives them no route out. An edge container forwards the test connections to the server and records each outbound DNS query. Before each case, a lookup of a control name must appear in the record, and the case requires no other query. The test-only browser and the MCP SDK client of each user reach the server through the edge. Before each server container starts, the suite copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt` to `/etc/thermus/ad-rules.txt` in it; command containers get no rules file. The image holds the pinned Lightpanda 1.0.0. In the two renderer cases, `NODE_OPTIONS` loads the test-only page seam `test/support/container/container-page.ts` into the server. The seam serves a JavaScript page on port 8090 of the container, gives the lookup of `localhost` a public address, and logs each renderer launch and each connection and request of the page. With `CONTAINER_GATE_PAGE=permitted`, it lets the renderer reach `127.0.0.1` for the page; with `blocked`, the renderer starts with the production options. The hosted image acceptance specification loads the same seam with the third mode, `hosted`. The seam keeps the telemetry settings of the image and the fetcher. The suite does not reach a public page, and it is not a renderer gate pass.
 
-[V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed` and a `fetch_failed` record, because the container has no route out, and the server log gets no renderer setup report; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
+[V] Given a fresh image and data volume, stopped-server command containers add two users and register a native client for each; after the server container starts, each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one tenant; a fetch tool call with an address-literal URL gets `Page fetch failed: Renderer connection failed` and a `fetch_failed` record, because the container has no route out, and the server log gets no renderer setup report; a token that is no longer accepted leads to a new authorization without the pages, a refresh request gets `unsupported_grant_type`, and no container tries an outbound connection
 [V] Given two users with tokens and consents, a restart, a new container, and a container of the rebuilt image on the same volume each keep the tenant, the user IDs, the clients, the signing keys, the sessions, the consents, and the tokens of both users usable
 [V] Given a tar backup of the complete stopped volume, a restore into a new volume keeps the tenant, the user IDs, the tokens, the sessions, and the consents; a fresh volume gets a new tenant; a restore without the installation identity or without `auth.secret` stops the server before it listens, asks for a restore, and gets no new identity
 [V] Given a server container with trusted rules and the permitted page seam, `LIGHTPANDA_BIN` in the running container names `/opt/lightpanda/1.0.0/lightpanda`, which reports `1.0.0`; an authorized SDK client gets the exact cleaned Markdown of the local JavaScript page, which the renderer of the image loads with its script; the trusted rules of the final host apply; the server writes one safe `success` record; the server container stops with status 0, and no container tries an outbound connection, also no telemetry lookup
-[V] Given a server container with the blocked page seam and the production renderer options, calls for the loopback address, for the private address of the container, and for `localhost`, which the seam gives a public address, each get `Page fetch failed` and one `fetch_failed` record; the fetcher starts no renderer for the two addresses; the renderer starts for `localhost` and blocks its loopback socket; the page gets no connection, and no container tries an outbound connection
+[V] Given a server container with the blocked page seam and the production renderer options, calls for the loopback address, for the private address of the container, and for `localhost`, which the seam gives a public address, give `Page fetch failed` for the two address checks and `Page fetch failed: Renderer connection failed` for the renderer socket block; each call has one `fetch_failed` record; the fetcher starts no renderer for the two addresses; the renderer starts for `localhost` and blocks its loopback socket; the page gets no connection, and no container tries an outbound connection
 [V] Given an image build with another file in place of the Lightpanda download, the build stops with `Lightpanda SHA256 check failed for linux/<architecture>` and makes no image; the build needs no network access for the asset
 [V] Given a fresh volume and a server container without the trusted rules file, the server stops before it listens with the `FATAL` line `AD_RULES_FILE could not be read (ENOENT).` and writes nothing to the volume; a command container, which reads no rules, still adds an account
 [V] Given two users with tokens, a stopped-server password reset of one user ends only its token and old password, and the user signs in again without a new consent; a later disable of the other user ends only its token and sign-in; the peer keeps working each time
@@ -3595,7 +3607,7 @@ later suites. Production readiness and shutdown bounds stay unchanged.
 [V] Given the unmodified image and placeholder runtime settings, the real CLI serves portal assets and CSP, responds to health, requires MCP authentication, and refuses a foreign Origin
 [V] Given the unmodified image and placeholder credentials with signup enabled only in the test, a visitor sees the complete byte-exact approved notice before sign-in and no activation form
 [V] Given the provider seam's Connect User, the real renderer fetches public HTTPS with verified TLS and returns the controlled page's JavaScript output after the native cleaner applies the shipped policy
-[V] Given private targets, overload, disconnect, and active-renderer SIGTERM, private calls fail before rendering, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
+[V] Given private targets, overload, disconnect, and active-renderer SIGTERM, address-policy refusals give `Page fetch failed` before rendering, a blocked renderer socket gives `Page fetch failed: Renderer connection failed`, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
 [V] Given missing rules, a missing renderer, an empty cookie password, or an HTTP public base URL, the real CLI exits with status 1 before listening and shows no secret
 [V] Given a final image with its portal hidden by an empty mount, startup fails before listening with a safe portal error
 [V] Given a copied context with an injected failing offline test, the final-target build fails and creates no runtime image
@@ -3881,6 +3893,21 @@ image test performs no Docker operation.
 
 ## Fetch failure diagnostics
 
+**Public failure formatting** (`test/unit/page-fetch/fetch-failure.test.ts`)
+
+[V] Formats representative valid HTTP statuses and uses fixed unavailable-status text for invalid metadata and the known renderer `HttpError` code
+[V] Formats readiness, DNS, launch, known renderer, output-limit, killed, interrupted, and failed-process details without a raw cause or diagnostic
+[V] Refuses unknown, malformed, or hostile facts and does not treat HTTP status from an interrupted process as the failure cause
+
+**Protected operation** (`test/integration/page-fetch/fetch-page.test.ts`)
+
+[V] Converts a typed HTTP 429 failure with a private cause to only the safe public detail, with no HTML processing
+
+**MCP failure projection** (`test/integration/mcp/fetch-failure-details.test.ts`)
+
+[V] Returns one text error through the real SDK and tool for HTTP, readiness, DNS, launch, request timeout, and interrupted-process failures; keeps one `fetch_failed` completion and starts no HTML processing
+[V] Keeps unknown errors, unclassified statuses, and malformed diagnostics generic without exposing private data
+
 **Renderer boundary** (`test/unit/website-fetcher/website-fetcher-diagnostics.test.ts`)
 
 [V] Retains HTTP 429 with `error: null` and exit 22, and HTTP status with exit 1 and a known renderer error
@@ -3890,12 +3917,12 @@ image test performs no Docker operation.
 
 **Hosted diagnostic acceptance** (`test/acceptance/mcp/hosted-fetch-failure-diagnostics.test.ts`)
 
-[V] Joins one safe HTTP failure event to the completion ID and preserves `Page fetch failed`
+[V] Joins one safe HTTP failure event to the completion ID and returns `Page fetch failed: HTTP 404`
 
 The protected operation tests also cover unknown errors, reporter failure,
 success, and cancellation. Hosted concurrency cases require no diagnostic for
 cancelled work and one diagnostic for a failed fetch.
 
 ```sh
-npm run build && node --test dist/test/unit/website-fetcher/website-fetcher-diagnostics.test.js dist/test/integration/page-fetch/fetch-page.test.js dist/test/integration/fetch-tool-renderer-setup-report.test.js dist/test/acceptance/mcp/hosted-fetch-failure-diagnostics.test.js dist/test/acceptance/mcp/hosted-fetch-tool.test.js
+npm run build && node --test dist/test/unit/page-fetch/fetch-failure.test.js dist/test/unit/website-fetcher/website-fetcher-diagnostics.test.js dist/test/integration/mcp/fetch-failure-details.test.js dist/test/integration/page-fetch/fetch-page.test.js dist/test/integration/fetch-tool-renderer-setup-report.test.js dist/test/acceptance/mcp/hosted-fetch-failure-diagnostics.test.js dist/test/acceptance/mcp/hosted-fetch-tool.test.js
 ```
