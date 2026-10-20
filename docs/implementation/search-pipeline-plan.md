@@ -1,6 +1,7 @@
 # Search pipeline plan
 
-Status: SEARCH-01 through SEARCH-05 implemented; SEARCH-06 runtime and live proofs passed. Final delivery checks are in progress.
+Status: SEARCH-01 through SEARCH-06 implemented and verified. See
+[SEARCH-06 evidence](search-06.md) for checks and retained quality exceptions.
 Date: 2026-10-20.
 
 Add MCP `search({ query, reason })` to return cleaned first-page Markdown.
@@ -242,7 +243,8 @@ Modify these existing paths:
   a focused sibling specification using the existing guard fixtures.
 - `package.json`: select both fetch and search runtime files in
   `test:mcp:renderer` and `build:hosted`, plus necessary ordinary hosted
-  search acceptance cases in the hosted build.
+  search acceptance cases in the hosted build. Add `test:mcp:search:live`
+  for the separate public Brave proof.
 - `docs/implementation/test-gate-policy.md`,
   [Lightpanda runtime guide](../lightpanda-runtime.md),
   [README.md](../../README.md), and the
@@ -269,6 +271,13 @@ of supported captured pages. Add
 `test/acceptance/mcp/hosted-search-capacity.test.ts` for public behavior.
 Cover both edition-by-era combinations for discovery and representative
 success; do not repeat every negative matrix in all four combinations.
+
+Use `test/acceptance/mcp/search-pipeline.runtime.ts` for the local pinned
+renderer proof and `test/acceptance/mcp/search-pipeline.live.ts` for the
+separate public Brave proof. Share the third copy of renderer setup validation
+in `test/support/processes/pinned-renderer.ts`. Extend
+`test/acceptance/mcp/renderer-gate-setup.test.ts` to check command selection
+and refusal of invalid setup before network work.
 
 Reuse existing MCP drivers and production-like sites. Add support only where
 needed; do not copy a complete search site by default. Keep private fixtures
@@ -398,8 +407,8 @@ checks above apply to the complete implementation candidate.
 
 These are local work packages. SEARCH-01 contracts, SEARCH-02 provider
 behavior, SEARCH-03 core, SEARCH-04 composition, and SEARCH-05 public MCP
-dispatch are implemented. SEARCH-06's pinned search runtime and live Brave
-proofs passed. Its final delivery checks are **In progress**. See the
+dispatch are implemented. SEARCH-06's pinned search runtime, live Brave proof,
+and selected test and build gates passed. See the
 [SEARCH-06 verification record](search-06.md) for complete-candidate evidence.
 The entries are not board issues or instructions to open separate pull requests.
 No board issue has been created.
@@ -422,7 +431,8 @@ does not defer checks from earlier work. Add no executable tests for prose.
 **Dependencies:** none. **Acceptance:** AC2.
 
 The [implementation record](search-01.md) gives the changes and verification
-evidence. The complete search flow remains in Draft.
+evidence. [SEARCH-06](search-06.md) records final verification of the complete
+search flow.
 
 **Scope and main paths:** Add the failing public search specification and the
 `SearchQuery` value class in `src/search-pipeline/search-query.ts`.
@@ -445,7 +455,7 @@ its initial failure. SEARCH-05 records the completed public flow.
 
 ### SEARCH-02: Prove Brave HTTP classification and full-page fidelity
 
-**Status:** Implemented and reviewed; SEARCH-06 verifies the final delivery gates.
+**Status:** Implemented and reviewed; SEARCH-06 records the final delivery checks.
 **Dependencies:** SEARCH-01. **Acceptance:** AC5, AC6,
 and the provider/renderer distinction in AC9. The
 [implementation record](search-02.md) gives the evidence and limits.
@@ -561,19 +571,23 @@ privacy assertions, log-failure behavior, and unchanged fetch log fields.
 eras. The schema, typed projection, safe failure mapping, operation-pair
 wiring, and private completion branch are in place. Public fixture tests
 cover results, no-results, withholding, refusals, shared capacity,
-cancellation, and shutdown. The pull request stays Draft until the remaining
-required checks and SEARCH-06 proofs pass.
+cancellation, and shutdown. SEARCH-06 adds the pinned runtime and live proofs
+and records final verification of the complete candidate.
 
 ### SEARCH-06: Prove the pinned runtime and select the delivery gates
 
-**Status:** In progress. **Dependencies:** SEARCH-05. **Acceptance:** AC10 and
-complete verification of AC1–AC9.
+**Status:** Implemented and verified. See [SEARCH-06 evidence](search-06.md).
+**Dependencies:** SEARCH-05. **Acceptance:** AC10 and complete verification
+of AC1–AC9.
 
 **Scope and main paths:** Add
 `test/acceptance/mcp/search-pipeline.runtime.ts` using the test-only canonical
 URL-to-local-fixture transport described above. Select both runtime files in
 `package.json` for `test:mcp:renderer` and `build:hosted`, including necessary
-ordinary hosted search cases. Update the test gate policy and runtime guide.
+ordinary hosted search cases. Add `search-pipeline.live.ts` beside the runtime
+file and select it only with `test:mcp:search:live`. Reuse the shared pinned
+setup helper for fetch runtime, search runtime, and live search. Update the
+test gate policy and runtime guide.
 Complete `docs/reference/mcp-search-tool.md` and affected existing references.
 Run the separate pinned real-Brave end-to-end proof through adapter,
 classifier, cleaners, and tool output.
