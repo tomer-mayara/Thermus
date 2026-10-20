@@ -680,26 +680,46 @@ ignored:
       message: Too many Lines of code (176 > 150)
       count: 1
     - rule: maintainability
+      file: src/website-fetcher/fetch-diagnostic.ts
+      message: 'Maintainability too low: got 81 (min: 85)'
+      count: 1
+    - rule: lloc_by_method
       file: src/website-fetcher/network-policy.ts
-      message: 'Maintainability too low: got 59 (min: 85)'
+      message: 'LLOC too high in method lookupAddresses(): got 27 (max: 20)'
+      count: 1
+    - rule: maintainability
+      file: src/website-fetcher/network-policy.ts
+      message: 'Maintainability too low: got 61 (min: 85)'
+      count: 1
+    - rule: max_loc_by_method
+      file: src/website-fetcher/network-policy.ts
+      message: 'LOC too high in method lookupAddresses(): got 41 (max: 30)'
       count: 1
     - rule: cyclomatic_complexity
       file: src/website-fetcher/website-fetcher-lightpanda.ts
-      message: 'Cyclomatic complexity too high: got 65 (max: 40)'
+      message: 'Cyclomatic complexity too high: got 45 (max: 40)'
       count: 1
     - rule: efferent_coupling
       file: src/website-fetcher/website-fetcher-lightpanda.ts
-      message: 'Efferent coupling too high: got 12 (max: 10)'
+      message: 'Efferent coupling too high: got 14 (max: 10)'
+      count: 1
+    - rule: lloc_by_method
+      file: src/website-fetcher/website-fetcher-lightpanda.ts
+      message: 'LLOC too high in method render(): got 40 (max: 20)'
       count: 1
     - rule: maintainability
       file: src/website-fetcher/website-fetcher-lightpanda.ts
-      message: 'Maintainability too low: got 47 (min: 85)'
+      message: 'Maintainability too low: got 71 (min: 85)'
       count: 1
     - rule: max_loc
       file: src/website-fetcher/website-fetcher-lightpanda.ts
-      message: Too many Lines of code (196 > 150)
+      message: Too many Lines of code (153 > 150)
+      count: 1
+    - rule: max_loc_by_method
+      file: src/website-fetcher/website-fetcher-lightpanda.ts
+      message: 'LOC too high in method render(): got 65 (max: 30)'
       count: 1
     - rule: maintainability
       file: src/website-fetcher/website-fetcher.ts
-      message: 'Maintainability too low: got 82 (min: 85)'
+      message: 'Maintainability too low: got 80 (min: 85)'
       count: 1
