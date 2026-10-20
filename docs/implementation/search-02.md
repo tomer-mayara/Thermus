@@ -86,6 +86,7 @@ it is not a claim about every challenge Brave can serve.
 | Final provider tests | All 62 cases passed after the complete template checks. |
 | Final converter and integration checks | All 152 cases passed, including existing converter and fetch regressions. |
 | Initial changed-test check | All 67 then-current provider, converter, and integration cases passed before the last whole-banner correction. |
+| Final changed-test check | All 73 new cases passed from the clean build of the final source: 62 provider, 3 converter, and 8 integration cases. |
 
 The final focused commands were:
 
@@ -123,20 +124,20 @@ gate until MCP registration is implemented. The pull request stays Draft.
 
 ## Complete-candidate results
 
-These results precede the last whole-banner correction. The selected checks
-are being repeated for that correction.
+These results cover the final whole-banner correction at `c7a951a3`.
 
 | Check | Exit | Result |
 | --- | --- | --- |
-| Focused new tests | 0 | All 67 cases passed: 56 provider, 3 converter, and 8 integration cases. |
-| `npm test` | 1 | 5,512 of 5,517 backend cases passed in 303 suites. Two public search cases await MCP registration. Three logging cases require `AXIOM_API_KEY`, which is unset. |
+| Focused new tests | 0 | All 73 cases passed: 62 provider, 3 converter, and 8 integration cases. |
+| `npm test` | 1 | 5,517 of 5,523 backend cases passed in 303 suites. Two public search cases await MCP registration. Three logging cases require `AXIOM_API_KEY`, which is unset. The existing metrics timeout case also failed; see the diagnosis below. |
 | `npm run test:user-portal` | 0 | All 41 cases passed. Run separately because backend failures stopped the ordinary command before portal tests. |
 | `npm run typecheck` | 0 | Backend and portal types passed, including the static engine contracts. |
 | `npm run test:build` | 0 | All 13 cases passed. |
 | `npm run build:user-portal` | 0 | Passed. |
 | `npm run test:mcp:renderer` | 0 | All 9 cases passed with pinned Lightpanda 1.0.0. |
-| `npm run build:hosted` | 0 | Every stage passed: 3,915 backend unit cases, 23 portal unit cases, 13 build cases, 18 portal acceptance cases, 566 integration cases, 142 selected acceptance/interface cases, and 9 renderer cases. |
-| `npm run test:container:hosted` | Pending | Linux AMD64 image gate is running. |
+| `npm run build:hosted` | 0 | Every stage passed: 3,921 backend unit cases, 23 portal unit cases, 13 build cases, 18 portal acceptance cases, 566 integration cases, 142 selected acceptance/interface cases, and 9 renderer cases. |
+| `npm run test:container:hosted` | 0 | All 9 Linux AMD64 image cases passed, including runtime rendering, cancellation, shutdown, and refusal to produce an image after a failed offline check. |
+| Metrics timeout-test diagnosis | 0 | All 16 existing cases in `ast-metrics-mcp.test.js` passed when run alone after the image gate. |
 | `habit-hooks --branch origin/main` | 1 | Completed with 26 retained findings, explained below. |
 | ast-metrics process with fresh coverage | Pending | Required because production source changed. |
 
@@ -144,8 +145,16 @@ Every completed test run above had zero cancelled, skipped, or todo tests.
 The ordinary suite remains a failed gate. No public acceptance case or logger
 case was skipped, weakened, or changed to expect its current failure.
 
-The focused changed-test command used the output from the clean build in the
-image-gate command:
+The metrics timeout case received the expected exit code and timeout text.
+Its next assertion failed: the fake recorded zero tool calls rather than
+one. The command's 300 ms deadline includes process startup and the MCP
+handshake, so it can expire before the tool call. All 16 cases in that file
+passed in an isolated rerun after the build gates, including the timeout
+case. This supports a startup-timing diagnosis; it does not turn the failed
+ordinary-suite run into a pass. The test and its deadline have not changed.
+
+The focused changed-test command used the output from the clean build in
+`npm test`:
 
 ```sh
 node --test dist/test/unit/search-engine/search-engine-brave-http.test.js \
