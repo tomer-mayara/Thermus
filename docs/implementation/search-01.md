@@ -1,7 +1,7 @@
 # SEARCH-01: query and document contracts
 
 Date: 2026-10-20.
-Status: query-class revision implemented and tested; metrics review in progress.
+Status: query-class revision implemented and reviewed; public search acceptance remains open.
 
 This record covers [SEARCH-01](search-pipeline-plan.md#search-01-define-the-query-and-document-contracts).
 The [draft pull request](https://github.com/tomer-mayara/Thermus/pull/200)
@@ -83,7 +83,7 @@ These results cover the query-class revision.
 | `npm run test:build` | All 13 cases passed. |
 | `npm run build:user-portal` | Passed. |
 | `habit-hooks --branch origin/main` | Completed with 12 comment findings. The disposition below retains each compiler directive; the snooze file stays empty. |
-| `pnpm exec node script/code-quality/ast-metrics-process.ts --collect-coverage` | Pending for the query-class revision. |
+| `pnpm exec node script/code-quality/ast-metrics-process.ts --collect-coverage` | All four sections completed. Coverage passed: 3,856 backend unit cases and 23 portal unit cases. The process exited 1 for the recorded maintainability and function-matching findings below. Architecture passed. |
 
 The logging tests require a real Axiom export, as the test gate policy states.
 No credentials, fake exports, skipped cases, or changes to those tests were
@@ -100,14 +100,36 @@ Keep them as executable compiler annotations.
 All comparisons use the same base,
 `0524a43646886f143ddf707bfb73d2157085649a`.
 
-The class replaces the standalone predicate at the owner's request. The
-previous predicate's maintainability and function-identity findings no
-longer describe the current code. Collect fresh unit coverage and measure
-the class before completing this review. The interface-only engine file
-has no measured maintainability or runtime function.
+The query-class file has maintainability 65.4, below the goal of 85. The
+review reports this as a high finding, with rounded score 65. Direct
+inspection with `ast-metrics-mcp.ts file` reports three methods and eight
+decision paths. Retain this finding: the constructor gives one fixed error
+path, the private field and getter keep the text read-only, and the private
+validator keeps the bounded Unicode checks together. Inlining those checks
+would complicate the constructor. The scalar loop stops at 513 and uses
+constant space. A full array conversion would need another bound; a counting
+regular expression would hide the scalar rule. The manager and implementation
+author found no useful simplification. No extra abstraction, comment, or
+file split was added to change the score.
 
-The previous review reported five high findings in fetch files outside this
-code change. Each was read and retained for the following design reason:
+Fresh unit coverage was collected at `e2d4a3ca`. The CRAP report contains
+these findings for `src/search-pipeline/search-query.ts`:
+
+| Method | Paths | Reported coverage | Reported CRAP | Classification and retained reason |
+| --- | --- | --- | --- | --- |
+| `SearchQuery.isValid` | 5 | 100% | 5.0 | Identity unknown. The measured score meets both numerical goals, but the tool cannot classify the new-function target. |
+| `SearchQuery.constructor` | 2 | 100% | 2.0 | Identity unknown. The measured score meets both numerical goals, but the tool cannot classify the new-function target. |
+| `SearchQuery.value` | 1 | Unknown | At least 1 | Identity and coverage matching are unknown. The focused cases read the getter, but the CRAP report cannot associate its coverage entry. Do not treat this lower bound as a measured pass. |
+
+Git shows that all three methods are new. The verified coverage file records
+`get value` with seven calls and covered share 1. The CRAP report names the
+method `SearchQuery.value` and leaves it unmatched. Keep this matching limit
+explicit; do not edit the report or add redundant getter tests to change it.
+The interface-only engine file has no measured maintainability or runtime
+function.
+
+The review also reports five high findings in fetch files outside this code
+change. Each was read and retained for the following design reason:
 
 | File and reported score | Reason to retain |
 | --- | --- |
@@ -125,8 +147,9 @@ including its goal misses, graphs, legends, and evidence limits.
 
 ## Manager review
 
-The manager reviewed the delegated class implementation and test evidence.
-The class owns validation and the unchanged text; the engine contract does
-not gain a dependency on the pipeline. Metrics review is in progress.
-The public acceptance flow and the ordinary test gate remain open, so the
-pull request stays in Draft and must not merge.
+The manager reviewed the delegated class implementation, test evidence, and
+quality findings. The class owns validation and the unchanged text; the
+engine contract does not gain a dependency on the pipeline. This sign-off
+covers the SEARCH-01 query and document contracts only. The public acceptance
+flow and the ordinary test gate remain open, so the pull request stays in
+Draft and must not merge.
