@@ -51,6 +51,7 @@ The matching helper folders (`delta/`, `mcp/`, `review/`, `coverage/`,
 own each command's work. `identity/` owns source evidence and function identity;
 `provenance/` owns input identity and checked readers; `dependencies/` owns
 parsed imports, resolution, and checked snapshot dependency evidence.
+`snapshot/observations.ts` owns the separate offline raw-observation projection.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
 and parent signal observations live in `coverage/propagation.ts` and
@@ -768,7 +769,8 @@ remain unavailable, never inferred from rounded scores. Present malformed or
 nonfinite native MI for a `src/` file stops capture before publication;
 out-of-scope entries remain ignored. The existing
 architecture reader ignores this optional field; displays/trends/process retain
-rounded data. A raw-retaining assessment reader remains future work.
+rounded data. The separate decoder below preserves raw observations; full
+assessment validation remains future work.
 
 Optional file `classObservations` preserves the native reported subset from
 the already fetched `get_file_metrics` response's `classes` array. Each entry
@@ -785,7 +787,25 @@ can collapse same-named namespace classes. Presence, length and names prove
 neither class identity nor completeness. Separate source correspondence and
 completeness evidence are still needed for class decisions. The architecture
 reader ignores these observations. Persistent class identity, class decision
-automation and a raw-aware assessment reader remain future work.
+automation and full assessment validation remain future work.
+
+The separate synchronous offline decoder
+`snapshotObservationsIn(text, expected: { commit, tool })` in
+`script/code-quality/snapshot/observations.ts` returns only version 1, declared
+commit/tool and file paths with optional raw file MI and passive class
+observations. The commit must be a full lowercase 40-hex SHA, and the expected tool must be a
+nonempty string. Both declared labels must exactly match the supplied
+expectations; paths must be unique canonical `src/` paths. Present numbers must be finite and
+present classes must have the declared shape. Missing raw data stays unknown;
+rounded display MI never fills it. Zero, native order, duplicate and empty class
+names, and explicit empty arrays stay intact.
+
+This validates only the projection. It does not validate the full snapshot or
+provenance, content cleanliness/authenticity, approved tool or measurement basis,
+class/source completeness, coverage/exact measurement binding, comparison,
+history or route eligibility. It is groundwork for future assessment validation.
+Existing architecture and CRAP readers and behavior stay unchanged. It adds no
+CLI, collection or write operation and activates no policy.
 
 `tool` keeps the checked actual version, including an explicit override.
 Optional `title` is the commit message's first line; optional `provenance`
@@ -961,7 +981,11 @@ Prose changes alone do not select a broader suite through those references.
 Live contracts check repository invariants, not fixed community, cycle, or
 file counts. MCP checks function output and missing files. Snapshot checks
 source membership, labels, references, counts, HEAD, dependency pairs,
-deadlines, and worktree cleanup. Architecture acceptance cases share full
+deadlines, and worktree cleanup. Its raw-observation decoder roundtrip uses
+the captured snapshot and native values without another native call. The unit
+and acceptance `ast-metrics-snapshot-observations.test.ts` files check the
+separate offline projection, its unknown/preserved values and input rejection.
+Architecture acceptance cases share full
 graph fixtures; the document-only case proves no suite runs.
 
 `ast-metrics-architecture.live.ts` uses `--no-coverage` and checks structure,
@@ -1054,6 +1078,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-commit.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-observations.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
@@ -1120,6 +1145,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-classes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-observations.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |

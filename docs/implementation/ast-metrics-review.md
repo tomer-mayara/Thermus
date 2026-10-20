@@ -780,7 +780,8 @@ nonfinite native MI for a `src/` file rejects capture before publication;
 out-of-scope entries remain ignored. The existing
 architecture reader ignores this field, so its displays, trends and process
 results still use rounded data. A future assessment must retain and validate raw
-MI through its own reader. This field adds no raw function data.
+MI through a checked assessment boundary. The separate decoder below is
+groundwork for that boundary. This field adds no raw function data.
 
 Optional per-file `classObservations` keeps the native reported subset from
 the already fetched `get_file_metrics` response's `classes` array. Each entry
@@ -799,8 +800,26 @@ can omit class expressions and anonymous default classes, omit MI for an empty
 or nested declaration, and collapse same-named namespace classes into one entry.
 Presence, length and names prove neither source identity nor completeness.
 Class decision automation needs separate source correspondence and completeness
-evidence. Persistent class identity and a raw-aware assessment reader remain
+evidence. Persistent class identity and full assessment validation remain
 future work; this field does not activate policy.
+
+The separate synchronous offline decoder
+`snapshotObservationsIn(text, expected: { commit, tool })` in
+`script/code-quality/snapshot/observations.ts` returns only version 1, declared
+commit/tool and file paths with optional raw file MI and passive class
+observations. The commit must be a full lowercase 40-hex SHA, and the expected tool must be a
+nonempty string. Both declared labels must exactly match the supplied
+expectations; paths must be unique canonical `src/` paths. Present numbers must be finite and
+present classes must have the declared shape. Missing raw data stays unknown;
+rounded display MI never fills it. Zero, native order, duplicate and empty class
+names, and explicit empty arrays stay intact.
+
+This validates only the projection. It does not validate the full snapshot or
+provenance, content cleanliness/authenticity, approved tool or measurement basis,
+class/source completeness, coverage/exact measurement binding, comparison,
+history or route eligibility. It is groundwork for future assessment validation.
+Existing architecture and CRAP readers and behavior stay unchanged. It adds no
+CLI, collection or write operation and activates no policy.
 
 The raw 0.43.1 JSON gives file coupling counts and namespace relations, but
 does not give complete file import pairs. The snapshot therefore uses the

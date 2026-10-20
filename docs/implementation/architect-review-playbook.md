@@ -702,7 +702,7 @@ Other proposed operations remain unavailable.
 | Script | Reuse | Change or removal plan |
 | --- | --- | --- |
 | [`ast-metrics-process.ts`](../../script/code-quality/ast-metrics-process.ts) | Main entry; four report sections; stage failure handling. | Add structured assessment with MI owner warnings, required triggers and AUTO exclusions, plus full-report assembly and short PR view. Read history but never record acceptance while rendering. Preserve raw output and original command statuses. |
-| [`ast-metrics-snapshot.ts`](../../script/code-quality/ast-metrics-snapshot.ts) | Static metrics, source evidence, dependencies, exact-commit CLI, optional raw file MI and native class observations. | F.8/F.9/F.10 record available additions. Assessment raw-reader support and class source correspondence/completeness remain pending. Preserve the merge-base meaning of `--base` and old snapshot readers. |
+| [`ast-metrics-snapshot.ts`](../../script/code-quality/ast-metrics-snapshot.ts) | Static metrics, source evidence, dependencies, exact-commit CLI, optional raw file MI and native class observations. | F.8–F.11 record available capture additions and the separate offline projection decoder. Full assessment/provenance validation and class source correspondence/completeness remain pending. Preserve the merge-base meaning of `--base` and old snapshot readers. |
 | [`ast-metrics-coverage.ts`](../../script/code-quality/ast-metrics-coverage.ts) | Selected-suite collector/importer; own ranges, manifests, process/loader completion and provenance. | Keep. Assessment adds canonical-unit selection and independent own-revision checks. Collection still needs test-scope authorization. |
 | [`ast-metrics-crap.ts`](../../script/code-quality/ast-metrics-crap.ts) | Focused scores, exact threshold arithmetic and coverage/split advice. | Keep for diagnosis. Reuse observations in the complete process; add persistent origin, bounds and B/H/A decisions in the assessment owner. |
 | [`ast-metrics-delta.ts`](../../script/code-quality/ast-metrics-delta.ts) | Changed TypeScript inventory, MI diagnosis and HTML/OpenMetrics output. | Keep standalone output, including non-production rows. Assessment uses raw observations; it must not parse display text for decisions. |
@@ -718,7 +718,7 @@ Other proposed operations remain unavailable.
 | --- | --- | --- |
 | `process/run.ts`, `process/types.ts` | Stage ordering and failure/goal-miss distinctions. | `{text, passed}` cannot express a review route, a bound proof or human approval. Add a separate typed assessment. |
 | `snapshot/commit.ts`, `tree.ts`, `worktree.ts`, `sweep.ts` | Exact static revision analysis and cleanup. | Temporary static checkouts have no dependency installation or coverage run. They do not solve base coverage. |
-| `snapshot/input.ts`, `build.ts` | Native file metric parsing, raw file MI and optional typed native class observations beside rounded output. | F.9/F.10 preserve available raw values and the native reported class subset; the architecture reader ignores them. Source class correspondence/completeness, class history and a retaining/validating assessment reader remain pending. |
+| `snapshot/input.ts`, `build.ts` | Native file metric parsing, raw file MI and optional typed native class observations beside rounded output. | F.9/F.10 preserve available raw values and the native reported class subset; the architecture reader ignores them. F.11 adds the separate `snapshot/observations.ts` projection decoder. Full assessment/provenance validation, source class correspondence/completeness and class history remain pending. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | Add sound upper/difference bounds and lasting origin rules. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -950,8 +950,9 @@ check is required. The third captures the working tree. All provide structural
 evidence and rounded MI, plus optional raw file MI and native class observations
 when the native report provides them, without building, testing or collecting
 coverage. F.9/F.10 define unavailable raw values and the native reported subset.
-The assessment reader and class source correspondence/completeness remain
-**to build**; keep their relevant gaps visible.
+F.11 adds only a separate offline raw-observation projection decoder. Full
+assessment/provenance validation and class source correspondence/completeness
+remain **to build**; keep their relevant gaps visible.
 
 For CRAP, use only canonical unit evidence. A base capture must describe `B`;
 head coverage must not stand in for it. In an independently authorized checkout
@@ -2075,14 +2076,15 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 | --- | --- |
 | `assessment/` (planned) | One pure assessment entry point, typed observations/result and the AUTO predicate. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. Export typed stage outcomes instead of only `runProcess`'s current text/passed pair; keep effectful validation outside the pure calculation. |
-| `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. Raw-retaining assessment input and source correspondence/completeness remain pending. |
+| `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
 
 ### F.2. Command and result contract
 
-Process/assessment options below remain **PROPOSED**. F.8/F.9/F.10 record the
-exact snapshot CLI, optional raw file MI and native class observations, with
-their validation limits.
+Process/assessment options below remain **PROPOSED**. F.8–F.11 record the
+exact snapshot CLI, optional raw file MI, native class observations and separate
+offline projection decoder, with their validation limits. The decoder adds no
+CLI option; full assessment/provenance validation remains pending.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2381,8 +2383,9 @@ Raw file/class additions, image export, assessment/report integration and policy
 adoption remain pending.
 
 That scope statement records the exact-CLI slice. F.9 records the later additive
-raw file MI field. F.10 records native class observations; source class
-correspondence/completeness, assessment and image capabilities remain pending.
+raw file MI field. F.10 records native class observations. F.11 records a separate
+offline raw-observation decoder. Source class correspondence/completeness,
+assessment validation and image capabilities remain pending.
 
 Validation on 2026-10-20:
 
@@ -2427,6 +2430,7 @@ can be obtained before wrapper rounding; it is not final snapshot validation.
 The existing architecture reader ignores the new field, so displays, trends and
 process results retain rounded data. A future assessment needs a reader that
 retains and validates raw MI; this slice does not add it or raw function MI.
+F.11 later adds a narrow observation decoder, with assessment validation pending.
 Typed raw class identity/completeness, image export, assessment and policy
 adoption remain pending. Coverage, routes and manual merge rules do not change.
 
@@ -2489,8 +2493,9 @@ cannot safely drive AUTO criteria. Separate source correspondence and
 completeness evidence remain future work. Existing `sourceEvidence.complete`
 describes functions only and stays unchanged. This slice adds no persistent
 class identity, class decision automation, raw-aware assessment reader, image
-export or policy adoption. Rounded fields and the current architecture
-reader, displays, trends and process results stay unchanged.
+export or policy adoption. F.11 later adds only a raw-observation decoder.
+Rounded fields and the current architecture reader, displays, trends and process
+results stay unchanged.
 
 The new ordinary `ast-metrics-snapshot-classes.test.ts` acceptance file covers
 native precision, missing and empty values, zero, refusal before publication,
@@ -2522,6 +2527,71 @@ checks were selected; broader groups and coverage collection were not selected.
 The two required failures keep PR #201 in Draft. Current habit-hooks and
 four-section process evidence, with reasons for retained findings, are recorded
 on the PR. Merging stays manual after required checks pass.
+
+### F.11. Offline raw-observation decoder implementation record
+
+This groundwork adds the separate synchronous function
+`snapshotObservationsIn(text, expected: { commit, tool })` in
+`script/code-quality/snapshot/observations.ts`. It decodes a narrow projection
+from version-1 snapshot JSON: declared commit and tool, and each file's canonical
+`src/` path, optional raw file MI and optional passive `classObservations`.
+The declared commit must be a full lowercase 40-hex SHA, and the expected tool
+must be a nonempty string. Both declared labels must exactly match the supplied
+expectations.
+File paths must be unique. Present raw MI must be a finite number; present class
+arrays and entries must have the declared shape. Reject malformed input rather
+than return a partial projection.
+
+Missing raw fields stay unknown. Rounded display MI never fills raw MI. Preserve
+zero, finite precision, native order, duplicate class names, empty native names
+and explicit empty class arrays. These class observations remain a reported
+subset with no source class identity or completeness claim.
+
+This function validates only that projection. Matching caller-supplied labels
+proves neither content authenticity nor clean or exact measured content. It does
+not validate the full snapshot or provenance, approve a tool or measurement
+basis, bind coverage to an exact measurement, establish class/source
+completeness, compare observations, read history or decide route eligibility.
+Existing architecture and CRAP readers and behavior stay unchanged. There is no
+new CLI, collection, write, policy adoption or root-guide handoff. Source
+correspondence, coverage/exact measurement binding, image export and the rest of
+assessment validation remain pending. Review and merging stay manual.
+
+The new ordinary unit and acceptance files are both named
+`ast-metrics-snapshot-observations.test.ts`. They specify the projection boundary,
+unknown raw values, preserved observations and rejection of malformed inputs.
+The existing snapshot live contract adds a decoder roundtrip comparison with
+its captured snapshot and native values, without another native call.
+
+Validation on 2026-10-20:
+
+- The pre-edit baseline passed 116/116. The new CLI-to-reader acceptance case
+  first failed for the absent module. The first unit RED run passed 52/55;
+  negative assertions that accepted missing-module errors were then tightened
+  to require decoder diagnostics. The final focused set passed 173/173,
+  including 56 new unit cases and one new acceptance case. The build passed.
+- Manager review added literal positive/negative `1e999` inputs, independent
+  Git/pinned-tool expectations and an explicit display 85/raw 84.96 comparison.
+  The independent local audit and manager found no actionable defect.
+- `pnpm run test:unit` passed 4,020 compiled and 23 portal checks, 4,043 total.
+  Full acceptance passed 908/911 compiled checks and exited 1. Two unchanged
+  public-search cases failed. The existing logging `otel-logger` case also
+  failed for missing `AXIOM_API_KEY` before export. Both `AXIOM_API_KEY` and
+  `AXOIM_ENDPOINT_URL` were absent, and no `.env.local` existed. That source and
+  its tests were unchanged from main. No repair, bypass or skip was applied.
+- The failed acceptance command did not run its portal phase; a separate selected
+  run passed 18/18 portal checks. README/help/inventory checks passed 18/18 within
+  full acceptance. Existing MCP timeout, fetch and OAuth cases passed.
+- Pinned ast-metrics 0.43.1 snapshot live checks passed 3/3, including decoder
+  roundtrip comparison without extra native calls. Structural architecture live
+  with `--no-coverage` passed 1/1. All completed runs had zero skipped, cancelled
+  or todo tests.
+
+No `src/` file changed. The complete unit and acceptance groups and relevant live
+checks were selected; no broader suites or coverage collection were added.
+Required failures keep PR #201 in Draft. Habit-hooks and four-section process
+evidence, with reasons for retained findings, will be recorded on the PR.
+Review and merging stay manual.
 
 ## References
 

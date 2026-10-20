@@ -530,7 +530,7 @@ They compare emitted raw file MI with the pinned native analysis value.
 `test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts` checks raw file MI
 beside rounded output, refusal before publication, and identical architecture
 reports from legacy and raw-enriched snapshots. The architecture reader still
-ignores the optional raw field; assessment raw validation remains future work.
+ignores the optional raw field; full assessment raw validation remains future work.
 
 `test/unit/script/ast-metrics-snapshot-classes.test.ts` checks native class
 observation validation: finite precision, zero, missing MI, missing and empty
@@ -542,6 +542,18 @@ compares captured observations with the native `get_file_metrics` response.
 These tests establish the native reported subset contract, not a complete
 source class inventory or class identity. Function `sourceEvidence.complete`
 does not establish class completeness.
+
+`test/unit/script/ast-metrics-snapshot-observations.test.ts` and
+`test/acceptance/script/ast-metrics-snapshot-observations.test.ts` specify the
+separate synchronous offline decoder's narrow projection: exact expected full
+lowercase 40-hex SHA and nonempty tool labels, unique canonical source paths,
+finite raw numbers and valid
+passive class entries. They cover missing raw values without rounded fallback,
+zero, native order, duplicate and empty names, explicit empty arrays and malformed
+input rejection. They do not establish full snapshot/provenance validity,
+content authenticity, source completeness or assessment eligibility. The existing
+snapshot live contract also compares the decoded projection with the capture
+and native values, with no additional native call.
 
 `test/acceptance/script/ast-metrics-snapshot-provenance.test.ts` checks that
 capture records source and expected coverage-input identity and refuses to
@@ -915,6 +927,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-commit.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-observations.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
@@ -981,6 +994,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-classes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-observations.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |

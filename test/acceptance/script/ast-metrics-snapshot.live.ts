@@ -34,6 +34,10 @@ test('Given the real ast-metrics, when the snapshot runs in the repository root,
   assert.equal(result.code, 0, result.stderr);
   const snapshot = snapshotIn(out);
   assertSnapshotOfHead(snapshot, git('rev-parse', 'HEAD').trim());
+  const { snapshotObservationsIn } = await import(new URL('snapshot/observations.ts', pathToFileURL(astMetricsSnapshotScript)).href) as typeof import('../../../script/code-quality/snapshot/observations.ts');
+  assert.ok(typeof snapshot.tool === 'string');
+  const observed = snapshotObservationsIn(readFileSync(out, 'utf8'), { commit: snapshot.commit, tool: snapshot.tool });
+  assert.deepEqual(observed.files, snapshot.files.map(({ path, maintainabilityRaw, classObservations }) => ({ path, ...(maintainabilityRaw === undefined ? {} : { maintainabilityRaw }), ...(classObservations === undefined ? {} : { classObservations }) })));
   const nativePath = join(folder, 'native.json');
   execFileSync('ast-metrics', ['analyze', `--report-json=${nativePath}`, '--report-summary=false', 'src'], { cwd: root, env: { ...process.env, PWD: root }, stdio: 'pipe', timeout: 60_000 });
   const native = JSON.parse(readFileSync(nativePath, 'utf8')) as { concernedFiles: readonly { path: string; maintainability?: { maintainabilityIndex?: number } }[] };
