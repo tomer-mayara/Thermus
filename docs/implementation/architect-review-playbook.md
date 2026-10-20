@@ -2329,7 +2329,13 @@ bytes. The existing goal-miss case now also checks saved-report/stdout equality.
 These are passing characterization cases, with no production edit or artificial
 failing step. No new harness, test file or runtime interface is needed.
 
-The changed acceptance file selects the acceptance group. Run that file locally
+The acceptance run also exposed timing errors in existing fetch-url tests.
+A follow-up waits for the server's abort signal before checking its count and
+separates the OAuth timeout case from the browser cancellation case. The tests
+keep their output, cancellation, retry and recovery assertions. Production
+behavior stays unchanged.
+
+The changed acceptance files select the acceptance group. Run those files locally
 before commit, the existing focused process unit characterization, and the
 README contract. Because no `src/` file changes, this slice does not select the
 full ordinary suite. It selects no complete unit group or live coverage
