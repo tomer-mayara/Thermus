@@ -830,6 +830,22 @@ history or route eligibility. It is groundwork for future assessment validation.
 Existing architecture and CRAP readers and behavior stay unchanged. It adds no
 CLI, collection or write operation and activates no policy.
 
+The separate synchronous calculation `fileMi85Of(text, expected: { commit,
+tool }, selected: readonly string[])` in `assessment/file-mi85.ts` returns
+readonly per-file `{ path, state, maintainabilityRaw?, reason }` results. It
+first decodes the full raw-observation projection with exact declared commit/tool
+binding, even for empty selection, and checks unique canonical selected `src/`
+paths. Raw MI at least 85 is `MEETS` for this floor only; below 85 is `LOW`.
+An absent file row or absent raw MI is `UNKNOWN`, with a different reason for
+each. It uses no rounding or class aggregation and has no `NOT_APPLICABLE` state.
+
+This calculates over declared inputs and caller selection. It does not verify
+source authenticity, full scope, provenance or trust, infer scope, or decide
+routes/AUTO eligibility. It adds no IO, CLI, report or history behavior and
+activates no policy. Full assessment remains pending; existing commands and
+manual merging stay unchanged. The process does not call it yet. `LOW` or
+`UNKNOWN` alone is not an architect trigger; broader checks remain pending.
+
 The raw 0.43.1 JSON gives file coupling counts and namespace relations, but
 does not give complete file import pairs. The snapshot therefore uses the
 TypeScript parser supplied by `ts-morph`. It ignores package imports and

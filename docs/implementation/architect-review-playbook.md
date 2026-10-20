@@ -695,7 +695,7 @@ Paths in this appendix are relative to
 [`script/code-quality/`](../../script/code-quality/README.md). The map reflects
 the reference commit, with exact-snapshot CLI, raw file MI and native class
 observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
-process outcomes in F.12.
+process outcomes in F.12 and exact per-file MI85 calculation in F.13.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -720,6 +720,7 @@ Other proposed operations remain unavailable.
 | `process/run.ts`, `process/types.ts` | Stage ordering and failure/goal-miss distinctions; F.12 exposes final ordered outcomes through `ProcessResult`. | Process outcomes are not native exit records, review routes, bound proofs or human approvals. Add a separate typed assessment. |
 | `snapshot/commit.ts`, `tree.ts`, `worktree.ts`, `sweep.ts` | Exact static revision analysis and cleanup. | Temporary static checkouts have no dependency installation or coverage run. They do not solve base coverage. |
 | `snapshot/input.ts`, `build.ts` | Native file metric parsing, raw file MI and optional typed native class observations beside rounded output. | F.9/F.10 preserve available raw values and the native reported class subset; the architecture reader ignores them. F.11 adds the separate `snapshot/observations.ts` projection decoder. Full assessment/provenance validation, source class correspondence/completeness and class history remain pending. |
+| `assessment/file-mi85.ts` | F.13 calculates exact per-file MI85 states from declared observations and caller selection; first non-test caller of the F.11 decoder. | No source/authenticity or full-scope proof, route/AUTO eligibility or full assessment. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | Add sound upper/difference bounds and lasting origin rules. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -2075,7 +2076,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 
 | Owner/path | Planned change |
 | --- | --- |
-| `assessment/` (planned) | One pure assessment entry point, typed observations/result and the AUTO predicate. No Git, tools, network, rendering or archive writes. |
+| `assessment/` | F.13 adds only exact per-file MI85 calculation. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
@@ -2087,7 +2088,8 @@ exact snapshot CLI, optional raw file MI, native class observations and separate
 offline projection decoder, with their validation limits. The decoder adds no
 CLI option; full assessment/provenance validation remains pending. F.12 exposes
 final typed process outcomes through the programmatic API only, with no new
-operation, artifact or policy adoption.
+operation, artifact or policy adoption. F.13 adds only a synchronous per-file
+MI85 calculation for declared inputs and caller selection; no command changes.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2639,6 +2641,56 @@ Validation on 2026-10-20:
 Required failures keep PR #201 in Draft. Habit-hooks and final four-section
 process evidence, with reasons for retained findings, will be recorded on the
 PR after documentation freeze. Review and merging stay manual.
+
+### F.13. Exact per-file MI85 calculation implementation record
+
+`assessment/file-mi85.ts` adds only `fileMi85Of(text, expected: { commit, tool },
+selected: readonly string[])`. It is the first non-test caller of F.11's decoder.
+It decodes the full projection and checks exact declared binding before returning
+an empty selection; it also checks unique canonical selected `src/` paths.
+Readonly results contain `path`, `state`, optional `maintainabilityRaw` and
+`reason`. Raw MI at least 85 is `MEETS` for this floor only; below 85 is `LOW`.
+Missing file rows and missing raw values are `UNKNOWN` with distinct reasons.
+
+This is a calculation over declared inputs and caller selection. It uses no
+rounding, class aggregation or `NOT_APPLICABLE` state. It adds no IO, CLI,
+report/history behavior, scope inference, route/AUTO eligibility or policy
+adoption. Source/authenticity, provenance/trust and full-scope verification and
+the rest of assessment remain pending. The process does not call it yet. `LOW`
+or `UNKNOWN` alone is not an architect trigger. Existing commands and manual
+merging stay unchanged.
+
+The unit and acceptance files are both named `ast-metrics-file-mi85.test.ts`.
+They cover exact thresholds, distinct unknown reasons, selection validation and
+the captured raw/display distinction.
+
+Validation on 2026-10-20:
+
+- The baseline passed 173/173. The new acceptance case first failed for the
+  absent module after its snapshot/display assertions passed; all 34 new unit
+  cases first failed. The first green set passed 208/208, including 173 unchanged
+  snapshot checks and 35 new checks. Manager review added a sparse-array case
+  without a runtime change. The final build and new checks passed: 35 unit and
+  one acceptance case, 36/36 total.
+- `pnpm run test:unit` passed 4,055 compiled and 23 portal checks, 4,078 total,
+  with exit 0. Full acceptance passed 910/913 compiled checks and exited 1:
+  the same two missing-public-search cases and existing logger setup case failed.
+  The logger lacked `AXIOM_API_KEY`; both `AXIOM_API_KEY` and `AXOIM_ENDPOINT_URL`
+  were absent, with no `.env.local`. Search/logger source, tests and support were
+  unchanged from `origin/main`.
+- Separate selected portal acceptance passed 18/18. README/help/inventory checks
+  passed 18/18 within full acceptance. New MI85, fetch, OAuth and MCP timeout
+  cases passed. Native snapshot passed 3/3 and structural architecture with
+  `--no-coverage` passed 1/1. Every completed run had zero cancelled, skipped or
+  todo tests.
+- Manager review and independent audit found no actionable defect. Manager
+  sign-off covers this small slice's correctness only, not Ready or merge.
+
+No `src/` file changed. Complete selected unit/acceptance groups and affected live
+checks ran, with no coverage collection or broader suite. Required failures keep
+PR #201 in Draft; merging stays manual. Final habit-hooks and clean committed
+candidate process evidence, with reasons for retained findings, will be added
+to the PR.
 
 ## References
 

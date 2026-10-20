@@ -169,6 +169,13 @@ records stay immutable. Gap checks cover only the interval between displayed
 first-parent endpoints; every stored full SHA counts, also when its row is not
 shown. Offline snapshot dates cannot establish omitted commits.
 
+`test/unit/script/ast-metrics-file-mi85.test.ts` checks exact raw MI85 states,
+distinct unknown reasons, caller selection and full projection validation even
+for empty selection. `test/acceptance/script/ast-metrics-file-mi85.test.ts` uses
+captured snapshots to check raw 84.96 as `LOW` despite display 85, exact 85 as
+`MEETS`, and missing file/raw evidence as `UNKNOWN`. These checks establish a
+calculation over declared inputs, not source authenticity or full scope.
+
 `test/unit/script/ast-metrics-process.test.ts` checks stage order, completed
 goal misses, operational failures, unavailable required coverage, an empty
 production selection, recording failure, and option conflicts. It checks a
@@ -914,6 +921,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
@@ -988,6 +996,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-dependencies-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-dependencies.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |

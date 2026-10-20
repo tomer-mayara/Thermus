@@ -52,6 +52,7 @@ own each command's work. `identity/` owns source evidence and function identity;
 `provenance/` owns input identity and checked readers; `dependencies/` owns
 parsed imports, resolution, and checked snapshot dependency evidence.
 `snapshot/observations.ts` owns the separate offline raw-observation projection.
+`assessment/file-mi85.ts` calculates exact per-file MI85 states for caller selection.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
 and parent signal observations live in `coverage/propagation.ts` and
@@ -807,6 +808,22 @@ history or route eligibility. It is groundwork for future assessment validation.
 Existing architecture and CRAP readers and behavior stay unchanged. It adds no
 CLI, collection or write operation and activates no policy.
 
+The separate synchronous calculation `fileMi85Of(text, expected: { commit,
+tool }, selected: readonly string[])` in `assessment/file-mi85.ts` returns
+readonly per-file `{ path, state, maintainabilityRaw?, reason }` results. It
+first decodes the full raw-observation projection with exact declared commit/tool
+binding, even for empty selection, and checks unique canonical selected `src/`
+paths. Raw MI at least 85 is `MEETS` for this floor only; below 85 is `LOW`.
+An absent file row or absent raw MI is `UNKNOWN`, with a different reason for
+each. It uses no rounding or class aggregation and has no `NOT_APPLICABLE` state.
+
+This calculates over declared inputs and caller selection. It does not verify
+source authenticity, full scope, provenance or trust, infer scope, or decide
+routes/AUTO eligibility. It adds no IO, CLI, report or history behavior and
+activates no policy. Full assessment remains pending; existing commands and
+manual merging stay unchanged. The process does not call it yet. `LOW` or
+`UNKNOWN` alone is not an architect trigger; broader checks remain pending.
+
 `tool` keeps the checked actual version, including an explicit override.
 Optional `title` is the commit message's first line; optional `provenance`
 contains source and expected coverage-input fingerprints, runtime, compiler,
@@ -1069,6 +1086,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
@@ -1143,6 +1161,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-dependencies-read.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-dependencies.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |
