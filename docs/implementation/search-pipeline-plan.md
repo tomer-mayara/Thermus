@@ -1,6 +1,6 @@
 # Search pipeline plan
 
-Status: planned; not implemented.
+Status: SEARCH-01 contracts implemented; the search tool is not yet implemented.
 Date: 2026-10-20.
 
 Add MCP `search({ query, reason })` to return cleaned first-page Markdown.
@@ -365,13 +365,15 @@ source coverage, maintainability and CRAP assessment, final unedited process
 report, and generated metrics record. Follow normal draft, review, Ready,
 Actions, and merge policy from [AGENTS.md](../../AGENTS.md).
 
-This revision saves only the plan. It runs no implementation code, tests,
-builds, runtime probes, commits, or pull request operations.
+Appendix A records ticket status and links to implementation evidence. The
+checks above apply to the complete implementation candidate.
 
 ## Appendix A: implementation tickets
 
-These are local work packages, all **Planned**. They are not board issues or
-instructions to open separate pull requests. No board issue has been created.
+These are local work packages. SEARCH-01 contracts are implemented; its public
+acceptance flow remains open. SEARCH-02 through SEARCH-06 are **Planned**.
+The entries are not board issues or instructions to open separate pull requests.
+No board issue has been created.
 AC numbers refer to the acceptance criteria above. The dependency order is:
 
 `SEARCH-01 -> SEARCH-02 -> SEARCH-03 -> SEARCH-04 -> SEARCH-05 -> SEARCH-06`
@@ -387,7 +389,11 @@ does not defer checks from earlier work. Add no executable tests for prose.
 
 ### SEARCH-01: Define the query and document contracts
 
-**Status:** Planned. **Dependencies:** none. **Acceptance:** AC2.
+**Status:** Contracts implemented; public acceptance remains open.
+**Dependencies:** none. **Acceptance:** AC2.
+
+The [implementation record](search-01.md) gives the changes and verification
+evidence. The complete search flow remains in Draft.
 
 **Scope and main paths:** Add the failing public search specification and the
 working semantic query validator in `src/search-pipeline/search-query.ts`.
