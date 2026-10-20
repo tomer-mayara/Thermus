@@ -1,6 +1,6 @@
 # Search pipeline plan
 
-Status: SEARCH-01 through SEARCH-05 implemented; SEARCH-06 verification is in progress.
+Status: SEARCH-01 through SEARCH-05 implemented; SEARCH-06 runtime and live proofs passed. Final delivery checks are in progress.
 Date: 2026-10-20.
 
 Add MCP `search({ query, reason })` to return cleaned first-page Markdown.
@@ -351,8 +351,11 @@ command, date, pinned version, and tool result. Earlier raw probes used
 They establish neither pinned-1.0.0 compatibility, conversion fidelity, nor
 sustained public access. SEARCH-02 captured a full results page with verified
 1.0.0 and proved its fidelity offline through the real engine and cleaners.
-A later raw request received HTTP 429. No live proof through the complete MCP
-search flow has passed under this plan.
+A later raw request received HTTP 429. SEARCH-06 then passed a separate live
+proof through the complete MCP search flow with pinned Lightpanda 1.0.0 at
+2026-10-20 23:06:10 UTC. The [dated record](search-06.md#dated-live-mcp-proof)
+includes the command and full tool result. This proves that one call passed;
+it does not guarantee later access or verify a live empty-results response.
 
 ## Implementation order and gates
 
@@ -395,9 +398,9 @@ checks above apply to the complete implementation candidate.
 
 These are local work packages. SEARCH-01 contracts, SEARCH-02 provider
 behavior, SEARCH-03 core, SEARCH-04 composition, and SEARCH-05 public MCP
-dispatch are implemented. SEARCH-06 is **In progress**; its pinned search runtime
-and live Brave proofs remain open. See the
-[SEARCH-05 verification record](search-05.md) for complete-candidate checks.
+dispatch are implemented. SEARCH-06's pinned search runtime and live Brave
+proofs passed. Its final delivery checks are **In progress**. See the
+[SEARCH-06 verification record](search-06.md) for complete-candidate evidence.
 The entries are not board issues or instructions to open separate pull requests.
 No board issue has been created.
 AC numbers refer to the acceptance criteria above. The dependency order is:

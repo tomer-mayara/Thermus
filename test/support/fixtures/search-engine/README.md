@@ -81,7 +81,9 @@ The live capture attempt for a quoted rare term returned fallback results,
 not an empty page. A later query received HTTP 429 from the renderer. No
 retry or challenge bypass was used. These fixtures do not prove that the
 supported no-results branch occurs in a current live response. That remains
-an explicit limit of this ticket and needs a live check in SEARCH-06.
+unverified. [SEARCH-06](../../../../docs/implementation/search-06.md) records
+a successful live results call and controlled no-results coverage; it does
+not claim a live empty-results proof.
 
 ## Controlled test changes
 

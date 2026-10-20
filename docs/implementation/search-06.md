@@ -129,3 +129,63 @@ Run habit-hooks and the full ast-metrics process with the same base. Both
 unit and integration suites are selected, so their coverage can be collected.
 Reuse the documented SEARCH-02 analyzer correction; do not change rules,
 baseline, coverage data, or existing immutable history records.
+
+## Complete-candidate results
+
+The source and test candidate is `85817282`. Later document edits record
+evidence only. Commands use pnpm 12.10.1 and its pinned Node 24.20.0.
+The ordinary suite passed on its first run for this candidate. Its temporary
+launcher outside the repository loaded only the existing Axiom test key and
+endpoint from the main checkout and fixed the dataset to `system-log-test`.
+No secret was copied into this worktree or printed.
+
+| Check | Result |
+| --- | --- |
+| Provider, full-page cleaning, and public search selection | 99 tests passed. |
+| Fetch runtime, search runtime, and setup selection | 18 tests passed. |
+| `npm test` | 5,759 backend and 41 portal tests passed; zero failures, cancellations, skips, or todo cases. |
+| `npm run typecheck` | Passed. |
+| `npm run test:build` | 13 tests passed. |
+| `npm run build:user-portal` | Passed. |
+| `npm run test:mcp:renderer` | 13 tests passed. |
+| `npm run test:container` | 13 tests passed. |
+| `npm run build:hosted` | Passed all selected offline stages: 3,988 backend unit, 23 portal unit, 13 build, 18 portal acceptance, 685 integration, 188 selected acceptance/interface, and 13 runtime tests. |
+| `npm run test:mcp:search:live` | One real MCP test passed, as recorded above. |
+
+The Linux AMD64 hosted image gate and fresh coverage are still running.
+Final quality evidence will follow their results.
+
+The first fresh coverage run passed all 3,988 backend unit tests, then refused
+to write coverage because the manager edited fixture documentation during
+capture. Its input fingerprint correctly detected the change. The replacement
+capture holds all repository inputs fixed; no coverage data is edited or
+reconstructed.
+
+## Habit-hooks review
+
+The complete-candidate run reports no lint errors and 135 retained findings:
+two complexity findings, one function-size finding, 120 comment lines, and
+12 file-size findings. The snooze file stays `[]`.
+
+The 113 earlier findings keep their reasons in
+[SEARCH-05](search-05.md#habit-hooks-review). The additional complexity finding
+is `SearchEngineBraveHttp.isNoResults`, whose body is unchanged. Its 15 paths
+check one strict absence grammar, including conflicting result markers and
+banner branches. Keep these checks together so a partial banner cannot become
+a false no-results response.
+
+Retain the 19 additional comment lines for these reasons:
+
+| File | Reason |
+| --- | --- |
+| `test/acceptance/mcp/get-url-as-markdown.runtime.ts` | The 14 lines state gate prerequisites, real authentication, renderer-child observation, telemetry isolation, and legacy shutdown ownership. |
+| `test/acceptance/mcp/renderer-gate-setup.test.ts` | One line explains why the child must not inherit `NODE_TEST_CONTEXT`. |
+| `test/acceptance/mcp/search-pipeline.live.ts` | Two lines state the separate gate selection and the single public request without fallback. |
+| `test/acceptance/mcp/search-pipeline.runtime.ts` | Two lines state the dedicated selection and the canonical transport's test-only scope. |
+
+Retain the two additional file-size findings. The existing fetch runtime keeps
+nine related cases with their authentication, renderer, and shutdown lifetime.
+Its third repeated pin check was extracted into the shared setup helper. The
+provider unit file keeps the public provider contract and independent refusal
+matrix together, including the observed video shape. A split based only on
+line count would not separate another responsibility.

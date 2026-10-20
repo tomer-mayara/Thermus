@@ -135,8 +135,10 @@ offline, and container build gates exclude it. A block, rate limit, or
 unsupported page fails this proof. A successful local fixture run does not
 establish current Brave availability.
 
-The [SEARCH-06 work package](../implementation/search-pipeline-plan.md#search-06-prove-the-pinned-runtime-and-select-the-delivery-gates)
-tracks the dated local and live evidence. The
+The [SEARCH-06 record](../implementation/search-06.md) gives the local runtime
+results and the successful live MCP call on 2026-10-20 with Lightpanda 1.0.0.
+The saved result is evidence for that call; it does not guarantee later access
+or verify a live empty-results response. The
 [runtime guide](../lightpanda-runtime.md#verify-rendering) and
 [test gate policy](../implementation/test-gate-policy.md#live-brave-search-proof-search-06)
 give setup and evidence rules.
