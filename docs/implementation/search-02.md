@@ -211,3 +211,59 @@ all below the goal of 85:
 
 These are retained goal misses, not passes. The complete process and its
 coverage assessment are pending.
+
+### Analyzer completeness correction
+
+The pinned ast-metrics 0.43.1 process collected fresh coverage successfully:
+3,921 backend unit cases and 23 portal unit cases passed. The process then
+stopped at the source-declaration completeness check. Its file metrics omitted
+anonymous callbacks that have the same qualified class name. The converter
+had 6 source declarations but 5 measured functions; the prepared document had
+17 but 16; the Brave engine had 12 but 8. This is a tool failure, not an
+allowed score exception.
+
+The [saved upstream patch](search-02-ast-metrics.patch) applies to
+[ast-metrics v0.43.1](https://github.com/ast-metrics/ast-metrics/tree/b2f83dc17bc5f13084c163400def4d55d691f983).
+Its six-line source change gives unnamed functions a deduplication key from
+their source span, or object identity when no span exists. It keeps named
+function handling and reported names and measurements unchanged. It does not
+change Thermus source, scripts, coverage, rules, or baseline.
+
+Two upstream regression files first reproduced the failure, then passed after
+the correction. They cover distinct declarations, same-span aliases, absent
+spans, repeated scope aliases, outside-class selection, and real TypeScript
+parsing of two callbacks. The existing engine suites then passed in 19
+packages, with 328 top-level tests and 614 passing test events including
+subtests. Two existing opt-in corpus diagnostic tests were skipped because
+their corpus environment variables were unset; two packages have no tests.
+No failed test was changed or skipped.
+
+The tool checkout, Go toolchain, and caches are isolated under ignored
+`ast-report/search-02-tooling/`. The installed Homebrew analyzer is unchanged.
+The Go toolchain is 1.27.3 for Darwin ARM64; its official archive SHA-256 is
+`dd3908cf20959d798c1e06ebe5b72213f0505ce01373b40ce3110975a6cd99c2`.
+The saved patch SHA-256 is
+`a75412fe6c1cf3b22f8bdcdc5c55677f2abb3f4a7a07b48c2ed58b5ff502c0e6`.
+The custom binary reports `0.43.1-search02-anonymous-fix`; its SHA-256 is
+`f834fbf0587bbfff3e25da094965d2d4c0faabe49247dec30dcc74a8a13ad115`.
+This is a local correction, not the pinned upstream release.
+
+To reproduce the tool, check out the exact upstream commit above in an
+isolated directory, apply the saved patch with `git apply`, and run:
+
+```sh
+go test ./internal/engine ./internal/engine/typescript \
+  -run 'Test(GetFunctionsInFile|GetFunctionsOutsideClassesInFile|TypeScriptParser_PreservesAnonymousClassCallbacks)' \
+  -count=1 -v
+go test ./internal/engine/... -count=1 -json
+go build -trimpath \
+  -ldflags '-X main.version=0.43.1-search02-anonymous-fix -X main.commit=b2f83dc17bc5f13084c163400def4d55d691f983+anonymous-dedup' \
+  -o ../0.43.1-search02-anonymous-fix/bin/ast-metrics ./cmd/ast-metrics
+```
+
+The recorded run used `GOTOOLCHAIN=local` and isolated `GOPATH` and `GOCACHE`.
+Run the Thermus wrappers with that binary directory first on command-scoped
+`PATH` and the explicit `--allow-tool-version` option. Use the same base for
+every comparison and reuse the fresh unit coverage while Thermus source,
+tests, and scripts remain unchanged. The native comparison checks out its
+base, so commit document changes before starting it.
