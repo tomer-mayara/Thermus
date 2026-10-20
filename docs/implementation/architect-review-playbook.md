@@ -694,7 +694,8 @@ remove separate identity or design obligations.
 Paths in this appendix are relative to
 [`script/code-quality/`](../../script/code-quality/README.md). The map reflects
 the reference commit, with exact-snapshot CLI, raw file MI and native class
-observation updates in F.8/F.9/F.10.
+observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
+process outcomes in F.12.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -716,7 +717,7 @@ Other proposed operations remain unavailable.
 
 | Existing modules | What to reuse | Important limit |
 | --- | --- | --- |
-| `process/run.ts`, `process/types.ts` | Stage ordering and failure/goal-miss distinctions. | `{text, passed}` cannot express a review route, a bound proof or human approval. Add a separate typed assessment. |
+| `process/run.ts`, `process/types.ts` | Stage ordering and failure/goal-miss distinctions; F.12 exposes final ordered outcomes through `ProcessResult`. | Process outcomes are not native exit records, review routes, bound proofs or human approvals. Add a separate typed assessment. |
 | `snapshot/commit.ts`, `tree.ts`, `worktree.ts`, `sweep.ts` | Exact static revision analysis and cleanup. | Temporary static checkouts have no dependency installation or coverage run. They do not solve base coverage. |
 | `snapshot/input.ts`, `build.ts` | Native file metric parsing, raw file MI and optional typed native class observations beside rounded output. | F.9/F.10 preserve available raw values and the native reported class subset; the architecture reader ignores them. F.11 adds the separate `snapshot/observations.ts` projection decoder. Full assessment/provenance validation, source class correspondence/completeness and class history remain pending. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
@@ -2075,7 +2076,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 | Owner/path | Planned change |
 | --- | --- |
 | `assessment/` (planned) | One pure assessment entry point, typed observations/result and the AUTO predicate. No Git, tools, network, rendering or archive writes. |
-| `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. Export typed stage outcomes instead of only `runProcess`'s current text/passed pair; keep effectful validation outside the pure calculation. |
+| `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
 
@@ -2084,7 +2085,9 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 Process/assessment options below remain **PROPOSED**. F.8–F.11 record the
 exact snapshot CLI, optional raw file MI, native class observations and separate
 offline projection decoder, with their validation limits. The decoder adds no
-CLI option; full assessment/provenance validation remains pending.
+CLI option; full assessment/provenance validation remains pending. F.12 exposes
+final typed process outcomes through the programmatic API only, with no new
+operation, artifact or policy adoption.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2592,6 +2595,50 @@ checks were selected; no broader suites or coverage collection were added.
 Required failures keep PR #201 in Draft. Habit-hooks and four-section process
 evidence, with reasons for retained findings, will be recorded on the PR.
 Review and merging stay manual.
+
+### F.12. Typed final process outcome implementation record
+
+This groundwork exposes `ProcessResult extends StageReport` with
+`readonly outcomes: readonly StageOutcome[]` from `runProcess`. The result keeps
+final Delta, Review, CRAP, Architecture order, stage texts and the existing
+`passed`, `goal miss`, `failed` and `unavailable` statuses. Each entry reflects
+the final state, including any history publication result. Publication can be
+withheld after a failed prerequisite or missing required coverage. These are
+process stage outcomes, not native exit records.
+
+CLI output, saved Markdown, exits, stage execution, coverage and history behavior
+stay unchanged. This adds no flag, route, JSON artifact, assessment, policy
+adoption or automatic merge. Full assessment and report integration remain
+pending. Review and merging stay manual.
+
+Validation on 2026-10-20:
+
+- The baseline passed 44/44. The new acceptance case first failed because
+  outcomes were absent. The extended unit matrix then failed 10/23, with the
+  other 13 passing, before the implementation change.
+- After the build, the final focused set passed 45/45. Unit checks use direct
+  typed access and cover a goal miss in each of Delta, Review and CRAP. The
+  existing stage-outcomes acceptance file exercises real `processOperations`
+  with `runProcess` and checks recorded Architecture text.
+- Runtime/test review and the independent audit found no actionable defect.
+
+- `pnpm run test:unit` passed 4,020 compiled and 23 portal checks, 4,043 total,
+  with exit 0. Full acceptance passed 909/912 compiled checks and exited 1:
+  the same two public-search absent-tool cases and existing `otel-logger` setup
+  case failed. The latter lacked `AXIOM_API_KEY`; both `AXIOM_API_KEY` and
+  `AXOIM_ENDPOINT_URL` were absent, with no `.env.local`. Logger/search source
+  and tests were unchanged from main.
+- The failed compiled command stopped before portal acceptance; a separate
+  selected run passed 18/18 portal checks. README/help/inventory checks passed
+  18/18 within full acceptance. Fetch, OAuth and MCP timeout cases passed.
+- Native snapshot checks passed 3/3; structural architecture with
+  `--no-coverage` passed 1/1. All completed runs had zero cancelled, skipped or
+  todo tests. Independent local review and manager review found no actionable
+  defect.
+
+Required failures keep PR #201 in Draft. Habit-hooks and final four-section
+process evidence, with reasons for retained findings, will be recorded on the
+PR after documentation freeze. Review and merging stay manual.
 
 ## References
 

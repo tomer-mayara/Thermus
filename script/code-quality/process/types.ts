@@ -25,3 +25,7 @@ export interface StageOutcome {
   readonly status: 'passed' | 'goal miss' | 'failed' | 'unavailable';
   readonly text: string;
 }
+
+export interface ProcessResult extends StageReport {
+  readonly outcomes: readonly StageOutcome[];
+}

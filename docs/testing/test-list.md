@@ -173,6 +173,9 @@ shown. Offline snapshot dates cannot establish omitted commits.
 goal misses, operational failures, unavailable required coverage, an empty
 production selection, recording failure, and option conflicts. It checks a
 fenced delta with aligned rows and preserves indentation in Markdown stages.
+The typed result checks cover final ordered stage outcomes, their texts and
+statuses, including any history publication result. These are process outcomes, not
+native exit records.
 The acceptance process files check the complete command with tool and Git
 doubles: `ast-metrics-process.test.ts` checks the document-only four-section
 report and structural record without a CRAP session or suite;
@@ -196,7 +199,9 @@ structured review evidence identifies completed goals and rejects malformed
 or contradictory results. `test/acceptance/script/ast-metrics-stage-outcomes.test.ts`
 checks that delta, review, and CRAP distinguish completed goal misses from
 operational failures, including stale or absent review JSON. This prevents
-an ambiguous exit status from authorizing a history write.
+an ambiguous exit status from authorizing a history write. The same acceptance
+file uses real `processOperations` with `runProcess` and checks that the returned
+Architecture outcome contains the recorded architecture text.
 
 `test/unit/script/ast-metrics-delta.test.ts`,
 `test/unit/script/ast-metrics-review.test.ts`, and

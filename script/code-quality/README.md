@@ -872,6 +872,15 @@ legends, and notices. A text fence keeps delta's aligned rows. `--base`
 reaches each comparison and the version override reaches each tool operation.
 Explicit paths resolve from the current folder; defaults use the repository root.
 
+The programmatic `runProcess` result is `ProcessResult`, which extends
+`StageReport` with `readonly outcomes: readonly StageOutcome[]`. Outcomes keep
+the final Delta, Review, CRAP, Architecture order and each stage's text and
+status: `passed`, `goal miss`, `failed` or `unavailable`. Each entry reflects the final state, including any history publication
+result. These are process stage outcomes, not
+native exit records. CLI output, saved Markdown, exits, stage execution, coverage
+and history behavior stay unchanged. This adds no flag, JSON artifact, route,
+assessment, policy adoption or automatic merge.
+
 Reuse of compatible verified coverage is the default. Missing or stale data
 never starts a suite. `--coverage` selects another report.
 `--collect-coverage` builds and collects both complete unit parts once; use

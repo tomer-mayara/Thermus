@@ -136,6 +136,15 @@ and exits 1. Required assessments without sufficient data do not pass.
 Exit 0 means all required assessments completed and passed. Invalid options
 or a recording failure also exit 1.
 
+The programmatic `runProcess` result is `ProcessResult`, which extends
+`StageReport` with `readonly outcomes: readonly StageOutcome[]`. Outcomes keep
+the final Delta, Review, CRAP, Architecture order and each stage's text and
+status: `passed`, `goal miss`, `failed` or `unavailable`. Each entry reflects the final state, including any history publication
+result. These are process stage outcomes, not
+native exit records. CLI output, saved Markdown, exits, stage execution, coverage
+and history behavior stay unchanged. This adds no flag, JSON artifact, route,
+assessment, policy adoption or automatic merge.
+
 Reuse is the default; `--coverage FILE` selects another report. Missing or
 stale coverage never starts a suite. `--collect-coverage` explicitly builds
 and runs both complete unit parts once. Use it only when `src/` changed or

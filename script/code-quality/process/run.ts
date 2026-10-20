@@ -1,10 +1,10 @@
 import { failureText, processReportOf } from './report.ts';
 import type { StageReport } from '../shared/report.ts';
-import type { ArchitectureAnalysis, CoverageChoice, ProcessOperations, StageOutcome } from './types.ts';
+import type { ArchitectureAnalysis, CoverageChoice, ProcessOperations, ProcessResult, StageOutcome } from './types.ts';
 
 const names = ['Delta', 'Review', 'CRAP', 'Architecture'];
 
-export async function runProcess(operations: ProcessOperations): Promise<StageReport> {
+export async function runProcess(operations: ProcessOperations): Promise<ProcessResult> {
   const outcomes: StageOutcome[] = [];
   let architecture: ArchitectureAnalysis | undefined;
   try {
@@ -24,7 +24,7 @@ export async function runProcess(operations: ProcessOperations): Promise<StageRe
     }
     text = processReportOf(outcomes);
   }
-  return { text, passed: outcomes.every(({ status }) => status === 'passed') };
+  return { text, passed: outcomes.every(({ status }) => status === 'passed'), outcomes };
 }
 
 function completed(name: string, report: StageReport): StageOutcome {

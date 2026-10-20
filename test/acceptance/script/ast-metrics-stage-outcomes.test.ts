@@ -5,6 +5,7 @@ import { test, type TestContext } from 'node:test';
 import { astMetricsCliFakeOnPath } from '../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
 import * as commands from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
+import { documentProcessMarkdown, missingCoverage, noFinding, processFixture, recordsIn } from './fixtures/ast-metrics-process.ts';
 import { crapFixture } from './fixtures/ast-metrics-crap.ts';
 import { GitRepository } from './fixtures/git-repository.ts';
 
@@ -71,4 +72,31 @@ test('Given measured CRAP goals that fail, when the internal CRAP operation runs
   const report = JSON.parse(result.stdout);
   assert.equal(report.passed, false);
   assert.match(report.text, /70.0/);
+});
+
+test('Given a document-only candidate, when the real process operations complete and publish, then typed outcomes retain final evidence and the base history record', { timeout: 20_000 }, async (t) => {
+  const { repository, doubles } = processFixture(t);
+  const probe = join(repository.root, 'probe.ts');
+  const root = pathToFileURL(commands.astMetricsProcessScript);
+  repository.write({ '.git/info/exclude': 'probe.ts\n' });
+  repository.write({ 'probe.ts': `import { processOperations } from ${JSON.stringify(new URL('process/operations.ts', root).href)};
+import { runProcess } from ${JSON.stringify(new URL('process/run.ts', root).href)};
+const result = await runProcess(processOperations(process.cwd(), { base:'origin/main',collectCoverage:false,skipCoverage:false,allowToolVersion:false }));
+console.log(JSON.stringify(result));
+` });
+  const result = await runScript(t, probe, { cwd: repository.root, env: doubles.env });
+  assert.equal(result.code, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.passed, true);
+  assert.equal(report.text, documentProcessMarkdown(repository));
+  assert.deepEqual(report.outcomes.map(({ name, status }: { name: string; status: string }) => ({ name, status })), ['Delta', 'Review', 'CRAP', 'Architecture'].map((name) => ({ name, status: 'passed' })));
+  assert.equal(report.outcomes[0].text.trim(), 'No TypeScript file is added or changed against origin/main.');
+  assert.equal(report.outcomes[1].text, noFinding);
+  assert.equal(report.outcomes[2].text, `${missingCoverage}\n\nNo production files to assess.\n`);
+  assert.equal(report.outcomes[3].text.trim(), documentProcessMarkdown(repository).split('## Architecture\n\nStatus: passed.\n\n')[1].trim());
+  const records = recordsIn(repository);
+  assert.equal(records.length, 1);
+  assert.equal(records[0].commit, repository.git('rev-parse', 'origin/main').trim());
+  assert.equal(records[0].version, 1);
+  assert.match(report.outcomes[3].text, /## Trend of src\/ on main/);
 });
