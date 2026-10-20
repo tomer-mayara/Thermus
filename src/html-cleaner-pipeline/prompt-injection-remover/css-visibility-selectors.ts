@@ -4,6 +4,7 @@ import { DomUtils } from 'htmlparser2';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
 import { selectorSpecificity } from './css-visibility-rules.ts';
 import { simpleSelectorPredicate } from './css-selector-predicates.ts';
+import { CssSelectorIndex } from './css-selector-index.ts';
 
 export type HtmlElement = Htmlparser2TreeAdapterMap['element'];
 export type HtmlDocument = Htmlparser2TreeAdapterMap['document'];
@@ -42,14 +43,16 @@ export function documentElements(document: HtmlDocument, includeTemplateContent 
   return elements;
 }
 
-function boundedAdapter() {
+function boundedAdapter(quirksMode: boolean, document: HtmlDocument) {
   let remaining = maxSelectorWork;
   const spend = (cost = 1) => {
     remaining -= cost;
     if (remaining < 0) throw new CssSelectorLimitError('work');
   };
+  const index = new CssSelectorIndex(() => documentElements(document), quirksMode, spend);
   return {
     ...DomUtils,
+    index,
     isTag(node: HtmlNode): node is HtmlElement {
       spend();
       return adapter.isElementNode(node);
@@ -62,6 +65,9 @@ function boundedAdapter() {
       const value = DomUtils.getAttributeValue(element, name);
       spend(1 + (value?.length ?? 0));
       return value;
+    },
+    hasClass(element: HtmlElement, name: string) {
+      return index.hasClass(element, name);
     },
     getName(element: HtmlElement) {
       spend(1 + element.name.length);
@@ -98,9 +104,10 @@ function compileSelector(selector: Selector, options: {
 }
 
 export function createSelectorMatcher(document: HtmlDocument) {
+  const quirksMode = document['x-mode'] === 'quirks';
   const options = {
-    adapter: boundedAdapter(),
-    quirksMode: document['x-mode'] === 'quirks',
+    adapter: boundedAdapter(quirksMode, document),
+    quirksMode,
   };
   return (prelude: CssNode) => {
     if (prelude.type !== 'SelectorList') return undefined;
@@ -115,7 +122,7 @@ export function createSelectorMatcher(document: HtmlDocument) {
       const css = generate(selector);
       if (css.length > maxSelectorLength) throw new CssSelectorLimitError('size');
       try {
-        selectors.push({ specificity, query: compileSelector(selector, options) });
+        selectors.push({ specificity, query: compileSelector(selector, options), candidates: () => options.adapter.index.candidates(selector) });
       } catch (error) {
         if (error instanceof RangeError) throw error;
         return undefined;
