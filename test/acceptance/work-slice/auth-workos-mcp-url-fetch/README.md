@@ -261,7 +261,7 @@ this sequence:
 A call that the server refuses with `401` or `403` writes no fetch line.
 
 The slice composes the production parts `openWorkOSConnection`,
-`composeWorkOSApplication`, `createFetchOperation`, and `fetchToolServers` with
+`composeWorkOSApplication`, `createToolOperations(...).fetch`, and `fetchToolServers` with
 the test-only HTTPS front `LocalHttpsSite`. The onboarding policy and the two
 lines with the full URL and the Markdown are slice-only; the fetch tool behind
 the hosted MCP endpoint is in production since commit 080dd065. The acceptance tests show the application path

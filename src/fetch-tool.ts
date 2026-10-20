@@ -7,33 +7,55 @@ import { CleanHtmlToMarkdownDefuddle } from './html-cleaner-pipeline/html-to-mar
 import { PromptInjectionRemoverSanitizer } from './html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { createFetchToolServer } from './mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown, type FetchOperation } from './mcp/get-url-as-markdown.ts';
+import { OperationCapacity } from './mcp/operation-capacity.ts';
+import { SearchEngineBraveHttp } from './search-engine/search-engine-brave-http.ts';
+import { SearchPipeline, type SearchOutcome } from './search-pipeline/search-pipeline.ts';
+import type { RequestContext } from './auth/access-context.ts';
+import type { ExecutionContext } from './page-fetch/execution-context.ts';
 import type { RequestServerBuilder } from './mcp/mcp-server.ts';
 import { createFetchPage } from './page-fetch/fetch-page.ts';
 import { ObserveRequestStep } from './page-fetch/observe-request-step.ts';
-import type { RendererSetupFailure } from './page-fetch/renderer-failure-reports.ts';
+import type { StepRecordSink } from './page-fetch/step-record.ts';
+import type { RendererFailureReports, RendererSetupFailure } from './page-fetch/renderer-failure-reports.ts';
 import { WebsiteFetcherLightpanda } from './website-fetcher/website-fetcher-lightpanda.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-// Only a server composition loads this module. createFetchOperation reads AD_RULES_FILE and makes the renderer and
-// the cleaning pipeline one time. It does not run or check the renderer. fetchToolServers gives each MCP request its
-// own tool server, and each tool server uses that one operation.
-export function createFetchOperation(environment: Environment, logger: ApplicationLogger): FetchOperation {
-  const pipeline = new HtmlToMarkdownPipeline([
-    adCleaner(readAdRulesFile(environment)),
-    new PromptInjectionRemoverSanitizer(),
-    new CleanHtmlToMarkdownDefuddle(),
-  ]);
-  return createGetURLAsMarkdown(createFetchPage({
+export interface ToolOperations {
+  readonly fetch: FetchOperation;
+  readonly search: (query: string, context: RequestContext, execution: ExecutionContext) => Promise<SearchOutcome>;
+}
+
+// One application owns the renderer, rules, compatible cleaners, and setup reports for both tools.
+export function createToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations {
+  const ads = adCleaner(readAdRulesFile(environment));
+  const sanitizer = new PromptInjectionRemoverSanitizer();
+  const fetcher = new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN);
+  const shared: RendererFailureReports & { outgoing: ObserveRequestStep; records: StepRecordSink } = {
     outgoing: new ObserveRequestStep(),
     records: { record: (event) => logger.info(JSON.stringify(event)) },
-    fetcher: new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN),
-    incoming: new ProcessHtmlStep(pipeline),
     reportRendererSetupFailure: rendererSetupReporter(logger),
     reportFetchFailure: (failure) => {
       logger.error(JSON.stringify({ event: 'renderer.fetch.failed', ...failure }));
     },
+  };
+  const fetch = createGetURLAsMarkdown(createFetchPage({
+    ...shared,
+    fetcher,
+    incoming: new ProcessHtmlStep(new HtmlToMarkdownPipeline([ads, sanitizer, new CleanHtmlToMarkdownDefuddle()])),
   }));
+  const search = new SearchPipeline({
+    ...shared,
+    engine: new SearchEngineBraveHttp(fetcher),
+    incoming: new ProcessHtmlStep(new HtmlToMarkdownPipeline([ads, sanitizer, new CleanHtmlToMarkdownDefuddle({ preserveSearchResults: true })])),
+  });
+  return { fetch, search: (query, context, execution) => search.search(query, context, execution) };
+}
+
+export function createHostedToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations {
+  const operations = createToolOperations(environment, logger);
+  const capacity = new OperationCapacity();
+  return { fetch: capacity.wrap(operations.fetch), search: capacity.wrap(operations.search) };
 }
 
 export function fetchToolServers(operation: FetchOperation, logger: ApplicationLogger): RequestServerBuilder {

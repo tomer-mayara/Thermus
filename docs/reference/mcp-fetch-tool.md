@@ -99,13 +99,13 @@ The command still accepts the generic `Page fetch failed` from older servers.
 
 The self-hosted server registers the tool. Its application branch loads
 [`src/fetch-tool.ts`](../../src/fetch-tool.ts) and calls
-`createFetchOperation(environment, logger)` before it opens the Better Auth
+`createToolOperations(environment, logger)` before it opens the Better Auth
 runtime. That call reads the [ad rules file](ad-rules.md#server-rules-file) one
 time. Then it makes these parts one time:
 
-- one `HtmlToMarkdownPipeline` with `CleanHtmlAdsAdblockRs`,
-  `PromptInjectionRemoverSanitizer`, and `CleanHtmlToMarkdownDefuddle`, in that
-  order;
+- a fetch `HtmlToMarkdownPipeline` with `CleanHtmlAdsAdblockRs`,
+  `PromptInjectionRemoverSanitizer`, and the default
+  `CleanHtmlToMarkdownDefuddle`, in that order;
 - one `WebsiteFetcherLightpanda` with the server's `LIGHTPANDA_BIN` value;
 - one `ProcessHtmlStep` that wraps the existing pipeline, checks its input
   size, and allows string Markdown or blocks with a typed scan code;
@@ -119,14 +119,23 @@ time. Then it makes these parts one time:
   maps known withholding to exact empty text in the existing MCP
   string-returning operation.
 
-`createFetchOperation` returns the operation. Then the branch calls
-`fetchToolServers(operation, logger)`, which returns the `buildServer` function
+The same factory creates the protected search operation with `SearchPipeline`
+and `SearchEngineBraveHttp`. It shares the fetcher, ad cleaner, sanitizer,
+outgoing step, record sink, and setup reporter with fetch. Its separate
+converter enables `preserveSearchResults`. The shared fetcher retains one
+abandoned DNS guard across both operations. Each application has its own
+resources and setup warning state.
+
+`createToolOperations` returns both operations. Then the branch calls
+`fetchToolServers(operations.fetch, logger)`, which returns the `buildServer` function
 of `MCPServer`. Each MCP request gets its own SDK `Server` from
 `createFetchToolServer(context, { operation, logger }, lifetime)`. Completion
 records attempt a JSON write to the application logger for each dispatched
 `tools/call`, with an `ERROR` fallback if the `INFO` write throws.
 `requestedUrl` keeps the exact accepted spelling. The
 renderer's `finalUrl` selects the ad rules and resolves relative links.
+Public MCP search dispatch remains in SEARCH-05 of the
+[search plan](../implementation/search-pipeline-plan.md).
 
 The neutral code lives under `src/page-fetch/`. It owns semantic URL
 validation, the step protocol/executor and record-sink contract, and the
@@ -195,11 +204,13 @@ holds the pinned renderer, as the
 [runtime guide](../lightpanda-runtime.md#container-image) tells, so a server
 container renders pages with the same fetcher options.
 
-The RHD-01 hosted opener uses the same `createFetchOperation` and
-`fetchToolServers`, with one shared capacity slot around the full operation.
+The hosted opener uses `createHostedToolOperations` and `fetchToolServers`.
+One `OperationCapacity` wraps both full operations in that application.
 WorkOS Connect tokens and the current User grant protect each request. Missing
 or revoked access is refused before fetching. The slot covers DNS, rendering,
-cleaning, and cleanup across requests; there is no queue or capacity setting.
+outgoing work, cleaning, and cleanup across requests and both operations;
+there is no queue or capacity setting. A cancelled caller gets cancellation
+before busy.
 An abort does not free the slot before settlement. A busy call writes its own
 safe completion record with status `busy`. RHD-01 adds no onboarding or
 deployment. [RHD-02](../implementation/rhd-02.md) adds portal serving, local

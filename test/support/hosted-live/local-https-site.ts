@@ -133,15 +133,14 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
   const config = loadDeploymentConfig(environment, 'http');
   if (documents === undefined) return createApplication(config, logger, environment);
   const { composeWorkOSApplication, openWorkOSConnection } = await import('../../../src/hosted-workos-application.ts');
-  const { createFetchOperation, fetchToolServers } = await import('../../../src/fetch-tool.ts');
-  const { singleFetchOperation } = await import('../../../src/mcp/single-fetch-operation.ts');
+  const { createHostedToolOperations, fetchToolServers } = await import('../../../src/fetch-tool.ts');
   const { assertHostedRenderer } = await import('../../../src/hosted-renderer-startup.ts');
   const { HostedPortal } = await import('../../../src/hosted-portal.ts');
   await assertHostedRenderer(executable);
   const connection = await openWorkOSConnection(config, logger, environment);
   const portal = await HostedPortal.load(settings.authkitIssuer);
   const application = await composeWorkOSApplication(config, connection, {
-    logger, buildServer: fetchToolServers(singleFetchOperation(createFetchOperation(environment, logger)), logger),
+    logger, buildServer: fetchToolServers(createHostedToolOperations(environment, logger).fetch, logger),
     signup: { enabled: true, documents },
   });
   return portal.withApplication(application);

@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application, type ApplicationLogger } from '../../../../src/application.ts';
 import { loadListenAddress, loadPublicUrls, type PublicUrls } from '../../../../src/config/deployment-config.ts';
-import { createFetchOperation, fetchToolServers } from '../../../../src/fetch-tool.ts';
+import { createToolOperations, fetchToolServers } from '../../../../src/fetch-tool.ts';
 import { assertHostedRenderer } from '../../../../src/hosted-renderer-startup.ts';
 import { serveApplication } from '../../../../src/index.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
@@ -28,7 +28,7 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 // slice. The slice has no OAuth provider and no pages, so their paths are not found.
 export function createWorkSliceApplication(environment: Environment, logger: ApplicationLogger): Application {
   const urls = loadPublicUrls(environment, 'self-hosted');
-  const operation = fetchOperationSpy(createFetchOperation(environment, logger), logger);
+  const operation = fetchOperationSpy(createToolOperations(environment, logger).fetch, logger);
   const provider = new NoAuthProvider(new URL(urls.mcpResourceUrl));
   const mcp = new MCPServer({
     auth: {

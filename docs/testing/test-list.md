@@ -7,6 +7,29 @@
 
 # Tests
 
+## Shared fetch and search resources
+
+`test/integration/tool-operations.test.ts` runs the concrete composition with
+DNS and renderer process doubles. It checks cancellation before native DNS
+settles, the guard in both tool orders, recovery after a late DNS result or
+failure, and isolation between applications. Real cleaning preserves the
+captured search results and exact query. It also checks one rules read per
+application, shared compatible cleaners and setup warning state, and separate
+converter instances.
+
+`test/acceptance/mcp/hosted-search-capacity.test.ts` exercises the production
+operation factories before MCP search dispatch is added. It checks both tool
+orders while outgoing, renderer, or incoming work is held; success, failure,
+abort, cancellation before busy, held renderer cleanup, and subsequent calls.
+Separate hosted applications and self-hosted operations can overlap. Existing
+MCP lifecycle tests retain the public fetch shutdown and cancellation proof.
+
+`test/unit/mcp/operation-capacity.test.ts` checks the shared capacity contract
+with operation doubles, including context and result identity, no queue,
+cleanup settlement, independent owners, and synchronous failure.
+The [SEARCH-04 record](../implementation/search-04.md) gives verification
+results and limits. Public MCP search remains in SEARCH-05.
+
 ## MCP fetch debug command
 
 `test/unit/script/fetch-url.test.ts` checks CLI input, help, credential input,
@@ -2384,7 +2407,7 @@ real tool server, and SDK client.
 
 **Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
 
-`createFetchOperation` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
+`createToolOperations(...).fetch` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
 
 [V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets a safe launch detail with its approved code and a `fetch_failed` record, and the operator log gets one setup warning for each code and one correlated structured failure event for each call
 
@@ -2997,7 +3020,7 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 [V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
 [V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
 [V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: stalled cleanup or a residual handle causes an error exit at the fixed 10-second hosted CLI deadline, while shutdown during MCP/account/session identity waits exits cleanly
-[V] `test/unit/mcp/single-fetch-operation.test.ts`: one shared slot refuses overlap without queuing and returns capacity only after settlement
+[V] `test/unit/mcp/operation-capacity.test.ts`: one owner shares capacity across fetch and search, refuses overlap without queuing, checks cancellation before busy, and returns capacity only after settlement
 [V] `test/unit/website-fetcher/website-fetcher-dns-wait.test.ts`: the five-second wait, abort, late completion, residual lookup ownership, and recovery do not change the resolver policy or start late rendering
 [V] `test/unit/http/request-cancellation.test.ts`, `test/unit/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/unit/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
 

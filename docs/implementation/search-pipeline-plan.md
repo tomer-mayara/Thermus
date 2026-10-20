@@ -140,8 +140,8 @@ Do not discard CSS or ancestors to force fragment extraction.
 SEARCH-02 found that default conversion produced blank lines inside result
 link labels. Its opt-in `CleanHtmlToMarkdownDefuddle` setting,
 `{ preserveSearchResults: true }`, keeps the full cleaned body and converts
-block children of links to inline labels. SEARCH-04 must enable this setting
-for search only. Share the ad cleaner and sanitizer; use separate converter
+block children of links to inline labels. SEARCH-04 enables this setting
+for search only. It shares the ad cleaner and sanitizer and uses separate converter
 instances for the two modes. The [SEARCH-02 record](search-02.md) and
 [fixture notes](../../test/support/fixtures/search-engine/README.md) give the
 capture evidence and its limits. The supported English no-results template
@@ -394,8 +394,8 @@ checks above apply to the complete implementation candidate.
 ## Appendix A: implementation tickets
 
 These are local work packages. SEARCH-01 contracts, SEARCH-02 provider
-behavior, and SEARCH-03 core are implemented; public search acceptance
-remains open. SEARCH-04 through SEARCH-06 are **Planned**.
+behavior, SEARCH-03 core, and SEARCH-04 composition are implemented; public
+search acceptance remains open. SEARCH-05 and SEARCH-06 are **Planned**.
 The entries are not board issues or instructions to open separate pull requests.
 No board issue has been created.
 AC numbers refer to the acceptance criteria above. The dependency order is:
@@ -499,7 +499,12 @@ The core imports contracts rather than concrete adapters or transport.
 
 ### SEARCH-04: Share renderer resources and hosted operation capacity
 
-**Status:** Planned. **Dependencies:** SEARCH-03. **Acceptance:** AC7, AC8.
+**Status:** Composition implemented; public acceptance remains open.
+**Dependencies:** SEARCH-03. **Acceptance:** AC7, AC8.
+
+The [implementation record](search-04.md) gives the resource ownership,
+capacity tests, review, and selected verification gates. One hosted factory
+wraps both operations with one owner. Public MCP search remains in SEARCH-05.
 
 **Scope and main paths:** Expand `src/fetch-tool.ts` concrete composition and
 wire `src/application.ts` and `src/hosted-workos-application.ts`. Replace the
