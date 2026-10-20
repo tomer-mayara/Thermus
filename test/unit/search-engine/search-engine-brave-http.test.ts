@@ -51,6 +51,7 @@ for (const [shape, html] of [
   ['a blank query span', noResultsPage.html.replace('<span class="desktop-default-semibold t-primary">"lightpanda browser"</span>', '<span> </span>')],
   ['a missing header', noResultsPage.html.replace('<span>Not many great matches came back for your search: <span class="desktop-default-semibold t-primary">"lightpanda browser"</span></span>', '')],
   ['conflicting headers', noResultsPage.html.replace('<span>Not many great matches came back for your search:', '<span>Unsupported error</span><span>Not many great matches came back for your search:')],
+  ['a missing tips list', noResultsPage.html.replace('<ul class="t-tertiary svelte-6dkl6q"><li>Try more general keywords</li> <li>Try fewer keywords</li></ul>', '')],
   ['a missing search tip', noResultsPage.html.replace('<li>Try fewer keywords</li>', '')],
   ['an unsupported search tip', noResultsPage.html.replace('Try fewer keywords', 'Try again later')],
   ['meaningful text inside the tips list', noResultsPage.html.replace('<ul class="t-tertiary svelte-6dkl6q">', '<ul class="t-tertiary svelte-6dkl6q">Unrecognized result')],
