@@ -15,8 +15,8 @@ Run ast-metrics baseline from the repository root and report the ignored entry
 counts before and after. A missing .ast-metrics-baseline.yaml starts at zero.
 
 This command adds no permission to change .ast-metrics-baseline.yaml. Use it
-only for a retained high finding or a change to .ast-metrics.yaml rules, under
-the baseline policy in AGENTS.md.
+only when the pull request changes the rules in .ast-metrics.yaml, under the
+baseline policy in AGENTS.md.
 
 Options:
   --allow-tool-version  Allow an installed version other than the pinned version

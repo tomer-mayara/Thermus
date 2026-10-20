@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "tool": "0.43.1",
+  "commit": "5f3679efaf1da9ca0bfc043005454308f6756c17",
+  "date": "2026-10-19T19:28:55-06:00",
+  "title": "Fix Markdown conversion for pages with large stylesheets (#196)",
+  "modularity": 0.55,
+  "crossShare": 0.24,
+  "cycles": 2,
+  "maintainability": 56.8,
+  "paths": 2913,
+  "files": 132,
+  "functions": 1078,
+  "communities": [
+    {
+      "label": "hosted-admin",
+      "files": 9,
+      "loc": 861,
+      "maintainability": 66.9,
+      "paths": 176
+    },
+    {
+      "label": "http",
+      "files": 18,
+      "loc": 1959,
+      "maintainability": 57.6,
+      "paths": 463
+    },
+    {
+      "label": "logging",
+      "files": 3,
+      "loc": 210,
+      "maintainability": 62.5,
+      "paths": 39
+    },
+    {
+      "label": "mcp",
+      "files": 4,
+      "loc": 181,
+      "maintainability": 55.2,
+      "paths": 51
+    },
+    {
+      "label": "organizations",
+      "files": 29,
+      "loc": 3398,
+      "maintainability": 61.5,
+      "paths": 778
+    },
+    {
+      "label": "page-fetch",
+      "files": 49,
+      "loc": 3592,
+      "maintainability": 50,
+      "paths": 1092
+    },
+    {
+      "label": "shared kernel",
+      "files": 1,
+      "loc": 95,
+      "maintainability": 77,
+      "paths": 18
+    },
+    {
+      "label": "src",
+      "files": 8,
+      "loc": 833,
+      "maintainability": 54.5,
+      "paths": 187
+    },
+    {
+      "label": "user-portal",
+      "files": 6,
+      "loc": 455,
+      "maintainability": 52.7,
+      "paths": 65
+    }
+  ],
+  "components": [
+    {
+      "name": "auth",
+      "files": 36,
+      "loc": 4385,
+      "maintainability": 58.8,
+      "paths": 1012
+    },
+    {
+      "name": "billing",
+      "files": 2,
+      "loc": 27,
+      "maintainability": 68.8,
+      "paths": 6
+    },
+    {
+      "name": "config",
+      "files": 2,
+      "loc": 199,
+      "maintainability": 56.8,
+      "paths": 56
+    },
+    {
+      "name": "hosted-admin",
+      "files": 9,
+      "loc": 882,
+      "maintainability": 66.8,
+      "paths": 184
+    },
+    {
+      "name": "html",
+      "files": 1,
+      "loc": 8,
+      "maintainability": 121.4,
+      "paths": 2
+    },
+    {
+      "name": "html-cleaner-pipeline",
+      "files": 34,
+      "loc": 2871,
+      "maintainability": 46.9,
+      "paths": 890
+    },
+    {
+      "name": "http",
+      "files": 4,
+      "loc": 233,
+      "maintainability": 64.6,
+      "paths": 66
+    },
+    {
+      "name": "logging",
+      "files": 3,
+      "loc": 210,
+      "maintainability": 62.4,
+      "paths": 39
+    },
+    {
+      "name": "mcp",
+      "files": 8,
+      "loc": 611,
+      "maintainability": 51.8,
+      "paths": 163
+    },
+    {
+      "name": "organizations",
+      "files": 6,
+      "loc": 587,
+      "maintainability": 75,
+      "paths": 112
+    },
+    {
+      "name": "page-fetch",
+      "files": 9,
+      "loc": 272,
+      "maintainability": 60.7,
+      "paths": 83
+    },
+    {
+      "name": "src",
+      "files": 6,
+      "loc": 652,
+      "maintainability": 60.5,
+      "paths": 127
+    },
+    {
+      "name": "terminal",
+      "files": 1,
+      "loc": 63,
+      "maintainability": 77.2,
+      "paths": 14
+    },
+    {
+      "name": "user-portal",
+      "files": 8,
+      "loc": 472,
+      "maintainability": 52.7,
+      "paths": 65
+    },
+    {
+      "name": "website-fetcher",
+      "files": 3,
+      "loc": 332,
+      "maintainability": 55.7,
+      "paths": 94
+    }
+  ],
+  "sourceFingerprint": "5eb771f5f79581dc10d34a914dc6f3db9af3484684834e43b1e4dbb23e4872cf"
+}

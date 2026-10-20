@@ -101,104 +101,76 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 ## Code quality review with ast-metrics
 
 Run this process on the complete candidate of each pull request, after the
-documents are updated and before Ready. Use the commands under `script/code-quality/`;
-they carry the correct syntax of ast-metrics. The details and the limits are
-in [the ast-metrics review guide](docs/implementation/ast-metrics-review.md).
+documents are updated and before Ready. Use the commands under
+`script/code-quality/`. The
+[ast-metrics review guide](docs/implementation/ast-metrics-review.md) gives
+the commands, their reports, the configuration, and the limits of the tool.
 
-1. Update the branch from `origin/main` first. Use the same base for every
-   comparison. Select tests from the complete candidate before running
-   these commands. No quality command or live test may add a broader suite
-   through nested coverage collection.
+1. Prepare. Update the branch from `origin/main`. Select the tests from the
+   complete candidate, as the test gate policy says. A command of this process
+   must not start a suite outside that selection. Use the same base for
+   every comparison.
 2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts` and read
-   `ast-report/process.md`. It runs delta, review, coverage resolution, CRAP,
-   and architecture in order. It prints and saves four report sections.
-   It reuses verified compatible coverage by default. Missing or stale
-   coverage never starts a suite. Use `--collect-coverage` only when `src/`
-   changed or both complete unit parts were already selected: emitted Node
-   tests and source portal tests. The collector builds first. Record that
-   test selection in the pull request evidence. Otherwise keep the unavailable
-   assessment and architecture without bands. `--skip-coverage` ignores all
-   reports; it cannot make an unassessed required goal pass. An empty default
-   production-file selection succeeds without coverage or MCP for CRAP.
-   A document-only commit can reuse an older capture when its inputs match.
-   The standalone collector defaults to unit coverage. Its repeatable `--suite`
-   option can collect unit, integration, or acceptance coverage only when each
-   complete suite was independently selected. The process collector still runs
-   unit only. Preserve the reported suite names and original capture identities
-   when reusing combined coverage; the command grants no extra test scope.
-   Intentional crash children need the approved verified pre-crash
-   flush/stop/seal protocol. Only known crash fixtures opt in to its IPC
-   listener with `THERMUS_COVERAGE_CRASH=1`; ordinary captured forks have no
-   injected message listener. OAuth uses a synchronous prepared nonce without
-   an IPC listener. Do not omit incomplete process or thread identities
-   or publish them as verified. A protocol fixture does not replace a complete
-   real capture proof. Normal-exit checkpoints must have later V8 flush
-   evidence. A captured PID's signal exit needs a verified seal; later raw
-   coverage alone does not prove normal termination. Real loader threads need
-   the verified loader shutdown exchange: actual thread and owner identities,
-   a completed normal owner, an intact checkpoint, and a distinct later V8 flush.
-   Do not stop capture on a manually emitted exit event. The genuine-exit guard
-   depends on pinned Node 24.20.0; missing guard evidence fails closed.
-3. Maintainability goal: 85 or more for each changed production file under
-   `src/`. Test and support files have no goal. Inspect low files with
-   `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.
-   Simplify functions with low scores or many decision paths. Keep selected
-   tests green. Remeasure with delta for at most three passes. Record each
-   remaining low score and its reason in the pull request description.
-4. Correct each review finding of severity high or record its reason. For
-   a retained high finding, run
-   `pnpm exec node script/code-quality/ast-metrics-baseline.ts` and commit
-   `.ast-metrics-baseline.yaml` in the same pull request. The wrapper runs
-   from the repository root and reports ignored entry counts before and
-   after. Include the review Markdown in the description.
-   The review wrapper reports new resolved imports from
-   `src/html-cleaner-pipeline/` to `src/mcp/`, and from `src/website-fetcher/`
-   to `src/auth/`, as high findings. It compares those paths with the merge
-   base. New-function warnings start above 10 paths; high starts at 25. The
-   file rule allows at most 40 paths and 150 LOC.
-5. CRAP goals: added or changed functions below 30; added functions also at
-   15 or less. The table includes unchanged and identity-unknown functions
-   and states their scope. Improve missed required goals with selected unit
-   tests or fewer paths. Remeasure with compatible coverage and the same
-   base for at most three cycles. Record score or bound, paths, coverage,
-   classification, and reason for every unresolved required goal, including
-   new functions above 15 but below 30 and unknown assessments. An unchanged
-   high function can retain the reason `unchanged by this PR`. Ready may
-   proceed with these documented exceptions after at most three cycles;
-   the command still exits 1 for required goal misses or unknowns. Tool
-   failures remain errors. Re-select tests from the actual candidate when
-   test changes affect collection scope.
-6. Run the process on the complete candidate after fixes. Reuse still-valid
-   coverage; a final report does not require another collection. Include its
-   full Markdown in the pull request description: review, community and
-   component architecture deltas, complexity, trend, and CRAP or the
-   unavailable-assessment reason. Paste both fenced `mermaid` graphs,
-   their legends, and import evidence unchanged, including on
-   document-only changes and reports without coverage. Include
-   `The map did not change.` and `No production file changed.` when present.
-   Historical counts from head coverage are estimates. Preserve their
-   coverage origin, fingerprints, measurement version, and unknown count.
-   Completed goal misses keep all report evidence. Failed prerequisites
-   leave dependent sections unavailable, exit 1, and write no historical
-   record. Unassessed required CRAP goals also prevent recording.
-7. Change `.ast-metrics-baseline.yaml` only for a retained high finding in
-   step 4 or changes to `.ast-metrics.yaml` rules. Run the baseline wrapper
-   and commit it. A violation already on `main` is not a third exception.
-8. The complete process requests architecture recording only after its
-   required analyses complete. Completed goal misses can still record;
-   operational failures or unavailable required assessments cannot. Only
-   architecture with `--record` writes a missing base record. It checks the
-   full base commit and its ancestry on `origin/main`. Commit the new record
-   under `docs/metrics/`. Existing records are immutable, including records
-   without coverage counts. In a metrics conflict, keep the file from `main`
-   and drop the candidate's conflicting file. Exploratory architecture runs
-   omit `--record`. Missing historical values remain absent. Nothing runs
-   at merge time.
+   `ast-report/process.md`. The report has four sections: delta, review,
+   CRAP, and architecture. Choose the coverage option from the test
+   selection:
+   - A file under `src/` changed: add `--collect-coverage`, unless a
+     compatible report exists. Record the test selection in the pull
+     request evidence.
+   - No file under `src/` changed: give no coverage option. The process
+     reuses a compatible report if one exists. Without one, the
+     architecture has no bands, and there is no CRAP goal to assess.
+     Collect coverage only if both complete parts of the unit suite are
+     selected anyway.
+   - `--skip-coverage` ignores every report. It cannot make a required
+     CRAP goal pass.
 
-Commands that use MCP start and stop the server within a bounded operation,
-on success or failure. The MCP entry point makes one tool call; snapshot
-and CRAP can make several requests in one session. Do not start `ast-metrics mcp` yourself or register
-it as a session server.
+   The standalone coverage command collects another suite with `--suite`
+   only when that complete suite is selected too. Do not edit a coverage
+   report.
+3. Maintainability. Each added or changed production file under `src/` must
+   score 85 or more. Test and support files have no goal. Inspect a low file
+   with `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.
+   Simplify the functions with a low score or many decision paths. Keep the
+   selected tests green. Measure again with the delta command, at most three
+   times. Record each remaining low score and its reason in the pull request
+   description.
+4. Review. Correct each finding of severity high, or record its reason in
+   the pull request description. Refresh `.ast-metrics-baseline.yaml` with
+   `pnpm exec node script/code-quality/ast-metrics-baseline.ts` only when
+   the pull request changes the rules in `.ast-metrics.yaml`. Commit the
+   baseline in the same pull request. A violation that is already on `main`
+   is not a reason.
+5. CRAP. Each added or changed function must score below 30. Each added
+   function must also score 15 or less. Improve a miss with tests from the
+   selected suites, or with fewer decision paths. If you add or change a
+   test, select the tests again from the new candidate. After a code change,
+   collect coverage again as in step 2. Measure again with the same base, at
+   most three cycles. Then record each unresolved goal in the pull request
+   description: score or bound, paths, coverage, classification, and reason.
+   This includes an added function between 15 and 30, and a function with
+   unknown identity or unknown coverage. An unchanged function can keep the
+   reason `unchanged by this PR`. The pull request can go Ready with these
+   recorded exceptions; the command still exits 1. A tool failure is not an
+   exception: correct it.
+6. Final report. After the last fix, run the process again on the complete
+   candidate. Paste `ast-report/process.md` into the pull request
+   description without change: all four sections, both `mermaid` graphs,
+   their legends, the import evidence, and notices such as
+   `The map did not change.` and `No production file changed.` This also
+   applies to a document-only pull request and to a report without coverage.
+7. History. The first process run that completes all four sections writes
+   the record of the base commit to `docs/metrics/`, if that record is
+   missing. A goal miss does not prevent the record; a failed section or an
+   unassessed required goal does. Commit the new record. Never edit a
+   record. In a merge conflict under `docs/metrics/`, keep the file from
+   `main` and drop the file of the candidate. The standalone architecture
+   command writes a record only with `--record`; omit it in an exploratory
+   run. Nothing runs at merge time.
+
+Each command starts and stops the MCP server of ast-metrics itself. Do not
+start `ast-metrics mcp` yourself, and do not register it as a session
+server.
 
 ## Work from a Delamain board
 
