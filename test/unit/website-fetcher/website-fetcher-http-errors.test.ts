@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
@@ -45,12 +46,12 @@ test('preserves a signaled process with a numeric exit code and failed HTTP stat
   });
   stubProcess(context, cause, output(500, 'ServerError'));
 
-  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error === cause);
+  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
 });
 
 test('preserves a non-HTTP process error when renderer metadata is invalid', async (context) => {
   const cause = Object.assign(new Error('renderer failed before producing metadata'), { code: 1 });
   stubProcess(context, cause, '{invalid JSON');
 
-  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error === cause);
+  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
 });

@@ -64,7 +64,10 @@ test('Given the server composition and renderer starts that fail with ENOENT and
 
   for (const result of results) assert.deepEqual([result.content, result.isError], [[{ type: 'text', text: 'Page fetch failed' }], true]);
   assert.deepEqual(completionRecordsIn(lines.info.join('\n')).map(({ status }) => status), Array(5).fill('fetch_failed'));
-  assert.deepEqual(lines.error, [
+  const diagnostics = lines.error.filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
+  assert.deepEqual(diagnostics.map(({ operationId }) => operationId), completionRecordsIn(lines.info.join('\n')).map(({ operationId }) => operationId));
+  assert.deepEqual(diagnostics.map(({ category }) => category), Array(5).fill('launch'));
+  assert.deepEqual(lines.error.filter((line) => !line.startsWith('{')), [
     'Renderer setup failure: the Lightpanda executable is missing (ENOENT). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.',
     'Renderer setup failure: the Lightpanda executable cannot start (EACCES). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.',
     'Renderer setup failure: the Lightpanda executable cannot start (ENOEXEC). Each page fetch fails until you correct this. See docs/lightpanda-runtime.md.',
@@ -84,9 +87,10 @@ for (const loggerFails of [false, true]) {
       },
     };
     const operation = createFetchOperation({ AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: executable }, logger);
+    const executions = [executionContextOf(), executionContextOf()];
 
     for (let call = 0; call < 2; call += 1) {
-      await assert.rejects(operation(url, context, executionContextOf()), (error: unknown) => {
+      await assert.rejects(operation(url, context, executions[call]), (error: unknown) => {
         assert.ok(error instanceof Error);
         assert.equal(error.message, 'Page fetch failed');
         assert.equal(error.cause, undefined);
@@ -94,7 +98,7 @@ for (const loggerFails of [false, true]) {
       });
     }
 
-    assert.deepEqual(errors.map((line) => JSON.parse(line)), Array(2).fill({ event: 'renderer.fetch.failed', category: 'readiness_timeout', budgetMs: 20_000 }));
+    assert.deepEqual(errors.map((line) => JSON.parse(line)), executions.map(({ operationId }) => ({ event: 'renderer.fetch.failed', category: 'readiness_timeout', phase: 'renderer_process', budgetMs: 20_000, operationId })));
     assert.doesNotMatch(errors.join('\n'), /private|Bearer|https?:|lightpanda|stderr|SIGKILL/);
   });
 }

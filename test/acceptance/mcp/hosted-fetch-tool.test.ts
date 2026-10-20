@@ -99,6 +99,7 @@ for (const outcome of ['failure', 'cancelled'] as const) {
     assert.deepEqual(site.completions().map(({ status }) => status), ['busy', outcome === 'failure' ? 'fetch_failed' : 'cancelled', 'success']);
     for (const record of site.completions()) assert.match(record.operationId as string, generatedOperationIdPattern);
     assert.equal(new Set(site.completions().map(({ operationId }) => operationId)).size, 3);
+    assert.equal(site.lines.filter((line) => line.startsWith('{\"event\":\"renderer.fetch.failed\"')).length, outcome === 'failure' ? 1 : 0);
     assert.doesNotMatch(site.lines.join('\n'), /private-query|private-fragment|private-renderer-failure/);
   });
 }

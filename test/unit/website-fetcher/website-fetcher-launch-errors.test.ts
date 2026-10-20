@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
@@ -84,7 +85,7 @@ for (const code of ['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM']) {
     const cause = launchFailure(code);
     stubProcess(t, (complete) => complete(cause, '', ''));
 
-    await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error === cause);
+    await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
   });
 }
 
@@ -92,11 +93,11 @@ test('Given a started renderer that the process timeout cannot stop because kill
   const cause = Object.assign(new Error('kill EPERM'), { code: 'EPERM', errno: -1, syscall: 'kill' });
   stubProcess(t, (complete) => complete(cause, '', ''));
 
-  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error === cause);
+  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
 });
 
 test('Given a launch error made with a code that is not a system error name, when it is made, then its code is UNKNOWN, so a report cannot show other text', () => {
-  for (const code of ['ENOENT\nERROR forged line', 'https://example.com/', undefined, 42]) {
+  for (const code of ['ESECRETTOKEN', 'ENOENT\nERROR forged line', 'https://example.com/', undefined, 42]) {
     const error = new WebsiteFetchLaunchError(code, 'Lightpanda executable could not start.');
     assert.deepEqual({ code: error.code, failure: error.failure }, { code: 'UNKNOWN', failure: 'cannot-start' });
   }
@@ -116,7 +117,7 @@ for (const { name, cause, stdout } of startedProcessFailures) {
     await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => {
       assert.ok(!(error instanceof WebsiteFetchLaunchError));
       if (name === 'an HTTP 404 error') assert.ok(error instanceof WebsiteFetchHttpError);
-      else assert.equal(error, cause);
+      else assert.ok(error instanceof WebsiteFetchFailure); assert.equal(error.cause, cause);
       return true;
     });
   });
@@ -127,6 +128,6 @@ test('Given a DNS failure with the code ENOTFOUND, when fetching, then the rende
   const { lookup, execute } = stubProcess(t, (complete) => complete(null, '', ''));
   lookup.mock.mockImplementation(async () => { throw cause; });
 
-  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error === cause);
+  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
   assert.equal(execute.mock.callCount(), 0);
 });

@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import { type LookupAddress } from 'node:dns';
@@ -146,7 +147,7 @@ test('rejects unsupported URL schemes and malformed input before launch', async 
 test('fails closed when the renderer cannot apply its policy', async (t) => {
   const error = new Error('unknown option: --block-private-networks');
   const { calls } = stubRenderer(t, error);
-  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://1.1.1.1/'), error);
+  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://1.1.1.1/'), (caught) => caught instanceof WebsiteFetchFailure && caught.cause === error);
   assert.equal(calls.length, 1);
 });
 

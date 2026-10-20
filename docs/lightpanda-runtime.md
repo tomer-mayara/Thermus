@@ -177,7 +177,7 @@ Markdown. The completion record has `fetch_failed`, and the application logger
 writes this safe `ERROR` record for each readiness timeout:
 
 ```json
-{"event":"renderer.fetch.failed","category":"readiness_timeout","budgetMs":20000}
+{"event":"renderer.fetch.failed","category":"readiness_timeout","phase":"renderer_process","budgetMs":20000,"operationId":"8b7bcf65-ddaf-45a8-b26f-374280b74eb1"}
 ```
 
 This record contains no URL, request credentials, renderer arguments, stderr,
@@ -187,6 +187,22 @@ the page completes its loading and permits automated access. Do not remove the
 network safety options to make a page load. The allowance is fixed; no request
 argument or environment setting changes it. The separate process timeout stays
 60000 ms, and the output limit stays 32 MiB.
+
+## Fetch failure diagnostics
+
+Each failed fetch also writes a structured `renderer.fetch.failed` event with
+its `operationId`. Join it to the completion event to inspect the observed HTTP
+status, known renderer code, process exit code, signal, killed flag, and local
+validation or timeout phase. Empty or invalid JSON is marked `absent` or
+`invalid` in `metadata`. Unknown codes stay `unknown`. The
+[diagnostic field contract](reference/mcp-fetch-tool.md#fetch-failure-diagnostics)
+gives the exact fields. Successful and cancelled fetches write no failure event.
+
+For example, `httpStatus: 429` with `exitCode: 22` and no renderer error code
+means that the renderer observed an HTTP error. It does not establish whether
+the origin, a proxy, or another service returned it. `OperationTimedout` is a
+renderer error code; it does not identify DNS, TCP, TLS, or transfer as the cause.
+The event contains no raw output or request data. Do not add these to logs.
 
 ## Verify rendering
 

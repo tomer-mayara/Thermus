@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, {
   ChildProcess,
@@ -105,7 +106,7 @@ describe('WebsiteFetcherLightpanda', () => {
       finish(error, '<html>Partial</html>', error.message);
       await assert.rejects(result, (caught) => expectedMessage
         ? (caught as Error).message === expectedMessage
-        : caught === error);
+        : caught instanceof WebsiteFetchFailure && caught.cause === error);
     });
   }
 
@@ -153,7 +154,7 @@ describe('WebsiteFetcherLightpanda', () => {
       if (error === null) {
         assert.deepEqual(await result, expectedPage('https://example.com/', '<html>Ready</html>'));
       } else {
-        await assert.rejects(result, (caught) => caught === error);
+        await assert.rejects(result, (caught) => caught instanceof WebsiteFetchFailure && caught.cause === error);
       }
       t.mock.timers.tick(60_000);
       assert.deepEqual(child.signals, []);
@@ -175,7 +176,7 @@ describe('WebsiteFetcherLightpanda', () => {
     assert.equal(settled, false);
     finish(error, '<html>Partial</html>', '');
 
-    await assert.rejects(result, (caught) => caught === error);
+    await assert.rejects(result, (caught) => caught instanceof WebsiteFetchFailure && caught.cause === error);
   });
 
   test('rejects a synchronous launch error without a timer', async (t) => {
@@ -184,7 +185,7 @@ describe('WebsiteFetcherLightpanda', () => {
     mock.method(childProcess, 'execFile', () => { throw error; });
     syncBuiltinESMExports();
 
-    await assert.rejects(fetcher.fetchURL('https://example.com/'), (caught) => caught === error);
+    await assert.rejects(fetcher.fetchURL('https://example.com/'), (caught) => caught instanceof WebsiteFetchFailure && caught.cause === error);
     t.mock.timers.tick(60_000);
     assert.deepEqual(child.signals, []);
   });

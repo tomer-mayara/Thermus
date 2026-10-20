@@ -298,3 +298,22 @@ test('Given a sink that aborts during the incoming terminal write, when the core
   ]);
   assert.equal(dependencies.incoming.execute.mock.callCount(), 1);
 });
+
+for (const mode of ['failure', 'success', 'cancelled', 'reporter_throws'] as const) {
+  test(`Given a fetch ${mode}, when the protected operation finishes, then only noncancelled failures attempt one correlated safe diagnostic`, async (t) => {
+    const dependencies = operationDoubles(t);
+    const reports: unknown[] = [];
+    const execution = executionContextOf();
+    if (mode !== 'success') dependencies.fetcher.fetchURL.mock.mockImplementation(async () => {
+      if (mode === 'cancelled') throw new DOMException('private-cancel', 'AbortError');
+      throw Object.assign(new Error('private-message'), { code: 'ESECRETTOKEN', cause: new Error('private-cause') });
+    });
+    const operation = createFetchPage({ ...dependencies, reportFetchFailure: (failure) => {
+      reports.push(failure);
+      if (mode === 'reporter_throws') throw new Error('private-logger');
+    } });
+    if (mode === 'success') assert.equal((await operation(url, context, execution)).status, 'released');
+    else await assert.rejects(operation(url, context, execution), { message: mode === 'cancelled' ? 'Request cancelled' : 'Page fetch failed' });
+    assert.deepEqual(reports, mode === 'success' || mode === 'cancelled' ? [] : [{ category: 'unknown', phase: 'unknown', operationId: execution.operationId }]);
+  });
+}

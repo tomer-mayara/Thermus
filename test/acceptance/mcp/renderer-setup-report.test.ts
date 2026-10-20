@@ -76,10 +76,12 @@ describe('Renderer setup reports in the operator log', () => {
     await site.server.stop();
 
     assertFetchFailed(results);
+    const diagnostics = site.server.errorLines().filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
+    assert.deepEqual(diagnostics.map(({ operationId }) => operationId), site.server.completionRecords().map(({ operationId }) => operationId));
     assert.deepEqual(site.server.completionRecords().map(({ url, status }) => ({ url, status })), [1, 2].map(() => ({
       url: 'https://93.184.216.34/private-path', status: 'fetch_failed',
     })));
-    assert.deepEqual(site.server.errorLines(), [missingReport]);
+    assert.deepEqual(site.server.errorLines().filter((line) => !line.startsWith('{')), [missingReport]);
     assertNoRequestData(site.server.errorLines(), setup, executable);
   });
 
@@ -94,8 +96,10 @@ describe('Renderer setup reports in the operator log', () => {
     await site.server.stop();
 
     assertFetchFailed(results);
+    const diagnostics = site.server.errorLines().filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
+    assert.deepEqual(diagnostics.map(({ operationId }) => operationId), site.server.completionRecords().map(({ operationId }) => operationId));
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['fetch_failed', 'fetch_failed', 'fetch_failed']);
-    assert.deepEqual(site.server.errorLines(), [missingReport, notExecutableReport]);
+    assert.deepEqual(site.server.errorLines().filter((line) => !line.startsWith('{')), [missingReport, notExecutableReport]);
     assertNoRequestData(site.server.errorLines(), setup, executable);
   });
 
@@ -108,8 +112,10 @@ describe('Renderer setup reports in the operator log', () => {
     await site.server.stop();
 
     assertFetchFailed(results);
+    const diagnostics = site.server.errorLines().filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
+    assert.deepEqual(diagnostics.map(({ operationId }) => operationId), site.server.completionRecords().map(({ operationId }) => operationId));
     assert.equal(renderer.launches.length, 1);
     assert.deepEqual(site.server.completionRecords().map(({ status }) => status), ['fetch_failed', 'fetch_failed']);
-    assert.deepEqual(site.server.errorLines(), []);
+    assert.deepEqual(site.server.errorLines().filter((line) => !line.startsWith('{')), []);
   });
 });

@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
@@ -103,7 +104,7 @@ test('Given the host is offline, when the configured runtime fails to connect, t
   const cause = Object.assign(new Error('Network is unreachable'), { code: 1 });
   const execute = stubRuntime(t, cause);
 
-  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error === cause);
+  await assert.rejects(new WebsiteFetcherLightpanda(executable).fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
   assert.equal(execute.mock.callCount(), 1);
   assert.equal(execute.mock.calls[0].arguments[0], executable);
 });

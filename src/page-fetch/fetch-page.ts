@@ -34,7 +34,7 @@ export function createFetchPage(dependencies: RendererFailureReports & {
       page = await dependencies.fetcher.fetchURL(outgoingUrl, signal);
     } catch (error) {
       throwIfCancelled(signal, error);
-      reportRendererFailure(dependencies, error);
+      reportRendererFailure(dependencies, error, execution.operationId);
       throw new Error('Page fetch failed');
     }
 
