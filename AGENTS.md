@@ -163,10 +163,10 @@ candidate.
    for `READ`. Name the tests.
 5. **Metrics.** Use the final report of the process "Code quality review with
    ast-metrics" below. A recorded miss of an added or changed function or
-   file, or a kept high finding, is a reason for `READ`. A miss with the
-   reason `unchanged by this PR` is not. An MI drop of five or more on an
-   existing file is a reason for `READ`. These rules replace `ratchet` in
-   the trial.
+   file, or a kept high finding on a changed file, is a reason for `READ`.
+   A miss or finding with the reason `unchanged by this PR` is not. An MI
+   drop of five or more on an existing file is a reason for `READ`. These
+   rules replace `ratchet` in the trial.
 6. **Route.** A required check is a required run of the test gate policy, or
    habit-hooks. While one fails, the route is `FIX`. Do not mark a `FIX`
    pull request Ready: make the check pass, then compute the route again.
