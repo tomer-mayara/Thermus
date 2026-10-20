@@ -22,7 +22,7 @@ require one supported search root and results section. Results need complete
 web-result structures. The supported English no-results template needs its
 wrapper, header, query span, and two tips, with no result markers anywhere
 in the search root. Extra content in the results section, fallback wrapper,
-or banner is refused; comments and whitespace are allowed.
+or banner subtree is refused; comments and whitespace are allowed.
 Error, excessive-query, translated, ambiguous, and
 unknown structures fail with `Search failed`. Phrases in a query, snippet,
 or script do not establish absence or a challenge.
@@ -82,9 +82,10 @@ it is not a claim about every challenge Brave can serve.
 | Supported no-results template before implementation | 2 of 42 provider cases failed: the derived no-results page was refused and a conflicting results/banner page was accepted. |
 | Duplicate-container review before correction | 2 of 50 provider cases failed because duplicate roots or sections were accepted. |
 | Unknown-content review before correction | 4 of 55 provider cases failed because unknown results-section content or nesting was accepted as absence. A further banner-content case failed before its correction. |
-| Final provider tests | All 56 cases passed after the strict template checks. |
+| Whole-banner review before correction | 5 of 62 cases failed because unknown list text or descendants of the header, query, or tips were accepted. Literal query text and comments remained valid. |
+| Final provider tests | All 62 cases passed after the complete template checks. |
 | Final converter and integration checks | All 152 cases passed, including existing converter and fetch regressions. |
-| Final changed-test check | All 67 new provider, converter, and integration cases passed from a clean build of the complete candidate. |
+| Initial changed-test check | All 67 then-current provider, converter, and integration cases passed before the last whole-banner correction. |
 
 The final focused commands were:
 
@@ -121,6 +122,9 @@ The incomplete public search specification from SEARCH-01 remains a failed
 gate until MCP registration is implemented. The pull request stays Draft.
 
 ## Complete-candidate results
+
+These results precede the last whole-banner correction. The selected checks
+are being repeated for that correction.
 
 | Check | Exit | Result |
 | --- | --- | --- |
@@ -191,7 +195,7 @@ all below the goal of 85:
 
 | File | Score | Retained reason |
 | --- | --- | --- |
-| `src/search-engine/search-engine-brave-http.ts` | 35.0 | One provider owns the fixed request, response bounds, supported DOM grammar, and safe failure boundary. Its seven named methods have at most 14 decision paths each. A separate file for each guard would spread this provider contract without simplifying it. The no-results method checks one strict template with early refusals. |
+| `src/search-engine/search-engine-brave-http.ts` | 34.3 | One provider owns the fixed request, response bounds, supported DOM grammar, and safe failure boundary. Its seven named methods have at most 15 decision paths each. A separate file for each guard would spread this provider contract without simplifying it. The no-results method checks one strict template with early refusals. Its final descendant-count check uses the known elements; a redundant second order check was removed. |
 | `src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts` | 44.5 | The document owns parsing, ordered normalization and sanitization, and local Defuddle extraction. The new inline-label operation has three paths. Fragment status now comes from the owned document. Keep the existing parser workarounds together; splitting them does not simplify their order or invariants. |
 | `src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts` | 62.9 | One converter owns input sanitization, extraction, output sanitization, and report accumulation. The added option changes only document preparation. The existing shared boundary stays explicit. |
 | `src/search-pipeline/search-query.ts` | 65.4 | The class owns bounded Unicode validation, a fixed constructor error, and read-only exact text. The scalar loop uses constant space and stops at the bound. Moving the checks or replacing them with a counting expression would hide this contract. |

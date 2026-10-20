@@ -53,6 +53,11 @@ for (const [shape, html] of [
   ['conflicting headers', noResultsPage.html.replace('<span>Not many great matches came back for your search:', '<span>Unsupported error</span><span>Not many great matches came back for your search:')],
   ['a missing search tip', noResultsPage.html.replace('<li>Try fewer keywords</li>', '')],
   ['an unsupported search tip', noResultsPage.html.replace('Try fewer keywords', 'Try again later')],
+  ['meaningful text inside the tips list', noResultsPage.html.replace('<ul class="t-tertiary svelte-6dkl6q">', '<ul class="t-tertiary svelte-6dkl6q">Unrecognized result')],
+  ['an unknown result inside the tips list', noResultsPage.html.replace('</ul></section>', '<article><a href="https://example.com">Result</a></article></ul></section>')],
+  ['an unknown header element', noResultsPage.html.replace('<span>Not many great matches came back for your search:', '<span><article>Unknown result</article>Not many great matches came back for your search:')],
+  ['a nested query element', noResultsPage.html.replace('<span class="desktop-default-semibold t-primary">"lightpanda browser"</span>', '<span class="desktop-default-semibold t-primary"><em>"lightpanda browser"</em></span>')],
+  ['a nested tip element', noResultsPage.html.replace('<li>Try fewer keywords</li>', '<li><em>Try fewer keywords</em></li>')],
   ['unrecognized result content', noResultsPage.html.replace('</ul></section></div></section>', '</ul></section></div><article><a href="https://example.com">Result</a></article></section>')],
   ['meaningful sibling text', noResultsPage.html.replace('</ul></section></div></section>', '</ul></section></div>Unrecognized result</section>')],
   ['extra fallback content', noResultsPage.html.replace('</ul></section></div></section>', '</ul></section><article>Unrecognized result</article></div></section>')],
@@ -74,12 +79,28 @@ for (const [shape, html] of [
 test('Given the supported no-results shape with comments and whitespace, when classified, then navigation outside the results section does not imply results', async () => {
   const html = noResultsPage.html.replace('id="mixed-main" class="svelte-e12qt1">', 'id="mixed-main" class="svelte-e12qt1"> \n<!-- section comment -->')
     .replace('<div class="fallback-snippet svelte-6dkl6q">', '<div class="fallback-snippet svelte-6dkl6q"> \n<!-- fallback comment -->')
+    .replace('<ul class="t-tertiary svelte-6dkl6q">', '<ul class="t-tertiary svelte-6dkl6q"> \n<!-- tips comment -->')
     .replace('id="floating-infobox-anchor"></div>', 'id="floating-infobox-anchor"><a href="https://example.com">Navigation</a></div>');
   const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...noResultsPage, html }) });
 
   const result = await engine.search('sources', new AbortController().signal);
 
   assert.equal(result.kind, 'no_results');
+});
+
+test('Given literal query text that resembles markup and challenge messages, when the supported no-results template is classified, then only its structure decides absence', async () => {
+  const query = 'CAPTCHA & <article>No results</article>';
+  const page = {
+    ...noResultsPage,
+    html: noResultsPage.html.replace('>"lightpanda browser"</span>', '>"CAPTCHA &amp; &lt;article&gt;No results&lt;/article&gt;"</span>'),
+  };
+  assert.notEqual(page.html, noResultsPage.html);
+  const engine = new SearchEngineBraveHttp({ fetchURL: async () => page });
+
+  const result = await engine.search(query, new AbortController().signal);
+
+  assert.equal(result.kind, 'no_results');
+  assert.equal(result.page, page);
 });
 
 test('Given actual results and a bad-results banner together, when classified, then the ambiguous page fails', async () => {

@@ -93,13 +93,16 @@ export class SearchEngineBraveHttp implements SearchEngine {
     const header = headers[0];
     const lists = selectAll<HtmlNode, HtmlElement>(':scope > ul', banner);
     if (lists.length !== 1) return false;
-    for (const [parent, children] of [[main, [wrapper]], [wrapper, [banner]], [banner, [header, lists[0]]]] as const) {
+    const queries = selectAll<HtmlNode, HtmlElement>(':scope > span', header);
+    const tips = selectAll<HtmlNode, HtmlElement>(':scope > li', lists[0]);
+    if (queries.length !== 1 || !DomUtils.textContent(queries[0]).trim() || tips.length !== 2) return false;
+    for (const [parent, children] of [[main, [wrapper]], [wrapper, [banner]], [banner, [header, lists[0]]], [lists[0], tips]] as const) {
       const meaningful = parent.children.filter((node) => node.type !== 'comment' && (node.type !== 'text' || node.data.trim() !== ''));
       if (meaningful.length !== children.length || !meaningful.every((node, index) => node === children[index])) return false;
     }
-    const queries = selectAll<HtmlNode, HtmlElement>(':scope > span', header);
-    const tips = selectAll<HtmlNode, HtmlElement>(':scope > ul > li', banner);
-    if (queries.length !== 1 || !DomUtils.textContent(queries[0]).trim() || tips.length !== 2) return false;
+    const expected = [header, queries[0], lists[0], ...tips];
+    const descendants = selectAll<HtmlNode, HtmlElement>('*', banner);
+    if (descendants.length !== expected.length) return false;
     const label = header.children.filter((node) => node.type === 'text').map((node) => node.data).join('').trim();
     return label === 'Not many great matches came back for your search:'
       && DomUtils.textContent(tips[0]).trim() === 'Try more general keywords'
