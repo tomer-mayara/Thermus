@@ -1,7 +1,7 @@
 # SEARCH-04: Shared resources and hosted capacity
 
 Date: 2026-10-20.
-Status: implementation and verification in progress.
+Status: composition implemented; public MCP search remains open.
 
 This record covers [SEARCH-04](search-pipeline-plan.md#search-04-share-renderer-resources-and-hosted-operation-capacity).
 It continues the Draft pull request for SEARCH-03. The comparison base for
@@ -75,6 +75,14 @@ existed. It passed all 20 cases; no red run is claimed for that matrix.
 The manager's combined source run passed all 44 cases in the capacity,
 composition, hosted-capacity, and existing renderer-report test files.
 
+```sh
+pnpm exec node --experimental-transform-types --test \
+  test/unit/mcp/operation-capacity.test.ts \
+  test/acceptance/mcp/hosted-search-capacity.test.ts \
+  test/integration/tool-operations.test.ts \
+  test/integration/fetch-tool-renderer-setup-report.test.ts
+```
+
 Manager review confirmed one owner through settlement, exact typed results,
 and no second hosted slot. It corrected asset paths for emitted integration
 tests, added a bounded DNS cancellation check, and made polling stop at the
@@ -82,7 +90,8 @@ test deadline. The first full build found missing types in test spies and
 cleanup callbacks; those test annotations were corrected before verification.
 
 The manager reviewed and signed off all three workers' changes. The source
-and test candidate is `19eda2b0`; subsequent record updates add only prose.
+and test candidate is `19eda2b0`; subsequent record updates add documentation
+and generated evidence.
 
 ## Complete-candidate checks
 
@@ -100,6 +109,9 @@ Node 24.20.0 through `pnpm exec`.
 | `npm run test:mcp:renderer` | 0 | All nine pinned-runtime cases passed. |
 | `npm run test:container` | 0 | All 13 self-hosted image cases passed. |
 | `npm run build:hosted` | 0 | All selected groups passed: 3,969 backend unit, 23 portal unit, 13 build, 18 portal acceptance, 665 integration, 146 hosted acceptance/interface, and nine renderer cases. |
+| `npm run test:container:hosted` | 0 | All nine Linux AMD64 image cases passed, including the copied failing-check proof. |
+| Verified unit and integration coverage | 0 | All 3,969 backend unit, 23 portal unit, and 665 integration cases passed. The verified report has 131 files from 1,148 processes. |
+| Complete ast-metrics process | 1 | All four sections completed. Architecture passed. Eight file scores and 58 function identity or coverage assessments remain exceptions. No measured CRAP target miss. |
 | `habit-hooks --branch origin/main` | 1 | The 73 retained findings are explained below. No lint errors. |
 | `git diff --check` | 0 | No whitespace findings. |
 
@@ -141,3 +153,97 @@ contract and its matrices together; the fetch outgoing specification keeps
 its stage and shared record contract together. A split only to meet the line
 limit would not separate a new responsibility. The source change in
 `application.ts` is limited to selecting the new operation factory.
+
+## Code quality review
+
+All comparisons in this verification round use
+`063404050aaf2d8989039309afc96d0308f7b318`. The branch includes that main
+update. Direct inspection with `ast-metrics-mcp.ts file` passed for all eight
+low-scoring production files. No function has more than ten decision paths.
+
+### Maintainability and high findings
+
+Retain these file-score exceptions. A file split or added delegation only to
+raise the score would hide the relevant owner or lifecycle.
+
+| Production file | Score | Reason |
+| --- | --- | --- |
+| `src/search-pipeline/search-pipeline.ts` | 43.2 | One owner enforces validation, stage order, cancellation, and final release. Provider result checks stay separate from renderer error reports. |
+| `src/search-pipeline/execute-incoming-step.ts` | 46.7 | Validation, typed withholding, cancellation, and one terminal record belong to one entered stage. |
+| `src/search-pipeline/search-failure.ts` | 47.6 | The immutable public message and bounded diagnostic allowlists form one error policy. The separate category functions have at most ten paths. |
+| `src/search-pipeline/execute-outgoing-step.ts` | 48.2 | Exact query checks, refusal, cancellation, and the terminal record belong to the same outgoing role. |
+| `src/application.ts` | 56.2 | The change only selects the new factory. Keep edition selection, route restrictions, and resource teardown visible; their algorithms are unchanged. The changed function has one path and 100% measured coverage. |
+| `src/hosted-workos-application.ts` | 63.0 | The opener selects the shared factory and retains its startup order. Provider configuration and request-server ownership stay explicit. The changed opener has two paths and 93.5% measured coverage. |
+| `src/mcp/operation-capacity.ts` | 65.8 | One small class owns one slot. Its wrapper checks cancellation and busy before work and releases in `finally`; another helper would obscure that invariant. The wrapper and callback have one and two paths. |
+| `src/fetch-tool.ts` | 67.6 | One composition root shows which concrete resources are shared and which converter settings differ. Both new factories have one path and 100% measured coverage. Hiding the dependencies in more factories would make ownership harder to check. |
+
+The capacity class and two search classes account for three of the 12 high
+review findings. Their reasons are above; class and file scores differ.
+Retain the other nine high findings for these reasons:
+
+| File | Reported score | Reason |
+| --- | --- | --- |
+| `src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts` | 63 | One converter owns the ordered sanitization, extraction, and reports; result preservation changes document preparation. |
+| `src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts` | 59 | Parsing, normalization, and library workarounds share one document lifecycle and safety context. |
+| `src/page-fetch/fetch-failure.ts` | 71 | The immutable message and bounded detail allowlists form one public error boundary. |
+| `src/search-engine/search-engine-brave-http.ts` | 34 | The provider owns the fixed request, bounds, destination checks, and supported DOM grammar. Those refusals must stay explicit. |
+| `src/search-pipeline/search-query.ts` | 65 | This small class owns bounded Unicode validation and exact read-only text. Its early scalar bound uses constant space. |
+| `src/website-fetcher/fetch-diagnostic.ts` | 81 | Fixed code lists and bounds keep request data out of diagnostic records. |
+| `src/website-fetcher/network-policy.ts` | 61 | DNS waits, timers, late completion, and the abandoned-work guard share state and need one owner. |
+| `src/website-fetcher/website-fetcher-lightpanda.ts` | 71 | Readiness, rendering, cancellation, child completion, and release need one lifecycle owner. |
+| `src/website-fetcher/website-fetcher.ts` | 80 | The small public page, renderer, and canonical failure contracts belong together. Splitting constructors adds navigation without removing a rule. |
+
+The fetch composition's coupling and maintainability regression reflect the
+explicit wiring of both operations. Core import boundaries still pass. The
+other medium and low findings concern the same lifecycle, validation, or
+composition responsibilities; no extra framework is added to hide them.
+
+### Function assessment limits
+
+The full process report records every function's classification, path count,
+coverage, score or lower bound, and required action. Retain the 58 unknown
+identity or assessment exceptions in that table. Twenty-nine functions lack
+a coverage match. A lower bound is not a measured score or a pass.
+
+For the new search functions, the two new factories, and the capacity owner,
+the analyzer does not establish declaration identity. The measured scores
+meet both numeric targets. For the unmatched anonymous functions and getter,
+the executed tests do not repair the analyzer's missing match. Keep the
+reported unknown coverage and lower bounds. This includes the new capacity
+callback and search binding; their tests check observable behavior but do not
+provide a substitute numeric score.
+
+The anonymous functions in `application.ts` and
+`hosted-workos-application.ts` have unchanged bodies in the Git diff. The
+existing fetch reporter and SDK-server callbacks also retain their behavior.
+Their reason is unchanged by this PR; the report retains its conservative
+unknown classification. The named unchanged functions retain the same reason
+in their report rows. No coverage data was edited, and no operational tool
+failure is being accepted as an exception.
+
+### Commands and history
+
+The analyzer is the locally corrected
+`0.43.1-search02-anonymous-fix` documented in
+[SEARCH-02](search-02.md#analyzer-completeness-correction). Its binary and saved
+patch hashes were verified against that record. The installed analyzer,
+rules, and baseline are unchanged.
+
+```sh
+pnpm exec node script/code-quality/ast-metrics-coverage.ts \
+  --suite unit --suite integration
+
+PATH="$PWD/ast-report/search-02-tooling/0.43.1-search02-anonymous-fix/bin:$PATH" \
+  pnpm exec node script/code-quality/ast-metrics-process.ts \
+  --base 063404050aaf2d8989039309afc96d0308f7b318 --allow-tool-version
+```
+
+The process wrote the immutable base record
+`docs/metrics/2026-10-20-06340405.json`, with SHA-256
+`9ee8da37d03127e9943a5f2672503258e6ef4657a5ef9a03d708fdad868836c3`.
+The prior `2026-10-20-304cd24f.json` retains its recorded hash. No history
+record was edited. The final process runs after these document updates and
+reuses verified compatible coverage.
+The pull request description contains the complete final process report
+without changes: all four sections, both graphs, their legends, import
+evidence, and assessment notices.
