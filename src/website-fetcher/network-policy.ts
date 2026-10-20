@@ -23,53 +23,58 @@ for (const cidr of blockedNetworks) {
   blockedAddresses.addSubnet(address, Number(prefix), isIP(address) === 4 ? 'ipv4' : 'ipv6');
 }
 
+// The system lookup cannot be cancelled. Refuse further hostname work until
+// every abandoned lookup settles. Keep late success and failure handlers.
+async function lookupAddresses(hostname: string, abandonedLookups: Set<symbol>, signal?: AbortSignal): Promise<LookupAddress[]> {
+  signal?.throwIfAborted();
+  if (abandonedLookups.size !== 0) throw new WebsiteFetchFailure('A previous DNS lookup is still pending', { category: 'validation', phase: 'destination_policy', reason: 'dns_pending' });
+  const lookupId = Symbol();
+  let nativePending = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let cancel: (() => void) | undefined;
+  function nativeSettled() {
+    nativePending = false;
+    abandonedLookups.delete(lookupId);
+  }
+  try {
+    function awaitDnsLookup(resolve: (addresses: LookupAddress[]) => void, reject: (error: unknown) => void) {
+      function stopWaiting(error: unknown) {
+        if (nativePending) abandonedLookups.add(lookupId);
+        reject(error);
+      }
+      function cancelDnsWait() { stopWaiting(signal?.reason); }
+      cancel = cancelDnsWait;
+      signal?.addEventListener('abort', cancel, { once: true });
+      function expireDnsWait() { stopWaiting(new WebsiteFetchFailure(`DNS lookup timed out after ${DNS_LOOKUP_WAIT_MS} ms`, { category: 'dns_timeout', phase: 'destination_policy', budgetMs: DNS_LOOKUP_WAIT_MS })); }
+      timer = setTimeout(expireDnsWait, DNS_LOOKUP_WAIT_MS);
+      const lookup = dns.lookup(hostname, { all: true });
+      nativePending = true;
+      function resolveDnsLookup(addresses: LookupAddress[]) {
+        nativeSettled();
+        resolve(addresses);
+      }
+      function rejectDnsLookup(error: unknown) {
+        nativeSettled();
+        reject(error);
+      }
+      lookup.then(resolveDnsLookup, rejectDnsLookup);
+      if (signal?.aborted) cancel();
+    }
+    return await new Promise<LookupAddress[]>(awaitDnsLookup);
+  } finally {
+    clearTimeout(timer);
+    if (cancel !== undefined) signal?.removeEventListener('abort', cancel);
+  }
+}
+
 export class PublicDestinationPolicy {
   private readonly abandonedLookups = new Set<symbol>();
-
-  // The system lookup cannot be cancelled. Refuse further hostname work until
-  // every abandoned lookup settles. Keep late success and failure handlers.
-  private async lookupAddresses(hostname: string, signal?: AbortSignal): Promise<LookupAddress[]> {
-    signal?.throwIfAborted();
-    if (this.abandonedLookups.size !== 0) throw new WebsiteFetchFailure('A previous DNS lookup is still pending', { category: 'validation', phase: 'destination_policy', reason: 'dns_pending' });
-    const lookupId = Symbol();
-    let nativePending = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let cancel: (() => void) | undefined;
-    const nativeSettled = () => {
-      nativePending = false;
-      this.abandonedLookups.delete(lookupId);
-    };
-    try {
-      return await new Promise<LookupAddress[]>((resolve, reject) => {
-        const stopWaiting = (error: unknown) => {
-          if (nativePending) this.abandonedLookups.add(lookupId);
-          reject(error);
-        };
-        cancel = () => stopWaiting(signal?.reason);
-        signal?.addEventListener('abort', cancel, { once: true });
-        timer = setTimeout(() => stopWaiting(new WebsiteFetchFailure(`DNS lookup timed out after ${DNS_LOOKUP_WAIT_MS} ms`, { category: 'dns_timeout', phase: 'destination_policy', budgetMs: DNS_LOOKUP_WAIT_MS })), DNS_LOOKUP_WAIT_MS);
-        const lookup = dns.lookup(hostname, { all: true });
-        nativePending = true;
-        lookup.then((addresses) => {
-          nativeSettled();
-          resolve(addresses);
-        }, (error: unknown) => {
-          nativeSettled();
-          reject(error);
-        });
-        if (signal?.aborted) cancel();
-      });
-    } finally {
-      clearTimeout(timer);
-      if (cancel !== undefined) signal?.removeEventListener('abort', cancel);
-    }
-  }
 
   public async assertPublicDestination(url: URL, signal?: AbortSignal): Promise<void> {
     const hostname = url.hostname.replace(/^\[|\]$/g, '');
     const addresses = isIP(hostname)
       ? [{ address: hostname }]
-      : await this.lookupAddresses(hostname, signal);
+      : await lookupAddresses(hostname, this.abandonedLookups, signal);
     if (addresses.length === 0) {
       throw new WebsiteFetchFailure('Fetch hostname has no network addresses', { category: 'validation', phase: 'destination_policy', reason: 'no_addresses' });
     }
