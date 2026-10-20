@@ -4,8 +4,12 @@ Date: 2026-10-20.
 Status: implementation and verification in progress.
 
 This record covers [SEARCH-04](search-pipeline-plan.md#search-04-share-renderer-resources-and-hosted-operation-capacity).
-It continues the Draft pull request for SEARCH-03. The comparison base stays
-`304cd24fd0f198716c372bd2ec404eeffc12a132`.
+It continues the Draft pull request for SEARCH-03. The comparison base for
+this verification round is `063404050aaf2d8989039309afc96d0308f7b318`.
+During verification, `main` advanced from the prior SEARCH-03 base only by
+updating the unused `tools/code-review-agents` submodule reference. That
+update changes no application, test, or build input and is included before
+the quality comparison. The submodule stays uninitialized.
 
 ## Composition
 
@@ -76,6 +80,41 @@ and no second hosted slot. It corrected asset paths for emitted integration
 tests, added a bounded DNS cancellation check, and made polling stop at the
 test deadline. The first full build found missing types in test spies and
 cleanup callbacks; those test annotations were corrected before verification.
+
+The manager reviewed and signed off all three workers' changes. The source
+and test candidate is `19eda2b0`; subsequent record updates add only prose.
+
+## Complete-candidate checks
+
+`pnpm install --frozen-lockfile` passed. Commands use pnpm 12.10.1 and
+Node 24.20.0 through `pnpm exec`.
+
+| Check | Exit | Result |
+| --- | --- | --- |
+| Combined focused source run | 0 | All 44 cases passed. |
+| `npm test` | 1 | 5,689 of 5,694 backend cases passed in 304 suites. Five failures are listed below. |
+| `npm run test:user-portal` | 0 | All 41 cases passed. Run separately because the backend failures stopped the ordinary command. |
+| `npm run typecheck` | 0 | Backend and portal types passed. |
+| `npm run test:build` | 0 | All 13 cases passed. |
+| `npm run build:user-portal` | 0 | Passed. |
+| `npm run test:mcp:renderer` | 0 | All nine pinned-runtime cases passed. |
+| `npm run test:container` | 0 | All 13 self-hosted image cases passed. |
+| `npm run build:hosted` | 0 | All selected groups passed: 3,969 backend unit, 23 portal unit, 13 build, 18 portal acceptance, 665 integration, 146 hosted acceptance/interface, and nine renderer cases. |
+| `habit-hooks --branch origin/main` | 1 | The 73 retained findings are explained below. No lint errors. |
+| `git diff --check` | 0 | No whitespace findings. |
+
+All completed test runs above had zero cancelled, skipped, or todo cases.
+The ordinary suite is still a failed gate: two public search specifications
+need the SEARCH-05 registration, and three logger cases need the unset
+`AXIOM_API_KEY`. No case was skipped, weakened, or changed to expect failure.
+The pull request stays Draft.
+
+The runtime command set `LIGHTPANDA_BIN` to
+`/Users/tomermayara/git/Thermus/.cache/lightpanda/1.0.0/lightpanda`.
+Its SHA-256 was
+`955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d`.
+This is the existing fetch runtime gate. It does not replace the public
+search runtime and real-Brave proof required in SEARCH-06.
 
 ## Habit-hooks review
 
