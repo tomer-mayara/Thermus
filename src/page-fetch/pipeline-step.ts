@@ -1,6 +1,10 @@
 import type { WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
 
-export type StepId = 'outgoing.observe_request' | 'incoming.process_html';
+export type StepId =
+  | 'outgoing.observe_request'
+  | 'incoming.process_html'
+  | 'search.outgoing.observe_request'
+  | 'search.incoming.process_html';
 export type BlockCode = 'blocked' | 'scan_failed' | 'scan_limit';
 
 export type StepResult<Output, Code extends BlockCode = BlockCode> =

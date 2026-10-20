@@ -37,6 +37,12 @@ const pageFetchImports = [
   '(?:\\.\\./)+website-fetcher/(?!website-fetcher(?:\\.[jt]s)?$)',
 ];
 
+const searchPipelineImports = [
+  ...pageFetchImports,
+  '(?:\\.\\./)+search-engine/(?!search-engine(?:\\.[jt]s)?$)',
+  '(?:\\.\\./)+page-fetch/(?!(?:pipeline-step|execution-context|step-record|renderer-failure-reports)(?:\\.[jt]s)?$)',
+];
+
 function directImportRules(paths, message) {
   const regex = `^(?:${paths.join('|')})`;
   return {
@@ -130,6 +136,10 @@ export default [
   {
     files: ['src/page-fetch/**/*.ts'],
     rules: directImportRules(pageFetchImports, 'Page fetch uses public contracts. Composition selects transport, renderer, cleaner, and logger implementations.'),
+  },
+  {
+    files: ['src/search-pipeline/**/*.ts'],
+    rules: directImportRules(searchPipelineImports, 'Search pipeline uses public contracts and shared execution helpers. Composition selects implementations.'),
   },
   // For the same rule, a block replaces the options of each block before it.
   // Thus each glob has one block with all of its patterns. The driver block and

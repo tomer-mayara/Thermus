@@ -1,6 +1,6 @@
 # Search pipeline plan
 
-Status: SEARCH-01 contracts and SEARCH-02 provider implemented; public search remains open.
+Status: SEARCH-01 contracts, SEARCH-02 provider, and SEARCH-03 core implemented; public search remains open.
 Date: 2026-10-20.
 
 Add MCP `search({ query, reason })` to return cleaned first-page Markdown.
@@ -209,6 +209,7 @@ unchanged. Sink or logger failure must not change a result or repeat work.
 | `src/search-engine/search-engine-brave-http.ts` | Public HTTP implementation, fixed URL checks, and private classification methods. |
 | `src/search-pipeline/search-pipeline.ts` | Protected orchestration and final decision. |
 | `src/search-pipeline/search-query.ts` | `SearchQuery` class with exact text, Unicode rules, and query bounds. |
+| `src/search-pipeline/search-failure.ts` | Safe search failure with bounded public renderer details. |
 | `src/search-pipeline/execute-outgoing-step.ts` | Unchanged-query checks and outgoing records. |
 | `src/search-pipeline/execute-incoming-step.ts` | Incoming checks, withholding, and records. |
 | `src/mcp/search-tool-schema.ts` | Search argument schema and parsing. |
@@ -249,8 +250,7 @@ Modify these existing paths:
   and gate selection. Add `docs/reference/mcp-search-tool.md`.
 
 No ast-metrics rule change is planned unless implementation evidence requires
-it. The current guard does not cover search core merely because this plan
-names it.
+it. SEARCH-03 adds and tests the search-core import guard.
 
 ## Test plan and acceptance criteria
 
@@ -259,9 +259,12 @@ contracts and behavior. Unit tests replace other Thermus packages at public
 interfaces. Real collaboration between packages belongs in integration or
 acceptance tests.
 
-Use `test/unit/search-engine/` and `test/unit/search-pipeline/` for detailed
-matrices. Use `test/integration/search-pipeline/brave-markdown.test.ts` for
-real cleaning of supported captured pages. Add
+Use `test/unit/search-engine/` and `test/unit/search-pipeline/` for isolated
+provider, query, and safe failure matrices. The protected pipeline tests live
+in `test/integration/search-pipeline/protected-search.test.ts` because they
+execute the real auth and shared page-fetch helpers. Use
+`test/integration/search-pipeline/brave-markdown.test.ts` for real cleaning
+of supported captured pages. Add
 `test/acceptance/mcp/search-pipeline.test.ts` and
 `test/acceptance/mcp/hosted-search-capacity.test.ts` for public behavior.
 Cover both edition-by-era combinations for discovery and representative
@@ -390,9 +393,9 @@ checks above apply to the complete implementation candidate.
 
 ## Appendix A: implementation tickets
 
-These are local work packages. SEARCH-01 contracts and SEARCH-02 provider
-behavior are implemented; public search acceptance remains open.
-SEARCH-03 is **In progress**. SEARCH-04 through SEARCH-06 are **Planned**.
+These are local work packages. SEARCH-01 contracts, SEARCH-02 provider
+behavior, and SEARCH-03 core are implemented; public search acceptance
+remains open. SEARCH-04 through SEARCH-06 are **Planned**.
 The entries are not board issues or instructions to open separate pull requests.
 No board issue has been created.
 AC numbers refer to the acceptance criteria above. The dependency order is:
@@ -466,8 +469,13 @@ for the full-page fidelity proof.
 
 ### SEARCH-03: Implement the protected search pipeline and records
 
-**Status:** In progress. **Dependencies:** SEARCH-02. **Acceptance:** AC2, AC3,
+**Status:** Core implemented; public acceptance remains open.
+**Dependencies:** SEARCH-02. **Acceptance:** AC2, AC3,
 AC4, stage cancellation in AC7, and stage records in AC9.
+
+The [implementation record](search-03.md) gives the test-first evidence,
+manager review, and complete-candidate check results. The pull request stays
+Draft while public MCP search remains incomplete.
 
 **Scope and main paths:** Add `src/search-pipeline/search-pipeline.ts` and its
 two local executors. Reuse public page-fetch steps, execution validation, and
@@ -484,7 +492,7 @@ processing. Withholding or cancellation wins. Invalid inputs, stage decisions,
 or failures stop later work. Only entered stages attempt one safe record with
 the shared operation ID; sink failure changes no behavior.
 
-**Done evidence:** Focused unit matrices and boundary integration tests prove
+**Done evidence:** Focused failure unit matrices and boundary integration tests prove
 effect ordering, typed withholding precedence, malformed outcomes, cancellation,
 and record counts. Shared type/record and architecture specifications pass.
 The core imports contracts rather than concrete adapters or transport.
