@@ -532,6 +532,17 @@ beside rounded output, refusal before publication, and identical architecture
 reports from legacy and raw-enriched snapshots. The architecture reader still
 ignores the optional raw field; assessment raw validation remains future work.
 
+`test/unit/script/ast-metrics-snapshot-classes.test.ts` checks native class
+observation validation: finite precision, zero, missing MI, missing and empty
+arrays, native order, duplicate and empty names, and malformed present values.
+`test/acceptance/script/ast-metrics-snapshot-classes.test.ts` checks these
+observations through the snapshot command, refusal before publication, and
+compatibility with the existing architecture reader. The snapshot live contract
+compares captured observations with the native `get_file_metrics` response.
+These tests establish the native reported subset contract, not a complete
+source class inventory or class identity. Function `sourceEvidence.complete`
+does not establish class completeness.
+
 `test/acceptance/script/ast-metrics-snapshot-provenance.test.ts` checks that
 capture records source and expected coverage-input identity and refuses to
 publish after input mutation during analysis.
@@ -900,6 +911,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-classes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-commit.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
@@ -968,6 +980,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-review-policy.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-classes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |

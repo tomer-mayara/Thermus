@@ -3,7 +3,7 @@
 import { dependenciesOf } from '../dependencies/source.ts';
 import { snapshotCommunitiesOf } from './communities.ts';
 import { functionEvidenceOf } from '../identity/source.ts';
-import { serverCommunitiesOf, snapshotFunctionsOf } from './input.ts';
+import { serverCommunitiesOf, snapshotFileMetricsOf } from './input.ts';
 import { communityMapOf } from './map.ts';
 import * as numbers from '../shared/numbers.ts';
 import type { FileMeasurement, Snapshot, SnapshotFile } from './types.ts';
@@ -56,7 +56,7 @@ function snapshotFileOf(file: FileMeasurement, community: string | null, functio
     paths: file.paths,
     loc: file.loc,
     risk: numbers.rounded(file.risk, 2),
-    functions: snapshotFunctionsOf(file.path, functions),
+    ...snapshotFileMetricsOf(file.path, functions),
   };
 }
 

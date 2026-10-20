@@ -3,7 +3,7 @@ import { relative, sep } from 'node:path';
 import { arrayOf, isJsonObject, jsonOf, numberOf, numberOrZero, objectOf, textOf, textsOf } from '../shared/json.ts';
 import { textOrder } from '../shared/order.ts';
 import { rounded } from '../shared/numbers.ts';
-import type { CommunityReferences, FileMeasurement, SnapshotFunction } from './types.ts';
+import type { CommunityReferences, FileMeasurement, NativeClassObservation, SnapshotFile, SnapshotFunction } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
 
 // Sorted by path, the order of the snapshot. The report names each file by its absolute path; the snapshot names it by
@@ -47,10 +47,41 @@ function fileMaintainabilityOf(value: unknown, path: string): number | undefined
 // The shape of the answer of get_file_metrics follows ast-metrics 0.43.1.
 // Each src/ file needs its answer: a snapshot with a gap would look complete.
 export function snapshotFunctionsOf(path: string, text: string | undefined): SnapshotFunction[] {
+  return arrayOf(fileMetricsAnswerOf(path, text).functions).map(functionOf);
+}
+
+export function snapshotFileMetricsOf(path: string, text: string | undefined): Pick<SnapshotFile, 'functions' | 'classObservations'> {
+  const answer = fileMetricsAnswerOf(path, text);
+  const classes = answer.classes;
+  if (classes !== undefined && !Array.isArray(classes)) throw classObservationError(path, 'classes', 'an array');
+  return {
+    functions: arrayOf(answer.functions).map(functionOf),
+    ...(classes === undefined ? {} : { classObservations: classes.map((entry, index) => classObservationOf(path, entry, index)) }),
+  };
+}
+
+function fileMetricsAnswerOf(path: string, text: string | undefined): Record<string, unknown> {
   if (text === undefined) throw new CommandError(`get_file_metrics gave no answer for ${path}.`);
   const answer = jsonOf(text);
   if (!isJsonObject(answer)) throw new CommandError(`get_file_metrics gave an unexpected answer for ${path}: expected a JSON object.`);
-  return arrayOf(answer.functions).map(functionOf);
+  return answer;
+}
+
+function classObservationOf(path: string, entry: unknown, index: number): NativeClassObservation {
+  const field = `classes[${index}]`;
+  if (!isJsonObject(entry)) throw classObservationError(path, field, 'an object');
+  if (typeof entry.name !== 'string') throw classObservationError(path, `${field}.name`, 'a string');
+  const maintainability = entry.maintainability;
+  if (maintainability === undefined) return { name: entry.name };
+  if (!isJsonObject(maintainability)) throw classObservationError(path, `${field}.maintainability`, 'an object');
+  const raw = maintainability.maintainability_index;
+  if (raw === undefined) return { name: entry.name };
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) throw classObservationError(path, `${field}.maintainability.maintainability_index`, 'a finite number');
+  return { name: entry.name, maintainabilityRaw: raw };
+}
+
+function classObservationError(path: string, field: string, expected: string): CommandError {
+  return new CommandError(`Invalid class observation for ${path} at ${field}: expected ${expected}.`);
 }
 
 // ast-metrics gives an anonymous function, such as a callback or a test case, an empty name. A function without code

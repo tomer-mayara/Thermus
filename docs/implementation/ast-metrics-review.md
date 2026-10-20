@@ -759,7 +759,7 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
   other communities.
 - `files`: each `src/` file, sorted by path, with its community (or `null`),
   rounded `maintainability`, optional `maintainabilityRaw`, decision paths,
-  lines, risk, and functions.
+  lines, risk, functions, and optional `classObservations`.
 - `provenance`: source and expected coverage-input fingerprints, runtime,
   compiler, suite, and measurement version. These inputs are checked before
   and after analysis. The commit label alone does not identify uncommitted
@@ -780,7 +780,27 @@ nonfinite native MI for a `src/` file rejects capture before publication;
 out-of-scope entries remain ignored. The existing
 architecture reader ignores this field, so its displays, trends and process
 results still use rounded data. A future assessment must retain and validate raw
-MI through its own reader. This field adds no raw function or typed class data.
+MI through its own reader. This field adds no raw function data.
+
+Optional per-file `classObservations` keeps the native reported subset from
+the already fetched `get_file_metrics` response's `classes` array. Each entry
+has `name: string` and optional `maintainabilityRaw: number`. Native order,
+duplicate names and empty string names stay as reported. A missing `classes`
+key omits the field and stays unavailable; an explicit empty array stays empty
+and means only that the native response was empty. Missing MI stays unavailable.
+Finite MI keeps zero and native precision without rounding or a clamp.
+A malformed present array, entry, name, maintainability object or index, or a
+nonfinite index, rejects capture before publication. Snapshot version stays 1;
+there is no new flag, native call or session. The current architecture reader
+ignores these observations and continues to use rounded fields.
+
+These observations are not a source class inventory. Native ast-metrics 0.43.1
+can omit class expressions and anonymous default classes, omit MI for an empty
+or nested declaration, and collapse same-named namespace classes into one entry.
+Presence, length and names prove neither source identity nor completeness.
+Class decision automation needs separate source correspondence and completeness
+evidence. Persistent class identity and a raw-aware assessment reader remain
+future work; this field does not activate policy.
 
 The raw 0.43.1 JSON gives file coupling counts and namespace relations, but
 does not give complete file import pairs. The snapshot therefore uses the
@@ -800,7 +820,8 @@ but literal spelling and executable syntax do. The signature omits the
 binding name; recursive uses in the body remain. Source parse errors withhold identity and set `complete: false`.
 Anonymous functions, duplicate names, and unsupported owners have no stable
 identity. `complete` is true only when every executable function is supported
-and every metric has one source declaration. See the [snapshot format](ast-metrics-change-request.md#a2-snapshot).
+and every metric has one source declaration. This `complete` flag describes
+functions only; it says nothing about class observations. See the [snapshot format](ast-metrics-change-request.md#a2-snapshot).
 
 Snapshots contain no coverage or CRAP. The architecture command joins a
 separate coverage report when it makes its output. Snapshot capture starts no

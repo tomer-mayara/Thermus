@@ -159,9 +159,11 @@ The output has these limits:
   This policy uses raw values for comparisons and
   the AUTO floor: raw 84.96 blocks AUTO even if the display says 85.0. It is an
   owner warning, not by itself an architect trigger.
-- Native lint reports class findings, but current snapshots have no typed raw
-  class observations or class history. Prove that capability before relying on
-  class automation. Missing raw class MI solely for the AUTO floor is an AUTO-only
+- Native lint reports class findings. F.10 adds optional typed native class
+  observations, with raw MI when available. This reported subset proves neither
+  source correspondence nor completeness. Class history and a raw-aware
+  assessment reader remain pending; class automation needs that separate proof.
+  Missing raw class MI solely for the AUTO floor is an AUTO-only
   unknown when ordinary evidence is sufficient. Unknowns that can change a
   required decline/CRAP/design decision retain the fix/architect gap rules.
 - Coverage version `own-characters-1` rounds shares to 0.001. Exact CRAP comparison
@@ -691,7 +693,8 @@ remove separate identity or design obligations.
 
 Paths in this appendix are relative to
 [`script/code-quality/`](../../script/code-quality/README.md). The map reflects
-the reference commit, with exact-snapshot CLI and raw file MI updates in F.8/F.9.
+the reference commit, with exact-snapshot CLI, raw file MI and native class
+observation updates in F.8/F.9/F.10.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -699,7 +702,7 @@ Other proposed operations remain unavailable.
 | Script | Reuse | Change or removal plan |
 | --- | --- | --- |
 | [`ast-metrics-process.ts`](../../script/code-quality/ast-metrics-process.ts) | Main entry; four report sections; stage failure handling. | Add structured assessment with MI owner warnings, required triggers and AUTO exclusions, plus full-report assembly and short PR view. Read history but never record acceptance while rendering. Preserve raw output and original command statuses. |
-| [`ast-metrics-snapshot.ts`](../../script/code-quality/ast-metrics-snapshot.ts) | Static metrics, source evidence, dependencies, exact-commit CLI and optional raw file MI. | F.8/F.9 record available additions. Assessment raw-reader support and typed class observations remain pending. Preserve the merge-base meaning of `--base` and old snapshot readers. |
+| [`ast-metrics-snapshot.ts`](../../script/code-quality/ast-metrics-snapshot.ts) | Static metrics, source evidence, dependencies, exact-commit CLI, optional raw file MI and native class observations. | F.8/F.9/F.10 record available additions. Assessment raw-reader support and class source correspondence/completeness remain pending. Preserve the merge-base meaning of `--base` and old snapshot readers. |
 | [`ast-metrics-coverage.ts`](../../script/code-quality/ast-metrics-coverage.ts) | Selected-suite collector/importer; own ranges, manifests, process/loader completion and provenance. | Keep. Assessment adds canonical-unit selection and independent own-revision checks. Collection still needs test-scope authorization. |
 | [`ast-metrics-crap.ts`](../../script/code-quality/ast-metrics-crap.ts) | Focused scores, exact threshold arithmetic and coverage/split advice. | Keep for diagnosis. Reuse observations in the complete process; add persistent origin, bounds and B/H/A decisions in the assessment owner. |
 | [`ast-metrics-delta.ts`](../../script/code-quality/ast-metrics-delta.ts) | Changed TypeScript inventory, MI diagnosis and HTML/OpenMetrics output. | Keep standalone output, including non-production rows. Assessment uses raw observations; it must not parse display text for decisions. |
@@ -715,7 +718,7 @@ Other proposed operations remain unavailable.
 | --- | --- | --- |
 | `process/run.ts`, `process/types.ts` | Stage ordering and failure/goal-miss distinctions. | `{text, passed}` cannot express a review route, a bound proof or human approval. Add a separate typed assessment. |
 | `snapshot/commit.ts`, `tree.ts`, `worktree.ts`, `sweep.ts` | Exact static revision analysis and cleanup. | Temporary static checkouts have no dependency installation or coverage run. They do not solve base coverage. |
-| `snapshot/input.ts`, `build.ts` | Native file metric parsing and raw file MI preservation beside rounded output. | F.9 adds optional file `maintainabilityRaw`; the architecture reader ignores it. Build a retaining/validating assessment reader and typed class observations separately. |
+| `snapshot/input.ts`, `build.ts` | Native file metric parsing, raw file MI and optional typed native class observations beside rounded output. | F.9/F.10 preserve available raw values and the native reported class subset; the architecture reader ignores them. Source class correspondence/completeness, class history and a retaining/validating assessment reader remain pending. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | Add sound upper/difference bounds and lasting origin rules. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -944,10 +947,11 @@ pnpm exec node script/code-quality/ast-metrics-snapshot.ts --out <head-snapshot-
 The first captures exact B, given as a full lowercase 40-hex commit SHA. It cannot
 be combined with `--base`. The second captures the merge base, so B.1's ancestry
 check is required. The third captures the working tree. All provide structural
-evidence and rounded MI, plus optional raw file MI when the native report provides
-it, without building, testing or collecting coverage. F.9 defines unavailable
-raw values. The assessment reader and typed class observations remain **to build**;
-keep their relevant gaps visible.
+evidence and rounded MI, plus optional raw file MI and native class observations
+when the native report provides them, without building, testing or collecting
+coverage. F.9/F.10 define unavailable raw values and the native reported subset.
+The assessment reader and class source correspondence/completeness remain
+**to build**; keep their relevant gaps visible.
 
 For CRAP, use only canonical unit evidence. A base capture must describe `B`;
 head coverage must not stand in for it. In an independently authorized checkout
@@ -2071,13 +2075,14 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 | --- | --- |
 | `assessment/` (planned) | One pure assessment entry point, typed observations/result and the AUTO predicate. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. Export typed stage outcomes instead of only `runProcess`'s current text/passed pair; keep effectful validation outside the pure calculation. |
-| `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. Raw-retaining assessment input and typed class observations remain pending. |
+| `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. Raw-retaining assessment input and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
 
 ### F.2. Command and result contract
 
-Process/assessment options below remain **PROPOSED**. F.8/F.9 record the available
-exact snapshot CLI and optional raw file MI, with their validation limits.
+Process/assessment options below remain **PROPOSED**. F.8/F.9/F.10 record the
+exact snapshot CLI, optional raw file MI and native class observations, with
+their validation limits.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2086,7 +2091,7 @@ for each step. Default `--operation report` preserves today's invocation.
 | Report with no new flags | Preserve existing output, `--out FILE` meaning the original four-section Markdown, coverage behavior, structural publication and exit 0/1. |
 | Report: `--assessment-input FILE --assessment-out PREFIX` | Require the pair to opt in to PREPARATION input, full root report/images and `PREFIX.json` plus derived `PREFIX.md`. JSON contains typed verified observations, original native outcomes, source calculation, evidence references and exact output manifest; no separate bundle flag/file. |
 | `--operation assess --assessment-input FILE --assessment-out PREFIX` | Require FINAL input referencing completed PREPARATION JSON by hash. Local Git/file checks are allowed. Run no ast-metrics, MCP, native comparison, build, test or coverage; rewrite no root/process report or images, and write no structural/accepted history. Assessment JSON and its Markdown view are allowed outputs. |
-| CURRENT snapshot: `--commit <FULL_SHA> --out <file>` | Require a full lowercase 40-hex commit SHA; reject combination with `--base` before tools. Default output is root `ast-report/snapshot-commit.json`; explicit `--out` is relative to the current folder. Preserve working-tree default and `--base` merge-base semantics. No implicit build/test/coverage. F.9 adds optional raw file MI while top-level version stays 1. |
+| CURRENT snapshot: `--commit <FULL_SHA> --out <file>` | Require a full lowercase 40-hex commit SHA; reject combination with `--base` before tools. Default output is root `ast-report/snapshot-commit.json`; explicit `--out` is relative to the current folder. Preserve working-tree default and `--base` merge-base semantics. No implicit build/test/coverage. F.9/F.10 add optional raw file MI and native class observations while top-level version stays 1. |
 
 Reject incomplete assessment input/output pairs before tools. Assess rejects
 report-only options:
@@ -2213,7 +2218,7 @@ FIX/ARCH rules; low MI is an owner warning/AUTO blocker. Holds block every route
 
 ### F.5. Companion outputs, failure and retry
 
-The snapshot additions in F.8/F.9 do not implement this proposed companion flow.
+The snapshot additions in F.8/F.9/F.10 do not implement this proposed companion flow.
 
 Use fixed first-version output locations: root `last_code_quality_report.md`
 and owned `docs/code-quality-report-assets/`. After rendering, record the exact
@@ -2376,7 +2381,8 @@ Raw file/class additions, image export, assessment/report integration and policy
 adoption remain pending.
 
 That scope statement records the exact-CLI slice. F.9 records the later additive
-raw file MI field; class/assessment/image capabilities remain pending.
+raw file MI field. F.10 records native class observations; source class
+correspondence/completeness, assessment and image capabilities remain pending.
 
 Validation on 2026-10-20:
 
@@ -2449,6 +2455,73 @@ in this slice. No `src/` file changed; broader groups and coverage collection
 were not selected. The two required failures keep PR #201 in Draft. Current
 habit-hooks and full-process evidence will be recorded on the PR. Merging stays
 manual after required checks pass.
+
+### F.10. Native class observation implementation record
+
+This Observe sub-slice adds optional per-file
+`classObservations?: readonly NativeClassObservation[]` to version-1 snapshots.
+Each observation has a native `name: string` and optional
+`maintainabilityRaw?: number`. Capture uses the `classes` array from the same
+`get_file_metrics` response already fetched for that file. It adds no flag,
+native call, session, coverage collection or history behavior.
+
+The observations are a native reported subset, not a source class inventory.
+Keep native order, duplicate names and empty string names without interpretation.
+A missing `classes` key omits the field and remains unavailable. An explicit
+empty array stays empty; it means only that the native response was empty.
+Missing class MI stays unavailable. Preserve zero and all finite precision
+without rounding or an assumed clamp. A malformed present array, entry, name,
+maintainability object or index, or a nonfinite index, rejects capture before
+publication.
+
+The manager's probe with pinned ast-metrics 0.43.1 reported `SearchQuery` class
+MI `65.43822959731905`, three entries for `website-fetcher.ts`, and no `classes`
+key for `application.ts`. Controlled fixtures showed the limits: an empty class
+declaration had a name without MI; a constructor data class had raw MI zero;
+named and anonymous class expressions and an anonymous default class had no
+`classes` key. A nested declaration appeared, but its MI could be absent. Two
+same-named classes in separate namespaces collapsed into one native entry.
+These probes establish native capability and its limits, not final validation
+of snapshot capture.
+
+Presence, length and names do not prove source identity or completeness and
+cannot safely drive AUTO criteria. Separate source correspondence and
+completeness evidence remain future work. Existing `sourceEvidence.complete`
+describes functions only and stays unchanged. This slice adds no persistent
+class identity, class decision automation, raw-aware assessment reader, image
+export or policy adoption. Rounded fields and the current architecture
+reader, displays, trends and process results stay unchanged.
+
+The new ordinary `ast-metrics-snapshot-classes.test.ts` acceptance file covers
+native precision, missing and empty values, zero, refusal before publication,
+duplicate names, native order and compatibility with the existing architecture
+reader. The focused unit file of the same name and the existing
+`ast-metrics-snapshot.live.ts` contract cover the boundary and comparison with
+native class values. Validation on 2026-10-20:
+
+- The pre-edit baseline passed 81/81 checks. The new acceptance cases first
+  passed one and failed two: the observation was missing, and a malformed native
+  value was published. The unit cases first passed one and failed 31. The first
+  new green set passed 35/35; the final focused set passed 116/116.
+- `pnpm run test:unit` passed 3,964 compiled and 23 portal checks, 3,987 in total.
+  Full acceptance passed 908/910 compiled checks. The two unchanged search
+  pipeline discovery and invalid-argument cases from main still fail because
+  the public search tool is absent. The MCP 300 ms, fetch-url and OAuth cases
+  passed in that group.
+- The acceptance command stopped before its portal phase; all 18 portal checks
+  passed in a separate selected run. README/help/inventory checks passed 18/18
+  within full acceptance; these are not an extra acceptance group result.
+- Pinned ast-metrics 0.43.1 snapshot live checks passed 3/3. They compare each
+  file's class observations with an independent native MCP response and retain
+  the raw file MI comparison. Structural architecture live with `--no-coverage`
+  passed 1/1. All completed runs had no skipped, cancelled or todo tests.
+
+The manager and independent local reviewer found no correctness or scope issue.
+No `src/` file changed. The complete unit and acceptance groups and focused native
+checks were selected; broader groups and coverage collection were not selected.
+The two required failures keep PR #201 in Draft. Current habit-hooks and
+four-section process evidence, with reasons for retained findings, are recorded
+on the PR. Merging stays manual after required checks pass.
 
 ## References
 

@@ -770,11 +770,29 @@ out-of-scope entries remain ignored. The existing
 architecture reader ignores this optional field; displays/trends/process retain
 rounded data. A raw-retaining assessment reader remains future work.
 
+Optional file `classObservations` preserves the native reported subset from
+the already fetched `get_file_metrics` response's `classes` array. Each entry
+has `name: string` and optional `maintainabilityRaw: number`. Keep native order,
+duplicate names and empty string names. A missing array stays unavailable and
+omits the field; an explicit empty array means only that the native response
+was empty. Missing MI stays unavailable. Finite MI keeps zero and native
+precision without rounding or a clamp. A malformed present array, entry, name,
+maintainability object or index, or a nonfinite index, stops capture before
+publication. Version 1 remains; no flag, native call or session is added.
+
+This is not a source class inventory: native 0.43.1 omits some class forms and
+can collapse same-named namespace classes. Presence, length and names prove
+neither class identity nor completeness. Separate source correspondence and
+completeness evidence are still needed for class decisions. The architecture
+reader ignores these observations. Persistent class identity, class decision
+automation and a raw-aware assessment reader remain future work.
+
 `tool` keeps the checked actual version, including an explicit override.
 Optional `title` is the commit message's first line; optional `provenance`
 contains source and expected coverage-input fingerprints, runtime, compiler,
 suite, and measurement version. Optional source evidence uses
-`typescript-tokens-v1`, UTF-16 ranges, and completeness. Supported function
+`typescript-tokens-v1`, UTF-16 ranges, and function completeness. Its `complete`
+flag does not describe class observations. Supported function
 identity keeps kind, owner, name, range, and body/signature hashes. Token
 normalization ignores whitespace and comments but retains executable syntax
 and literal spelling. Anonymous functions, duplicate names, unsupported
@@ -1032,6 +1050,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-classes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-commit.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
@@ -1100,6 +1119,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-review-policy.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-review.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-snapshot-classes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |

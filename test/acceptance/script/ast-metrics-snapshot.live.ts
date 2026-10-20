@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { delimiter, join, relative, sep } from 'node:path';
 import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Snapshot } from '../../../script/code-quality/snapshot/types.ts';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsSnapshotScript, repositoryRoot } from '../../support/processes/module-paths.ts';
@@ -25,7 +25,7 @@ function snapshotIn(path: string): Snapshot {
   return JSON.parse(readFileSync(path, 'utf8')) as Snapshot;
 }
 
-test('Given the real ast-metrics, when the snapshot runs in the repository root, then it keeps native file MI precision and valid source metrics within 60 seconds', live, async (t) => {
+test('Given the real ast-metrics, when the snapshot runs in the repository root, then it keeps native file and class MI precision and valid source metrics within 60 seconds', live, async (t) => {
   const folder = dataDirectory(t);
   const out = join(folder, 'snapshot.json');
 
@@ -45,6 +45,21 @@ test('Given the real ast-metrics, when the snapshot runs in the repository root,
     assert.equal(file.maintainability, raw === undefined ? undefined : Number(raw.toFixed(1)), file.path);
   }
   assert.ok(snapshot.files.some((file) => file.maintainabilityRaw !== undefined && file.maintainabilityRaw !== file.maintainability), 'The native report must include precision beyond the display value.');
+  const { withAstMetricsServer } = await import(new URL('mcp/session.ts', pathToFileURL(astMetricsSnapshotScript)).href) as typeof import('../../../script/code-quality/mcp/session.ts');
+  let unavailable = 0;
+  await withAstMetricsServer({ root, folder: 'src' }, 60_000, async (server) => {
+    for (const file of snapshot.files) {
+      const answer = JSON.parse(await server.tool('get_file_metrics', { path: file.path })) as { classes?: readonly { name: string; maintainability?: { maintainability_index?: number } }[] };
+      const observations = answer.classes?.map((entry) => ({ name: entry.name, ...(entry.maintainability?.maintainability_index === undefined ? {} : { maintainabilityRaw: entry.maintainability.maintainability_index }) }));
+      assert.deepEqual(file.classObservations, observations, file.path);
+      if (!Object.hasOwn(answer, 'classes')) {
+        assert.equal(Object.hasOwn(file, 'classObservations'), false, file.path);
+        unavailable += 1;
+      }
+    }
+  });
+  assert.ok(unavailable > 0, 'An absent native classes key must stay unavailable.');
+  assert.ok(snapshot.files.some((file) => file.classObservations?.some((entry) => entry.maintainabilityRaw !== undefined && entry.maintainabilityRaw !== Number(entry.maintainabilityRaw.toFixed(1)))), 'The native class observations must include precision beyond one decimal.');
 });
 
 // HEAD is the merge base of HEAD and HEAD, so the temporary worktree holds the commit of HEAD. TMPDIR names a folder of

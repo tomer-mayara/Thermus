@@ -75,10 +75,17 @@ export interface SnapshotFile {
   readonly maintainability?: number;
   // Native file MI before rounding. Absent when the report has no index.
   readonly maintainabilityRaw?: number;
+  // A partial native response, not a source class inventory. Absent when the native classes key is absent.
+  readonly classObservations?: readonly NativeClassObservation[];
   readonly paths: number;
   readonly loc: number;
   readonly risk?: number;
   readonly functions: readonly SnapshotFunction[];
+}
+
+export interface NativeClassObservation {
+  readonly name: string;
+  readonly maintainabilityRaw?: number;
 }
 
 // A function in the order of get_file_metrics. ast-metrics gives no line numbers, and an anonymous function, such as a
