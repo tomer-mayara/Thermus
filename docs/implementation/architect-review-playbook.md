@@ -686,14 +686,15 @@ remove separate identity or design obligations.
 
 Paths in this appendix are relative to
 [`script/code-quality/`](../../script/code-quality/README.md). The map reflects
-the reference commit. Proposed operations are not available commands today.
+the reference commit, with the exact-snapshot CLI update recorded in F.8.
+Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
 
 | Script | Reuse | Change or removal plan |
 | --- | --- | --- |
 | [`ast-metrics-process.ts`](../../script/code-quality/ast-metrics-process.ts) | Main entry; four report sections; stage failure handling. | Add structured assessment with MI owner warnings, required triggers and AUTO exclusions, plus full-report assembly and short PR view. Read history but never record acceptance while rendering. Preserve raw output and original command statuses. |
-| [`ast-metrics-snapshot.ts`](../../script/code-quality/ast-metrics-snapshot.ts) | Static metrics, source evidence, dependencies and exact-commit internals. | Add raw file/class observations and an explicit exact-commit option. Preserve the existing merge-base meaning of `--base` and old snapshot readers. |
+| [`ast-metrics-snapshot.ts`](../../script/code-quality/ast-metrics-snapshot.ts) | Static metrics, source evidence, dependencies and exact-commit CLI. | Exact `--commit` input is available as F.8 records. Raw file/class additions remain pending. Preserve the merge-base meaning of `--base` and old snapshot readers. |
 | [`ast-metrics-coverage.ts`](../../script/code-quality/ast-metrics-coverage.ts) | Selected-suite collector/importer; own ranges, manifests, process/loader completion and provenance. | Keep. Assessment adds canonical-unit selection and independent own-revision checks. Collection still needs test-scope authorization. |
 | [`ast-metrics-crap.ts`](../../script/code-quality/ast-metrics-crap.ts) | Focused scores, exact threshold arithmetic and coverage/split advice. | Keep for diagnosis. Reuse observations in the complete process; add persistent origin, bounds and B/H/A decisions in the assessment owner. |
 | [`ast-metrics-delta.ts`](../../script/code-quality/ast-metrics-delta.ts) | Changed TypeScript inventory, MI diagnosis and HTML/OpenMetrics output. | Keep standalone output, including non-production rows. Assessment uses raw observations; it must not parse display text for decisions. |
@@ -930,14 +931,16 @@ sound bounds. Skip this work when B.2 proved numeric comparison unnecessary.
 **How:** Reuse valid captured evidence first. These snapshot commands **exist**:
 
 ```sh
+pnpm exec node script/code-quality/ast-metrics-snapshot.ts --commit <B> --out <exact-base-snapshot-file>
 pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base <B> --out <base-snapshot-file>
 pnpm exec node script/code-quality/ast-metrics-snapshot.ts --out <head-snapshot-file>
 ```
 
-The first captures the merge base, so B.1's ancestry check is required. The second
-captures the working tree. They provide structural evidence and rounded MI.
-Raw file/class observations and an explicit exact-commit option are **to build**
-in the snapshot path. Until proved available, keep relevant raw/class gaps visible.
+The first captures exact B, given as a full lowercase 40-hex commit SHA. It cannot
+be combined with `--base`. The second captures the merge base, so B.1's ancestry
+check is required. The third captures the working tree. All provide structural
+evidence and rounded MI, without building, testing or collecting coverage.
+Raw file/class additions remain **to build**; keep relevant raw/class gaps visible.
 
 For CRAP, use only canonical unit evidence. A base capture must describe `B`;
 head coverage must not stand in for it. In an independently authorized checkout
@@ -2061,12 +2064,13 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 | --- | --- |
 | `assessment/` (planned) | One pure assessment entry point, typed observations/result and the AUTO predicate. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. Export typed stage outcomes instead of only `runProcess`'s current text/passed pair; keep effectful validation outside the pure calculation. |
-| `snapshot/` and `ast-metrics-snapshot.ts` | Add exact-commit CLI input and raw file/class schema plumbing, reusing `snapshot/commit.ts` and its static lifecycle. |
+| `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. Raw file/class schema plumbing remains pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
 
 ### F.2. Command and result contract
 
-The new options/calls in this appendix are **PROPOSED**, not available today.
+Process/assessment options below remain **PROPOSED**. Only the exact snapshot
+CLI is available; F.8 records this small Observe sub-slice and its validation limits.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2075,9 +2079,10 @@ for each step. Default `--operation report` preserves today's invocation.
 | Report with no new flags | Preserve existing output, `--out FILE` meaning the original four-section Markdown, coverage behavior, structural publication and exit 0/1. |
 | Report: `--assessment-input FILE --assessment-out PREFIX` | Require the pair to opt in to PREPARATION input, full root report/images and `PREFIX.json` plus derived `PREFIX.md`. JSON contains typed verified observations, original native outcomes, source calculation, evidence references and exact output manifest; no separate bundle flag/file. |
 | `--operation assess --assessment-input FILE --assessment-out PREFIX` | Require FINAL input referencing completed PREPARATION JSON by hash. Local Git/file checks are allowed. Run no ast-metrics, MCP, native comparison, build, test or coverage; rewrite no root/process report or images, and write no structural/accepted history. Assessment JSON and its Markdown view are allowed outputs. |
-| Snapshot: `--commit <FULL_SHA> --out <file>` | Add to the existing snapshot command. Require a full exact SHA; reject combination with `--base`. Preserve default working-tree capture and `--base` merge-base semantics. No implicit build or coverage. |
+| CURRENT snapshot: `--commit <FULL_SHA> --out <file>` | Require a full lowercase 40-hex commit SHA; reject combination with `--base` before tools. Default output is root `ast-report/snapshot-commit.json`; explicit `--out` is relative to the current folder. Preserve working-tree default and `--base` merge-base semantics. No implicit build/test/coverage or schema change. |
 
-Reject incomplete option pairs before tools. Assess rejects report-only options:
+Reject incomplete assessment input/output pairs before tools. Assess rejects
+report-only options:
 `--base`, coverage options, `--out` and `--allow-tool-version`. Its exact revision
 and measurement facts come from checked input. Help and assess need no installed
 ast-metrics or image exporter. Keep the parser's operation shapes explicit.
@@ -2184,7 +2189,7 @@ the full agreed SHA and `<attempt>` with a fresh prefix outside the checkout.
 | Step | Action, calls and result |
 | --- | --- |
 | 1. Scope and checks | Open Draft, agree B/P/basis, inspect full scope/semantic changes and relevant history, then select checks under the test gate policy. CURRENT for src: `pnpm test`, `pnpm run typecheck`, `pnpm run test:build`, `pnpm run build:user-portal`, plus applicable gates; otherwise selected groups/focused tests. CURRENT: `habit-hooks --branch origin/main`. Repair required failures; reselect after edits. |
-| 2. Source evidence | Obtain only needed independent B/S evidence within authorized scope. PROPOSED exact snapshot: `pnpm exec node script/code-quality/ast-metrics-snapshot.ts --commit <B> --out <snapshot>`. CURRENT capture in an authorized revision checkout: `pnpm exec node script/code-quality/ast-metrics-coverage.ts --out <capture>`. Commit clean source S, then prepare external input and the reviewed history extract. No blanket new measurement job or preliminary full-process run. |
+| 2. Source evidence | Obtain only needed independent B/S evidence within authorized scope. CURRENT exact snapshot: `pnpm exec node script/code-quality/ast-metrics-snapshot.ts --commit <B> --out <snapshot>`. CURRENT capture in an authorized revision checkout: `pnpm exec node script/code-quality/ast-metrics-coverage.ts --out <capture>`. Commit clean source S, then prepare external input and the reviewed history extract. No blanket new measurement job or preliminary full-process run. |
 | 3. One report pass at S | PROPOSED: `pnpm exec node script/code-quality/ast-metrics-process.ts --operation report --base <B> --assessment-input <preparation-input> --assessment-out <attempt> --out ast-report/process.md`. Add only an allowed coverage choice. Produce original process Markdown, PREPARATION JSON/view, root full report/images and any verified B companion record written by the current writer. |
 | 4. Candidate H and provisional PR view | Validate exact S→H outputs under F.5; commit only the root report, owned images and conditional verified B record. Immediately show the commit-pinned report link, provisional route and short reason on the PR, including pending final proof. This precedes Ready and final decisions. |
 | 5. Final checks and assessment | Finish or validly reuse required local checks and validate report/images/links at H before Ready. Then mark Ready and wait for all started H Actions. PROPOSED: `pnpm exec node script/code-quality/ast-metrics-process.ts --operation assess --assessment-input <final-input> --assessment-out <new-attempt>`. Freeze the valid FINAL result and update the short route/reason. Failed or pending required work still blocks merge. |
@@ -2200,6 +2205,8 @@ Required failure/staleness needs repair; genuine unresolved gaps use existing
 FIX/ARCH rules; low MI is an owner warning/AUTO blocker. Holds block every route.
 
 ### F.5. Companion outputs, failure and retry
+
+The exact snapshot CLI in F.8 does not implement this proposed companion flow.
 
 Use fixed first-version output locations: root `last_code_quality_report.md`
 and owned `docs/code-quality-report-assets/`. After rendering, record the exact
@@ -2308,6 +2315,9 @@ preserves current behavior; it activates no proposed policy or command. The
 remaining slices stay pending. [PR #201](https://github.com/tomer-mayara/Thermus/pull/201)
 holds the changes and validation evidence. Merging remains manual.
 
+F.8 records the later exact-snapshot CLI sub-slice; the remaining proposals
+still await their own implementation and adoption.
+
 Existing tests already cover the default CLI/help, exact four-section report,
 graphs/notices, goal misses, partial failures, coverage choices and structural
 publication. Reuse them instead of adding duplicate cases:
@@ -2341,6 +2351,48 @@ README contract. Because no `src/` file changes, this slice does not select the
 full ordinary suite. It selects no complete unit group or live coverage
 collector. Current habit-hooks and metrics review requirements still apply
 before Ready.
+
+### F.8. Exact snapshot CLI implementation record
+
+This small Observe sub-slice is on
+[PR #201](https://github.com/tomer-mayara/Thermus/pull/201). It exposes the existing
+exact-commit snapshot owner through `--commit <FULL_SHA>`. The SHA must contain
+40 lowercase hexadecimal characters and identify a commit. `--base` and
+`--commit` are mutually exclusive; argument rejection occurs before tools run.
+
+Default output is `ast-report/snapshot-commit.json` at the repository root;
+`--out` resolves from the current folder. The command analyzes the exact committed
+tree through unchanged `snapshot/commit.ts` and its temporary-worktree cleanup.
+It starts no implicit build, test or coverage run. Snapshot schema, working-tree
+default, `--base` merge-base behavior, routes and manual merge policy stay unchanged.
+Raw file/class additions, image export, assessment/report integration and policy
+adoption remain pending.
+
+Validation on 2026-10-20:
+
+- The existing snapshot baseline passed 50 checks before code changed. The new
+  acceptance case failed for the unsupported option; parser cases then failed
+  and passed as validation was added. The final focused snapshot set passed 61
+  checks. Removing one redundant comment later left all 31 focused parser,
+  snapshot-build and exact-commit checks green.
+- The full unit group passed 3,928 compiled checks and 23 portal checks. All
+  three snapshot checks passed with the real pinned ast-metrics 0.43.1. The
+  README/help and inventory contract passed all 18 checks.
+- The required acceptance command passed 901 of 904 compiled checks. Two search
+  cases from `main` fail because the public search tool is not registered. The
+  unchanged MCP timeout case reported zero tool calls instead of one. Its full
+  focused file passed all 16 checks, but that does not make the group pass.
+  The backend failures stopped the command before portal acceptance; all 18
+  portal checks passed in a separate selected run. No assertion or timeout was
+  relaxed, and no test was skipped.
+
+No `src/` file changed against base `304cd24fd0f198716c372bd2ec404eeffc12a132`.
+Changed test files selected the unit and acceptance groups, plus the snapshot
+live contract. No coverage collector was needed. Local code review found no
+correctness or scope issue. Current habit-hooks and four-section metrics evidence,
+with each retained finding explained, are recorded on PR #201. The failed
+acceptance gate keeps the PR in Draft. The owner still merges manually after
+the required checks pass.
 
 ## References
 

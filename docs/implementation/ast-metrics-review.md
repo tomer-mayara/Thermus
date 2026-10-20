@@ -737,10 +737,10 @@ eligible. A missing report does not add a blanket live gate.
 ### Take a snapshot: `script/code-quality/ast-metrics-snapshot.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS] [--allow-tool-version]
+pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF | --commit FULL_SHA] [--out FILE] [--timeout-ms MS] [--allow-tool-version]
 ```
 
-The command writes the snapshot of the working tree to
+With no revision option, the command writes the snapshot of the working tree to
 `ast-report/snapshot.json`, or to `--out` (relative to the current folder).
 It runs `ast-metrics analyze src` for the JSON report and one MCP session of
 `ast-metrics mcp src` with `get_communities` and `get_file_metrics` for each
@@ -748,8 +748,9 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
 
 - `tool`: the actual checked ast-metrics version, including an explicitly
   permitted version. Legacy snapshots can omit it; their version is unknown.
-- `commit` and `date`: HEAD and its committer date. The files can hold
-  changes that are not committed.
+- `commit` and `date`: HEAD and its committer date for working-tree capture,
+  the merge base for `--base`, or the exact requested commit for `--commit`.
+  Only working-tree capture can include changes that are not committed.
 - `global`: modularity, cross share, and cycles from `get_communities`, the
   LOC-weighted maintainability, the decision paths, and the counts of files
   and functions. All of them describe `src/` alone.
@@ -789,7 +790,8 @@ identity. `complete` is true only when every executable function is supported
 and every metric has one source declaration. See the [snapshot format](ast-metrics-change-request.md#a2-snapshot).
 
 Snapshots contain no coverage or CRAP. The architecture command joins a
-separate coverage report when it makes its output.
+separate coverage report when it makes its output. Snapshot capture starts no
+build, test or coverage run.
 
 A label uses the largest source namespace by member count. A tie uses the
 lexically first namespace. Remove the `src/` prefix; without a source
@@ -813,6 +815,15 @@ ast-metrics only parses the files, and no hook of the repository runs in it
 and its committer date. The default file is `ast-report/snapshot-base.json`,
 so that `ast-report/snapshot.json` stays.
 
+With `--commit SHA`, the command captures that exact committed tree, independently
+of HEAD or its merge base. Give a full lowercase 40-hex commit SHA. The command
+rejects `--commit` with `--base` before starting tools. It reuses the existing
+exact-commit owner and temporary-worktree analysis/cleanup; it does not install
+dependencies or change the snapshot schema. The default file is
+`ast-report/snapshot-commit.json` at the repository root. Explicit `--out` remains
+relative to the current folder. The working-tree default and `--base` merge-base
+meaning stay unchanged.
+
 Before it adds its worktree, the command runs `git worktree prune` and
 removes each worktree under the temporary folder whose name has the prefix
 and whose run has ended (the name holds the process id of its run, so the
@@ -826,6 +837,8 @@ takes effect after that step. After SIGKILL or a crash, the next run removes
 the worktree. With `--base`, the exit status is also 1 for an unknown ref, a
 ref without a merge base with HEAD, or a worktree that git cannot remove;
 the diagnostic then names the folder that stays.
+With `--commit`, invalid or missing commit identity and worktree failures also
+exit 1; SIGINT/SIGTERM use the same cleanup and exit 130/143.
 
 ### Show the architecture delta: `script/code-quality/ast-metrics-architecture.ts`
 

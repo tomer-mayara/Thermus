@@ -8,14 +8,14 @@ import { runScript } from '../../support/processes/script-command.ts';
 // An empty PATH has no git and no ast-metrics. Thus these cases also show that the command checks its arguments first.
 const noTools = { env: { PATH: '' } };
 
-test('Given --help, when the snapshot command runs, then it explains the options, the default files of the working tree and of the merge base, and the exit status', async (t) => {
+test('Given --help, when the snapshot command runs, then it explains the options, the three default files, and the exit status', async (t) => {
   const result = await runScript(t, astMetricsSnapshotScript, { args: ['--help'], ...noTools });
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-snapshot\.ts \[--base REF\] \[--out FILE\] \[--timeout-ms MS\] \[--allow-tool-version\] \[--help\]\n/);
+  assert.match(result.stdout, /^Usage: node script\/code-quality\/ast-metrics-snapshot\.ts \[--base REF \| --commit FULL_SHA\] \[--out FILE\] \[--timeout-ms MS\] \[--allow-tool-version\] \[--help\]\n/);
   const texts = ['ast-report/snapshot.json', 'src/', 'get_communities', 'get_file_metrics', 'default: 60000', 'HEAD', 'Exit status 1'];
-  for (const text of [...texts, '--base REF', 'merge base', 'temporary worktree', 'ast-report/snapshot-base.json', 'interrupted runs', 'SIGTERM', 'Exit status 130', '143']) {
+  for (const text of [...texts, '--base REF', '--commit FULL_SHA', 'full lowercase 40-character', 'merge base', 'temporary worktree', 'ast-report/snapshot-base.json', 'ast-report/snapshot-commit.json', 'interrupted runs', 'SIGTERM', 'Exit status 130', '143']) {
     assert.ok(result.stdout.includes(text), `The help does not name ${text}.`);
   }
 });
@@ -31,6 +31,12 @@ for (const [args, diagnostic] of [
   [['--base'], 'Invalid arguments. Use --help for the supported options.'],
   [['--base='], 'The --base value must name a git ref.'],
   [['--base=--output=diff.txt'], 'The --base value must name a git ref.'],
+  [['--commit'], 'Invalid arguments. Use --help for the supported options.'],
+  [['--commit='], 'The --commit value must be a full lowercase 40-character commit SHA.'],
+  [['--commit', 'a'.repeat(39)], 'The --commit value must be a full lowercase 40-character commit SHA.'],
+  [['--commit', 'A'.repeat(40)], 'The --commit value must be a full lowercase 40-character commit SHA.'],
+  [['--commit', `${'a'.repeat(40)}^`], 'The --commit value must be a full lowercase 40-character commit SHA.'],
+  [['--base', 'main', '--commit', 'a'.repeat(40)], 'Use only one of --base and --commit.'],
 ] as const) {
   test(`Given the arguments ${args.join(' ')}, when the snapshot command runs, then it fails with one diagnostic line`, async (t) => {
     const result = await runScript(t, astMetricsSnapshotScript, { args, ...noTools });

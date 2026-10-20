@@ -739,13 +739,15 @@ live contracts separately under their listed scope.
 ## Take a snapshot
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF] [--out FILE] [--timeout-ms MS] [--allow-tool-version] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-snapshot.ts [--base REF | --commit FULL_SHA] [--out FILE] [--timeout-ms MS] [--allow-tool-version] [--help]
 
 Options:
   --base REF       Take the snapshot of the merge base of REF and HEAD
+  --commit FULL_SHA  Take the snapshot of one full lowercase 40-character commit SHA
   --out FILE       The snapshot file, relative to the current folder (default:
-                   ast-report/snapshot.json in the repository root, or
-                   ast-report/snapshot-base.json with --base)
+                   ast-report/snapshot.json in the repository root,
+                   ast-report/snapshot-base.json with --base, or
+                   ast-report/snapshot-commit.json with --commit)
   --timeout-ms MS  Deadline of the MCP session (100..300000; default: 60000)
   --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h       Show this help
@@ -781,9 +783,18 @@ it after success, failure, SIGINT, or SIGTERM, and clears abandoned worktrees
 from interrupted runs, reporting that count on stderr. Explicit `--out`
 resolves from the current folder; defaults are at the repository root.
 
+`--commit FULL_SHA` captures one exact committed tree, independently of HEAD or
+its merge base. Require a full lowercase 40-character hexadecimal commit SHA;
+reject combination with `--base` before starting tools. Default output is
+`ast-report/snapshot-commit.json` at the repository root. The command reuses the
+existing exact-commit owner and temporary-worktree cleanup. It starts no build,
+test or coverage run and changes no snapshot schema. Working-tree default and
+`--base` merge-base behavior stay unchanged.
+
 Exit 0 means the snapshot was written. Exit 1 gives one diagnostic line for
 invalid input, a missing executable, failed analysis/call, or publication
-failure. SIGINT/SIGTERM during base capture exit 130/143 after cleanup.
+failure. SIGINT/SIGTERM during base or exact-commit capture exit 130/143 after
+cleanup.
 
 Focused tests: affected `ast-metrics-snapshot*.test.ts`,
 `ast-metrics-dependencies*.test.ts`, and source-evidence rows in the
@@ -1011,6 +1022,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-commit.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |

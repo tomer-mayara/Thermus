@@ -48,3 +48,20 @@ test('Given the real ast-metrics, when the snapshot runs with --base HEAD, then 
   const worktrees = git('worktree', 'list', '--porcelain');
   assert.equal(worktrees.includes(realpathSync(folder)), false, worktrees);
 });
+
+test('Given the real ast-metrics and a full parent commit SHA, when --commit runs, then the capture names that revision and date and leaves no worktree', live, async (t) => {
+  const folder = dataDirectory(t);
+  const out = join(folder, 'snapshot-commit.json');
+  const commit = git('rev-parse', 'HEAD^').trim();
+
+  const result = await runScript(t, astMetricsSnapshotScript, { args: ['--commit', commit, '--out', out], cwd: root, env: { TMPDIR: folder } });
+
+  assert.equal(result.code, 0, result.stderr);
+  assert.notEqual(commit, git('rev-parse', 'HEAD').trim());
+  const snapshot = snapshotIn(out);
+  assertSnapshotOfHead(snapshot, commit);
+  assert.equal(snapshot.date, git('show', '-s', '--format=%cI', commit).trim());
+  assert.deepEqual(readdirSync(folder).filter((name) => name.startsWith('thermus-snapshot-base-')), []);
+  const worktrees = git('worktree', 'list', '--porcelain');
+  assert.equal(worktrees.includes(realpathSync(folder)), false, worktrees);
+});

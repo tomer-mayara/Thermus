@@ -484,6 +484,8 @@ refused arguments of the snapshot command with an empty PATH, and the rules
 of the pure build in the test process: the LOC-weighted maintainability, the
 label rule, the `src/` filter, the cycles, the community of a file in a
 folder member, and the join of the functions.
+It also checks exact-commit help and rejects malformed SHA values and the
+`--base`/`--commit` combination before tools.
 `test/acceptance/script/ast-metrics-snapshot.test.ts` runs the command
 against both doubles with the answers of
 `fixtures/ast-metrics-snapshot-answers.ts`: the whole snapshot from one
@@ -497,14 +499,18 @@ no worktree left after a run, and a branch without a commit of its own.
 `ast-metrics-snapshot-base-failures.test.ts` checks a failed analysis of
 the base with the worktree removed, an unknown ref, a ref without a merge
 base, and a git that cannot remove the worktree.
+`ast-metrics-snapshot-commit.test.ts` checks exact committed-tree capture,
+the separate default file, caller-relative `--out`, commit validation and
+worktree cleanup. The exact-commit path starts no build or coverage collection.
 `ast-metrics-snapshot-base-worktree.test.ts` checks the sweep of stale
 worktrees (also a locked one, also one of an active run that must stay, also
 one that git cannot remove), SIGTERM and SIGINT with exit 143 and 130, and
 that no repository hook runs in the worktree. `ast-metrics-snapshot.live.ts`
 runs the real tool on the repository when it is on PATH, with and without
-`--base HEAD`. It checks the shared kernel, unique labels, source members,
+`--base HEAD`, plus exact-commit capture. It checks the shared kernel, unique
+labels, source members,
 valid community and cycle references, positive file and function counts,
-HEAD, deadlines, and worktree cleanup. Community, cycle, and file counts
+the requested commit, deadlines, and worktree cleanup. Community, cycle, and file counts
 can change without breaking these invariants. Ordinary suites do not select
 it; an absent-tool skip is not a pass.
 
@@ -885,6 +891,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-commit.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
