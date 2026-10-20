@@ -392,7 +392,7 @@ checks above apply to the complete implementation candidate.
 
 These are local work packages. SEARCH-01 contracts and SEARCH-02 provider
 behavior are implemented; public search acceptance remains open.
-SEARCH-03 through SEARCH-06 are **Planned**.
+SEARCH-03 is **In progress**. SEARCH-04 through SEARCH-06 are **Planned**.
 The entries are not board issues or instructions to open separate pull requests.
 No board issue has been created.
 AC numbers refer to the acceptance criteria above. The dependency order is:
@@ -466,7 +466,7 @@ for the full-page fidelity proof.
 
 ### SEARCH-03: Implement the protected search pipeline and records
 
-**Status:** Planned. **Dependencies:** SEARCH-02. **Acceptance:** AC2, AC3,
+**Status:** In progress. **Dependencies:** SEARCH-02. **Acceptance:** AC2, AC3,
 AC4, stage cancellation in AC7, and stage records in AC9.
 
 **Scope and main paths:** Add `src/search-pipeline/search-pipeline.ts` and its
