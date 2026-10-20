@@ -29,6 +29,7 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
+- [Architect review playbook](implementation/architect-review-playbook.md): proposed review triggers, cumulative deterioration tracking, manual review and merge steps, and acceptance criteria. This plan does not change the current review policy.
 - [MCP pipeline refinements implementation record](implementation/mcp-pipeline-refinements.md): implemented and validated naming, trusted record identity, and static result refinements in [PR #164](https://github.com/tomer-mayara/Thermus/pull/164), with functional gates, manager sign-off, and retained quality exceptions.
 - [Two MCP pipelines plan](implementation/mcp-pipelines-plan.md): four slices for a neutral fetch operation, correlation IDs, outgoing observation, and incoming decisions; 01 merged in PR #155, 02 merged in PR #159, 03 merged in PR #160, and 04 is implemented and validated with manager sign-off in PR #162.
 - [Two MCP pipelines plan review](implementation/mcp-pipelines-plan-review.md): the deep review, corrected logical errors, section-by-section simplifications, and design sign-off.
