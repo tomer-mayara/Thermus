@@ -51,6 +51,7 @@ The matching helper folders (`delta/`, `mcp/`, `review/`, `coverage/`,
 own each command's work. `identity/` owns source evidence and function identity;
 `provenance/` owns input identity and checked readers; `dependencies/` owns
 parsed imports, resolution, and checked snapshot dependency evidence.
+`assessment/crap-absolute.ts` calculates both absolute CRAP goals from operands.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
 and parent signal observations live in `coverage/propagation.ts` and
@@ -115,6 +116,24 @@ at zero coverage and 25 paths at 80% equal 30 and fail the strict goal.
 At 30 paths even full coverage fails it; at 15 paths full coverage meets 15.
 Decisions use unrounded scores. Display precision or an explicit inequality
 keeps 29.96 visibly below 30 and 15.04 above 15.
+
+The separate pure `crapAbsoluteOf({ paths, share? })` in
+`assessment/crap-absolute.ts` calculates both `atMost15` and `below30`, each with
+`PASS`, `MISS` or `UNKNOWN` and a reason. Its observation is one of
+`known-coverage { paths, share, displayValue }`, positive
+`missing-coverage { paths, lower, upper }`, or `proven-zero { paths: 0, value: 0 }`.
+Paths must be a nonnegative safe integer. A supplied share must be finite and in
+`[0,1]`; null is invalid. Missing coverage gives exact safe-integer bounds
+`[p,p²+p]`; reject a bound that is not a safe integer. Known coverage needs no unused
+bound cap. Zero paths without coverage prove zero without an invented share.
+
+`compareCrap` decides from the exact operands; `crapValueOf` supplies an
+approximate display value only. For five paths and share `1e-320`, display can
+be 30 while `below30` is `PASS`. This is arithmetic over supplied operands,
+not accepted evidence. It does not select origin/applicability, apply exceptions,
+track lineage/history or decline, decide routes/AUTO eligibility, or verify
+scope/provenance. It adds no command or process integration and activates no
+policy. MI85, CLI/report/process/history behavior and manual merging stay unchanged.
 
 ### Own characters, joins, and unknowns
 
@@ -998,6 +1017,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
@@ -1071,6 +1091,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-coverage-suites.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |

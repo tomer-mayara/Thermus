@@ -260,6 +260,12 @@ records stay immutable. Gap checks cover only the interval between displayed
 first-parent endpoints; every stored full SHA counts, also when its row is not
 shown. Offline snapshot dates cannot establish omitted commits.
 
+`test/unit/script/ast-metrics-crap-absolute.test.ts` and
+`test/acceptance/script/ast-metrics-crap-absolute.test.ts` specify both absolute
+CRAP goals over supplied operands: exact comparisons, display-only scores,
+missing-coverage bounds, proven zero, invalid inputs and distinct reasons.
+They establish arithmetic only, not accepted evidence or route eligibility.
+
 `test/unit/script/ast-metrics-process.test.ts` checks stage order, completed
 goal misses, operational failures, unavailable required coverage, an empty
 production selection, recording failure, and option conflicts. It checks a
@@ -958,6 +964,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
@@ -1031,6 +1038,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-coverage-suites.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
