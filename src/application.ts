@@ -80,7 +80,7 @@ export function operatorFailureReporter(logger: ApplicationLogger): FailureRepor
 async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
   // The rules load before the data directory opens, so a rules failure holds no resource and changes no data.
   const { createToolOperations, fetchToolServers } = await import('./fetch-tool.ts');
-  const buildServer = fetchToolServers(createToolOperations(environment, logger).fetch, logger);
+  const buildServer = fetchToolServers(createToolOperations(environment, logger), logger);
   const { openBetterAuthRuntime } = await import('./auth/local-auth/better-auth/better-auth-runtime.ts');
   const { BetterAuthProvider } = await import('./auth/local-auth/better-auth/better-auth-provider.ts');
   const { LocalAuthPages, localPagePaths } = await import('./auth/local-auth/better-auth/local-auth-pages.ts');

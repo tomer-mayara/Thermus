@@ -140,7 +140,7 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
   const connection = await openWorkOSConnection(config, logger, environment);
   const portal = await HostedPortal.load(settings.authkitIssuer);
   const application = await composeWorkOSApplication(config, connection, {
-    logger, buildServer: fetchToolServers(createHostedToolOperations(environment, logger).fetch, logger),
+    logger, buildServer: fetchToolServers(createHostedToolOperations(environment, logger), logger),
     signup: { enabled: true, documents },
   });
   return portal.withApplication(application);

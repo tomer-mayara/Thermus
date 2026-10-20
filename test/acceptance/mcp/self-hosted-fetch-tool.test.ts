@@ -1,12 +1,14 @@
+import { repositoryRoot } from '../../support/processes/module-paths.ts';
 import assert from 'node:assert/strict';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
-import { copyFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test, type TestContext } from 'node:test';
 import { SdkHttpError, UnauthorizedError, type CallToolResult, type Client } from '@modelcontextprotocol/client';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { incomingPageCases } from '../../support/fixtures/incoming-pages.ts';
+import { searchToolInputSchema } from '../../../src/mcp/search-tool-schema.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
 import { trustedAdRulesFile } from '../../support/fixtures/ad-rules.ts';
@@ -139,7 +141,7 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
       const tenant = server.tenant();
       await server.stop();
 
-      assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }]);
+      assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }, { name: 'search', inputSchema: searchToolInputSchema }]);
       assertText(first, cleanedStory);
       assertText(second, cleanedStory);
       assert.deepEqual(renderer.launches, [productionLaunch(rendererUrl), productionLaunch(rendererUrl)]);
@@ -275,3 +277,38 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
     });
   }
 });
+
+const searchDescription = 'Search the web with a text query and return cleaned results as Markdown. Use this tool for web searches; search engines may block generic page-fetch requests. Use getURLAsMarkdown to read a result page. Give the reason the agent needs the search.';
+const fetchDescription = 'Fetch a known web page URL as Markdown. For web searches, use search instead of fetching a search engine results URL. Give the reason the agent needs the page.';
+
+for (const era of mcpProtocolEras) {
+  test(`Given the production self-hosted application and an authorized user in ${era}, when the user discovers and calls search, then both tools have their guidance and schemas and the captured Brave results reach the client`, { timeout: 120_000 }, async (t) => {
+    const setup = await installation(t, [alice]);
+    const searchUrl = 'https://search.brave.com/search?q=entry+wiring';
+    const renderer = RendererProcessDouble.install(t);
+    renderer.serve(searchUrl, { finalUrl: searchUrl, html: readFileSync(new URL('test/support/fixtures/search-engine/brave-results.html', repositoryRoot), 'utf8') });
+    const server = InProcessServer.open(t);
+    await server.start(serverSettings(setup.directory));
+    const user = new LocalMcpUser(server.address, setup.clientId, alice);
+    const { client } = await user.connect(t, alice, era);
+    const { tools } = await client.listTools();
+    assert.deepEqual(tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })), [
+      { name: 'getURLAsMarkdown', description: fetchDescription, inputSchema: fetchToolInputSchema },
+      { name: 'search', description: searchDescription, inputSchema: searchToolInputSchema },
+    ]);
+    const result = await client.callTool({ name: 'search', arguments: { query: 'entry wiring', reason: 'Verify production search' } });
+    assert.notEqual(result.isError, true);
+    assert.equal(result.structuredContent, undefined);
+    assert.equal(result.content.length, 1);
+    const content = result.content[0];
+    assert.equal(content.type, 'text');
+    if (content.type !== 'text') throw new Error('Expected Markdown');
+    const expected = JSON.parse(readFileSync(new URL('test/support/fixtures/search-engine/brave-results-expected.json', repositoryRoot), 'utf8')) as Array<{ title: string; url: string }>;
+    for (const entry of expected) {
+      assert.ok(content.text.includes(entry.title), `Missing result: ${entry.title}`);
+      assert.ok(content.text.includes(entry.url), `Missing destination: ${entry.url}`);
+    }
+    assert.deepEqual(renderer.launches, [productionLaunch(searchUrl)]);
+    assert.equal(server.completionRecords().at(-1)?.status, 'success');
+  });
+}

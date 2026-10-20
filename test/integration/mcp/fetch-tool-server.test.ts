@@ -6,10 +6,12 @@ import type { RequestContext } from '../../../src/auth/access-context.ts';
 import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import type { McpRequestLifetime } from '../../../src/mcp/mcp-server.ts';
+import type { SearchOperation } from '../../../src/mcp/search.ts';
 import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
 import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
 import { completionLinesIn } from '../../support/drivers/operator-log.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { SearchFailure } from '../../../src/search-pipeline/search-failure.ts';
 import { PageFetchFailure } from '../../../src/page-fetch/fetch-failure.ts';
 
 const context: RequestContext = {
@@ -17,24 +19,24 @@ const context: RequestContext = {
 };
 const validArgs = { url: 'HTTPS://Example.COM/Page?secret-query=yes#secret-fragment', reason: 'Read for the task' };
 
-async function connect(t: TestContext, options: { operation?: FetchOperation; infoFails?: boolean; errorFails?: boolean; lifetime?: McpRequestLifetime } = {}) {
+async function connect(t: TestContext, options: { search?: SearchOperation; operation?: FetchOperation; infoFails?: boolean; errorFails?: boolean; lifetime?: McpRequestLifetime } = {}) {
   const calls: { url: string; context: RequestContext; execution: ExecutionContext }[] = [];
   const info: string[] = [];
   const completed = Promise.withResolvers<string>();
   const errors: string[] = [];
   const server = createFetchToolServer(context, {
-    operation: async (url, trusted, execution) => {
+    operations: { search: options.search ?? (async () => ({ status: 'released', markdown: 'search' })), fetch: async (url, trusted, execution) => {
       calls.push({ url, context: trusted, execution });
       return options.operation?.(url, trusted, execution) ?? '# Exact\n';
-    },
+    } },
     logger: {
       info: (entry) => { info.push(entry); if (completionLinesIn(entry).length === 1) completed.resolve(entry); if (options.infoFails) throw new Error('secret-info-error'); },
       error: (entry) => { errors.push(entry); if (options.errorFails) throw new Error('secret-log-error'); },
     },
   }, options.lifetime);
-  const client = new Client({ name: 'fetch-dispatch-unit', version: '0.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
+  const client = new Client({ name: 'fetch-dispatch-unit', version: '0.0.0' });
   await client.connect(clientTransport);
   t.after(async () => { await client.close(); await server.close(); });
   return { client, calls, info, errors, firstCompletion: completed.promise };
@@ -43,7 +45,7 @@ async function connect(t: TestContext, options: { operation?: FetchOperation; in
 test('Given a fetch operation double, when the tool is listed and called, then it uses the shared schema and returns one exact Markdown text entry with one trusted completion', async (t) => {
   const { client, calls, info, errors } = await connect(t);
   const listed = await client.listTools();
-  assert.equal(listed.tools.length, 1);
+  assert.equal(listed.tools.length, 2);
   assert.deepEqual(listed.tools[0]?.inputSchema, fetchToolInputSchema);
   const result = await client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs });
   assert.deepEqual(result, { content: [{ type: 'text', text: '# Exact\n' }] });
@@ -202,4 +204,126 @@ test('Given an unknown tool and two failing logger methods, when called, then th
   assert.equal(info.length, 1);
   assert.deepEqual(errors, info);
   assert.equal(JSON.parse(info[0]).status, 'unknown_tool');
+});
+
+for (const [error, message, status] of [
+  [new Error('Search failed'), 'Search failed', 'search_failed'],
+  [new Error('Search processing failed'), 'Search processing failed', 'processing_failed'],
+  [new Error('Access denied'), 'Access denied', 'access_denied'],
+  [new Error('Server busy. Try again later.'), 'Server busy. Try again later.', 'busy'],
+  [new Error('PRIVATE error'), 'Search processing failed', 'processing_failed'],
+  [new DOMException('PRIVATE cancel', 'AbortError'), 'Request cancelled', 'cancelled'],
+] as const) {
+  test(`Given search failure ${status}, when dispatched with failed loggers, then safe text and one private completion remain`, async (t) => {
+    let count = 0;
+    const site = await connect(t, { search: async () => { count++; throw error; }, infoFails: true, errorFails: true });
+    assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE query', reason: 'PRIVATE reason' } }), { content: [{ type: 'text', text: message }], isError: true });
+    assert.equal(count, 1);
+    assert.equal(site.info.length, 1);
+    assert.deepEqual(site.info, site.errors);
+    const record = JSON.parse(site.info[0]);
+    assert.equal(record.tool, 'search');
+    assert.equal(record.status, status);
+    assert.doesNotMatch(site.info[0], /PRIVATE|query|reason|url/i);
+  });
+}
+
+test('Given released and withheld search outcomes, when dispatched, then exact text and safe withholding are projected', async (t) => {
+  const outcomes = [{ status: 'released', markdown: '# Exact search\n' }, { status: 'withheld', code: 'scan_failed' }];
+  const site = await connect(t, { search: async () => outcomes.shift() as never });
+  assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE', reason: 'PRIVATE' } }), { content: [{ type: 'text', text: '# Exact search\n' }] });
+  assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE', reason: 'PRIVATE' } }), { content: [{ type: 'text', text: 'Search content withheld' }], isError: true });
+  assert.deepEqual(site.info.map((line) => JSON.parse(line).status), ['success', 'withheld']);
+  assert.doesNotMatch(site.info.join(''), /PRIVATE/);
+});
+
+test('Given an authorized client, when it discovers and calls search, then guidance and trusted execution are preserved', async (t) => {
+  const site = await connect(t, { search: async (query, trusted, execution) => {
+    assert.equal(query, ' exact query ');
+    assert.equal(trusted, context);
+    assert.match(execution.operationId, generatedOperationIdPattern);
+    assert.ok(execution.signal instanceof AbortSignal);
+    return { status: 'released', markdown: 'Exact search' };
+  } });
+  const tools = (await site.client.listTools()).tools;
+  assert.equal(tools.find((tool) => tool.name === 'search')?.description, 'Search the web with a text query and return cleaned results as Markdown. Use this tool for web searches; search engines may block generic page-fetch requests. Use getURLAsMarkdown to read a result page. Give the reason the agent needs the search.');
+  assert.equal(tools.find((tool) => tool.name === 'getURLAsMarkdown')?.description, 'Fetch a known web page URL as Markdown. For web searches, use search instead of fetching a search engine results URL. Give the reason the agent needs the page.');
+  assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: ' exact query ', reason: 'PRIVATE reason' } }), { content: [{ type: 'text', text: 'Exact search' }] });
+  assert.equal(site.info.length, 1);
+});
+
+test('Given a typed search failure with a changed message, when dispatched, then the immutable diagnosis is projected', async (t) => {
+  const failure = new SearchFailure({ phase: 'renderer_result', category: 'http', httpStatus: 429 });
+  failure.message = 'PRIVATE failure';
+  const site = await connect(t, { search: async () => { throw failure; } });
+  assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE', reason: 'PRIVATE' } }), { content: [{ type: 'text', text: 'Search failed: HTTP 429' }], isError: true });
+  assert.equal(JSON.parse(site.info[0]).status, 'search_failed');
+  assert.doesNotMatch(site.info[0], /PRIVATE|429/);
+});
+
+for (const args of [{ query: 'PRIVATE' }, { query: 'PRIVATE', reason: 'PRIVATE', url: 'https://PRIVATE' }, { query: 7, reason: 'PRIVATE' }]) {
+  test('Given malformed search arguments, when dispatched, then no operation runs and the completion has no argument fields', async (t) => {
+    let calls = 0;
+    const site = await connect(t, { search: async () => { calls++; throw new Error('PRIVATE'); } });
+    assert.deepEqual(await site.client.callTool({ name: 'search', arguments: args }), { content: [{ type: 'text', text: 'Invalid tool arguments' }], isError: true });
+    assert.equal(calls, 0);
+    assert.equal(site.info.length, 1);
+    assert.equal(JSON.parse(site.info[0]).status, 'invalid_arguments');
+    assert.doesNotMatch(site.info[0], /PRIVATE|query|reason|url/);
+  });
+}
+
+test('Given malformed search operation output, when dispatched, then only the processing failure is projected', async (t) => {
+  const site = await connect(t, { search: async () => ({ status: 'PRIVATE' }) as never });
+  assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE', reason: 'PRIVATE' } }), { content: [{ type: 'text', text: 'Search processing failed' }], isError: true });
+  assert.equal(JSON.parse(site.info[0]).status, 'processing_failed');
+});
+
+for (const field of ['name', 'message']) {
+  test(`Given a search error with a throwing ${field} getter, when dispatched, then processing failure and one completion remain safe`, async (t) => {
+    const failure = Object.defineProperty(new Error(), field, { get() { throw new Error('PRIVATE getter'); } });
+    const site = await connect(t, { search: async () => { throw failure; } });
+    assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE', reason: 'PRIVATE' } }), { content: [{ type: 'text', text: 'Search processing failed' }], isError: true });
+    assert.equal(site.info.length, 1);
+    assert.equal(JSON.parse(site.info[0]).status, 'processing_failed');
+    assert.doesNotMatch(site.info[0], /PRIVATE/);
+  });
+}
+
+test('Given search cancellation and late operation output, when shutdown aborts the lifetime, then cancellation wins and the correlated completion stays tracked', async (t) => {
+  const shutdown = new AbortController();
+  const started = Promise.withResolvers<void>();
+  const release = Promise.withResolvers<void>();
+  const tracked: Promise<unknown>[] = [];
+  const site = await connect(t, {
+    lifetime: { signal: shutdown.signal, track: (task) => { tracked.push(task); return task; } },
+    search: async (_query, _trusted, execution) => {
+      started.resolve();
+      await release.promise;
+      assert.ok(execution.signal.aborted);
+      return { status: 'released', markdown: 'PRIVATE late page' };
+    },
+  });
+  t.after(() => release.resolve());
+  const result = site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE query', reason: 'PRIVATE reason' } });
+  await started.promise;
+  shutdown.abort();
+  assert.equal(tracked.length, 1);
+  assert.deepEqual(site.info, []);
+  release.resolve();
+  await Promise.all(tracked);
+  assert.deepEqual(await result, { content: [{ type: 'text', text: 'Request cancelled' }], isError: true });
+  assert.equal(site.info.length, 1);
+  assert.equal(JSON.parse(site.info[0]).status, 'cancelled');
+  assert.doesNotMatch(site.info[0], /PRIVATE/);
+});
+
+test('Given a search error whose message changes after the first read, when dispatched, then only the checked message is projected', async (t) => {
+  let reads = 0;
+  const failure = Object.defineProperty(new Error(), 'message', { get() { return reads++ === 0 ? 'Search failed' : 'PRIVATE changed message'; } });
+  const site = await connect(t, { search: async () => { throw failure; } });
+  assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE', reason: 'PRIVATE' } }), { content: [{ type: 'text', text: 'Search failed' }], isError: true });
+  assert.equal(reads, 1);
+  assert.equal(JSON.parse(site.info[0]).status, 'search_failed');
+  assert.doesNotMatch(site.info[0], /PRIVATE/);
 });

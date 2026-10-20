@@ -245,7 +245,7 @@ listens, and the stop writes `Stopping after <signal>`. The slice records
 the first startup or stop signal and keeps both signal handlers through site
 cleanup and logging flush. Repeated forwarded signals do not replace the
 first signal or interrupt that cleanup. The validation record includes the
-passing real launcher shutdown and Axiom stopping record. One tool call writes three log lines in
+passing real launcher shutdown and Axiom stopping record. One fetch call writes three log lines in
 this sequence:
 
 1. `work-slice fetch started: <requested URL>`
@@ -260,8 +260,11 @@ this sequence:
 
 A call that the server refuses with `401` or `403` writes no fetch line.
 
+The slice registers both production tools. Its extra content logging wraps
+only fetch; search keeps its private production records.
+
 The slice composes the production parts `openWorkOSConnection`,
-`composeWorkOSApplication`, `createToolOperations(...).fetch`, and `fetchToolServers` with
+`composeWorkOSApplication`, `createToolOperations`, and `fetchToolServers` with
 the test-only HTTPS front `LocalHttpsSite`. The onboarding policy and the two
 lines with the full URL and the Markdown are slice-only; the fetch tool behind
 the hosted MCP endpoint is in production since commit 080dd065. The acceptance tests show the application path

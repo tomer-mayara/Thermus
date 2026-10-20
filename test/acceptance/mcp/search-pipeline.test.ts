@@ -1,29 +1,39 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { openFetchSite } from '../../support/in-process/mcp-fetch-site.ts';
+import { parseHTML } from 'linkedom';
+import { micromark } from 'micromark';
+import { readFileSync } from 'node:fs';
+import { openSearchSite } from '../../support/in-process/mcp-search-site.ts';
+import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
+import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { RendererProcessDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
+import { HiddenHtmlScanner } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
+import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
 const reason = 'Find sources for this task';
+const boundedSearchSchema = {
+  type: 'object',
+  properties: {
+    query: { type: 'string', minLength: 1, maxLength: 512, pattern: '\\S' },
+    reason: { type: 'string', minLength: 1, maxLength: 2_000, pattern: '\\S' },
+  },
+  required: ['query', 'reason'],
+  additionalProperties: false,
+};
 
 test('Given an authorized MCP client, when it discovers tools, then search and page fetch are available with bounded search arguments', async (t) => {
-  const { client } = await openFetchSite(t, '2026-07-28');
+  const { client } = await openSearchSite(t, '2026-07-28', 'self-hosted');
   const { tools } = await client.listTools();
 
   assert.ok(tools.some(({ name }) => name === 'getURLAsMarkdown'));
   const search = tools.find(({ name }) => name === 'search');
   assert.ok(search, 'The search tool must be available');
-  assert.partialDeepStrictEqual(search.inputSchema, {
-    type: 'object',
-    properties: {
-      query: { type: 'string', minLength: 1, maxLength: 512, pattern: '\\S' },
-      reason: { type: 'string', minLength: 1, maxLength: 2_000, pattern: '\\S' },
-    },
-    required: ['query', 'reason'],
-    additionalProperties: false,
-  });
+  assert.partialDeepStrictEqual(search.inputSchema, boundedSearchSchema);
 });
 
 test('Given an authorized MCP client, when search arguments are invalid, then each call returns only the fixed invalid-arguments error', async (t) => {
-  const { client } = await openFetchSite(t, '2026-07-28');
+  const renderer = RendererProcessDouble.install(t);
+  const { client, stages, completions } = await openSearchSite(t, '2026-07-28', 'self-hosted');
   const invalidArguments = [
     { reason },
     { query: '', reason },
@@ -43,4 +53,106 @@ test('Given an authorized MCP client, when search arguments are invalid, then ea
     assert.equal(result.isError, true);
     assert.equal(result.structuredContent, undefined);
   }
+  assert.equal(renderer.launches.length, 0);
+  assert.equal(renderer.lookups.length, 0);
+  assert.deepEqual(stages(), []);
+  assert.equal(completions().length, invalidArguments.length);
+  assert.ok(completions().every((record) => record.status === 'invalid_arguments'));
 });
+
+
+const searchDescription = 'Search the web with a text query and return cleaned results as Markdown. Use this tool for web searches; search engines may block generic page-fetch requests. Use getURLAsMarkdown to read a result page. Give the reason the agent needs the search.';
+const fetchDescription = 'Fetch a known web page URL as Markdown. For web searches, use search instead of fetching a search engine results URL. Give the reason the agent needs the page.';
+const searchUrl = 'https://search.brave.com/search?q=private-acceptance-query';
+const fixture = (name: string) => readFileSync(new URL(`test/support/fixtures/search-engine/${name}`, repositoryRoot), 'utf8');
+
+for (const edition of ['hosted', 'self-hosted'] as const) {
+  for (const era of mcpProtocolEras) {
+    test(`Given ${edition} in ${era}, when an authorized client discovers and searches the captured Brave page, then guidance and all cleaned results reach the client with private correlated records`, async (t) => {
+      const renderer = RendererProcessDouble.install(t);
+      renderer.serve(searchUrl, { finalUrl: searchUrl, html: fixture('brave-results.html') });
+      const site = await openSearchSite(t, era, edition);
+      const { tools } = await site.client.listTools();
+      const searchTool = tools.find((tool) => tool.name === 'search');
+      assert.equal(searchTool?.description, searchDescription);
+      assert.partialDeepStrictEqual(searchTool?.inputSchema, boundedSearchSchema);
+      assert.equal(tools.find((tool) => tool.name === 'getURLAsMarkdown')?.description, fetchDescription);
+      assert.ok(tools.every((tool) => !Object.hasOwn(tool, 'details')));
+      const result = await site.client.callTool({ name: 'search', arguments: { query: 'private-acceptance-query', reason: 'private-acceptance-reason' } });
+      assert.notEqual(result.isError, true);
+      assert.equal(result.structuredContent, undefined);
+      assert.equal(result.content.length, 1);
+      const content = result.content[0];
+      assert.equal(content.type, 'text');
+      if (content.type !== 'text') throw new Error('Expected Markdown');
+      const expected = JSON.parse(fixture('brave-results-expected.json')) as { title: string; url: string; snippet: string }[];
+      const rendered = parseHTML(`<html><body>${micromark(content.text)}</body></html>`).document;
+      const visibleText = rendered.body.textContent.replace(/\s+/g, ' ').trim();
+      let previous = -1;
+      for (const entry of expected) {
+        const position = content.text.indexOf(entry.title, previous + 1);
+        assert.ok(position > previous, `Missing or reordered result: ${entry.title}`);
+        assert.ok(content.text.includes(entry.url), `Missing result destination: ${entry.url}`);
+        assert.ok(visibleText.includes(entry.snippet), `Missing result snippet: ${entry.title}`);
+        previous = position;
+      }
+      assert.equal(renderer.launches.length, 1);
+      const [completion] = site.completions();
+      assert.equal(site.completions().length, 1);
+      assert.equal(completion.tool, 'search');
+      assert.equal(completion.status, 'success');
+      assert.deepEqual(Object.keys(completion).sort(), ['event', 'operationId', 'authority', 'subject', 'tenantId', 'tool', 'status', 'durationMs'].sort());
+      assert.equal(site.stages().length, 2);
+      assert.deepEqual(site.stages().map((stage) => stage.stepId), ['search.outgoing.observe_request', 'search.incoming.process_html']);
+      assert.ok(site.stages().every((stage) => stage.operationId === completion.operationId && stage.outcome === 'allowed'));
+      assert.doesNotMatch(site.records.join('\n'), /private-acceptance-query|private-acceptance-reason|Lightpanda \| The headless browser/);
+    });
+  }
+  test(`Given ${edition} with an explicit no-results Brave page, when the client searches, then only the fixed no-results text is released`, async (t) => {
+    const renderer = RendererProcessDouble.install(t);
+    renderer.serve(searchUrl, { finalUrl: searchUrl, html: fixture('brave-no-results-derived.html') });
+    const site = await openSearchSite(t, '2026-07-28', edition);
+    const result = await site.client.callTool({ name: 'search', arguments: { query: 'private-acceptance-query', reason } });
+    assert.deepEqual(result.content, [{ type: 'text', text: 'No search results.' }]);
+    assert.notEqual(result.isError, true);
+    assert.equal(site.stages().length, 2);
+  });
+}
+
+for (const edition of ['hosted', 'self-hosted'] as const) {
+  test(`Given ${edition} with an incoming scan failure, when a client searches, then the public result withholds all content and logs one safe completion`, async (t) => {
+    const renderer = RendererProcessDouble.install(t);
+    renderer.serve(searchUrl, { finalUrl: searchUrl, html: fixture('brave-results.html') });
+    t.mock.method(HiddenHtmlScanner, 'scan', () => { throw new Error('private-scan-failure'); });
+    const site = await openSearchSite(t, '2026-07-28', edition);
+    const result = await site.client.callTool({ name: 'search', arguments: { query: 'private-acceptance-query', reason } });
+    assert.deepEqual(result.content, [{ type: 'text', text: 'Search content withheld' }]);
+    assert.equal(result.isError, true);
+    assert.equal(result.structuredContent, undefined);
+    assert.equal(site.completions().length, 1);
+    assert.equal(site.completions()[0].status, 'withheld');
+    assert.equal(site.stages().length, 2);
+    assert.doesNotMatch(site.records.join('\n'), /private-scan-failure|private-acceptance-query|Lightpanda \|/);
+  });
+}
+
+for (const refusal of ['authentication', 'access', 'origin', 'body', 'envelope'] as const) {
+  test(`Given a search call refused for ${refusal}, when the public HTTP boundary rejects it, then no renderer or operation records are created`, async (t) => {
+    const renderer = RendererProcessDouble.install(t);
+    const site = await openSearchSite(t, '2026-07-28', 'hosted');
+    if (refusal === 'access') t.mock.method(site.provider, 'resolve', async () => ({ allowed: false as const, reason: 'permission-required' as const }));
+    const request = mcpRequest({ url: site.url.href, method: 'tools/call', token: refusal === 'authentication' ? undefined : 'token',
+      headers: refusal === 'origin' ? { Origin: 'https://attacker.example' } : {},
+      params: { name: 'search', arguments: { query: 'private-refused-query', reason } } });
+    const invalid = refusal === 'body' || refusal === 'envelope'
+      ? new Request(request.url, { method: 'POST', headers: request.headers, body: refusal === 'body' ? '{' : JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: 'invalid' }) })
+      : request;
+    const response = await fetch(invalid);
+    const body = await response.text();
+    assert.ok(response.status >= 400 || body.includes('"error"'), `Expected refusal: ${response.status} ${body}`);
+    assert.deepEqual(site.completions(), []);
+    assert.deepEqual(site.stages(), []);
+    assert.equal(renderer.launches.length, 0);
+    assert.equal(renderer.lookups.length, 0);
+  });
+}

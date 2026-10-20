@@ -8,6 +8,7 @@ import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-
 import { RendererProcessDouble, controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { trustedAdRulesFile } from '../../support/fixtures/ad-rules.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';
+import { openSearchSite } from '../../support/in-process/mcp-search-site.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
 const environment = { AD_RULES_FILE: trustedAdRulesFile };
@@ -160,5 +161,44 @@ for (const deployment of ['separate hosted applications', 'self-hosted operation
     barrier.release();
     assertReleased(await fetch, 'fetch');
     assertReleased(await search, 'search');
+  });
+}
+
+
+for (const firstTool of ['fetch', 'search'] as const) {
+  test(`Given public hosted ${firstTool} rendering, when its peer is called and the first client cancels, then capacity stays held through cleanup and the peer can recover`, { timeout: 5_000 }, async (t) => {
+    const renderer = controlledRenderer(t);
+    const site = await openSearchSite(t, '2026-07-28', 'hosted');
+    const peer = firstTool === 'fetch' ? 'search' : 'fetch';
+    const controller = new AbortController();
+    const call = (tool: Tool, signal?: AbortSignal) => site.client.callTool({ name: tool === 'fetch' ? 'getURLAsMarkdown' : 'search', arguments: tool === 'fetch' ? { url, reason: 'Read source' } : { query, reason: 'Find source' } }, { signal });
+    const response = (tool: Tool) => JSON.stringify({ url: tool === 'fetch' ? url : searchUrl, http_status: 200, content: tool === 'fetch' ? article : searchHtml, error: null });
+    t.after(() => renderer.finish(null, response(firstTool), ''));
+    const first = call(firstTool, controller.signal).catch(() => undefined);
+    await renderer.launched;
+    assert.deepEqual((await call(peer)).content, [{ type: 'text', text: 'Server busy. Try again later.' }]);
+    controller.abort();
+    while (renderer.child.signals.length === 0) {
+      t.signal.throwIfAborted();
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    }
+    assert.deepEqual(renderer.child.signals, ['SIGKILL']);
+    assert.deepEqual((await call(peer)).content, [{ type: 'text', text: 'Server busy. Try again later.' }]);
+    assert.equal(renderer.execute.mock.callCount(), 1);
+    renderer.finish(null, response(firstTool), '');
+    await first;
+    while (!site.completions().some((record) => record.status === 'cancelled')) {
+      t.signal.throwIfAborted();
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    }
+    const next = call(peer);
+    while (renderer.execute.mock.callCount() < 2) {
+      t.signal.throwIfAborted();
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    }
+    renderer.finish(null, response(peer), '');
+    const result = await next;
+    assert.notEqual(result.isError, true);
+    assert.equal(site.completions().filter((record) => record.status === 'cancelled').length, 1);
   });
 }

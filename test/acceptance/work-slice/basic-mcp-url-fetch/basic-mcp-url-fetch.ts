@@ -28,7 +28,8 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 // slice. The slice has no OAuth provider and no pages, so their paths are not found.
 export function createWorkSliceApplication(environment: Environment, logger: ApplicationLogger): Application {
   const urls = loadPublicUrls(environment, 'self-hosted');
-  const operation = fetchOperationSpy(createToolOperations(environment, logger).fetch, logger);
+  const operations = createToolOperations(environment, logger);
+  const operation = fetchOperationSpy(operations.fetch, logger);
   const provider = new NoAuthProvider(new URL(urls.mcpResourceUrl));
   const mcp = new MCPServer({
     auth: {
@@ -37,7 +38,7 @@ export function createWorkSliceApplication(environment: Environment, logger: App
       resourceMetadataUrl: urls.resourceMetadataUrl,
       expectedResource: new URL(urls.mcpResourceUrl),
     },
-    buildServer: fetchToolServers(operation, logger),
+    buildServer: fetchToolServers({ ...operations, fetch: operation }, logger),
     reportFailure: operatorFailureReporter(logger),
   });
   const handle = routeLocalRequests(urls, { mcp: (request) => mcp.fetch(request), provider: notFound, pages: { handles: () => false, handle: notFound } });

@@ -159,7 +159,7 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
     assert.deepEqual(renewed.pages, ['/sign-in']);
     assert.equal(jwtClaims(aliceUser.accessToken).sub, userIds.get(alice.email));
     assert.notEqual(aliceUser.accessToken, oldAliceToken);
-    assert.deepEqual(peerTools, ['getURLAsMarkdown']);
+    assert.deepEqual(peerTools, ['getURLAsMarkdown', 'search']);
     assert.deepEqual(peerReauthorization.pages, []);
     await server.stop();
     assertNoOutboundAccess(server, [...commands, reset]);
@@ -187,7 +187,7 @@ describe('Self-hosted browser-to-MCP authorization without outbound access', () 
     assert.match(disabledSignIn.body, /account is disabled/i);
     assert.equal(bobUser.browser.cookies.size, 0, 'the refused sign-in set no session cookie');
     await assertNoRefreshGrant(server, clientId, oldBobToken);
-    assert.deepEqual(peerTools, ['getURLAsMarkdown']);
+    assert.deepEqual(peerTools, ['getURLAsMarkdown', 'search']);
     await server.stop();
     assertNoOutboundAccess(server, [...commands, disable]);
   });

@@ -55,7 +55,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: Applica
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);
   const { HostedPortal } = await import('./hosted-portal.ts');
   const portal = await HostedPortal.load(connection.settings.authkitIssuer);
-  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operations.fetch, logger), signup });
+  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operations, logger), signup });
   return portal.withApplication(application);
 }
 

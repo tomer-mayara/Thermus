@@ -50,8 +50,9 @@ export async function composeWorkSliceApplication(parts: WorkSliceParts, logger:
   const { config, connection, environment } = parts;
   const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
   if (!organizationId) throw new Error('Set THERMUS_SLICE_ORGANIZATION_ID to the WorkOS organization of this slice');
-  const operation = fetchOperationSpy(createToolOperations(environment, logger).fetch, logger);
-  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger), onboarding: { organizationId }, mfaEvidence: 'unproven' });
+  const operations = createToolOperations(environment, logger);
+  const operation = fetchOperationSpy(operations.fetch, logger);
+  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers({ ...operations, fetch: operation }, logger), onboarding: { organizationId }, mfaEvidence: 'unproven' });
 }
 
 async function run(consoleLog: ConsoleLogger): Promise<number> {

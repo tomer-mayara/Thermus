@@ -18,6 +18,11 @@ POST tool or new stdio tool.
 
 ## Request and result
 
+Discovery describes the tool as: "Fetch a known web page URL as Markdown.
+For web searches, use search instead of fetching a search engine results URL.
+Give the reason the agent needs the page." Both editions also expose the
+[search tool](mcp-search-tool.md).
+
 The tool lists and validates one JSON Schema. Its input is an object with exactly
 two required string properties, `url` and `reason`. Extra properties are refused.
 
@@ -127,15 +132,15 @@ abandoned DNS guard across both operations. Each application has its own
 resources and setup warning state.
 
 `createToolOperations` returns both operations. Then the branch calls
-`fetchToolServers(operations.fetch, logger)`, which returns the `buildServer` function
+`fetchToolServers(operations, logger)`, which returns the `buildServer` function
 of `MCPServer`. Each MCP request gets its own SDK `Server` from
-`createFetchToolServer(context, { operation, logger }, lifetime)`. Completion
+`createFetchToolServer(context, { operations, logger }, lifetime)`. Completion
 records attempt a JSON write to the application logger for each dispatched
 `tools/call`, with an `ERROR` fallback if the `INFO` write throws.
 `requestedUrl` keeps the exact accepted spelling. The
 renderer's `finalUrl` selects the ad rules and resolves relative links.
-Public MCP search dispatch remains in SEARCH-05 of the
-[search plan](../implementation/search-pipeline-plan.md).
+The request server exposes both operations. Search has a separate
+[result and completion contract](mcp-search-tool.md).
 
 The neutral code lives under `src/page-fetch/`. It owns semantic URL
 validation, the step protocol/executor and record-sink contract, and the
@@ -407,11 +412,15 @@ remain unchanged.
 ## Completion records
 
 Every envelope-valid dispatched call attempts one JSON-encoded completion
-record in `finally`. It includes the trusted authority, subject, and tenant; the
+record in `finally`. The fetch projection includes the trusted authority, subject, and tenant; the
 operation ID; the recognized tool label or a fixed unknown label; safe input fields or field-status
 codes; the completion status; and elapsed time. A safe URL omits userinfo, query,
 and fragment. A reason is included only when it is a bounded, structurally valid
 string. JSON encoding escapes line breaks.
+
+Search selects its own projection before reading any argument field. Its
+[completion records](mcp-search-tool.md#execution-and-logging) omit query,
+reason, URL, page, and failure data, including for invalid search arguments.
 
 Dispatch generates the UUID with Node `randomUUID` before tool-name and argument
 checks. Dispatched unknown, invalid, denied, busy, and cancelled calls therefore

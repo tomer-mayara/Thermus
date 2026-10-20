@@ -394,8 +394,10 @@ checks above apply to the complete implementation candidate.
 ## Appendix A: implementation tickets
 
 These are local work packages. SEARCH-01 contracts, SEARCH-02 provider
-behavior, SEARCH-03 core, and SEARCH-04 composition are implemented; public
-search acceptance remains open. SEARCH-05 and SEARCH-06 are **Planned**.
+behavior, SEARCH-03 core, SEARCH-04 composition, and SEARCH-05 public MCP
+dispatch are implemented. SEARCH-06 is **Planned**; its pinned search runtime
+and live Brave proofs remain open. See the
+[SEARCH-05 verification record](search-05.md) for complete-candidate checks.
 The entries are not board issues or instructions to open separate pull requests.
 No board issue has been created.
 AC numbers refer to the acceptance criteria above. The dependency order is:
@@ -528,7 +530,8 @@ there is one hosted slot and no lifecycle algorithm change in `MCPServer`.
 
 ### SEARCH-05: Expose MCP search with safe projection and discovery guidance
 
-**Status:** Planned. **Dependencies:** SEARCH-04. **Acceptance:** AC1, AC9;
+**Status:** Implemented. See [SEARCH-05 evidence](search-05.md).
+**Dependencies:** SEARCH-04. **Acceptance:** AC1, AC9;
 public confirmation of AC2, AC4, AC7, and AC8.
 
 **Scope and main paths:** Add `src/mcp/search-tool-schema.ts` and the typed
@@ -550,6 +553,13 @@ calls attempt one completion; pre-dispatch refusals emit no tool/stage records.
 negative matrices kept at their owning boundaries. Public cross-tool capacity
 and withholding cases pass. Record descriptions, safe errors and statuses,
 privacy assertions, log-failure behavior, and unchanged fetch log fields.
+
+**Implementation:** Both production editions expose search in both protocol
+eras. The schema, typed projection, safe failure mapping, operation-pair
+wiring, and private completion branch are in place. Public fixture tests
+cover results, no-results, withholding, refusals, shared capacity,
+cancellation, and shutdown. The pull request stays Draft until the remaining
+required checks and SEARCH-06 proofs pass.
 
 ### SEARCH-06: Prove the pinned runtime and select the delivery gates
 

@@ -31,7 +31,7 @@ test('Given a hosted MCP resource, when a native client omits Origin or a browse
 
     assert.equal(authorized.status, 200);
     const { tools } = await rpcResult(authorized) as { tools: ReadonlyArray<{ name: string }> };
-    assert.deepEqual(tools.map(({ name }) => name), ['getURLAsMarkdown']);
+    assert.deepEqual(tools.map(({ name }) => name), ['getURLAsMarkdown', 'search']);
     assert.equal(anonymous.status, 401);
     assert.match(anonymous.headers.get('WWW-Authenticate') ?? '', /resource_metadata=/);
   }

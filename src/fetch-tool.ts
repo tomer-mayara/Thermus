@@ -5,13 +5,11 @@ import { HtmlToMarkdownPipeline } from './html-cleaner-pipeline/html-to-markdown
 import { ProcessHtmlStep } from './html-cleaner-pipeline/process-html-step.ts';
 import { CleanHtmlToMarkdownDefuddle } from './html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { PromptInjectionRemoverSanitizer } from './html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { createFetchToolServer } from './mcp/fetch-tool-server.ts';
-import { createGetURLAsMarkdown, type FetchOperation } from './mcp/get-url-as-markdown.ts';
+import { createFetchToolServer, type ToolOperations } from './mcp/fetch-tool-server.ts';
+import { createGetURLAsMarkdown } from './mcp/get-url-as-markdown.ts';
 import { OperationCapacity } from './mcp/operation-capacity.ts';
 import { SearchEngineBraveHttp } from './search-engine/search-engine-brave-http.ts';
-import { SearchPipeline, type SearchOutcome } from './search-pipeline/search-pipeline.ts';
-import type { RequestContext } from './auth/access-context.ts';
-import type { ExecutionContext } from './page-fetch/execution-context.ts';
+import { SearchPipeline } from './search-pipeline/search-pipeline.ts';
 import type { RequestServerBuilder } from './mcp/mcp-server.ts';
 import { createFetchPage } from './page-fetch/fetch-page.ts';
 import { ObserveRequestStep } from './page-fetch/observe-request-step.ts';
@@ -21,10 +19,7 @@ import { WebsiteFetcherLightpanda } from './website-fetcher/website-fetcher-ligh
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-export interface ToolOperations {
-  readonly fetch: FetchOperation;
-  readonly search: (query: string, context: RequestContext, execution: ExecutionContext) => Promise<SearchOutcome>;
-}
+export type { ToolOperations } from './mcp/fetch-tool-server.ts';
 
 // One application owns the renderer, rules, compatible cleaners, and setup reports for both tools.
 export function createToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations {
@@ -58,8 +53,8 @@ export function createHostedToolOperations(environment: Environment, logger: App
   return { fetch: capacity.wrap(operations.fetch), search: capacity.wrap(operations.search) };
 }
 
-export function fetchToolServers(operation: FetchOperation, logger: ApplicationLogger): RequestServerBuilder {
-  return (context, lifetime) => createFetchToolServer(context, { operation, logger }, lifetime);
+export function fetchToolServers(operations: ToolOperations, logger: ApplicationLogger): RequestServerBuilder {
+  return (context, lifetime) => createFetchToolServer(context, { operations, logger }, lifetime);
 }
 
 // One line for each code in the life of the server keeps the log short when the renderer stays missing.

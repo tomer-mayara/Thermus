@@ -54,7 +54,7 @@ test('Given the server composition and renderer starts that fail with ENOENT and
     info: (line: string) => lines.info.push(line),
     error: (line: string) => lines.error.push(line),
   };
-  const buildServer = fetchToolServers(createToolOperations({ AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: executable }, logger).fetch, logger);
+  const buildServer = fetchToolServers(createToolOperations({ AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: executable }, logger), logger);
   const client = await connectedClient(t, buildServer(context, { signal: new AbortController().signal, track: (task) => task }));
 
   const results: CallToolResult[] = [];

@@ -7,6 +7,36 @@
 
 # Tests
 
+## Public MCP search
+
+`test/acceptance/mcp/search-pipeline.test.ts` runs the real operation factories,
+Brave HTTP adapter, classifier, and cleaners through the HTTP MCP server.
+It uses a test identity provider and controlled DNS and renderer processes.
+It checks both protocol eras, exact discovery guidance, all 18 captured
+results in order, their snippets, no-results, scan withholding, validation,
+and private correlated completion and stage records. Authentication, access,
+Origin, malformed body, and envelope refusals create no operation records.
+
+The added search cases in `self-hosted-fetch-tool.test.ts` and
+`hosted-fetch-tool.test.ts` use the actual production entry compositions with
+Better Auth or the WorkOS provider and its local API double. Each edition
+discovers both tools and returns the captured results in both protocol eras.
+`search-lifecycle.test.ts` proves that shutdown in either era waits for
+search renderer cleanup and attempts one cancellation completion.
+
+`test/integration/mcp/search-tool-schema.test.ts` checks query and reason
+boundaries through the SDK validator and real `SearchQuery`.
+`fetch-tool-server.test.ts` covers the dispatcher, exact result projection,
+safe typed and unexpected errors, changing or throwing error getters,
+malformed arguments and outcomes, logger failures, and tracked cancellation.
+`test/unit/mcp/search.test.ts` checks typed result projection.
+`test/unit/mcp/tool-completion-record.test.ts` proves that search completion
+formatting reads no argument properties, even when they have throwing getters.
+
+The [SEARCH-05 record](../implementation/search-05.md) gives the runs and
+limits. The pinned local search runtime gate and live Brave proof remain in
+SEARCH-06; these ordinary tests do not replace them.
+
 ## Shared fetch and search resources
 
 `test/integration/tool-operations.test.ts` runs the concrete composition with
@@ -18,17 +48,19 @@ application, shared compatible cleaners and setup warning state, and separate
 converter instances.
 
 `test/acceptance/mcp/hosted-search-capacity.test.ts` exercises the production
-operation factories before MCP search dispatch is added. It checks both tool
+operation factories and public MCP dispatch. It checks both tool
 orders while outgoing, renderer, or incoming work is held; success, failure,
 abort, cancellation before busy, held renderer cleanup, and subsequent calls.
-Separate hosted applications and self-hosted operations can overlap. Existing
-MCP lifecycle tests retain the public fetch shutdown and cancellation proof.
+Separate hosted applications and self-hosted operations can overlap. Public
+calls in both tool orders prove busy refusal, held cleanup after cancellation,
+and successful recovery. Existing MCP lifecycle tests retain the public fetch
+shutdown and cancellation proof.
 
 `test/unit/mcp/operation-capacity.test.ts` checks the shared capacity contract
 with operation doubles, including context and result identity, no queue,
 cleanup settlement, independent owners, and synchronous failure.
 The [SEARCH-04 record](../implementation/search-04.md) gives verification
-results and limits. Public MCP search remains in SEARCH-05.
+results and limits. SEARCH-05 adds the public search proofs above.
 
 ## MCP fetch debug command
 
