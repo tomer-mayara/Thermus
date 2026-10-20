@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
@@ -86,7 +87,7 @@ describe('WebsiteFetcherLightpanda process contract', () => {
       const cause = Object.assign(new Error('process timed out'), { code, killed: true, signal: 'SIGTERM' as const });
       stubProcess(context, { error: cause, stdout: output(500) });
 
-      await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error === cause);
+      await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
     });
   }
 
@@ -94,7 +95,7 @@ describe('WebsiteFetcherLightpanda process contract', () => {
     const cause = Object.assign(new Error('navigation failed'), { code: 1 });
     stubProcess(context, { error: cause, stdout: output(200) });
 
-    await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error === cause);
+    await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(url), (error) => error instanceof WebsiteFetchFailure && error.cause === cause);
   });
 
   for (const [stdout, message] of [

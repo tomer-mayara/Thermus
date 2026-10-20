@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import type { ChildProcess, ExecFileException } from 'node:child_process';
 import { test } from 'node:test';
@@ -56,7 +57,7 @@ test('preserves the original error when a failed exit precedes the deadline call
     code: null,
   });
   renderer.finish(error, '', '');
-  await assert.rejects(result, (caught) => caught === error);
+  await assert.rejects(result, (caught) => caught instanceof WebsiteFetchFailure && caught.cause === error);
 });
 
 test('rejects a clean callback when the still-running child reached the deadline', async (t) => {

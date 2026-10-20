@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import dns from 'node:dns/promises';
 import { getEventListeners } from 'node:events';
@@ -65,7 +66,7 @@ for (const lateOutcome of ['success', 'failure'] as const) {
 test('Given DNS fails before the deadline, when fetching rejects, then it releases the wait resources and preserves the cause', async (t) => {
   const pending = pendingDns(t);
   const reason = new Error('DNS unavailable');
-  const rejected = assert.rejects(pending.result, (error) => error === reason);
+  const rejected = assert.rejects(pending.result, (error) => error instanceof WebsiteFetchFailure && error.cause === reason);
   pending.answer.reject(reason);
   await rejected;
   pending.assertReleased();
@@ -104,7 +105,7 @@ test('Given the DNS API throws during lookup, when fetching rejects, then the wa
   const scheduled = t.mock.method(globalThis, 'setTimeout');
   const cleared = t.mock.method(globalThis, 'clearTimeout');
   const controller = new AbortController();
-  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://pending.test/', controller.signal), (error) => error === failure);
+  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL('https://pending.test/', controller.signal), (error) => error instanceof WebsiteFetchFailure && error.cause === failure);
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
   assert.ok(scheduled.mock.calls[0]?.result);
   assert.equal(cleared.mock.calls[0]?.arguments[0], scheduled.mock.calls[0]?.result);

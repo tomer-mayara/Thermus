@@ -2374,9 +2374,9 @@ real tool server, and SDK client.
 
 `createFetchOperation` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
 
-[V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets exactly one line for each code, in order, with the exact report text
+[V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets `Page fetch failed` and a `fetch_failed` record, and the operator log gets one setup warning for each code and one correlated structured failure event for each call
 
-[V] Given two readiness timeouts with private causes, each call gets the safe fetch failure and each timeout sends one fixed JSON readiness report; this remains true when the application logger throws
+[V] Given two readiness timeouts with private causes, each call gets the safe fetch failure and each timeout sends one correlated JSON failure report with the readiness category, phase, and budget; this remains true when the application logger throws
 
 Focused commands:
 
@@ -3878,3 +3878,24 @@ image test performs no Docker operation.
 [V] Builds preserve source and files outside the owned output when called from another directory
 [V] Builds reject symlink and regular-file output paths without deleting their data
 [V] Typecheck does not emit files or clear existing output
+
+## Fetch failure diagnostics
+
+**Renderer boundary** (`test/unit/website-fetcher/website-fetcher-diagnostics.test.ts`)
+
+[V] Retains HTTP 429 with `error: null` and exit 22, and HTTP status with exit 1 and a known renderer error
+[V] Retains known DNS, connect, TLS, redirect, and transfer renderer codes; replaces arbitrary secret codes with `unknown`
+[V] Keeps safe process exit, signal, and killed fields when metadata is absent or invalid, including interrupted exit 22
+[V] Identifies blocked destinations, URL validation, DNS ENOTFOUND, and the DNS wait budget without host data
+
+**Hosted diagnostic acceptance** (`test/acceptance/mcp/hosted-fetch-failure-diagnostics.test.ts`)
+
+[V] Joins one safe HTTP failure event to the completion ID and preserves `Page fetch failed`
+
+The protected operation tests also cover unknown errors, reporter failure,
+success, and cancellation. Hosted concurrency cases require no diagnostic for
+cancelled work and one diagnostic for a failed fetch.
+
+```sh
+npm run build && node --test dist/test/unit/website-fetcher/website-fetcher-diagnostics.test.js dist/test/integration/page-fetch/fetch-page.test.js dist/test/integration/fetch-tool-renderer-setup-report.test.js dist/test/acceptance/mcp/hosted-fetch-failure-diagnostics.test.js dist/test/acceptance/mcp/hosted-fetch-tool.test.js
+```

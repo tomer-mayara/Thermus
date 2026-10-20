@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from './fetch-diagnostic.ts';
 import dns from 'node:dns/promises';
 import type { LookupAddress } from 'node:dns';
 import { BlockList, isIP } from 'node:net';
@@ -29,7 +30,7 @@ export class PublicDestinationPolicy {
   // every abandoned lookup settles. Keep late success and failure handlers.
   private async lookupAddresses(hostname: string, signal?: AbortSignal): Promise<LookupAddress[]> {
     signal?.throwIfAborted();
-    if (this.abandonedLookups.size !== 0) throw new Error('A previous DNS lookup is still pending');
+    if (this.abandonedLookups.size !== 0) throw new WebsiteFetchFailure('A previous DNS lookup is still pending', { category: 'validation', phase: 'destination_policy', reason: 'dns_pending' });
     const lookupId = Symbol();
     let nativePending = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -46,7 +47,7 @@ export class PublicDestinationPolicy {
         };
         cancel = () => stopWaiting(signal?.reason);
         signal?.addEventListener('abort', cancel, { once: true });
-        timer = setTimeout(() => stopWaiting(new Error(`DNS lookup timed out after ${DNS_LOOKUP_WAIT_MS} ms`)), DNS_LOOKUP_WAIT_MS);
+        timer = setTimeout(() => stopWaiting(new WebsiteFetchFailure(`DNS lookup timed out after ${DNS_LOOKUP_WAIT_MS} ms`, { category: 'dns_timeout', phase: 'destination_policy', budgetMs: DNS_LOOKUP_WAIT_MS })), DNS_LOOKUP_WAIT_MS);
         const lookup = dns.lookup(hostname, { all: true });
         nativePending = true;
         lookup.then((addresses) => {
@@ -70,12 +71,12 @@ export class PublicDestinationPolicy {
       ? [{ address: hostname }]
       : await this.lookupAddresses(hostname, signal);
     if (addresses.length === 0) {
-      throw new Error('Fetch hostname has no network addresses');
+      throw new WebsiteFetchFailure('Fetch hostname has no network addresses', { category: 'validation', phase: 'destination_policy', reason: 'no_addresses' });
     }
     for (const { address } of addresses) {
       const family = isIP(address);
       if (family === 0 || blockedAddresses.check(address, family === 4 ? 'ipv4' : 'ipv6')) {
-        throw new Error(`Fetch destination is not a public network address: ${address}`);
+        throw new WebsiteFetchFailure(`Fetch destination is not a public network address: ${address}`, { category: 'validation', phase: 'destination_policy', reason: 'blocked_destination' });
       }
     }
   }

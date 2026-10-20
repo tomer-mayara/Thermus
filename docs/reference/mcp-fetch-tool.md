@@ -111,7 +111,7 @@ time. Then it makes these parts one time:
 - one protected `createFetchPage` use case with the fetcher, incoming step,
   required outgoing step and record sink, and
   [renderer setup report](#renderer-setup-report) and
-  [readiness report](#renderer-readiness-report) of the application logger;
+  [failure diagnostics](#fetch-failure-diagnostics) of the application logger;
 - one thin `createGetURLAsMarkdown` adapter that returns released Markdown or
   maps known withholding to exact empty text in the existing MCP
   string-returning operation.
@@ -247,21 +247,53 @@ When it stays active at the deadline, the fetcher stops the child and waits for
 its completion. The client gets `Page fetch failed`, no partial Markdown, and
 one completion record with `fetch_failed`.
 
-The operation gives the optional `reportRendererReadinessTimeout` dependency
-only `{ category: 'readiness_timeout', budgetMs: 20000 }`. The application
-logger writes this safe `ERROR` record for each readiness timeout:
+The application logger writes one correlated failure event for each readiness timeout.
+The event includes `category: 'readiness_timeout'`, `phase: 'renderer_process'`,
+`budgetMs: 20000`, and the operation ID. Available safe exit fields are included.
+Cancellation takes priority and writes no failure diagnostic. The optional
+`reportRendererReadinessTimeout` dependency remains available to other compositions;
+the server uses the unified reporter below, so it does not duplicate this event.
+See the [runtime guide](../lightpanda-runtime.md#renderer-readiness-report).
+
+## Fetch failure diagnostics
+
+For each fetcher failure, the operation attempts one `reportFetchFailure` call.
+The server writes one JSON `ERROR` event and joins it to `mcp.tool.completed`
+with the same `operationId`. For example:
 
 ```json
-{"event":"renderer.fetch.failed","category":"readiness_timeout","budgetMs":20000}
+{"event":"renderer.fetch.failed","category":"http","phase":"renderer_result","httpStatus":429,"exitCode":22,"operationId":"8b7bcf65-ddaf-45a8-b26f-374280b74eb1"}
 ```
 
-The report contains only these fixed fields. It contains no URL, reason,
-credentials, renderer arguments, stderr, or raw error cause. A logging failure
-does not change the client result. Cancellation takes priority and writes no
-readiness report. HTTP errors, process timeouts, output limits, and renderer
-launch failures keep their separate behavior. See the
-[runtime guide](../lightpanda-runtime.md#renderer-readiness-report) for operator
-steps.
+The renderer boundary selects these fields from observed facts:
+
+- `category`: `http`, `renderer`, `validation`, `launch`, `readiness_timeout`,
+  `dns_timeout`, or `unknown`.
+- `phase`: `renderer_result`, `renderer_process`, `renderer_launch`,
+  `destination_policy`, `url_validation`, or `unknown`.
+- `httpStatus`: an integer from 100 to 599, when the JSON supplies one.
+- `rendererErrorCode`: an exact known Lightpanda error name, or `unknown`.
+- `exitCode`: an integer from 0 to 255; `processErrorCode`: a fixed known
+  Node error name, or `unknown`; `signal`: a known platform signal;
+  `killed`: the Boolean value from the process callback, when supplied.
+- `metadata`: `absent` for empty output or `invalid` for a rejected JSON envelope.
+  `budgetMs` identifies a known local deadline. Destination validation can include
+  `reason`: `blocked_destination`, `no_addresses`, or `dns_pending`.
+  Renderer validation uses `invalid_http_status`, `invalid_result`, or
+  `invalid_final_url`; requested URL validation uses `invalid_url` or
+  `unsupported_protocol`.
+
+An untyped failure has category and phase `unknown`. Missing facts stay absent.
+The event has no URL, query, reason text, credentials, headers, command path,
+HTML, stdout, stderr, arbitrary message, cause, or stack. Reporter failures do
+not change the public result. Successful and cancelled fetches write no event.
+The separate setup warning remains limited to one warning per safe code.
+
+A killed or signalled process keeps process failure precedence, even with exit
+code 22 or a failed HTTP status in partial output. An observed HTTP status can
+still be included. An HTTP status, including 429, does not establish which
+server or proxy returned it. `OperationTimedout` does not establish whether DNS,
+TCP, TLS, or transfer timed out. These events report observed facts.
 
 <a id="outgoing-step-records"></a>
 

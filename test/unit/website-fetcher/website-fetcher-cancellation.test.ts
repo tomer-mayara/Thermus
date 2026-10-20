@@ -1,3 +1,4 @@
+import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, { ChildProcess, type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
@@ -88,7 +89,7 @@ for (const fails of [false, true]) {
     const error = fails ? new Error('Renderer failed') : null;
     renderer.finish(error, success, '');
 
-    if (fails) await assert.rejects(result, (caught) => caught === error);
+    if (fails) await assert.rejects(result, (caught) => caught instanceof WebsiteFetchFailure && caught.cause === error);
     else assert.deepEqual(await result, { requestedUrl, finalUrl: 'https://example.com/final', html: '<html>Ready</html>' });
     assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
     controller.abort();
@@ -105,7 +106,7 @@ test('Given renderer launch fails, when fetching with a signal, then it releases
   syncBuiltinESMExports();
   const controller = new AbortController();
 
-  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal), (caught) => caught === error);
+  await assert.rejects(new WebsiteFetcherLightpanda().fetchURL(requestedUrl, controller.signal), (caught) => caught instanceof WebsiteFetchFailure && caught.cause === error);
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
   controller.abort();
   t.mock.timers.tick(60_000);
