@@ -437,7 +437,7 @@ its initial failure; the cross-package flow remains open until implemented.
 
 ### SEARCH-02: Prove Brave HTTP classification and full-page fidelity
 
-**Status:** Implemented; complete-candidate verification in progress.
+**Status:** Implemented and reviewed; public search and delivery gates remain open.
 **Dependencies:** SEARCH-01. **Acceptance:** AC5, AC6,
 and the provider/renderer distinction in AC9. The
 [implementation record](search-02.md) gives the evidence and limits.

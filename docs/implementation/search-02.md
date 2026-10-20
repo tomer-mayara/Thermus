@@ -1,7 +1,7 @@
 # SEARCH-02: Brave HTTP engine and full-page fidelity
 
 Date: 2026-10-20.
-Status: implemented; complete-candidate verification in progress.
+Status: implemented and reviewed; public search and delivery gates remain open.
 
 This record covers [SEARCH-02](search-pipeline-plan.md#search-02-prove-brave-http-classification-and-full-page-fidelity).
 The existing [draft pull request](https://github.com/tomer-mayara/Thermus/pull/200)
@@ -83,10 +83,12 @@ it is not a claim about every challenge Brave can serve.
 | Duplicate-container review before correction | 2 of 50 provider cases failed because duplicate roots or sections were accepted. |
 | Unknown-content review before correction | 4 of 55 provider cases failed because unknown results-section content or nesting was accepted as absence. A further banner-content case failed before its correction. |
 | Whole-banner review before correction | 5 of 62 cases failed because unknown list text or descendants of the header, query, or tips were accepted. Literal query text and comments remained valid. |
-| Final provider tests | All 62 cases passed after the complete template checks. |
+| Provider tests after the whole-banner correction | All 62 cases passed after the complete template checks. |
 | Final converter and integration checks | All 152 cases passed, including existing converter and fetch regressions. |
 | Initial changed-test check | All 67 then-current provider, converter, and integration cases passed before the last whole-banner correction. |
-| Final changed-test check | All 73 new cases passed from the clean build of the final source: 62 provider, 3 converter, and 8 integration cases. |
+| Whole-banner changed-test check | All 73 then-current new cases passed from a clean build: 62 provider, 3 converter, and 8 integration cases. |
+| Coverage review characterization | A new case removes the entire tips list. Existing code correctly refuses it. All 63 provider cases passed; this test-only addition closes the last measured `isNoResults` gap. No false failing implementation step was introduced. |
+| Final changed-test check | All 74 new cases passed from the refreshed clean build: 63 provider, 3 converter, and 8 integration cases. |
 
 The final focused commands were:
 
@@ -124,12 +126,17 @@ gate until MCP registration is implemented. The pull request stays Draft.
 
 ## Complete-candidate results
 
-These results cover the final whole-banner correction at `c7a951a3`.
+The production source is final at `c7a951a3`. The last test-only addition at
+`94d7ad35` checks the absent tips list. The ordinary suite, focused tests,
+portal tests, habit-hooks, and unit coverage were refreshed after that
+addition. The other static, build, renderer, and image results below cover
+the same unchanged production source; those checks were not repeated for a
+single added provider test.
 
 | Check | Exit | Result |
 | --- | --- | --- |
-| Focused new tests | 0 | All 73 cases passed: 62 provider, 3 converter, and 8 integration cases. |
-| `npm test` | 1 | 5,517 of 5,523 backend cases passed in 303 suites. Two public search cases await MCP registration. Three logging cases require `AXIOM_API_KEY`, which is unset. The existing metrics timeout case also failed; see the diagnosis below. |
+| Focused new tests | 0 | All 74 cases passed: 63 provider, 3 converter, and 8 integration cases. |
+| `npm test` | 1 | 5,518 of 5,524 backend cases passed in 303 suites. Two public search cases await MCP registration. Three logging cases require `AXIOM_API_KEY`, which is unset. An existing OAuth cancellation case timed out; see the diagnosis below. |
 | `npm run test:user-portal` | 0 | All 41 cases passed. Run separately because backend failures stopped the ordinary command before portal tests. |
 | `npm run typecheck` | 0 | Backend and portal types passed, including the static engine contracts. |
 | `npm run test:build` | 0 | All 13 cases passed. |
@@ -138,20 +145,30 @@ These results cover the final whole-banner correction at `c7a951a3`.
 | `npm run build:hosted` | 0 | Every stage passed: 3,921 backend unit cases, 23 portal unit cases, 13 build cases, 18 portal acceptance cases, 566 integration cases, 142 selected acceptance/interface cases, and 9 renderer cases. |
 | `npm run test:container:hosted` | 0 | All 9 Linux AMD64 image cases passed, including runtime rendering, cancellation, shutdown, and refusal to produce an image after a failed offline check. |
 | Metrics timeout-test diagnosis | 0 | All 16 existing cases in `ast-metrics-mcp.test.js` passed when run alone after the image gate. |
+| OAuth timeout-test diagnosis | 0 | All 15 existing cases in `fetch-url-oauth.test.js` passed when run alone after the final coverage run. |
 | `habit-hooks --branch origin/main` | 1 | Completed with 26 retained findings, explained below. |
-| ast-metrics process with fresh coverage | Pending | Required because production source changed. |
+| ast-metrics process with fresh coverage | 1 | All four sections completed with the documented analyzer correction. Coverage passed: 3,922 backend unit cases and 23 portal unit cases. Architecture passed. The retained maintainability and function-matching limits are recorded below. No measured CRAP target miss remains. |
 
-Every completed test run above had zero cancelled, skipped, or todo tests.
+Every completed Thermus test run above had zero cancelled, skipped, or todo tests.
 The ordinary suite remains a failed gate. No public acceptance case or logger
 case was skipped, weakened, or changed to expect its current failure.
 
-The metrics timeout case received the expected exit code and timeout text.
+In the earlier whole-banner run, the metrics timeout case received the
+expected exit code and timeout text.
 Its next assertion failed: the fake recorded zero tool calls rather than
 one. The command's 300 ms deadline includes process startup and the MCP
 handshake, so it can expire before the tool call. All 16 cases in that file
 passed in an isolated rerun after the build gates, including the timeout
 case. This supports a startup-timing diagnosis; it does not turn the failed
 ordinary-suite run into a pass. The test and its deadline have not changed.
+That case also passed in the final ordinary-suite refresh.
+
+The final ordinary run instead failed the existing OAuth pending-browser
+cancel case: it received `Hosted authorization timed out` instead of
+`cancelled`. That case sets a 150 ms authorization deadline. All 15 cases in
+its file then passed in isolation, including cancellation and subsequent
+listener/lock recovery. This supports a timing diagnosis; the final ordinary
+run is still a failure. No authentication code, test, or deadline changed.
 
 The focused changed-test command used the output from the clean build in
 `npm test`:
@@ -191,10 +208,12 @@ remains `[]`. The retained findings have these reasons:
   conversion process and its parser workarounds; the provider unit file owns
   one public contract matrix. Neither needs a mechanical split.
 
-The six trailing-whitespace findings from `git diff --check` are in the two
-HTML fixture files. They are retained to preserve the original captured
-bytes and the documented derivative. Source and document edits have no such
-findings.
+Six trailing-whitespace findings from `git diff --check` are in the two
+HTML fixture files. They preserve the original captured bytes and the
+documented derivative. Six space-before-tab findings are unified-diff context
+lines in the saved upstream patch: the initial space is the patch marker,
+followed by the original Go indentation. Keep the valid patch bytes. The
+production source and Markdown edits have no whitespace findings.
 
 ### Maintainability inspection
 
@@ -209,8 +228,10 @@ all below the goal of 85:
 | `src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts` | 62.9 | One converter owns input sanitization, extraction, output sanitization, and report accumulation. The added option changes only document preparation. The existing shared boundary stays explicit. |
 | `src/search-pipeline/search-query.ts` | 65.4 | The class owns bounded Unicode validation, a fixed constructor error, and read-only exact text. The scalar loop uses constant space and stops at the bound. Moving the checks or replacing them with a counting expression would hide this contract. |
 
-These are retained goal misses, not passes. The complete process and its
-coverage assessment are pending.
+These are retained goal misses, not passes. The complete process has no
+remaining operational failure. It reports 12 unmeasured functions and 24
+required functions with unknown identity or assessment. The dispositions
+below retain each limit.
 
 ### Analyzer completeness correction
 
@@ -267,3 +288,109 @@ Run the Thermus wrappers with that binary directory first on command-scoped
 every comparison and reuse the fresh unit coverage while Thermus source,
 tests, and scripts remain unchanged. The native comparison checks out its
 base, so commit document changes before starting it.
+
+After the missing-list characterization, fresh unit coverage at `94d7ad35`
+passed all 3,922 backend and 23 portal cases. The complete process then
+finished all four sections. `isNoResults` now has 15 paths, 100% measured
+coverage, and CRAP 15.0. Its earlier 99.2% coverage gave 15.0001152, just above
+the new-function target. The added test proves a real refusal boundary and
+closes that measured gap. Final prose changes reuse this compatible coverage.
+
+The final process command is:
+
+```sh
+PATH="$PWD/ast-report/search-02-tooling/0.43.1-search02-anonymous-fix/bin:$PATH" \
+  pnpm exec node script/code-quality/ast-metrics-process.ts \
+  --base 0524a43646886f143ddf707bfb73d2157085649a --allow-tool-version
+```
+
+### Review findings outside the changed production files
+
+The four changed file scores above also account for four high review findings.
+The prepared-document review uses the class score of 59; its file score is
+44.5. The other five high findings were inspected and are retained for these
+design reasons:
+
+| File | Reported score | Retained reason |
+| --- | --- | --- |
+| `src/page-fetch/fetch-failure.ts` | 71 | The public error class and its fixed detail allowlists form one boundary. Keep the guards and mappings together so the permitted output remains clear. |
+| `src/website-fetcher/fetch-diagnostic.ts` | 81 | Explicit field bounds and fixed code lists produce one diagnostic contract. Keep this logging boundary together. |
+| `src/website-fetcher/network-policy.ts` | 61 | One owner tracks DNS waits, timers, cancellation, and late completion. Splitting its callbacks would spread the state needed to refuse further work while native DNS remains pending. |
+| `src/website-fetcher/website-fetcher-lightpanda.ts` | 71 | The renderer lifecycle keeps completion, cancellation, readiness limits, and release together. Separate flags guard different races; retain their common owner. |
+| `src/website-fetcher/website-fetcher.ts` | 80 | The module groups the small public page, fetcher, and error contracts. Splitting its constructors would add navigation without removing a rule. |
+
+No metrics rules or baseline changed. The existing base history record,
+`docs/metrics/2026-10-19-0524a436.json`, remains unchanged. The final report
+includes the historical tool versions; older trend points use upstream
+0.43.1, while this review uses the documented correction. Both sides of the
+current base comparison use the same corrected tool.
+
+### Function assessment limits
+
+The corrected analyzer reports all 6 converter declarations, all 17 prepared
+document declarations, and all 12 Brave declarations. The source completeness
+guard now passes. The separate identity and coverage matcher still cannot
+associate some class methods, getters, or anonymous callbacks. These are
+reported limits; the source review below does not replace or edit them.
+
+The following tables give every function whose required identity or coverage
+assessment remains unknown. Coverage and CRAP are exactly the measured values
+or bounds from the report. A lower bound is not a passing measurement.
+
+`src/search-engine/search-engine-brave-http.ts`:
+
+| Function or source callback | Paths | Coverage | CRAP | Classification and retained reason |
+| --- | --- | --- | --- | --- |
+| `SearchEngineBraveHttp.isNoResults` | 15 | 100% | 15.0 | Identity unknown; source is new. The missing-list case closes the last measured gap. Keep the strict template guards together; the measured score now meets the new-function target. |
+| `SearchEngineBraveHttp.assertDepth` | 8 | 100% | 8.0 | Identity unknown; source is new. The bounded iterative traversal is fully measured, but the matcher cannot classify the new target. |
+| `SearchEngineBraveHttp.classify` | 8 | 100% | 8.0 | Identity unknown; source is new. One method selects supported results or absence and refuses ambiguous containers. |
+| `SearchEngineBraveHttp.isWebResult` | 7 | 100% | 7.0 | Identity unknown; source is new. The complete link, title, and snippet checks belong together. |
+| `SearchEngineBraveHttp.assertFinalUrl` | 5 | 100% | 5.0 | Identity unknown; source is new. One fixed destination contract owns all URL checks. |
+| `SearchEngineBraveHttp.search` | 4 | 100% | 4.0 | Identity unknown; source is new. The method owns the one request, abort precedence, and safe provider-failure boundary. |
+| `SearchEngineBraveHttp.constructor` | 1 | 100% | 1.0 | Identity unknown; source is new. It receives the required public fetcher dependency. |
+| Web-result `every` callback | 1 | Unknown | ≥ 1 | Identity and coverage unknown; source is new. The real callback remains inline at its only use. |
+| Meaningful-child `filter` callback | 3 | Unknown | ≥ 3 | Identity and coverage unknown; source is new. It expresses the local comment/whitespace rule; no wrapper is added only to alter matching. |
+| Ordered-child `every` callback | 1 | Unknown | ≥ 1 | Identity and coverage unknown; source is new. It checks expected child identities at the local boundary. |
+| Header-text `filter` callback | 1 | Unknown | ≥ 1 | Identity and coverage unknown; source is new. It selects only direct text for the fixed label. |
+| Header-text `map` callback | 1 | Unknown | ≥ 1 | Identity and coverage unknown; source is new. It reads the selected text nodes at their only use. |
+
+`src/html-cleaner-pipeline/html-to-markdown/prepare-html-document.ts`:
+
+| Function or source callback | Paths | Coverage | CRAP | Classification and retained reason |
+| --- | --- | --- | --- | --- |
+| `PreparedHtmlDocument.inlineSearchLinkLabels` | 3 | 100% | 3.0 | Identity unknown; source is new. One local operation preserves valid link labels and word separation. |
+| `processExtractedDom` callback | 2 | Unknown | ≥ 2 | Identity and coverage unknown; source changed. Sanitization must run before optional label normalization. Real-converter tests cover this behavior; the report cannot match the callback. |
+| Script-content `some` callback | 1 | Unknown | ≥ 1 | Identity and coverage unknown; unchanged by this PR. |
+| JSON comment-removal callback | 2 | Unknown | ≥ 2 | Identity and coverage unknown; unchanged by this PR. |
+| JSON metadata reviver | 3 | Unknown | ≥ 3 | Identity and coverage unknown; unchanged by this PR. |
+
+`src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts`:
+
+| Function or source callback | Paths | Coverage | CRAP | Classification and retained reason |
+| --- | --- | --- | --- | --- |
+| `CleanHtmlToMarkdownDefuddle.constructor` | 1 | 100% | 1.0 | Identity unknown; source is new. It owns the per-converter search setting. |
+| `sanitizeText` closure | 3 | 80.3% | 3.1 | Identity unknown; unchanged by this PR. |
+| Report findings `flatMap` callback | 1 | Unknown | ≥ 1 | Identity and coverage unknown; unchanged by this PR. |
+| Report warnings `flatMap` callback | 1 | Unknown | ≥ 1 | Identity and coverage unknown; unchanged by this PR. |
+
+`src/search-pipeline/search-query.ts`:
+
+| Function | Paths | Coverage | CRAP | Classification and retained reason |
+| --- | --- | --- | --- | --- |
+| `SearchQuery.isValid` | 5 | 100% | 5.0 | Identity unknown; source is new in SEARCH-01. The exact bounded Unicode rule stays in the class. |
+| `SearchQuery.constructor` | 2 | 100% | 2.0 | Identity unknown; source is new in SEARCH-01. It enforces the value invariant with one fixed error. |
+| `SearchQuery.value` | 1 | Unknown | ≥ 1 | Identity and coverage unknown; source is new in SEARCH-01. Unit tests read the getter, and raw coverage names it `get value`, but the matcher cannot associate that entry. Keep the limit explicit. |
+
+The complete report retains the unknown classifications. The measured changed
+functions meet their numerical goals; that statement does not treat unknown
+identities or unknown coverage as passes.
+
+### Manager sign-off
+
+The manager reviewed the delegated provider, converter, fixtures, and tests,
+then reviewed the isolated analyzer correction and its test-first evidence.
+SEARCH-02's scoped implementation and offline fixture criteria are met.
+The draft pull request remains incomplete for the public search feature.
+Later tickets must prove the protected MCP flow and live no-results behavior.
+The ordinary test failures and the quality exceptions above remain visible;
+this sign-off does not authorize Ready or merge.
