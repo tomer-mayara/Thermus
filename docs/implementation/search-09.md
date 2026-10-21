@@ -1,7 +1,7 @@
 # SEARCH-09: Align proof strength and current documentation
 
 Date: 2026-10-20 (America/Denver).
-Status: implementation and final verification in progress.
+Status: implemented and locally verified; owner review and merge pending.
 
 This record covers [SEARCH-09](search-pipeline-plan.md#search-09-align-proof-strength-and-current-documentation)
 in [PR 202](https://github.com/tomer-mayara/Thermus/pull/202).
@@ -124,8 +124,9 @@ the snooze file empty and preserve immutable metric records.
 ## Results
 
 The source and test candidate is `f7516391`; later edits record evidence only.
-The current results follow. The AMD64 image gate and final quality review
-remain in progress. Owner review and merge remain pending.
+The current results follow. All selected test and build gates passed.
+Quality exceptions remain as recorded below. Owner review and merge remain
+pending.
 
 | Check | Result |
 | --- | --- |
@@ -137,10 +138,14 @@ remain in progress. Owner review and merge remain pending.
 | `npm run test:mcp:renderer` | All 13 fetch and search cases passed. |
 | `npm run test:container` | All 13 cases passed without outbound access; 107.92 seconds. |
 | `npm run build:hosted` | Passed: 4,029 backend unit, 23 portal unit, 13 build, 18 portal acceptance, 703 integration, 194 selected acceptance/interface, and 13 renderer tests. |
+| Linux AMD64 `npm run test:container:hosted` | All 9 tests passed; 1,774.40 seconds. The final image passed runtime checks, and the deliberately failing copied build produced no runtime image. |
 | Separate live Brave proof | One test passed on its single request, as recorded above. |
 | Fresh unit and integration coverage | 4,029 backend unit, 23 portal unit, and 703 integration tests passed. Verified capture covers 134 files from 1,158 processes. |
 
-These completed runs have zero failures, cancellations, skips, or todo cases.
+These selected commands passed, with no cancellations, skips, or todo cases.
+The image gate's copied negative build had one deliberate unit-test failure;
+its refusal to produce an image is the required passing outcome. The positive
+AMD64 build passed the same seven test phases as the hosted offline build.
 Commands use pnpm with the pinned Node 24.20.0 runtime. The ordinary suite
 uses the existing temporary Axiom test launcher, which loads the test key
 and endpoint from the main checkout and fixes the dataset to
@@ -148,7 +153,10 @@ and endpoint from the main checkout and fixes the dataset to
 
 Gate logs use `/tmp/thermus-search09-` with `ordinary-retry.log`,
 `typecheck.log`, `test-build.log`, `portal-build.log`, `renderer.log`,
-`container.log`, `hosted-build.log`, and `coverage.log`. The coverage capture
+`container.log`, `hosted-build.log`, `hosted-image.log`, and `coverage.log`.
+The positive and negative AMD64 build logs are
+`/tmp/thermus-search09-hosted-buildx.log` and
+`/tmp/thermus-search09-hosted-negative-buildx.log`. The coverage capture
 passed on its first attempt with fixed source, test, configuration, and build
 inputs. No coverage data was edited.
 
@@ -162,3 +170,65 @@ establish which step consumed the timeout. SEARCH-09 changes none of that
 path. All 15 tests in its file passed in isolation without edits. Logs:
 `/tmp/thermus-search09-ordinary.log` and
 `/tmp/thermus-search09-oauth-focused.log`. The failed run is not a gate pass.
+
+## Quality review
+
+The manager reviewed the worker's changes and the complete candidate's
+quality findings. No production file changes in SEARCH-09. The production
+scores and reasons retained from SEARCH-05 through SEARCH-08 still apply.
+The new assertion and its controls share one test responsibility; no new
+production abstraction is needed.
+
+Habit-hooks reports no lint errors and the same 136 retained findings:
+two complexity findings, one function-size finding, 120 comment lines, and
+13 file-size findings. The snooze file remains `[]`. The call counters stay
+in the existing scenarios, so one case proves the outcome and the absence
+of repeated provider work. Earlier reasons remain in
+[SEARCH-05](search-05.md#habit-hooks-review),
+[SEARCH-06](search-06.md), and [SEARCH-08](search-08.md).
+The pull request retains the full reasons for the complete candidate.
+
+```sh
+habit-hooks --branch 063404050aaf2d8989039309afc96d0308f7b318 --no-snooze
+
+pnpm exec node script/code-quality/ast-metrics-coverage.ts \
+  --suite unit --suite integration
+
+PATH="$PWD/ast-report/search-02-tooling/0.43.1-search02-anonymous-fix/bin:$PATH" \
+  pnpm exec node script/code-quality/ast-metrics-process.ts \
+  --base 063404050aaf2d8989039309afc96d0308f7b318 --allow-tool-version
+```
+
+The complete process finished delta, review, CRAP, and architecture. It
+reused verified compatible unit and integration coverage from `f7516391`.
+Architecture passed. Delta, review, and CRAP retained the stated goal
+exceptions, so the command exited 1. This is not an all-green quality result.
+Logs: `/tmp/thermus-search09-habit-final.log` and
+`/tmp/thermus-search09-metrics-final.log`.
+
+All 14 changed production files retain scores below 85. They have the direct
+file inspections and reasons recorded in the earlier tickets. The review
+has 16 high, 18 medium, and seven low findings. The CRAP section has zero
+measured target misses, 36 functions without a coverage match, and 67
+required functions with unknown assessment or identity. Unknown values and
+lower bounds are not passes. The full pull request description records
+these exceptions and each reason. No tool failure is treated as an exception.
+
+The analyzer is the local `0.43.1-search02-anonymous-fix` documented in
+[SEARCH-02](search-02.md#analyzer-completeness-correction). Its checked SHA-256
+is `f834fbf0587bbfff3e25da094965d2d4c0faabe49247dec30dcc74a8a13ad115`.
+The correction patch has checked SHA-256
+`a75412fe6c1cf3b22f8bdcdc5c55677f2abb3f4a7a07b48c2ed58b5ff502c0e6`.
+The installed analyzer, rules, and baseline are unchanged.
+
+The existing immutable records keep their checked SHA-256 values:
+
+- `docs/metrics/2026-10-20-304cd24f.json`:
+  `7191f52971a5a16eef92b641b29e75bc0a28d3861e617fa99fd95eeef8985ab4`.
+- `docs/metrics/2026-10-20-06340405.json`:
+  `9ee8da37d03127e9943a5f2672503258e6ef4657a5ef9a03d708fdad868836c3`.
+
+The base record already exists; no new record is needed. The pull request
+includes the final process report without changes: all four sections,
+graphs, legends, import evidence, and notices. Owner review and merge remain
+pending under [AGENTS.md](../../AGENTS.md#pull-requests).

@@ -3,11 +3,12 @@
 Initial review: 2026-10-20, against `ec1647bb`.
 
 **Status:** SEARCH-01 through SEARCH-09 are implemented. SEARCH-07 corrected
-R1; SEARCH-08 corrected R2; SEARCH-09 addresses R3. Final qualification is in
-progress in [SEARCH-09 evidence](search-09.md). Earlier test and build passes
-remain evidence for their recorded inputs; they do not qualify changed inputs.
-[PR 202](https://github.com/tomer-mayara/Thermus/pull/202) is Draft.
-Owner review and merge remain pending.
+R1; SEARCH-08 corrected R2; SEARCH-09 addressed R3. The completed candidate's
+selected test and build gates passed; see [SEARCH-09 evidence](search-09.md).
+Earlier test and build passes remain evidence for their recorded inputs;
+they do not qualify changed inputs.
+Owner review and merge of
+[PR 202](https://github.com/tomer-mayara/Thermus/pull/202) remain pending.
 
 This document owns the current design, acceptance criteria, and next steps.
 The [search reference](../reference/mcp-search-tool.md) owns tool usage.
@@ -298,30 +299,29 @@ the earlier passing runs do not prove the new cases.
    passed with the shared safe cancellation check. Public tests preserve the
    boundary's message and completion status. Cancellation and stage records
    remain correct when inspecting an error fails or causes an abort.
-4. **SEARCH-09 implementation complete:** existing cases assert call counts.
+4. **SEARCH-09 complete:** existing cases assert call counts.
    Controlled false-positive cases failed before the live assertion was
    corrected. Current documents identify proof ownership and completed AMD64
-   evidence. Record the separate live result as pass or failure; do not retry
-   until it happens to pass.
-5. Select checks from the **complete candidate**, as the
-   [test gate policy](test-gate-policy.md) requires. Source changes select
+   evidence. The separate live proof passed on its one request.
+5. **Selected checks complete:** the **complete candidate** follows the
+   [test gate policy](test-gate-policy.md). Source changes selected
    `npm test`, `npm run typecheck`, `npm run test:build`,
    `npm run build:user-portal`, and applicable runtime/container/hosted gates.
-   Run changed tests before commit. Do not add a duplicate `npm run check`.
-6. Run habit-hooks and the full
-   [ast-metrics process](ast-metrics-review.md) after the final changes.
-   Reuse coverage only if it is compatible; record each remaining goal
-   exception. Do not alter immutable metric history.
-7. Update evidence and the PR description, including the required complete
-   process report. Then follow [AGENTS.md](../../AGENTS.md) for Ready,
-   started Actions jobs, owner review, and merge.
+   Changed tests ran before commit. No duplicate `npm run check` was added.
+6. **Quality review complete:** habit-hooks and all four sections of the
+   [ast-metrics process](ast-metrics-review.md) ran on the complete candidate.
+   Fresh unit and integration coverage is compatible. Retained goal
+   exceptions have reasons; immutable metric history is unchanged.
+7. The PR description must include the complete final process report.
+   Follow [AGENTS.md](../../AGENTS.md) for Ready, started Actions jobs,
+   owner review, and merge.
 
 The original review used source inspection, 214 passing focused tests, and
 independent in-memory reproductions of R1 and R2. SEARCH-07 and SEARCH-08 fix
-those defects and record their own checks. Final image/build qualification of
-the completed SEARCH-07–09 candidate remains required before Ready; earlier
-passes do not qualify changed production inputs. No new public Brave request
-is needed for SEARCH-07 or SEARCH-08.
+those defects and record their own checks. SEARCH-09 records final image/build
+qualification of the completed SEARCH-07–09 candidate, including the Linux
+AMD64 gate. Earlier passes do not qualify changed production inputs. No new
+public Brave request was needed for SEARCH-07 or SEARCH-08.
 
 A future unchanged live empty-results capture should get provenance and a
 full-flow regression. Until then, retain the explicit unverified limit.
@@ -414,7 +414,7 @@ generalize fetch and search executors.
 
 ### SEARCH-09: Align proof strength and current documentation
 
-**Implemented; final qualification in progress.** Addresses R3, AC3, AC6,
+**Implemented and verified.** Addresses R3, AC3, AC6,
 and AC10. See [SEARCH-09 evidence](search-09.md).
 
 **Paths:** existing protected-search, public search, and live search tests;
