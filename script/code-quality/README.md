@@ -54,6 +54,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `snapshot/observations.ts` owns the separate offline raw-observation projection.
 `assessment/file-mi85.ts` calculates exact per-file MI85 states for caller selection.
 `assessment/crap-absolute.ts` calculates both absolute CRAP goals from operands.
+`assessment/crap-deterioration.ts` compares supplied CRAP observations or bounds.
 `assessment/mi-decline.ts` compares supplied MI operands for decline.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
@@ -137,6 +138,25 @@ not accepted evidence. It does not select origin/applicability, apply exceptions
 track lineage/history or decline, decide routes/AUTO eligibility, or verify
 scope/provenance. It adds no command or process integration and activates no
 policy. MI85, CLI/report/process/history behavior and manual merging stay unchanged.
+
+The separate pure `crapDeteriorationOf({ reference?, head? })` in
+`assessment/crap-deterioration.ts` accepts optional `{ paths, share? }` sides.
+It retains the `crapAbsoluteOf` observation shapes and reports `belowFive`
+(`head − reference < 5`) and `noDeterioration` (`head − reference ≤ 0`), each
+with `PASS`, `MISS` or `UNKNOWN` and a reason. Every supplied side is validated
+even if the other is absent; undefined is absent and null is invalid.
+
+Known endpoints use exact fractions. Missing share uses the existing safe bounds
+`[paths,paths²+paths]`; zero proves zero without fabricated coverage. The possible
+difference is `[head lower − reference upper, head upper − reference lower]`.
+An upper bound must prove a pass; a lower bound must prove a miss. Equal input
+bounds do not prove unchanged scores. The additive `compareCrapDifference` in
+`architecture/crap-score.ts` compares exactly; existing functions and signatures
+stay unchanged. Decisions use no display arithmetic and promise no numeric
+difference.
+This is arithmetic over supplied values, with no reference selection, identity,
+history, exceptions, routes, process integration or policy adoption. Full
+assessment remains pending; existing commands and manual merging stay unchanged.
 
 ### Own characters, joins, and unknowns
 
@@ -1113,6 +1133,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
@@ -1193,6 +1214,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |

@@ -175,6 +175,12 @@ decline below five and no deterioration, unknown operands, invalid values and
 threshold precision. They establish arithmetic, not comparable B/A evidence,
 best accepted score/history or scope.
 
+`test/unit/script/ast-metrics-crap-deterioration.test.ts` and
+`test/acceptance/script/ast-metrics-crap-deterioration.test.ts` specify exact CRAP
+deterioration below five and no deterioration from supplied observations or
+bounds. They cover missing and invalid sides, zero, strict boundaries and
+uncertainty; they do not establish reference identity or accepted history.
+
 `test/unit/script/ast-metrics-crap-absolute.test.ts` and
 `test/acceptance/script/ast-metrics-crap-absolute.test.ts` specify both absolute
 CRAP goals over supplied operands: exact comparisons, display-only scores,
@@ -924,6 +930,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
@@ -1004,6 +1011,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |

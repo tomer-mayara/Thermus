@@ -693,6 +693,25 @@ track lineage/history or decline, decide routes/AUTO eligibility, or verify
 scope/provenance. It adds no command or process integration and activates no
 policy. MI85, CLI/report/process/history behavior and manual merging stay unchanged.
 
+The separate pure `crapDeteriorationOf({ reference?, head? })` in
+`assessment/crap-deterioration.ts` accepts optional `{ paths, share? }` sides.
+It retains the `crapAbsoluteOf` observation shapes and reports `belowFive`
+(`head − reference < 5`) and `noDeterioration` (`head − reference ≤ 0`), each
+with `PASS`, `MISS` or `UNKNOWN` and a reason. Every supplied side is validated
+even if the other is absent; undefined is absent and null is invalid.
+
+Known endpoints use exact fractions. Missing share uses the existing safe bounds
+`[paths,paths²+paths]`; zero proves zero without fabricated coverage. The possible
+difference is `[head lower − reference upper, head upper − reference lower]`.
+An upper bound must prove a pass; a lower bound must prove a miss. Equal input
+bounds do not prove unchanged scores. The additive `compareCrapDifference` in
+`architecture/crap-score.ts` compares exactly; existing functions and signatures
+stay unchanged. Decisions use no display arithmetic and promise no numeric
+difference.
+This is arithmetic over supplied values, with no reference selection, identity,
+history, exceptions, routes, process integration or policy adoption. Full
+assessment remains pending; existing commands and manual merging stay unchanged.
+
 | Paths | Minimum whole percent for CRAP < 30 | Minimum whole percent for CRAP ≤ 15 |
 | --- | --- | --- |
 | 0 | 0% | 0% |

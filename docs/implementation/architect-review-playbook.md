@@ -696,7 +696,7 @@ Paths in this appendix are relative to
 the reference commit, with exact-snapshot CLI, raw file MI and native class
 observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
 process outcomes in F.12, exact per-file MI85 in F.13 and absolute CRAP
-calculation in F.14 and MI decline from supplied values in F.15.
+calculation in F.14, MI decline in F.15 and CRAP deterioration in F.16.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -724,9 +724,10 @@ Other proposed operations remain unavailable.
 | `assessment/file-mi85.ts` | F.13 calculates exact per-file MI85 states from declared observations and caller selection; first non-test caller of the F.11 decoder. | No source/authenticity or full-scope proof, route/AUTO eligibility or full assessment. |
 | `assessment/crap-absolute.ts` | F.14 calculates both absolute CRAP goals from supplied paths and optional coverage, with exact comparisons and safe bounds. | Arithmetic only; no accepted evidence, origin/applicability, exceptions, decline or route decisions. |
 | `assessment/mi-decline.ts` | F.15 compares supplied MI reference/head operands exactly for a drop below five points and no deterioration. | Caller validates B/A reference; arithmetic proves no comparability, lineage, best accepted score/history or scope. |
+| `assessment/crap-deterioration.ts`, `architecture/crap-score.ts` | F.16 compares supplied CRAP observations or safe bounds with additive `compareCrapDifference`. | No reference selection, identity, history, exception, route or process integration. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
-| `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | Add sound upper/difference bounds and lasting origin rules. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
+| `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | F.14/F.16 add sound absolute and difference bounds over supplied values. Lasting origin rules remain pending. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
 | `delta/`, `dependencies/`, `review/layer-tree.ts`, `layers.ts` | Changed paths, parsed import kinds, resolution issues and current guards. | Resolver coverage is limited; `#` aliases and bare external dependencies are not a complete package model. New affected-boundary checks must retain uncertainty. |
 | `architecture/component-*`, `community-*`, `trend-*`, renderers | Maps, historical labels and displays. | Internal edges are omitted from the component display. Use a separate file/logical-package graph for cycle decisions; the last ten trends cannot provide anchors. |
 | `architecture/main-history.ts`, `trend-store.ts`, `trend-lock.ts` | History enumeration and no-overwrite publication patterns. | Old same-commit publication keeps the first record even if new data differs. New accepted storage must reject conflicts. Local locking does not imply multi-host support. |
@@ -2079,7 +2080,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 
 | Owner/path | Planned change |
 | --- | --- |
-| `assessment/` | F.13–F.15 add only per-file MI85, absolute CRAP and MI decline from supplied values calculations. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
+| `assessment/` | F.13–F.16 add only per-file MI85, absolute CRAP, MI decline and CRAP deterioration calculations over supplied values. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
@@ -2094,7 +2095,8 @@ final typed process outcomes through the programmatic API only, with no new
 operation, artifact or policy adoption. F.13 adds only a synchronous per-file
 MI85 calculation for declared inputs and caller selection. F.14 adds pure
 absolute CRAP arithmetic, and F.15 adds MI decline comparisons over supplied
-operands. These calculations do not change commands.
+operands. F.16 adds exact CRAP deterioration comparisons over supplied
+observations or bounds. These calculations do not change commands.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2806,6 +2808,56 @@ Validation on 2026-10-20:
 No `src/` path or existing runtime code changed; no extra suite or collector ran.
 Required failures keep PR #201 in Draft; merging stays manual. Final committed
 process evidence and reasons for retained findings will be added to the PR.
+
+### F.16. CRAP deterioration calculation implementation record
+
+`assessment/crap-deterioration.ts` adds pure
+`crapDeteriorationOf({ reference?, head? })`, with optional `{ paths, share? }`
+sides. It retains `crapAbsoluteOf` observation shapes. `belowFive` checks
+`head − reference < 5`; `noDeterioration` checks `head − reference ≤ 0`.
+Both report `PASS`, `MISS` or `UNKNOWN` with reasons. Validate every supplied
+side even if the other is absent; undefined is absent and null is invalid.
+
+Known endpoints use exact fractions; missing share uses existing safe bounds
+`[paths,paths²+paths]`, and zero proves zero. Difference bounds are
+`[head lower − reference upper, head upper − reference lower]`. Only an upper
+bound can prove a pass; only a lower bound can prove a miss. Equal input bounds
+are not proof of unchanged scores. Additive `compareCrapDifference` in
+`architecture/crap-score.ts` preserves existing functions and signatures.
+There is no numeric difference promise, display arithmetic or fabricated coverage.
+
+Reference selection, identity, history, exceptions, routes, process integration
+and full assessment remain pending. No policy is adopted; existing MI85,
+commands, reports and manual merging stay unchanged. The unit and acceptance
+files are both named `ast-metrics-crap-deterioration.test.ts`.
+
+Validation on 2026-10-20:
+
+- The existing focused baseline passed 235/235. Five new acceptance and 54 new
+  unit cases first failed for the absent module/export. After two manager
+  boundary cases, the build exited 0 and the final focused set passed 296/296:
+  235 existing, 56 new unit and five new acceptance checks. Typed imports also
+  checked the new module's delegation to the runtime validator.
+- `pnpm run test:unit` passed 4,189 compiled and 23 portal checks, 4,212 total,
+  with exit 0. Full acceptance passed 924/927 compiled checks and exited 1:
+  the same two public-search cases and existing logger setup case failed.
+  The logger lacked `AXIOM_API_KEY`; both `AXIOM_API_KEY` and `AXOIM_ENDPOINT_URL`
+  were absent, with no `.env.local`. Relevant source, tests and support matched
+  `origin/main`. All five new cases and 18 README/help/inventory checks passed.
+- Separate selected portal acceptance passed 18/18. Pinned ast-metrics 0.43.1
+  snapshot passed 3/3; structural architecture with `--no-coverage` passed 1/1.
+  All completed runs had zero cancelled, skipped or todo tests. The 35 history
+  hashes stayed unchanged. Existing CRAP helper bodies and signatures stayed
+  byte-for-byte unchanged. The added comparator has no caller in current commands.
+  Coverage/CRAP live behavior and collectors were unaffected.
+- The first habit-hooks run exited 1 for one unused-file, three unused-export,
+  82 comment and one oversized finding, with no complexity finding. Concrete
+  reasons are on the PR; the snooze file is empty. Manager and independent review
+  found no defect, including at the final validation seam.
+
+No `src/` file changed; no extra suite or collector ran. Required failures keep
+PR #201 in Draft; merging stays manual. Final habit-hooks after documentation
+and the committed process report will follow on the PR.
 
 ## References
 

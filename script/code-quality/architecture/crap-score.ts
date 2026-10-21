@@ -28,3 +28,20 @@ export function compareCrap(entry: FunctionCrap, other: FunctionCrap | number): 
   const difference = first[0] * second[1] - second[0] * first[1];
   return Number(difference > 0n) - Number(difference < 0n);
 }
+
+interface KnownCrapOperands { readonly paths: number; readonly share: number }
+type ExactCrapOperand = number | KnownCrapOperands;
+
+// Callers validate operands. Scalars are exact score endpoints; known coverage
+// uses its operands. Display values never establish the difference or its sign.
+export function compareCrapDifference(head: ExactCrapOperand, reference: ExactCrapOperand, threshold: number): number {
+  const [h, hd] = exactCrapFractionOf(head);
+  const [r, rd] = exactCrapFractionOf(reference);
+  const [t, td] = fractionOf(threshold);
+  const difference = (h * rd - r * hd) * td - t * hd * rd;
+  return Number(difference > 0n) - Number(difference < 0n);
+}
+
+function exactCrapFractionOf(value: ExactCrapOperand): readonly [bigint, bigint] {
+  return typeof value === 'number' ? fractionOf(value) : crapFractionOf(value.paths, value.share);
+}
