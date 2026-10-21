@@ -13,10 +13,14 @@ they do not qualify changed inputs.
 2026-10-21 at 04:51:01 UTC as
 `6ac961ae2865fbe6ebdbd586869c30a1b0ae52f2`.
 
-The [search results cleanup plan](search-results-cleanup-plan.md) is in
-implementation in [PR 208](https://github.com/tomer-mayara/Thermus/pull/208).
-It adds result-only projection after full-page safety cleaning. Its delivery
-checks and review remain pending; earlier SEARCH evidence does not qualify it.
+The [search results cleanup plan](search-results-cleanup-plan.md) adds
+result-only projection after full-page safety cleaning. Local implementation
+and validation are complete: manager review, all eight selected gates, and one
+bounded local live proof are recorded in [SR-01](sr-01.md).
+[PR 208](https://github.com/tomer-mayara/Thermus/pull/208) owns current Ready,
+Actions, owner-review, and merge status; owner review remains required. The PR
+must include the complete final ast-metrics report unchanged.
+Recorded quality exceptions are not passing assessments.
 
 This document owns the current design, acceptance criteria, and next steps.
 The [search reference](../reference/mcp-search-tool.md) owns tool usage.
@@ -223,7 +227,7 @@ sanitation; the pipeline checks only nonblank output, not final row links.
 Zero eligible rows produces blank HTML. Existing kind handling distinguishes
 allowed provider no-results from blank results; withholding stays authoritative.
 See the [cleanup plan](search-results-cleanup-plan.md) for its implementation
-contract and pending delivery evidence.
+contract and the [SR-01 record](sr-01.md) for delivery evidence.
 
 ### Outcomes and failures
 

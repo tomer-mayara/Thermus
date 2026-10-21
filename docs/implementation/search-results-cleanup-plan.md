@@ -1,7 +1,7 @@
 # Search results cleanup plan
 
 Date: 2026-10-20 (America/Denver).
-Status: implementation in progress in draft PR 208; delivery verification and final manager review pending.
+Status: local implementation and validation complete; PR 208 owns the current review and merge status.
 
 ## Decision
 
@@ -333,12 +333,15 @@ new controls, retry policy, or release obligation is implied by this placeholder
 ## Review and delivery status
 
 The manager signed off the plan, implementation, and current guidance.
-Implementation is in draft [PR 208](https://github.com/tomer-mayara/Thermus/pull/208).
+The change is tracked in [PR 208](https://github.com/tomer-mayara/Thermus/pull/208).
 The [SR-01 delivery record](sr-01.md) owns candidate revisions, focused test
 results, fixture measurements, retained quality findings, and final gate/live
-proof fields. Full final-candidate gates, Ready, owner review, and Actions
-outcomes remain pending. Earlier full-suite evidence does not qualify the
-subsequent source and test changes.
+proof. All eight selected local gates and the bounded live proof passed.
+PR 208 owns current Ready, Actions, owner-review, and merge status; owner review
+is still required. Quality goal misses and unknown assessments are recorded as
+exceptions, not passes. The final prose-only ast-metrics process must reuse
+compatible coverage after the final documentation commit, and its complete report
+must be attached to the PR unchanged.
 
 The implementation retains one public transformation and two private helpers
 created per invocation. No pipeline contract changed. The latest focused built
@@ -352,5 +355,5 @@ record preserves this limitation; cleanup does not decode twice, and generic
 converter/fetch behavior is unchanged. Do not infer final-render literal-entity
 fidelity from the focused passes.
 
-SR-02 remains an independent deferred follow-up. Current code review signoff
-is not final gate completion or release approval.
+SR-02 remains an independent deferred follow-up. Local completion and manager
+signoff do not replace owner review or the required PR workflow.
