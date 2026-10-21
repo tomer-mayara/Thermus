@@ -174,6 +174,12 @@ records stay immutable. Gap checks cover only the interval between displayed
 first-parent endpoints; every stored full SHA counts, also when its row is not
 shown. Offline snapshot dates cannot establish omitted commits.
 
+`test/unit/script/ast-metrics-manual-history.test.ts` and
+`test/acceptance/script/ast-metrics-manual-history.test.ts` specify one-unit
+manual declarations, missing facts/ranges, review completeness and retained-byte
+references. They check declared bindings and hashes, not semantic truth, actual
+history completeness or a complete accepted anchor. They collect no coverage.
+
 `test/unit/script/ast-metrics-numeric-evidence.test.ts` and
 `test/acceptance/script/ast-metrics-numeric-evidence.test.ts` specify strict
 numeric-fragment binding, MI/CRAP evidence, copied operands and retained gaps.
@@ -978,6 +984,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-file-mi85.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-manual-history.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
@@ -1062,6 +1069,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-manual-history.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |

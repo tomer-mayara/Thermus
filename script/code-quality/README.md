@@ -59,6 +59,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `assessment/crap-ceiling.ts` compares supplied CRAP operands/bounds with a ceiling.
 `assessment/mi-floor.ts` compares supplied raw MI with a supplied floor.
 `assessment/numeric-evidence.ts` checks declared numeric fragment bindings.
+`assessment/manual-history.ts` checks manual declarations against retained bytes.
 `assessment/mi-decline.ts` compares supplied MI operands for decline.
 `assessment/mi-assessment.ts` calculates per-unit MI floor and independent decline results.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
@@ -911,6 +912,38 @@ activates no policy. Full assessment remains pending; existing commands and
 manual merging stay unchanged. The process does not call it yet. `LOW` or
 `UNKNOWN` alone is not an architect trigger; broader checks remain pending.
 
+`manualHistoryIn(input, expected, sources)` in `assessment/manual-history.ts`
+checks one unit's manual history fragment, without an independent version or
+full input schema. Expected bindings name unit id/kind, basis SHA256, start P
+and main-cut SHA1, archive cut `{ id, sha256 }`, scope id, reviewer, optional
+accepted-best revision and an independent source catalog `{ id, sha256 }[]`.
+Expected `sources` is the independent catalog; the separate sources argument
+supplies retained `{ id, bytes: Uint8Array }` values. References must match the
+catalog and SHA256 of those exact bytes, without JSON reserialization; dangling
+or changed references fail even when other gaps are declared.
+
+The fragment requires unit, basis, start/main cuts, archive cut, scope, metric,
+origin, acceptedBest, skippedRanges, gaps, review and exceptions. MI applies to
+file/class and CRAP to function. Known origin has references; missing origin
+has an explicit reason. Selected best retains revision, evidence and
+references; known measurement requires references, while missing measurement
+may have an empty reference list. Unselected best declares a gap, distinct from
+missing measurement. An exact numeric best cannot use positive paths with
+missing coverage; proven zero can. Skipped ranges retain
+endpoints/reason/references; gaps retain endpoints/reason. Review is `{
+reviewer, completeness, statement }`, bound to the expected human reviewer; it
+is not a separate referenced artifact. Its `no-known-gaps` or `gaps-declared`
+completeness must agree with missing facts and range gaps. Required
+`exceptions` is empty; nonempty exceptions are explicitly unsupported.
+
+The reader copies declarations and references, with no projection to a complete
+accepted anchor, calculator input or route. People still verify semantic truth,
+authority, lineage, actual merges and range completeness; hashes do not prove
+truth. It does no Git ancestry, overlap or history replay, IO, archive writing
+or scanning. New-unit history exemptions, exception semantics, full history and
+command wiring remain pending. Existing commands and manual merging stay
+unchanged.
+
 `numericEvidenceIn(input, expectedBinding)` in `assessment/numeric-evidence.ts`
 checks one numeric fragment of future assessment input. It is not a separate
 version or the full PREPARATION/FINAL schema. Expected bindings declare unit
@@ -1261,6 +1294,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-file-mi85.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-manual-history.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
@@ -1345,6 +1379,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-manual-history.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |

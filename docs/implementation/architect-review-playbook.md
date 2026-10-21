@@ -698,7 +698,8 @@ observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
 process outcomes in F.12, exact per-file MI85 in F.13 and absolute CRAP
 calculation in F.14, MI decline in F.15, CRAP deterioration in F.16, and per-unit
 MI/per-function CRAP assessment in F.17/F.18 and supplied CRAP ceilings/MI
-floors in F.19/F.20, plus declared numeric fragment checks in F.21.
+floors in F.19/F.20, declared numeric checks in F.21 and manual history fragment
+checks in F.22.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -732,6 +733,7 @@ Other proposed operations remain unavailable.
 | `assessment/crap-ceiling.ts` | F.19 compares supplied CRAP operands/bounds with a supplied ceiling. | Arithmetic only; no exception validity/applicability, reference/history/provenance proof or route. |
 | `assessment/mi-floor.ts` | F.20 compares supplied raw head MI with a supplied floor. | Arithmetic only; no proof an exception is valid or covers a condition, history/identity or route proof. |
 | `assessment/numeric-evidence.ts` | F.21 checks one numeric fragment against declared unit/basis/revision bindings and copies evidence/operands with gaps retained. | Not verified evidence or full PREPARATION/FINAL schema; source, history, origin, exception and route checks remain pending. |
+| `assessment/manual-history.ts` | F.22 checks one unit’s manual history declarations and source references against expected bindings/catalog and retained bytes. | Hashes do not prove truth, authority, lineage or range completeness; no complete anchor/calculator projection or replay. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | F.14/F.16 add sound absolute and difference bounds over supplied values. Lasting origin rules remain pending. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -2087,7 +2089,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 
 | Owner/path | Planned change |
 | --- | --- |
-| `assessment/` | F.13–F.20 add numeric calculations; F.21 adds a checked numeric fragment reader over declared bindings. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
+| `assessment/` | F.13–F.20 add numeric calculations; F.21 adds a checked numeric fragment reader; F.22 checks manual history declarations and retained reference bytes. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
@@ -2109,7 +2111,8 @@ PR/cumulative CRAP results. F.19 compares supplied CRAP operands/bounds with
 a supplied ceiling. F.20 compares supplied raw MI with a supplied floor. These
 calculations do not change commands. F.21 checks a numeric input fragment
 against declared bindings, without a full PREPARATION/FINAL schema or command
-wiring.
+wiring. F.22 checks one unit’s manual history declarations/references without
+full history validation, replay or calculator projection.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -3179,6 +3182,56 @@ Focused validation on 2026-10-20:
 Three known failures keep PR #201 in Draft; merging stays manual. Final
 habit-hooks after this prose and the clean committed process report will
 follow on the PR.
+
+### F.22. Manual history fragment implementation record
+
+`assessment/manual-history.ts` adds `manualHistoryIn(input, expected, sources)`
+for one unit fragment, without an independent version or full input schema.
+Expected bindings declare unit id/kind, basis SHA256, start P/main-cut SHA1,
+archive cut id/hash, scope id, reviewer, optional accepted-best revision and an
+independent source catalog. References must match that catalog and SHA256 of
+actual retained `Uint8Array` bytes, without JSON reserialization. Dangling or
+changed references fail even with other declared gaps.
+
+Required declarations include origin, acceptedBest, skippedRanges, gaps, review
+and exceptions. Known origin retains references; missing origin has a reason.
+Selected best retains revision/evidence/references; an unselected reference is
+a gap, distinct from missing measurement. Positive paths with missing coverage
+cannot supply an exact numeric best; proven zero can. Skipped ranges retain
+endpoints/reason/references, and gaps retain endpoints/reason. Review is
+`{ reviewer, completeness, statement }`, bound to the expected named human,
+without a separate review artifact/reference. Its `no-known-gaps`/`gaps-declared`
+completeness must agree with missing facts/range gaps.
+Required exceptions must be empty; nonempty exceptions are unsupported.
+
+Copied declarations/references do not supply a complete accepted anchor,
+calculator input or route. People verify truth, authority, lineage, actual
+merges and range completeness; hashes prove no semantic truth. No Git ancestry,
+overlap replay, IO, archive writer or scanner is added. New-unit history
+exemptions, exception semantics, full history and command wiring remain pending.
+Existing commands and manual merging stay unchanged.
+
+The unit and acceptance files are both named `ast-metrics-manual-history.test.ts`.
+Validation on 2026-10-20:
+
+- The baseline passed 464/464. Five new acceptance and 57 new unit cases first
+  failed before runtime implementation. After eight added boundary cases, the
+  final typed build exited 0 and focused checks passed 534/534: 464 existing,
+  65 new unit and five new acceptance cases.
+- Full unit passed 4,455 compiled and 23 portal checks, 4,478 total. Compiled
+  acceptance passed 952/955: only missing `AXIOM_API_KEY` and the two known
+  absent/unknown search-tool cases failed. All five new reader cases and 18
+  README/help/inventory checks passed. Separate portal acceptance passed 18/18.
+- Existing command-selection sentinels passed 3/3. Native snapshot passed 3/3
+  and structural architecture passed 1/1 without skips. Original MCP timeout,
+  hung discovery/initialize/call and forced-GC checks passed, with all three
+  nested cases asserted. All budgets and assertions stayed unchanged; completed
+  runs had zero cancellations, skips or todo tests.
+- Manager and independent audit found no actionable issue. The 35 history-record
+  hashes stayed unchanged. The runtime is one module without an added helper.
+
+Three known required failures keep PR #201 in Draft; merging stays manual.
+Final habit-hooks and clean committed process evidence will follow on the PR.
 
 ## References
 
