@@ -6,7 +6,7 @@ import type { FunctionIdentity, SourceEvidence } from '../identity/types.ts';
 // the files under src/ and their communities. See docs/implementation/ast-metrics-review.md, "Take a snapshot",
 // for its fields and purpose; the architecture command reads it.
 //
-// A score keeps one decimal and a share two; a count is an integer. A field that ast-metrics did not measure is absent,
+// Display scores keep one decimal and shares two; a count is an integer. A field that ast-metrics did not measure is absent,
 // such as the maintainability of a file of types. Communities are sorted by label and files by path, so that two
 // snapshots diff well.
 
@@ -73,6 +73,8 @@ export interface SnapshotFile {
   // null for a file that is in no community, such as an entry point that no file imports.
   readonly community: string | null;
   readonly maintainability?: number;
+  // Native file MI before rounding. Absent when the report has no index.
+  readonly maintainabilityRaw?: number;
   readonly paths: number;
   readonly loc: number;
   readonly risk?: number;

@@ -26,6 +26,7 @@ test('Given a branch that changes only a document, when the check runs, then the
     'Changed paths:', '- M docs/guide.md', '',
     'Line counts:', '- Production: 0 (limit 400)', '- Total without generated files: 2 (limit 1500)', '',
     'Tests:', '- Added test cases: 0', '- Removed test cases: 0', '- Added skips or todos: none', '',
+    'MI:', '- not checked: give --base-snapshot and --head-snapshot', '',
     'Facts to declare:', '- none', '',
     'Declared facts:', '- none', '',
     'Surface differences:', '- none', '',

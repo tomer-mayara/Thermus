@@ -15,7 +15,6 @@ export function sourceFilesOf(text: string, root: string): FileMeasurement[] {
   }
   return report.concernedFiles
     .flatMap((entry) => measurementOf(entry, root))
-    .filter((file) => file.path.startsWith('src/'))
     .sort((first, second) => textOrder(first.path, second.path));
 }
 
@@ -23,15 +22,26 @@ export function sourceFilesOf(text: string, root: string): FileMeasurement[] {
 // as a file of types, and the risk score of many files, so both stay optional.
 function measurementOf(entry: unknown, root: string): FileMeasurement[] {
   const fields = objectOf(entry);
-  const path = textOf(fields.path);
-  if (path === undefined) return [];
+  const nativePath = textOf(fields.path);
+  if (nativePath === undefined) return [];
+  const path = relative(root, nativePath).split(sep).join('/');
+  if (!path.startsWith('src/')) return [];
   return [{
-    path: relative(root, path).split(sep).join('/'),
+    path,
     paths: numberOrZero(objectOf(fields.complexity).cyclomatic),
     loc: numberOrZero(objectOf(fields.volume).loc),
-    maintainability: numberOf(objectOf(fields.maintainability).maintainabilityIndex),
+    maintainability: fileMaintainabilityOf(fields.maintainability, path),
     risk: numberOf(objectOf(fields.risk).score),
   }];
+}
+
+function fileMaintainabilityOf(value: unknown, path: string): number | undefined {
+  if (value === undefined) return undefined;
+  if (isJsonObject(value)) {
+    const index = value.maintainabilityIndex;
+    if (index === undefined || typeof index === 'number' && Number.isFinite(index)) return index;
+  }
+  throw new CommandError(`Invalid file maintainability for ${path}: expected an object with an optional finite maintainabilityIndex.`);
 }
 
 // The shape of the answer of get_file_metrics follows ast-metrics 0.43.1.

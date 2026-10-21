@@ -4,6 +4,7 @@ import type { CheckOptions } from './command-line.ts';
 import { candidateOf, isDirty, revisionsOf } from './git-reads.ts';
 import { resultOf } from './result.ts';
 import { rulesAt } from './rules-source.ts';
+import { snapshotPairOf } from './snapshots.ts';
 import type { CheckResult } from './types.ts';
 
 export function runCheck(root: string, options: CheckOptions): CheckResult {
@@ -14,5 +15,6 @@ export function runCheck(root: string, options: CheckOptions): CheckResult {
   }
   const revisions = revisionsOf(root, options.base);
   const rules = rulesAt(root, revisions, options.rules);
-  return resultOf({ ...candidateOf(root, revisions, rules.base.scopes.production), dirty }, rules, options.repository);
+  const snapshots = options.snapshots === undefined ? undefined : snapshotPairOf(options.snapshots, revisions);
+  return resultOf({ ...candidateOf(root, revisions, rules.base.scopes.production), dirty, snapshots }, rules, options.repository);
 }

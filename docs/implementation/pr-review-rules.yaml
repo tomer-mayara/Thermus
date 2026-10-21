@@ -2,9 +2,10 @@
 #
 # Status: proposal of 2026-10-20, in manual trial. The command
 # script/pr-review/check.ts applies protected_paths, read_paths, scopes,
-# public_surface, dependency_graph and size. The other keys wait for CI and the
-# later checks. The section "Review route" of AGENTS.md governs where it differs
-# from this file. The playbook docs/implementation/pr-review-playbook.md explains the
+# public_surface, dependency_graph, size and ratchet.maintainability_index,
+# and it reads the exceptions file of ratchet. The other keys wait for CI and
+# the later checks. The section "Review route" of AGENTS.md governs where it
+# differs from this file. The playbook docs/implementation/pr-review-playbook.md explains the
 # routes and the seven checks. The checks will read this file. A change to
 # this file is ASK.
 #
@@ -47,14 +48,14 @@ scopes:
     - docs/api-surface/**          # to create
     - pnpm-lock.yaml
     - .ast-metrics-baseline.yaml
-    - .code-quality-scores.json   # to create
 
 measurement_basis:
   node: 24.20.0
   ast_metrics: 0.43.1
   typescript: 7.0.2                  # native build; no compiler API
-  # After a pull request changes one of these versions, the main workflow
-  # writes new scores for that commit. The pull request itself changes no score.
+  # The snapshot command measures the merge base and the candidate with the
+  # installed tools, so a pull request that changes a version measures both
+  # with the new version.
 
 # Check 7. A failed command is FIX. None of this runs today: the repository has
 # no .github/workflows, and branch protection needs GitHub Pro or an organization.
@@ -69,7 +70,9 @@ required_checks:
     - habit-hooks --branch origin/main
     - pnpm exec node script/code-quality/ast-metrics-coverage.ts --suite unit --suite integration --suite acceptance --out ast-report/coverage.json
     - pnpm exec node script/code-quality/ast-metrics-process.ts --coverage ast-report/coverage.json
-    - pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus   # checks 1, 3 and 5, and the modules of check 2
+    - pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main   # writes ast-report/snapshot-base.json
+    - pnpm exec node script/code-quality/ast-metrics-snapshot.ts                      # writes ast-report/snapshot.json
+    - pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json   # checks 1, 3 and 5, the MI rules of check 4, and the modules of check 2
   when_paths_change:
     - paths: [src/**, docker/**, "Dockerfile*"]
       commands: [pnpm run build:hosted, pnpm run test:container:hosted]   # the AMD64 runner replaces the emulated local build
@@ -78,7 +81,6 @@ required_checks:
   live_gates: docs/implementation/test-gate-policy.md   # the hosted live gate and the signup gate stay manual
   main_push:
     - the same commands as pull_request
-    - write .code-quality-scores.json for the new main commit, with "[skip render]" in the commit message
     - audit: recompute the route of the merged pull request; open an issue when the route was ASK or READ and the approved label was absent
 
 # Check 1. A changed path that matches a pattern is ASK. A path can appear in
@@ -168,7 +170,7 @@ read_paths:
   route: READ
   paths:
     - .ast-metrics-baseline.yaml     # the accepted native lint violations
-    - .code-quality-exceptions.yaml  # to create; the metric exceptions of check 4
+    - .code-quality-exceptions.yaml  # optional; the metric exceptions of check 4
     - docs/implementation/test-gate-policy.md     # while no CI exists, this document is the enforcement; move it out when workflows run the checks
     - docs/implementation/ast-metrics-review.md   # same reason
     - .agent/**                                   # agent configuration
@@ -379,11 +381,17 @@ dependency_graph:
     user-portal: ["node:url"]
     website-fetcher: ["node:child_process", "node:dns", "node:dns/promises", "node:net", "node:os"]
 
-# Check 4. CI compares the scores of the head with the scores of the merge
-# base. The scores file holds the scores of each main commit.
+# Check 4. The author takes two snapshots with
+# script/code-quality/ast-metrics-snapshot.ts, one of the merge base and one
+# of the candidate. The check reads them with --base-snapshot and
+# --head-snapshot and applies maintainability_index to the raw MI of each
+# changed production file. A snapshot of another commit stops the check. The
+# check reads the exceptions file at HEAD; today is the committer date of
+# HEAD, so that a rerun gives the same route. The CRAP keys and identity wait
+# for the later check.
 ratchet:
-  scores_file: .code-quality-scores.json    # to create; the main workflow writes it, no pull request changes it
-  pull_request_changes_scores_file: FIX
+  base_snapshot: ast-report/snapshot-base.json   # the default output of the snapshot command with --base
+  head_snapshot: ast-report/snapshot.json        # the default output of the snapshot command without --base
   coverage_suites: [unit, integration, acceptance]   # one basis for the AGENTS.md report and this check; the metrics guide uses unit only today
   identity:
     key: the function identity and move detection of script/code-quality/ast-metrics-crap.ts
@@ -398,12 +406,12 @@ ratchet:
     changed_function_above_goal_and_worse_than_base: FIX   # a function below its goal may get worse
   maintainability_index:
     unit: production file            # a test or support file has no rule
-    new_file_below: 85               # FIX
-    existing_file_drop_read_at: 5    # READ at a raw drop of five or more from the merge base
+    new_file_below: 85               # FIX for a new file (status A) below this raw MI
+    existing_file_drop_read_at: 5    # READ at a raw drop of five or more from the base snapshot; a renamed file continues its old path
     compare: raw values, no rounding
   exceptions:
-    file: .code-quality-exceptions.yaml   # to create; a change is READ through read_paths
-    fields: [unit, metric, bound, reason, expires, predecessor]
+    file: .code-quality-exceptions.yaml   # optional; a change is READ through read_paths
+    fields: [unit, metric, bound, reason, expires, predecessor]   # the check reads path (the unit of mi), metric mi, bound, reason and expires (YYYY-MM-DD)
     predecessor: the function that a renamed or moved function continues, so it keeps the legacy goal
     expired_entry: FIX for a pull request that changes the unit; other expiries go to the monthly review
 

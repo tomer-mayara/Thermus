@@ -758,6 +758,17 @@ communities. Publication requires every call to succeed and unchanged input
 identity. The snapshot stores no coverage or CRAP; architecture joins those
 when reporting.
 
+Capture emits optional file `maintainabilityRaw` by default when native file MI
+is available. It keeps finite precision before rounding, including zero, with
+no assumed upper clamp. Rounded `maintainability`
+stays unchanged; top-level snapshot version stays 1. Missing/legacy raw values
+remain unavailable, never inferred from rounded scores. Present malformed or
+nonfinite native MI for a `src/` file stops capture before publication;
+out-of-scope entries remain ignored. The existing
+architecture reader ignores this optional field; displays/trends/process retain
+rounded data. The review route check `script/pr-review/check.ts` reads the raw
+value for the MI rules of check 4.
+
 `tool` keeps the checked actual version, including an explicit override.
 Optional `title` is the commit message's first line; optional `provenance`
 contains source and expected coverage-input fingerprints, runtime, compiler,
@@ -1014,6 +1025,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |

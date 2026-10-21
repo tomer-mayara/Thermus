@@ -23,6 +23,7 @@ export function resultOf(candidate: Candidate, rules: LoadedRules, repository: s
     changedPaths: candidate.changes,
     lineCounts: { production: counts.production, productionLimit: rules.base.limits.production, total: counts.total, totalLimit: rules.base.limits.total },
     tests: { added: tests.added, removed: tests.removedCases.length, skippedOrTodo: tests.skippedOrTodo },
+    mi: analysis.mi,
     factsToDeclare: analysis.factsToDeclare,
     declaredFacts: analysis.declared,
     surfaceDifferences: analysis.surface,

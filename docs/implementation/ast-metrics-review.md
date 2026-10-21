@@ -757,7 +757,8 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
   hub, member files, the numbers of its files, references, and edges to the
   other communities.
 - `files`: each `src/` file, sorted by path, with its community (or `null`),
-  maintainability, decision paths, lines, risk, and functions.
+  rounded `maintainability`, optional `maintainabilityRaw`, decision paths,
+  lines, risk, and functions.
 - `provenance`: source and expected coverage-input fingerprints, runtime,
   compiler, suite, and measurement version. These inputs are checked before
   and after analysis. The commit label alone does not identify uncommitted
@@ -767,6 +768,20 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
   The pairs keep local static imports, type imports, re-exports, side-effect
   imports, and literal dynamic imports. They include imports within one
   component and deduplicate each source/target file pair.
+
+Optional file `maintainabilityRaw` preserves the finite value from native
+`concernedFiles[].maintainability.maintainabilityIndex`, including zero, without
+rounding or an assumed upper clamp. Capture emits it by default when available.
+The additive field keeps snapshot version 1
+and leaves rounded `maintainability` unchanged. Missing/legacy raw values stay
+unavailable; never reconstruct them from rounded values. Present malformed or
+nonfinite native MI for a `src/` file rejects capture before publication;
+out-of-scope entries remain ignored. The existing
+architecture reader ignores this field, so its displays, trends and process
+results still use rounded data. The review route check
+[`script/pr-review/check.ts`](../../script/pr-review/README.md) reads and
+validates the raw value for the MI rules of check 4. The field adds no raw MI
+for functions.
 
 The raw 0.43.1 JSON gives file coupling counts and namespace relations, but
 does not give complete file import pairs. The snapshot therefore uses the
@@ -797,7 +812,8 @@ namespace, use `src`. The shared community ID gives `shared kernel`. When
 labels repeat, each gets the basename of its first hub in parentheses, or
 the community ID if it has no hub. The hub is a duplicate suffix, not the
 primary label rule. The maintainability of a community or of `src/` is the sum of index × lines over the sum of lines of
-the files with an index. A score keeps one decimal and a share two. A value
+the files with an index. Rounded scores keep one decimal and a share two; file
+`maintainabilityRaw` keeps native precision. A value
 that ast-metrics does not give is absent. A function without a name is
 `(anonymous)`. The exit status is 1, with one diagnostic line and no
 snapshot, for a missing executable, a failed analysis, a failed or late
