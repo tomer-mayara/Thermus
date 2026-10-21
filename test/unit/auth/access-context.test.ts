@@ -6,7 +6,7 @@ import {
   requirePermission,
   type AuthenticatedUser,
   type RoleGrant,
-} from '../../../src/auth/access-context.ts';
+} from '../../../src/accounts/identity/access-context.ts';
 
 const productAccess = 'product:access';
 const userGrant: RoleGrant = { role: 'user', permissions: [productAccess] };

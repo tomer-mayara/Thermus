@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
+import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 import { hostedConfig, hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 
 describe('Hosted test configuration of the offline hosted sites', () => {

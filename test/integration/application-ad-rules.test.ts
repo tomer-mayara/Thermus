@@ -3,7 +3,7 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import adblockRust from 'adblock-rs';
-import { createApplication } from '../../src/application.ts';
+import { createApplication } from '../../src/app/application.ts';
 import { dataDirectory } from '../support/isolation/data-directory.ts';
 import { selfHostedConfig, selfHostedServerSettings } from '../support/in-process/local-runtime.ts';
 

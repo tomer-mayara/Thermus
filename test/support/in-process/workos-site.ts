@@ -1,9 +1,9 @@
 import type { TestContext } from 'node:test';
-import type { Application } from '../../../src/application.ts';
-import type { WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { composeWorkOSApplication, type WorkOSApplicationParts } from '../../../src/hosted-workos-application.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import type { RequestServerBuilder } from '../../../src/mcp/mcp-server.ts';
+import type { Application } from '../../../src/app/application.ts';
+import type { WorkOSMfaPolicy } from '../../../src/accounts/providers/workos/workos-settings.ts';
+import { composeWorkOSApplication, type WorkOSApplicationParts } from '../../../src/app/hosted-workos-application.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
+import type { RequestServerBuilder } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
 import { WorkOSFake } from '../doubles/workos/workos-fake.ts';
 import { WorkOSSignupFake } from '../doubles/workos/workos-signup-fake.ts';

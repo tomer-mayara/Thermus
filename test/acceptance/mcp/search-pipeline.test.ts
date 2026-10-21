@@ -5,7 +5,7 @@ import { openSearchSite } from '../../support/in-process/mcp-search-site.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { RendererProcessDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
-import { HiddenHtmlScanner } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
+import { HiddenHtmlScanner } from '../../../src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 import { assertCleanSearchResults } from '../../support/dsl/search-results.ts';
 

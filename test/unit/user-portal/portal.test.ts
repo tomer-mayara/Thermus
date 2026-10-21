@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { initializePortal, type PortalOptions } from '../../../src/user-portal/portal.ts';
+import { initializePortal, type PortalOptions } from '../../../src/interfaces/user-portal/portal.ts';
 
 type Answers = Readonly<Record<string, () => Promise<Response>>>;
 

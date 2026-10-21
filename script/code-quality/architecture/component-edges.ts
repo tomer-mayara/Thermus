@@ -10,8 +10,9 @@ export function dependencyNoticeOf({ base, head }: MapSources): string | undefin
 
 export function componentEdgesOf(sources: MapSources, nodes: readonly MapNode[]): MapEdge[] {
   if (sources.base.dependencies === undefined || sources.head.dependencies === undefined) return [];
-  const after = componentDependenciesOf(sources.head);
-  const before = dependencyNoticeOf(sources) === undefined ? componentDependenciesOf(sources.base) : after;
+  const legacyRoot = sources.base.ownership?.app || sources.head.ownership?.app ? 'app' : 'src';
+  const after = componentDependenciesOf(sources.head, legacyRoot);
+  const before = dependencyNoticeOf(sources) === undefined ? componentDependenciesOf(sources.base, legacyRoot) : after;
   const nodeOf = new Map(nodes.map((node) => [node.label, node]));
   return [...new Map([...before, ...after])].flatMap(([key, edge]): MapEdge[] => {
     const from = nodeOf.get(edge.from);

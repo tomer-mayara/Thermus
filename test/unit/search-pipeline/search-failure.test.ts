@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SearchFailure } from '../../../src/search-pipeline/search-failure.ts';
+import { SearchFailure } from '../../../src/pipelines/search/search-failure.ts';
 
 let caseNumber = 0;
 for (const [diagnostic, detail] of [

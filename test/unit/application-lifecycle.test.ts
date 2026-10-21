@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { composeApplication } from '../../src/application.ts';
+import { composeApplication } from '../../src/app/application.ts';
 
 test('Given active MCP work and a listener that is draining, when concurrent close calls start, then work closes before drain and providers wait for both', async () => {
   const events: string[] = [];

@@ -1,4 +1,4 @@
-import type { FailureReport } from '../../../../src/mcp/mcp-server.ts';
+import type { FailureReport } from '../../../../src/interfaces/mcp/mcp-server.ts';
 
 export class FailureReporterSpy {
   readonly reports: FailureReport[] = [];

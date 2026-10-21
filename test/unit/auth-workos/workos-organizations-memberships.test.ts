@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { ListOrganizationMembershipsOptions } from '@workos-inc/node';
-import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
-import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
-import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
+import type { AuthenticatedUser } from '../../../src/accounts/identity/access-context.ts';
+import { HostedRoleConfigurationError } from '../../../src/accounts/providers/workos/hosted-role-mapping.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
 import { stagingRoles, type MembershipRecord, type RoleRecord } from './fixtures/workos-organizations-double.ts';
 
 interface MembershipPage {

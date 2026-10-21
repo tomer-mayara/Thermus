@@ -4,7 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { test, type TestContext } from 'node:test';
 import { betterAuth } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
-import { localProviderOptions } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
+import { localProviderOptions } from '../../../src/accounts/providers/better-auth/better-auth-runtime.ts';
 
 const installationId = '0f6c1e9a-4b7d-4e2a-9c35-8d1f2a6b7e40';
 const shippedMigrations = ['0001-better-auth.sql', '0002-installation.sql'];

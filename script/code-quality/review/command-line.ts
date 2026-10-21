@@ -12,7 +12,9 @@ The command runs ast-metrics review at the repository root, prints its Markdown
 report, and writes fresh reports to ast-report/review.md and ast-report/review.json.
 The wrapper warns for new functions above ten paths and keeps native high
 severity at 25 paths. It also blocks new resolved imports from
-src/html-cleaner-pipeline/ to src/mcp/, and from src/website-fetcher/ to src/auth/.
+HTML processing to MCP, and website-fetcher to identity, auth providers, web,
+or CLI. Each revision supplies its component roots; legacy folders still apply
+when the revision has no ownership declaration.
 Layer rules compare with the merge base. Uncertain imports in affected guarded
 sources fail the command. Adjusted JSON retains the complete nativeReview.
 The native baseline does not suppress these resolved-path checks.

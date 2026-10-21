@@ -1,5 +1,5 @@
-import type { SearchDocument, SearchEngine } from '../../../src/search-engine/search-engine.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import type { SearchDocument, SearchEngine } from '../../../src/pipelines/providers/search-engine/search-engine.ts';
+import type { WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 
 const page = {
   requestedUrl: 'https://search.example/search?q=sources',

@@ -1,7 +1,7 @@
 import type { TestContext } from 'node:test';
 import { createRemoteJWKSet } from 'jose';
-import type { WorkOSConnection } from '../../../../src/hosted-workos-application.ts';
-import type { WorkOSSettings, WorkOSMfaPolicy } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import type { WorkOSConnection } from '../../../../src/app/hosted-workos-application.ts';
+import type { WorkOSSettings, WorkOSMfaPolicy } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from './workos-fake-api.ts';
 import { answerDirectoryRoutes, changeMembership, currentStatus, effectiveRoles, grantState, indexOfUser, membershipIdAt, type DirectoryView } from './workos-fake-directory.ts';

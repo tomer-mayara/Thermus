@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WorkOSBrowserSession } from '../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
+import { WorkOSBrowserSession } from '../../../src/accounts/providers/workos/workos-browser-session.ts';
 import { authority, settings, signInCookieHeader, sessionEnvelopeIn, WorkOSSessionClientDouble } from './fixtures/workos-session-client-double.ts';
 
 test('Given an opt-in onboarding policy, when a trusted code exchange completes, then the policy gets the exchange before its returned seal enters the cookie, and Google gives no MFA evidence', async () => {

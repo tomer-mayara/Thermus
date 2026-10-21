@@ -10,6 +10,7 @@ import { sourceTextsOf } from './source.ts';
 import type { Snapshot } from './types.ts';
 import * as repository from '../shared/repository.ts';
 import { inputIdentityOf } from '../provenance/inputs.ts';
+import { ownershipOfTree } from './ownership.ts';
 
 // ast-metrics groups the dependency graph of all that it analyzes, so code that grows in script/ or test/ would regroup
 // the communities of src/. Both runs thus analyze src/ alone.
@@ -20,14 +21,15 @@ const analyzedFolder = 'src';
 export async function snapshotOfTree(root: string, timeoutMs: number, checked?: toolVersion.CheckedToolVersion): Promise<Snapshot> {
   const tool = checked ?? toolVersion.cliToolVersion(root);
   const provenance = inputIdentityOf(root);
+  const ownership = ownershipOfTree(root);
   const commit = repository.git(root, ['rev-parse', '--verify', 'HEAD'], 'The repository has no commit at HEAD.').trim();
   const date = repository.git(root, ['show', '-s', '--format=%cI', 'HEAD'], 'git show failed for HEAD.').trim();
   const title = repository.git(root, ['show', '-s', '--format=%s', 'HEAD'], 'git show failed for HEAD.').split(/\r?\n/u)[0];
   const files = sourceFilesOf(analysisReportOf(root, analyzedFolder), root);
   const paths = files.map((file) => file.path);
   const answers = await withAstMetricsServer({ root, folder: analyzedFolder, checked: tool }, timeoutMs, (server) => serverAnswersOf(server, paths));
-  const snapshot = snapshotOf({ commit, date, title, files, ...answers, sourceTexts: sourceTextsOf(root, paths) });
-  if (JSON.stringify(provenance) !== JSON.stringify(inputIdentityOf(root))) {
+  const snapshot = snapshotOf({ commit, date, title, ownership, files, ...answers, sourceTexts: sourceTextsOf(root, paths) });
+  if (JSON.stringify(provenance) !== JSON.stringify(inputIdentityOf(root)) || JSON.stringify(ownership) !== JSON.stringify(ownershipOfTree(root))) {
     throw new repository.CommandError('The inputs changed during the snapshot. No snapshot was published.');
   }
   return { ...snapshot, tool: tool.actual, provenance };

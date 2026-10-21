@@ -2,16 +2,16 @@ import assert from 'node:assert/strict';
 import { EventEmitter, once } from 'node:events';
 import { test, type TestContext } from 'node:test';
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
-import { createRequestContext } from '../../../src/auth/access-context.ts';
-import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline, type HtmlProcessingContext } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
+import { createRequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { HtmlToMarkdownPipeline, type HtmlProcessingContext } from '../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
+import { PromptInjectionRemoverSanitizer } from '../../../src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { createFetchToolServer } from '../../../src/interfaces/mcp/fetch-tool-server.ts';
 import { composeFetchOperation } from '../../support/in-process/fetch-operation.ts';
 import { completionLinesIn } from '../../support/drivers/operator-log.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import type { WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { elementHidingRules } from '../../support/fixtures/ad-rules.ts';
 
 const context = createRequestContext({

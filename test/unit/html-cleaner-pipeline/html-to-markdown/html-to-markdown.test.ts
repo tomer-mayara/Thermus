@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { type CleanHtmlToMarkdown } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown.ts';
-import { type HtmlProcessingContext } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { type CleanHtmlToMarkdown } from '../../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown.ts';
+import { type HtmlProcessingContext } from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { readAdFixture } from '../fixtures/ad-pages.ts';
 
 const cleanedHtml = readAdFixture('element-hiding.cleaned.html');

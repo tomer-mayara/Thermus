@@ -3,7 +3,7 @@ import fs, { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
-import { AdRulesFileError, readAdRulesFile } from '../../../src/config/ad-rules-file.ts';
+import { AdRulesFileError, readAdRulesFile } from '../../../src/runtime/config/ad-rules-file.ts';
 import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 
 type Environment = Record<string, string | undefined>;

@@ -6,9 +6,9 @@ import {
   type LocalAuth,
   type LocalAuthResources,
   type LocalProviderSettings,
-} from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
-import type { DataDirectoryLock } from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
-import type { LocalInstallation, StoredResourceServerClient } from '../../../src/auth/local-auth/better-auth/local-installation.ts';
+} from '../../../src/accounts/providers/better-auth/better-auth-runtime.ts';
+import type { DataDirectoryLock } from '../../../src/accounts/providers/better-auth/data-directory-lock.ts';
+import type { LocalInstallation, StoredResourceServerClient } from '../../../src/accounts/providers/better-auth/local-installation.ts';
 
 const settings = {
   dataDirectory: '/var/lib/thermus',

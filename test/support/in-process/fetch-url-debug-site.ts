@@ -1,6 +1,6 @@
 import type { TestContext } from 'node:test';
 import { createMcpHandler, fromJsonSchema, McpServer, type CallToolResult } from '@modelcontextprotocol/server';
-import { startHttpServer } from '../../../src/http/server.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
 
 export interface DebugSiteOptions {
   readonly credential?: string;

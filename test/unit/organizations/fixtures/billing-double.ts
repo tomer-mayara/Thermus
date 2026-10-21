@@ -1,4 +1,4 @@
-import type { Billing, BillingState } from '../../../../src/billing/billing.ts';
+import type { Billing, BillingState } from '../../../../src/accounts/billing/billing.ts';
 
 // Stands for the billing package at its public contract. It keeps each call and answers with a frozen free state, or
 // with the configured failure.

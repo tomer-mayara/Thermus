@@ -7,10 +7,10 @@ import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify, type JWTPayload }
 import { completeAuthKit } from './authkit-driver.ts';
 import { LiveBrowser } from './live-browser.ts';
 import { TotpAuthenticator } from './totp.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { composeWorkOSApplication } from '../../../src/hosted-workos-application.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { fetchToolServers } from '../../../src/fetch-tool.ts';
+import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
+import { composeWorkOSApplication } from '../../../src/app/hosted-workos-application.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
+import { fetchToolServers } from '../../../src/app/fetch-tool.ts';
 import { mcpRequest, rpcResult } from '../drivers/mcp/mcp-http-request.ts';
 import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
 

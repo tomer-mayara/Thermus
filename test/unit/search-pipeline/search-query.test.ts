@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SearchQuery } from '../../../src/search-pipeline/search-query.ts';
+import { SearchQuery } from '../../../src/pipelines/search/search-query.ts';
 
 test('Given the search query contract, when its public bound is read, then it permits at most 512 Unicode scalar values', () => {
   assert.equal(SearchQuery.MAX_SCALARS, 512);

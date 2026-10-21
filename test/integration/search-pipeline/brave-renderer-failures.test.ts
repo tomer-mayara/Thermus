@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SearchEngineBraveHttp } from '../../../src/search-engine/search-engine-brave-http.ts';
-import { WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { SearchEngineBraveHttp } from '../../../src/pipelines/providers/search-engine/search-engine-brave-http.ts';
+import { WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 
 for (const [label, failure] of [
   ['an HTTP 429 refusal', new WebsiteFetchHttpError(429)],

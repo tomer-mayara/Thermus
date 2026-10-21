@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetcherLightpanda } from '../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
 
 describe('WebsiteFetcherLightpanda', () => {
   let fetcher: WebsiteFetcherLightpanda;

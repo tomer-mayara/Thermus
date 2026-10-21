@@ -2,9 +2,12 @@
 
 Date: 2026-10-21. Source snapshot: `af6b9e22`.
 
-Proposal for review. Planning only; no implementation or file moves in this
-change. This file is the only addition to the live worktree. The dependency-cruiser
-pilot ran in a disposable copy; its results do not constitute permanent adoption.
+Phase 1 implements the reviewed component layout, the three repairs, and the
+associated guards, test classification, and resource-path updates. The source
+map below retains the reviewed before/after paths as migration evidence.
+Dependency-cruiser remains an optional separate diagnostic: its disposable
+pilot does not constitute permanent tool adoption. Verification and review-route
+evidence for this change belongs in the pull request.
 
 ## Decisions and review corrections
 
@@ -28,14 +31,14 @@ The review found these concrete gaps, addressed below:
   [committed-Git candidate](../../script/pr-review/git-reads.ts) and
   [dependency-free baseline snapshots](../../script/code-quality/snapshot/base.ts).
 - Portal compiler settings were confused with execution context:
-  [Vite configuration](../../src/user-portal/vite.config.ts) runs in Node.
+  [Vite configuration](../../src/interfaces/user-portal/vite.config.ts) runs in Node.
 - [HTML depth](../reference/html-processing-limits.md) and
   [renderer network](../reference/renderer-network-policy.md) contracts were
   left subject to an undefined privacy decision; their exports must remain.
-- Shared lifetimes in [tool composition](../../src/fetch-tool.ts) were
+- Shared lifetimes in [tool composition](../../src/app/fetch-tool.ts) were
   underspecified and must remain shared at their existing scope.
 - Nested test folders conflicted with fixture rules, while the execution split
-  changes [executor test](../../test/unit/page-fetch/execute-incoming-step.test.ts)
+  changes [executor test](../../test/integration/page-fetch/execute-incoming-step.test.ts)
   classification. Keep flat folders and preserve cases through public interfaces.
 
 The mergers of server-web code and terminal support are simplifications. They

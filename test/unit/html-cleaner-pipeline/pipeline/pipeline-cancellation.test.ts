@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import {
   HtmlToMarkdownPipeline,
   type HtmlProcessingContext,
-} from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+} from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 
 const page = {
   requestedUrl: 'https://source.example/start',

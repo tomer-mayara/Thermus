@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
-import type { AccountFailureReport } from '../../../src/hosted-admin/account-routes.ts';
-import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
+import type { AccountFailureReport } from '../../../src/interfaces/web/account/account-routes.ts';
+import type { ChangeRecord } from '../../../src/accounts/organizations/change-records.ts';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../drivers/browser/hosted-browser.ts';
 import { administrationMembers, userOf } from '../fixtures/hosted-members.ts';
 import { serveOrganizationSite, type OrganizationSite, type SiteSetup } from '../in-process/hosted-organization-site.ts';

@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import type { BrowserSession, BrowserSessionState } from '../../../src/auth/hosted-auth/browser-session.ts';
-import { WorkOSSignupRoutes } from '../../../src/auth/hosted-auth/workos/workos-signup-routes.ts';
-import type { SignupActivation, SignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
+import type { BrowserSession, BrowserSessionState } from '../../../src/accounts/identity/browser-session.ts';
+import { WorkOSSignupRoutes } from '../../../src/interfaces/web/auth/workos/workos-signup-routes.ts';
+import type { SignupActivation, SignupDocuments } from '../../../src/accounts/providers/workos/workos-signup.ts';
 
 const document = (text: string) => ({ version: 'v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents: SignupDocuments = { version: 'v1', terms: document('Test <terms>'), notice: document('Test <notice>'), agreement: { version: 'v1', text: 'I agree as an adult for business use.' } };
@@ -50,7 +50,7 @@ test('Given signed-out signup, when opened, then the full escaped notice appears
   assert.equal(world.inspections(), 0);
 });
 
-test('Given signed-in signup, when opened then posted with express agreement, then it redirects to organizations and keeps session cookies', async () => {
+test('Given signed-in signup and exact fields with the current document version, when opened then posted with express agreement, then it redirects to organizations and keeps session cookies', async () => {
   const world = setup();
   const form = await (await world.routes.handle(new Request('https://thermus.example/signup'))).text();
   assert.match(form, /type="checkbox" name="agreement" value="accepted" required/);
@@ -113,6 +113,25 @@ test('Given a public-base path, when existing access continues or activation suc
   const answer = await world.routes.handle(activation);
   assert.equal(answer.status, 303);
   assert.equal(answer.headers.get('Location'), 'https://thermus.example/app/organizations?return_to=%2Fapp%2F');
+});
+
+test('Given unchecked, stale, forged, repeated, or extra signup fields, when posted, then the public route refuses the form without activation', async () => {
+  const cases = [
+    { body: 'csrf_token=secret&document_version=v1', status: 400 },
+    { body: 'csrf_token=secret&document_version=old&agreement=accepted', status: 400 },
+    { body: 'csrf_token=wrong&document_version=v1&agreement=accepted', status: 403 },
+    { body: 'csrf_token=secret&document_version=v1&agreement=accepted&agreement=accepted', status: 400 },
+    { body: 'csrf_token=secret&document_version=v1&agreement=accepted&subject=user', status: 400 },
+    { body: 'csrf_token=secret&document_version=v1&agreement=false', status: 400 },
+  ];
+  for (const { body, status } of cases) {
+    const world = setup();
+    const answer = await world.routes.handle(post(body));
+    assert.equal(answer.status, status, body);
+    assert.equal(world.calls(), 0, body);
+    assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
+    assert.deepEqual(world.failures, []);
+  }
 });
 
 test('Given forged or stale signup, when posted, then no activation runs', async () => {

@@ -3,9 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const { createApplication } = await import(pathToFileURL(resolve('dist/src/application.js')));
-const { loadDeploymentConfig } = await import(pathToFileURL(resolve('dist/src/config/deployment-config.js')));
-const { readAdRulesFile } = await import(pathToFileURL(resolve('dist/src/config/ad-rules-file.js')));
+const { createApplication } = await import(pathToFileURL(resolve('dist/src/app/application.js')));
+const { loadDeploymentConfig } = await import(pathToFileURL(resolve('dist/src/runtime/config/deployment-config.js')));
+const { readAdRulesFile } = await import(pathToFileURL(resolve('dist/src/runtime/config/ad-rules-file.js')));
 
 // These values pass local settings checks. The build has no network and makes no provider request.
 const environment = {

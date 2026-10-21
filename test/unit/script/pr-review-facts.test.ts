@@ -26,13 +26,13 @@ function view(change: Partial<GraphRules> = {}) {
 const listed = view({ allowedEdges: [{ from: 'a', to: 'b', kind: 'runtime' }] });
 
 test('Given an edge that the rules of the merge base lack and the rules of HEAD list, when the outcome is computed, then it is declared, not FIX', () => {
-  assert.deepEqual(dependencyOutcome(graph, { base: view(), head: listed }, changed), { fix: [], declared: [edgeFact], notes: [] });
+  assert.deepEqual(dependencyOutcome({ base: { graph, rules: view() }, head: { graph, rules: listed } }, changed), { fix: [], declared: [edgeFact], notes: [] });
 });
 
 test('Given an edge that both rules files lack, also under another trigger, when the outcome is computed, then it is FIX once', () => {
   const typeOnly = view({ allowedEdges: [{ from: 'a', to: 'b', kind: 'type' }] });
 
-  assert.deepEqual(dependencyOutcome(graph, { base: view(), head: typeOnly }, changed), {
+  assert.deepEqual(dependencyOutcome({ base: { graph, rules: view() }, head: { graph, rules: typeOnly } }, changed), {
     fix: [{ ...edgeFact, key: 'dependency_graph.triggers.type_edge_becomes_runtime' }], declared: [], notes: [],
   });
 });
@@ -40,20 +40,20 @@ test('Given an edge that both rules files lack, also under another trigger, when
 test('Given an edge that the merge base forbids and HEAD no longer forbids, when the outcome is computed, then it stays FIX', () => {
   const forbidden = view({ forbiddenEdges: [{ from: 'a', to: ['b'] }] });
 
-  assert.deepEqual(dependencyOutcome(graph, { base: forbidden, head: listed }, changed).fix, [
+  assert.deepEqual(dependencyOutcome({ base: { graph, rules: forbidden }, head: { graph, rules: listed } }, changed).fix, [
     { key: 'dependency_graph.triggers.forbidden_edge', text: 'a -> b (runtime)', source: 'src/a/a.ts' },
   ]);
 });
 
 test('Given an edge that only the rules of HEAD lack, when the outcome is computed, then it is FIX, because the merge would bring it to main unlisted', () => {
-  assert.deepEqual(dependencyOutcome(graph, { base: listed, head: view() }, changed), { fix: [edgeFact], declared: [], notes: [] });
+  assert.deepEqual(dependencyOutcome({ base: { graph, rules: listed }, head: { graph, rules: view() } }, changed), { fix: [edgeFact], declared: [], notes: [] });
 });
 
 test('Given unresolved imports, when the outcome is computed, then those in changed files are FIX and the others are notes', () => {
   const broken = { 'src/a/a.ts': "import { gone } from './gone.ts';\n", 'src/b/b.ts': "import './b.css';\n" };
   const brokenGraph = sourceGraphOf(Object.keys(broken), new Map(Object.entries(broken)));
 
-  assert.deepEqual(dependencyOutcome(brokenGraph, { base: view(), head: view() }, changed), {
+  assert.deepEqual(dependencyOutcome({ base: { graph: brokenGraph, rules: view() }, head: { graph: brokenGraph, rules: view() } }, changed), {
     fix: [{ key: 'dependency_graph.counting.unresolved_relative_import', text: 'src/a/a.ts: ./gone.ts' }],
     declared: [],
     notes: ['Unresolved import in an unchanged file: src/b/b.ts: ./b.css'],
@@ -68,7 +68,7 @@ test('Given a new cycle that the rules of HEAD list as known, when the outcome i
 
   const surface = { modules: ['src/a/a.ts', 'src/b/b.ts'], contractDocuments: [] };
 
-  assert.deepEqual(dependencyOutcome(cycleGraph, { base: { ...edges, surface }, head: { ...known, surface } }, changed), {
+  assert.deepEqual(dependencyOutcome({ base: { graph: cycleGraph, rules: { ...edges, surface } }, head: { graph: cycleGraph, rules: { ...known, surface } } }, changed), {
     fix: [{ key: 'dependency_graph.triggers.cycle_not_listed', text: 'a, b (runtime)' }], declared: [], notes: [],
   });
 });

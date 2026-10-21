@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { MemberOverview } from '../../../src/organizations/administration-overviews.ts';
-import type { OrganizationMember } from '../../../src/organizations/organization-directory.ts';
+import type { MemberOverview } from '../../../src/accounts/organizations/administration-overviews.ts';
+import type { OrganizationMember } from '../../../src/accounts/organizations/organization-directory.ts';
 import { actorOf, administrationWith, superAdminGrant, userGrant } from './fixtures/administration-fixtures.ts';
 
 function overviewOf(overview: MemberOverview | string): MemberOverview {

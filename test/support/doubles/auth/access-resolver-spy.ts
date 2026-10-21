@@ -1,4 +1,4 @@
-import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../../../../src/auth/access-context.ts';
+import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../../../../src/accounts/identity/access-context.ts';
 
 export type ConfiguredAccess = AccessDecision | Error | ((user: AuthenticatedUser) => Promise<AccessDecision>);
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { openWorkOSConnection } from '../../../src/hosted-workos-application.ts';
-import type { RequestServerBuilder } from '../../../src/mcp/mcp-server.ts';
+import { openWorkOSConnection } from '../../../src/app/hosted-workos-application.ts';
+import type { RequestServerBuilder } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { HostedBrowser, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 import { hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';

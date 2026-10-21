@@ -9,6 +9,7 @@ import { fileEvidenceIn } from '../identity/file.ts';
 import * as json from '../shared/json.ts';
 import type { MapSnapshot } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
+import { componentDefinitionsOf, componentOwnersOf } from '../../component-ownership.ts';
 
 type Fields = ReturnType<typeof json.objectOf>;
 type MapCommunity = MapSnapshot['communities'][number];
@@ -32,7 +33,10 @@ function invalid(path: string): never {
 // The maintainability is absent for a src/ without code, so it stays optional.
 function snapshotOf(fields: Fields, check: Check): MapSnapshot {
   const global = json.objectOf(fields.global);
+  const ownership = componentDefinitionsOf(fields.ownership, 'Snapshot ownership');
+  if (ownership !== undefined) componentOwnersOf(json.arrayOf(fields.files).map((entry) => check(json.textOf(json.objectOf(entry).path))), ownership);
   return {
+    ownership,
     commit: check(json.textOf(fields.commit)),
     date: check(json.isoDateOf(fields.date)),
     title: fields.title === undefined ? undefined : check(typeof fields.title === 'string' ? fields.title : undefined),

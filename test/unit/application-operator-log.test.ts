@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { accountChangeRecorder, accountFailureReporter, operatorFailureReporter } from '../../src/application.ts';
-import type { FailureReport } from '../../src/mcp/mcp-server.ts';
-import type { ChangeRecord } from '../../src/organizations/change-records.ts';
+import { accountChangeRecorder, accountFailureReporter, operatorFailureReporter } from '../../src/app/application.ts';
+import type { FailureReport } from '../../src/interfaces/mcp/mcp-server.ts';
+import type { ChangeRecord } from '../../src/accounts/organizations/change-records.ts';
 
 class RecordingLogger {
   readonly lines: string[] = [];

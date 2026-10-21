@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { BraveHTTPResultCleanup } from '../../../../src/html-cleaner-pipeline/search-results/brave-http-result-cleanup.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { ProcessHtmlStep } from '../../../../src/html-cleaner-pipeline/process-html-step.ts';
+import { BraveHTTPResultCleanup } from '../../../../src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { HtmlToMarkdownPipeline } from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
+import { ProcessHtmlStep } from '../../../../src/pipelines/html-processing/process-html-step.ts';
 import { micromark } from 'micromark';
 import { createContext } from '../fixtures/html-cleaner-context.ts';
 

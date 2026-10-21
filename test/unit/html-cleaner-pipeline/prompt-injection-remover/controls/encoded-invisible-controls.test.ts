@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CleanHtmlToMarkdownDefuddle } from '../../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import type { HtmlProcessingContext } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import type { HtmlProcessingContext } from '../../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { processHtml } from '../../../../support/in-process/process-html.ts';
 
 const formatWarning = 'Stripped: Format chars (Cf) — inspect the removed bytes with a hex dump (xxd / od -c), which survives sanitization';

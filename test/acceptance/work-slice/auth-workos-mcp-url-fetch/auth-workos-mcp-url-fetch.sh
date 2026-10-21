@@ -50,7 +50,7 @@ if [[ ! -f "$AD_RULES_FILE" ]]; then
   printf 'AD_RULES_FILE=%s is not a file. For no ad rules, make an empty file: touch "%s"\n' "$AD_RULES_FILE" "$AD_RULES_FILE" >&2
   exit 1
 fi
-portal_build="$root/src/user-portal/dist/index.html"
+portal_build="$root/src/interfaces/user-portal/dist/index.html"
 if [[ ! -f "$portal_build" ]]; then
   printf 'The portal build %s is missing. Make it in the repository root: npm run build:user-portal\n' "$portal_build" >&2
   exit 1

@@ -3,7 +3,7 @@
   "exclude": [
     "script",
     "test/unit/build-output.test.ts",
-    "src/user-portal",
+    "src/interfaces/user-portal",
     "test/acceptance/user-portal",
     "test/unit/user-portal"
   ]

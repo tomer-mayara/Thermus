@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { HtmlToMarkdownPipeline } from '../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { CleanHtmlAdsAdblockRs } from '../../src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { HtmlToMarkdownPipeline } from '../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { repositoryRoot } from '../support/processes/module-paths.ts';
 
 test('given the hosted EasyList snapshot and an article with an ad banner, when cleaned, then the banner is removed and the article stays', async () => {

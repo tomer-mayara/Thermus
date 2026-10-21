@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import type { AccountFailureReport } from '../../../src/hosted-admin/account-routes.ts';
+import type { AccountFailureReport } from '../../../src/interfaces/web/account/account-routes.ts';
 import { CLEARED_SESSION_COOKIE } from '../../support/doubles/auth/browser-session-store.ts';
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { statusesOf } from '../../support/dsl/hosted-access.ts';

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { Billing, BillingState } from '../../../src/billing/billing.ts';
-import { BillingFree } from '../../../src/billing/billing-free.ts';
+import type { Billing, BillingState } from '../../../src/accounts/billing/billing.ts';
+import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
 
 function freeState(organizationId: string): BillingState {
   return { organizationId, plan: 'free', billedSeats: 0 };

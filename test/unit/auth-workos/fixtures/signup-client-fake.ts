@@ -1,6 +1,6 @@
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions } from '@workos-inc/node';
-import type { OrganizationMembership } from '../../../../src/organizations/organization-directory.ts';
-import type { SignupDocuments, WorkOSSignupOptions } from '../../../../src/auth/hosted-auth/workos/workos-signup.ts';
+import type { OrganizationMembership } from '../../../../src/accounts/organizations/organization-directory.ts';
+import type { SignupDocuments, WorkOSSignupOptions } from '../../../../src/accounts/providers/workos/workos-signup.ts';
 
 type Organization = Awaited<ReturnType<WorkOSSignupOptions['workos']['organizations']['getOrganization']>>;
 type Membership = Awaited<ReturnType<WorkOSSignupOptions['workos']['userManagement']['createOrganizationMembership']>>;

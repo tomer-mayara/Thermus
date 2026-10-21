@@ -5,7 +5,7 @@ import { extname } from 'node:path';
 import { createInterface } from 'node:readline';
 
 const extension = extname(import.meta.filename);
-const parserModule = new URL(`../../../../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser${extension}`, import.meta.url).href;
+const parserModule = new URL(`../../../../../src/pipelines/html-processing/ad-cleaner/adb/source-range-parser${extension}`, import.meta.url).href;
 const childArguments = extension === '.ts' ? ['--import=tsx', '--input-type=module'] : ['--input-type=module'];
 const loadedLine = 'parser loaded';
 // The bound is high, so that a slow start does not fail a case. Only a child that does not load at all reaches it.

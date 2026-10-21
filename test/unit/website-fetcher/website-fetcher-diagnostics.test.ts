@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { constants } from 'node:os';
-import { systemErrorName } from '../../../src/website-fetcher/website-fetcher.ts';
+import { systemErrorName } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { test } from 'node:test';
 import type { ExecFileException } from 'node:child_process';
-import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
 import { controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 for (const [stdout, process, expected] of [

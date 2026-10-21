@@ -1,4 +1,4 @@
-import { approvedSignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-approved-signup-documents.ts';
+import { approvedSignupDocuments } from '../../../src/accounts/providers/workos/workos-approved-signup-documents.ts';
 import { createHash } from 'node:crypto';
 import { parseHTML } from 'linkedom';
 import { openProductionSignupSite } from '../../support/in-process/production-signup-site.ts';

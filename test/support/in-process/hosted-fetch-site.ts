@@ -1,6 +1,6 @@
 import type { TestContext } from 'node:test';
 import '../processes/use-hosted-portal-fixture.ts';
-import { openWorkOSApplication } from '../../../src/hosted-workos-application.ts';
+import { openWorkOSApplication } from '../../../src/app/hosted-workos-application.ts';
 import { hostedRootConfig } from '../fixtures/hosted-config.ts';
 import { hostedFetchSettings, workOSSettings } from '../fixtures/hosted-placeholder.ts';
 import { WorkOSFake, type FakeUser } from '../doubles/workos/workos-fake.ts';

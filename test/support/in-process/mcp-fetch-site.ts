@@ -1,18 +1,18 @@
 import type { TestContext } from 'node:test';
 import { StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
-import type { AccessResolver } from '../../../src/auth/access-context.ts';
-import type { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
+import type { AccessResolver } from '../../../src/accounts/identity/access-context.ts';
+import type { HtmlToMarkdownPipeline } from '../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
+import { createFetchToolServer } from '../../../src/interfaces/mcp/fetch-tool-server.ts';
 import { composeFetchOperation } from './fetch-operation.ts';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import type { WebsiteFetcher, WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
+import type { WebsiteFetcher, WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { NoAuthProvider } from '../doubles/auth/no-auth-provider.ts';
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
 import { completionLinesIn } from '../drivers/operator-log.ts';
-import type { OutgoingStep, IncomingStep } from '../../../src/page-fetch/pipeline-step.ts';
-import type { StepRecordSink } from '../../../src/page-fetch/step-record.ts';
+import type { OutgoingStep, IncomingStep } from '../../../src/pipelines/execution/pipeline-step.ts';
+import type { StepRecordSink } from '../../../src/pipelines/execution/step-record.ts';
 
 export const exactMarkdown = '# Exact Markdown\n\nNo extra text.\n';
 export const validFetchArguments = { url: 'HTTPS://Example.COM/Page?private-query=yes#private-fragment', reason: 'Read the page for this task' };

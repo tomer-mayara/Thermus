@@ -3,7 +3,7 @@ import { execFile } from 'node:child_process';
 import { describe, test, type TestContext } from 'node:test';
 import { promisify } from 'node:util';
 import { auth as runMcpAuthorization } from '@modelcontextprotocol/client';
-import { ProviderEnvironmentError } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
+import { ProviderEnvironmentError } from '../../../src/accounts/providers/better-auth/better-auth-runtime.ts';
 import {
   errorCodeOf,
   followAuthorizationWithConsent,

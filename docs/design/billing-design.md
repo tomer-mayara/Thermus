@@ -51,7 +51,7 @@ These rules follow from the answer:
 
 ## The Billing interface
 
-`src/billing/billing.ts` contains the contract. It has two operations. Each
+`src/accounts/billing/billing.ts` contains the contract. It has two operations. Each
 operation gives a `BillingState`.
 
 | Operation | Contract |
@@ -85,7 +85,7 @@ Each implementation obeys these rules:
    a billing operation. The self-hosted composition creates none.
 
 The hosted composition has one `Billing`. `composeWorkOSApplication()` in
-`src/hosted-workos-application.ts` creates a `BillingFree` and gives it to
+`src/app/hosted-workos-application.ts` creates a `BillingFree` and gives it to
 `composeHostedApplication()`, which gives it to `OrganizationAdministration`.
 The self-hosted composition creates no `Billing`. `OrganizationAdministration`
 is the only caller of `Billing`:
@@ -109,7 +109,7 @@ implementation, and it adds the billing changes that the approved rules need.
 
 ## Free billing
 
-`src/billing/billing-free.ts` contains `BillingFree`. It obeys the interface
+`src/accounts/billing/billing-free.ts` contains `BillingFree`. It obeys the interface
 rules and these rules:
 
 - Each organization is on the free plan, with 0 billed seats, from its
@@ -467,7 +467,7 @@ ticket. Do not create another one.
    unit test with doubles for the provider client, the storage, and the
    membership count. Then make it pass.
 3. Connect the provider implementation. `composeWorkOSApplication()` in
-   `src/hosted-workos-application.ts` creates it instead of `BillingFree`, and
+   `src/app/hosted-workos-application.ts` creates it instead of `BillingFree`, and
    `composeHostedApplication()` gives it to `OrganizationAdministration`. Thus
    the two current callers of `Billing`, `changeGrant()` and `billingState()`
    of `OrganizationAdministration`, use the provider implementation.
@@ -485,14 +485,14 @@ recommended options.
 
 | File | Change |
 | --- | --- |
-| `src/billing/billing.ts` | Add the paid states and the operations that the approved rules need, for example the hosted payment pages. `BillingFree` answers each new operation while it exists. |
-| `src/billing/billing-<provider>.ts` | The provider implementation, for example `BillingStripe` in `billing-stripe.ts` for D1 (a). |
-| `src/billing/billing-events.ts` | The event route. It checks the signature and the time on the raw body, and it records the IDs of processed events. |
-| `src/billing/seat-reconciliation.ts` | Gives the complete count to `updateSeats` after each membership change and on a schedule. |
-| `src/billing/billing-store.ts`, `migrations/billing/0001-billing.sql` | For D11 (a): SQLite through `node:sqlite` on the hosted persistent volume. The store keeps the provider customer and subscription IDs, the last confirmed status, quantity, and period end of each organization, the IDs of processed events, and the billing change records. For D11 (b), a PostgreSQL store replaces these files. |
-| `src/hosted-admin/administration-routes.ts`, `src/hosted-admin/administration-pages.ts` | The Super Admin billing page and actions. `AdministrationRoutes` serves the billing page, `GET <base>billing`, and `billingPage()` in `administration-pages.ts` makes it. `AdministrationRoutes.changeOnPost()` checks each member and invitation change: the method, the origin, the form, the form token, and the organization of the session. Each billing action gets the same checks. |
-| `src/hosted-workos-application.ts` | `composeWorkOSApplication()` creates the provider implementation instead of `BillingFree` and gives it as `billing` to `composeHostedApplication()`. |
-| `src/config/deployment-config.ts`, `.env.example` | The provider settings of the hosted edition. The self-hosted edition reads none. |
+| `src/accounts/billing/billing.ts` | Add the paid states and the operations that the approved rules need, for example the hosted payment pages. `BillingFree` answers each new operation while it exists. |
+| `src/accounts/billing/billing-<provider>.ts` | The provider implementation, for example `BillingStripe` in `billing-stripe.ts` for D1 (a). |
+| `src/accounts/billing/billing-events.ts` | The event route. It checks the signature and the time on the raw body, and it records the IDs of processed events. |
+| `src/accounts/billing/seat-reconciliation.ts` | Gives the complete count to `updateSeats` after each membership change and on a schedule. |
+| `src/accounts/billing/billing-store.ts`, `migrations/billing/0001-billing.sql` | For D11 (a): SQLite through `node:sqlite` on the hosted persistent volume. The store keeps the provider customer and subscription IDs, the last confirmed status, quantity, and period end of each organization, the IDs of processed events, and the billing change records. For D11 (b), a PostgreSQL store replaces these files. |
+| `src/interfaces/web/account/administration-routes.ts`, `src/interfaces/web/account/administration-pages.ts` | The Super Admin billing page and actions. `AdministrationRoutes` serves the billing page, `GET <base>billing`, and `billingPage()` in `administration-pages.ts` makes it. `AdministrationRoutes.changeOnPost()` checks each member and invitation change: the method, the origin, the form, the form token, and the organization of the session. Each billing action gets the same checks. |
+| `src/app/hosted-workos-application.ts` | `composeWorkOSApplication()` creates the provider implementation instead of `BillingFree` and gives it as `billing` to `composeHostedApplication()`. |
+| `src/runtime/config/deployment-config.ts`, `.env.example` | The provider settings of the hosted edition. The self-hosted edition reads none. |
 | `package.json`, `pnpm-lock.yaml` | An exact pin of the provider SDK, if AUTH-11 uses one. |
 
 ### Tests

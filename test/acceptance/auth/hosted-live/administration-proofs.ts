@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import type { Invitation, OrganizationMembership, WorkOS } from '@workos-inc/node';
-import { WorkOSOrganizations } from '../../../../src/auth/hosted-auth/workos/workos-organizations.ts';
-import { workosAuthority } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { activeUserSeatCount } from '../../../../src/organizations/administration-overviews.ts';
-import { invitationsOf } from '../../../../src/organizations/directory-reads.ts';
+import { WorkOSOrganizations } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
+import { activeUserSeatCount } from '../../../../src/accounts/organizations/administration-overviews.ts';
+import { invitationsOf } from '../../../../src/accounts/organizations/directory-reads.ts';
 import type {
   DirectoryGrantChange,
   InvitationState,
@@ -12,7 +12,7 @@ import type {
   OrganizationDirectory,
   OrganizationInvitation,
   OrganizationMember,
-} from '../../../../src/organizations/organization-directory.ts';
+} from '../../../../src/accounts/organizations/organization-directory.ts';
 import type { AdministrationMembershipName } from '../../../support/hosted-live/administration-fixtures.ts';
 import type { LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf } from '../../../support/hosted-live/operator-runbook.ts';

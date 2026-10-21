@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { openWorkOSConnection } from '../../../src/hosted-workos-application.ts';
+import { openWorkOSConnection } from '../../../src/app/hosted-workos-application.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 

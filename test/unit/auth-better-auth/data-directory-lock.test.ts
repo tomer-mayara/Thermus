@@ -9,12 +9,12 @@ import {
   DataDirectoryInUseError,
   DataDirectoryUnavailableError,
   lockDataDirectory,
-} from '../../../src/auth/local-auth/better-auth/data-directory-lock.ts';
+} from '../../../src/accounts/providers/better-auth/data-directory-lock.ts';
 import { crashChild } from '../../support/processes/crash-child.ts';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 
 const moduleExtension = import.meta.url.endsWith('.ts') ? 'ts' : 'js';
-const lockModule = new URL(`../../../src/auth/local-auth/better-auth/data-directory-lock.${moduleExtension}`, import.meta.url).href;
+const lockModule = new URL(`../../../src/accounts/providers/better-auth/data-directory-lock.${moduleExtension}`, import.meta.url).href;
 const concurrentLockers = 3;
 const concurrentRounds = 50;
 

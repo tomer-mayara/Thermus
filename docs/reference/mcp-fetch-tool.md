@@ -103,7 +103,7 @@ The command still accepts the generic `Page fetch failed` from older servers.
 ## Production composition
 
 The self-hosted server registers the tool. Its application branch loads
-[`src/fetch-tool.ts`](../../src/fetch-tool.ts) and calls
+[`src/app/fetch-tool.ts`](../../src/app/fetch-tool.ts) and calls
 `createToolOperations(environment, logger)` before it opens the Better Auth
 runtime. That call reads the [ad rules file](ad-rules.md#server-rules-file) one
 time. Then it makes these parts one time:
@@ -145,12 +145,12 @@ renderer's `finalUrl` selects the ad rules and resolves relative links.
 The request server exposes both operations. Search has a separate
 [result and completion contract](mcp-search-tool.md).
 
-The neutral code lives under `src/page-fetch/`. It owns semantic URL
+The neutral code lives under `src/pipelines/page-fetch/`. It owns semantic URL
 validation, the step protocol/executor and record-sink contract, and the
 protected fetch sequence. Separate `executeOutgoingStep` and
 `executeIncomingStep` functions enforce the two trusted roles. The MCP schema uses the same
 URL rules while retaining SDK schema conversion at the transport boundary.
-The cleaner-owned adapter stays under `src/html-cleaner-pipeline/`; the
+The cleaner-owned adapter stays under `src/pipelines/html-processing/`; the
 neutral use case depends on the `PipelineStep` role contract. The transitional
 `PageProcessor` port is removed. Import rules enforce this boundary, including
 type-only imports.

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { decodeJwt } from 'jose';
-import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
-import { workosAuthority } from '../../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/accounts/providers/workos/workos-browser-session.ts';
+import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../../support/doubles/workos/jwt-signing-key.ts';
 import { cookiePassword, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type FakeClientSettings } from '../../../support/doubles/workos/workos-fake-api.ts';
 import { guardOutboundFetch } from '../../../support/isolation/outbound-fetch-guard.ts';

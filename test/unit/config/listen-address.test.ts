@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DeploymentConfigError, loadListenAddress } from '../../../src/config/deployment-config.ts';
+import { DeploymentConfigError, loadListenAddress } from '../../../src/runtime/config/deployment-config.ts';
 
 type Environment = Record<string, string | undefined>;
 

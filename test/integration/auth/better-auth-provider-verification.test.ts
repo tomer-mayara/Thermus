@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { inspect } from 'node:util';
 import { describe, test } from 'node:test';
-import { BetterAuthProvider } from '../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
-import { InvalidAccessTokenError } from '../../../src/auth/identity-verifier.ts';
+import { BetterAuthProvider } from '../../../src/accounts/providers/better-auth/better-auth-provider.ts';
+import { InvalidAccessTokenError } from '../../../src/accounts/identity/identity-verifier.ts';
 import {
   AccessTokenSigner,
   localIssuer,

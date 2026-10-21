@@ -1,6 +1,6 @@
-import type { createFetchPage } from '../../../src/page-fetch/fetch-page.ts';
-import type { StepId } from '../../../src/page-fetch/pipeline-step.ts';
-import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
+import type { createFetchPage } from '../../../src/pipelines/page-fetch/fetch-page.ts';
+import type { StepId } from '../../../src/pipelines/execution/pipeline-step.ts';
+import type { StepRecord } from '../../../src/pipelines/execution/step-record.ts';
 
 type Dependencies = Parameters<typeof createFetchPage>[0];
 type OutgoingResult = Awaited<ReturnType<Dependencies['outgoing']['execute']>>;

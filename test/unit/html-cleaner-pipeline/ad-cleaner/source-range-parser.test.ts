@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
-import { SourceRangeParser } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/source-range-parser.ts';
+import { SourceRangeParser } from '../../../../src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts';
 import { assertWorkPassesInChild } from './fixtures/parser-child.ts';
 
 type ParentNode = Htmlparser2TreeAdapterMap['parentNode'];

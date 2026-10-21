@@ -2,22 +2,24 @@ import type { DependencyPair } from '../dependencies/types.ts';
 import { CommandError } from '../shared/repository.ts';
 import type { JsonObject } from '../shared/json.ts';
 import { comparisonTrees, type LayerComparison } from './layer-tree.ts';
+import { componentOf, type ComponentDefinitions } from '../../component-ownership.ts';
 
 const rules = [
-  { from: 'src/html-cleaner-pipeline/', to: 'src/mcp/' },
-  { from: 'src/website-fetcher/', to: 'src/auth/' },
+  { from: ['html-cleaner-pipeline', 'html-processing'], to: ['mcp'] },
+  { from: ['website-fetcher'], to: ['auth', 'identity', 'workos', 'better-auth', 'web', 'cli'] },
 ] as const;
 
-function guarded(path: string): boolean { return rules.some((rule) => path.startsWith(rule.from)); }
-function forbidden(pair: DependencyPair): boolean { return rules.some((rule) => pair.from.startsWith(rule.from) && pair.to.startsWith(rule.to)); }
+function includes(owners: readonly string[], path: string, ownership?: ComponentDefinitions): boolean { return owners.includes(componentOf(path, ownership) ?? ''); }
+function guarded(path: string, ownership?: ComponentDefinitions): boolean { return rules.some((rule) => includes(rule.from, path, ownership)); }
+function forbidden(pair: DependencyPair, ownership?: ComponentDefinitions): boolean { return rules.some((rule) => includes(rule.from, pair.from, ownership) && includes(rule.to, pair.to, ownership)); }
 function pairKey(pair: Pick<DependencyPair, 'from' | 'to'>): string { return JSON.stringify([pair.from, pair.to]); }
 export function layerRegressions(root: string, base: string): readonly JsonObject[] {
   const comparison = comparisonTrees(root, base, guarded);
   const { before, head, after } = comparison;
   // Filter before translating moves. Moving an allowed edge across a forbidden
   // component boundary creates a violation, even if its import text is unchanged.
-  const oldPairs = new Set(before.pairs.filter(forbidden).map((pair) => pairKey({ from: after(pair.from), to: after(pair.to) })));
-  const added = head.pairs.filter((pair) => forbidden(pair) && !oldPairs.has(pairKey(pair)));
+  const oldPairs = new Set(before.pairs.filter((pair) => forbidden(pair, comparison.beforeOwnership)).map((pair) => pairKey({ from: after(pair.from), to: after(pair.to) })));
+  const added = head.pairs.filter((pair) => forbidden(pair, comparison.headOwnership) && !oldPairs.has(pairKey(pair)));
   assertCertain(comparison, added);
   return added.map((pair) => ({
     kind: 'regression', severity: 'high', rule: 'forbidden-component-dependency', file: pair.from,
@@ -27,14 +29,14 @@ export function layerRegressions(root: string, base: string): readonly JsonObjec
   }));
 }
 
-function affectedSources({ changes, headPaths, before, head, after }: LayerComparison, added: readonly DependencyPair[]): ReadonlySet<string> {
-  const affected = new Set(changes.filter((change) => change.status !== 'D').map((change) => change.path).filter(guarded));
+function affectedSources({ changes, headPaths, before, head, after, beforeOwnership, headOwnership }: LayerComparison, added: readonly DependencyPair[]): ReadonlySet<string> {
+  const affected = new Set(changes.filter((change) => change.status !== 'D').map((change) => change.path).filter((path) => guarded(path, headOwnership)));
   for (const pair of added) affected.add(pair.from);
   const oldIssues = new Set(before.issues.map((issue) => JSON.stringify({ ...issue, path: after(issue.path) })));
   for (const issue of head.issues) if (!oldIssues.has(JSON.stringify(issue))) affected.add(issue.path);
   for (const rule of rules) {
-    if (changes.some((change) => [change.path, change.oldPath ?? ''].some((path) => path.startsWith(rule.to)))) {
-      for (const path of headPaths) if (path.startsWith(rule.from)) affected.add(path);
+    if (changes.some((change) => includes(rule.to, change.path, headOwnership) || includes(rule.to, change.oldPath ?? change.path, beforeOwnership))) {
+      for (const path of headPaths) if (includes(rule.from, path, headOwnership)) affected.add(path);
     }
   }
   return affected;

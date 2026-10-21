@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { runLocalAuthCommand, type LocalAuthCommandContext } from '../../../src/auth/local-auth/local-auth-command.ts';
-import type { LocalUserAdministration } from '../../../src/auth/local-auth/local-user-administration.ts';
+import { runLocalAuthCommand, type LocalAuthCommandContext } from '../../../src/interfaces/cli/local-auth-command.ts';
+import type { LocalUserAdministration } from '../../../src/accounts/identity/local-user-administration.ts';
 import { BaseLogger } from '../../../src/logging/base-logger.ts';
 
 const environment = { DEPLOYMENT: 'self-hosted', PUBLIC_BASE_URL: 'http://localhost:8080', DATA_DIR: '/var/lib/thermus' };

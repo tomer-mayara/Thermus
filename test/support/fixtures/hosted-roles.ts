@@ -1,4 +1,4 @@
-import type { RoleGrant } from '../../../src/auth/access-context.ts';
+import type { RoleGrant } from '../../../src/accounts/identity/access-context.ts';
 
 // The role catalog of the hosted edition, as the WorkOS staging environment defines it: each environment role with its
 // application permissions. Keep this key order: the fake lists the roles in it. The fake answers with the catalog, the

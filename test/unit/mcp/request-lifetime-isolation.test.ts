@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
 import { Server } from '@modelcontextprotocol/server';
-import type { RequestContext } from '../../../src/auth/access-context.ts';
-import { MCPServer, type McpRequestLifetime } from '../../../src/mcp/mcp-server.ts';
+import type { RequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { MCPServer, type McpRequestLifetime } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { alice, bob, contextFor, identityFor, resourceUrl } from '../../support/in-process/access-test-server.ts';
 

@@ -1,4 +1,4 @@
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
+import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 
 // The hosted test configuration: the hosted edition at the public base URL https://thermus.example/team, with MCP over
 // HTTP, not stdio. It is a test setting of the hosted environment, not literal test data.

@@ -3,8 +3,8 @@ import childProcess, { type ChildProcess } from 'node:child_process';
 import { once, getEventListeners } from 'node:events';
 import { syncBuiltinESMExports } from 'node:module';
 import { test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import type { WebsiteFetcher } from '../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetcherLightpanda } from '../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
+import type { WebsiteFetcher } from '../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { permitIPv4Fixture, startFixture } from '../support/doubles/website-fetcher/network-fixture.ts';
 
 test('fetchURL accepts a pre-aborted signal and makes no request', async (t) => {

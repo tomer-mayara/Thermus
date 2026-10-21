@@ -7,7 +7,7 @@ const blocked = 'The test blocked a provider module';
 const guard = `import { registerHooks } from 'node:module';
 registerHooks({ resolve(specifier, context, nextResolve) {
   const result = nextResolve(specifier, context);
-  if (['better-auth-runtime', 'better-auth-user-administration'].some(name => result.url.endsWith('/src/auth/local-auth/better-auth/' + name + '.js'))) {
+  if (['better-auth-runtime', 'better-auth-user-administration'].some(name => result.url.endsWith('/src/accounts/providers/better-auth/' + name + '.js'))) {
     throw new Error(${JSON.stringify(blocked)});
   }
   return result;

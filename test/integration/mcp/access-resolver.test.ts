@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { inspect } from 'node:util';
 import { PerRequestHTTPServerTransport } from '@modelcontextprotocol/server';
-import type { AccessDenialReason } from '../../../src/auth/access-context.ts';
+import type { AccessDenialReason } from '../../../src/accounts/identity/access-context.ts';
 import { ContextReportToolSpy, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';
 import { mcpRequest, toolJson } from '../../support/drivers/mcp/mcp-http-request.ts';
 import {

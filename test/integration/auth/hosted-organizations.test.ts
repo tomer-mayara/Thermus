@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import { describe, test, type TestContext } from 'node:test';
-import { accountFailureReporter, createApplication } from '../../../src/application.ts';
+import { accountFailureReporter, createApplication } from '../../../src/app/application.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';

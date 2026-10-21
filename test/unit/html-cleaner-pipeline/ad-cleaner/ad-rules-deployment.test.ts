@@ -24,7 +24,7 @@ test('a deployment without test fixtures applies supplied rules across working d
   assert.equal(existsSync(join(deployment, 'test')), false);
 
   const moduleUrl = pathToFileURL(join(deployment,
-    'src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.js')).href;
+    'src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.js')).href;
   const script = `
     const { CleanHtmlAdsAdblockRs } = await import(process.argv[1]);
     const rules = 'example.com##.advert';

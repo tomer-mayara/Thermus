@@ -86,7 +86,7 @@ A change that adds a prerequisite to a suite adds it to this table.
 Local-command tests that execute `loadDeploymentConfig()` belong to the
 integration suite, also when they use an administration role double. Config and
 local commands are separate logical packages. See the
-[auth refactoring package map](../archive/auth-refactoring-plan.md#logical-packages-and-dependency-rules).
+[component boundaries](../design/component-structure-proposal.md#target-tree-and-public-boundaries).
 `npm run check` does not select these tests. Use their focused commands;
 run the integration group only when the path rules below select it.
 
@@ -203,7 +203,7 @@ for a deleted or moved file, also inspect its former consumers.
 
 Examples:
 
-- A change to `src/auth/` plus a unit test selects the source validation
+- A change to `src/accounts/identity/` plus a unit test selects the source validation
   in rule 1 and applicable production gates.
 - A change only to a unit test selects the unit group. A change to unit and
   integration tests selects those two groups.
@@ -367,14 +367,15 @@ In addition to the source validation in rule 1, run these gates when the
 changed source affects their behavior:
 
 - `npm run test:mcp:renderer` for the fetch tool composition
-  (`src/fetch-tool.ts`), search engine or pipeline (`src/search-engine/` and
-  `src/search-pipeline/`), renderer runtime (`src/website-fetcher/`), cleaning
-  pipeline (`src/html-cleaner-pipeline/`), or rules loading
-  (`src/config/ad-rules-file.ts`).
+  (`src/app/fetch-tool.ts`), search engine or pipeline (`src/pipelines/providers/search-engine/` and
+  `src/pipelines/search/`), renderer runtime (`src/pipelines/providers/website-fetcher/`), cleaning
+  pipeline (`src/pipelines/html-processing/`), or rules loading
+  (`src/runtime/config/ad-rules-file.ts`).
 - `npm run test:container` for the self-hosted server and commands, including
-  `src/index.ts`, `src/application.ts`, `src/fetch-tool.ts`, `src/auth/`,
-  `src/config/`, `src/hosted-admin/`, `src/http/`, `src/logging/`, `src/mcp/`,
-  `src/organizations/`, and `src/terminal/`.
+  `src/index.ts`, `src/app/`, `src/accounts/`, `src/runtime/`,
+  `src/interfaces/cli/`, `src/interfaces/mcp/`, `src/interfaces/web/`, and
+  `src/logging/`. During a move, select by both the deleted old path and the new
+  path; moving a provider or browser route does not remove its gate.
 - `npm run build:hosted` and `npm run test:container:hosted` for source that
   affects the hosted application, its portal, or its offline checks. The
   image gate must pass on Linux AMD64; a host-only or ARM64 run is not a
@@ -755,14 +756,14 @@ the pinned SDK with a local fake of the WorkOS API
 (`test/support/doubles/workos/workos-fake-api.ts` and `test/support/doubles/workos/workos-fake.ts`).
 They are in the existing suites:
 
-- unit: `test/unit/hosted-admin/account-routes.test.ts`,
-  `test/unit/hosted-admin/account-routes-effects.test.ts`,
-  `test/unit/hosted-admin/account-routes-organization-page.test.ts`,
-  `test/unit/hosted-admin/account-routes-selection-input.test.ts`,
-  `test/unit/hosted-admin/account-routes-selection.test.ts`,
-  `test/unit/hosted-admin/account-routes-administration-pages.test.ts`,
-  `test/unit/hosted-admin/account-routes-administration-changes.test.ts`,
-  `test/unit/hosted-admin/account-routes-administration-input.test.ts`,
+- unit: `test/integration/hosted-admin/account-routes.test.ts`,
+  `test/integration/hosted-admin/account-routes-effects.test.ts`,
+  `test/integration/hosted-admin/account-routes-organization-page.test.ts`,
+  `test/integration/hosted-admin/account-routes-selection-input.test.ts`,
+  `test/integration/hosted-admin/account-routes-selection.test.ts`,
+  `test/integration/hosted-admin/account-routes-administration-pages.test.ts`,
+  `test/integration/hosted-admin/account-routes-administration-changes.test.ts`,
+  `test/integration/hosted-admin/account-routes-administration-input.test.ts`,
   `test/unit/organizations/organization-administration.test.ts`,
   `test/unit/organizations/organization-administration-grants.test.ts`,
   `test/unit/organizations/organization-administration-targets.test.ts`,

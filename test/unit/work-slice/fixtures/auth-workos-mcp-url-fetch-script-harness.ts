@@ -79,8 +79,8 @@ export function scriptHarness(t: TestContext): ScriptHarness {
   const calls = join(directory, 'openssl-calls');
   mkdirSync(dirname(script), { recursive: true });
   copyFileSync(sourceScript, script);
-  mkdirSync(join(root, 'src/user-portal/dist'), { recursive: true });
-  writeFileSync(join(root, 'src/user-portal/dist/index.html'), '<!doctype html>\n');
+  mkdirSync(join(root, 'src/interfaces/user-portal/dist'), { recursive: true });
+  writeFileSync(join(root, 'src/interfaces/user-portal/dist/index.html'), '<!doctype html>\n');
   writeFileSync(join(root, 'ad-rules.txt'), '');
   mkdirSync(bin);
   mkdirSync(home);

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { createHostedToolOperations, createToolOperations } from '../../../src/fetch-tool.ts';
-import { createRequestContext } from '../../../src/auth/access-context.ts';
-import { ObserveRequestStep } from '../../../src/page-fetch/observe-request-step.ts';
-import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { createHostedToolOperations, createToolOperations } from '../../../src/app/fetch-tool.ts';
+import { createRequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { ObserveRequestStep } from '../../../src/pipelines/execution/observe-request-step.ts';
+import { HtmlToMarkdownPipeline } from '../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { RendererProcessDouble, controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { trustedAdRulesFile } from '../../support/fixtures/ad-rules.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';

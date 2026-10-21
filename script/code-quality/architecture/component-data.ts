@@ -2,6 +2,7 @@ import { rounded } from '../shared/numbers.ts';
 import { componentNameOf } from './component-name.ts';
 import { textOrder } from '../shared/order.ts';
 import type { MapSnapshot, TableFile } from './types.ts';
+import { componentOwnersOf } from '../../component-ownership.ts';
 
 export interface Component {
   readonly name: string;
@@ -12,10 +13,11 @@ export interface Component {
   readonly paths?: number;
 }
 
-export function componentsOf(snapshot: MapSnapshot): Component[] {
+export function componentsOf(snapshot: MapSnapshot, legacyRoot = 'src'): Component[] {
+  if (snapshot.ownership !== undefined) componentOwnersOf(snapshot.files.map((file) => file.path), snapshot.ownership);
   const groups = new Map<string, TableFile[]>();
   for (const file of snapshot.files) {
-    const name = componentNameOf(file.path);
+    const name = componentNameOf(file.path, snapshot.ownership, legacyRoot);
     if (name === undefined) continue;
     const group = groups.get(name) ?? [];
     group.push(file);

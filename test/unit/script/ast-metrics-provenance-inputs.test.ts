@@ -69,3 +69,29 @@ test('Given a dangling input symlink, when hashed, then fingerprinting fails', (
   symlinkSync('missing', join(root, 'test/link'));
   assert.throws(() => inputIdentityOf(root), /Cannot fingerprint inputs/);
 });
+
+for (const generated of ['src/interfaces/user-portal/dist/assets/app.js', 'src/interfaces/user-portal/.vite/cache.json']) {
+  test(`Given generated portal output at ${generated}, when it changes, then source and input fingerprints stay unchanged`, (t) => {
+    const root = tree(t);
+    write(root, 'src/interfaces/user-portal/main.ts', 'export const portal = true;');
+    const before = inputIdentityOf(root);
+    write(root, generated, 'first output');
+    assert.deepEqual(inputIdentityOf(root), before);
+    write(root, generated, 'new output');
+    assert.deepEqual(inputIdentityOf(root), before);
+  });
+}
+
+test('Given architecture policy and adjacent prose, when the policy changes, then only the input fingerprint changes', (t) => {
+  const root = tree(t);
+  write(root, 'src/example.ts', 'export const example = true;');
+  write(root, 'docs/implementation/pr-review-rules.yaml', 'dependency_graph: before');
+  write(root, 'docs/implementation/notes.md', 'before');
+  const before = inputIdentityOf(root);
+  write(root, 'docs/implementation/notes.md', 'after');
+  assert.deepEqual(inputIdentityOf(root), before);
+  write(root, 'docs/implementation/pr-review-rules.yaml', 'dependency_graph: after');
+  const after = inputIdentityOf(root);
+  assert.notEqual(after.inputsFingerprint, before.inputsFingerprint);
+  assert.equal(after.sourceFingerprint, before.sourceFingerprint);
+});

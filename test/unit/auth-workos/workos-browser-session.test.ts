@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { sessionCookie, signInCookie } from '../../../src/auth/hosted-auth/workos/session-cookies.ts';
+import { sessionCookie, signInCookie } from '../../../src/accounts/providers/workos/session-cookies.ts';
 import {
   ada,
   authority,

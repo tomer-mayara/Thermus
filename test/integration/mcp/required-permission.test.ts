@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { PerRequestHTTPServerTransport } from '@modelcontextprotocol/server';
-import type { RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
-import { MCPServer, type McpHttpAuthOptions } from '../../../src/mcp/mcp-server.ts';
+import type { RequestContext, RoleGrant } from '../../../src/accounts/identity/access-context.ts';
+import { MCPServer, type McpHttpAuthOptions } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { AccessResolverSpy, type ConfiguredAccess } from '../../support/doubles/auth/access-resolver-spy.ts';
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { ContextReportToolSpy, type ContextReport } from '../../support/doubles/mcp/context-report-tool-spy.ts';

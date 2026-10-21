@@ -107,6 +107,11 @@ change of the rules file is `CLARIFICATION_NEEDED`.
   fact. An import whose target is missing is `FIX` in a changed file and a
   note in an unchanged file. A changed JavaScript file under `src/` is `FIX`,
   because the check reads TypeScript only.
+- `dependency_graph.components` defines stable IDs with directory `roots` and
+  optional exact `files`. All committed `src/` files, including assets, must
+  have one owner. Overlap and missing ownership stop the check. Grouping folders
+  are not packages. A revision without this key uses the legacy first-level
+  folders and `composition` for root files.
 - The check compares the packages, edges, cycles, and external imports of the
   whole tree, and the imports across packages of the changed files, with the
   rules. A fact that the rules of the merge base lack and the rules of HEAD
@@ -116,6 +121,13 @@ change of the rules file is `CLARIFICATION_NEEDED`.
   known cycle grows when it gains a member, or an edge between two members
   that `allowed_edges` of the merge base does not cover. A known cycle may
   shrink.
+- HEAD supplies the candidate ownership. Proven Git renames also give each
+  moved file its previous path for the merge-base policy view. Thus regrouping
+  cannot hide a forbidden edge, private access, runtime escalation, external
+  import, or cycle growth. Added/deleted files without rename evidence do not
+  inherit an old identity. The check still reads committed blobs, not the
+  installed working tree. A file whose owner changes is assessed for private
+  access even when its source text is unchanged.
 - Public surface: every change to a module of `public_surface` is
   `CLARIFICATION_NEEDED`. So is a module that imports a changed file of its
   own package, because a re-export or an imported type can change its

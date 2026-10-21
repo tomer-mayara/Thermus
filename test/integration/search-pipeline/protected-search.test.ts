@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SearchPipeline } from '../../../src/search-pipeline/search-pipeline.ts';
-import { createRequestContext } from '../../../src/auth/access-context.ts';
-import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
-import type { StepResult } from '../../../src/page-fetch/pipeline-step.ts';
-import type { SearchDocument } from '../../../src/search-engine/search-engine.ts';
-import { WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { SearchPipeline } from '../../../src/pipelines/search/search-pipeline.ts';
+import { createRequestContext } from '../../../src/accounts/identity/access-context.ts';
+import type { StepRecord } from '../../../src/pipelines/execution/step-record.ts';
+import type { StepResult } from '../../../src/pipelines/execution/pipeline-step.ts';
+import type { SearchDocument } from '../../../src/pipelines/providers/search-engine/search-engine.ts';
+import { WebsiteFetchHttpError, WebsiteFetchLaunchError, WebsiteFetchReadinessTimeoutError } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 
 const context = createRequestContext({ user: { authority: 'test', subject: 'reader' }, tenantId: 'tenant', grants: [{ role: 'reader', permissions: ['product:access'] }] });
 const page = { requestedUrl: 'https://search.example/', finalUrl: 'https://search.example/', html: '<p>private page</p>' };

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { Server } from 'node:net';
 import { describe, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
-import { startHttpServer } from '../../../src/http/server.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import { bodyReader, connectionError, encoded, loopback, nextAcceptedConnection, publicBaseUrl, RawConnection, serve } from './fixtures/http-server-fixtures.ts';
 
 describe('HTTP server close', () => {

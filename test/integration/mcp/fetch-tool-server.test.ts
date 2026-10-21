@@ -2,19 +2,19 @@ import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client';
 import { ProtocolError } from '@modelcontextprotocol/server';
-import type { RequestContext } from '../../../src/auth/access-context.ts';
-import { createFetchToolServer } from '../../../src/mcp/fetch-tool-server.ts';
-import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
-import type { McpRequestLifetime } from '../../../src/mcp/mcp-server.ts';
-import type { SearchOperation } from '../../../src/mcp/search.ts';
-import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
-import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
+import type { RequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { createFetchToolServer } from '../../../src/interfaces/mcp/fetch-tool-server.ts';
+import { fetchToolInputSchema } from '../../../src/interfaces/mcp/fetch-tool-schema.ts';
+import type { McpRequestLifetime } from '../../../src/interfaces/mcp/mcp-server.ts';
+import type { SearchOperation } from '../../../src/interfaces/mcp/search.ts';
+import type { FetchOperation } from '../../../src/interfaces/mcp/get-url-as-markdown.ts';
+import type { ExecutionContext } from '../../../src/pipelines/execution/execution-context.ts';
 import { completionLinesIn } from '../../support/drivers/operator-log.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
-import { SearchPipeline } from '../../../src/search-pipeline/search-pipeline.ts';
-import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
-import { SearchFailure } from '../../../src/search-pipeline/search-failure.ts';
-import { PageFetchFailure } from '../../../src/page-fetch/fetch-failure.ts';
+import { SearchPipeline } from '../../../src/pipelines/search/search-pipeline.ts';
+import type { StepRecord } from '../../../src/pipelines/execution/step-record.ts';
+import { SearchFailure } from '../../../src/pipelines/search/search-failure.ts';
+import { PageFetchFailure } from '../../../src/pipelines/page-fetch/fetch-failure.ts';
 
 const context: RequestContext = {
   user: { authority: 'trusted-authority', subject: 'trusted-subject' }, tenantId: 'trusted-workspace', grants: [], permissions: ['product:access'],

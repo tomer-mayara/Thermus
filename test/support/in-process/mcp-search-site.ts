@@ -1,9 +1,9 @@
 import type { TestContext } from 'node:test';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { createHostedToolOperations, createToolOperations, fetchToolServers } from '../../../src/fetch-tool.ts';
-import { routeHostedRequests } from '../../../src/application.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { createHostedToolOperations, createToolOperations, fetchToolServers } from '../../../src/app/fetch-tool.ts';
+import { routeHostedRequests } from '../../../src/app/application.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../doubles/auth/no-auth-provider.ts';
 import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
 import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';

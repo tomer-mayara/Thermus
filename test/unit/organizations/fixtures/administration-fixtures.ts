@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import type { RoleGrant } from '../../../../src/auth/access-context.ts';
-import type { ChangeRecord } from '../../../../src/organizations/change-records.ts';
+import type { RoleGrant } from '../../../../src/accounts/identity/access-context.ts';
+import type { ChangeRecord } from '../../../../src/accounts/organizations/change-records.ts';
 import {
   OrganizationAdministration,
   type Actor,
   type GrantChangeRequest,
-} from '../../../../src/organizations/organization-administration.ts';
+} from '../../../../src/accounts/organizations/organization-administration.ts';
 import { membershipIdOf, type MemberSeed } from '../../../support/doubles/organizations/directory-double-records.ts';
 import { OrganizationDirectoryDouble } from '../../../support/doubles/organizations/organization-directory-double.ts';
 import { memberRole } from '../../../support/fixtures/hosted-roles.ts';

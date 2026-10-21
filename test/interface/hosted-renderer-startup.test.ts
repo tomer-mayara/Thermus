@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
-import { assertHostedRenderer } from '../../src/hosted-renderer-startup.ts';
+import { assertHostedRenderer } from '../../src/app/hosted-renderer-startup.ts';
 
 async function rendererFile(t: TestContext, program: string, mode = 0o755): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), 'thermus-startup-renderer-'));

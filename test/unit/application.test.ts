@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { routeHostedRequests, routeLocalRequests } from '../../src/application.ts';
+import { routeHostedRequests, routeLocalRequests } from '../../src/app/application.ts';
 
 const routeConfig = {
   publicBaseUrl: 'https://thermus.example/team/',

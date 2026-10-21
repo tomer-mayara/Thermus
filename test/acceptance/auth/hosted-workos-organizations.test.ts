@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import type { WorkOSMfaPolicy } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import type { WorkOSMfaPolicy } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 import { statusesOf } from '../../support/dsl/hosted-access.ts';

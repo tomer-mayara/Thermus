@@ -1,4 +1,4 @@
-import type { AuthenticatedUser } from '../../../../src/auth/access-context.ts';
+import type { AuthenticatedUser } from '../../../../src/accounts/identity/access-context.ts';
 import type {
   DirectoryChangeResult,
   DirectoryGrantChange,
@@ -13,7 +13,7 @@ import type {
   OrganizationMember,
   OrganizationMembership,
   Page,
-} from '../../../../src/organizations/organization-directory.ts';
+} from '../../../../src/accounts/organizations/organization-directory.ts';
 import { ChangeAnswers } from './change-answers.ts';
 import { chunks, memberOf, pageAt, roleGrantOf, stateOf, withoutRole, withRole, type InvitationRecord, type InvitationSeed, type MemberSeed, type MemberState, type PageLayout } from './directory-double-records.ts';
 

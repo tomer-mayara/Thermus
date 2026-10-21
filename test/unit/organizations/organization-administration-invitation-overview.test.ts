@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { InvitationOverview } from '../../../src/organizations/administration-overviews.ts';
-import type { OrganizationInvitation } from '../../../src/organizations/organization-directory.ts';
+import type { InvitationOverview } from '../../../src/accounts/organizations/administration-overviews.ts';
+import type { OrganizationInvitation } from '../../../src/accounts/organizations/organization-directory.ts';
 import { actorOf, invitationsWith } from './fixtures/administration-fixtures.ts';
 
 function overviewOf(overview: InvitationOverview | string): InvitationOverview {

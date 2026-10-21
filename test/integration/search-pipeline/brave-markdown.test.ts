@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
 import { micromark } from 'micromark';
-import { SearchEngineBraveHttp } from '../../../src/search-engine/search-engine-brave-http.ts';
-import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { BraveHTTPResultCleanup } from '../../../src/html-cleaner-pipeline/search-results/brave-http-result-cleanup.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { SearchEngineBraveHttp } from '../../../src/pipelines/providers/search-engine/search-engine-brave-http.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { PromptInjectionRemoverSanitizer } from '../../../src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { HtmlToMarkdownPipeline } from '../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
+import { BraveHTTPResultCleanup } from '../../../src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts';
+import type { WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
 interface ExpectedResult {

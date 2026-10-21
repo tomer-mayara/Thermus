@@ -122,12 +122,11 @@ describe('Given the configured direct auth import boundaries', () => {
   });
 
   it('when composition roots select concrete implementations, then static and lazy imports are allowed', async () => {
-    for (const filePath of ['src/application.ts', 'src/index.ts', 'src/hosted-workos-application.ts']) {
+    for (const filePath of ['src/app/application.ts', 'src/index.ts', 'src/app/hosted-workos-application.ts']) {
+      const accounts = filePath === 'src/index.ts' ? './accounts/' : '../accounts/';
       await assertAllowed(filePath, [
-        './auth/local-auth/better-auth/better-auth-user-administration.ts',
-        './auth/hosted-auth/workos/workos-auth-provider.ts',
-        'better-auth',
-        '@better-auth/mcp',
+        `${accounts}providers/better-auth/better-auth-user-administration.ts`,
+        `${accounts}providers/workos/workos-auth-provider.ts`,
         '@workos-inc/node',
       ]);
     }

@@ -1,4 +1,5 @@
-import { invalidKey, isRecord, isTextList, listAt, listsAt, textListAt } from './rules-values.ts';
+import { componentDefinitionsOf, type ComponentDefinitions } from '../component-ownership.ts';
+import { invalidKey, isRecord, isTextList, listAt, listsAt, textListAt, valueAt } from './rules-values.ts';
 
 // The section dependency_graph of the rules file. The kind of an allowed edge is the maximum: type allows type
 // imports only; runtime and both allow any import.
@@ -21,6 +22,7 @@ export interface KnownCycle {
 }
 
 export interface GraphRules {
+  readonly components?: ComponentDefinitions;
   readonly packages: readonly string[];
   readonly allowedEdges: readonly AllowedEdge[];
   readonly forbiddenEdges: readonly ForbiddenEdge[];
@@ -40,12 +42,15 @@ interface ItemReader<T> {
 }
 
 export function graphRulesOf(document: unknown, where: string): GraphRules {
+  const components = componentDefinitionsOf(valueAt(document, 'dependency_graph.components'), where);
+  if (components !== undefined && valueAt(document, 'dependency_graph.packages') !== undefined) throw invalidKey(where, 'dependency_graph', 'use components or legacy packages, not both');
   const section = { document, where };
   const allowedEdges = itemsAt(section, 'allowed_edges', { read: allowedEdgeOf, expected: 'give from, to, and a kind of type, runtime, or both' });
   const repeated = allowedEdges.findIndex((edge, index) => allowedEdges.findIndex((other) => other.from === edge.from && other.to === edge.to) !== index);
   if (repeated >= 0) throw invalidKey(where, `dependency_graph.allowed_edges[${repeated}]`, 'list each pair of from and to once');
   return {
-    packages: textListAt(document, 'dependency_graph.packages', where),
+    components,
+    packages: components === undefined ? textListAt(document, 'dependency_graph.packages', where) : Object.keys(components),
     allowedEdges,
     forbiddenEdges: itemsAt(section, 'forbidden_edges', { read: forbiddenEdgeOf, expected: 'give from, and to as a text or a list of text' }),
     knownCycles: itemsAt(section, 'known_cycles', { read: knownCycleOf, expected: 'give two or more members and a kind of runtime or all' }),

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { composeHostedApplication } from '../../../src/application.ts';
-import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/auth/access-context.ts';
-import { BillingFree } from '../../../src/billing/billing-free.ts';
-import type { BrowserSessionState } from '../../../src/auth/hosted-auth/browser-session.ts';
+import { composeHostedApplication } from '../../../src/app/application.ts';
+import type { AuthenticatedUser, RequestContext, RoleGrant } from '../../../src/accounts/identity/access-context.ts';
+import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
+import type { BrowserSessionState } from '../../../src/accounts/identity/browser-session.ts';
 import { AccountOperationSpy } from '../../support/doubles/hosted-admin/account-operation-spy.ts';
 import { MembershipDirectoryDouble, type MembershipRecord } from '../../support/doubles/organizations/membership-directory-double.ts';
 import { BrowserSessionDouble, SignedInSessionDouble } from '../../support/doubles/auth/browser-session-double.ts';

@@ -66,7 +66,7 @@ WORKDIR /app
 COPY --from=production-dependencies /app/package.json ./
 COPY --from=production-dependencies /app/node_modules node_modules
 COPY --from=checked-build /app/dist/src dist/src
-COPY --from=checked-build /app/src/user-portal/dist src/user-portal/dist
+COPY --from=checked-build /app/src/interfaces/user-portal/dist src/interfaces/user-portal/dist
 COPY migrations migrations
 COPY docker/hosted-ad-rules.txt /etc/thermus/ad-rules.txt
 COPY docker/hosted-ad-rules.SOURCE.md docker/hosted-ad-rules.LICENSE.txt /etc/thermus/

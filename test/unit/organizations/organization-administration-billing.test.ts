@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { GrantChangeRequest } from '../../../src/organizations/organization-administration.ts';
+import type { GrantChangeRequest } from '../../../src/accounts/organizations/organization-administration.ts';
 import type { MemberSeed } from '../../support/doubles/organizations/directory-double-records.ts';
 import { memberRole } from '../../support/fixtures/hosted-roles.ts';
 import { actorOf, adminGrant, administrationWith, changeOf, invitationsWith, members, recordLines, rolesIn, superAdminGrant, userGrant } from './fixtures/administration-fixtures.ts';

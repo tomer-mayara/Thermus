@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { setTimeout as delay, setImmediate as nextTurn } from 'node:timers/promises';
-import type { FetchHandler } from '../../../src/http/server.ts';
+import type { FetchHandler } from '../../../src/runtime/http/server.ts';
 import { bodyReader, decoded, encoded, RawConnection, serve } from './fixtures/http-server-fixtures.ts';
 
 describe('HTTP server handler errors', () => {

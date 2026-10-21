@@ -2,7 +2,7 @@
 
 `CleanHtmlAdsAdblockRs` rejects parsed HTML that is deeper than 256 elements. This limit bounds tree walks that ad selectors can trigger.
 
-The module [html-depth-limit-error.ts](../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts) exports `HtmlDepthLimitError` and `MAX_HTML_ELEMENT_DEPTH` for callers.
+The module [html-depth-limit-error.ts](../../src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts) exports `HtmlDepthLimitError` and `MAX_HTML_ELEMENT_DEPTH` for callers.
 
 Depth follows the tree that `SourceRangeParser` parses with parse5 and the htmlparser2 tree adapter. The parser can add `html`, `head`, and `body` elements to the tree. These elements count toward the limit.
 

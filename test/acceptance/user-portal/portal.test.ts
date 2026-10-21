@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { initializePortal } from '../../../src/user-portal/portal.ts';
+import { initializePortal } from '../../../src/interfaces/user-portal/portal.ts';
 
 interface ServerState {
   readonly session?: Readonly<Record<string, unknown>>;

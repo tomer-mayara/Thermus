@@ -5,11 +5,13 @@ import type { FileChange } from '../delta/changes.ts';
 import type { InputIdentity } from '../provenance/types.ts';
 import type { CoverageReport } from './coverage.ts';
 import type { Snapshot, SnapshotCommunity, SnapshotFile, SnapshotFunction } from '../snapshot/types.ts';
+import type { ComponentDefinitions } from '../../component-ownership.ts';
 
 // The parts of a snapshot that the map, the complexity table, and the trend read. A snapshot of
 // script/code-quality/ast-metrics-snapshot.ts has all of them, and so has a snapshot file after its check. The trend keeps the global
 // numbers and the numbers of each community, and the date of the commit names its record.
 export interface MapSnapshot {
+  readonly ownership?: ComponentDefinitions;
   readonly tool?: string;
   readonly commit: string;
   readonly date: string;

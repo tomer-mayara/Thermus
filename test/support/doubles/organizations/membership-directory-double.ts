@@ -3,7 +3,7 @@ import {
   type AccessDecision,
   type AccessResolver,
   type AuthenticatedUser,
-} from '../../../../src/auth/access-context.ts';
+} from '../../../../src/accounts/identity/access-context.ts';
 import type { MemberSeed } from './directory-double-records.ts';
 import { OrganizationDirectoryDouble } from './organization-directory-double.ts';
 

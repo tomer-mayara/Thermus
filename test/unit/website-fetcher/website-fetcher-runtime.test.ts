@@ -1,10 +1,10 @@
-import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
+import { WebsiteFetchFailure } from '../../../src/pipelines/providers/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, { type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
 import { test, type TestContext } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { WebsiteFetchLaunchError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchLaunchError } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 

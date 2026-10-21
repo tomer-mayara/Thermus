@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { GenericServerException, UnauthorizedException } from '@workos-inc/node';
-import type { SealRefresh } from '../../../src/auth/hosted-auth/workos/workos-session-client.ts';
+import type { SealRefresh } from '../../../src/accounts/providers/workos/workos-session-client.ts';
 import {
   ada,
   authority,

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetcherLightpanda } from '../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
 import { permitIPv4Fixture, resolveAsPublic, startFixture } from '../support/doubles/website-fetcher/network-fixture.ts';
 
 test('blocks literal and DNS loopback targets before any connection', async (t) => {

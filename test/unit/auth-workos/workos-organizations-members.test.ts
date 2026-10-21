@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { MembershipStatus } from '../../../src/organizations/organization-directory.ts';
+import type { MembershipStatus } from '../../../src/accounts/organizations/organization-directory.ts';
 import {
   acme,
   assertConfigurationError,

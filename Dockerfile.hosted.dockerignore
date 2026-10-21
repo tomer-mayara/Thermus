@@ -4,6 +4,7 @@
 !.npmrc
 !docker/
 !docs/lightpanda-runtime.md
+!docs/implementation/pr-review-rules.yaml
 !migrations/
 !package.json
 !patches/

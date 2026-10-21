@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
 import { test } from 'node:test';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import { NoAuthProvider } from '../../support/doubles/auth/no-auth-provider.ts';
 
 for (const stage of ['verification', 'access'] as const) {

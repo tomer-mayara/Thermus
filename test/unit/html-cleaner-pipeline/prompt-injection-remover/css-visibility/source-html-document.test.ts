@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { adapter, type Htmlparser2TreeAdapterMap } from 'parse5-htmlparser2-tree-adapter';
-import { SourceHtmlDocument, type SourceRange, type StyleSource } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts';
+import { SourceHtmlDocument, type SourceRange, type StyleSource } from '../../../../../src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts';
 
 function sourceText(html: string, ranges: readonly SourceRange[]): string[] {
   return ranges.map(({ start, end }) => html.slice(start, end));

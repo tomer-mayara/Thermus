@@ -6,8 +6,8 @@ import {
   PerRequestHTTPServerTransport,
   PROTOCOL_VERSION_META_KEY,
 } from '@modelcontextprotocol/server';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
-import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
+import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/accounts/identity/identity-verifier.ts';
 import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
