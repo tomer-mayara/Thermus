@@ -58,9 +58,12 @@ Each HTML conversion uses a `PreparedHtmlDocument`. `fromHtml(html, url)` parses
 The source uses logical owners under `app`, `accounts`, `interfaces`,
 `pipelines`, `logging`, and `runtime`. Grouping directories are not packages.
 The shared review policy defines ownership and permitted dependencies. The
-[component structure record](docs/design/component-structure-proposal.md)
-lists public boundaries, file contexts, and the reviewed move map. Server web
-code shares one owner; browser modules remain separate from Node Vite tooling.
+[current component registry](architecture/components.md) describes responsibilities,
+public boundaries, and runtime dependencies. Follow the
+[registry workflow](docs/implementation/component-registry-workflow.md) when a
+change affects that map. The [component migration record](docs/design/component-structure-proposal.md)
+keeps the reviewed move map as historical evidence. Server web code shares one
+owner; browser modules remain separate from Node Vite tooling.
 
 ## Hidden-text sanitizer
 

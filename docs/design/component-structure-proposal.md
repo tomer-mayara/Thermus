@@ -2,6 +2,10 @@
 
 Date: 2026-10-21. Source snapshot: `af6b9e22`.
 
+Status: Phase 1 is complete. This document keeps the migration plan and reviewed
+move map as history. Use the [current component registry](../../architecture/components.md)
+for the current system.
+
 Phase 1 implements the reviewed component layout, the three repairs, and the
 associated guards, test classification, and resource-path updates. The source
 map below retains the reviewed before/after paths as migration evidence.
@@ -220,7 +224,7 @@ workflow, audit storage, class hierarchy, or internal app-cycle refactor is requ
 Replace the review policy's current `dependency_graph.packages` list with one
 minimal declaration of stable IDs and their roots, using the table above.
 Tools discover files and imports, not intended component meaning; define
-ownership once without an additional registry.
+ownership once without an additional machine ownership registry.
 The planned `dependency_graph.components` entries hold roots and, for app,
 exactly the `src/index.ts` file exception. Share one resolver across consumers;
 derive tracked file inventory and imports automatically. Reject unowned or

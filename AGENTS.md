@@ -86,6 +86,9 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
   outside the selection, record that run as deferred. The test gate policy
   gives the commands.
 - Update the documents that the change affects in the same pull request.
+- Follow the [component registry workflow](docs/implementation/component-registry-workflow.md)
+  to check architecture impact and maintain the registry before Ready or
+  requesting human review or merge automation allowed by this policy.
 - Run the ast-metrics review process (the section "Code quality review
   with ast-metrics" below) on the complete candidate before Ready.
 - Compute and record the review route as the section "Review route" below

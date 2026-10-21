@@ -99,6 +99,7 @@ protected_paths:
     paths:
       - AGENTS.md
       - CLAUDE.md
+      - docs/implementation/component-registry-workflow.md
       - .github/**
       - docs/implementation/pr-review-playbook.md
       - docs/implementation/pr-review-rules.yaml
