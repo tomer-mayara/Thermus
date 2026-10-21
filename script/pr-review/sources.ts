@@ -15,9 +15,9 @@ export function sourceOutcome(candidate: Pick<Candidate, 'sourcePaths' | 'source
   const oldPaths = new Map([...moves].map(([before, after]) => [after, before]));
   const baseOwnerOf = (path: string) => componentOf(oldPaths.get(path) ?? path, rules.base.graph.components) ?? ownerOf(path);
   const baseGraph = sourceGraphOf(candidate.sourcePaths, candidate.sources, baseOwnerOf);
-  const base = { ...rules.base, surface: { ...rules.base.surface, modules: rules.base.surface.modules.map((path) => moves.get(path) ?? path) } };
+  const base = { ...rules.base, surface: { ...rules.base.surface, modules: rules.base.surface.modules.map((path) => moves.get(path) ?? path), external: rules.base.surface.external?.map((path) => moves.get(path) ?? path) } };
   const dependencyChanged = new Set([...changed, ...candidate.sourcePaths.filter((path) => ownerOf(path) !== baseOwnerOf(path))]);
   const surfaces = [...surfaceReasons(base.surface, baseGraph, changed), ...surfaceReasons(rules.head.surface, graph, changed)];
   return { facts: dependencyOutcome({ base: { graph: baseGraph, rules: base }, head: { graph, rules: rules.head } }, dependencyChanged),
-    surface: [...new Map(surfaces.map((reason) => [reason.fact, reason])).values()] };
+    surface: [...new Map(surfaces.map((reason) => [`${reason.tier}:${reason.fact}`, reason])).values()] };
 }

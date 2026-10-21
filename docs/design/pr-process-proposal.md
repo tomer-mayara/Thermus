@@ -1,9 +1,11 @@
 # Pull request process proposal
 
-Status: proposal, not active. Date: 2026-10-21.
-This document proposes a later process change. It implements no automation.
-[AGENTS.md](../../AGENTS.md), the current [review rules](../implementation/pr-review-rules.yaml),
-and existing workflows govern until a separate implementation is approved.
+Status: approved for implementation, 2026-10-21. The implementation updates
+[AGENTS.md](../../AGENTS.md), the [review playbook](../implementation/pr-review-playbook.md),
+rules, checker, test and metric policies, registry workflow, and pull request
+template together. These active files govern after the implementation merges.
+The implementation pull request remains Draft until the user requests otherwise.
+Automatic merge activation is separate; this approval changes no live settings.
 
 ## Goal and tier names
 
@@ -29,7 +31,12 @@ can be T0 Auto merge and blocked, or T2 Need architect and eligible.
 
 The author proposes one tier and records every matching reason. Apply the
 highest matching tier. Trusted mechanical checks verify facts they can establish,
-including changed paths, public contracts, and dependency changes. They use the
+including changed paths, affected public-surface modules, and dependency changes.
+A static protected-path or public-surface touch sets a conservative T1 Team review
+floor, including contract and deployment files. The checker lists affected
+modules; it does not emit or compare declaration snapshots. Team review assesses
+actual contract and topology changes from evidence and escalates architecture
+changes to T2 Need architect. Uncertain impact blocks eligibility. Checks use the
 pre-change policy from the trusted base; a pull request cannot weaken its own
 review or merge requirements. Semantic claims still need supporting evidence.
 An ambiguous classification cannot use T0 Auto merge. Resolve it through
@@ -81,8 +88,10 @@ effect on boundaries or sensitive behavior.
 
 File type alone does not select T0 Auto merge. Documents can define contracts;
 configuration can change trust or deployment; tests can weaken enforcement.
-A routine compatible library patch can use T0 Auto merge when no higher-tier
-reason applies. Assess its runtime effect and applicable checks.
+A routine compatible library patch can be semantically low risk. Current
+dependency-file changes still require T1 Team review and manual merge, or an
+explicitly approved manual de-escalation under this policy. They cannot use
+automatic T0 Auto merge.
 
 ## Conditions for merge
 
@@ -145,7 +154,7 @@ more can provide optional summaries. There is no single component CRAP score.
 Do not use a component CRAP before/after value, a 50% CRAP increase, or an
 arbitrary ten-point component MI drop as an automatic escalation rule.
 
-Initially retain the approved absolute file/function goals and exception policy
+Retain the approved absolute file/function goals and exception policy
 in [AGENTS.md](../../AGENTS.md) and the [review rules](../implementation/pr-review-rules.yaml).
 Do not introduce new numeric thresholds in this proposal. Metric failures block
 merge until corrected or covered by a permitted, reviewed exception. Required
@@ -163,10 +172,15 @@ not measured base coverage. Do not claim a measured CRAP delta from that estimat
 Unknown required evidence is not a pass; use supported bounds only when they
 prove the applicable goal. Mark production metrics N/A when none apply.
 
-On adoption, ordinary prose-only changes should skip irrelevant full code-metric
-runs. Changes to metric rules or tooling still need their relevant checks.
-Selection must follow the revised test and metrics policies for the complete
-candidate. Until adoption, the current mandatory process still applies.
+Ordinary prose-only changes skip irrelevant full code-metric runs under the
+implemented policy. The new metrics process paths are `src/**`,
+`script/code-quality/**`, `.ast-metrics.yaml`, `.ast-metrics-baseline.yaml`, and
+`.code-quality-exceptions.yaml`. Source changes need full production metrics;
+source-free metric-tool or rule changes need process/review and relevant checks.
+Other source-free PR checker, CI, or policy scripts can mark production metrics
+N/A and use applicable tests and habit-hooks. The trusted merge-base rules retain
+broader historical requirements for their candidate. This implementation runs
+the historical full process and preserves its higher review requirement.
 
 ## Short pull request template
 
@@ -195,25 +209,38 @@ Decision: <ADR link for an enduring decision, or why no new decision is needed>
 
 Human approvals and merge eligibility must be recorded by the trusted process,
 not inferred from this template. Full reports remain accessible as artifacts or
-links. On adoption, this replaces the current requirement to paste the complete
-metrics report unchanged into every pull request description; it does not replace
-that requirement today.
+links. The implementation replaces the requirement to paste the complete metrics
+report unchanged into every pull request description. It retains accessible full
+reports and concise relevant findings. Before that implementation merges, the
+trusted historical policy still governs its candidate.
 
-## Adopt separately
+## Implementation and separate activation
 
-1. Trial the proposal on representative recent pull requests, including contained
-   code changes, sensitive local fixes, architecture changes, policy changes,
-   dependency updates, and ordinary documents. Check effort and missed risks.
-2. Approve a separate implementation. Update AGENTS.md, rules, checker, test gate
-   policy, metrics policy, registry workflow, and pull request template together,
-   using the three tier names consistently. State which old requirements change.
-3. Establish trusted CI results, human approval identity, and merge enforcement.
-   Baseline `b5fcee19` has no `.github` workflows; this proposal adds none.
-4. Test classification, ambiguous cases, policy changes, failed checks, missing
-   evidence, stale approvals, holds, and de-escalation. Verify that the changed
-   candidate cannot exempt itself through its own policy edits.
-5. Enable T0 Auto merge only after the approved implementation and these checks
-   work. Reassess the trial results before widening automatic merge coverage.
+The approved implementation updates policy, rules, checker, fail-closed workflow
+controls, and the short template as one candidate. Semantic impact is committed
+in root `.pr-impact.json` with version, classification, and architecture, and must
+differ from the trusted base. The trusted controller adds actual base/head
+identities; local checks use a stamped copy. Mutable pull request prose does not
+change the classified scope at an approved head. The automatic controller keeps
+the highest historical canonical tier label; labels only escalate. Approved
+de-escalation needs manual higher-authority review and merge with all checks.
+The historical base adapter
+retains legacy higher review as T2 Need architect and retains its blockers; new
+HEAD rules cannot lower this migration's own requirements. Current tier labels
+use the full canonical names; legacy route names remain historical input only.
 
-Saving or approving this proposal alone does not change an active rule, authorize
-a merge, or enable any automation.
+The [automation setup guide](../implementation/pr-automation-setup.md) records
+trusted workflow identity, check selection, independent human approval, and
+current-SHA merge evidence. The repository's `allow_auto_merge` setting was false
+when the implementation was prepared. No live setting changes or activation are
+part of this draft implementation. Missing prerequisites keep the workflow
+blocked. Source changes still require their complete ordinary and production
+gates, including trusted evidence for credentialed checks.
+
+Trial representative contained code changes, sensitive local fixes, architecture
+changes, policy changes, dependencies, and ordinary documents. Verify ambiguity,
+failed checks, missing evidence, stale approvals, holds, de-escalation, and attempts
+to weaken policy through candidate edits. Review effort and missed risks before
+widening automation. Enable T0 Auto merge only after trusted enforcement passes
+these checks and the owner separately authorizes activation. Neither approval of
+this proposal nor the implementation draft authorizes a merge.

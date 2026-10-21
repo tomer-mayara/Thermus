@@ -34,12 +34,12 @@ test('Given goal misses of Delta, Review, and CRAP and no finding, when the metr
   });
 });
 
-test('Given a failed CRAP stage and an unavailable Architecture stage, when the metrics step runs, then each is a FIX reason of the required checks with its status', () => {
+test('Given a failed CRAP stage and an unavailable Architecture stage, when the metrics step runs, then each is a blocked reason of the required checks with its status', () => {
   const outcome = metricsOutcome({ changes, metrics: { outcomes: outcomesOf('passed', 'passed', 'failed', 'unavailable'), findings: [] } }, rules);
 
   assert.deepEqual(outcome.reasons, [
-    { route: 'FIX', key: 'required_checks', fact: 'CRAP failed' },
-    { route: 'FIX', key: 'required_checks', fact: 'Architecture unavailable' },
+    { blocking: true, key: 'required_checks', fact: 'CRAP failed' },
+    { blocking: true, key: 'required_checks', fact: 'Architecture unavailable' },
   ]);
   assert.deepEqual(outcome.lines.slice(2), ['CRAP: failed', 'Architecture: unavailable', unchangedLine('0 findings')]);
 });
@@ -51,15 +51,15 @@ test('Given a Review stage that did not complete, when the metrics step runs, th
   assert.deepEqual(outcome.lines, ['Delta: passed', 'Review: failed', 'CRAP: unavailable', 'Architecture: unavailable', 'findings not read: the Review stage did not complete']);
 });
 
-test('Given high findings on a changed and on a renamed production file, when the metrics step runs, then each is an ARCHITECT_REVIEW_NEEDED reason with its file and message', () => {
+test('Given high findings on a changed and on a renamed production file, when the metrics step runs, then each is an T1 reason with its file and message', () => {
   const outcome = findingsOutcome([
     { severity: 'high', file: 'src/a.ts', message: lowMi },
     { severity: 'high', file: 'src/b.ts', message: 'Maintainability index: 90 -> 80 (below 85 is hard to maintain)' },
   ]);
 
   assert.deepEqual(outcome.reasons, [
-    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.review_findings', fact: `src/a.ts: ${lowMi}` },
-    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.review_findings', fact: 'src/b.ts: Maintainability index: 90 -> 80 (below 85 is hard to maintain)' },
+    { tier: 'T1', key: 'ratchet.review_findings', fact: `src/a.ts: ${lowMi}` },
+    { tier: 'T1', key: 'ratchet.review_findings', fact: 'src/b.ts: Maintainability index: 90 -> 80 (below 85 is hard to maintain)' },
   ]);
   assert.deepEqual(outcome.lines.slice(4), [unchangedLine('0 findings')]);
 });

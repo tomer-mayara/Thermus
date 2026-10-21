@@ -4,11 +4,11 @@ import { prReviewCheckScript } from '../../../support/processes/module-paths.ts'
 import { runScript } from '../../../support/processes/script-command.ts';
 import type { GitRepository } from './git-repository.ts';
 
-export const manualNote = '- The steps "Metrics" and "Decision" of the review route are manual: do them before Ready, as AGENTS.md says.';
+export const manualNote = '- Local eligibility is preliminary. The trusted merge gate must verify current checks, holds, and independent human approval.';
 export const snapshotOptions = ['--base-snapshot', 'ast-report/snapshot-base.json', '--head-snapshot', 'ast-report/snapshot.json'];
 export const crapOptions = ['--crap', 'ast-report/crap.json'];
 export const metricsOptions = ['--process', 'ast-report/process.json', '--review', 'ast-report/review.json'];
-export const decisionNote = '- The step "Decision" of the review route is manual: do it before Ready, as AGENTS.md says.';
+export const decisionNote = manualNote;
 
 type RawValues = Readonly<Record<string, number | undefined>>;
 type Commits = { readonly base: string; readonly head: string };
@@ -31,7 +31,13 @@ export interface FindingFixture {
 }
 
 export function checkOn(t: TestContext, repository: GitRepository, ...args: string[]) {
-  return runScript(t, prReviewCheckScript, { args: ['--base', 'main', ...args], cwd: repository.root });
+  const impact = {
+    version: 1, base: repository.git('rev-parse', 'main').trim(), head: repository.git('rev-parse', 'HEAD').trim(),
+    classification: { container: false, external: false, contract: false, deployment: false, crossCutting: false, component: false, internalInterface: false, sensitiveBehavior: false, dependencyRisk: false, policy: false, uncertain: false },
+    architecture: { modelUpdated: false, summary: 'No further semantic change in this guard scenario.', views: ['Context', 'Runtime'], evidence: ['The committed fixture.'] },
+  };
+  repository.write({ '.git/pr-review-impact.json': JSON.stringify(impact) });
+  return runScript(t, prReviewCheckScript, { args: ['--base', 'main', '--impact', '.git/pr-review-impact.json', ...args], cwd: repository.root });
 }
 
 // A list of the report ends at the next empty line.
@@ -42,8 +48,12 @@ export function linesUnder(report: string, heading: string): string[] {
   return lines.slice(start + 1, lines.indexOf('', start));
 }
 
-export function routeOf(report: string): string | undefined {
-  return /^Route: `(\w+)`$/m.exec(report)?.[1];
+export function tierOf(report: string): string | undefined {
+  return /^Tier: `(T[012]) [^`]+`$/m.exec(report)?.[1];
+}
+
+export function eligibilityOf(report: string): string | undefined {
+  return /^Local eligibility: `(eligible|blocked)`$/m.exec(report)?.[1];
 }
 
 export function snapshotText(commit: string, files: RawValues): string {

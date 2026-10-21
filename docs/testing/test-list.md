@@ -1104,120 +1104,74 @@ See [the script guide](../../script/README.md) and
 
 ## PR review check
 
-Nine acceptance files run `script/pr-review/check.ts` in small git
-repositories. Each repository has its own rules file from
-`test/acceptance/script/fixtures/pr-review-rules.ts`.
-`test/acceptance/script/pr-review-check.test.ts` checks the route from the
-changed paths: `SHIPPED` for a document change, with the complete report and its
-commits; `CLARIFICATION_NEEDED` for a protected path with the question of its
-group, for a
-renamed protected file, for a changed surface module, and for a changed
-contract document; `SHIPPED` for a change of tests only; and `SHIPPED` with no
-changed path when HEAD is the merge base.
-`test/acceptance/script/pr-review-check-size.test.ts` checks
-`ARCHITECT_REVIEW_NEEDED` for a
-production line count above the limit, also for a file that moves into `src/`,
-for a removed test case that the reason names, and for an added skip.
-`test/acceptance/script/pr-review-check-facts.test.ts` checks the dependency
-facts. `FIX`: an edge that the rules do not list, with the key that lists it, a
-forbidden edge, a new cycle with no entry to declare it, a new edge inside a
-known cycle also when the branch declares the edge, an import of a file of
-another package outside the public surface, an unresolved import in a changed
-file, and a changed JavaScript file. `CLARIFICATION_NEEDED`: an edge that the rules
-file of the branch declares, also when no protected group lists the rules
-file. A stylesheet import is no fact, and an unresolved import in an unchanged
-file is a note. `test/acceptance/script/pr-review-check-record.test.ts` checks
-the JSON keys and the commits, the stop for uncommitted changes and the note
-with `--allow-dirty`, and the rules file of HEAD when the merge base has none
-or has one that is not valid. Historical route names at the merge base keep
-its thresholds and protected paths when HEAD adopts the four routes. The
-check refuses historical route names at HEAD.
-`test/acceptance/script/pr-review-check-failures.test.ts` checks exit status 1
-for a rules file at HEAD without a key, without the MI limit of a new file,
-with a CRAP goal other than 15, with a number as the location of the review
-findings, with a trigger of another route, or that is not valid YAML, for a
-deleted rules file, a missing base ref, an unknown option, a rules path
-outside the repository, a repository without an owner, a head snapshot
-without a base snapshot, and a process file without a review file. It also checks that the README gives the same synopsis, options, and
-defaults as the help, which it reads without child processes.
-`test/acceptance/script/pr-review-check-ratchet.test.ts` checks the MI rules
-of check 4 with snapshot files that the test writes under `ast-report/`:
-`FIX` for a new production file at raw MI 84.96 and no reason at 85;
-`ARCHITECT_REVIEW_NEEDED`
-for an existing file that drops from 90 to 85, with both values, and no
-reason at 85.1; a renamed file that compares its old path in the base
-snapshot with its new path in the head snapshot; and not applicable for a
-file without raw MI in the snapshot that it needs. It checks exit status 1
-for a head or base snapshot of another commit, with the snapshot and both
-commits, for a missing snapshot file, and for a raw MI that is a text.
-`test/acceptance/script/pr-review-check-exceptions.test.ts` checks the
-exceptions file: an entry with a future date turns the `FIX` into an
-`ARCHITECT_REVIEW_NEEDED`
-reason that names the entry, a past date keeps the `FIX` and adds the expired
-entry, an expired entry of a changed file is `FIX` without the snapshot
-options while the MI section says that MI was not checked, and an expiry that
-is not a calendar date gives exit status 1.
-`test/acceptance/script/pr-review-check-crap.test.ts` checks the CRAP goals of
-check 4 with a CRAP file that the test writes under `ast-report/`: a pass from
-the bound `[3, 12]` for a new function of three paths without a share; `FIX`
-for a new function of four paths, whose range `[4, 20]` crosses 15; a pass at
-29.999 and `FIX` at 30 for changed functions with known coverage; `FIX` with
-the goal of a new function for an unknown function, while an unchanged
-function and a row of an unchanged file give no reason. A function entry of
-the exceptions file with a future date turns the `FIX` into an
-`ARCHITECT_REVIEW_NEEDED` reason
-that names the entry; with a past date the `FIX` stays and the expired entry
-is `FIX` too. It checks exit status 1 for a CRAP file of another commit, with
-the file and both commits, for a missing file, and for a row whose paths are
-a text. The complete report of `pr-review-check.test.ts` says that CRAP was
-not checked without `--crap`, and that the metrics step was not checked
-without `--process` and `--review`.
-`test/acceptance/script/pr-review-check-metrics.test.ts` checks the metrics
-step with a process file and a review file that the test writes under
-`ast-report/`: goal misses of the process and high findings on unchanged files
-only give no reason, the section counts the findings, and the note leaves only
-the step "Decision" manual; a high finding on a changed production file is
-`ARCHITECT_REVIEW_NEEDED` with the file and the message, while a low finding
-there gives no
-reason and a high finding on a changed test file has a line without a reason;
-a failed Delta stage is `FIX` with each stage that did not complete, and the
-check does not read a review file that does not exist. It checks exit status
-1 for a process file or a review file of another commit, with the file and
-both commits, for a missing process file, for a process file with three
-stages, and for a review finding of another severity.
+The acceptance files `test/acceptance/script/pr-review-check*.test.ts` run
+`script/pr-review/check.ts` in temporary Git repositories. Their shared fixtures
+provide current rules and an explicit architecture declaration. The dedicated
+tier tests also exercise missing and stale evidence directly.
 
-The unit tests `test/unit/script/pr-review-*.test.ts` check the parts: the glob
-matcher with dot files (`globs`), the kind of each import statement in each
-kind of TypeScript file (`imports`), the package graph, its resolution, and
-its assets (`graph`), the cycles and the edges inside known cycles (`cycles`),
-the dependency facts (`dependency-facts`), the declared and the undeclared
-facts (`facts`), the rules reader, its route guards, and its diagnostics
-(`rules`), the readers of the diff output (`changes`), the reader of `git
-cat-file --batch` (`blobs`), the line counts and the snooze file (`size`), each
-form of a test case, a skip, and a todo (`test-counts`), the path and surface
-reasons (`paths`), the route and the label command (`route`), the result and
-its report with the MI and CRAP sections (`result`), the MI rules with renames, limits,
-and exceptions (`ratchet`), the reader of the snapshot files and its
-diagnostics (`snapshots`), the reader of the exceptions file with its file
-and function entries, its dates, its cover, and its expiry (`exceptions`), the
-reader of the CRAP file and its diagnostics (`crap-rows`), the CRAP goals
-with their bounds, the exact values at the goals, the rows that count, and
-the function entries (`crap`), the readers of the process file and the review
-file with their commits, their diagnostics, and the review file that is not
-read after a Review stage that did not complete (`metrics-files`), and the
-metrics step with the stages that did not complete, the goal misses, and the
-high findings on changed, renamed, test, and unchanged files (`metrics`). The
-rules reader also checks the optional locations of the two metrics files, and
-the result checks the Metrics section and the note that leaves only the step
-"Decision" manual.
+- `pr-review-check-tiers.test.ts` proves T0 Auto merge for ordinary prose with
+  complete evidence, T1 Team review for process changes, and T2 Need architect
+  for declared external contract changes. A blocked check retains the required
+  tier. Missing impact cannot authorize automatic merge. Historical base
+  requirements remain in force when HEAD relaxes its policy; a missing or
+  invalid base policy blocks merge.
+- `pr-review-check.test.ts` checks the report, commits, canonical labels,
+  protected paths and renames, possible surface changes, contract documents,
+  tests-only changes, and an empty diff. Static surface candidates establish
+  T1 Team review; actual boundary changes use the semantic declaration.
+- `pr-review-check-components.test.ts` checks stable owners, nested roots,
+  exact entrypoint ownership, and rejection of unowned committed files.
+- `pr-review-check-size.test.ts` checks changed-line limits, moves into the
+  production scope, removed tests, and added skips as T1 Team review reasons.
+- `pr-review-check-facts.test.ts` checks missing declarations, forbidden edges,
+  new cycles, known-cycle growth, private imports, and unresolved imports.
+  Declarations need review and never permit forbidden edges or cycle growth.
+- `pr-review-check-record.test.ts` checks JSON, dirty working trees, committed
+  blobs, trusted-base policy, historical adapters, and current HEAD schema.
+- `pr-review-check-failures.test.ts` checks invalid arguments, rules, refs,
+  and incomplete option pairs. Invalid input exits 1; a computed blocked
+  result exits 0 and must be inspected before merge.
+- `pr-review-check-ratchet.test.ts` checks file MI thresholds, exact raw
+  comparisons, renames, missing evidence, stale snapshots, and invalid scores.
+- `pr-review-check-exceptions.test.ts` checks reviewed MI exceptions, bounds,
+  expiry dates, and expired entries for changed units.
+- `pr-review-check-crap.test.ts` checks function CRAP goals, coverage bounds,
+  unknown identity, unchanged functions, exceptions, and stale or invalid rows.
+- `pr-review-check-metrics.test.ts` checks failed stages, kept high findings on
+  changed files, unchanged findings, and stale or invalid process reports.
+
+The unit files `test/unit/script/pr-review-*.test.ts` cover glob matching,
+imports, owners, resolution, cycles, declaration facts, trusted rules, diff and
+blob readers, line and test counts, MI and CRAP goals, exceptions, metric input
+validation, and Markdown/JSON output. `pr-review-tier.test.ts` proves that
+blockers cannot hide T1 Team review or T2 Need architect.
+`pr-review-impact.test.ts` checks commit binding, mandatory explicit claims,
+architecture evidence, and unresolved classification. Missing raw MI blocks a
+supported implementation; a complete snapshot with no functions can establish
+that the metric does not apply.
 
 ```sh
 npm run build
-node --test "dist/test/acceptance/script/pr-review-check*.test.js"
+node --test --test-concurrency=1 "dist/test/acceptance/script/pr-review-check*.test.js"
 node --test "dist/test/unit/script/pr-review-*.test.js"
 ```
 
 See [the check guide](../../script/pr-review/README.md).
+
+## PR merge automation
+
+`test/acceptance/script/pr-automation.test.ts` checks the plain Node entry point,
+an exact-commit T0 Auto merge, changes to the candidate or its assessment,
+holds, and manual owner merge for decision records even after architect approval.
+`pr-automation-trust.test.ts` uses temporary Git repositories to prove trusted
+base execution, committed impact evidence, and retention of old rename paths.
+
+The unit files `test/unit/script/pr-automation*.test.ts` check independent human
+approval, stale reviews, failed or missing checks, sticky escalation, trusted
+external evidence, branch protection, controller provenance, and test selection.
+They use fake GitHub evidence and make no live merge request. The
+[automation setup guide](../implementation/pr-automation-setup.md) defines the
+separate activation trial.
 
 ## Free hosted signup (FS-01)
 

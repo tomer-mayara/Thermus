@@ -1,0 +1,54 @@
+name: Thermus merge gate
+
+on:
+  workflow_run:
+    workflows: [Thermus PR validation]
+    types: [completed]
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      pull_request:
+        description: Pull request number, or blank to inspect open pull requests
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: read
+  actions: read
+  checks: read
+  statuses: read
+
+concurrency:
+  group: thermus-merge-gate
+  cancel-in-progress: false
+
+jobs:
+  merge-gate:
+    if: vars.THERMUS_AUTO_MERGE_ENABLED == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Never check out or run the pull request's scripts with this token.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.20.0
+      - run: npm install --global pnpm@12.10.1
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Check current evidence and merge eligible candidates
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          THERMUS_AUTO_MERGE_ENABLED: ${{ vars.THERMUS_AUTO_MERGE_ENABLED }}
+          THERMUS_TEAM_REVIEWERS: ${{ vars.THERMUS_TEAM_REVIEWERS }}
+          THERMUS_ARCHITECT_REVIEWERS: ${{ vars.THERMUS_ARCHITECT_REVIEWERS }}
+          THERMUS_REQUIRED_GATES_APP_ID: ${{ vars.THERMUS_REQUIRED_GATES_APP_ID }}
+          THERMUS_PROTECTION_READ_TOKEN: ${{ secrets.THERMUS_PROTECTION_READ_TOKEN }}
+          THERMUS_PR_NUMBER: ${{ inputs.pull_request }}
+        run: node script/pr-review/automation-merge.ts

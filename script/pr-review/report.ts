@@ -1,13 +1,16 @@
+import { reasonName } from './tier.ts';
 import type { Change, CheckResult, Declaration } from './types.ts';
 
 export function markdownOf(result: CheckResult): string {
   const { lineCounts: counts, tests } = result;
   return [
-    '## Review route', '',
-    `Route: \`${result.route}\``,
+    '## Review tier', '',
+    `Tier: \`${result.tierName}\``,
+    `Local eligibility: \`${result.eligibility}\``,
     `Candidate: ${result.candidate}`,
     `Merge base: ${result.mergeBase}`, '',
-    ...section('Reasons', result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`)),
+    ...section('Reasons', result.reasons.filter((reason) => !reason.key.startsWith('evidence.')).map((reason) => `${reasonName(reason)} ${reason.key}: ${reason.fact}`)),
+    ...section('Evidence blockers', result.blockers.filter((reason) => reason.key.startsWith('evidence.')).map((reason) => `${reason.key}: ${reason.fact}`)),
     ...section('Questions to answer', result.questions.map((entry) => `${entry.key}: ${entry.question}`)),
     ...section('Changed paths', result.changedPaths.map(changeLine)),
     ...section('Line counts', [`Production: ${counts.production} (limit ${counts.productionLimit})`, `Total without generated files: ${counts.total} (limit ${counts.totalLimit})`]),

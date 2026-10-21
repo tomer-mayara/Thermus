@@ -70,8 +70,29 @@ select that focused contract. They do not select listed commands, live
 collectors, or a complete suite. See the
 [focused command](test-gate-policy.md#select-by-changed-path).
 The delta, review, snapshot, and architecture commands do not run tests.
-Run the process command for every pull request; the individual commands
-remain available for inspection and improvement passes.
+Select the process from the complete candidate as AGENTS.md says. The new
+rules select `src/**`, `script/code-quality/**`, `.ast-metrics.yaml`,
+`.ast-metrics-baseline.yaml`, and `.code-quality-exceptions.yaml`. Source changes
+need full snapshots, CRAP, and process evidence. Source-free metric-tool or rule
+changes need process/review and relevant tests, with production metrics N/A.
+Other source-free changes, including prose, PR checker, CI, and policy scripts,
+need their applicable tests and habit-hooks; they skip irrelevant full metrics.
+All tiers still record architecture impact. The trusted merge-base policy
+controls selection. Historical rules that require a process for every candidate
+remain in force for that candidate. Individual commands remain available for inspection and improvement passes.
+
+Retain complete process and machine-readable reports as accessible review
+artifacts. Summarize relevant changed file/function findings and link the full
+reports, including graphs, legends, import evidence, and limitations. Do not
+paste unchanged full reports into every pull request. This smaller summary does
+not narrow the global dependency graph or the context needed for correct
+analysis. Required metric assessment or a permitted exception needs at least
+T1 Team review, unless architecture independently requires T2 Need architect.
+Tool failure or missing required evidence blocks merge; approval cannot waive it.
+MI applies to production files and CRAP to functions. Optional component
+summaries do not create a component CRAP score or a new numeric escalation rule.
+A base CRAP value derived with head coverage is an estimate, not measured base
+coverage or a measured CRAP delta.
 
 By default, the coverage command runs both parts of the unit suite: emitted Node tests
 and source portal tests. Run it, or its live test, only when `src/` changed
@@ -149,7 +170,7 @@ to the current folder. The file has `version` 1, `base` (the merge base of
 `--base` and HEAD), `head` (HEAD), and `outcomes`. Each outcome has `name`,
 `status`, and `text`. The process writes the file also after a goal miss or a
 failed stage. The Markdown, the exit status, and the history record do not
-change. The review route check reads the file with `--process`, and the review
+change. The review tier check reads the file with `--process`, and the review
 findings of `ast-report/review.json` with `--review`. See
 [the check guide](../../script/pr-review/README.md). Write the file under
 `ast-report/`, as `ast-report/process.json`.
@@ -676,7 +697,7 @@ With `--json FILE`, the command also writes the rows of its table to `FILE`,
 relative to the current folder: `version` 1, `base`, `head`, and per row
 `file`, `function`, `change`, `paths`, `share`, `crap`, and `identity`. A value
 that the table shows as unknown is absent. The command writes the file also
-for a goal miss; the table and the exit status do not change. The review route
+for a goal miss; the table and the exit status do not change. The review tier
 check reads the file with `--crap`; the
 [code-quality README](../../script/code-quality/README.md#assess-per-function-crap-goals)
 gives the format.
@@ -707,9 +728,9 @@ bound cap. Zero paths without coverage prove zero without an invented share.
 approximate display value only. For five paths and share `1e-320`, display can
 be 30 while `below30` is `PASS`. This is arithmetic over supplied operands,
 not accepted evidence. It does not select origin/applicability, apply exceptions,
-track lineage/history or decline, decide routes/AUTO eligibility, or verify
-scope/provenance. The review route check calls it for each row of the CRAP
-command's `--json` file and applies the goal, the exceptions, and the route;
+track lineage/history or decline, decide review tiers or merge eligibility, or verify
+scope/provenance. The review tier check calls it for each row of the CRAP
+command's `--json` file and applies the goal, the exceptions, and the tier and blockers;
 see [the check guide](../../script/pr-review/README.md). The CRAP command, the
 process, the history, and manual merging do not use it.
 
@@ -775,8 +796,11 @@ with compatible coverage and the same base for at most three cycles. Record
 score or bound, paths, coverage, classification, and reason for every
 unresolved required goal, including new functions above 15 but below 30 and
 unknown data. An unchanged high function can retain `unchanged by this PR`.
-Under approved D2, Ready may proceed with these documented exceptions; the
-command still exits 1. Tool failures remain errors. Reselect tests from the
+A permitted exception must also have the required unit, metric, bound,
+reason, and expiry in `.code-quality-exceptions.yaml`. It needs independent
+T1 Team review, or T2 Need architect when architecture independently requires
+it. A recorded exception does not waive an uncovered goal or missing evidence.
+The command still exits 1 for a goal miss. Tool failures remain errors. Reselect tests from the
 actual candidate after test changes; do not expand selection only to collect
 coverage. Real-file checks reuse compatible coverage or collect only when
 eligible. A missing report does not add a blanket live gate.
@@ -828,7 +852,7 @@ unavailable; never reconstruct them from rounded values. Present malformed or
 nonfinite native MI for a `src/` file rejects capture before publication;
 out-of-scope entries remain ignored. The existing
 architecture reader ignores this field, so its displays, trends and process
-results still use rounded data. The review route check
+results still use rounded data. The review tier check
 [`script/pr-review/check.ts`](../../script/pr-review/README.md) reads and
 validates the raw value for the MI rules of check 4. The field adds no raw MI
 for functions.
@@ -981,10 +1005,11 @@ without bands. Invalid report envelopes still stop the command. With valid
 coverage, individual unknowns can still make an assessment incomplete; the
 band rules below explain that separate case.
 
-Paste both fenced `mermaid` blocks, their legends, and import evidence
-unchanged into every pull request body, including a pull request that changes only documents or has
-no current valid coverage. Prose does not replace the graph. This requirement
-does not expand the selected test scope or permit coverage collection outside it.
+Retain both fenced `mermaid` blocks, their legends, and import evidence
+unchanged in the complete report. Link that report from the pull request and
+summarize relevant architecture changes and evidence limits. Ordinary prose-only
+changes do not need a new irrelevant metrics report. This reporting rule does
+not expand test selection or permit coverage collection outside it.
 
 Matching: a head community matches the base community with the largest
 Jaccard overlap of their files, at 0.5 or more; the largest overlaps match

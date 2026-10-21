@@ -37,7 +37,7 @@ for (const [paths, line, fact] of [
   [16, undefined, 'src/a.ts: run: [16, 272]'],
 ] as const) {
   test(`Given a new function with ${paths} paths and no covered share, when the CRAP rules run, then the bounds decide the goal of 15`, () => {
-    assert.deepEqual(outcomeOf([row('new', paths)]), { reasons: fact === undefined ? [] : [{ route: 'FIX', key: newKey, fact }], lines: line === undefined ? [] : [line] });
+    assert.deepEqual(outcomeOf([row('new', paths)]), { reasons: fact === undefined ? [] : [{ blocking: true, key: newKey, fact }], lines: line === undefined ? [] : [line] });
   });
 }
 
@@ -47,7 +47,7 @@ for (const [paths, line, fact] of [
   [30, undefined, 'src/a.ts: run: [30, 930]'],
 ] as const) {
   test(`Given a changed function with ${paths} paths and no covered share, when the CRAP rules run, then the bounds decide the goal below 30`, () => {
-    assert.deepEqual(outcomeOf([row('changed', paths)]), { reasons: fact === undefined ? [] : [{ route: 'FIX', key: changedKey, fact }], lines: line === undefined ? [] : [line] });
+    assert.deepEqual(outcomeOf([row('changed', paths)]), { reasons: fact === undefined ? [] : [{ blocking: true, key: changedKey, fact }], lines: line === undefined ? [] : [line] });
   });
 }
 
@@ -58,9 +58,9 @@ test('Given functions with known coverage near their goals, when the CRAP rules 
   ]);
 
   assert.deepEqual(outcome.reasons, [
-    { route: 'FIX', key: newKey, fact: 'src/a.ts: run: > 15' },
-    { route: 'FIX', key: newKey, fact: 'src/a.ts: run: 20.0' },
-    { route: 'FIX', key: changedKey, fact: 'src/a.ts: run: 30.0' },
+    { blocking: true, key: newKey, fact: 'src/a.ts: run: > 15' },
+    { blocking: true, key: newKey, fact: 'src/a.ts: run: 20.0' },
+    { blocking: true, key: changedKey, fact: 'src/a.ts: run: 30.0' },
   ]);
   assert.deepEqual(outcome.lines, ['src/a.ts: run: 15.0', 'src/a.ts: run: 29.999002513266692', 'src/a.ts: run: < 30']);
 });
@@ -79,28 +79,28 @@ test('Given rows of unchanged functions, of unchanged and deleted files, and of 
     { file: 'src/moved.ts', function: 'after', change: 'changed', paths: 40 },
   ];
 
-  assert.deepEqual(outcomeOf(rows, { changes }), { reasons: [{ route: 'FIX', key: changedKey, fact: 'src/moved.ts: after: [40, 1640]' }], lines: [] });
+  assert.deepEqual(outcomeOf(rows, { changes }), { reasons: [{ blocking: true, key: changedKey, fact: 'src/moved.ts: after: [40, 1640]' }], lines: [] });
 });
 
 for (const [name, rows, exceptions, route] of [
-  ['an upper bound at the bound of the entry', [row('new', 4)], exceptionsFile(20, '2026-12-31'), 'ARCHITECT_REVIEW_NEEDED'],
-  ['an upper bound above the bound of the entry', [row('new', 4)], exceptionsFile(19.5, '2026-12-31'), 'FIX'],
-  ['an entry that expires today', [row('new', 4)], exceptionsFile(20, today), 'ARCHITECT_REVIEW_NEEDED'],
-  ['an entry that expired yesterday', [row('new', 4)], exceptionsFile(20, '2026-10-20'), 'FIX'],
-  ['an exact value just above the bound of the entry', [row('new', 15, 0.9999999)], exceptionsFile(15, '2026-12-31'), 'FIX'],
-  ['an exact value just below the bound of the entry', [row('new', 15, 0.9999999)], exceptionsFile(15.000001, '2026-12-31'), 'ARCHITECT_REVIEW_NEEDED'],
-  ['an entry of another function', [{ ...row('new', 4), function: 'other' }], exceptionsFile(20, '2026-12-31'), 'FIX'],
+  ['an upper bound at the bound of the entry', [row('new', 4)], exceptionsFile(20, '2026-12-31'), 'T1'],
+  ['an upper bound above the bound of the entry', [row('new', 4)], exceptionsFile(19.5, '2026-12-31'), 'blocked'],
+  ['an entry that expires today', [row('new', 4)], exceptionsFile(20, today), 'T1'],
+  ['an entry that expired yesterday', [row('new', 4)], exceptionsFile(20, '2026-10-20'), 'blocked'],
+  ['an exact value just above the bound of the entry', [row('new', 15, 0.9999999)], exceptionsFile(15, '2026-12-31'), 'blocked'],
+  ['an exact value just below the bound of the entry', [row('new', 15, 0.9999999)], exceptionsFile(15.000001, '2026-12-31'), 'T1'],
+  ['an entry of another function', [{ ...row('new', 4), function: 'other' }], exceptionsFile(20, '2026-12-31'), 'blocked'],
 ] as const) {
-  test(`Given a CRAP miss and ${name}, when the CRAP rules run, then the route of the reason is ${route}`, () => {
+  test(`Given a CRAP miss and ${name}, when the CRAP rules run, then the outcome of the reason is ${route}`, () => {
     const [reason] = outcomeOf(rows, { exceptions }).reasons;
 
-    assert.equal(reason.route, route);
-    if (route === 'ARCHITECT_REVIEW_NEEDED') assert.match(reason.fact, /^src\/a\.ts#run: \S.* covered by "A large switch\." until \d{4}-\d{2}-\d{2}$/);
+    assert.equal(reason.blocking ? 'blocked' : reason.tier, route);
+    if (route === 'T1') assert.match(reason.fact, /^src\/a\.ts#run: \S.* covered by "A large switch\." until \d{4}-\d{2}-\d{2}$/);
   });
 }
 
-test('Given an exception entry that covers a miss of four paths, when the CRAP rules run, then the ARCHITECT_REVIEW_NEEDED reason names the entry and the range', () => {
+test('Given an exception entry that covers a miss of four paths, when the CRAP rules run, then the T1 reason names the entry and the range', () => {
   assert.deepEqual(outcomeOf([row('new', 4)], { exceptions: exceptionsFile(20, '2026-12-31') }).reasons, [
-    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.exceptions', fact: 'src/a.ts#run: [4, 20] covered by "A large switch." until 2026-12-31' },
+    { tier: 'T1', key: 'ratchet.exceptions', fact: 'src/a.ts#run: [4, 20] covered by "A large switch." until 2026-12-31' },
   ]);
 });

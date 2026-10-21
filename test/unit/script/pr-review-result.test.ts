@@ -14,20 +14,22 @@ const triggers = [
   'known_cycle_grows', 'cross_package_file_not_in_public_surface', 'external_import_not_listed', 'forbidden_edge',
 ];
 const rules = rulesOf(stringify({
-  routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'] },
+  version: 2,
+  tiers: { order: ['T2', 'T1', 'T0'], names: { T0: 'T0 Auto merge', T1: 'T1 Team review', T2: 'T2 Need architect' } },
+    metrics: { process_paths: ['src/**', 'script/code-quality/**', '.ast-metrics.yaml', '.ast-metrics-baseline.yaml', '.code-quality-exceptions.yaml'] },
   protected_paths: {
-    policy: { route: 'CLARIFICATION_NEEDED', question: 'Who decides?', paths: ['AGENTS.md'] },
-    contracts: { route: 'CLARIFICATION_NEEDED', question: 'What does a client see?', paths: ['src/index.ts'] },
+    policy: { tier: 'T1', question: 'Who decides?', paths: ['AGENTS.md'] },
+    contracts: { tier: 'T1', question: 'What does a client see?', paths: ['src/index.ts'] },
   },
-  read_paths: { route: 'ARCHITECT_REVIEW_NEEDED', paths: [], moved_by_stop_rule: [] },
+  read_paths: { tier: 'T1', paths: [], moved_by_stop_rule: [] },
   scopes: { production: ['src/**'], generated: [] },
   size: {
     production_lines_read_above: 400, total_lines_read_above: 1500,
-    test_counts: { fewer_tests_than_base: 'ARCHITECT_REVIEW_NEEDED', more_skipped_or_todo_than_base: 'ARCHITECT_REVIEW_NEEDED' }, habit_hooks_snooze_non_empty: 'FIX',
+    test_counts: { fewer_tests_than_base: 'T1', more_skipped_or_todo_than_base: 'T1' }, habit_hooks_snooze_non_empty: 'blocked',
   },
   public_surface: { contract_documents: [], external: ['src/index.ts'], between_packages: {}, documented: [] },
   dependency_graph: {
-    counting: { unresolved_relative_import: 'FIX' }, triggers: Object.fromEntries(triggers.map((name) => [name, 'FIX'])),
+    counting: { unresolved_relative_import: 'blocked' }, triggers: Object.fromEntries(triggers.map((name) => [name, 'blocked'])),
     packages: ['a', 'composition'], allowed_edges: [{ from: 'composition', to: 'a', kind: 'runtime' }], forbidden_edges: [], known_cycles: [],
     allowed_external_imports: {}, allowed_node_builtins: {},
   },
@@ -48,74 +50,64 @@ const candidate = {
   dirty: true,
 };
 
-test('Given a renamed file and a changed module that is both a protected contract and a surface module, when the result is made, then the contracts question comes once and the notes keep their order', () => {
-  const result = resultOf(candidate, { base: rules, head: rules, path: 'r.yaml', notes: ['A note of the rules.'] }, undefined);
-  const report = markdownOf(result);
+const complete = {
+  ...candidate, dirty: false,
+  impact: {
+    version: 1 as const, base: candidate.mergeBase, head: candidate.head,
+    classification: { container: false, external: false, contract: false, deployment: false, crossCutting: false, component: false, internalInterface: false, sensitiveBehavior: false, dependencyRisk: false, policy: false, uncertain: false },
+    architecture: { modelUpdated: false, summary: 'Current views still match.', views: ['Runtime'], evidence: ['src/index.ts'] },
+  },
+  snapshots: { base: new Map([['src/a/old.ts', 90], ['src/index.ts', 90]]), head: new Map([['src/a/a.ts', 90], ['src/index.ts', 90]]) },
+  crap: [],
+  metrics: { outcomes: ['Delta', 'Review', 'CRAP', 'Architecture'].map((name) => ({ name, status: 'passed' })), findings: [] } as import('../../../script/pr-review/metrics-files.ts').MetricsFiles,
+};
+const loaded = { base: rules, head: rules, path: 'r.yaml', notes: [] };
 
-  assert.equal(result.route, 'CLARIFICATION_NEEDED');
-  assert.deepEqual(result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`), [
-    'CLARIFICATION_NEEDED protected_paths.contracts: src/index.ts',
-    'CLARIFICATION_NEEDED public_surface: src/index.ts',
-  ]);
+test('Given a contract candidate with complete local evidence, when the report is made, then each review reason is retained and the contracts question appears once', () => {
+  const result = resultOf(complete, loaded, undefined);
+  assert.equal(result.tier, 'T1');
+  assert.equal(result.tierName, 'T1 Team review');
+  assert.equal(result.eligibility, 'eligible');
+  assert.deepEqual(result.reasons.map((reason) => reason.key), ['protected_paths.contracts', 'public_surface']);
   assert.deepEqual(result.questions, [{ key: 'protected_paths.contracts', question: 'What does a client see?' }]);
   assert.deepEqual(result.lineCounts, { production: 4, productionLimit: 400, total: 4, totalLimit: 1500 });
-  assert.deepEqual(result.notes, [
-    'Uncommitted changes are not part of the candidate: the check reads the commit HEAD only.',
-    'A note of the rules.',
-    'The check does not compare declarations: compare the exported declarations of each module under "Surface differences" before and after the change, as the step "Declare or remove facts" says.',
-    'The steps "Metrics" and "Decision" of the review route are manual: do them before Ready, as AGENTS.md says.',
-  ]);
-  assert.match(report, new RegExp(`^## Review route\\n\\nRoute: \`CLARIFICATION_NEEDED\`\\nCandidate: ${'b'.repeat(40)}\\nMerge base: ${'a'.repeat(40)}\\n\\n`));
-  assert.match(report, /\nChanged paths:\n- R src\/a\/old\.ts -> src\/a\/a\.ts\n- M src\/index\.ts\n\n/);
-  assert.match(report, /\nSurface differences:\n- src\/index\.ts\n\n/);
+  const report = markdownOf(result);
+  assert.match(report, /^## Review tier\n\nTier: `T1 Team review`\nLocal eligibility: `eligible`/);
+  assert.match(report, /Changed paths:\n- R src\/a\/old\.ts -> src\/a\/a\.ts/);
+  assert.match(report, /Local eligibility is preliminary/);
   assert.deepEqual(JSON.parse(jsonOf(result)), JSON.parse(JSON.stringify(result)));
 });
 
-test('Given snapshots in which the changed contract drops by five, when the result is made, then the MI reason is ARCHITECT_REVIEW_NEEDED among the other reasons and the report gives the MI section after the tests', () => {
-  const snapshots = { base: new Map([['src/a/old.ts', 90], ['src/index.ts', 88]]), head: new Map([['src/a/a.ts', 89.5], ['src/index.ts', 82.5]]) };
-  const result = resultOf({ ...candidate, snapshots }, { base: rules, head: rules, path: 'r.yaml', notes: [] }, undefined);
-
-  assert.deepEqual(result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`), [
-    'CLARIFICATION_NEEDED protected_paths.contracts: src/index.ts',
-    'CLARIFICATION_NEEDED public_surface: src/index.ts',
-    'ARCHITECT_REVIEW_NEEDED ratchet.maintainability_index.existing_file_drop_read_at: src/index.ts: 88 to 82.5',
-  ]);
-  assert.deepEqual(result.mi, ['changed: src/a/old.ts -> src/a/a.ts: 90 to 89.5', 'changed: src/index.ts: 88 to 82.5']);
-  assert.match(markdownOf(result), /\nTests:\n(?:- .*\n){3}\nMI:\n- changed: src\/a\/old\.ts -> src\/a\/a\.ts: 90 to 89\.5\n- changed: src\/index\.ts: 88 to 82\.5\n\nCRAP:\n- not checked: give --crap\n\nMetrics:\n- not checked: give --process and --review\n\nFacts to declare:\n/);
+test('Given an MI regression and an architectural change, when the result is made, then the T1 quality finding does not replace T2 Need architect', () => {
+  const snapshots = { base: complete.snapshots.base, head: new Map([['src/a/a.ts', 90], ['src/index.ts', 82.5]]) };
+  const impact = { ...complete.impact, classification: { ...complete.impact.classification, contract: true } };
+  const result = resultOf({ ...complete, snapshots, impact }, loaded, undefined);
+  assert.equal(result.tier, 'T2');
+  assert.ok(result.reasons.some((reason) => reason.tier === 'T1' && reason.key === 'ratchet.maintainability_index.existing_file_drop_read_at'));
+  assert.ok(result.reasons.some((reason) => reason.tier === 'T2' && reason.key === 'impact.contract'));
 });
 
-test('Given CRAP rows of the renamed file, when the result is made, then the CRAP reason is FIX among the other reasons and the report gives the CRAP section after the MI section', () => {
-  const crap = [
-    { file: 'src/a/a.ts', function: 'grow', change: 'changed' as const, paths: 5 },
-    { file: 'src/a/a.ts', function: 'small', change: 'new' as const, paths: 2 },
-  ];
-  const result = resultOf({ ...candidate, crap }, { base: rules, head: rules, path: 'r.yaml', notes: [] }, undefined);
-
-  assert.equal(result.route, 'FIX');
-  assert.deepEqual(result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`), [
-    'FIX ratchet.crap.changed_legacy_function_at_or_above: src/a/a.ts: grow: [5, 30]',
-    'CLARIFICATION_NEEDED protected_paths.contracts: src/index.ts',
-    'CLARIFICATION_NEEDED public_surface: src/index.ts',
-  ]);
-  assert.deepEqual(result.crap, ['src/a/a.ts: small: pass from the bound [2, 6]']);
-  assert.match(markdownOf(result), /\nMI:\n- not checked: give --base-snapshot and --head-snapshot\n\nCRAP:\n- src\/a\/a\.ts: small: pass from the bound \[2, 6\]\n\nMetrics:\n- not checked: give --process and --review\n\nFacts to declare:\n/);
+test('Given a CRAP failure and an architectural change, when the result is made, then the failure blocks merge and the tier remains T2 Need architect', () => {
+  const crap = [{ file: 'src/a/a.ts', function: 'grow', change: 'changed' as const, paths: 5 }];
+  const impact = { ...complete.impact, classification: { ...complete.impact.classification, contract: true } };
+  const result = resultOf({ ...complete, crap, impact }, loaded, undefined);
+  assert.equal(result.tier, 'T2');
+  assert.equal(result.eligibility, 'blocked');
+  assert.deepEqual(result.blockers.map((reason) => reason.key), ['ratchet.crap.changed_legacy_function_at_or_above']);
 });
 
-test('Given metrics files with a failed CRAP stage and a high finding on the renamed file, when the result is made, then the metrics reasons join the others, the report gives the Metrics section after the CRAP section, and only the step "Decision" stays manual', () => {
+test('Given a failed metrics stage and a kept high finding, when the result is made, then the stage blocks and the finding still needs T1 Team review', () => {
   const metrics = {
     outcomes: [{ name: 'Delta', status: 'passed' }, { name: 'Review', status: 'goal miss' }, { name: 'CRAP', status: 'failed' }, { name: 'Architecture', status: 'passed' }],
     findings: [{ severity: 'high', file: 'src/a/a.ts', message: 'Maintainability too low: got 63 (min: 85)' }],
   } as const;
-  const result = resultOf({ ...candidate, dirty: false, metrics }, { base: rules, head: rules, path: 'r.yaml', notes: [] }, undefined);
-
-  assert.equal(result.route, 'FIX');
-  assert.deepEqual(result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`), [
-    'FIX required_checks: CRAP failed',
-    'CLARIFICATION_NEEDED protected_paths.contracts: src/index.ts',
-    'CLARIFICATION_NEEDED public_surface: src/index.ts',
-    'ARCHITECT_REVIEW_NEEDED ratchet.review_findings: src/a/a.ts: Maintainability too low: got 63 (min: 85)',
-  ]);
-  assert.deepEqual(result.metrics, ['Delta: passed', 'Review: goal miss', 'CRAP: failed', 'Architecture: passed', '0 findings on unchanged files, reason unchanged by this PR']);
-  assert.equal(result.notes.at(-1), 'The step "Decision" of the review route is manual: do it before Ready, as AGENTS.md says.');
-  assert.match(markdownOf(result), /\nCRAP:\n- not checked: give --crap\n\nMetrics:\n- Delta: passed\n- Review: goal miss\n- CRAP: failed\n- Architecture: passed\n- 0 findings on unchanged files, reason unchanged by this PR\n\nFacts to declare:\n/);
+  const result = resultOf({ ...complete, metrics }, loaded, undefined);
+  assert.equal(result.tier, 'T1');
+  assert.equal(result.eligibility, 'blocked');
+  assert.ok(result.blockers.some((reason) => reason.key === 'required_checks'));
+  assert.ok(result.reasons.some((reason) => reason.tier === 'T1' && reason.key === 'ratchet.review_findings'));
+  const report = markdownOf(result);
+  assert.ok(report.indexOf('MI:') < report.indexOf('CRAP:'));
+  assert.ok(report.indexOf('CRAP:') < report.indexOf('Metrics:'));
+  assert.match(report, /CRAP: failed/);
 });

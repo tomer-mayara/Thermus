@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { GitRepository } from './fixtures/git-repository.ts';
-import { checkOn, commitsOf, crapOptions, crapText, linesUnder, routeOf, writeCrap } from './fixtures/pr-review-check.ts';
+import { checkOn, eligibilityOf, commitsOf, crapOptions, crapText, linesUnder, tierOf, writeCrap } from './fixtures/pr-review-check.ts';
 import { measuredFiles, rulesYaml } from './fixtures/pr-review-rules.ts';
 
 // The CRAP rules of check 4 on the rows that script/code-quality/ast-metrics-crap.ts writes with --json.
@@ -24,13 +24,13 @@ test('Given a new function with three paths and no coverage share, when the chec
   const result = await checkOn(t, repository, ...crapOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIPPED');
+  assert.equal(tierOf(result.stdout), 'T0');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- src/alpha/small.ts: small: pass from the bound [3, 12]']);
   assert.equal(result.code, 0);
 });
 
-test('Given a new function with four paths and no coverage share, when the check runs with the CRAP file, then its range crosses 15 and the route is FIX', { timeout }, async (t) => {
+test('Given a new function with four paths and no coverage share, when the check runs with the CRAP file, then its range crosses 15 and merge is blocked', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Add a wide module', wideModule);
   writeCrap(repository, [wideRow]);
@@ -38,15 +38,15 @@ test('Given a new function with four paths and no coverage share, when the check
   const result = await checkOn(t, repository, ...crapOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'FIX');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- FIX ratchet.crap.new_function_above: src/alpha/wide.ts: wide: [4, 20]',
+    '- blocked ratchet.crap.new_function_above: src/alpha/wide.ts: wide: [4, 20]',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- none']);
   assert.equal(result.code, 0);
 });
 
-test('Given changed legacy functions at CRAP 29.999 and 30 from known coverage, when the check runs, then the first passes and the second is FIX', { timeout }, async (t) => {
+test('Given changed legacy functions at CRAP 29.999 and 30 from known coverage, when the check runs, then the first passes and the second is blocked', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change the parser', parserChange);
   writeCrap(repository, [
@@ -57,15 +57,15 @@ test('Given changed legacy functions at CRAP 29.999 and 30 from known coverage, 
   const result = await checkOn(t, repository, ...crapOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'FIX');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- FIX ratchet.crap.changed_legacy_function_at_or_above: src/alpha/parser.ts: tokenize: 30.0',
+    '- blocked ratchet.crap.changed_legacy_function_at_or_above: src/alpha/parser.ts: tokenize: 30.0',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- src/alpha/parser.ts: parse: 29.999002513266692']);
   assert.equal(result.code, 0);
 });
 
-test('Given an unknown function above 15, an unchanged function above 30, and a row of an unchanged file, when the check runs, then only the unknown function is FIX, with the goal of a new function', { timeout }, async (t) => {
+test('Given an unknown function above 15, an unchanged function above 30, and a row of an unchanged file, when the check runs, then only the unknown function is blocked, with the goal of a new function', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change the parser', parserChange);
   writeCrap(repository, [
@@ -77,23 +77,23 @@ test('Given an unknown function above 15, an unchanged function above 30, and a 
   const result = await checkOn(t, repository, ...crapOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'FIX');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- FIX ratchet.crap.new_function_above: src/alpha/parser.ts: (anonymous): 20.0',
+    '- blocked ratchet.crap.new_function_above: src/alpha/parser.ts: (anonymous): 20.0',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- none']);
   assert.equal(result.code, 0);
 });
 
 for (const [expires, route, reasons] of [
-  ['2999-12-31', 'ARCHITECT_REVIEW_NEEDED', [
-    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
-    '- ARCHITECT_REVIEW_NEEDED ratchet.exceptions: src/alpha/wide.ts#wide: [4, 20] covered by "The parser keeps one table of rules." until 2999-12-31',
+  ['2999-12-31', 'T1', [
+    `- T1 Team review read_paths: ${exceptionsPath}`,
+    '- T1 Team review ratchet.exceptions: src/alpha/wide.ts#wide: [4, 20] covered by "The parser keeps one table of rules." until 2999-12-31',
   ]],
-  ['2000-01-01', 'FIX', [
-    '- FIX ratchet.exceptions.expired: src/alpha/wide.ts#wide',
-    '- FIX ratchet.crap.new_function_above: src/alpha/wide.ts: wide: [4, 20]',
-    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
+  ['2000-01-01', 'blocked', [
+    '- blocked ratchet.exceptions.expired: src/alpha/wide.ts#wide',
+    '- blocked ratchet.crap.new_function_above: src/alpha/wide.ts: wide: [4, 20]',
+    `- T1 Team review read_paths: ${exceptionsPath}`,
   ]],
 ] as const) {
   test(`Given an exception entry for the function with a bound of 20 that expires on ${expires}, when the check runs, then the route is ${route}`, { timeout }, async (t) => {
@@ -104,7 +104,7 @@ for (const [expires, route, reasons] of [
     const result = await checkOn(t, repository, ...crapOptions);
 
     assert.equal(result.stderr, '');
-    assert.equal(routeOf(result.stdout), route);
+    assert.equal(route === 'blocked' ? eligibilityOf(result.stdout) : tierOf(result.stdout), route);
     assert.deepEqual(linesUnder(result.stdout, 'Reasons'), reasons);
     assert.equal(result.code, 0);
   });

@@ -99,19 +99,19 @@ test('Given a function entry, when a CRAP value is compared with it, then it cov
   assert.equal(coveringException([crapEntry], { path: 'src/a.ts#run', raw: 84, today: '2026-10-21' }), undefined);
 });
 
-test('Given an expired function entry, when the changed paths are compared, then it is FIX when the file of its function changed', () => {
+test('Given an expired function entry, when the changed paths are compared, then it is blocked when the file of its function changed', () => {
   const crapEntry = { function: 'src/a.ts#run', bound: 20, reason: 'A large switch.', expires: '2026-12-31' };
 
   assert.deepEqual(expiredReasons([crapEntry, entry], ['src/a.ts'], '2027-01-01'), [
-    { route: 'FIX', key: 'ratchet.exceptions.expired', fact: 'src/a.ts#run' },
-    { route: 'FIX', key: 'ratchet.exceptions.expired', fact: 'src/a.ts' },
+    { blocking: true, key: 'ratchet.exceptions.expired', fact: 'src/a.ts#run' },
+    { blocking: true, key: 'ratchet.exceptions.expired', fact: 'src/a.ts' },
   ]);
   assert.deepEqual(expiredReasons([crapEntry], ['src/b.ts'], '2027-01-01'), []);
 });
 
-test('Given entries that expired before today, when the changed paths are compared, then each expired entry of a changed path is FIX once', () => {
+test('Given entries that expired before today, when the changed paths are compared, then each expired entry of a changed path is blocked once', () => {
   const entries = [entry, { ...entry, bound: 70 }, { ...entry, path: 'src/b.ts' }, { ...entry, path: 'src/c.ts', expires: '2027-01-01' }];
 
-  assert.deepEqual(expiredReasons(entries, ['src/a.ts', 'src/c.ts', 'docs/x.md'], '2027-01-01'), [{ route: 'FIX', key: 'ratchet.exceptions.expired', fact: 'src/a.ts' }]);
+  assert.deepEqual(expiredReasons(entries, ['src/a.ts', 'src/c.ts', 'docs/x.md'], '2027-01-01'), [{ blocking: true, key: 'ratchet.exceptions.expired', fact: 'src/a.ts' }]);
   assert.deepEqual(expiredReasons(entries, ['src/a.ts'], '2026-12-31'), []);
 });

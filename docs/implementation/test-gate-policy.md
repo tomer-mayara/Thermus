@@ -847,44 +847,75 @@ Each command must exit with status 0 and show each required test as passed:
 5. `npm run build && node --test dist/test/interface/auth/better-auth.test.js`
 6. `npm run test:container`
 
-If an Actions job starts for the release commit, it must pass too. Then build the
-release image with `docker compose build`. The release notes must not claim
+If a candidate-validation Actions job starts for the release commit, it must
+pass too. Then build the release image with `docker compose build`. The release notes must not claim
 payment collection, hosted features, or migration between editions.
 
 ## Pull request steps
 
-1. Open a draft pull request first.
-2. Do the [required runs](#required-runs).
-3. Update the documents that the change affects in the same pull request.
-   Then run the process "Code quality review with ast-metrics" of AGENTS.md
-   on the complete candidate; the
-   [ast-metrics review guide](ast-metrics-review.md) gives the commands.
-4. Compute and record the review route as the section "Review route" of
-   AGENTS.md says.
-5. Mark the pull request Ready. Wait for every Actions job that starts for its
-   head to pass. A started job that is pending, skipped, cancelled, or failed is
-   not a pass.
-6. If you must make a fix after Ready, return the pull request to Draft first.
-   Then continue from step 2 with the new candidate.
-7. The review is manual. The manager reviews the work of each subagent. The
-   owner reviews the pull request with the depth that its route suggests. No
-   agent reviewer runs on it.
-8. Merge a clean pull request one time. The owner merges a pull request that
-   adds a decision record under `architecture/decisions/`.
+1. Open a draft pull request first. A request for a draft stops before Ready
+   and merge.
+2. Do the [required runs](#required-runs) on the complete candidate. Run
+   habit-hooks and resolve each enforced finding or record its permitted reason.
+3. Update affected documents. Check and record architecture impact for every
+   tier using the [registry workflow](component-registry-workflow.md).
+4. Select the applicable metrics under "Code quality review with ast-metrics"
+   in [AGENTS.md](../../AGENTS.md). Ordinary prose-only changes skip irrelevant
+   full metrics and record production metrics N/A. The new process paths are
+   `src/**`, `script/code-quality/**`, `.ast-metrics.yaml`,
+   `.ast-metrics-baseline.yaml`, and `.code-quality-exceptions.yaml`. Source-free
+   PR checker, CI, or policy scripts outside those paths need applicable tests
+   and habit-hooks, with production metrics N/A. Metric-tool or rule changes
+   need process/review and relevant tests. Historical base rules retain their
+   broader requirements for that candidate. Keep the existing test selection;
+   a metric command cannot start an unselected suite.
+5. Compute and record the tier, all reasons, blockers, current candidate SHA,
+   selected checks, and linked retained reports as "Review tier and merge
+   eligibility" in AGENTS.md says. The local result is preliminary.
+6. When the requested scope permits Ready, mark the pull request Ready and wait
+   for every candidate-validation Actions job that starts for its head to pass.
+   Pending, skipped, cancelled, failed, or unavailable required jobs are not
+   passes. An intentional
+   N/A needs trusted selection evidence.
+7. Return a Ready pull request to Draft before any fix. Continue from step 2
+   and refresh evidence and affected approvals for the new candidate.
+8. The manager reviews subagent work. T1 Team review needs an independent
+   authorized human team member or owner; T2 Need architect needs an independent
+   authorized human architect. Approval covers the current head SHA and scope.
+   A label, an agent approval, or a request for review does not prove approval.
+9. Merge an eligible clean pull request one time, within the user's request.
+   The owner merges a pull request that adds an architecture decision record.
+   T0 Auto merge requires separately activated trusted enforcement; adopting
+   this policy does not enable it.
 
-A Delamain worker run does the required runs and steps 1 to 4 of the review
-route, and none of the pull request steps.
-For a Delamain ticket, the session opens and merges the pull request one time
-each. A restart reuses the same pull request and merge result.
+A Delamain worker does the required runs, classifies its part, resolves facts,
+and reports its evidence; it performs none of the pull request steps. For a
+Delamain ticket, the session opens and merges the pull request one time each,
+within the run's authority. A restart reuses the same pull request and result.
 
 ## Actions jobs
 
-This repository has no workflow in `.github/workflows/` now. No Actions job
-starts for a pull request head. The required runs give all gate evidence.
+The [automation setup guide](pr-automation-setup.md) describes the fail-closed
+validation and merge workflows and their separate activation prerequisites.
+`pr-validation.yml` runs candidate checks without secrets or write authority.
+`pr-merge.yml` uses trusted base code for the privileged eligibility decision;
+it cannot treat an author label or candidate workflow as proof of a pass.
 
-If a change adds a workflow, the AGENTS.md wait rule applies to every job that
-starts for the head. The required runs stay required. That change also updates
-this section.
+CI follows the complete-candidate selection in this policy. A source change
+still requires the full ordinary suite, static and build checks, metrics, and
+applicable production gates. An offline subset is not a pass of credentialed
+or runtime gates. Missing trusted external evidence keeps merge blocked.
+Neither CI nor a metrics command expands the selected tests for prose changes.
+
+The required local runs remain required. Every started candidate-validation
+Actions job for the head must pass before merge. The trusted merge controller
+is the final decision maker and is excluded from its own check-run inventory;
+this exclusion does not remove any candidate-validation job. No workflow,
+label, successful local classification, or repository setting alone proves
+eligibility. Activation requires trusted check
+identity and current-SHA evidence, independent authorized human approval where
+needed, and merge controls. Do not change live settings or enable automatic
+merge without separate owner authorization.
 
 ## Hosted live gate (AUTH-06)
 

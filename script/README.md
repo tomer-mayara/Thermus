@@ -315,11 +315,15 @@ identity; the default coverage report stayed unchanged. This complete capture
 is separate from the protocol fixtures. The earlier `c620cf8f` run passed tests
 but remained unverified because four loaders had raw-only evidence.
 
-# Compute the review route
+# Compute the review tier and merge eligibility
 
-[`pr-review/check.ts`](pr-review/check.ts) computes the review route of a pull
-request candidate: `FIX`, `CLARIFICATION_NEEDED`,
-`ARCHITECT_REVIEW_NEEDED`, or `SHIPPED`. It reads the
-[rules file](../docs/implementation/pr-review-rules.yaml). It is the step "Run
-the check" of the section "Review route" of [AGENTS.md](../AGENTS.md). The
-[check guide](pr-review/README.md) gives its options, its output, and its tests.
+[`pr-review/check.ts`](pr-review/check.ts) reports T0 Auto merge, T1 Team review,
+or T2 Need architect, with every matching reason. Merge eligibility is separately
+`eligible` or `blocked`; blockers are not review tiers. The checker uses the
+trusted merge-base [rules](../docs/implementation/pr-review-rules.yaml), candidate
+facts, and base/head-bound impact evidence. Root `.pr-impact.json` holds the
+committed declaration; local checks use a copy stamped with actual base/head
+identities as the check guide specifies. Its local result is preliminary and
+does not prove hosted checks or human approval. Follow "Review tier and merge
+eligibility" in [AGENTS.md](../AGENTS.md). The
+[check guide](pr-review/README.md) gives options, evidence, output, and tests.

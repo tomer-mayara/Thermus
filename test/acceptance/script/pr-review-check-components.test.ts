@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { stringify } from 'yaml';
 import { GitRepository } from './fixtures/git-repository.ts';
-import { checkOn, routeOf } from './fixtures/pr-review-check.ts';
+import { checkOn, tierOf } from './fixtures/pr-review-check.ts';
 import { mainFiles, rulesDocument, rulesPath } from './fixtures/pr-review-rules.ts';
 
 function nestedRules() {
@@ -25,7 +25,7 @@ test('Given committed nested component roots and an exact entrypoint, when the c
   repository.write({ 'src/not-committed.ts': 'export {};\n' });
   const result = await checkOn(t, repository, '--allow-dirty');
   assert.equal(result.code, 0, result.stderr);
-  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
+  assert.equal(tierOf(result.stdout), 'T1');
   assert.doesNotMatch(result.stdout, /folder_not_listed|package_removed|edge_not_listed|not-committed/);
 });
 

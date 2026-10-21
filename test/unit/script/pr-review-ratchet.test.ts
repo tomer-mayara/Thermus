@@ -26,18 +26,18 @@ test('Given no snapshots, when the MI rules run, then the MI section says that t
   assert.deepEqual(outcomeOf([{ status: 'A', path: 'src/new.ts' }]), { reasons: [], lines: ['not checked: give --base-snapshot and --head-snapshot'] });
 });
 
-test('Given new production files around the limit, when the MI rules run, then a raw value below 85 is FIX with the exact value and a value at 85 is no reason', () => {
+test('Given new production files around the limit, when the MI rules run, then a raw value below 85 is blocked with the exact value and a value at 85 is no reason', () => {
   const changes = [{ status: 'A', path: 'src/even.ts' }, { status: 'A', path: 'src/low.ts' }, { status: 'A', path: 'src/near.ts' }];
   const outcome = outcomeOf(changes, { base: {}, head: { 'src/even.ts': 85, 'src/low.ts': 84.96, 'src/near.ts': 84.99999999999999 } });
 
   assert.deepEqual(outcome.reasons, [
-    { route: 'FIX', key: newKey, fact: 'src/low.ts: 84.96' },
-    { route: 'FIX', key: newKey, fact: 'src/near.ts: 84.99999999999999' },
+    { blocking: true, key: newKey, fact: 'src/low.ts: 84.96' },
+    { blocking: true, key: newKey, fact: 'src/near.ts: 84.99999999999999' },
   ]);
   assert.deepEqual(outcome.lines, ['new: src/even.ts: 85', 'new: src/low.ts: 84.96', 'new: src/near.ts: 84.99999999999999']);
 });
 
-test('Given changed production files, when the MI rules run, then a raw drop of five or more is ARCHITECT_REVIEW_NEEDED with both exact values, and a smaller drop or a rise is no reason', () => {
+test('Given changed production files, when the MI rules run, then a raw drop of five or more is T1 with both exact values, and a smaller drop or a rise is no reason', () => {
   const changes = ['src/five.ts', 'src/less.ts', 'src/rise.ts', 'src/raw.ts', 'src/decimal.ts'].map((path) => ({ status: 'M', path }));
   const outcome = outcomeOf(changes, {
     base: { 'src/five.ts': 90, 'src/less.ts': 90, 'src/rise.ts': 70, 'src/raw.ts': 61.17474697614129, 'src/decimal.ts': 66.1 },
@@ -45,9 +45,9 @@ test('Given changed production files, when the MI rules run, then a raw drop of 
   });
 
   assert.deepEqual(outcome.reasons, [
-    { route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/five.ts: 90 to 85' },
-    { route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/raw.ts: 61.17474697614129 to 56.17474697614129' },
-    { route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/decimal.ts: 66.1 to 61.1' },
+    { tier: 'T1', key: dropKey, fact: 'src/five.ts: 90 to 85' },
+    { tier: 'T1', key: dropKey, fact: 'src/raw.ts: 61.17474697614129 to 56.17474697614129' },
+    { tier: 'T1', key: dropKey, fact: 'src/decimal.ts: 66.1 to 61.1' },
   ]);
   assert.deepEqual(outcome.lines, [
     'changed: src/five.ts: 90 to 85', 'changed: src/less.ts: 90 to 85.1', 'changed: src/rise.ts: 70 to 80', 'changed: src/raw.ts: 61.17474697614129 to 56.17474697614129',
@@ -63,7 +63,7 @@ test('Given renames inside, into, and out of the production scope, when the MI r
   ];
   const outcome = outcomeOf(changes, { base: { 'src/old.ts': 90, 'src/gone.ts': 88 }, head: { 'src/new-name.ts': 84, 'src/moved.ts': 70 } });
 
-  assert.deepEqual(outcome.reasons, [{ route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/old.ts -> src/new-name.ts: 90 to 84' }]);
+  assert.deepEqual(outcome.reasons, [{ tier: 'T1', key: dropKey, fact: 'src/old.ts -> src/new-name.ts: 90 to 84' }]);
   assert.deepEqual(outcome.lines, [
     'changed: src/old.ts -> src/new-name.ts: 90 to 84',
     'not applicable: tools/moved.ts -> src/moved.ts: no raw MI in the base snapshot',
@@ -78,36 +78,36 @@ test('Given files without raw MI in the snapshot that each needs, a deleted file
   ];
   const outcome = outcomeOf(changes, { base: { 'src/a.ts': 90, 'src/deleted.ts': 40 }, head: { 'src/types.ts': undefined, 'src/b.ts': 60, 'test/new.test.ts': 10 } });
 
-  assert.deepEqual(outcome.reasons, []);
+  assert.deepEqual(outcome.reasons.map((reason) => reason.key), Array(3).fill('ratchet.maintainability_index.missing'));
   assert.deepEqual(outcome.lines, [
-    'not applicable: src/types.ts: no raw MI in the head snapshot',
-    'not applicable: src/a.ts: no raw MI in the head snapshot',
-    'not applicable: src/b.ts: no raw MI in the base snapshot',
+    'unavailable: src/types.ts: no raw MI in the head snapshot',
+    'unavailable: src/a.ts: no raw MI in the head snapshot',
+    'unavailable: src/b.ts: no raw MI in the base snapshot',
   ]);
 });
 
-test('Given an exception entry for a new file below the limit, when its raw MI is at its bound and today is its expiry date, then the FIX becomes an ARCHITECT_REVIEW_NEEDED reason that names the entry', () => {
+test('Given an exception entry for a new file below the limit, when its raw MI is at its bound and today is its expiry date, then the blocked becomes an T1 reason that names the entry', () => {
   const outcome = outcomeOf([{ status: 'A', path: 'src/new.ts' }], { base: {}, head: { 'src/new.ts': 80 }, exceptions: exceptionsFile(80, today) });
 
-  assert.deepEqual(outcome.reasons, [{ route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.exceptions', fact: 'src/new.ts covered by "One table of rules." until 2026-10-21' }]);
+  assert.deepEqual(outcome.reasons, [{ tier: 'T1', key: 'ratchet.exceptions', fact: 'src/new.ts covered by "One table of rules." until 2026-10-21' }]);
   assert.deepEqual(outcome.lines, ['new: src/new.ts: 80']);
 });
 
-test('Given an exception entry with a bound above the raw MI, when the MI rules run, then the FIX stays', () => {
+test('Given an exception entry with a bound above the raw MI, when the MI rules run, then the blocked stays', () => {
   const outcome = outcomeOf([{ status: 'A', path: 'src/new.ts' }], { base: {}, head: { 'src/new.ts': 79.9 }, exceptions: exceptionsFile(80, '2026-12-31') });
 
-  assert.deepEqual(outcome.reasons, [{ route: 'FIX', key: newKey, fact: 'src/new.ts: 79.9' }]);
+  assert.deepEqual(outcome.reasons, [{ blocking: true, key: newKey, fact: 'src/new.ts: 79.9' }]);
 });
 
-test('Given an exception entry that expired yesterday, when the MI rules run with or without snapshots, then the expired entry of the changed file is FIX after the MI reasons', () => {
+test('Given an exception entry that expired yesterday, when the MI rules run with or without snapshots, then the expired entry of the changed file is blocked after the MI reasons', () => {
   const changes = [{ status: 'A', path: 'src/new.ts' }];
   const exceptions = exceptionsFile(80, '2026-10-20');
 
   assert.deepEqual(outcomeOf(changes, { base: {}, head: { 'src/new.ts': 82 }, exceptions }).reasons, [
-    { route: 'FIX', key: newKey, fact: 'src/new.ts: 82' },
-    { route: 'FIX', key: 'ratchet.exceptions.expired', fact: 'src/new.ts' },
+    { blocking: true, key: newKey, fact: 'src/new.ts: 82' },
+    { blocking: true, key: 'ratchet.exceptions.expired', fact: 'src/new.ts' },
   ]);
-  assert.deepEqual(outcomeOf(changes, { exceptions }).reasons, [{ route: 'FIX', key: 'ratchet.exceptions.expired', fact: 'src/new.ts' }]);
+  assert.deepEqual(outcomeOf(changes, { exceptions }).reasons, [{ blocking: true, key: 'ratchet.exceptions.expired', fact: 'src/new.ts' }]);
   assert.deepEqual(outcomeOf([{ status: 'M', path: 'src/other.ts' }], { exceptions }).reasons, []);
 });
 
@@ -115,4 +115,18 @@ test('Given an exceptions file that is not valid, when the MI rules run, then th
   assert.throws(() => outcomeOf([], { exceptions: 'exceptions: {}\n' }), {
     message: 'The exceptions file .code-quality-exceptions.yaml at HEAD has no valid key exceptions: give a list of entries.',
   });
+});
+
+test('Given a changed production implementation missing raw MI, when snapshots are supplied, then absent evidence blocks the candidate', () => {
+  const outcome = outcomeOf([{ status: 'M', path: 'src/a.ts' }], { base: { 'src/a.ts': 90 }, head: {} });
+  assert.ok(outcome.reasons.some((reason) => reason.blocking && reason.key === 'ratchet.maintainability_index.missing'));
+});
+
+test('Given a type-only file with complete zero-function snapshot evidence, when MI is assessed, then it is explicitly not applicable', () => {
+  const outcome = ratchetOutcome({
+    changes: [{ status: 'A', path: 'src/types.ts' }], today,
+    snapshots: { base: new Map(), head: new Map([['src/types.ts', undefined]]), notApplicable: { base: new Set(), head: new Set(['src/types.ts']) } },
+  }, rules);
+  assert.deepEqual(outcome.reasons, []);
+  assert.deepEqual(outcome.lines, ['not applicable: src/types.ts: no raw MI in the head snapshot']);
 });

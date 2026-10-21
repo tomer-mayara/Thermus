@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { GitRepository } from './fixtures/git-repository.ts';
-import { checkOn, commitsOf, linesUnder, routeOf, snapshotOptions, snapshotText, writeSnapshots } from './fixtures/pr-review-check.ts';
+import { checkOn, eligibilityOf, commitsOf, linesUnder, tierOf, snapshotOptions, snapshotText, writeSnapshots } from './fixtures/pr-review-check.ts';
 import { measuredFiles } from './fixtures/pr-review-rules.ts';
 
 // The MI rules of check 4 on the two snapshots. pr-review-check-exceptions.test.ts specifies the exceptions file, and
@@ -9,7 +9,7 @@ import { measuredFiles } from './fixtures/pr-review-rules.ts';
 const timeout = 30_000;
 const newModule = { 'src/alpha/low.ts': 'export const low = 1;\n' };
 
-test('Given a new production file at raw MI 84.96 and one at 85, when the check runs with both snapshots, then the first is FIX and the second is no reason', { timeout }, async (t) => {
+test('Given a new production file at raw MI 84.96 and one at 85, when the check runs with both snapshots, then the first is blocked and the second is no reason', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Add two modules', { ...newModule, 'src/alpha/even.ts': 'export const even = 1;\n' });
   writeSnapshots(repository, { 'src/alpha/parser.ts': 90 }, { 'src/alpha/even.ts': 85, 'src/alpha/low.ts': 84.96, 'src/alpha/parser.ts': 90 });
@@ -17,15 +17,15 @@ test('Given a new production file at raw MI 84.96 and one at 85, when the check 
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'FIX');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- FIX ratchet.maintainability_index.new_file_below: src/alpha/low.ts: 84.96',
+    '- blocked ratchet.maintainability_index.new_file_below: src/alpha/low.ts: 84.96',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- new: src/alpha/even.ts: 85', '- new: src/alpha/low.ts: 84.96']);
   assert.equal(result.code, 0);
 });
 
-test('Given an existing file at raw MI 90.0 in the base and 85.0 in the head, and one at 85.1, when the check runs, then only the first is ARCHITECT_REVIEW_NEEDED with both values', { timeout }, async (t) => {
+test('Given an existing file at raw MI 90.0 in the base and 85.0 in the head, and one at 85.1, when the check runs, then only the first is T1 Team review with both values', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change two modules', { 'src/alpha/parser.ts': 'export const parser = 2;\n', 'src/alpha/printer.ts': 'export const printer = 2;\n' });
   writeSnapshots(repository, { 'src/alpha/parser.ts': 90.0, 'src/alpha/printer.ts': 90.0 }, { 'src/alpha/parser.ts': 85.0, 'src/alpha/printer.ts': 85.1 });
@@ -33,9 +33,9 @@ test('Given an existing file at raw MI 90.0 in the base and 85.0 in the head, an
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
+  assert.equal(tierOf(result.stdout), 'T1');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- ARCHITECT_REVIEW_NEEDED ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts: 90 to 85',
+    '- T1 Team review ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts: 90 to 85',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- changed: src/alpha/parser.ts: 90 to 85', '- changed: src/alpha/printer.ts: 90 to 85.1']);
   assert.equal(result.code, 0);
@@ -50,15 +50,15 @@ test('Given a renamed production file whose raw MI drops by five, when the check
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
+  assert.equal(tierOf(result.stdout), 'T1');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- ARCHITECT_REVIEW_NEEDED ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts -> src/alpha/reader.ts: 92.5 to 87.5',
+    '- T1 Team review ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts -> src/alpha/reader.ts: 92.5 to 87.5',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- changed: src/alpha/parser.ts -> src/alpha/reader.ts: 92.5 to 87.5']);
   assert.equal(result.code, 0);
 });
 
-test('Given changed and new production files without raw MI in the snapshot that each needs, when the check runs, then the MI section names each as not applicable with the reason and no MI reason fires', { timeout }, async (t) => {
+test('Given changed and new production files without raw MI in the snapshot that each needs, when the check runs, then the MI section names missing evidence and blocks merge', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change two modules and add types', {
     'src/alpha/parser.ts': 'export const parser = 2;\n', 'src/alpha/printer.ts': 'export const printer = 2;\n', 'src/alpha/types.ts': 'export type Value = number;\n',
@@ -68,12 +68,17 @@ test('Given changed and new production files without raw MI in the snapshot that
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIPPED');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
+  assert.equal(tierOf(result.stdout), 'T0');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
+    '- blocked ratchet.maintainability_index.missing: src/alpha/parser.ts: no raw MI in the head snapshot',
+    '- blocked ratchet.maintainability_index.missing: src/alpha/printer.ts: no raw MI in the base snapshot',
+    '- blocked ratchet.maintainability_index.missing: src/alpha/types.ts: no raw MI in the head snapshot',
+  ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), [
-    '- not applicable: src/alpha/parser.ts: no raw MI in the head snapshot',
-    '- not applicable: src/alpha/printer.ts: no raw MI in the base snapshot',
-    '- not applicable: src/alpha/types.ts: no raw MI in the head snapshot',
+    '- unavailable: src/alpha/parser.ts: no raw MI in the head snapshot',
+    '- unavailable: src/alpha/printer.ts: no raw MI in the base snapshot',
+    '- unavailable: src/alpha/types.ts: no raw MI in the head snapshot',
   ]);
   assert.equal(result.code, 0);
 });

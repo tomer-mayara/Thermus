@@ -20,7 +20,7 @@ const goalOf = {
 
 type AssessedRow = CrapRow & { readonly change: keyof typeof goalOf };
 
-// today is the committer date of HEAD, so that a rerun of the same candidate gives the same route.
+// today is the committer date of HEAD, so that a rerun of the same candidate gives the same tier.
 interface CrapInput {
   readonly changes: readonly Change[];
   readonly crap?: readonly CrapRow[];
@@ -60,8 +60,8 @@ function rowOutcomeOf(row: AssessedRow, context: Context): RowOutcome {
 function missReason(miss: { readonly row: AssessedRow; readonly goals: Goals; readonly value: string }, key: string, context: Context): Reason {
   const unit = `${miss.row.file}#${miss.row.function}`;
   const entry = coveringCrapException(context.entries, { function: unit, today: context.today, within: (bound) => withinBound(miss.goals, bound) });
-  if (entry === undefined) return { route: 'FIX', key, fact: `${miss.row.file}: ${miss.row.function}: ${miss.value}` };
-  return { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.exceptions', fact: `${unit}: ${miss.value} covered by "${entry.reason}" until ${entry.expires}` };
+  if (entry === undefined) return { blocking: true, key, fact: `${miss.row.file}: ${miss.row.function}: ${miss.value}` };
+  return { tier: 'T1', key: 'ratchet.exceptions', fact: `${unit}: ${miss.value} covered by "${entry.reason}" until ${entry.expires}` };
 }
 
 // Without a covered share, p paths bound CRAP from p to p² + p, and zero paths prove 0.

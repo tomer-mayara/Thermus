@@ -14,24 +14,26 @@ const triggers = [
 
 function documentOf() {
   return {
-    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'] },
+    version: 2,
+    tiers: { order: ['T2', 'T1', 'T0'], names: { T0: 'T0 Auto merge', T1: 'T1 Team review', T2: 'T2 Need architect' } },
+    metrics: { process_paths: ['src/**', 'script/code-quality/**', '.ast-metrics.yaml', '.ast-metrics-baseline.yaml', '.code-quality-exceptions.yaml'] },
     protected_paths: {
-      policy: { route: 'CLARIFICATION_NEEDED', question: 'Who decides?', paths: ['AGENTS.md', '.github/**'] },
-      contracts: { route: 'CLARIFICATION_NEEDED', question: 'What does a client see?', paths: ['src/index.ts'] },
+      policy: { tier: 'T1', question: 'Who decides?', paths: ['AGENTS.md', '.github/**'] },
+      contracts: { tier: 'T1', question: 'What does a client see?', paths: ['src/index.ts'] },
     },
-    read_paths: { route: 'ARCHITECT_REVIEW_NEEDED', paths: ['.ast-metrics-baseline.yaml'], moved_by_stop_rule: ['src/a.ts'] },
+    read_paths: { tier: 'T1', paths: ['.ast-metrics-baseline.yaml'], moved_by_stop_rule: ['src/a.ts'] },
     scopes: { production: ['src/**'], generated: ['docs/metrics/**'] },
     size: {
       production_lines_read_above: 400, total_lines_read_above: 1500,
-      test_counts: { fewer_tests_than_base: 'ARCHITECT_REVIEW_NEEDED', more_skipped_or_todo_than_base: 'ARCHITECT_REVIEW_NEEDED' }, habit_hooks_snooze_non_empty: 'FIX',
+      test_counts: { fewer_tests_than_base: 'T1', more_skipped_or_todo_than_base: 'T1' }, habit_hooks_snooze_non_empty: 'blocked',
     },
     public_surface: {
       contract_documents: 'docs/reference/**',
       external: ['src/index.ts'], between_packages: { auth: ['src/auth/a.ts'], http: ['src/http/b.ts'] }, documented: ['src/c.ts'],
     },
     dependency_graph: {
-      counting: { unresolved_relative_import: 'FIX' },
-      triggers: { ...Object.fromEntries(triggers.map((name) => [name, 'FIX'])), runtime_edge_becomes_type: 'none' },
+      counting: { unresolved_relative_import: 'blocked' },
+      triggers: { ...Object.fromEntries(triggers.map((name) => [name, 'blocked'])), runtime_edge_becomes_type: 'none' },
       packages: ['auth', 'http', 'composition'],
       allowed_edges: [{ from: 'auth', to: 'http', kind: 'runtime' }, { from: 'composition', to: 'auth', kind: 'both' }],
       forbidden_edges: [{ from: 'http', to: 'auth' }, { from: 'auth', to: ['composition', 'mcp'] }],
@@ -52,15 +54,15 @@ test('Given a complete rules document, when it is read, then the check gets the 
   const rules = rulesOf(stringify(documentOf()), where);
 
   assert.deepEqual(rules.protectedPaths, [
-    { name: 'policy', question: 'Who decides?', paths: ['AGENTS.md', '.github/**'] },
-    { name: 'contracts', question: 'What does a client see?', paths: ['src/index.ts'] },
+    { tier: 'T1', name: 'policy', question: 'Who decides?', paths: ['AGENTS.md', '.github/**'] },
+    { tier: 'T1', name: 'contracts', question: 'What does a client see?', paths: ['src/index.ts'] },
   ]);
   assert.equal(rules.policyQuestion, 'Who decides?');
   assert.equal(rules.contractsQuestion, 'What does a client see?');
   assert.deepEqual(rules.readPaths, ['.ast-metrics-baseline.yaml', 'src/a.ts']);
   assert.deepEqual(rules.scopes, { production: ['src/**'], generated: ['docs/metrics/**'] });
   assert.deepEqual(rules.limits, { production: 400, total: 1500 });
-  assert.deepEqual(rules.surface, { modules: ['src/index.ts', 'src/auth/a.ts', 'src/http/b.ts', 'src/c.ts'], contractDocuments: ['docs/reference/**'] });
+  assert.deepEqual(rules.surface, { modules: ['src/index.ts', 'src/auth/a.ts', 'src/http/b.ts', 'src/c.ts'], external: ['src/index.ts'], contractDocuments: ['docs/reference/**'] });
   assert.deepEqual(rules.graph.forbiddenEdges, [{ from: 'http', to: ['auth'] }, { from: 'auth', to: ['composition', 'mcp'] }]);
   assert.deepEqual(rules.graph.knownCycles, [{ members: ['auth', 'http'], kind: 'runtime' }]);
   assert.deepEqual(rules.graph.externalImports, new Map([['auth', ['jose']]]));
@@ -77,6 +79,11 @@ test('Given contract documents as a list, when the rules are read, then each pat
 });
 
 for (const [name, edit, message] of [
+  ['without a schema version', (document: Document) => document.deleteIn(['version']), 'version: give 2'],
+  ['with an unsupported schema version', (document: Document) => document.setIn(['version'], 3), 'version: give 2'],
+  ['without the canonical tier names', (document: Document) => document.deleteIn(['tiers', 'names']), 'tiers.names.T2: give T2 Need architect'],
+  ['with another team tier name', (document: Document) => document.setIn(['tiers', 'names', 'T1'], 'Team approval'), 'tiers.names.T1: give T1 Team review'],
+  ['without the metrics process selection', (document: Document) => document.deleteIn(['metrics', 'process_paths']), 'metrics.process_paths: give a list of text'],
   ['without the package list', (document: Document) => document.deleteIn(['dependency_graph', 'packages']), 'dependency_graph.packages: give a list of text'],
   ['with a limit that is not a number', (document: Document) => document.setIn(['size', 'total_lines_read_above'], 'many'), 'size.total_lines_read_above: give a whole number, 0 or more'],
   ['without a question', (document: Document) => document.deleteIn(['protected_paths', 'contracts', 'question']), 'protected_paths.contracts.question: give a non-empty text'],
@@ -88,13 +95,13 @@ for (const [name, edit, message] of [
   ['with a builtin list that is not a list', (document: Document) => document.setIn(['dependency_graph', 'allowed_node_builtins', 'http'], 'node:http'), 'dependency_graph.allowed_node_builtins.http: give a list of text'],
   ['with a surface module that is not text', (document: Document) => document.setIn(['public_surface', 'between_packages', 'auth'], [1]), 'public_surface.between_packages.auth: give a list of text'],
   ['with contract documents that are not text', (document: Document) => document.setIn(['public_surface', 'contract_documents'], 3), 'public_surface.contract_documents: give a text or a list of text'],
-  ['with another route order', (document: Document) => document.setIn(['routes', 'order'], ['FIX', 'ARCHITECT_REVIEW_NEEDED', 'CLARIFICATION_NEEDED', 'SHIPPED']), 'routes.order: give FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIPPED, the order that the check uses'],
-  ['with a protected group of another route', (document: Document) => document.setIn(['protected_paths', 'contracts', 'route'], 'ARCHITECT_REVIEW_NEEDED'), 'protected_paths.contracts.route: give CLARIFICATION_NEEDED, the route that the check uses'],
-  ['with read paths of another route', (document: Document) => document.deleteIn(['read_paths', 'route']), 'read_paths.route: give ARCHITECT_REVIEW_NEEDED, the route that the check uses'],
-  ['with a trigger of another route', (document: Document) => document.setIn(['dependency_graph', 'triggers', 'forbidden_edge'], 'CLARIFICATION_NEEDED'), 'dependency_graph.triggers.forbidden_edge: give FIX, the route that the check uses'],
-  ['with an unresolved import of another route', (document: Document) => document.setIn(['dependency_graph', 'counting', 'unresolved_relative_import'], 'ARCHITECT_REVIEW_NEEDED'), 'dependency_graph.counting.unresolved_relative_import: give FIX, the route that the check uses'],
-  ['with a snooze file of another route', (document: Document) => document.setIn(['size', 'habit_hooks_snooze_non_empty'], 'ARCHITECT_REVIEW_NEEDED'), 'size.habit_hooks_snooze_non_empty: give FIX, the route that the check uses'],
-  ['with fewer tests of another route', (document: Document) => document.setIn(['size', 'test_counts', 'fewer_tests_than_base'], 'FIX'), 'size.test_counts.fewer_tests_than_base: give ARCHITECT_REVIEW_NEEDED, the route that the check uses'],
+  ['with another tier or blocking outcome order', (document: Document) => document.setIn(['tiers', 'order'], ['T1', 'T2', 'T0']), 'tiers.order: give T2, T1, T0, the order that the check uses'],
+  ['with a protected group of another tier or blocking outcome', (document: Document) => document.setIn(['protected_paths', 'contracts', 'tier'], 'T0'), 'protected_paths.contracts.tier: give T1 or T2'],
+  ['with read paths of another tier or blocking outcome', (document: Document) => document.deleteIn(['read_paths', 'tier']), 'read_paths.tier: give T1, the outcome that the check uses'],
+  ['with a trigger of another tier or blocking outcome', (document: Document) => document.setIn(['dependency_graph', 'triggers', 'forbidden_edge'], 'T2'), 'dependency_graph.triggers.forbidden_edge: give blocked, the outcome that the check uses'],
+  ['with an unresolved import of another tier or blocking outcome', (document: Document) => document.setIn(['dependency_graph', 'counting', 'unresolved_relative_import'], 'T1'), 'dependency_graph.counting.unresolved_relative_import: give blocked, the outcome that the check uses'],
+  ['with a snooze file of another tier or blocking outcome', (document: Document) => document.setIn(['size', 'habit_hooks_snooze_non_empty'], 'T1'), 'size.habit_hooks_snooze_non_empty: give blocked, the outcome that the check uses'],
+  ['with fewer tests of another tier or blocking outcome', (document: Document) => document.setIn(['size', 'test_counts', 'fewer_tests_than_base'], 'blocked'), 'size.test_counts.fewer_tests_than_base: give T1, the outcome that the check uses'],
   ['without the MI limit of a new file', (document: Document) => document.deleteIn(['ratchet', 'maintainability_index', 'new_file_below']), 'ratchet.maintainability_index.new_file_below: give a whole number, 0 or more'],
   ['with an MI drop that is a text', (document: Document) => document.setIn(['ratchet', 'maintainability_index', 'existing_file_drop_read_at'], 'five'), 'ratchet.maintainability_index.existing_file_drop_read_at: give a whole number, 0 or more'],
   ['without the CRAP goal of a new function', (document: Document) => document.deleteIn(['ratchet', 'crap', 'new_function_above']), 'ratchet.crap.new_function_above: give a whole number, 0 or more'],
@@ -143,4 +150,10 @@ test('Given text that is not valid YAML, when it is read, then the diagnostic sa
 
 test('Given an empty document, when it is read, then the diagnostic names the first key that the check uses', () => {
   assert.throws(() => rulesOf('', where), { message: `${where} has no valid key protected_paths: give a map.` });
+});
+
+test('Given an unsupported version of historical rules, when the merge-base policy is read, then it cannot use the historical adapter', () => {
+  const document = { version: 2, routes: { order: ['FIX', 'ASK', 'READ', 'SHOW', 'SHIP'] } };
+
+  assert.throws(() => rulesOf(stringify(document), where, 'merge-base'), { message: `${where} has no valid key version: give 1 for the supported historical schema.` });
 });

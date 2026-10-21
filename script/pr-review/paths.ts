@@ -16,7 +16,7 @@ export function pathOutcome(changes: readonly Change[], rules: PathRules, rulesP
   const paths = changedPathsOf(changes);
   const located = protectedOutcome(paths, rules.protectedPaths);
   if (paths.includes(rulesPath)) addPolicyChange(located, rulesPath, rules.policyQuestion);
-  const read = matching(paths, rules.readPaths, { route: 'ARCHITECT_REVIEW_NEEDED', key: 'read_paths' });
+  const read = matching(paths, rules.readPaths, { tier: 'T1', key: 'read_paths' });
   return { reasons: [...located.reasons, ...read], questions: located.questions };
 }
 
@@ -25,7 +25,7 @@ function protectedOutcome(paths: readonly string[], groups: Rules['protectedPath
   const questions: Question[] = [];
   for (const group of groups) {
     const key = `protected_paths.${group.name}`;
-    const matched = matching(paths, group.paths, { route: 'CLARIFICATION_NEEDED', key });
+    const matched = matching(paths, group.paths, { tier: group.tier, key });
     reasons.push(...matched);
     if (matched.length > 0) questions.push({ key, question: group.question });
   }
@@ -34,7 +34,7 @@ function protectedOutcome(paths: readonly string[], groups: Rules['protectedPath
 
 function addPolicyChange(outcome: PathOutcome, rulesPath: string, question: string): void {
   const key = 'protected_paths.policy';
-  if (!outcome.reasons.some((reason) => reason.key === key && reason.fact === rulesPath)) outcome.reasons.push({ route: 'CLARIFICATION_NEEDED', key, fact: rulesPath });
+  if (!outcome.reasons.some((reason) => reason.key === key && reason.fact === rulesPath)) outcome.reasons.push({ tier: 'T1', key, fact: rulesPath });
   if (!outcome.questions.some((entry) => entry.key === key)) outcome.questions.push({ key, question });
 }
 

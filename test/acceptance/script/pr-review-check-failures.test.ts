@@ -9,15 +9,15 @@ import { GitRepository } from './fixtures/git-repository.ts';
 import { checkOn } from './fixtures/pr-review-check.ts';
 import { guideChange, mainFiles, rulesPath, rulesYaml } from './fixtures/pr-review-rules.ts';
 
-// The failures of the review route check, and its help. pr-review-check.test.ts specifies the routes.
+// The failures of the review tier check, and its help. pr-review-check.test.ts specifies the tiers.
 const timeout = 30_000;
 const atHead = `pr-review-check: The rules file ${rulesPath} at HEAD`;
 
 for (const [name, rules, diagnostic] of [
   ['without the package list', rulesYaml(({ dependency_graph: graph }) => { Reflect.deleteProperty(graph, 'packages'); }),
     `${atHead} has no valid key dependency_graph.packages: give a list of text.\n`],
-  ['that gives a trigger another route', rulesYaml(({ dependency_graph: graph }) => { graph.triggers.known_cycle_grows = 'ARCHITECT_REVIEW_NEEDED'; }),
-    `${atHead} has no valid key dependency_graph.triggers.known_cycle_grows: give FIX, the route that the check uses.\n`],
+  ['that gives a trigger another outcome', rulesYaml(({ dependency_graph: graph }) => { graph.triggers.known_cycle_grows = 'T1'; }),
+    `${atHead} has no valid key dependency_graph.triggers.known_cycle_grows: give blocked, the outcome that the check uses.\n`],
   ['without the MI limit of a new file', rulesYaml(({ ratchet }) => { Reflect.deleteProperty(ratchet.maintainability_index, 'new_file_below'); }),
     `${atHead} has no valid key ratchet.maintainability_index.new_file_below: give a whole number, 0 or more.\n`],
   ['with a CRAP goal of 10 for a new function', rulesYaml(({ ratchet }) => { ratchet.crap.new_function_above = 10; }),

@@ -1,5 +1,6 @@
 import { graphRulesOf, type GraphRules } from './rules-graph.ts';
-import { checkRoutes } from './rules-routes.ts';
+import { checkTiers } from './rules-tiers.ts';
+import { currentRulesDocument } from './historical-rules.ts';
 import { documentOf, globListAt, globsAt, invalidKey, numberAt, recordAt, textAt, textListAt, valueAt } from './rules-values.ts';
 
 // crapAbsoluteOf of script/code-quality/assessment/crap-absolute.ts computes these two goals only.
@@ -8,6 +9,7 @@ const supportedCrapGoals = { new_function_above: 15, changed_legacy_function_at_
 const metricsFileKeys = ['ratchet.process_outcomes', 'ratchet.review_findings'];
 
 interface PathGroup {
+  readonly tier: 'T1' | 'T2';
   readonly name: string;
   readonly question: string;
   readonly paths: readonly string[];
@@ -15,6 +17,8 @@ interface PathGroup {
 
 // The keys of the rules file that the check uses. The other keys are for people or for later checks.
 export interface Rules {
+  readonly historical?: boolean;
+  readonly processPaths?: readonly string[];
   readonly protectedPaths: readonly PathGroup[];
   readonly policyQuestion: string;
   readonly contractsQuestion: string;
@@ -22,7 +26,7 @@ export interface Rules {
   readonly scopes: { readonly production: readonly string[]; readonly generated: readonly string[] };
   readonly limits: { readonly production: number; readonly total: number };
   // modules holds every module that public_surface lists: external, between_packages, and documented.
-  readonly surface: { readonly modules: readonly string[]; readonly contractDocuments: readonly string[] };
+  readonly surface: { readonly modules: readonly string[]; readonly external?: readonly string[]; readonly contractDocuments: readonly string[] };
   readonly graph: GraphRules;
   readonly maintainability: { readonly newFileBelow: number; readonly existingFileDropReadAt: number };
   readonly crap: { readonly newFunctionAbove: number; readonly changedLegacyFunctionAtOrAbove: number };
@@ -35,15 +39,17 @@ export interface LoadedRules {
   readonly head: Rules;
   readonly path: string;
   readonly notes: readonly string[];
+  readonly trusted?: boolean;
 }
 
 export function rulesOf(text: string, where: string, source: 'head' | 'merge-base' = 'head'): Rules {
-  const document = documentOf(text, where);
+  const { document, historical } = currentRulesDocument(documentOf(text, where), where, source === 'merge-base');
   const protectedPaths = groupsOf(document, where);
-  checkRoutes(document, where, source === 'merge-base');
+  checkTiers(document, where);
   checkMetricsFiles(document, where);
   return {
-    protectedPaths,
+    protectedPaths, historical,
+    processPaths: globListAt(document, 'metrics.process_paths', where),
     policyQuestion: textAt(document, 'protected_paths.policy.question', where),
     contractsQuestion: textAt(document, 'protected_paths.contracts.question', where),
     readPaths: [...globListAt(document, 'read_paths.paths', where), ...globListAt(document, 'read_paths.moved_by_stop_rule', where)],
@@ -62,6 +68,7 @@ export function rulesOf(text: string, where: string, source: 'head' | 'merge-bas
 function groupsOf(document: unknown, where: string): PathGroup[] {
   return Object.keys(recordAt(document, 'protected_paths', where)).map((name) => ({
     name,
+    tier: textAt(document, `protected_paths.${name}.tier`, where) as 'T1' | 'T2',
     question: textAt(document, `protected_paths.${name}.question`, where),
     paths: globListAt(document, `protected_paths.${name}.paths`, where),
   }));
@@ -74,7 +81,7 @@ function surfaceOf(document: unknown, where: string): Rules['surface'] {
     ...owners.flatMap((owner) => textListAt(document, `public_surface.between_packages.${owner}`, where)),
     ...textListAt(document, 'public_surface.documented', where),
   ];
-  return { modules, contractDocuments: globsAt(document, 'public_surface.contract_documents', where) };
+  return { modules, external: textListAt(document, 'public_surface.external', where), contractDocuments: globsAt(document, 'public_surface.contract_documents', where) };
 }
 
 function maintainabilityOf(document: unknown, where: string): Rules['maintainability'] {

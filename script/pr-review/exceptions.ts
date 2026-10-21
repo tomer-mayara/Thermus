@@ -37,7 +37,7 @@ export function coveringCrapException(entries: readonly CodeQualityException[], 
 // The unit of a function entry changes with the file of its function.
 export function expiredReasons(entries: readonly CodeQualityException[], changed: readonly string[], today: string): Reason[] {
   const units = entries.filter((entry) => entry.expires < today && changed.includes(fileOf(entry))).map(unitOf);
-  return [...new Set(units)].map((unit) => ({ route: 'FIX', key: 'ratchet.exceptions.expired', fact: unit }));
+  return [...new Set(units)].map((unit) => ({ blocking: true, key: 'ratchet.exceptions.expired', fact: unit }));
 }
 
 function isMi(entry: CodeQualityException): entry is MiException {

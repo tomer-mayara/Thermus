@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { GitRepository } from './fixtures/git-repository.ts';
-import { checkOn, linesUnder, manualNote, routeOf } from './fixtures/pr-review-check.ts';
+import { checkOn, eligibilityOf, linesUnder, manualNote, tierOf } from './fixtures/pr-review-check.ts';
 import { betaUsesAlpha, guideChange, historicalRulesYaml, mainFiles, rulesPath, rulesYaml } from './fixtures/pr-review-rules.ts';
 
-// The candidate and the rules of the review route, and its JSON record. pr-review-check.test.ts specifies the route
+// The candidate and the rules of the review tier, and its JSON record. pr-review-check.test.ts specifies the tier
 // from the changed paths.
 const timeout = 30_000;
 const dirtyMessage = 'pr-review-check: The working tree has uncommitted changes. Commit them, or run with --allow-dirty to check HEAD alone.\n';
 
-test('Given --json, when the check runs, then it prints one JSON object with stable keys, the commits, the route, and the reasons', { timeout }, async (t) => {
+test('Given --json, when the check runs, then it prints one JSON object with stable keys, the commits, the tier, and the reasons', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.commit('Use alpha in beta', betaUsesAlpha);
 
@@ -18,14 +18,14 @@ test('Given --json, when the check runs, then it prints one JSON object with sta
   assert.equal(result.stderr, '');
   const report = JSON.parse(result.stdout) as Record<string, unknown>;
   assert.deepEqual(Object.keys(report), [
-    'route', 'candidate', 'mergeBase', 'reasons', 'questions', 'changedPaths', 'lineCounts', 'tests', 'mi', 'crap', 'metrics',
+    'tier', 'tierName', 'eligibility', 'blockers', 'candidate', 'mergeBase', 'reasons', 'questions', 'changedPaths', 'lineCounts', 'tests', 'mi', 'crap', 'metrics',
     'factsToDeclare', 'declaredFacts', 'surfaceDifferences', 'notes', 'label',
   ]);
-  assert.equal(report.route, 'FIX');
+  assert.equal(report.eligibility, 'blocked');
   assert.equal(report.candidate, repository.git('rev-parse', 'HEAD').trim());
   assert.equal(report.mergeBase, repository.git('rev-parse', 'main').trim());
-  assert.deepEqual(report.reasons, [
-    { route: 'FIX', key: 'dependency_graph.triggers.edge_not_listed', fact: 'beta -> alpha (runtime), in src/beta/uses-alpha.ts' },
+  assert.deepEqual((report.reasons as { key: string }[]).filter((reason) => !reason.key.startsWith('evidence.')), [
+    { blocking: true, key: 'dependency_graph.triggers.edge_not_listed', fact: 'beta -> alpha (runtime), in src/beta/uses-alpha.ts' },
   ]);
   assert.deepEqual(report.changedPaths, [{ status: 'A', path: 'src/beta/uses-alpha.ts' }]);
   assert.deepEqual(report.factsToDeclare, [{ key: 'dependency_graph.allowed_edges', value: '{ from: beta, to: alpha, kind: runtime }' }]);
@@ -53,13 +53,13 @@ test('Given uncommitted changes and --allow-dirty, when the check runs, then a n
   const result = await checkOn(t, repository, '--allow-dirty');
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIPPED');
+  assert.equal(tierOf(result.stdout), 'T0');
   assert.deepEqual(linesUnder(result.stdout, 'Changed paths'), ['- M docs/guide.md']);
   assert.deepEqual(linesUnder(result.stdout, 'Notes'), ['- Uncommitted changes are not part of the candidate: the check reads the commit HEAD only.', manualNote]);
   assert.equal(result.code, 0);
 });
 
-test('Given a merge base without the rules file, when the check runs, then the rules file of the branch applies, a note says so, and the route is CLARIFICATION_NEEDED', { timeout }, async (t) => {
+test('Given a merge base without the rules file, when the check runs, then HEAD supplies declared facts, a note says so, and merge stays blocked', { timeout }, async (t) => {
   const { [rulesPath]: rules, ...withoutRules } = mainFiles();
   const repository = GitRepository.onFeatureBranch(t, withoutRules);
   repository.commit('Add the rules file', { [rulesPath]: rules });
@@ -67,45 +67,47 @@ test('Given a merge base without the rules file, when the check runs, then the r
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [`- CLARIFICATION_NEEDED protected_paths.policy: ${rulesPath}`]);
-  assert.deepEqual(linesUnder(result.stdout, 'Notes'), ['- The rules file of the merge base does not exist, so the file at HEAD applies.', manualNote]);
+  assert.equal(tierOf(result.stdout), 'T1');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- blocked policy.untrusted_base: No valid trusted base policy is available.', `- T1 Team review protected_paths.policy: ${rulesPath}`]);
+  assert.deepEqual(linesUnder(result.stdout, 'Notes'), ['- The rules file of the merge base does not exist, so the candidate is blocked; HEAD is read only to report its declared facts.', manualNote]);
   assert.equal(result.code, 0);
 });
 
-test('Given a merge base with a rules file that is not valid, when the check runs, then the rules file of the branch applies, a note names the problem, and the route is CLARIFICATION_NEEDED', { timeout }, async (t) => {
+test('Given a merge base with a rules file that is not valid, when the check runs, then HEAD supplies declared facts, a note names the problem, and merge stays blocked', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles(rulesYaml((rules) => { rules.size.total_lines_read_above = -1; })));
   repository.commit('Repair the rules file', { [rulesPath]: rulesYaml() });
 
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [`- CLARIFICATION_NEEDED protected_paths.policy: ${rulesPath}`]);
+  assert.equal(tierOf(result.stdout), 'T1');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- blocked policy.untrusted_base: No valid trusted base policy is available.', `- T1 Team review protected_paths.policy: ${rulesPath}`]);
   assert.deepEqual(linesUnder(result.stdout, 'Notes'), [
-    `- The rules file of the merge base is not valid, so the file at HEAD applies. The rules file ${rulesPath} at the merge base has no valid key size.total_lines_read_above: give a whole number, 0 or more.`,
+    `- The rules file of the merge base is not valid, so the candidate is blocked; HEAD is read only to report its declared facts. The rules file ${rulesPath} at the merge base has no valid key size.total_lines_read_above: give a whole number, 0 or more.`,
     manualNote,
   ]);
   assert.equal(result.code, 0);
 });
 
-test('Given historical routes at the merge base and relaxed current rules at HEAD, when the check runs, then base protections and thresholds still apply with current route names', { timeout }, async (t) => {
+test('Given historical routes at the merge base and relaxed current rules at HEAD, when the check runs, then base protections and thresholds still apply with current tier names', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles(historicalRulesYaml()));
-  repository.commit('Adopt four routes and change the guide', { [rulesPath]: rulesYaml(), ...guideChange });
+  repository.commit('Adopt three tiers and change the guide', { [rulesPath]: rulesYaml(), ...guideChange });
 
   const result = await checkOn(t, repository, '--json');
 
   assert.equal(result.stderr, '');
   assert.equal(result.code, 0);
   const report = JSON.parse(result.stdout);
-  assert.equal(report.route, 'CLARIFICATION_NEEDED');
+  assert.equal(report.tier, 'T2');
   assert.equal(report.lineCounts.totalLimit, 1);
-  assert.ok(report.reasons.some((reason: { route: string; key: string; fact: string }) => reason.route === 'CLARIFICATION_NEEDED' && reason.key === 'protected_paths.policy' && reason.fact === 'docs/guide.md'));
-  assert.ok(report.reasons.some((reason: { route: string; key: string }) => reason.route === 'ARCHITECT_REVIEW_NEEDED' && reason.key === 'size.total_lines_read_above'));
+  assert.ok(report.reasons.some((reason: { tier: string; key: string; fact: string }) => reason.tier === 'T2' && reason.key === 'protected_paths.policy' && reason.fact === 'docs/guide.md'));
+  assert.ok(report.reasons.some((reason: { tier: string; key: string }) => reason.tier === 'T2' && reason.key === 'size.total_lines_read_above'));
   assert.deepEqual(report.notes, [manualNote.slice(2)]);
 });
 
-test('Given historical route names at HEAD, when the check runs, then the check requires the current four routes', { timeout }, async (t) => {
+test('Given historical route names at HEAD, when the check runs, then the check requires the current three tiers', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles(historicalRulesYaml()));
   repository.commit('Change the guide', guideChange);
 
@@ -113,5 +115,5 @@ test('Given historical route names at HEAD, when the check runs, then the check 
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, '');
-  assert.match(result.stderr, /at HEAD has no valid key routes.order: give FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIPPED/);
+  assert.match(result.stderr, /at HEAD has no valid key protected_paths.policy.tier: give a non-empty text/);
 });

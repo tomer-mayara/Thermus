@@ -1,6 +1,6 @@
 import { stringify } from 'yaml';
 
-// A minimal valid rules file for the review route check, and the small source tree that it describes. The packages
+// A minimal valid rules file for the review tier check, and the small source tree that it describes. The packages
 // are alpha, beta, and composition: the files directly in src/. betaUsesAlpha adds the runtime edge beta -> alpha.
 export const rulesPath = 'docs/implementation/pr-review-rules.yaml';
 
@@ -17,12 +17,14 @@ const triggers = [
 
 export function rulesDocument() {
   return {
-    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'] },
+    version: 2,
+    tiers: { order: ['T2', 'T1', 'T0'], names: { T0: 'T0 Auto merge', T1: 'T1 Team review', T2: 'T2 Need architect' } },
+    metrics: { process_paths: ['src/**', 'script/code-quality/**', '.ast-metrics.yaml', '.ast-metrics-baseline.yaml', '.code-quality-exceptions.yaml'] },
     protected_paths: {
-      policy: { route: 'CLARIFICATION_NEEDED', question: 'Does this change what the checks enforce? Record the new rule.', paths: ['AGENTS.md', rulesPath] },
-      contracts: { route: 'CLARIFICATION_NEEDED', question: 'Does a client see a different input or output? Record the promise.', paths: ['src/index.ts'] },
+      policy: { tier: 'T1', question: 'Does this change what the checks enforce? Record the new rule.', paths: ['AGENTS.md', rulesPath] },
+      contracts: { tier: 'T1', question: 'Does a client see a different input or output? Record the promise.', paths: ['src/index.ts'] },
     },
-    read_paths: { route: 'ARCHITECT_REVIEW_NEEDED', paths: ['docs/implementation/test-gate-policy.md'], moved_by_stop_rule: [] as string[] },
+    read_paths: { tier: 'T1', paths: ['docs/implementation/test-gate-policy.md'], moved_by_stop_rule: [] as string[] },
     scopes: { production: ['src/**'], generated: ['docs/metrics/**'] },
     public_surface: {
       contract_documents: 'docs/reference/**',
@@ -31,8 +33,8 @@ export function rulesDocument() {
       documented: [] as string[],
     },
     dependency_graph: {
-      counting: { unresolved_relative_import: 'FIX' },
-      triggers: { ...Object.fromEntries(triggers.map((name) => [name, 'FIX'])), runtime_edge_becomes_type: 'none' } as Record<string, string>,
+      counting: { unresolved_relative_import: 'blocked' },
+      triggers: { ...Object.fromEntries(triggers.map((name) => [name, 'blocked'])), runtime_edge_becomes_type: 'none' } as Record<string, string>,
       packages: ['alpha', 'beta', 'composition'],
       allowed_edges: [{ from: 'composition', to: 'alpha', kind: 'runtime' }] as Edge[],
       forbidden_edges: [] as { from: string; to: string | string[] }[],
@@ -43,8 +45,8 @@ export function rulesDocument() {
     size: {
       production_lines_read_above: 400,
       total_lines_read_above: 1500,
-      test_counts: { fewer_tests_than_base: 'ARCHITECT_REVIEW_NEEDED', more_skipped_or_todo_than_base: 'ARCHITECT_REVIEW_NEEDED' },
-      habit_hooks_snooze_non_empty: 'FIX',
+      test_counts: { fewer_tests_than_base: 'T1', more_skipped_or_todo_than_base: 'T1' },
+      habit_hooks_snooze_non_empty: 'blocked',
     },
     ratchet: {
       maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 } as Record<string, number>,
@@ -89,22 +91,29 @@ export function testFile(names: readonly string[]): string {
   return `import { test } from 'node:test';\n\n${names.map((name) => `test('${name}', () => {});\n`).join('')}`;
 }
 
-// The merge base can still use the routes that came before the four-route policy.
+// Only a historical merge base can use these names; HEAD must use the current tier policy.
 export function historicalRulesYaml() {
   const rules = rulesDocument();
+  const previous = Object.fromEntries(Object.entries(rules).filter(([key]) => key !== 'tiers' && key !== 'metrics'));
   return stringify({
-    ...rules,
+    ...previous,
+    version: 1,
     routes: { order: ['FIX', 'ASK', 'READ', 'SHOW', 'SHIP'] },
     protected_paths: {
-      policy: { ...rules.protected_paths.policy, route: 'ASK', paths: [...rules.protected_paths.policy.paths, 'docs/guide.md'] },
-      contracts: { ...rules.protected_paths.contracts, route: 'ASK' },
+      policy: { question: rules.protected_paths.policy.question, route: 'ASK', paths: [...rules.protected_paths.policy.paths, 'docs/guide.md'] },
+      contracts: { question: rules.protected_paths.contracts.question, route: 'ASK', paths: rules.protected_paths.contracts.paths },
     },
-    read_paths: { ...rules.read_paths, route: 'READ' },
+    read_paths: { paths: rules.read_paths.paths, moved_by_stop_rule: [], route: 'READ' },
+    dependency_graph: {
+      ...rules.dependency_graph,
+      counting: { unresolved_relative_import: 'FIX' },
+      triggers: Object.fromEntries(triggers.map((name) => [name, 'FIX'])),
+    },
     scopes: { ...rules.scopes, executable: ['src/**', 'test/**'] },
     size: {
-      ...rules.size,
-      total_lines_read_above: 1,
+      ...rules.size, total_lines_read_above: 1,
       test_counts: { fewer_tests_than_base: 'READ', more_skipped_or_todo_than_base: 'READ' },
+      habit_hooks_snooze_non_empty: 'FIX',
     },
   });
 }

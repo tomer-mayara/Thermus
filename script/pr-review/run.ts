@@ -4,6 +4,7 @@ import type { CheckOptions } from './command-line.ts';
 import { crapRowsOf } from './crap-rows.ts';
 import { candidateOf, isDirty, revisionsOf } from './git-reads.ts';
 import { metricsFilesOf } from './metrics-files.ts';
+import { impactOf } from './impact.ts';
 import { resultOf } from './result.ts';
 import { rulesAt } from './rules-source.ts';
 import { snapshotPairOf } from './snapshots.ts';
@@ -20,5 +21,5 @@ export function runCheck(root: string, options: CheckOptions): CheckResult {
   const snapshots = options.snapshots === undefined ? undefined : snapshotPairOf(options.snapshots, revisions);
   const crap = options.crap === undefined ? undefined : crapRowsOf(options.crap, revisions);
   const metrics = options.metrics === undefined ? undefined : metricsFilesOf(options.metrics, revisions.head);
-  return resultOf({ ...candidateOf(root, revisions, rules.base.scopes.production), dirty, snapshots, crap, metrics }, rules, options.repository);
+  return resultOf({ ...candidateOf(root, revisions, rules.base.scopes.production), dirty, snapshots, crap, metrics, impact: options.impact === undefined ? undefined : impactOf(options.impact, revisions) }, rules, options.repository);
 }

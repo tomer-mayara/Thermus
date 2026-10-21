@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { GitRepository } from './fixtures/git-repository.ts';
-import { checkOn, linesUnder, routeOf, snapshotOptions, writeSnapshots } from './fixtures/pr-review-check.ts';
+import { checkOn, eligibilityOf, linesUnder, tierOf, snapshotOptions, writeSnapshots } from './fixtures/pr-review-check.ts';
 import { measuredFiles, rulesYaml } from './fixtures/pr-review-rules.ts';
 
 // The exceptions file of check 4. The rules list it under read_paths, as the rules file of the repository does.
@@ -15,7 +15,7 @@ function exceptionsFile(path: string, expires: string): string {
   return ['exceptions:', `  - path: ${path}`, '    metric: mi', '    bound: 80', '    reason: The parser keeps one table of rules.', `    expires: ${expires}`, ''].join('\n');
 }
 
-test('Given an exception entry with a bound of 80 and a future date for a new file at raw MI 82, when the check runs, then the FIX becomes an ARCHITECT_REVIEW_NEEDED reason that names the entry', { timeout }, async (t) => {
+test('Given an exception entry with a bound of 80 and a future date for a new file at raw MI 82, when the check runs, then the blocked becomes an T1 Team review reason that names the entry', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, startFiles);
   repository.commit('Add a module and its exception', { ...newModule, [exceptionsPath]: exceptionsFile('src/alpha/low.ts', '2999-12-31') });
   writeSnapshots(repository, {}, { 'src/alpha/low.ts': 82 });
@@ -23,16 +23,16 @@ test('Given an exception entry with a bound of 80 and a future date for a new fi
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
+  assert.equal(tierOf(result.stdout), 'T1');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
-    '- ARCHITECT_REVIEW_NEEDED ratchet.exceptions: src/alpha/low.ts covered by "The parser keeps one table of rules." until 2999-12-31',
+    `- T1 Team review read_paths: ${exceptionsPath}`,
+    '- T1 Team review ratchet.exceptions: src/alpha/low.ts covered by "The parser keeps one table of rules." until 2999-12-31',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- new: src/alpha/low.ts: 82']);
   assert.equal(result.code, 0);
 });
 
-test('Given the same exception entry with a past date, when the check runs, then the FIX stays and the expired entry is FIX too', { timeout }, async (t) => {
+test('Given the same exception entry with a past date, when the check runs, then the blocked stays and the expired entry is blocked too', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, startFiles);
   repository.commit('Add a module and its exception', { ...newModule, [exceptionsPath]: exceptionsFile('src/alpha/low.ts', '2000-01-01') });
   writeSnapshots(repository, {}, { 'src/alpha/low.ts': 82 });
@@ -40,24 +40,24 @@ test('Given the same exception entry with a past date, when the check runs, then
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'FIX');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- FIX ratchet.maintainability_index.new_file_below: src/alpha/low.ts: 82',
-    '- FIX ratchet.exceptions.expired: src/alpha/low.ts',
-    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
+    '- blocked ratchet.maintainability_index.new_file_below: src/alpha/low.ts: 82',
+    '- blocked ratchet.exceptions.expired: src/alpha/low.ts',
+    `- T1 Team review read_paths: ${exceptionsPath}`,
   ]);
   assert.equal(result.code, 0);
 });
 
-test('Given an expired exception entry for a changed file and no snapshot options, when the check runs, then the expired entry is FIX and the MI section says that MI was not checked', { timeout }, async (t) => {
+test('Given an expired exception entry for a changed file and no snapshot options, when the check runs, then the expired entry is blocked and the MI section says that MI was not checked', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, { ...startFiles, [exceptionsPath]: exceptionsFile('src/alpha/parser.ts', '2000-01-01') });
   repository.commit('Change the parser', { 'src/alpha/parser.ts': 'export const parser = 2;\n' });
 
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'FIX');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- FIX ratchet.exceptions.expired: src/alpha/parser.ts']);
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- blocked ratchet.exceptions.expired: src/alpha/parser.ts']);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- not checked: give --base-snapshot and --head-snapshot']);
   assert.equal(result.code, 0);
 });

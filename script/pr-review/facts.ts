@@ -24,8 +24,8 @@ export function dependencyOutcome(revisions: { readonly base: DependencyRevision
 }
 
 // A fact that the rules of the merge base lack and the rules of HEAD list is declared: the pull request lists it in
-// the rules file, a protected path. Each fact that the rules of HEAD lack is FIX, because the merge would bring it to
-// main unlisted. A forbidden edge of the merge base stays FIX: no listing can allow it.
+// the rules file, a protected path. Each fact that the rules of HEAD lack is blocked, because the merge would bring it to
+// main unlisted. A forbidden edge of the merge base stays blocked: no listing can allow it.
 function splitFacts(base: readonly Fact[], head: readonly Fact[]): { readonly fix: Fact[]; readonly declared: Fact[] } {
   const atHead = new Set(head.map(identityOf));
   return {
@@ -34,7 +34,7 @@ function splitFacts(base: readonly Fact[], head: readonly Fact[]): { readonly fi
   };
 }
 
-// An import that does not resolve hides a dependency. It is FIX in a changed file and a note in an unchanged file.
+// An import that does not resolve hides a dependency. It is blocked in a changed file and a note in an unchanged file.
 function unresolvedOutcome(unresolved: readonly UnresolvedImport[], changed: ReadonlySet<string>): { readonly fix: Fact[]; readonly notes: string[] } {
   const key = 'dependency_graph.counting.unresolved_relative_import';
   return {

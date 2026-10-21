@@ -70,3 +70,13 @@ test('Given a snapshot path that does not exist, when it is read, then the diagn
 
   assert.throws(() => snapshotPairOf(paths, revisions), { message: `Cannot read the base snapshot file ${paths.base}.` });
 });
+
+test('Given a complete snapshot of a file with no functions, when raw MI is absent, then only that explicit evidence permits N/A', (t) => {
+  const paths = writeSnapshotFiles(t, validBase, { version: 1, commit: revisions.head, files: [
+    { path: 'src/types.ts', paths: 0, functions: [], sourceEvidence: { complete: true } },
+    { path: 'src/missing.ts' },
+    { path: 'src/incomplete.ts', paths: 0, functions: [], sourceEvidence: { complete: false } },
+  ] });
+  const pair = snapshotPairOf(paths, revisions);
+  assert.deepEqual(pair.notApplicable?.head, new Set(['src/types.ts']));
+});

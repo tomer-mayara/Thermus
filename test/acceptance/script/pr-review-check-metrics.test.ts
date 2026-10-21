@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { GitRepository } from './fixtures/git-repository.ts';
-import { checkOn, commitsOf, decisionNote, linesUnder, metricsOptions, processText, reviewText, routeOf, writeMetrics } from './fixtures/pr-review-check.ts';
+import { checkOn, eligibilityOf, commitsOf, decisionNote, linesUnder, metricsOptions, processText, reviewText, tierOf, writeMetrics } from './fixtures/pr-review-check.ts';
 import { guideChange, measuredFiles } from './fixtures/pr-review-rules.ts';
 
-// The step "Metrics" of the review route: the stage outcomes that script/code-quality/ast-metrics-process.ts writes
+// The step "Metrics" of the review tier: the stage outcomes that script/code-quality/ast-metrics-process.ts writes
 // with --json, and the review findings of its review stage. pr-review-check.test.ts gives the report without them.
 const timeout = 30_000;
 const parserChange = { 'src/alpha/parser.ts': 'export const parser = 2;\n' };
@@ -23,7 +23,7 @@ test('Given goal misses of the process and high findings on unchanged files only
   const result = await checkOn(t, repository, ...metricsOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIPPED');
+  assert.equal(tierOf(result.stdout), 'T0');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'Metrics'), [
     '- Delta: goal miss', '- Review: goal miss', '- CRAP: goal miss', '- Architecture: passed',
@@ -33,7 +33,7 @@ test('Given goal misses of the process and high findings on unchanged files only
   assert.equal(result.code, 0);
 });
 
-test('Given a high finding on a changed production file, when the check runs with both files, then the route is ARCHITECT_REVIEW_NEEDED with the file and the message, and a finding on a changed test file is no reason', { timeout }, async (t) => {
+test('Given a high finding on a changed production file, when the check runs with both files, then the route is T1 Team review with the file and the message, and a finding on a changed test file is no reason', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change the parser and its fixture', { ...parserChange, 'test/alpha/fixture.ts': 'export const fixture = 1;\n' });
   writeMetrics(repository, completed, [
@@ -46,9 +46,9 @@ test('Given a high finding on a changed production file, when the check runs wit
   const result = await checkOn(t, repository, ...metricsOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
+  assert.equal(tierOf(result.stdout), 'T1');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    `- ARCHITECT_REVIEW_NEEDED ratchet.review_findings: src/alpha/parser.ts: ${lowMi}`,
+    `- T1 Team review ratchet.review_findings: src/alpha/parser.ts: ${lowMi}`,
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Metrics').slice(4), [
     '- outside scopes.production: test/alpha/fixture.ts: Maintainability index: 57 -> 52 (below 85 is hard to maintain)',
@@ -57,7 +57,7 @@ test('Given a high finding on a changed production file, when the check runs wit
   assert.equal(result.code, 0);
 });
 
-test('Given a process file with the Delta stage failed and no review file, when the check runs with both options, then the route is FIX with each stage that did not complete', { timeout }, async (t) => {
+test('Given a process file with the Delta stage failed and no review file, when the check runs with both options, then merge is blocked with each stage that did not complete', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change the guide', guideChange);
   writeMetrics(repository, ['failed', 'unavailable', 'unavailable', 'unavailable']);
@@ -65,12 +65,12 @@ test('Given a process file with the Delta stage failed and no review file, when 
   const result = await checkOn(t, repository, ...metricsOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'FIX');
+  assert.equal(eligibilityOf(result.stdout), 'blocked');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- FIX required_checks: Delta failed',
-    '- FIX required_checks: Review unavailable',
-    '- FIX required_checks: CRAP unavailable',
-    '- FIX required_checks: Architecture unavailable',
+    '- blocked required_checks: Delta failed',
+    '- blocked required_checks: Review unavailable',
+    '- blocked required_checks: CRAP unavailable',
+    '- blocked required_checks: Architecture unavailable',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Metrics'), [
     '- Delta: failed', '- Review: unavailable', '- CRAP: unavailable', '- Architecture: unavailable',
