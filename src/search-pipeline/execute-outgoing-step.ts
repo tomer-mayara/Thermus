@@ -1,3 +1,4 @@
+import { isSearchCancelled, throwIfSearchCancelled } from './search-cancellation.ts';
 import type { ExecutionContext } from '../page-fetch/execution-context.ts';
 import type { OutgoingStep, StepResult } from '../page-fetch/pipeline-step.ts';
 import { writeStepRecord, type StepOutcome, type StepRecordSink } from '../page-fetch/step-record.ts';
@@ -7,14 +8,14 @@ export async function executeOutgoingStep(input: string, execution: ExecutionCon
   records: StepRecordSink;
 }): Promise<string> {
   const { signal, operationId } = execution;
-  throwIfCancelled(signal);
+  throwIfSearchCancelled(signal);
   const startedAt = performance.now();
   let outcome: StepOutcome = { outcome: 'failed', code: 'step_failed' };
   try {
     const result = await dependencies.outgoing.execute(input, signal);
-    throwIfCancelled(signal);
+    throwIfSearchCancelled(signal);
     const checked = checkedResult(result, input);
-    throwIfCancelled(signal);
+    throwIfSearchCancelled(signal);
     if (checked === undefined) outcome = { outcome: 'failed', code: 'invalid_step_result' };
     else if (checked.decision === 'allow') {
       outcome = { outcome: 'allowed' };
@@ -22,7 +23,7 @@ export async function executeOutgoingStep(input: string, execution: ExecutionCon
     } else outcome = { outcome: 'blocked', code: checked.code };
     throw new Error('Search failed');
   } catch (error) {
-    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+    if (isSearchCancelled(signal, error)) {
       outcome = { outcome: 'cancelled', code: 'cancelled' };
       throw new DOMException('Request cancelled', 'AbortError');
     }
@@ -44,8 +45,4 @@ function checkedResult(value: unknown, input: string): StepResult<string, 'block
 
 function isResultObject(value: unknown): value is { decision?: unknown; output?: unknown; code?: unknown } {
   return typeof value === 'object' && value !== null && !Array.isArray(value) && Object.hasOwn(value, 'decision');
-}
-
-function throwIfCancelled(signal: AbortSignal): void {
-  if (signal.aborted) throw new DOMException('Request cancelled', 'AbortError');
 }

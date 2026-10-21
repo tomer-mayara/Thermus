@@ -5,6 +5,7 @@ import { assertOperationId, type ExecutionContext } from '../page-fetch/executio
 import type { IncomingStep, OutgoingStep } from '../page-fetch/pipeline-step.ts';
 import { reportRendererFailure, type RendererFailureReports } from '../page-fetch/renderer-failure-reports.ts';
 import type { StepRecordSink } from '../page-fetch/step-record.ts';
+import { throwIfSearchCancelled } from './search-cancellation.ts';
 import { SearchQuery } from './search-query.ts';
 import { SearchFailure } from './search-failure.ts';
 import { executeOutgoingStep } from './execute-outgoing-step.ts';
@@ -28,23 +29,23 @@ export class SearchPipeline {
 
   async search(query: string, context: RequestContext, execution: ExecutionContext): Promise<SearchOutcome> {
     const { signal } = execution;
-    throwIfCancelled(signal);
+    throwIfSearchCancelled(signal);
     requirePermission(context, 'product:access');
     const input = checkedQuery(query);
     assertOperationId(execution.operationId);
     try {
       await executeOutgoingStep(input.value, execution, this.#dependencies);
-      throwIfCancelled(signal);
+      throwIfSearchCancelled(signal);
       const document = await this.searchDocument(input, execution);
-      throwIfCancelled(signal);
+      throwIfSearchCancelled(signal);
       const outcome = await executeIncomingStep(document.page, execution, this.#dependencies);
-      throwIfCancelled(signal);
+      throwIfSearchCancelled(signal);
       if (outcome.status === 'withheld') return outcome;
       if (document.kind === 'no_results') return { status: 'released', markdown: 'No search results.' };
       if (!/\S/u.test(outcome.markdown)) throw new Error('Search processing failed');
       return outcome;
     } catch (error) {
-      throwIfCancelled(signal, error);
+      throwIfSearchCancelled(signal, error);
       throw error;
     }
   }
@@ -54,19 +55,21 @@ export class SearchPipeline {
     try {
       result = await this.#dependencies.engine.search(query.value, execution.signal);
     } catch (error) {
-      throwIfCancelled(execution.signal, error);
+      throwIfSearchCancelled(execution.signal, error);
       const failure = safeSearchFailure(error);
-      if (error instanceof WebsiteFetchFailure) reportRendererFailure(this.#dependencies, error, execution.operationId);
-      throwIfCancelled(execution.signal);
+      try {
+        if (error instanceof WebsiteFetchFailure) reportRendererFailure(this.#dependencies, error, execution.operationId);
+      } catch { /* An unreadable error cannot change the fixed failure. */ }
+      throwIfSearchCancelled(execution.signal);
       throw failure;
     }
-    throwIfCancelled(execution.signal);
+    throwIfSearchCancelled(execution.signal);
     try {
       const document = checkedDocument(result);
-      throwIfCancelled(execution.signal);
+      throwIfSearchCancelled(execution.signal);
       return document;
     } catch {
-      throwIfCancelled(execution.signal);
+      throwIfSearchCancelled(execution.signal);
       throw new SearchFailure();
     }
   }
@@ -91,10 +94,6 @@ function isPage(value: unknown): value is WebsiteFetchResult {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const page = value as Record<string, unknown>;
   return ['requestedUrl', 'finalUrl', 'html'].every((field) => Object.hasOwn(page, field) && typeof page[field] === 'string');
-}
-
-function throwIfCancelled(signal: AbortSignal, error?: unknown): void {
-  if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) throw new DOMException('Request cancelled', 'AbortError');
 }
 
 function safeSearchFailure(error: unknown): SearchFailure {

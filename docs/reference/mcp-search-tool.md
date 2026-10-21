@@ -93,6 +93,11 @@ request server. Hosted fetch and search use one capacity owner for the full
 operation through cleanup. Self-hosted concurrency is unchanged. Existing
 request lifetime tracking owns search cancellation and shutdown too.
 
+An aborted signal wins before error inspection. Cancellation during that
+inspection also wins. An unreadable error name or prototype uses the fixed
+failure for its boundary, starts no later stage, and preserves the safe stage
+and completion records.
+
 Every dispatched call attempts one `mcp.tool.completed` record, including
 invalid arguments. Search records contain only `event`, `operationId`,
 `authority`, `subject`, `tenantId`, `tool`, `status`, and `durationMs`.

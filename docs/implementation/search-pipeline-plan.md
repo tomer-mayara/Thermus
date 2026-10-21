@@ -1,20 +1,20 @@
 # Search pipeline plan
 
-Reviewed: 2026-10-20, against `ec1647bb`.
+Initial review: 2026-10-20, against `ec1647bb`.
 
-**Status:** SEARCH-01 through SEARCH-07 are implemented. SEARCH-07 corrects
-R1 below; its current verification is in [SEARCH-07 evidence](search-07.md).
-The earlier complete-candidate gates passed for `85817282` and remain
-historical evidence after the classifier change. SEARCH-08 and SEARCH-09
-remain planned for the other boundary defect and proof gaps.
+**Status:** SEARCH-01 through SEARCH-08 are implemented. SEARCH-07 corrected
+R1; SEARCH-08 corrects R2. Current verification is in
+[SEARCH-08 evidence](search-08.md). Earlier test and build passes remain
+evidence for their recorded inputs; they do not qualify the changed pipeline.
+SEARCH-09 remains planned for the proof gaps.
 [PR 202](https://github.com/tomer-mayara/Thermus/pull/202) is Draft.
 Owner review and merge remain pending.
 
 This document owns the current design, acceptance criteria, and next steps.
 The [search reference](../reference/mcp-search-tool.md) owns tool usage.
 The [SEARCH-06 record](search-06.md) owns the earlier gate results and quality
-exceptions; SEARCH-07 records the new checks. Passing test and build gates
-does not mean that all maintainability or coverage assessments met their goals.
+exceptions; SEARCH-07 and SEARCH-08 record later checks. Passing test and build
+gates does not mean that all maintainability or coverage assessments met their goals.
 
 ## Review findings
 
@@ -46,21 +46,25 @@ generic footer data attributes remain valid. No new abstraction was needed.
 
 ### R2: A malformed error can escape the core's safe failure — low priority
 
-The outgoing executor, incoming executor, and protected pipeline read
-`error.name` to recognize cancellation. That property can itself throw.
-A controlled collaborator that throws such an `Error` causes the raw getter
-exception to escape `SearchPipeline` in all three positions. See
+**Fixed by SEARCH-08.** The outgoing executor, incoming executor, and protected
+pipeline read `error.name` to recognize cancellation. That property can itself
+throw. At the reviewed revision, a collaborator that threw such an `Error`
+caused the raw getter exception to escape `SearchPipeline` in all three
+positions. See
 [the outgoing executor](../../src/search-pipeline/execute-outgoing-step.ts),
 [the incoming executor](../../src/search-pipeline/execute-incoming-step.ts),
 and [the pipeline](../../src/search-pipeline/search-pipeline.ts).
 
-The MCP boundary catches this and returns fixed safe text. No MCP content leak
-was demonstrated. The defect is in the protected core's failure contract.
+The MCP boundary caught this and returned fixed safe text. No MCP content leak
+was demonstrated. The new public regression also shows that outgoing and
+engine failures received the generic processing-failure status. The fixed
+core now preserves each boundary's expected message and status.
 
-**Correction:** SEARCH-08 will give the three search paths one small safe
-cancellation check. An aborted signal still wins; an unreadable error property
-must fall back to the stage's fixed failure. Keep stage outcomes and recording
-local. No general error framework is needed.
+**Correction:** The three search paths share one small safe cancellation
+check. An aborted signal wins before error inspection; the check also observes
+an abort caused during inspection. An unreadable name or prototype falls back
+to the boundary's fixed failure. A narrow guard protects the engine's existing
+renderer-report classification too. Stage outcomes and recording stay local.
 
 ### R3: Proof claims need more precise ownership
 
@@ -116,7 +120,7 @@ Authenticated MCP search(query, reason)
 | Query | Keep the small `SearchQuery` value class. The MCP parser and direct core boundary both use its rules. These checks protect different entry points. |
 | Provider boundary | Keep one `SearchEngine` interface and the `SearchDocument` record. Return original HTML and classification. Design an API response format only when an API adapter is needed. |
 | Brave HTTP | Keep classification and document-wide checks private in `search-engine-brave-http.ts`. No provider registry or generic DOM classifier is needed. |
-| Core and stages | Keep one protected pipeline and two local executors. Their query checks, withholding rules, and safe failures differ from fetch. Share only the repeated safe cancellation check in SEARCH-08. |
+| Core and stages | Keep one protected pipeline and two local executors. Their query checks, withholding rules, and safe failures differ from fetch. Share the safe cancellation check and its checkpoint wrapper. |
 | HTML conversion | Keep the full document through the existing cleaners. Keep the tested search-only preservation option; retain fetch defaults. |
 | Resources | Keep one renderer, shared compatible cleaners and reports, separate converter instances, and one hosted capacity owner. These lifetimes are required behavior. |
 | MCP | Keep direct dispatch for two tools and the existing description field. No tool router, `details` field, or nested MCP call is needed. |
@@ -206,6 +210,11 @@ busy, refuse overlap without queuing, and release only after settlement.
 Self-hosted concurrency remains unchanged. Use the existing MCP request
 lifetime for cancellation and shutdown.
 
+Search checks an aborted signal before it inspects a thrown error, then checks
+the signal again after inspection. Unreadable error metadata stays inside the
+fixed failure for its boundary. Keep cancellation outcomes in the executors
+so each entered stage records the correct terminal result.
+
 Each entered stage attempts one correlated safe record. Unentered stages
 emit none. Use `search.outgoing.observe_request` and
 `search.incoming.process_html` with the existing shared record contract.
@@ -229,6 +238,7 @@ src/
     search-query.ts
     search-pipeline.ts
     search-failure.ts
+    search-cancellation.ts
     execute-outgoing-step.ts
     execute-incoming-step.ts
   mcp/
@@ -243,9 +253,9 @@ src/
 ```
 
 Reuse the public step, execution, and record contracts in `src/page-fetch/`
-and the existing HTML cleaner package. SEARCH-08 adds only
-`src/search-pipeline/search-cancellation.ts` for the shared safe check.
-No other new production directory or file is planned.
+and the existing HTML cleaner package. SEARCH-08 added only
+`src/search-pipeline/search-cancellation.ts` for the shared safe check and its
+checkpoint wrapper. No other new production directory or file is planned.
 
 Tests stay in `test/unit/search-engine/`, `test/unit/search-pipeline/`,
 `test/integration/search-pipeline/`, `test/integration/mcp/`, and
@@ -265,9 +275,9 @@ the earlier passing runs do not prove the new cases.
 | AC2 | Invalid input, denied access, and invalid operation IDs start no stages, provider, cleaners, or failure reports. Dispatched invalid calls still get completion records. Cover bounds, supplementary characters, lone surrogates, blank text, and exact preservation. | Query, schema, protected pipeline, and public invalid-argument tests. |
 | AC3 | Outgoing refusal, changed query, malformed output, or failure prevents provider and incoming work. Incoming failure or withholding releases no page content and does not repeat provider work. | Protected pipeline tests; strengthen direct call-count assertions in SEARCH-09. |
 | AC4 | Results require nonblank allowed Markdown. No-results still passes incoming and releases only the fixed text. Withholding and cancellation win. Malformed or contradictory provider output never claims absence. | Protected, public, and runtime tests; document-wide conflict regressions in SEARCH-07. |
-| AC5 | Query delimiters remain one value at the fixed endpoint. Unexpected final destinations, unsupported shapes, oversized HTML, and excessive depth fail. Ordinary query/snippet phrases cannot override DOM structure. | Provider contract tests; extend known-container scope in SEARCH-07. |
+| AC5 | Query delimiters remain one value at the fixed endpoint. Unexpected final destinations, unsupported shapes, oversized HTML, and excessive depth fail. Ordinary query/snippet phrases cannot override DOM structure. | Provider contract tests and document-wide container regressions in SEARCH-07. |
 | AC6 | Supported full-page fixtures retain safe titles, actual Markdown links, snippets, order, and correct base resolution through real cleaners. Unsafe content is removed or withheld. | Real-cleaner integration, video public regression, and local runtime assertions. No universal completeness claim. |
-| AC7 | Observed cancellation starts no later stage. Calls keep context and results isolated. Shared renderer ownership preserves DNS protection, prompt cancellation, cleanup, and shutdown. | Composition, DNS, lifecycle, and pinned fetch/search tests; preserve these in SEARCH-08. |
+| AC7 | Observed cancellation starts no later stage. Calls keep context and results isolated. Shared renderer ownership preserves DNS protection, prompt cancellation, cleanup, and shutdown. | Composition, DNS, lifecycle, and pinned fetch/search tests; SEARCH-08 adds malformed-error and inspection-triggered cancellation controls. |
 | AC8 | Held rendering, incoming work, or cleanup prevents overlapping hosted fetch/search in both orders. Cancelled callers get cancellation before busy. Capacity returns only after settlement on success, failure, or abort. | Capacity unit and public hosted acceptance tests. |
 | AC9 | Completion and entered-stage records are correlated, safe, and attempted once. Logger failure changes no behavior. Safe failures distinguish provider and renderer errors. Fetch remains compatible. | Dispatcher, formatter, core, and public tests; malformed-error core regression in SEARCH-08. |
 | AC10 | Pinned local rendering reaches the MCP result without public access. The separate live proof reaches real Brave and useful MCP output; a provider refusal fails that proof. | Both runtime files and the dated live result in SEARCH-06; improve result/description association in SEARCH-09. |
@@ -280,9 +290,10 @@ the earlier passing runs do not prove the new cases.
 2. **SEARCH-07 complete:** public and provider scenarios failed first, then
    passed after the document-scope correction. Existing valid pages and
    ordinary footer navigation remain supported. See the verification record.
-3. **SEARCH-08:** write failing protected-core specifications for unreadable
-   error names at all three boundaries. Add the shared safe cancellation
-   check. Preserve cancellation precedence, records, and fixed failures.
+3. **SEARCH-08 complete:** protected-core specifications failed first, then
+   passed with the shared safe cancellation check. Public tests preserve the
+   boundary's message and completion status. Cancellation and stage records
+   remain correct when inspecting an error fails or causes an abort.
 4. **SEARCH-09:** strengthen existing count and live-association assertions
    and align current documents. Use a controlled false-positive example to
    prove the stronger live assertion. A live result must be recorded as pass
@@ -301,11 +312,11 @@ the earlier passing runs do not prove the new cases.
    started Actions jobs, owner review, and merge.
 
 The original review used source inspection, 214 passing focused tests, and
-independent in-memory reproductions of R1 and R2. SEARCH-07 now fixes R1 and
-records its own checks. R2 remains open. Final image/build qualification of
+independent in-memory reproductions of R1 and R2. SEARCH-07 and SEARCH-08 fix
+those defects and record their own checks. Final image/build qualification of
 the completed SEARCH-07–09 candidate remains required before Ready; earlier
 passes do not qualify changed production inputs. No new public Brave request
-is needed for SEARCH-07.
+is needed for SEARCH-07 or SEARCH-08.
 
 A future unchanged live empty-results capture should get provenance and a
 full-flow regression. Until then, retain the explicit unverified limit.
@@ -331,7 +342,7 @@ Covers AC5–AC6. See [SEARCH-02 evidence](search-02.md).
 
 ### SEARCH-03: Implement the protected search pipeline and records
 
-**Implemented, with R2 open.** Added protected orchestration, local executors,
+**Implemented; R2 fixed by SEARCH-08.** Added protected orchestration, local executors,
 safe failures, and architecture checks. Covers AC2–AC4, AC7, and AC9.
 See [SEARCH-03 evidence](search-03.md).
 
@@ -375,12 +386,15 @@ original page; run the focused tests and update current provider limits.
 
 ### SEARCH-08: Keep malformed errors inside the safe search boundary
 
-**Planned; before Ready.** Addresses R2, AC7, and AC9.
+**Implemented.** Addresses R2, AC7, and AC9. The failing specifications,
+shared check, public regression, and current checks are in
+[SEARCH-08 evidence](search-08.md).
 
 **Paths:** the three search pipeline modules that inspect cancellation;
 new `src/search-pipeline/search-cancellation.ts`;
-`test/integration/search-pipeline/protected-search.test.ts`; existing MCP
-dispatch tests where needed.
+`test/unit/search-pipeline/search-cancellation.test.ts`;
+`test/integration/search-pipeline/protected-search.test.ts`; and
+`test/integration/mcp/fetch-tool-server.test.ts`.
 
 **Acceptance:** Given an outgoing, engine, or incoming error whose name read
 throws, when the protected pipeline runs, then callers get the fixed failure

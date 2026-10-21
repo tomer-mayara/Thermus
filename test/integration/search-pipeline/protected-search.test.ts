@@ -124,10 +124,14 @@ test('Given failing record writes, when search succeeds, then both stages run on
 
 for (const stage of ['outgoing', 'engine', 'incoming'] as const) {
   test(`Given ${stage} throws an AbortError without signal cancellation, when settled, then the safe cancellation remains`, async () => {
-    const f = fixture(); const abort = async (): Promise<never> => { throw new DOMException('private abort', 'AbortError'); };
+    const f = fixture(); const abort = async (): Promise<never> => { f.calls.push(stage); throw new DOMException('private abort', 'AbortError'); };
     if (stage === 'engine') f.dependencies.engine.search = abort;
     else f.dependencies[stage].execute = abort;
     await assert.rejects(f.run(), { name: 'AbortError', message: 'Request cancelled' });
+    assert.equal(f.execution.signal.aborted, false);
+    assert.deepEqual(f.calls, stage === 'outgoing' ? ['outgoing'] : stage === 'engine' ? ['outgoing', 'engine'] : ['outgoing', 'engine', 'incoming']);
+    assert.deepEqual(f.entries.map(({ outcome, ...entry }) => [outcome, 'code' in entry ? entry.code : undefined]), stage === 'outgoing' ? [['cancelled', 'cancelled']] : stage === 'engine' ? [['allowed', undefined]] : [['allowed', undefined], ['cancelled', 'cancelled']]);
+    assert.doesNotMatch(JSON.stringify(f.entries), /private/);
   });
 }
 
@@ -258,4 +262,83 @@ for (const [label, value] of [
     await assert.rejects(f.run(), { message: 'Search failed' });
     assert.deepEqual(f.entries.map(({ stepId, outcome }) => ({ stepId, outcome })), [{ stepId: 'search.outgoing.observe_request', outcome: 'allowed' }]);
   });
+}
+
+for (const stage of ['outgoing', 'engine', 'incoming'] as const) {
+  test(`Given an error at ${stage} whose name getter throws, when protected search settles, then its fixed failure and entered-stage records stay safe`, async () => {
+    const f = fixture();
+    const failure = new Error('private collaborator failure', { cause: new Error('private cause') });
+    let reads = 0;
+    Object.defineProperty(failure, 'name', { get() { reads++; throw new Error('private name getter'); } });
+    const fail = async (): Promise<never> => { f.calls.push(stage); throw failure; };
+    if (stage === 'engine') f.dependencies.engine.search = fail;
+    else f.dependencies[stage].execute = fail;
+
+    await assert.rejects(f.run(), (error: Error) => {
+      assert.equal(error.message, stage === 'incoming' ? 'Search processing failed' : 'Search failed');
+      assert.equal(error.cause, undefined);
+      assert.doesNotMatch(JSON.stringify(error), /private/);
+      return true;
+    });
+    assert.equal(reads, 1);
+    assert.deepEqual(f.calls, stage === 'outgoing' ? ['outgoing'] : stage === 'engine' ? ['outgoing', 'engine'] : ['outgoing', 'engine', 'incoming']);
+    const allowed = { event: 'pipeline.step.completed', stepId: 'search.outgoing.observe_request', outcome: 'allowed' };
+    const failed = { event: 'pipeline.step.completed', stepId: `search.${stage}.` + (stage === 'outgoing' ? 'observe_request' : 'process_html'), outcome: 'failed', code: 'step_failed' };
+    assert.deepEqual(f.entries.map(({ operationId, durationMs, ...entry }) => {
+      assert.equal(operationId, f.execution.operationId);
+      assert.ok(Number.isSafeInteger(durationMs) && durationMs >= 0);
+      return entry;
+    }), stage === 'outgoing' ? [failed] : stage === 'engine' ? [allowed] : [allowed, failed]);
+    assert.doesNotMatch(JSON.stringify(f.entries), /private/);
+  });
+}
+
+for (const stage of ['outgoing', 'engine', 'incoming'] as const) {
+  test(`Given ${stage} aborts before throwing a hostile error, when settled, then cancellation wins without reading its name`, async () => {
+    const f = fixture();
+    let reads = 0;
+    const failure = Object.defineProperty(new Error('private failure'), 'name', { get() { reads++; throw new Error('private name'); } });
+    const fail = async (): Promise<never> => { f.calls.push(stage); f.controller.abort('private reason'); throw failure; };
+    if (stage === 'engine') f.dependencies.engine.search = fail;
+    else f.dependencies[stage].execute = fail;
+    await assert.rejects(f.run(), { name: 'AbortError', message: 'Request cancelled' });
+    assert.equal(reads, 0);
+    assert.deepEqual(f.calls, stage === 'outgoing' ? ['outgoing'] : stage === 'engine' ? ['outgoing', 'engine'] : ['outgoing', 'engine', 'incoming']);
+    assert.deepEqual(f.entries.map(({ outcome, ...entry }) => [outcome, 'code' in entry ? entry.code : undefined]), stage === 'outgoing' ? [['cancelled', 'cancelled']] : stage === 'engine' ? [['allowed', undefined]] : [['allowed', undefined], ['cancelled', 'cancelled']]);
+    assert.doesNotMatch(JSON.stringify(f.entries), /private/);
+  });
+
+  test(`Given the ${stage} error name getter aborts and returns a different name, when inspected, then cancellation wins with cancelled stage records`, async () => {
+    const f = fixture();
+    let reads = 0;
+    const failure = Object.defineProperty(new Error('private failure'), 'name', { get() { reads++; f.controller.abort('private reason'); return 'OtherError'; } });
+    const fail = async (): Promise<never> => { f.calls.push(stage); throw failure; };
+    if (stage === 'engine') f.dependencies.engine.search = fail;
+    else f.dependencies[stage].execute = fail;
+    await assert.rejects(f.run(), { name: 'AbortError', message: 'Request cancelled' });
+    assert.equal(reads, 1);
+    assert.deepEqual(f.calls, stage === 'outgoing' ? ['outgoing'] : stage === 'engine' ? ['outgoing', 'engine'] : ['outgoing', 'engine', 'incoming']);
+    assert.deepEqual(f.entries.map(({ outcome, ...entry }) => [outcome, 'code' in entry ? entry.code : undefined]), stage === 'outgoing' ? [['cancelled', 'cancelled']] : stage === 'engine' ? [['allowed', undefined]] : [['allowed', undefined], ['cancelled', 'cancelled']]);
+  });
+
+  for (const cancel of [false, true]) {
+    test(`Given ${stage} throws a proxy whose prototype inspection throws with cancellation ${cancel}, when settled, then the safe boundary holds`, async () => {
+      const f = fixture();
+      const failure = new Proxy(new Error('private failure'), { getPrototypeOf() { if (cancel) f.controller.abort('private reason'); throw new Error('private prototype'); } });
+      const fail = async (): Promise<never> => { f.calls.push(stage); throw failure; };
+      if (stage === 'engine') f.dependencies.engine.search = fail;
+      else f.dependencies[stage].execute = fail;
+      await assert.rejects(f.run(), (error: Error) => {
+        assert.equal(error.message, cancel ? 'Request cancelled' : stage === 'incoming' ? 'Search processing failed' : 'Search failed');
+        assert.equal(error.name, cancel ? 'AbortError' : stage === 'engine' ? 'SearchFailure' : 'Error');
+        assert.equal(error.cause, undefined);
+        assert.doesNotMatch(JSON.stringify(error), /private/);
+        return true;
+      });
+      assert.deepEqual(f.calls, stage === 'outgoing' ? ['outgoing'] : stage === 'engine' ? ['outgoing', 'engine'] : ['outgoing', 'engine', 'incoming']);
+      const terminal = cancel ? ['cancelled', 'cancelled'] : ['failed', 'step_failed'];
+      assert.deepEqual(f.entries.map(({ outcome, ...entry }) => [outcome, 'code' in entry ? entry.code : undefined]), stage === 'outgoing' ? [terminal] : stage === 'engine' ? [['allowed', undefined]] : [['allowed', undefined], terminal]);
+      assert.doesNotMatch(JSON.stringify(f.entries), /private/);
+    });
+  }
 }

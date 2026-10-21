@@ -11,6 +11,8 @@ import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
 import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
 import { completionLinesIn } from '../../support/drivers/operator-log.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
+import { SearchPipeline } from '../../../src/search-pipeline/search-pipeline.ts';
+import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
 import { SearchFailure } from '../../../src/search-pipeline/search-failure.ts';
 import { PageFetchFailure } from '../../../src/page-fetch/fetch-failure.ts';
 
@@ -327,3 +329,33 @@ test('Given a search error whose message changes after the first read, when disp
   assert.equal(JSON.parse(site.info[0]).status, 'search_failed');
   assert.doesNotMatch(site.info[0], /PRIVATE/);
 });
+
+for (const stage of ['outgoing', 'engine', 'incoming'] as const) {
+  test(`Given the protected search ${stage} throws an error with an unreadable name, when dispatched, then its boundary text and completion status remain correct`, async (t) => {
+    const calls: string[] = [];
+    const records: StepRecord[] = [];
+    const failure = Object.defineProperty(new Error('PRIVATE failure', { cause: new Error('PRIVATE cause') }), 'name', { get() { throw new Error('PRIVATE name getter'); } });
+    const page = { requestedUrl: 'https://search.example/', finalUrl: 'https://search.example/', html: 'PRIVATE page' };
+    const pipeline = new SearchPipeline({
+      outgoing: { execute: async (query) => { calls.push('outgoing'); if (stage === 'outgoing') throw failure; return { decision: 'allow', output: query }; } },
+      engine: { search: async () => { calls.push('engine'); if (stage === 'engine') throw failure; return { page, kind: 'results' }; } },
+      incoming: { execute: async () => { calls.push('incoming'); if (stage === 'incoming') throw failure; return { decision: 'allow', output: 'PRIVATE result' }; } },
+      records: { record: (entry) => { records.push(entry); } },
+    });
+    let operations = 0;
+    const site = await connect(t, { search: async (...args) => { operations++; return pipeline.search(...args); }, infoFails: true, errorFails: true });
+    assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE query', reason: 'PRIVATE reason' } }), { content: [{ type: 'text', text: stage === 'incoming' ? 'Search processing failed' : 'Search failed' }], isError: true });
+    assert.equal(operations, 1);
+    assert.deepEqual(calls, stage === 'outgoing' ? ['outgoing'] : stage === 'engine' ? ['outgoing', 'engine'] : ['outgoing', 'engine', 'incoming']);
+    assert.equal(site.info.length, 1);
+    assert.deepEqual(site.errors, site.info);
+    const completion = JSON.parse(site.info[0]);
+    assert.equal(completion.tool, 'search');
+    assert.equal(completion.status, stage === 'incoming' ? 'processing_failed' : 'search_failed');
+    assert.deepEqual(records.map(({ operationId, outcome, ...entry }) => {
+      assert.equal(operationId, completion.operationId);
+      return [outcome, 'code' in entry ? entry.code : undefined];
+    }), stage === 'outgoing' ? [['failed', 'step_failed']] : stage === 'engine' ? [['allowed', undefined]] : [['allowed', undefined], ['failed', 'step_failed']]);
+    assert.doesNotMatch(site.info.join('') + JSON.stringify(records), /PRIVATE/);
+  });
+}

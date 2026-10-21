@@ -1,3 +1,4 @@
+import { isSearchCancelled, throwIfSearchCancelled } from './search-cancellation.ts';
 import type { WebsiteFetchResult } from '../website-fetcher/website-fetcher.ts';
 import type { ExecutionContext } from '../page-fetch/execution-context.ts';
 import type { SearchOutcome } from './search-pipeline.ts';
@@ -9,14 +10,14 @@ export async function executeIncomingStep(input: WebsiteFetchResult, execution: 
   records: StepRecordSink;
 }): Promise<SearchOutcome> {
   const { signal, operationId } = execution;
-  throwIfCancelled(signal);
+  throwIfSearchCancelled(signal);
   const startedAt = performance.now();
   let outcome: StepOutcome = { outcome: 'failed', code: 'step_failed' };
   try {
     const result = await dependencies.incoming.execute(input, signal);
-    throwIfCancelled(signal);
+    throwIfSearchCancelled(signal);
     const checked = checkedResult(result);
-    throwIfCancelled(signal);
+    throwIfSearchCancelled(signal);
     if (checked === undefined) outcome = { outcome: 'failed', code: 'invalid_step_result' };
     else if (checked.decision === 'allow') {
       outcome = { outcome: 'allowed' };
@@ -27,7 +28,7 @@ export async function executeIncomingStep(input: WebsiteFetchResult, execution: 
     }
     throw new Error('Search processing failed');
   } catch (error) {
-    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+    if (isSearchCancelled(signal, error)) {
       outcome = { outcome: 'cancelled', code: 'cancelled' };
       throw new DOMException('Request cancelled', 'AbortError');
     }
@@ -53,8 +54,4 @@ function isIncomingBlockCode(value: unknown): value is BlockCode {
 
 function isResultObject(value: unknown): value is { decision?: unknown; output?: unknown; code?: unknown } {
   return typeof value === 'object' && value !== null && !Array.isArray(value) && Object.hasOwn(value, 'decision');
-}
-
-function throwIfCancelled(signal: AbortSignal): void {
-  if (signal.aborted) throw new DOMException('Request cancelled', 'AbortError');
 }
