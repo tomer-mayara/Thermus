@@ -292,6 +292,34 @@ for (const field of ['name', 'message']) {
   });
 }
 
+for (const scenario of [
+  { name: 'name getter that returns Error', failure: (cancel: () => void) => Object.defineProperty(new Error('Search failed'), 'name', { get() { cancel(); return 'Error'; } }) },
+  { name: 'typed failure name getter', failure: (cancel: () => void) => Object.defineProperty(new SearchFailure(), 'name', { get() { cancel(); return 'SearchFailure'; } }) },
+  { name: 'message getter that returns unknown text', failure: (cancel: () => void) => Object.defineProperty(new Error(), 'message', { get() { cancel(); return 'PRIVATE failure'; } }) },
+  { name: 'name getter that throws', failure: (cancel: () => void) => Object.defineProperty(new Error('Search failed'), 'name', { get() { cancel(); throw new Error('PRIVATE getter'); } }) },
+]) {
+  test(`Given a search error with a cancelling ${scenario.name}, when dispatched, then cancellation wins in the result and the one correlated completion`, async (t) => {
+    const shutdown = new AbortController();
+    const failure = scenario.failure(() => shutdown.abort());
+    let execution: ExecutionContext | undefined;
+    let calls = 0;
+    const site = await connect(t, {
+      lifetime: { signal: shutdown.signal, track: (task) => task },
+      search: async (_query, _trusted, current) => { calls++; execution = current; throw failure; },
+    });
+
+    assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE query', reason: 'PRIVATE reason' } }), { content: [{ type: 'text', text: 'Request cancelled' }], isError: true });
+    assert.equal(calls, 1);
+    assert.ok(execution?.signal.aborted);
+    assert.equal(site.info.length, 1);
+    const completion = JSON.parse(site.info[0]);
+    assert.equal(completion.tool, 'search');
+    assert.equal(completion.status, 'cancelled');
+    assert.equal(completion.operationId, execution.operationId);
+    assert.doesNotMatch(site.info[0], /PRIVATE|query|reason|url/i);
+  });
+}
+
 test('Given search cancellation and late operation output, when shutdown aborts the lifetime, then cancellation wins and the correlated completion stays tracked', async (t) => {
   const shutdown = new AbortController();
   const started = Promise.withResolvers<void>();

@@ -101,24 +101,29 @@ function safeFailure(error: unknown, signal: AbortSignal, search: boolean): { st
 }
 
 function safeSearchFailure(error: unknown, signal: AbortSignal): { status: CompletionStatus; message: string } {
+  let failure: { status: CompletionStatus; message: string } = { status: 'processing_failed', message: 'Search processing failed' };
   try {
-    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) return { status: 'cancelled', message: 'Request cancelled' };
-    if (error instanceof SearchFailure) return { status: 'search_failed', message: error.publicMessage };
-    const failures = {
-      'Server busy. Try again later.': 'busy',
-      'Invalid tool arguments': 'invalid_arguments',
-      'Access denied': 'access_denied',
-      'Search failed': 'search_failed',
-      'Search processing failed': 'processing_failed',
-    } as const;
-    const message = error instanceof Error ? error.message : undefined;
-    if (typeof message === 'string' && Object.hasOwn(failures, message)) {
-      return { status: failures[message as keyof typeof failures], message };
+    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+      failure = { status: 'cancelled', message: 'Request cancelled' };
+    } else if (error instanceof SearchFailure) {
+      failure = { status: 'search_failed', message: error.publicMessage };
+    } else {
+      const failures = {
+        'Server busy. Try again later.': 'busy',
+        'Invalid tool arguments': 'invalid_arguments',
+        'Access denied': 'access_denied',
+        'Search failed': 'search_failed',
+        'Search processing failed': 'processing_failed',
+      } as const;
+      const message = error instanceof Error ? error.message : undefined;
+      if (typeof message === 'string' && Object.hasOwn(failures, message)) {
+        failure = { status: failures[message as keyof typeof failures], message };
+      }
     }
   } catch {
     // An untrusted error can throw when its fields are read.
   }
-  return { status: 'processing_failed', message: 'Search processing failed' };
+  return signal.aborted ? { status: 'cancelled', message: 'Request cancelled' } : failure;
 }
 
 function emitCompletion(logger: CompletionLogger, record: string): void {
