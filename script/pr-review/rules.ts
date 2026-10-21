@@ -1,9 +1,11 @@
 import { graphRulesOf, type GraphRules } from './rules-graph.ts';
 import { checkRoutes } from './rules-routes.ts';
-import { documentOf, globListAt, globsAt, invalidKey, numberAt, recordAt, textAt, textListAt } from './rules-values.ts';
+import { documentOf, globListAt, globsAt, invalidKey, numberAt, recordAt, textAt, textListAt, valueAt } from './rules-values.ts';
 
 // crapAbsoluteOf of script/code-quality/assessment/crap-absolute.ts computes these two goals only.
 const supportedCrapGoals = { new_function_above: 15, changed_legacy_function_at_or_above: 30 } as const;
+// Optional, because the check takes the files from --process and --review, and an older merge base lacks the keys.
+const metricsFileKeys = ['ratchet.process_outcomes', 'ratchet.review_findings'];
 
 interface PathGroup {
   readonly name: string;
@@ -39,6 +41,7 @@ export function rulesOf(text: string, where: string): Rules {
   const document = documentOf(text, where);
   const protectedPaths = groupsOf(document, where);
   checkRoutes(document, where, protectedPaths.map((group) => group.name));
+  checkMetricsFiles(document, where);
   return {
     protectedPaths,
     policyQuestion: textAt(document, 'protected_paths.policy.question', where),
@@ -94,4 +97,11 @@ function crapGoalAt(document: unknown, name: keyof typeof supportedCrapGoals, wh
   const goal = numberAt(document, key, where);
   if (goal !== supportedCrapGoals[name]) throw invalidKey(where, key, `give ${supportedCrapGoals[name]}; the check supports the goals 15 and 30 only`);
   return goal;
+}
+
+function checkMetricsFiles(document: unknown, where: string): void {
+  for (const key of metricsFileKeys) {
+    const value = valueAt(document, key);
+    if (value !== undefined && (typeof value !== 'string' || value.trim() === '')) throw invalidKey(where, key, 'give a non-empty text, or leave it out');
+  }
 }

@@ -14,6 +14,7 @@ export function markdownOf(result: CheckResult): string {
     ...section('Tests', [`Added test cases: ${tests.added}`, `Removed test cases: ${tests.removed}`, `Added skips or todos: ${tests.skippedOrTodo.join(', ') || 'none'}`]),
     ...section('MI', result.mi),
     ...section('CRAP', result.crap),
+    ...section('Metrics', result.metrics),
     ...section('Facts to declare', result.factsToDeclare.map(declarationLine)),
     ...section('Declared facts', result.declaredFacts.map(declarationLine)),
     ...section('Surface differences', result.surfaceDifferences),

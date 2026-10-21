@@ -270,6 +270,9 @@ They establish arithmetic only, not accepted evidence or route eligibility.
 goal misses, operational failures, unavailable required coverage, an empty
 production selection, recording failure, and option conflicts. It checks a
 fenced delta with aligned rows and preserves indentation in Markdown stages.
+The typed result checks cover the final ordered stage outcomes, their texts
+and statuses, including any history publication result. The option checks
+include `--json`.
 The acceptance process files check the complete command with tool and Git
 doubles: `ast-metrics-process.test.ts` checks the document-only four-section
 report and structural record without a CRAP session or suite;
@@ -279,6 +282,10 @@ caller, and reuse of combined-suite provenance without any added suite launch;
 `ast-metrics-process-failures.test.ts` checks custom base and version
 propagation, continued evidence after a goal miss, failed analysis without
 history, and retained drawings when recording fails.
+`ast-metrics-process-json.test.ts` checks `--json`: the file gives the merge
+base, HEAD, and the four outcomes of the unchanged printed report, and from a
+subfolder, with a relative path, the failed review and the unavailable
+dependent stages.
 `ast-metrics-process-collection.test.ts` selects both unit parts in a small
 fixture repository and proves explicit collection runs its build and each
 part once; a failed fixture build saves failure evidence and writes no
@@ -988,6 +995,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-json.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-review-policy.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
@@ -1078,7 +1086,7 @@ See [the script guide](../../script/README.md) and
 
 ## PR review check
 
-Eight acceptance files run `script/pr-review/check.ts` in small git
+Nine acceptance files run `script/pr-review/check.ts` in small git
 repositories. Each repository has its own rules file from
 `test/acceptance/script/fixtures/pr-review-rules.ts`.
 `test/acceptance/script/pr-review-check.test.ts` checks the route from the
@@ -1104,10 +1112,11 @@ with `--allow-dirty`, and the rules file of HEAD when the merge base has none
 or has one that is not valid.
 `test/acceptance/script/pr-review-check-failures.test.ts` checks exit status 1
 for a rules file at HEAD without a key, without the MI limit of a new file,
-with a CRAP goal other than 15, with a trigger of another route, or that is
-not valid YAML, for a deleted rules file, a missing base ref, an unknown
-option, a rules path outside the repository, a repository without an owner,
-and a head snapshot without a base snapshot. It also checks that the README gives the same synopsis, options, and
+with a CRAP goal other than 15, with a number as the location of the review
+findings, with a trigger of another route, or that is not valid YAML, for a
+deleted rules file, a missing base ref, an unknown option, a rules path
+outside the repository, a repository without an owner, a head snapshot
+without a base snapshot, and a process file without a review file. It also checks that the README gives the same synopsis, options, and
 defaults as the help, which it reads without child processes.
 `test/acceptance/script/pr-review-check-ratchet.test.ts` checks the MI rules
 of check 4 with snapshot files that the test writes under `ast-report/`:
@@ -1136,7 +1145,20 @@ that names the entry; with a past date the `FIX` stays and the expired entry
 is `FIX` too. It checks exit status 1 for a CRAP file of another commit, with
 the file and both commits, for a missing file, and for a row whose paths are
 a text. The complete report of `pr-review-check.test.ts` says that CRAP was
-not checked without `--crap`.
+not checked without `--crap`, and that the metrics step was not checked
+without `--process` and `--review`.
+`test/acceptance/script/pr-review-check-metrics.test.ts` checks the metrics
+step with a process file and a review file that the test writes under
+`ast-report/`: goal misses of the process and high findings on unchanged files
+only give no reason, the section counts the findings, and the note leaves only
+the step "Decision" manual; a high finding on a changed production file is
+`READ` with the file and the message, while a low finding there gives no
+reason and a high finding on a changed test file has a line without a reason;
+a failed Delta stage is `FIX` with each stage that did not complete, and the
+check does not read a review file that does not exist. It checks exit status
+1 for a process file or a review file of another commit, with the file and
+both commits, for a missing process file, for a process file with three
+stages, and for a review finding of another severity.
 
 The unit tests `test/unit/script/pr-review-*.test.ts` check the parts: the glob
 matcher with dot files (`globs`), the kind of each import statement in each
@@ -1152,9 +1174,16 @@ its report with the MI and CRAP sections (`result`), the MI rules with renames, 
 and exceptions (`ratchet`), the reader of the snapshot files and its
 diagnostics (`snapshots`), the reader of the exceptions file with its file
 and function entries, its dates, its cover, and its expiry (`exceptions`), the
-reader of the CRAP file and its diagnostics (`crap-rows`), and the CRAP goals
+reader of the CRAP file and its diagnostics (`crap-rows`), the CRAP goals
 with their bounds, the exact values at the goals, the rows that count, and
-the function entries (`crap`).
+the function entries (`crap`), the readers of the process file and the review
+file with their commits, their diagnostics, and the review file that is not
+read after a Review stage that did not complete (`metrics-files`), and the
+metrics step with the stages that did not complete, the goal misses, and the
+high findings on changed, renamed, test, and unchanged files (`metrics`). The
+rules reader also checks the optional locations of the two metrics files, and
+the result checks the Metrics section and the note that leaves only the step
+"Decision" manual.
 
 ```sh
 npm run build

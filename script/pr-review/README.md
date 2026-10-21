@@ -6,28 +6,34 @@ step "Run the check" of the section "Review route" of
 [rules file](../../docs/implementation/pr-review-rules.yaml). The
 [PR review playbook](../../docs/implementation/pr-review-playbook.md) explains
 the routes and the checks. Commit every file first, then take the two
-snapshots of check 4. After the metrics process has written its coverage
-report, also write the CRAP rows of check 4. Run the check from the repository
-root. No build is needed.
+snapshots of check 4. Run the metrics process with `--json`: it writes the
+coverage report, the stage outcomes, and the review findings. Then write the
+CRAP rows of check 4. Run the check from the repository root. No build is
+needed.
 
 ```sh
 pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main
 pnpm exec node script/code-quality/ast-metrics-snapshot.ts
+pnpm exec node script/code-quality/ast-metrics-process.ts --base origin/main --json ast-report/process.json
 pnpm exec node script/code-quality/ast-metrics-crap.ts --base origin/main --json ast-report/crap.json
 pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus \
   --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json \
-  --crap ast-report/crap.json
+  --crap ast-report/crap.json --process ast-report/process.json --review ast-report/review.json
 ```
+
+Give the metrics process the coverage option that the section "Code quality
+review with ast-metrics" of AGENTS.md selects. The process exits 1 for a goal
+miss, but it still writes the stage outcomes: the check reads them.
 
 The CRAP command exits 1 when a goal is missed or unknown, but it still writes
 the file: the check applies the goals. When it stops with a diagnostic, repair
 the cause. Give the CRAP command the same `--base` as the check: the check
 refuses a file whose `base` is not the merge base, because its rows would
 classify the functions against another tree. Before the metrics process, run
-the check without `--crap`.
+the check without `--crap`, `--process`, and `--review`.
 
 ```text
-Usage: pnpm exec node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--crap FILE] [--json] [--help]
+Usage: pnpm exec node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--crap FILE] [--process FILE --review FILE] [--json] [--help]
 
 Options:
   --base REF            Git ref to compare with (default: origin/main)
@@ -39,6 +45,8 @@ Options:
   --base-snapshot FILE  Snapshot of the merge base, relative to the current folder
   --head-snapshot FILE  Snapshot of HEAD, relative to the current folder
   --crap FILE           CRAP rows of HEAD, relative to the current folder
+  --process FILE        Stage outcomes of HEAD, relative to the current folder
+  --review FILE         Review findings of HEAD, relative to the current folder
   --json                Print one JSON object instead of Markdown
   --help, -h            Show this help
 ```
@@ -48,9 +56,10 @@ Exit status 0 means that the check computed a route, also when the route is
 the working tree has uncommitted changes and `--allow-dirty` is absent, or the
 folder is not a git repository. Or the base ref is missing, or the rules file
 at HEAD is missing, is not valid YAML, or has a key that is missing or wrong.
-Or a snapshot or the CRAP file cannot be read, is not valid, or is not of its
-commit, or the exceptions file is not valid. The diagnostic names the key, or
-the file and both commits.
+Or a snapshot, the CRAP file, or a metrics file cannot be read, is not valid,
+or is not of its commit, or the exceptions file is not valid. Or only one of
+`--process` and `--review` is given. The diagnostic names the key, or the file
+and both commits.
 
 ## The routes
 
@@ -59,9 +68,9 @@ every reason, not only the first.
 
 | Route | Meaning |
 | --- | --- |
-| `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. Or a new production file has a raw MI below the limit, or a new or changed function misses its CRAP goal, and no exception covers it. Or an exception entry of a changed path has expired. The author repairs the pull request or declares the fact. |
+| `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. Or a new production file has a raw MI below the limit, or a new or changed function misses its CRAP goal, and no exception covers it. Or an exception entry of a changed path has expired. Or a stage of the metrics process failed or is unavailable. The author repairs the pull request or declares the fact. |
 | `ASK` | A protected path, the rules file, a module of the public surface, or a contract document changed, or the pull request declares a fact. The architect answers the question of each matching group. |
-| `READ` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit or a function that misses its CRAP goal. The owner reads the diff before the merge. |
+| `READ` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit or a function that misses its CRAP goal. Or the review has a high finding on a changed production file. The owner reads the diff before the merge. |
 | `SHOW` | No other reason, and a file under `scopes.executable` changed. The owner skims the merged diff. |
 | `SHIP` | No reason. The pull request merges on green. |
 
@@ -154,11 +163,46 @@ change of the rules file is `ASK`.
   `change` of `new`, `changed`, `unchanged`, or `unknown`, and `paths` as a
   whole number, 0 or more. `share` is a number from 0 to 1, `crap` a finite
   number, and `identity` a text; each can be absent. The check uses `file`,
-  `function`, `change`, `paths`, and `share`. The `head` must be HEAD;
-  otherwise the check stops and names the file and both commits. The CRAP
-  command records HEAD also for uncommitted files, so commit first. The
-  check does not compare `base`; write the file with the same `--base` as
-  the check.
+  `function`, `change`, `paths`, and `share`. The `head` must be HEAD, and
+  the `base` must be the merge base; otherwise the check stops and names the
+  file and both commits. The CRAP command records HEAD also for uncommitted
+  files, so commit first, and write the file with the same `--base` as the
+  check.
+- Metrics: the step "Metrics" of the review route, with `--process` and
+  `--review`. Give both options or neither. A stage of the process file with
+  the status `failed` or `unavailable` is `FIX` `required_checks: <stage>
+  <status>`. A goal miss alone is no reason: the check applies the MI rules
+  and the CRAP goals itself. The check reads the review file only after a
+  completed Review stage, with the status `passed` or `goal miss`. Otherwise
+  the section says `findings not read: the Review stage did not complete`. A
+  finding of severity `high` whose `file` is a changed path under
+  `scopes.production` is `READ` `ratchet.review_findings: <file>: <message>`.
+  Both paths of a rename count. A high finding on a changed file outside
+  `scopes.production` has no rule: the section gives it as `outside
+  scopes.production: <file>: <message>`. A high finding on an unchanged file
+  is no reason: the section counts these as `<n> findings on unchanged files,
+  reason unchanged by this PR`. Medium and low findings are no reason, and
+  the section does not count them. The section "Metrics" gives each stage as
+  `<stage>: <status>`, then these lines. Without the two options, it says
+  `not checked: give --process and --review`.
+- Metrics files: each option names a file relative to the current folder.
+  The process file is the JSON of
+  `script/code-quality/ast-metrics-process.ts --json FILE`. It must have
+  `version` 1, a `base` text, a `head` text, and an `outcomes` list of the
+  four stages `Delta`, `Review`, `CRAP`, and `Architecture` in this order.
+  Each outcome needs its `name`, a `status` of `passed`, `goal miss`,
+  `failed`, or `unavailable`, and a `text`. The review file is
+  `ast-report/review.json`, which the review stage of the process writes. It
+  must have a `headSha` text and a `regressions` list. Each regression needs a
+  `severity` of `high`, `medium`, or `low`, and a non-empty `file` and
+  `message`; the check ignores the other fields. The `head` of the process
+  file and the `headSha` of the review file must be HEAD; otherwise the check
+  stops and names the file and both commits. The check compares no base. The
+  process keeps `origin/main` as its base also for a stacked pull request, and
+  the review compares with the tip of its base ref. The keys
+  `ratchet.process_outcomes` and `ratchet.review_findings` of the rules file
+  give the default locations of the two files. Each is optional; when present,
+  it must be a non-empty text.
 - Snapshots: each option names a file relative to the current folder. Each
   file must be JSON with `version` 1 and a `files` list. Each file entry has
   a `path` text and an optional finite `maintainabilityRaw`; the check ignores
@@ -181,8 +225,9 @@ change of the rules file is `ASK`.
   covered unit stays a `READ` reason that names the entry. An entry that
   expired before today is `FIX` when its path, or the file of its function,
   changed. A change to the file is `READ` through `read_paths`.
-- Route: the first route with a reason. The check does not run the required
-  checks; a failed required check is `FIX`, as the step "Route" says.
+- Route: the first route with a reason. The check runs no required check. It
+  reads the stages of the metrics process with `--process`; another failed
+  required check is `FIX`, as the step "Route" says.
 - Record: the Markdown section "Review route" for the pull request
   description, or one JSON object with `--json`, and the label command.
 
@@ -197,9 +242,11 @@ them.
 - "Declare or remove facts": remove each fact under "Facts to declare", or
   declare it under the key that the entry names. Compare the declarations of
   each module under "Surface differences".
-- "Metrics": take the final report of the process "Code quality review with
-  ast-metrics" in AGENTS.md. A kept high finding on a changed file is a reason
-  for `READ`. The check applies the MI rules and the CRAP goals.
+- "Metrics": after the final report of the process "Code quality review with
+  ast-metrics" in AGENTS.md, run the check with `--process` and `--review`, and
+  read its reasons. The check applies the MI rules, the CRAP goals, the stages
+  of the process, and the high findings of the review. A note says when this
+  step stays with you.
 - "Decision": for `ASK`, write the draft decision in the section "Review route"
   of the pull request description. Answer the question of each matching group,
   and state the guarantee that holds after the change.
@@ -219,7 +266,9 @@ reasons; `globs.ts` matches the patterns. `snapshots.ts` reads the two
 snapshot files, `exceptions.ts` reads the exceptions file and finds the entry
 that covers a unit, `exception-entries.ts` checks each entry, and `ratchet.ts`
 applies the MI rules. `crap-rows.ts` reads the CRAP file, and `crap.ts`
-applies the CRAP goals. `analysis.ts` and `result.ts` collect
+applies the CRAP goals. `metrics-files.ts` reads the process file and the
+review file, and `metrics.ts` applies the metrics step. `analysis.ts` and
+`result.ts` collect
 the reasons, and `route.ts` and `report.ts` give the route, the label command,
 and the record.
 

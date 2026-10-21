@@ -28,6 +28,7 @@ test('Given a branch that changes only a document, when the check runs, then the
     'Tests:', '- Added test cases: 0', '- Removed test cases: 0', '- Added skips or todos: none', '',
     'MI:', '- not checked: give --base-snapshot and --head-snapshot', '',
     'CRAP:', '- not checked: give --crap', '',
+    'Metrics:', '- not checked: give --process and --review', '',
     'Facts to declare:', '- none', '',
     'Declared facts:', '- none', '',
     'Surface differences:', '- none', '',

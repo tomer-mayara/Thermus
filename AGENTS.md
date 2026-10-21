@@ -113,10 +113,11 @@ The route does not change who merges.
 In this trial, this section governs where it differs from the rules file.
 The check applies the keys `protected_paths`, `read_paths`, `scopes`,
 `public_surface`, `dependency_graph`, `size`,
-`ratchet.maintainability_index`, and the two goals of `ratchet.crap`. It also
-reads the exceptions file. The keys `required_checks`, the other keys of
-`ratchet`, `calibration`, and the merge keys of `routes` wait for CI and the
-later checks; do not apply them by hand.
+`ratchet.maintainability_index`, the two goals of `ratchet.crap`, and
+`ratchet.review_findings`. It also reads the exceptions file and the stages of
+the metrics process. The keys `required_checks`, the other keys of `ratchet`,
+`calibration`, and the merge keys of `routes` wait for CI and the later
+checks; do not apply them by hand.
 
 Do steps 1 and 2 when you open the draft, and again after each change to the
 candidate. Do steps 3 to 6 after the final metrics report and before Ready.
@@ -129,20 +130,24 @@ candidate.
    `pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main`
    writes `ast-report/snapshot-base.json`.
    `pnpm exec node script/code-quality/ast-metrics-snapshot.ts` writes
-   `ast-report/snapshot.json`. The CRAP rows need the coverage report of the
-   metrics process (below). After that process, run
+   `ast-report/snapshot.json`. The CRAP rows and the metrics step need the
+   metrics process (below). Run it with `--json ast-report/process.json`:
+   `pnpm exec node script/code-quality/ast-metrics-process.ts --base origin/main --json ast-report/process.json`,
+   with the coverage option of its step 2. It writes the stage outcomes to
+   `ast-report/process.json` and the review findings to
+   `ast-report/review.json`. After that process, run
    `pnpm exec node script/code-quality/ast-metrics-crap.ts --base origin/main --json ast-report/crap.json`.
    It exits 1 when a goal is missed or unknown, but it writes the file: the
    check applies the goals. Then run
-   `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json --crap ast-report/crap.json`.
-   Before the metrics process, leave out `--crap`.
-   The check compares HEAD with the merge base. It reads the rules file of
-   the merge base and the facts that HEAD declares. It prints the route,
-   every reason, the questions for `ASK`, the changed paths, the line counts,
-   the test counts, the MI of the changed production files, the CRAP goals of
-   their new and changed functions, the facts to declare, the modules to
-   compare, and the label command. Exit status 1 means that the check could
-   not run: repair the cause.
+   `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json --crap ast-report/crap.json --process ast-report/process.json --review ast-report/review.json`.
+   Before the metrics process, leave out `--crap`, `--process`, and
+   `--review`. The check compares HEAD with the merge base. It reads the
+   rules file of the merge base and the facts that HEAD declares. It prints
+   the route, every reason, the questions for `ASK`, the changed paths, the
+   line counts, the test counts, the MI of the changed production files, the
+   CRAP goals of their new and changed functions, the metrics step, the facts
+   to declare, the modules to compare, and the label command. Exit status 1
+   means that the check could not run: repair the cause.
 2. **Declare or remove facts.** For each entry under "Facts to declare",
    remove the fact, for example by an import through a module that
    `public_surface` lists, or declare it in the rules file in the same pull
@@ -152,20 +157,22 @@ candidate.
    remove the import. For each module under "Surface differences", compare
    its exported declarations before and after the change, and describe the
    difference in the decision. Run the check again.
-3. **Metrics.** Use the final report of the process "Code quality review with
-   ast-metrics" below. A kept high finding on a changed file is a reason for
-   `READ`. A finding with the reason `unchanged by this PR` is not. The check
-   applies the MI rules and the CRAP goals.
+3. **Metrics.** After the final metrics report, run the check of step 1 with
+   `--process` and `--review`. Read its reasons. A kept high finding on a
+   changed production file is `READ`. A failed or unavailable stage of the
+   process is `FIX`. A finding with the reason `unchanged by this PR` is not a
+   reason. A goal miss alone is not a reason: the check applies the MI rules
+   and the CRAP goals.
 4. **Route.** A required check is a required run of the test gate policy, or
    habit-hooks. While one fails, the route is `FIX`. Do not mark a `FIX`
    pull request Ready: make the check pass, then run the check again. In
-   every other case, the route of the check applies, raised to `READ` by a
-   metric reason of step 3. Keep every reason, not only the first.
-5. **Record.** Paste the output of the check into a section "Review route" of
-   the pull request description. Add the metric reasons of step 3. Set the
-   label with the printed command. The labels `route:fix`, `route:ask`,
-   `route:read`, `route:show`, and `route:ship` exist in the repository.
-   Update the section and the label after each change to the candidate.
+   every other case, the route of the check of step 3 applies. Keep every
+   reason, not only the first.
+5. **Record.** Paste the output of the check of step 3 into a section "Review
+   route" of the pull request description. Set the label with the printed
+   command. The labels `route:fix`, `route:ask`, `route:read`, `route:show`,
+   and `route:ship` exist in the repository. Update the section and the label
+   after each change to the candidate.
 6. **Decision.** For `ASK`, write the draft decision in the "Review route"
    section. Answer the question of each matching group of `protected_paths`.
    State the guarantee that holds after the change. The owner decides
@@ -185,9 +192,10 @@ the commands, their reports, the configuration, and the limits of the tool.
    complete candidate, as the test gate policy says. A command of this process
    must not start a suite outside that selection. Use the same base for
    every comparison.
-2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts` and read
-   `ast-report/process.md`. The report has four sections: delta, review,
-   CRAP, and architecture. Choose the coverage option from the test
+2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts --json ast-report/process.json`
+   and read `ast-report/process.md`. The report has four sections: delta,
+   review, CRAP, and architecture. The review route check reads
+   `ast-report/process.json`. Choose the coverage option from the test
    selection:
    - A file under `src/` changed: add `--collect-coverage`, unless a
      compatible report exists. Record the test selection in the pull

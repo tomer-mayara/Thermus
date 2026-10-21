@@ -11,6 +11,13 @@ import { baseDoublesOnPath, baseRepository } from './ast-metrics-snapshot-base.t
 import type { GitRepository } from './git-repository.ts';
 
 export const noFinding = '## AST Metrics review\n\nNo new or worsened finding.\n';
+
+export interface ProcessJson {
+  readonly version: number;
+  readonly base: string;
+  readonly head: string;
+  readonly outcomes: readonly { readonly name: string; readonly status: string; readonly text: string }[];
+}
 export const missingCoverage = 'No coverage report: the bands are withheld. Run the coverage command when the test selection permits it.';
 
 export function processFixture(t: TestContext, answers: AstMetricsCliAnswers = {}) {
@@ -67,4 +74,12 @@ function documentTrendMarkdown(commit: string, date: string): string[] {
     '| auth | MI 70.4; functions ≥ 30: – | MI 70.4; functions ≥ 30: – |',
     '| kernel | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – |', '',
   ];
+}
+
+export function reportOfOutcomes(outcomes: ProcessJson['outcomes']): string {
+  const sections = outcomes.map(({ name, status, text }) => {
+    const content = text.endsWith('\n') ? text : `${text}\n`;
+    return `## ${name}\n\nStatus: ${status}.\n\n${name === 'Delta' ? `\`\`\`text\n${content}\`\`\`\n` : content}`;
+  });
+  return `# Code quality process\n\n${sections.join('\n')}`;
 }

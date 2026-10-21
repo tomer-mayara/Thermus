@@ -44,6 +44,7 @@ export interface CheckResult {
   readonly tests: { readonly added: number; readonly removed: number; readonly skippedOrTodo: readonly string[] };
   readonly mi: readonly string[];
   readonly crap: readonly string[];
+  readonly metrics: readonly string[];
   readonly factsToDeclare: readonly Declaration[];
   readonly declaredFacts: readonly Declaration[];
   readonly surfaceDifferences: readonly string[];

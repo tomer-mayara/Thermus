@@ -22,6 +22,8 @@ for (const [name, rules, diagnostic] of [
     `${atHead} has no valid key ratchet.maintainability_index.new_file_below: give a whole number, 0 or more.\n`],
   ['with a CRAP goal of 10 for a new function', rulesYaml(({ ratchet }) => { ratchet.crap.new_function_above = 10; }),
     `${atHead} has no valid key ratchet.crap.new_function_above: give 15; the check supports the goals 15 and 30 only.\n`],
+  ['with a number as the location of the review findings', rulesYaml(({ ratchet }) => { Object.assign(ratchet, { review_findings: 42 }); }),
+    `${atHead} has no valid key ratchet.review_findings: give a non-empty text, or leave it out.\n`],
 ] as const) {
   test(`Given a rules file ${name}, when the check runs, then it exits 1 and names the key`, { timeout }, async (t) => {
     const repository = GitRepository.onFeatureBranch(t, mainFiles(rules));
@@ -74,6 +76,7 @@ for (const [name, args, diagnostic] of [
   ['a rules path outside the repository', ['--rules', 'docs/../../rules.yaml'], 'The --rules value must name a file of the repository, relative to its root.'],
   ['a repository without an owner', ['--repo', 'Thermus'], 'The --repo value must have the form OWNER/NAME.'],
   ['a head snapshot without a base snapshot', ['--head-snapshot', 'ast-report/snapshot.json'], 'Give both --base-snapshot and --head-snapshot, or neither.'],
+  ['a process file without a review file', ['--process', 'ast-report/process.json'], 'Give both --process and --review, or neither.'],
 ] as const) {
   test(`Given ${name}, when the check runs, then it exits 1 with a diagnostic before it reads git`, { timeout }, async (t) => {
     const result = await runScript(t, prReviewCheckScript, { args, env: { PATH: '' } });

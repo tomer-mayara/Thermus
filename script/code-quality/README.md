@@ -830,7 +830,7 @@ policy scope.
 ## Run the complete review process
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-process.ts [--base REF] [--coverage FILE] [--collect-coverage | --skip-coverage] [--out FILE] [--allow-tool-version] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-process.ts [--base REF] [--coverage FILE] [--collect-coverage | --skip-coverage] [--out FILE] [--json FILE] [--allow-tool-version] [--help]
 
 Options:
   --base REF            Comparison ref (default: origin/main)
@@ -838,6 +838,7 @@ Options:
   --collect-coverage    Explicitly build and collect the complete unit suite once
   --skip-coverage       Ignore all coverage and render structure without bands
   --out FILE            Save Markdown (default: ast-report/process.md at root)
+  --json FILE           Also write the stage outcomes as JSON to FILE
   --allow-tool-version  Allow an installed version other than the pinned version
   --help, -h            Show this help
 ```
@@ -872,6 +873,18 @@ read-only without `--record`.
 Exit 0 requires completed passing assessments. Goal misses, unresolved
 required data, invalid options, tool failures, and recording failures exit 1.
 Approved exceptions do not change these results or excuse tool failures.
+
+With `--json`, the command also writes one JSON object to `FILE`. It has
+`version` 1, `base` (the merge base of REF and HEAD), `head` (HEAD), and
+`outcomes`. The outcomes are the four stages in order. Each has `name`,
+`status`, and `text`, as the report gives them. A name is `Delta`, `Review`,
+`CRAP`, or `Architecture`. A status is `passed`, `goal miss`, `failed`, or
+`unavailable`. The command writes the file also after a goal miss or a failed
+stage. The Markdown, the exit status, and the history record do not change.
+After a diagnostic, it writes no file, so an older file can stay. The
+[review route check](../pr-review/README.md) reads the file with `--process`.
+Write it under `ast-report/`, as `ast-report/process.json`: a file in another
+folder of the repository can change the input identity of the coverage report.
 
 Focused tests: affected `ast-metrics-process*.test.ts` and
 `ast-metrics-stage-outcomes.test.ts` rows in the
@@ -1042,6 +1055,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-process-json.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-review-policy.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
