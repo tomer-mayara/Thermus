@@ -1,7 +1,5 @@
 import type { HostedMfaPolicy } from './mfa-profile.ts';
 import { WorkOS } from '@workos-inc/node';
-import { browserSessionIssuer } from '../../../src/accounts/providers/workos/workos-settings.ts';
-import { hostedRolePermissions } from '../fixtures/hosted-roles.ts';
 
 export interface HostedLiveSettings {
   readonly mfaPolicy: HostedMfaPolicy;
@@ -20,21 +18,7 @@ export const initiateLoginUri = `${localOrigin}/login`;
 export const connectRedirectUri = 'http://127.0.0.1:46480/callback';
 export const connectScope = 'openid profile email offline_access';
 
-const applicationPermissions: readonly string[] = Object.values(hostedRolePermissions).flat();
-
 export function workosClient({ apiKey, clientId }: HostedLiveSettings): WorkOS {
   // No retry and a short timeout: a live failure shows at once, in the proof that caused it.
   return new WorkOS({ apiKey, clientId, maxRetries: 0, timeout: requestTimeout });
-}
-
-export function browserIssuer({ clientId }: HostedLiveSettings): string {
-  return browserSessionIssuer(clientId);
-}
-
-export function authkitKeySetUrl(issuer: string): string {
-  return `${issuer}/oauth2/jwks`;
-}
-
-export function applicationPermissionsOf(permissions: readonly string[]): string[] {
-  return permissions.filter((permission) => applicationPermissions.includes(permission)).toSorted();
 }

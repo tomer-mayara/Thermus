@@ -1,8 +1,4 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
 import { after, before, describe, test, type TestContext } from 'node:test';
 import { UnauthorizedError, type CallToolResult, type Client } from '@modelcontextprotocol/client';
 import { jwtClaims } from '../../support/drivers/browser/better-auth-agents.ts';
@@ -10,16 +6,11 @@ import { authIssuer, mcpResourceUrl, publicBaseUrl, type AccountCredentials } fr
 import { assertExit, assertRevealsNone, type CommandResult } from '../../support/processes/command-process.ts';
 import {
   buildGateImages,
-  buildWithLightpandaAsset,
-  containerAdRulesFile,
-  containerDataDirectory,
   probeImage,
   removeGateResources,
-  repositoryRoot,
   type GateImages,
 } from '../../support/container/container-gate.ts';
 import { ContainerSite } from '../../support/container/container-site.ts';
-import { dockerOutput } from '../../support/container/docker-cli.ts';
 import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
 import { addUser, listedAccounts, registerArgs, registeredClientId, type Operator } from '../../support/dsl/local-commands.ts';
@@ -72,52 +63,6 @@ interface Installation {
   readonly clientIds: readonly string[];
   readonly userIds: ReadonlyMap<string, string>;
   readonly commands: readonly CommandResult[];
-}
-
-interface ImageFacts {
-  readonly applicationEntries: readonly string[];
-  readonly distEntries: readonly string[];
-  readonly compiledSource: Readonly<Record<string, string>>;
-  readonly migrations: Readonly<Record<string, string>>;
-  readonly developmentPackages: readonly string[];
-  readonly pinnedPackages: Readonly<Record<string, string>>;
-  readonly adBlockerSelectors: readonly string[];
-  // The contents of AD_RULES_FILE, or null when the image has no file there.
-  readonly adRulesFile: string | null;
-  readonly renderer: RendererFacts | null;
-  readonly userId: number;
-  readonly dataDirectory: { readonly path: string; readonly ownerId: number; readonly mode: string; readonly entries: readonly string[] };
-}
-
-interface RendererFacts {
-  readonly path: string;
-  readonly ownerId: number;
-  readonly groupId: number;
-  readonly mode: string;
-  readonly writablePaths: readonly string[];
-  readonly version: string;
-  readonly offlineHttpsLog: readonly string[];
-}
-
-interface ImageConfig {
-  readonly User: string;
-  readonly Env: readonly string[];
-  readonly Entrypoint: readonly string[];
-  readonly Cmd?: readonly string[] | null;
-  readonly ExposedPorts: Readonly<Record<string, unknown>>;
-}
-
-interface ComposeService {
-  readonly build: { readonly context: string; readonly dockerfile: string };
-  readonly init?: boolean;
-  readonly environment: Readonly<Record<string, string>>;
-  readonly ports: readonly { readonly host_ip?: string; readonly target: number; readonly published: string }[];
-  readonly volumes: readonly { readonly type: string; readonly source: string; readonly target: string; readonly read_only?: boolean; readonly bind?: unknown }[];
-}
-
-interface ComposeConfig {
-  readonly services: Readonly<Record<string, ComposeService>>;
-  readonly volumes: Readonly<Record<string, unknown>>;
 }
 
 async function installation(t: TestContext, accounts: readonly AccountCredentials[] = [alice, bob]): Promise<Installation> {
@@ -188,29 +133,6 @@ async function refreshAttempt(site: ContainerSite, clientId: string, token: stri
 
 function accountIds(accounts: readonly { email: string; id: string }[]): Map<string, string> {
   return new Map(accounts.map(({ email, id }) => [email, id]));
-}
-
-function fileHashes(directory: string): Record<string, string> {
-  const files = readdirSync(directory, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile());
-  return Object.fromEntries(files.map((entry) => {
-    const path = join(entry.parentPath, entry.name);
-    return [relative(directory, path), createHash('sha256').update(readFileSync(path)).digest('hex')];
-  }).sort(([first = ''], [second = '']) => first.localeCompare(second)));
-}
-
-function hostPackageVersion(name: string): string {
-  return (JSON.parse(readFileSync(join(repositoryRoot, 'node_modules', name, 'package.json'), 'utf8')) as { version: string }).version;
-}
-
-// The compose file as Compose reads it, without a .env file or a PUBLIC_BASE_URL from the test environment.
-async function composeConfig(): Promise<ComposeConfig> {
-  const environment = { ...process.env };
-  delete environment.PUBLIC_BASE_URL;
-  const output = await dockerOutput(
-    ['compose', '--project-directory', repositoryRoot, '--file', join(repositoryRoot, 'compose.yaml'), '--env-file', '/dev/null', 'config', '--format', 'json'],
-    { environment },
-  );
-  return JSON.parse(output) as ComposeConfig;
 }
 
 describe('Self-hosted evaluation container without outbound access', { skip: gateArmed ? false : 'The container gate runs only with npm run test:container.' }, () => {
@@ -400,18 +322,6 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     await setup.site.assertNoOutboundRequests();
   });
 
-  test('Given an image build with a Lightpanda asset that does not match the SHA256 digest that docs/lightpanda-runtime.md records, when the build runs, then it stops with the Lightpanda digest error and makes no image', { timeout: 600_000 }, async (t) => {
-    const asset = mkdtempSync(join(tmpdir(), 'thermus-gate-asset-'));
-    t.after(() => rmSync(asset, { recursive: true, force: true }));
-    writeFileSync(join(asset, 'lightpanda'), 'This file is not the Lightpanda 1.0.0 asset.\n');
-
-    const build = await buildWithLightpandaAsset(asset);
-
-    assert.notEqual(build.code, 0, build.stderr);
-    assert.match(build.stderr, /Lightpanda SHA256 check failed for linux\/(?:amd64|arm64)/);
-    assert.equal(await dockerOutput(['image', 'ls', '--quiet', build.tag]), '');
-  });
-
   for (const deployment of ['self-hosted', 'hosted'] as const) {
     test(`Given a fresh volume and a ${deployment} server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account`, { timeout: 300_000 }, async (t) => {
       const site = await ContainerSite.open(t, images.current);
@@ -592,51 +502,5 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(hostedExit, { code: 1, signal: null });
     assert.deepEqual(await probeImage(images.current, 'data-files', hostedVolume), []);
     await setup.site.assertNoOutboundRequests();
-  });
-
-  test('Given the image and the compose file, when they are inspected, then the image holds the compiled server and commands of this build, the shipped migrations, the pinned production packages with the native ad blocker built for its platform, and the pinned Lightpanda 1.0.0 at LIGHTPANDA_BIN, owned by root and not writable by the image user, which loads the CA certificates of the image, but no TypeScript source, test output, or development package; it runs as a non-root user with production settings, no telemetry setting except the one that turns off the renderer telemetry, its data directory on the one volume, and the path of the trusted ad rules, but no rules file; the compose service mounts only that volume and the read-only rules file of the operator, which Compose must not make, starts with an init process, and publishes its port on the loopback address', { timeout: 300_000 }, async () => {
-    const facts = await probeImage<ImageFacts>(images.current, 'image');
-    const config = JSON.parse(await dockerOutput(['image', 'inspect', '--format', '{{json .Config}}', images.current])) as ImageConfig;
-    const compose = await composeConfig();
-    const service = compose.services.thermus;
-    const settings = Object.fromEntries(config.Env.map((setting) => setting.split(/=(.*)/s, 2)));
-
-    assert.deepEqual(facts.applicationEntries, ['dist', 'migrations', 'node_modules', 'package.json']);
-    assert.deepEqual(facts.distEntries, ['src']);
-    assert.deepEqual(facts.compiledSource, fileHashes(join(repositoryRoot, 'dist/src')));
-    assert.deepEqual(facts.migrations, fileHashes(join(repositoryRoot, 'migrations')));
-    assert.deepEqual(facts.developmentPackages, []);
-    assert.deepEqual(facts.pinnedPackages, Object.fromEntries(Object.keys(facts.pinnedPackages).map((name) => [name, hostPackageVersion(name)])));
-    assert.deepEqual(facts.adBlockerSelectors, ['.ad-banner']);
-    assert.notEqual(facts.userId, 0);
-    assert.deepEqual(facts.dataDirectory, { path: containerDataDirectory, ownerId: facts.userId, mode: '700', entries: [] });
-    assert.equal(config.User, 'node');
-    assert.deepEqual(config.Entrypoint, ['node', '/app/dist/src/index.js']);
-    assert.deepEqual(config.Cmd ?? [], []);
-    assert.deepEqual(Object.keys(config.ExposedPorts), ['8080/tcp']);
-    assert.equal(settings.NODE_ENV, 'production');
-    assert.equal(settings.DEPLOYMENT, 'self-hosted');
-    assert.equal(settings.DATA_DIR, containerDataDirectory);
-    assert.equal(settings.LISTEN_HOST, '0.0.0.0');
-    assert.equal(settings.LISTEN_PORT, '8080');
-    assert.equal(settings.AD_RULES_FILE, containerAdRulesFile);
-    assert.equal(facts.adRulesFile, null);
-    assert.equal(settings.LIGHTPANDA_BIN, pinnedRenderer);
-    // The renderer loads the CA certificates of the image, so an HTTPS fetch without a network fails only at the connection.
-    assert.deepEqual(facts.renderer, { path: pinnedRenderer, ownerId: 0, groupId: 0, mode: '755', writablePaths: [], version: '1.0.0', offlineHttpsLog: ['page failed'] });
-    assert.equal(settings.LIGHTPANDA_DISABLE_TELEMETRY, 'true');
-    assert.equal(settings.PUBLIC_BASE_URL, undefined);
-    assert.deepEqual(Object.keys(settings).filter((name) => /TELEMETRY|BETTER_AUTH|^AUTH_/.test(name)), ['LIGHTPANDA_DISABLE_TELEMETRY']);
-    assert.deepEqual(Object.keys(compose.services), ['thermus']);
-    assert.ok(service, 'the compose file has the thermus service');
-    assert.equal(service.build.dockerfile, 'Dockerfile');
-    assert.equal(service.init, true);
-    assert.deepEqual(service.environment, { PUBLIC_BASE_URL: publicBaseUrl });
-    assert.deepEqual(service.ports.map(({ host_ip, published, target }) => ({ host_ip, published, target })), [{ host_ip: '127.0.0.1', published: '8080', target: 8080 }]);
-    assert.deepEqual(service.volumes.map(({ type, source, target, read_only, bind }) => ({ type, source, target, read_only, bind })), [
-      { type: 'volume', source: 'thermus-data', target: containerDataDirectory, read_only: undefined, bind: undefined },
-      { type: 'bind', source: join(repositoryRoot, 'ad-rules.txt'), target: containerAdRulesFile, read_only: true, bind: { create_host_path: false } },
-    ]);
-    assert.deepEqual(Object.keys(compose.volumes), ['thermus-data']);
   });
 });

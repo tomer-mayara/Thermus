@@ -60,8 +60,7 @@ function directImportRules(paths, message) {
 const testLayout = 'docs/testing/test-code-layout.md';
 const testTypes = ['unit', 'integration', 'interface', 'acceptance'];
 const otherUnitPackageFixtures = '(?:\\.\\./)+(?:test/unit/)?(?!support/)[a-z-]+/fixtures/';
-// Rule D6 covers each script that runs alone in a container. test-support-boundaries.test.ts takes the scripts that
-// the sites send into containers from module-paths.ts, and it fails when this list does not name one of them.
+// Rule D6 covers each script that runs alone in a container.
 const containerScripts = [
   'test/support/container/container-edge.ts',
   'test/support/container/container-page.ts',
@@ -210,7 +209,7 @@ export default [
         {
           selector: 'Program',
           message: `Rule D7 of ${testLayout}: no test file lives under test/support/. `
-            + 'The tests of support code live in test/unit/test-support/.',
+            + 'Tests of src components live in the test-type folders.',
         },
       ],
     },

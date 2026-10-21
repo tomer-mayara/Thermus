@@ -36,8 +36,7 @@ initialization must also match the checked CLI version, even with an
 override. A mismatch gives `ast-metrics <v> is not the pinned
 <p>; run with --allow-tool-version to continue.` Pass `--allow-tool-version`
 to the outer command to permit another actual version throughout that run.
-The override does not change the pin. A pin change needs the applicable live
-contracts and fixture review.
+The override does not change the pin. Check tool compatibility when the pin changes.
 
 Help and offline architecture rendering start no tool and check no installed
 version. Coverage collection does not invoke ast-metrics and has no tool
@@ -49,8 +48,7 @@ them from the repository root with `pnpm exec node`.
 The ten entry points and their helper folders are in
 [`script/code-quality/`](../../script/code-quality/README.md). That README explains
 CRAP before the command sections, which follow the review process order. It
-lists each command's synopsis, options and defaults, output, exits, and focused
-tests. Use these wrappers for the review process. The process wrapper composes
+lists each command's synopsis, options and defaults, output, and exits. Use these wrappers for the review process. The process wrapper composes
 the complete review.
 The baseline wrapper reports counts for an allowed refresh. Shared helpers
 handle repeated argument and limit checks, JSON file reads, and UTF-16 text
@@ -64,17 +62,12 @@ commands. Only a change under `src/` requires the full ordinary suite
 (`npm test`) and the remaining static and build checks in that policy.
 Do not add `npm run check`, which would repeat unit and portal tests.
 For other changes, run only affected test groups and existing focused tests.
-The existing `script-readme.test.ts` contract checks command help and both test
-inventories. Changes to documented help contracts or either test inventory
-select that focused contract. They do not select listed commands, live
-collectors, or a complete suite. See the
-[focused command](test-gate-policy.md#select-by-changed-path).
 The delta, review, snapshot, and architecture commands do not run tests.
 Run the process command for every pull request; the individual commands
 remain available for inspection and improvement passes.
 
 By default, the coverage command runs both parts of the unit suite: emitted Node tests
-and source portal tests. Run it, or its live test, only when `src/` changed
+and source portal tests. Run it only when `src/` changed
 or both complete parts were already selected. A focused unit package or a
 script change alone does not select both complete parts. Reuse a current
 valid report when available; otherwise, a review outside that scope uses
@@ -85,35 +78,6 @@ acceptance coverage. Each complete requested group must already be selected
 under the test gate policy. A flag does not grant that scope. The process
 wrapper still collects only the default unit group. See the coverage section
 for package selections, capture identities, and child-process limits.
-The separate `ast-metrics-architecture-coverage.live.ts` has the same
-restriction. It collects both complete unit parts and passes its private
-report with `--coverage`. `ast-metrics-architecture.live.ts` is structural
-only: it uses `--no-coverage` and starts no suite. Both collectors assert
-that the default coverage report stays unchanged. Both architecture files
-use private trend stores. Structural architecture checks worktree cleanup.
-
-Live contracts use repository invariants rather than fixed community, cycle,
-or file counts. Snapshot checks the shared kernel, unique labels, source
-members, valid community and cycle references, positive file and function
-counts, HEAD, deadlines, and cleanup. It also checks unique normalized source
-dependency pairs and the literal dynamic import in `application.ts`.
-Structural architecture checks equal metrics, every reported community,
-each populated source folder component, and both complete graphs and legends. MCP
-checks the function table without requiring an incidental function name.
-Coverage retains the explicit proof that portal unit tests call
-`initializePortal`.
-
-MCP, snapshot, and both architecture live files need ast-metrics on PATH and
-skip when it is absent. The coverage live file needs no ast-metrics. A skip
-or a deferred collector is not a pass. Command and double changes select
-only affected focused and live contracts. The
-[policy mapping and safe commands](test-gate-policy.md#ast-metrics-focused-and-live-contracts)
-show the module areas and the structural and collecting runs. A slice that
-changes only dedicated live files and documents can run MCP, snapshot,
-structural architecture, and
-the existing focused README contract after a build. It defers both collectors
-and adds no complete suite. A build only prepares emitted test files.
-
 ### Run the complete process: `script/code-quality/ast-metrics-process.ts`
 
 ```sh
@@ -210,7 +174,7 @@ without a measurement:
 ```
   41.4  src/interfaces/user-portal/connection-guide.ts  below 85
   91.0  src/runtime/http/server.ts
-  42.9  test/acceptance/script/ast-metrics-delta.test.ts  no goal
+  42.9  test/acceptance/mcp/http-fetch.test.ts  no goal
   not measured  src/types.d.ts
 Result: 1 of 2 production files below 85. Goal: 85 or more for each production file. 1 other file without a goal. 1 file not measured.
 Comparison with origin/main: ast-report/compare.html

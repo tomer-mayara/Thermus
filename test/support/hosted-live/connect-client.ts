@@ -78,10 +78,6 @@ export function exchangeConnectCode(issuer: string, clientId: string, grant: Cod
   return requestTokens(issuer, { grant_type: 'authorization_code', code, redirect_uri: connectRedirectUri, client_id: clientId, code_verifier: verifier, resource });
 }
 
-export function refreshConnectTokens(issuer: string, clientId: string, grant: { readonly refreshToken: string; readonly resource?: string }): Promise<TokenAnswer> {
-  return requestTokens(issuer, { grant_type: 'refresh_token', refresh_token: grant.refreshToken, client_id: clientId, resource: grant.resource });
-}
-
 export function requestMachineTokens(issuer: string, client: ClientCredentials, resource?: string): Promise<TokenAnswer> {
   return requestTokens(issuer, { grant_type: 'client_credentials', client_id: client.clientId, client_secret: client.clientSecret, resource });
 }

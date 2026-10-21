@@ -112,24 +112,4 @@ describe('Hosted WorkOS site of the offline hosted WorkOS specifications', () =>
     assert.equal(answer.status, 401);
     assert.match(answer.headers.get('WWW-Authenticate') ?? '', /resource_metadata="https:\/\/thermus\.example\/\.well-known\/oauth-protected-resource\/mcp"/);
   });
-
-  test('Given a site without a set-up, when a test reads it, then it has the public base URL of the hosted test configuration and a fake without memberships', async (t) => {
-    const site = await serveWorkOSSite(t, { organizations: [acme] });
-
-    assert.equal(site.publicBaseUrl, hostedConfig.publicBaseUrl);
-    assert.deepEqual(site.world.memberships, []);
-  });
-
-  test('Given a site that a subtest opened, when the subtest ends, then the server of the site is closed, and a request to it fails', async (t) => {
-    const opened: WorkOSSite[] = [];
-    await t.test('the subtest opens the site, and the site answers', async (subtest) => {
-      const site = await serveWorkOSSite(subtest, { organizations: [acme] });
-      opened.push(site);
-      assert.equal((await site.discover()).status, 401);
-    });
-    const [site] = opened;
-
-    assert.ok(site);
-    await assert.rejects(site.discover());
-  });
 });

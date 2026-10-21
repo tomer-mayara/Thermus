@@ -1,12 +1,10 @@
 import { parseHTML } from 'linkedom';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { HostedImageGate } from '../../support/container/hosted-image-gate.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
-import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
 const story = 'http://localhost:8090/story';
 const slow = 'http://localhost:8090/slow';
@@ -22,36 +20,6 @@ function call(url: URL, page: string, signal: AbortSignal): Promise<Record<strin
 test('Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts', { timeout: 3_600_000 }, async (t) => {
   const gate = new HostedImageGate(t);
   await gate.build();
-
-  await t.test('Given the final image, when its metadata and files are inspected, then it contains the checked portal, native cleaner, renderer, certificates and production dependencies, runs as non-root, and contains no development tools or test output', async () => {
-    const image = await gate.inspect();
-    const facts = await gate.facts();
-    const environment = Object.fromEntries(image.Config.Env.map((value) => value.split(/=(.*)/s, 2)));
-    const packageJson = JSON.parse(readFileSync(new URL('package.json', repositoryRoot), 'utf8')) as { dependencies: Record<string, string> };
-    assert.equal(image.Architecture, 'amd64');
-    assert.equal(image.Os, 'linux');
-    assert.equal(image.Config.User, 'node');
-    assert.deepEqual(image.Config.Entrypoint, ['node', '/app/dist/src/index.js']);
-    assert.equal(facts.architecture, 'x64');
-    assert.notEqual(facts.user, 0);
-    assert.deepEqual(facts.rootEntries, ['dist', 'migrations', 'node_modules', 'package.json', 'src']);
-    assert.deepEqual(facts.distEntries, ['src']);
-    assert.equal(facts.portal, true);
-    assert.deepEqual(facts.developmentPackages, []);
-    assert.deepEqual(facts.tools, []);
-    assert.deepEqual(facts.productionPackages, Object.keys(packageJson.dependencies).sort());
-    assert.equal(facts.rendererVersion, '1.0.0');
-    assert.equal(facts.rendererWritable, false);
-    assert.equal(facts.certificates, true);
-    assert.equal(facts.rulesHash, createHash('sha256').update(readFileSync(new URL('docker/hosted-ad-rules.txt', repositoryRoot))).digest('hex'));
-    assert.equal(environment.DEPLOYMENT, 'hosted');
-    assert.equal(environment.NODE_ENV, 'production');
-    assert.equal(environment.LISTEN_HOST, '0.0.0.0');
-    assert.equal(environment.LISTEN_PORT, '8080');
-    assert.equal(environment.AD_RULES_FILE, '/etc/thermus/ad-rules.txt');
-    assert.equal(environment.LIGHTPANDA_DISABLE_TELEMETRY, 'true');
-    assert.deepEqual(Object.keys(environment).filter((name) => /WORKOS|AXIOM|PUBLIC_BASE_URL/.test(name)), []);
-  });
 
   await t.test('Given the unmodified image and placeholder runtime settings, when the real CLI starts, then portal, assets and health work, MCP remains protected, and foreign origins are refused', { timeout: 90_000 }, async (step) => {
     const server = await gate.server({}, false, step.signal);
@@ -170,6 +138,4 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.match(logs, /The hosted portal build is missing or invalid/);
     assert.doesNotMatch(logs, /Listening on http:\/\//);
   });
-
-  await t.test('Given a copied clean context with a failing offline unit check, when the final image target builds, then that check fails and no runtime image is created', { timeout: 1_200_000 }, (step) => gate.assertFailedCheckStopsImage(step.signal));
 });

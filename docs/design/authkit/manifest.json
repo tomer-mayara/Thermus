@@ -10,10 +10,8 @@
     "signUpCustomCss": "panel.css",
     "elementStyles": "element-styles.json",
     "fontFaceStylesheet": "fonts.css",
-    "authkitGlobalCss": "fonts.css",
-    "acceptanceCheck": "test/acceptance/auth/authkit-branding.test.ts"
+    "authkitGlobalCss": "fonts.css"
   },
-  "acceptanceCommand": "node --import tsx --test test/acceptance/auth/authkit-branding.test.ts",
   "requiresBeforeApply": [
     "Save complete previous branding for the confirmed production application and environment.",
     "Upload the exact dark logo and favicon, then replace THERMUS_AUTHKIT_LOGO_URL with the public logo URL.",

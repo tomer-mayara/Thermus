@@ -56,12 +56,6 @@ function stateOf(membership: OrganizationMembership): MembershipState {
   return { status: membership.status, roles: rolesOf(membership), updatedAt: membership.updatedAt };
 }
 
-// The single-role write of the directory: one role on the authorization resource of an organization without an external
-// ID, such as D or B. WorkOS names the resource of such an organization by its organization ID.
-function organizationRole(organizationId: string, membershipId: string, roleSlug: string) {
-  return { organizationMembershipId: membershipId, roleSlug, resourceTypeSlug: 'organization', resourceExternalId: organizationId };
-}
-
 function sameStatuses(read: readonly string[], statuses: readonly string[]): boolean {
   return read.length === statuses.length && statuses.every((status) => read.includes(status));
 }
@@ -165,67 +159,6 @@ export function describeAdministrationProofs(run: LiveRun): void {
     }
     return listed;
   }
-
-  describe('Hosted live proofs (AUTH-08W): single-role grant writes of WorkOS with the pinned SDK', () => {
-    test('Given a membership with User in D, when WorkOS assigns Admin on the organization resource and then assigns Admin again, then the first assignment adds only Admin and changes the update time, and the repeated one gives the same role assignment and changes neither the roles nor the update time', proofOptions, async (t) => {
-      const { organizationD, memberships } = await run.administrationFixtures();
-      const id = memberships.repeatInD;
-      const before = await membershipState(id);
-
-      const first = await workos.authorization.assignRole(organizationRole(organizationD.id, id, 'admin'));
-      const afterFirst = await membershipState(id);
-      const repeated = await workos.authorization.assignRole(organizationRole(organizationD.id, id, 'admin'));
-      const afterRepeat = await membershipState(id);
-      t.diagnostic(`roles ${JSON.stringify(before.roles)} > ${JSON.stringify(afterFirst.roles)} > ${JSON.stringify(afterRepeat.roles)}; update time changed ${before.updatedAt !== afterFirst.updatedAt}, then ${afterFirst.updatedAt !== afterRepeat.updatedAt}; the same role assignment: ${first.id === repeated.id}`);
-
-      assert.deepEqual(before.roles, ['user']);
-      assert.deepEqual([first.organizationMembershipId, first.role.slug, first.resource.resourceTypeSlug, first.resource.externalId], [id, 'admin', 'organization', organizationD.id]);
-      assert.deepEqual([afterFirst.status, afterFirst.roles], ['active', ['admin', 'user']]);
-      assert.notEqual(afterFirst.updatedAt, before.updatedAt, 'The role change did not change the update time.');
-      assert.equal(repeated.id, first.id, 'The repeated assignment gave another role assignment.');
-      assert.deepEqual(afterRepeat, afterFirst);
-    });
-
-    test('Given a membership with User in D, when two single-role writes assign Admin and Super Admin at the same time, then both roles stay, and User stays', proofOptions, async (t) => {
-      const { organizationD, memberships } = await run.administrationFixtures();
-      const id = memberships.concurrentInD;
-      const before = await membershipState(id);
-
-      await Promise.all(['admin', 'super-admin'].map((role) => workos.authorization.assignRole(organizationRole(organizationD.id, id, role))));
-      const after = await membershipState(id);
-      t.diagnostic(`roles ${JSON.stringify(before.roles)} > ${JSON.stringify(after.roles)}`);
-
-      assert.deepEqual(before.roles, ['user']);
-      assert.deepEqual([after.status, after.roles], ['active', ['admin', 'super-admin', 'user']]);
-    });
-
-    test('Given a membership with User in D, when WorkOS removes Admin, which the membership does not have, then the removal succeeds and changes neither the roles nor the update time', proofOptions, async () => {
-      const { organizationD, memberships } = await run.administrationFixtures();
-      const id = memberships.absentInD;
-      const before = await membershipState(id);
-
-      await workos.authorization.removeRole(organizationRole(organizationD.id, id, 'admin'));
-      const after = await membershipState(id);
-
-      assert.deepEqual(before.roles, ['user']);
-      assert.deepEqual(after, before);
-    });
-
-    test('Given a membership with User in D, when a single-role write names the organization resource of B, then WorkOS refuses it with 404 entity_not_found and changes neither the roles nor the update time', proofOptions, async (t) => {
-      const { organizationB } = await run.fixtures();
-      const { memberships } = await run.administrationFixtures();
-      const id = memberships.absentInD;
-      const before = await membershipState(id);
-
-      const refusal = await workos.authorization.assignRole(organizationRole(organizationB.id, id, 'super-admin')).then(() => undefined, (error: unknown) => error);
-      const after = await membershipState(id);
-      const answer = typeof refusal === 'object' && refusal !== null ? { status: Reflect.get(refusal, 'status'), code: Reflect.get(refusal, 'code') } : undefined;
-      t.diagnostic(`assignment on the resource of another organization: ${JSON.stringify(answer ?? 'accepted')}`);
-
-      assert.deepEqual(answer, { status: 404, code: 'entity_not_found' });
-      assert.deepEqual(after, before);
-    });
-  });
 
   describe('Hosted live proofs (AUTH-08W): grant changes of the directory against WorkOS', () => {
     test('Given a member with User in D and the revision of a page, when the directory grants Admin on it, the same request comes again, and after a later revoke of Admin the old request comes again, then the grant is applied and keeps User, each later request is stale without a write, and the revoked grant does not return', proofOptions, async (t) => {

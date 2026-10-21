@@ -15,8 +15,7 @@ package suites. The default runs both complete unit parts. Only a change under
 (`npm test`) and the remaining checks in the
 [test gate policy](../../docs/implementation/test-gate-policy.md). Other
 changes select affected groups and existing focused tests. Do not add
-`npm run check`, which repeats unit and portal tests. A command or live test
-must not start a broader suite through a nested coverage call.
+`npm run check`, which repeats unit and portal tests. A command must not start a broader suite through a nested coverage call.
 
 Tool operations need `ast-metrics` on PATH (`brew install
 ast-metrics/tap/ast-metrics` on macOS). The wrappers pin 0.43.1 and check CLI
@@ -25,7 +24,7 @@ results with `ast-metrics version`, and MCP results with initialization.
 child operations; a mismatch otherwise fails before results are consumed.
 Help, offline architecture rendering, and coverage collection need no
 installed ast-metrics. Delta and CRAP also need no tool for an empty default
-selection. A pin change needs the applicable live contracts and fixture review.
+selection. Check tool compatibility when the pin changes.
 MCP operations start and stop their server within a deadline, also after a
 failure. Do not start or register a persistent server.
 
@@ -284,10 +283,6 @@ invalid input, or an analysis failure. Maintainability ranges from 0 to 128;
 more is better. Inspect low files with MCP and repeat for at most three
 passes. Record any remaining score below 85 and its reason.
 
-Focused tests: affected `ast-metrics-delta*.test.ts` rows in the
-[available inventory](#available-tests), plus shared helpers when changed.
-These patterns help selection; they do not select every listed test.
-
 ## Ask the MCP server
 
 ```text
@@ -323,10 +318,6 @@ folder and must stay within the repository.
 Exit 0 means the answer was printed. Exit 1 gives one diagnostic line for
 invalid input, an unknown tool or file, a timeout, an early server exit,
 a version mismatch, or a missing executable. A timeout stops the server.
-
-Focused tests: affected `ast-metrics-mcp*.test.ts` rows in the
-[available inventory](#available-tests). Select its live contract only when
-applicable under the policy.
 
 ## Review the delta
 
@@ -373,9 +364,6 @@ belongs in the pull request description.
 Exit 0 means no high-severity finding; exit 1 means such a finding, invalid
 input, or a tool/report failure. Correct high findings or record a reason.
 Refresh the baseline only within the [allowed policy](#refresh-an-allowed-baseline).
-
-Focused tests: affected `ast-metrics-review*.test.ts` rows in the
-[available inventory](#available-tests).
 
 ## Measure the coverage per function
 
@@ -562,11 +550,6 @@ suite, invalid raw data, failed provenance, or publication failure exits 1
 and preserves an earlier report. Archived raw data survive a later report
 publication failure for recovery with `--from`. No ast-metrics is required.
 
-Focused tests: affected `ast-metrics-coverage*.test.ts` and
-`ast-metrics-provenance-*.test.ts` rows in the
-[available inventory](#available-tests). Collector live rows have the scope
-above, even when a focused caller would otherwise select them.
-
 ## Assess per-function CRAP goals
 
 ```text
@@ -619,17 +602,6 @@ older file can stay. The [review route check](../pr-review/README.md) reads
 the file with `--crap`. Write it under `ast-report/`, as
 `ast-report/crap.json`: a file in another folder of the repository can change
 the input identity of the coverage report.
-
-Focused tests: affected `ast-metrics-crap*.test.ts` rows in the
-[available inventory](#available-tests). The live contract reuses compatible
-coverage and starts no collector:
-
-```sh
-AST_METRICS_CRAP_COVERAGE=/absolute/path/coverage.json node --test dist/test/acceptance/script/ast-metrics-crap.live.js
-```
-
-Without that variable it reads `ast-report/coverage.json`. A missing tool or
-report skips explicitly; a skip is not a pass. A present stale report fails.
 
 ## Show the architecture delta
 
@@ -761,11 +733,6 @@ line and no Markdown. SIGINT/SIGTERM during base capture remove its worktree
 and exit 130/143. Coverage unavailability alone does not fail structure or
 permit collection outside test scope.
 
-Focused tests: affected `ast-metrics-architecture*.test.ts` and
-`ast-metrics-community-evidence.test.ts` rows in the
-[available inventory](#available-tests). Select structural and collector
-live contracts separately under their listed scope.
-
 ## Take a snapshot
 
 ```text
@@ -826,11 +793,6 @@ Exit 0 means the snapshot was written. Exit 1 gives one diagnostic line for
 invalid input, a missing executable, failed analysis/call, or publication
 failure. SIGINT/SIGTERM during base capture exit 130/143 after cleanup.
 
-Focused tests: affected `ast-metrics-snapshot*.test.ts`,
-`ast-metrics-dependencies*.test.ts`, and source-evidence rows in the
-[available inventory](#available-tests). Select its live contract only within
-policy scope.
-
 ## Run the complete review process
 
 ```text
@@ -890,12 +852,6 @@ After a diagnostic, it writes no file, so an older file can stay. The
 Write it under `ast-report/`, as `ast-report/process.json`: a file in another
 folder of the repository can change the input identity of the coverage report.
 
-Focused tests: affected `ast-metrics-process*.test.ts` and
-`ast-metrics-stage-outcomes.test.ts` rows in the
-[available inventory](#available-tests). Process doubles never start coverage
-implicitly. A process test alone selects neither both complete unit parts
-nor all live contracts.
-
 ## Refresh an allowed baseline
 
 ```text
@@ -916,9 +872,6 @@ Use this wrapper only when the pull request changes the rules in
 `.ast-metrics.yaml`. Commit the resulting `.ast-metrics-baseline.yaml` in the
 same pull request. A retained review finding and a violation already on
 `main` are not reasons; the wrapper grants no extra permission.
-
-Focused tests: affected `ast-metrics-baseline.test.ts` rows in the
-[available inventory](#available-tests).
 
 ## Backfill missing main records
 
@@ -948,199 +901,3 @@ and keep the `main` version in any metrics conflict.
 Exit 0 means all selected records exist. A failure exits 1 and retains
 records completed before the failure. Signals exit 130 or 143 after cleanup.
 A later run skips existing records and can continue the missing work.
-
-Focused tests: `ast-metrics-backfill.test.ts` and
-`ast-metrics-trend-gaps.test.ts` rows in the [available inventory](#available-tests).
-They use temporary repositories and tool doubles and run no application suite.
-
-## Available tests
-
-This is the complete available inventory, not a requirement to run every
-file. Select affected rows with the
-[test gate policy](../../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts),
-following changed shared helpers and fixtures to their consumers. Each
-command's test patterns are selection aids. After a clean build, replace
-`test/` with `dist/test/` and `.ts` with `.js` for an emitted focused test.
-The documentation contract can also run directly from source:
-
-```sh
-node --test test/acceptance/script/script-readme.test.ts
-```
-
-That test reads real `--help` with an empty PATH and forbids child processes.
-It checks exact Usage/Options contracts, declared defaults, and this inventory
-against the [test inventory](../../docs/testing/test-list.md#ast-metrics-commands).
-It reads command references; it never executes the listed test commands.
-Prose changes alone do not select a broader suite through those references.
-
-Live contracts check repository invariants, not fixed community, cycle, or
-file counts. MCP checks function output and missing files. Snapshot checks
-source membership, labels, references, counts, HEAD, dependency pairs,
-deadlines, and worktree cleanup. Architecture acceptance cases share full
-graph fixtures; the document-only case proves no suite runs.
-
-`ast-metrics-architecture.live.ts` uses `--no-coverage` and checks structure,
-components, graphs, legends, and cleanup without starting a suite.
-`ast-metrics-architecture-coverage.live.ts` and `ast-metrics-coverage.live.ts`
-collect both complete unit parts. The latter also proves that portal tests
-call `initializePortal`. Both keep the default report unchanged. Architecture
-live cases use temporary trend stores and write no repository record.
-
-`ast-metrics-rules.live.ts` probes the pinned tool's coupling and new-function
-warning behavior in temporary repositories. Path-target coupling patterns do
-not catch named TypeScript imports; symbol patterns follow aliases and match
-across paths, with low findings. Native new-function warnings start at ten
-paths and become high at 25, while the wrapper removes the warning at 10
-and keeps it at 11. It also checks file limits at 39/40/41 paths and
-149/150/151 LOC. It runs no collector. The owner approved cleaner → MCP and
-website-fetcher → auth path rules through the review wrapper, file cap 40
-with LOC 150 unchanged, and a strict new-function warning above 10 paths on
-2026-10-19. The candidate implements those project rules. Selected tests,
-typechecking, and all 13 affected live cases pass. Native coupling cases explain
-the need for
-resolved-path checks; focused review-policy tests cover the wrapper rules.
-
-MCP, snapshot, CRAP, and architecture live cases need ast-metrics and skip
-explicitly when unavailable. CRAP also needs reusable compatible coverage.
-A skip is not a pass. Coverage collection itself needs no ast-metrics.
-Run either full-unit live collector only when `src/` changed or both complete
-unit parts were independently selected; otherwise record it as deferred. A build only prepares
-emitted tests. Changes to one command or double do not select all live files.
-
-<!-- code-quality-tests:start -->
-
-| Kind | Test file | Collects full unit coverage |
-| --- | --- | --- |
-| ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-components.test.ts | no |
-| live | test/acceptance/script/ast-metrics-architecture-coverage.live.ts | yes |
-| ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-repository-provenance.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-test-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-trend-charts.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-trend-view.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
-| live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-backfill.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-baseline.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-community-evidence.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-crash.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-loader-exit.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-loader-refusal.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-loader.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
-| live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
-| ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-paths.test.ts | no |
-| live | test/acceptance/script/ast-metrics-crap.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
-| live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-json.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-review-policy.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
-| live | test/acceptance/script/ast-metrics-rules.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
-| live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-stage-outcomes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-tool-version.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-trend-gaps.test.ts | no |
-| ordinary | test/acceptance/script/script-readme.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-component-records.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-components.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-identity.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-provenance.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-test-changes.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-charts.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-file.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-provenance.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-publication.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-title.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-view.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-backfill.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-baseline.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-community-evidence.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-checkpoint.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-manifest.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-runtime.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-validation.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-propagation.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-seal.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-suites.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-json.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-dependencies-read.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-dependencies.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-order.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-process.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review-moves.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review-policy.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-tool-version.test.ts | no |
-
-<!-- code-quality-tests:end -->

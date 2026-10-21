@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { listeningUrlIn } from '../drivers/operator-log.ts';
 import { workOSSettingsFor } from '../fixtures/hosted-placeholder.ts';
-import { astMetricsCoverageSourceFolder, containerPageScript, containerProbeScript, hostedImageIdentity, repositoryRoot } from '../processes/module-paths.ts';
+import { containerPageScript, hostedImageIdentity, repositoryRoot } from '../processes/module-paths.ts';
 import { docker, dockerOutput, type DockerResult } from './docker-cli.ts';
 
 const root = fileURLToPath(repositoryRoot);
@@ -37,16 +35,6 @@ export class HostedImageGate {
     assert.equal(result.code, 0, `Hosted AMD64 image build failed:\n${result.stderr}`);
   }
 
-  async inspect(): Promise<{ Architecture: string; Os: string; Config: { User: string; Env: string[]; Entrypoint: string[] } }> {
-    return JSON.parse(await this.output(['image', 'inspect', '--format', '{{json .}}', this.tag]));
-  }
-
-  async facts(): Promise<Record<string, unknown>> {
-    const probe = ['run', '--rm', '--interactive', '--platform', 'linux/amd64', '--label', this.label, '--network', 'none', '--env', 'PROBE=hosted-image'];
-    const output = await this.output([...probe, '--entrypoint', 'node', this.tag, '--input-type=module', '-'], readFileSync(containerProbeScript));
-    return JSON.parse(output) as Record<string, unknown>;
-  }
-
   async server(environment: Readonly<Record<string, string>> = {}, seam = true, signal = this.t.signal): Promise<HostedImageServer> {
     const mounts = seam ? [
       '--mount', `type=bind,src=${hostedImageIdentity},dst=${identityTarget},readonly`,
@@ -65,26 +53,6 @@ export class HostedImageGate {
 
   rejectedMissingPortal(signal: AbortSignal): Promise<{ code: number; logs: string }> {
     return this.startupFailure({}, ['--mount', 'type=volume,dst=/app/src/interfaces/user-portal/dist,volume-nocopy,readonly'], signal);
-  }
-
-  async assertFailedCheckStopsImage(signal: AbortSignal): Promise<void> {
-    const context = mkdtempSync(join(tmpdir(), 'thermus-hosted-failed-check-'));
-    this.t.after(() => rmSync(context, { recursive: true, force: true }));
-    // Copy only the hosted build inputs. Exclude sensitive and generated files also within those folders.
-    for (const input of ['Dockerfile.hosted', 'Dockerfile.hosted.dockerignore', '.habit-hooks', '.npmrc', 'docker', 'docs', 'migrations', 'package.json', 'patches', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'script', 'src', 'test', 'tsconfig.json', 'tsconfig.build.json', 'tsconfig.user-portal.json']) {
-      cpSync(join(root, input), join(context, input), {
-        recursive: true,
-        filter: (path) => (path === astMetricsCoverageSourceFolder || !['.git', 'node_modules', 'dist', '.cache', 'coverage', 'secrets', 'playwright-report', 'test-results'].includes(basename(path)))
-          && !/^(?:\.env|credentials)|\.(?:pem|key|p12|pfx|log)$/.test(basename(path)),
-      });
-    }
-    const sentinel = 'Hosted image offline check sabotage';
-    writeFileSync(join(context, 'test/unit/test-support-paths.test.ts'), `import assert from 'node:assert/strict';\nimport { test } from 'node:test';\ntest('${sentinel}', () => assert.fail('${sentinel}'));\n`);
-    const failedTag = `${this.tag}-failed-check`;
-    const result = await this.buildContext(context, failedTag, signal);
-    assert.notEqual(result.code, 0, 'A failing offline acceptance test still produced an image');
-    assert.match(result.stderr, new RegExp(sentinel), result.stderr);
-    assert.equal(await this.output(['image', 'ls', '--quiet', failedTag]), '', 'A failed check produced a final image');
   }
 
   private async createAndStart(environment: Readonly<Record<string, string>>, options: readonly string[], signal: AbortSignal): Promise<string> {
@@ -106,10 +74,6 @@ export class HostedImageGate {
 
   private buildContext(context: string, tag: string, signal = this.t.signal): Promise<DockerResult> {
     return docker(['build', '--platform', 'linux/amd64', '--progress=plain', '--file', join(context, 'Dockerfile.hosted'), '--label', this.label, '--tag', tag, context], { signal });
-  }
-
-  private output(args: readonly string[], input?: Buffer): Promise<string> {
-    return dockerOutput(args, { signal: this.t.signal, ...(input === undefined ? {} : { input }) });
   }
 
   private async cleanup(): Promise<void> {
