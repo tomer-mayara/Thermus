@@ -70,6 +70,37 @@ SDK's 4 MiB body limit apply before dispatch. Their existing HTTP and protocol
 refusals remain unchanged. The protected pipeline also checks product access,
 the query, and the operation UUID before stages or provider work.
 
+## Debug command
+
+Run `pnpm exec node script/search/search.ts --query TEXT --reason TEXT` from
+the repository root to call the hosted tool without an LLM client. The default
+endpoint is `https://app.thermus.ai/mcp`. The command checks the input limits
+above and sends accepted text unchanged. The [script guide](../../script/README.md#search-through-mcp)
+gives installation, credential input, and local endpoint examples.
+
+The command supports hosted browser OAuth, `--login`, `--logout`, and
+`--non-interactive`. It shares the fetch command's private local grant, lock,
+hosted OAuth profile, and callback port. Login and logout affect the saved grant
+of both commands. A present `THERMUS_API_KEY` or `--api-key-stdin` selects explicit
+Bearer input; stdin replaces the environment input. Custom endpoints require
+an explicit credential. Credentials are not accepted as command arguments.
+
+The command negotiates modern JSON/SSE or legacy MCP with the pinned SDK. It
+prints exact Markdown to stdout and returns status 0, including an empty result
+or `No search results.` Failure returns status 1 and a diagnosis on stderr.
+`--timeout-ms` accepts 100 through 300000 ms and defaults to 60000 ms. Its deadline
+includes stdin in explicit mode and starts after authentication in OAuth mode.
+Timeout and process cancellation abort network work and close the client.
+Endpoint redirects are refused.
+
+For a tool error with exactly one text item, the command preserves only the
+fixed search errors in the table above and the bounded renderer diagnoses of
+the [public fetch failure vocabulary](mcp-fetch-tool.md#public-fetch-failures),
+with the prefix `Search failed:`. HTTP diagnoses allow only statuses 400 through
+599. Unknown text, private suffixes, control characters, and extra content items
+give `Search failed. Check the query and server logs.` The command never prints
+tool metadata or structured error content.
+
 ## Execution and logging
 
 `createToolOperations` constructs both protected operations once per
