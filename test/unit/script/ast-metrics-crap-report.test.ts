@@ -47,6 +47,9 @@ test('Given tied scores and duplicate names, when rows are reported, then file, 
   assert.match(body[3], /src\/a\.ts \| z/u);
   assert.match(body[4], /src\/z\.ts/u);
   assert.match(report.text, /Known limit violations: 1\. Measured target misses: 4\. Unmeasured functions: 1\. Required functions with unknown assessment or identity: 1\./u);
+  assert.deepEqual(report.rows.map(({ file, name, change }) => `${file} ${name} ${change}`), [
+    'src/a.ts bound changed', 'src/a.ts f changed', 'src/a.ts f unchanged', 'src/a.ts z changed', 'src/z.ts f changed',
+  ]);
 });
 
 test('Given unknown shares, when bounds are assessed, then only an impossible applicable goal says split', () => {

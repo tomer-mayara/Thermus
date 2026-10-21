@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "tool": "0.43.1",
+  "commit": "eacc4c7901a2d7288cdf3762d06754e710f63fcb",
+  "date": "2026-10-21T06:46:58-06:00",
+  "title": "Draft the deterministic PR review playbook and its rules file (#203)",
+  "modularity": 0.58,
+  "crossShare": 0.27,
+  "cycles": 2,
+  "maintainability": 56.2,
+  "paths": 3263,
+  "files": 148,
+  "functions": 1156,
+  "communities": [
+    {
+      "label": "auth",
+      "files": 50,
+      "loc": 5828,
+      "maintainability": 58.1,
+      "paths": 1342
+    },
+    {
+      "label": "hosted-admin",
+      "files": 9,
+      "loc": 861,
+      "maintainability": 66.9,
+      "paths": 176
+    },
+    {
+      "label": "html-cleaner-pipeline",
+      "files": 40,
+      "loc": 3170,
+      "maintainability": 48.1,
+      "paths": 976
+    },
+    {
+      "label": "logging",
+      "files": 3,
+      "loc": 210,
+      "maintainability": 62.5,
+      "paths": 39
+    },
+    {
+      "label": "mcp",
+      "files": 9,
+      "loc": 482,
+      "maintainability": 52.4,
+      "paths": 169
+    },
+    {
+      "label": "organizations",
+      "files": 5,
+      "loc": 361,
+      "maintainability": 73.9,
+      "paths": 86
+    },
+    {
+      "label": "page-fetch",
+      "files": 11,
+      "loc": 363,
+      "maintainability": 55.2,
+      "paths": 128
+    },
+    {
+      "label": "shared kernel",
+      "files": 2,
+      "loc": 197,
+      "maintainability": 59.5,
+      "paths": 49
+    },
+    {
+      "label": "user-portal",
+      "files": 6,
+      "loc": 455,
+      "maintainability": 52.7,
+      "paths": 65
+    },
+    {
+      "label": "website-fetcher",
+      "files": 8,
+      "loc": 561,
+      "maintainability": 55.4,
+      "paths": 189
+    }
+  ],
+  "components": [
+    {
+      "name": "auth",
+      "files": 36,
+      "loc": 4385,
+      "maintainability": 58.8,
+      "paths": 1012
+    },
+    {
+      "name": "billing",
+      "files": 2,
+      "loc": 27,
+      "maintainability": 68.8,
+      "paths": 6
+    },
+    {
+      "name": "config",
+      "files": 2,
+      "loc": 199,
+      "maintainability": 56.8,
+      "paths": 56
+    },
+    {
+      "name": "hosted-admin",
+      "files": 9,
+      "loc": 882,
+      "maintainability": 66.8,
+      "paths": 184
+    },
+    {
+      "name": "html",
+      "files": 1,
+      "loc": 8,
+      "maintainability": 121.4,
+      "paths": 2
+    },
+    {
+      "name": "html-cleaner-pipeline",
+      "files": 37,
+      "loc": 3023,
+      "maintainability": 46.9,
+      "paths": 946
+    },
+    {
+      "name": "http",
+      "files": 4,
+      "loc": 233,
+      "maintainability": 64.6,
+      "paths": 66
+    },
+    {
+      "name": "logging",
+      "files": 3,
+      "loc": 210,
+      "maintainability": 62.4,
+      "paths": 39
+    },
+    {
+      "name": "mcp",
+      "files": 10,
+      "loc": 719,
+      "maintainability": 51.5,
+      "paths": 193
+    },
+    {
+      "name": "organizations",
+      "files": 6,
+      "loc": 587,
+      "maintainability": 75,
+      "paths": 112
+    },
+    {
+      "name": "page-fetch",
+      "files": 10,
+      "loc": 368,
+      "maintainability": 57.8,
+      "paths": 125
+    },
+    {
+      "name": "search-engine",
+      "files": 2,
+      "loc": 122,
+      "maintainability": 34.1,
+      "paths": 56
+    },
+    {
+      "name": "search-pipeline",
+      "files": 6,
+      "loc": 331,
+      "maintainability": 48.3,
+      "paths": 131
+    },
+    {
+      "name": "src",
+      "files": 6,
+      "loc": 669,
+      "maintainability": 59.6,
+      "paths": 129
+    },
+    {
+      "name": "terminal",
+      "files": 1,
+      "loc": 63,
+      "maintainability": 77.2,
+      "paths": 14
+    },
+    {
+      "name": "user-portal",
+      "files": 8,
+      "loc": 472,
+      "maintainability": 52.7,
+      "paths": 65
+    },
+    {
+      "name": "website-fetcher",
+      "files": 5,
+      "loc": 410,
+      "maintainability": 59,
+      "paths": 127
+    }
+  ],
+  "sourceFingerprint": "7d7ee5341984e0c51204a44baa99c042e482392f21d2caec6924e39aa2f8c177"
+}

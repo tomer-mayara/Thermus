@@ -6,18 +6,28 @@ step "Run the check" of the section "Review route" of
 [rules file](../../docs/implementation/pr-review-rules.yaml). The
 [PR review playbook](../../docs/implementation/pr-review-playbook.md) explains
 the routes and the checks. Commit every file first, then take the two
-snapshots of check 4 and run the check from the repository root. No build is
-needed.
+snapshots of check 4. After the metrics process has written its coverage
+report, also write the CRAP rows of check 4. Run the check from the repository
+root. No build is needed.
 
 ```sh
 pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main
 pnpm exec node script/code-quality/ast-metrics-snapshot.ts
+pnpm exec node script/code-quality/ast-metrics-crap.ts --base origin/main --json ast-report/crap.json
 pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus \
-  --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json
+  --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json \
+  --crap ast-report/crap.json
 ```
 
+The CRAP command exits 1 when a goal is missed or unknown, but it still writes
+the file: the check applies the goals. When it stops with a diagnostic, repair
+the cause. Give the CRAP command the same `--base` as the check: the check
+refuses a file whose `base` is not the merge base, because its rows would
+classify the functions against another tree. Before the metrics process, run
+the check without `--crap`.
+
 ```text
-Usage: pnpm exec node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--json] [--help]
+Usage: pnpm exec node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--crap FILE] [--json] [--help]
 
 Options:
   --base REF            Git ref to compare with (default: origin/main)
@@ -28,6 +38,7 @@ Options:
   --allow-dirty         Check HEAD also when the working tree has uncommitted changes
   --base-snapshot FILE  Snapshot of the merge base, relative to the current folder
   --head-snapshot FILE  Snapshot of HEAD, relative to the current folder
+  --crap FILE           CRAP rows of HEAD, relative to the current folder
   --json                Print one JSON object instead of Markdown
   --help, -h            Show this help
 ```
@@ -37,9 +48,9 @@ Exit status 0 means that the check computed a route, also when the route is
 the working tree has uncommitted changes and `--allow-dirty` is absent, or the
 folder is not a git repository. Or the base ref is missing, or the rules file
 at HEAD is missing, is not valid YAML, or has a key that is missing or wrong.
-Or a snapshot cannot be read, is not valid, or is not of its commit, or the
-exceptions file is not valid. The diagnostic names the key, or the snapshot
-and both commits.
+Or a snapshot or the CRAP file cannot be read, is not valid, or is not of its
+commit, or the exceptions file is not valid. The diagnostic names the key, or
+the file and both commits.
 
 ## The routes
 
@@ -48,9 +59,9 @@ every reason, not only the first.
 
 | Route | Meaning |
 | --- | --- |
-| `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. Or a new production file has a raw MI below the limit and no exception covers it, or an exception entry of a changed path has expired. The author repairs the pull request or declares the fact. |
+| `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. Or a new production file has a raw MI below the limit, or a new or changed function misses its CRAP goal, and no exception covers it. Or an exception entry of a changed path has expired. The author repairs the pull request or declares the fact. |
 | `ASK` | A protected path, the rules file, a module of the public surface, or a contract document changed, or the pull request declares a fact. The architect answers the question of each matching group. |
-| `READ` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit. The owner reads the diff before the merge. |
+| `READ` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit or a function that misses its CRAP goal. The owner reads the diff before the merge. |
 | `SHOW` | No other reason, and a file under `scopes.executable` changed. The owner skims the merged diff. |
 | `SHIP` | No reason. The pull request merges on green. |
 
@@ -114,6 +125,40 @@ change of the rules file is `ASK`.
   path in the head snapshot. A file without raw MI in the snapshot that it
   needs is not applicable. The section "MI" gives each file with its values,
   or `not checked` without the two options.
+- CRAP: the goals of `ratchet.crap` for each row of the CRAP file whose
+  `file` is the path at HEAD of a change under `scopes.production` that is
+  not a deletion. A row of an unchanged function has no goal. The check
+  computes both goals with `crapAbsoluteOf` of
+  `script/code-quality/assessment/crap-absolute.ts`, from `paths` and
+  `share`. A new function, and a function of unknown identity, must be at
+  most `new_function_above`: a result `MISS` or `UNKNOWN` is `FIX`
+  `ratchet.crap.new_function_above`. A changed function must be below
+  `changed_legacy_function_at_or_above`: a result `MISS` or `UNKNOWN` is
+  `FIX` `ratchet.crap.changed_legacy_function_at_or_above`. The check treats
+  each changed function as legacy, because `ratchet.identity.start_commit`
+  is not set. Without a share, `p` paths give the bounds `[p, p² + p]`: three
+  paths give `[3, 12]` and pass 15 without coverage, four paths give
+  `[4, 20]`, which crosses 15. A range that crosses its goal stays `FIX`
+  until coverage or fewer paths decide it. The rules file must name the goals
+  15 and 30, because `crapAbsoluteOf` computes these two goals only. The
+  reason gives the value from known coverage, with the precision that keeps
+  the side of each goal, or the range `[lower, upper]`. The section "CRAP"
+  gives each function that passes: `<file>: <function>: pass from the bound
+  [<lower>, <upper>]`, or `<file>: <function>: <value>` from known coverage.
+  Without `--crap` it says `not checked: give --crap`. The comparison with
+  the CRAP of the merge base is a later iteration.
+- CRAP rows: the option names the JSON file of
+  `script/code-quality/ast-metrics-crap.ts --json FILE`, relative to the
+  current folder. The file must have `version` 1, a `base` text, a `head`
+  text, and a `rows` list. Each row needs a `file` and a `function` text, a
+  `change` of `new`, `changed`, `unchanged`, or `unknown`, and `paths` as a
+  whole number, 0 or more. `share` is a number from 0 to 1, `crap` a finite
+  number, and `identity` a text; each can be absent. The check uses `file`,
+  `function`, `change`, `paths`, and `share`. The `head` must be HEAD;
+  otherwise the check stops and names the file and both commits. The CRAP
+  command records HEAD also for uncommitted files, so commit first. The
+  check does not compare `base`; write the file with the same `--base` as
+  the check.
 - Snapshots: each option names a file relative to the current folder. Each
   file must be JSON with `version` 1 and a `files` list. Each file entry has
   a `path` text and an optional finite `maintainabilityRaw`; the check ignores
@@ -122,14 +167,20 @@ change of the rules file is `ASK`.
   stops and names the snapshot and both commits. The snapshot command records
   HEAD also for uncommitted files, so commit first.
 - Exceptions: the check reads `.code-quality-exceptions.yaml` from HEAD, when
-  it exists. Each entry under `exceptions` needs `path`, `metric: mi`, a finite
-  `bound`, a `reason`, and `expires` as `YYYY-MM-DD`; an entry that is not
-  valid stops the check, and the diagnostic names the entry and the field.
-  Today is the committer date of HEAD, so that a rerun gives the same route.
-  An entry covers the `FIX` of its new file while the raw MI is at least the
-  bound and today is not after `expires`. The covered file stays a `READ`
-  reason that names the entry. An entry that expired before today is `FIX`
-  when its path changed. A change to the file is `READ` through `read_paths`.
+  it exists. Each entry under `exceptions` needs a unit, a `metric`, a finite
+  `bound`, a `reason`, and `expires` as `YYYY-MM-DD`. The unit of an entry of
+  `metric: mi` is a file: `path`. The unit of an entry of `metric: crap` is a
+  function: `function: <file>#<function>`, with the file and the function as
+  the CRAP rows give them. An entry has `path` or `function`, not both. An
+  entry that is not valid stops the check, and the diagnostic names the entry
+  and the field. Today is the committer date of HEAD, so that a rerun gives
+  the same route. An `mi` entry covers the `FIX` of its new file while the raw
+  MI is at least the bound and today is not after `expires`. A `crap` entry
+  covers the `FIX` of its function while the value from known coverage, or
+  the upper bound, is at most the bound and today is not after `expires`. The
+  covered unit stays a `READ` reason that names the entry. An entry that
+  expired before today is `FIX` when its path, or the file of its function,
+  changed. A change to the file is `READ` through `read_paths`.
 - Route: the first route with a reason. The check does not run the required
   checks; a failed required check is `FIX`, as the step "Route" says.
 - Record: the Markdown section "Review route" for the pull request
@@ -147,9 +198,8 @@ them.
   declare it under the key that the entry names. Compare the declarations of
   each module under "Surface differences".
 - "Metrics": take the final report of the process "Code quality review with
-  ast-metrics" in AGENTS.md. A recorded CRAP miss of an added or changed
-  function, or a kept high finding on a changed file, is a reason for `READ`.
-  The check applies the MI rules.
+  ast-metrics" in AGENTS.md. A kept high finding on a changed file is a reason
+  for `READ`. The check applies the MI rules and the CRAP goals.
 - "Decision": for `ASK`, write the draft decision in the section "Review route"
   of the pull request description. Answer the question of each matching group,
   and state the guarantee that holds after the change.
@@ -166,8 +216,10 @@ graph. `dependency-facts.ts`, `cycles.ts`, and `facts.ts` compare it with the
 rules, and `sources.ts` joins the graph with the public surface of
 `surface.ts`. `paths.ts`, `size.ts`, and `test-counts.ts` give the other
 reasons; `globs.ts` matches the patterns. `snapshots.ts` reads the two
-snapshot files, `exceptions.ts` reads the exceptions file, and `ratchet.ts`
-applies the MI rules. `analysis.ts` and `result.ts` collect
+snapshot files, `exceptions.ts` reads the exceptions file and finds the entry
+that covers a unit, `exception-entries.ts` checks each entry, and `ratchet.ts`
+applies the MI rules. `crap-rows.ts` reads the CRAP file, and `crap.ts`
+applies the CRAP goals. `analysis.ts` and `result.ts` collect
 the reasons, and `route.ts` and `report.ts` give the route, the label command,
 and the record.
 

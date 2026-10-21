@@ -6,15 +6,17 @@ import { changesInSource } from '../delta/source.ts';
 import * as repository from '../shared/repository.ts';
 import type { CrapCommand } from './command-line.ts';
 
-export interface Selection { readonly root: string; readonly base: string; readonly changes: readonly FileChange[]; readonly paths: readonly string[] }
+// base is the merge base, not the ref, so that a reader of the rows can name the commit.
+export interface Selection { readonly root: string; readonly base: string; readonly head: string; readonly changes: readonly FileChange[]; readonly paths: readonly string[] }
 
 export function selectionOf(command: Extract<CrapCommand, { kind: 'report' }>): Selection {
   const root = repository.repositoryRoot();
   repository.verifyBase(root, command.base);
   const changes = changesInSource(deltaChanges(root, command.base));
   const selected = command.paths.length === 0 ? changes.filter(({ status }) => status !== 'D').map(({ path }) => checkedSourcePath(root, paths.resolve(root, path))) : command.paths.map((path) => checkedSourcePath(root, path));
-  const base = repository.git(root, ['merge-base', command.base, 'HEAD'], `Cannot resolve the merge base of ${command.base}.`).trim();
-  return { root, base, changes, paths: [...new Set(selected)].sort() };
+  const head = repository.git(root, ['rev-parse', '--verify', 'HEAD^{commit}'], 'Cannot resolve HEAD.').trim();
+  const base = repository.git(root, ['merge-base', command.base, head], `Cannot resolve the merge base of ${command.base}.`).trim();
+  return { root, base, head, changes, paths: [...new Set(selected)].sort() };
 }
 
 function checkedSourcePath(root: string, path: string): string {

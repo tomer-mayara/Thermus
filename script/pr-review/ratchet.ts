@@ -1,5 +1,5 @@
 import { changedPathsOf } from './changes.ts';
-import { coveringException, exceptionsOf, expiredReasons, type MiException } from './exceptions.ts';
+import { coveringException, exceptionsOf, expiredReasons, type CodeQualityException } from './exceptions.ts';
 import { anyGlobMatches } from './globs.ts';
 import type { Rules } from './rules.ts';
 import type { SnapshotPair } from './snapshots.ts';
@@ -18,7 +18,7 @@ interface RatchetInput {
 interface Context {
   readonly snapshots: SnapshotPair;
   readonly limits: Rules['maintainability'];
-  readonly entries: readonly MiException[];
+  readonly entries: readonly CodeQualityException[];
   readonly today: string;
 }
 

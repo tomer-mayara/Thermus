@@ -46,7 +46,10 @@ export function rulesDocument() {
       test_counts: { fewer_tests_than_base: 'READ', more_skipped_or_todo_than_base: 'READ' },
       habit_hooks_snooze_non_empty: 'FIX',
     },
-    ratchet: { maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 } as Record<string, number> },
+    ratchet: {
+      maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 } as Record<string, number>,
+      crap: { new_function_above: 15, changed_legacy_function_at_or_above: 30 } as Record<string, number>,
+    },
   };
 }
 

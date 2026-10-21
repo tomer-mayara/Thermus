@@ -260,6 +260,12 @@ records stay immutable. Gap checks cover only the interval between displayed
 first-parent endpoints; every stored full SHA counts, also when its row is not
 shown. Offline snapshot dates cannot establish omitted commits.
 
+`test/unit/script/ast-metrics-crap-absolute.test.ts` and
+`test/acceptance/script/ast-metrics-crap-absolute.test.ts` specify both absolute
+CRAP goals over supplied operands: exact comparisons, display-only scores,
+missing-coverage bounds, proven zero, invalid inputs and distinct reasons.
+They establish arithmetic only, not accepted evidence or route eligibility.
+
 `test/unit/script/ast-metrics-process.test.ts` checks stage order, completed
 goal misses, operational failures, unavailable required coverage, an empty
 production selection, recording failure, and option conflicts. It checks a
@@ -328,7 +334,13 @@ Acceptance cases use temporary repositories, source identity, verified fixture
 coverage, and MCP doubles. They check the complete table and goal exit status,
 empty default selection without coverage or MCP, explicit inspection paths,
 custom base, unchanged high functions, and missing or stale coverage. These
-cases run no application suite.
+cases run no application suite. `ast-metrics-crap.test.ts` also runs the
+command with `--json`: the file holds the rows of the table in its order, with
+the merge base and HEAD, without share and CRAP for an unmeasured function and
+without identity for a function without source identity, while the table and
+the exit status stay the same; an empty selection gives no rows.
+`test/unit/script/ast-metrics-crap-json.test.ts` checks the JSON rows, their
+keys and the absent values, and the write of the file and its diagnostic.
 
 `ast-metrics-review-policy.test.ts` in the unit script group checks the strict
 new-function boundary, native high preservation, invalid numeric path evidence,
@@ -958,6 +970,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
@@ -1031,8 +1044,10 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-coverage-suites.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-json.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
@@ -1063,7 +1078,7 @@ See [the script guide](../../script/README.md) and
 
 ## PR review check
 
-Seven acceptance files run `script/pr-review/check.ts` in small git
+Eight acceptance files run `script/pr-review/check.ts` in small git
 repositories. Each repository has its own rules file from
 `test/acceptance/script/fixtures/pr-review-rules.ts`.
 `test/acceptance/script/pr-review-check.test.ts` checks the route from the
@@ -1089,10 +1104,10 @@ with `--allow-dirty`, and the rules file of HEAD when the merge base has none
 or has one that is not valid.
 `test/acceptance/script/pr-review-check-failures.test.ts` checks exit status 1
 for a rules file at HEAD without a key, without the MI limit of a new file,
-with a trigger of another route, or that is not valid YAML, for a deleted
-rules file, a missing base ref, an unknown option, a rules path outside the
-repository, a repository without an owner, and a head snapshot without a base
-snapshot. It also checks that the README gives the same synopsis, options, and
+with a CRAP goal other than 15, with a trigger of another route, or that is
+not valid YAML, for a deleted rules file, a missing base ref, an unknown
+option, a rules path outside the repository, a repository without an owner,
+and a head snapshot without a base snapshot. It also checks that the README gives the same synopsis, options, and
 defaults as the help, which it reads without child processes.
 `test/acceptance/script/pr-review-check-ratchet.test.ts` checks the MI rules
 of check 4 with snapshot files that the test writes under `ast-report/`:
@@ -1109,6 +1124,19 @@ reason that names the entry, a past date keeps the `FIX` and adds the expired
 entry, an expired entry of a changed file is `FIX` without the snapshot
 options while the MI section says that MI was not checked, and an expiry that
 is not a calendar date gives exit status 1.
+`test/acceptance/script/pr-review-check-crap.test.ts` checks the CRAP goals of
+check 4 with a CRAP file that the test writes under `ast-report/`: a pass from
+the bound `[3, 12]` for a new function of three paths without a share; `FIX`
+for a new function of four paths, whose range `[4, 20]` crosses 15; a pass at
+29.999 and `FIX` at 30 for changed functions with known coverage; `FIX` with
+the goal of a new function for an unknown function, while an unchanged
+function and a row of an unchanged file give no reason. A function entry of
+the exceptions file with a future date turns the `FIX` into a `READ` reason
+that names the entry; with a past date the `FIX` stays and the expired entry
+is `FIX` too. It checks exit status 1 for a CRAP file of another commit, with
+the file and both commits, for a missing file, and for a row whose paths are
+a text. The complete report of `pr-review-check.test.ts` says that CRAP was
+not checked without `--crap`.
 
 The unit tests `test/unit/script/pr-review-*.test.ts` check the parts: the glob
 matcher with dot files (`globs`), the kind of each import statement in each
@@ -1120,10 +1148,13 @@ facts (`facts`), the rules reader, its route guards, and its diagnostics
 cat-file --batch` (`blobs`), the line counts and the snooze file (`size`), each
 form of a test case, a skip, and a todo (`test-counts`), the path and surface
 reasons (`paths`), the route and the label command (`route`), the result and
-its report with the MI section (`result`), the MI rules with renames, limits,
+its report with the MI and CRAP sections (`result`), the MI rules with renames, limits,
 and exceptions (`ratchet`), the reader of the snapshot files and its
-diagnostics (`snapshots`), and the reader of the exceptions file, its dates,
-its cover, and its expiry (`exceptions`).
+diagnostics (`snapshots`), the reader of the exceptions file with its file
+and function entries, its dates, its cover, and its expiry (`exceptions`), the
+reader of the CRAP file and its diagnostics (`crap-rows`), and the CRAP goals
+with their bounds, the exact values at the goals, the rows that count, and
+the function entries (`crap`).
 
 ```sh
 npm run build

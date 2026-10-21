@@ -7,6 +7,9 @@ import type { GoalFunction } from './types.ts';
 
 interface SourceFiles { readonly base: readonly TableFile[]; readonly head: readonly TableFile[] }
 
+// A function without source identity gets a placeholder that keeps the order of equal rows stable.
+const placeholder = 'metric:';
+
 export function goalFunctionsOf(selection: Selection, files: SourceFiles, coverage: CoverageReport): GoalFunction[] {
   const sources: MapSources = { base: snapshot(files.base), head: snapshot(files.head), changes: selection.changes, touched: selection.paths };
   const correspondence = correspondenceOf(sources);
@@ -16,9 +19,13 @@ export function goalFunctionsOf(selection: Selection, files: SourceFiles, covera
     const measured = fileCrapOf(file, coverageShareOf(covered.get(file.path)));
     return measured.functions.map((fn, index): GoalFunction => {
       const source = file.functions?.[index];
-      return { ...fn, file: file.path, change: source === undefined ? 'unknown' : correspondence.head.get(source)?.classification ?? 'unknown', identity: source?.identity === undefined ? `metric:${index}` : JSON.stringify(source.identity) };
+      return { ...fn, file: file.path, change: source === undefined ? 'unknown' : correspondence.head.get(source)?.classification ?? 'unknown', identity: source?.identity === undefined ? `${placeholder}${index}` : JSON.stringify(source.identity) };
     });
   });
+}
+
+export function sourceIdentityOf(entry: GoalFunction): string | undefined {
+  return entry.identity.startsWith(placeholder) ? undefined : entry.identity;
 }
 
 function snapshot(files: readonly TableFile[]): MapSnapshot {

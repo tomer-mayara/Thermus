@@ -3,7 +3,7 @@ import { CommandError } from '../code-quality/shared/command-error.ts';
 import { checkBaseRef, parseCommandArguments } from '../code-quality/shared/command-line.ts';
 import type { SnapshotPaths } from './snapshots.ts';
 
-export const help = `Usage: node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--json] [--help]
+export const help = `Usage: node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--crap FILE] [--json] [--help]
 
 Compute the review route of the pull request candidate: the step "Run the
 check" of the section "Review route" of AGENTS.md. The candidate is the commit
@@ -15,15 +15,20 @@ The rules come from PATH at the merge base. If that file does not exist there,
 or is not valid, the file at HEAD applies. The rules file at HEAD lists the
 facts that the pull request declares. The report gives the route, every
 reason, the questions, the changed paths, the line and test counts, the MI
-comparison, the facts to declare, the declared facts, the modules to compare,
-and the label command. The steps "Declare or remove facts", "Metrics", and
-"Decision" stay with you.
+comparison, the CRAP goals, the facts to declare, the declared facts, the
+modules to compare, and the label command. The steps "Declare or remove
+facts", "Metrics", and "Decision" stay with you.
 
 With --base-snapshot and --head-snapshot, the check applies the MI rules of
 check 4 to the changed production files. Make the two files with
 script/code-quality/ast-metrics-snapshot.ts: with --base REF for the merge
 base, and without --base for HEAD. The check also reads the exceptions file
 .code-quality-exceptions.yaml at HEAD, when it exists.
+
+With --crap, the check applies the CRAP goals of check 4 to the new, unknown,
+and changed functions of the changed production files. Make the file with
+script/code-quality/ast-metrics-crap.ts --json FILE, after the metrics process
+wrote its coverage report.
 
 Options:
   --base REF            Git ref to compare with (default: origin/main)
@@ -34,14 +39,15 @@ Options:
   --allow-dirty         Check HEAD also when the working tree has uncommitted changes
   --base-snapshot FILE  Snapshot of the merge base, relative to the current folder
   --head-snapshot FILE  Snapshot of HEAD, relative to the current folder
+  --crap FILE           CRAP rows of HEAD, relative to the current folder
   --json                Print one JSON object instead of Markdown
   --help, -h            Show this help
 
 Exit status 0: the check computed a route, also when the route is FIX.
 Exit status 1: an argument is not valid, the working tree is not clean, or the
 check could not compute a route, for example because the base ref is missing,
-the rules file at HEAD is missing or not valid, a snapshot is not of its
-commit, or the exceptions file is not valid.
+the rules file at HEAD is missing or not valid, a snapshot or the CRAP file is
+not of its commit, or the exceptions file is not valid.
 `;
 
 const shape = {
@@ -51,6 +57,7 @@ const shape = {
   'allow-dirty': { type: 'boolean' },
   'base-snapshot': { type: 'string' },
   'head-snapshot': { type: 'string' },
+  crap: { type: 'string' },
   json: { type: 'boolean' },
   help: { type: 'boolean', short: 'h' },
 } as const;
@@ -62,6 +69,7 @@ export interface CheckOptions {
   readonly allowDirty: boolean;
   readonly json: boolean;
   readonly snapshots?: SnapshotPaths;
+  readonly crap?: string;
 }
 
 export function optionsOf(args: readonly string[]): CheckOptions | { readonly help: true } {
@@ -71,7 +79,7 @@ export function optionsOf(args: readonly string[]): CheckOptions | { readonly he
   return {
     base: values.base, rules: rulesPathOf(values.rules), repository: repositoryOf(values.repo),
     allowDirty: values['allow-dirty'] === true, json: values.json === true,
-    snapshots: snapshotPathsOf(values['base-snapshot'], values['head-snapshot']),
+    snapshots: snapshotPathsOf(values['base-snapshot'], values['head-snapshot']), crap: values.crap,
   };
 }
 
