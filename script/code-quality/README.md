@@ -55,6 +55,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `assessment/file-mi85.ts` calculates exact per-file MI85 states for caller selection.
 `assessment/crap-absolute.ts` calculates both absolute CRAP goals from operands.
 `assessment/crap-deterioration.ts` compares supplied CRAP observations or bounds.
+`assessment/crap-assessment.ts` returns per-function absolute and decline results.
 `assessment/mi-decline.ts` compares supplied MI operands for decline.
 `assessment/mi-assessment.ts` calculates per-unit MI floor and independent decline results.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
@@ -158,6 +159,32 @@ difference.
 This is arithmetic over supplied values, with no reference selection, identity,
 history, exceptions, routes, process integration or policy adoption. Full
 assessment remains pending; existing commands and manual merging stay unchanged.
+
+The pure `crapAssessmentOf({ base?, head?, acceptedBest? })` in
+`assessment/crap-assessment.ts` accepts optional `{ paths, share? }` values.
+Its labeled `observation` keeps supplied base/head/acceptedBest observations in
+the existing known-coverage, missing-coverage or proven-zero shapes; absent
+observations are omitted. It returns independent `atMost15` (head CRAP ≤15),
+`below30` (head CRAP <30), `prDecline` (`head − base < 5`), `cumulativeDecline`
+(`head − acceptedBest < 5`) and `noPrDeterioration` (`head − base ≤ 0`), each
+with `PASS`, `MISS` or `UNKNOWN` and a reason. Differences use CRAP values or
+bounds. It reuses unchanged `crapAbsoluteOf` validation and
+`crapDeteriorationOf` exact comparisons and bounds. Every supplied value is
+validated even if another is
+absent or another result passes. Missing head makes both absolutes unknown;
+missing references affect only their comparisons. Missing coverage is distinct
+from a missing operand.
+
+With full coverage and accepted best 8, base 14 and head 13, both absolutes and
+PR decline pass, cumulative decline misses and no PR deterioration passes.
+Current improvement cannot clear cumulative deterioration of five points.
+Both absolute candidates remain visible; the caller proves persistent origin
+and applicability, identity, comparability, scope and accepted history. Bounds
+under the acceptedBest label are arithmetic only, not proof of an accepted
+anchor. There is no automatic best selection, use of bounds as exact anchors,
+`NOT_APPLICABLE`, history update/replay, aggregate pass, route, exception or
+process integration. No policy is adopted; existing APIs, commands and manual
+merging stay unchanged.
 
 ### Own characters, joins, and unknowns
 
@@ -1154,6 +1181,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-assessment.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
@@ -1235,6 +1263,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
